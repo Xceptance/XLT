@@ -18,12 +18,12 @@ import static org.htmlunit.css.CssStyleSheet.BLOCK;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebWindow;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.StyleAttributes.Definition;
+import org.htmlunit.html.DomCDataSection;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -58,6 +58,7 @@ import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.html.HtmlUnorderedList;
 import org.htmlunit.html.TableRowGroup;
 import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder.Mode;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Special serializer to generate the output we need
@@ -105,7 +106,10 @@ public class HtmlSerializerVisibleText {
      * @param mode the {@link Mode} to use for processing
      */
     protected void appendNode(final HtmlSerializerTextBuilder builder, final DomNode node, final Mode mode) {
-        if (node instanceof DomText) {
+        if (node instanceof DomCDataSection) {
+            // ignore
+        }
+        else if (node instanceof DomText) {
             appendText(builder, (DomText) node, mode);
         }
         else if (node instanceof DomComment) {
@@ -374,11 +378,11 @@ public class HtmlSerializerVisibleText {
             final HtmlTableRow htmlTableRow, final Mode mode) {
         boolean first = true;
         for (final HtmlTableCell cell : htmlTableRow.getCells()) {
-            if (!first) {
-                builder.appendBlank();
+            if (first) {
+                first = false;
             }
             else {
-                first = false;
+                builder.appendBlank();
             }
             appendChildren(builder, cell, mode); // trim?
         }
@@ -512,9 +516,7 @@ public class HtmlSerializerVisibleText {
      */
     protected void appendOption(final HtmlSerializerTextBuilder builder,
             final HtmlOption htmlOption, final Mode mode) {
-        builder.ignoreHtmlBreaks();
         appendChildren(builder, htmlOption, mode);
-        builder.processHtmlBreaks();
     }
 
     /**
@@ -685,7 +687,7 @@ public class HtmlSerializerVisibleText {
                     if (node instanceof DomElement) {
                         final ComputedCssStyleDeclaration style = window.getComputedStyle((DomElement) node, null);
                         final String value = style.getStyleAttribute(Definition.WHITE_SPACE, false);
-                        if (StringUtils.isNoneEmpty(value)) {
+                        if (!StringUtils.isEmptyOrNull(value)) {
                             if ("normal".equalsIgnoreCase(value)) {
                                 return Mode.WHITE_SPACE_NORMAL;
                             }
@@ -718,7 +720,7 @@ public class HtmlSerializerVisibleText {
                 if (domNode instanceof DomElement) {
                     final ComputedCssStyleDeclaration style = window.getComputedStyle((DomElement) domNode, null);
                     final String value = style.getStyleAttribute(Definition.WHITE_SPACE, false);
-                    if (StringUtils.isNoneEmpty(value)) {
+                    if (!StringUtils.isEmptyOrNull(value)) {
                         if ("normal".equalsIgnoreCase(value)) {
                             return Mode.WHITE_SPACE_NORMAL;
                         }
@@ -767,7 +769,7 @@ public class HtmlSerializerVisibleText {
 
             /**
              * Sequences of white space are collapsed. Lines are broken
-             * at newline characters, at <br>, and as necessary
+             * at newline characters, at <br> and as necessary
              * to fill line boxes.
              */
             WHITE_SPACE_PRE_LINE
@@ -787,7 +789,6 @@ public class HtmlSerializerVisibleText {
         private final StringBuilder builder_;
         private int trimRightPos_;
         private boolean contentAdded_;
-        private boolean ignoreHtmlBreaks_;
 
         /**
          * Ctor.
@@ -815,9 +816,9 @@ public class HtmlSerializerVisibleText {
             }
 
             length--;
-            int i = -1;
-            for (char c : content.toCharArray()) {
-                i++;
+            final int contentLength = content.length();
+            for (int i = 0; i < contentLength; i++) {
+                char c = content.charAt(i);
 
                 // handle \r
                 if (c == '\r') {
@@ -985,10 +986,6 @@ public class HtmlSerializerVisibleText {
          * @param mode the {@link Mode}
          */
         public void appendBreak(final Mode mode) {
-            if (ignoreHtmlBreaks_) {
-                return;
-            }
-
             builder_.setLength(trimRightPos_);
 
             builder_.append('\n');
@@ -1044,20 +1041,6 @@ public class HtmlSerializerVisibleText {
          */
         public void resetContentAdded() {
             contentAdded_ = false;
-        }
-
-        /**
-         * Ignore the following html breaks in the content to be added.
-         */
-        public void ignoreHtmlBreaks() {
-            ignoreHtmlBreaks_ = true;
-        }
-
-        /**
-         * Prozess the following html breaks in the content to be added.
-         */
-        public void processHtmlBreaks() {
-            ignoreHtmlBreaks_ = false;
         }
 
         /**

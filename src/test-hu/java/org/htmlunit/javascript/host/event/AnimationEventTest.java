@@ -15,13 +15,10 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.host.animations.AnimationEvent;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -29,7 +26,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class AnimationEventTest extends WebDriverTestCase {
 
     private static final String DUMP_EVENT_FUNCTION = "  function dump(event) {\n"
@@ -46,7 +42,7 @@ public class AnimationEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object AnimationEvent]", "animationstart", "false", "false", "false"})
     public void create_ctor() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -70,7 +66,7 @@ public class AnimationEventTest extends WebDriverTestCase {
             FF = "NotSupportedError/DOMException",
             FF_ESR = "NotSupportedError/DOMException")
     public void create_createEvent() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -92,8 +88,8 @@ public class AnimationEventTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -116,10 +112,13 @@ public class AnimationEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"animationstart", "animationend"})
-    @NotYetImplemented
+    @HtmlUnitNYI(CHROME = {},
+            EDGE = {},
+            FF = {},
+            FF_ESR = {})
     public void animate() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<style>\n"
             + "  .animate {  animation: identifier .1s ; }\n"
             + "  @keyframes identifier {\n"
@@ -145,7 +144,7 @@ public class AnimationEventTest extends WebDriverTestCase {
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
-        Thread.sleep(DEFAULT_WAIT_TIME / 2);
+        Thread.sleep(DEFAULT_WAIT_TIME.toMillis() / 2);
         verifyTitle2(driver, getExpectedAlerts());
     }
 }

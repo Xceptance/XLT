@@ -15,9 +15,7 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for elements with onblur and onfocus attributes.
@@ -25,8 +23,8 @@ import org.junit.runner.RunWith;
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class FocusableElementTest extends SimpleWebTestCase {
 
     /**
@@ -36,8 +34,8 @@ public class FocusableElementTest extends SimpleWebTestCase {
      */
     @Test
     public void onBlurWith2Pages() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + "  var bCalled = false;\n"
@@ -64,8 +62,8 @@ public class FocusableElementTest extends SimpleWebTestCase {
      */
     @Test
     public void focusin() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + "  function handler(_e) {\n"

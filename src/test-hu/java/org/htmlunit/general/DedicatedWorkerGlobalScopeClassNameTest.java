@@ -20,23 +20,21 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.host.css.CSSStyleRule;
 import org.htmlunit.javascript.host.css.CSSStyleSheet;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that {@code typeof} host class is correct.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
 
     private void test(final String className) throws Exception {
-        final String html = "<html><body>"
+        final String html = DOCTYPE_HTML
+                + "<html><body>"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "try {\n"
@@ -919,26 +917,6 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
     @Alerts("ReferenceError")
     public void client() throws Exception {
         test("Client");
-    }
-
-    /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("ReferenceError")
-    public void clientRect() throws Exception {
-        test("ClientRect");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("ReferenceError")
-    public void clientRectList() throws Exception {
-        test("ClientRectList");
     }
 
     /**
@@ -1890,7 +1868,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
+     * Test {@link org.htmlunit.javascript.host.DOMRect}.
      *
      * @throws Exception if an error occurs
      */
@@ -4329,8 +4307,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function Iterator() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function Iterator() { [native code] }")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -6054,8 +6031,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function Permissions() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function Permissions() { [native code] }")
     public void permissions() throws Exception {
         test("Permissions");
     }
@@ -6073,8 +6049,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function PermissionStatus() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function PermissionStatus() { [native code] }")
     public void permissionStatus() throws Exception {
         test("PermissionStatus");
     }
@@ -6354,8 +6329,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function PushManager() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function PushManager() { [native code] }")
     public void pushManager() throws Exception {
         test("PushManager");
     }
@@ -6382,8 +6356,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function PushSubscription() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function PushSubscription() { [native code] }")
     public void pushSubscription() throws Exception {
         test("PushSubscription");
     }
@@ -6392,8 +6365,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function PushSubscriptionOptions() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function PushSubscriptionOptions() { [native code] }")
     public void pushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions");
     }
@@ -6551,9 +6523,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function RTCDataChannel() { [native code] }",
-            FF = "ReferenceError",
             FF_ESR = "ReferenceError")
-    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError", FF = "ReferenceError")
     public void rtcDataChannel() throws Exception {
         test("RTCDataChannel");
     }
@@ -6722,8 +6693,9 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "ReferenceError",
-            FF = "function ServiceWorker() { [native code] }")
-    @HtmlUnitNYI(FF = "ReferenceError")
+            FF = "function ServiceWorker() { [native code] }",
+            FF_ESR = "function ServiceWorker() { [native code] }")
+    @HtmlUnitNYI(FF = "ReferenceError", FF_ESR = "ReferenceError")
     public void serviceWorker() throws Exception {
         test("ServiceWorker");
     }
@@ -6733,8 +6705,9 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "ReferenceError",
-            FF = "function ServiceWorkerContainer() { [native code] }")
-    @HtmlUnitNYI(FF = "ReferenceError")
+            FF = "function ServiceWorkerContainer() { [native code] }",
+            FF_ESR = "function ServiceWorkerContainer() { [native code] }")
+    @HtmlUnitNYI(FF = "ReferenceError", FF_ESR = "ReferenceError")
     public void serviceWorkerContainer() throws Exception {
         test("ServiceWorkerContainer");
     }
@@ -6761,8 +6734,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function ServiceWorkerRegistration() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function ServiceWorkerRegistration() { [native code] }")
     public void serviceWorkerRegistration() throws Exception {
         test("ServiceWorkerRegistration");
     }
@@ -10161,5 +10133,14 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
     @Alerts("function AbortSignal() { [native code] }")
     public void abortSignal() throws Exception {
         test("AbortSignal");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("ReferenceError")
+    public void global() throws Exception {
+        test("global");
     }
 }

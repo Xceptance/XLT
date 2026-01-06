@@ -14,14 +14,14 @@
  */
 package org.htmlunit.junit.annotation;
 
-import static org.junit.Assert.assertFalse;
+import static org.htmlunit.junit.SetExpectedAlertsBeforeTestExecutionCallback.isDefined;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserVersionClassRunner;
+import org.htmlunit.junit.SetExpectedAlertsBeforeTestExecutionCallback;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Utility functions for working with our annotations.
@@ -46,13 +46,15 @@ public final class AnnotationUtils {
     public static void assertAlerts(final Method method) {
         final Alerts alerts = method.getAnnotation(Alerts.class);
         if (alerts != null) {
-            if (!BrowserVersionClassRunner.isDefined(alerts.value())) {
-                assertFalse("Obsolete DEFAULT because all browser expectations defined individually",
-                        BrowserVersionClassRunner.isDefined(alerts.DEFAULT())
-                        && BrowserVersionClassRunner.isDefined(alerts.CHROME())
-                        && BrowserVersionClassRunner.isDefined(alerts.FF())
-                        && BrowserVersionClassRunner.isDefined(alerts.FF_ESR())
-                        && BrowserVersionClassRunner.isDefined(alerts.EDGE()));
+            if (!isDefined(alerts.value())) {
+                Assertions.assertFalse(
+                        isDefined(alerts.DEFAULT())
+                        && isDefined(alerts.CHROME())
+                        && isDefined(alerts.FF())
+                        && isDefined(alerts.FF_ESR())
+                        && isDefined(alerts.EDGE()),
+                        "Obsolete DEFAULT because all browser expectations defined individually ("
+                                + method.getDeclaringClass().getName() + "." + method.getName());
 
                 assertNotEquals("@Alerts", method, BrowserVersion.CHROME, alerts.CHROME(), alerts.DEFAULT());
                 assertNotEquals("@Alerts", method, BrowserVersion.FIREFOX, alerts.FF(), alerts.DEFAULT());
@@ -62,105 +64,72 @@ public final class AnnotationUtils {
 
             final HtmlUnitNYI nyiAlerts = method.getAnnotation(HtmlUnitNYI.class);
             if (nyiAlerts != null) {
-                if (BrowserVersionClassRunner.isDefined(nyiAlerts.value())) {
-                    if (BrowserVersionClassRunner.isDefined(alerts.CHROME())) {
-                        assertNotEquals("@HtmlUnitNYI",
-                                method, null, alerts.CHROME(), nyiAlerts.value());
-                    }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.DEFAULT())) {
-                        assertNotEquals("@HtmlUnitNYI",
-                                method, null, alerts.DEFAULT(), nyiAlerts.value());
-                    }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.value())) {
-                        assertNotEquals("@HtmlUnitNYI",
-                                method, null, alerts.value(), nyiAlerts.value());
-                    }
-                }
-
-                if (BrowserVersionClassRunner.isDefined(nyiAlerts.CHROME())) {
-                    if (BrowserVersionClassRunner.isDefined(alerts.CHROME())) {
+                if (isDefined(nyiAlerts.CHROME())) {
+                    if (isDefined(alerts.CHROME())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.CHROME, alerts.CHROME(), nyiAlerts.CHROME());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.DEFAULT())) {
+                    else if (isDefined(alerts.DEFAULT())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.CHROME, alerts.DEFAULT(), nyiAlerts.CHROME());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.value())) {
+                    else if (isDefined(alerts.value())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.CHROME, alerts.value(), nyiAlerts.CHROME());
                     }
                 }
 
-                if (BrowserVersionClassRunner.isDefined(nyiAlerts.FF_ESR())) {
-                    if (BrowserVersionClassRunner.isDefined(alerts.FF_ESR())) {
+                if (isDefined(nyiAlerts.FF_ESR())) {
+                    if (isDefined(alerts.FF_ESR())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.FIREFOX_ESR, alerts.FF_ESR(), nyiAlerts.FF_ESR());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.DEFAULT())) {
+                    else if (isDefined(alerts.DEFAULT())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.FIREFOX_ESR, alerts.DEFAULT(), nyiAlerts.FF_ESR());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.value())) {
+                    else if (isDefined(alerts.value())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.FIREFOX_ESR, alerts.value(), nyiAlerts.FF_ESR());
                     }
                 }
 
-                if (BrowserVersionClassRunner.isDefined(nyiAlerts.FF())) {
-                    if (BrowserVersionClassRunner.isDefined(alerts.FF())) {
+                if (isDefined(nyiAlerts.FF())) {
+                    if (isDefined(alerts.FF())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.FIREFOX, alerts.FF(), nyiAlerts.FF());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.DEFAULT())) {
+                    else if (isDefined(alerts.DEFAULT())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.FIREFOX, alerts.DEFAULT(), nyiAlerts.FF());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.value())) {
+                    else if (isDefined(alerts.value())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.FIREFOX, alerts.value(), nyiAlerts.FF());
                     }
                 }
 
-                if (BrowserVersionClassRunner.isDefined(nyiAlerts.EDGE())) {
-                    if (BrowserVersionClassRunner.isDefined(alerts.EDGE())) {
+                if (isDefined(nyiAlerts.EDGE())) {
+                    if (isDefined(alerts.EDGE())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.EDGE, alerts.EDGE(), nyiAlerts.EDGE());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.DEFAULT())) {
+                    else if (isDefined(alerts.DEFAULT())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.EDGE, alerts.DEFAULT(), nyiAlerts.EDGE());
                     }
-                    else if (BrowserVersionClassRunner.isDefined(alerts.value())) {
+                    else if (isDefined(alerts.value())) {
                         assertNotEquals("@HtmlUnitNYI",
                                 method, BrowserVersion.EDGE, alerts.value(), nyiAlerts.EDGE());
                     }
                 }
             }
         }
-
-        final AlertsStandards alerts2 = method.getAnnotation(AlertsStandards.class);
-        if (alerts2 != null) {
-            if (!BrowserVersionClassRunner.isDefined(alerts2.value())) {
-                assertFalse("Obsolete DEFAULT because all browser expectations are defined individually",
-                        BrowserVersionClassRunner.isDefined(alerts2.DEFAULT())
-                        && BrowserVersionClassRunner.isDefined(alerts2.CHROME())
-                        && BrowserVersionClassRunner.isDefined(alerts2.FF())
-                        && BrowserVersionClassRunner.isDefined(alerts2.FF_ESR())
-                        && BrowserVersionClassRunner.isDefined(alerts2.EDGE()));
-
-                assertNotEquals("@AlertsStandards", method, BrowserVersion.EDGE, alerts2.EDGE(), alerts2.DEFAULT());
-                assertNotEquals("@AlertsStandards", method, BrowserVersion.CHROME, alerts2.CHROME(), alerts2.DEFAULT());
-                assertNotEquals("@AlertsStandards", method, BrowserVersion.FIREFOX, alerts2.FF(), alerts2.DEFAULT());
-                assertNotEquals("@AlertsStandards",
-                        method, BrowserVersion.FIREFOX_ESR, alerts2.FF_ESR(), alerts2.DEFAULT());
-            }
-        }
     }
 
     private static void assertNotEquals(final String annotation, final Method method, final BrowserVersion browser,
             final String[] value1, final String[] value2) {
-        if (value1.length != 0 && !BrowserRunner.EMPTY_DEFAULT.equals(value1[0])
+        if (value1.length != 0 && !SetExpectedAlertsBeforeTestExecutionCallback.EMPTY_DEFAULT.equals(value1[0])
                 && value1.length == value2.length
                 && Arrays.asList(value1).toString().equals(Arrays.asList(value2).toString())) {
             final String nickname = browser == null ? "DEFAULT" : browser.getNickname();

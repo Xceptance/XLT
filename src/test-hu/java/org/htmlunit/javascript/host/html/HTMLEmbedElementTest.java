@@ -14,15 +14,10 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.annotation.TestedBrowser.FF;
-import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
-
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLEmbedElement}.
@@ -30,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLEmbedElementTest extends WebDriverTestCase {
 
     /**
@@ -43,10 +37,13 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
                   "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
             FF_ESR = {"left", "right", "bottom", "middle", "top",
                       "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"left", "right", "bottom", "middle", "top",
+                       "absbottom", "absmiddle", "baseline", "texttop", "wrong", ""},
+            FF_ESR = {"left", "right", "bottom", "middle", "top",
+                      "absbottom", "absmiddle", "baseline", "texttop", "wrong", ""})
     public void getAlign() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <embed id='e1' align='left' ></embed>\n"
             + "  <embed id='e2' align='right' ></embed>\n"
             + "  <embed id='e3' align='bottom' ></embed>\n"
@@ -80,10 +77,13 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
                   "absbottom", "absmiddle", "bottom", "texttop"},
             FF_ESR = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
                       "absbottom", "absmiddle", "bottom", "texttop"})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
+                       "absbottom", "absmiddle", "baseline", "texttop"},
+            FF_ESR = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top",
+                      "absbottom", "absmiddle", "baseline", "texttop"})
     public void setAlign() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <embed id='e1' align='left' ></embed>\n"
 
             + "<script>\n"
@@ -122,8 +122,8 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"10px", "20em", "80%", "40", "wrong", ""})
     public void getHeight() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <embed id='e1' height='10px' ></embed>\n"
             + "  <embed id='e2' height='20em' ></embed>\n"
             + "  <embed id='e3' height='80%' ></embed>\n"
@@ -148,8 +148,8 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"20px", "8", "foo"})
     public void setHeight() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <embed id='e1' height='10px' ></embed>\n"
 
             + "<script>\n"
@@ -179,8 +179,8 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"10px", "20em", "80%", "40", "wrong", ""})
     public void getWidth() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <embed id='e1' width='10px' ></embed>\n"
             + "  <embed id='e2' width='20em' ></embed>\n"
             + "  <embed id='e3' width='80%' ></embed>\n"
@@ -205,8 +205,8 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"20px", "8", "foo"})
     public void setWidth() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <embed id='e1' width='10px' ></embed>\n"
 
             + "<script>\n"

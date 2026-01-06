@@ -15,8 +15,6 @@
 package org.htmlunit.javascript.host;
 
 import static java.nio.charset.StandardCharsets.UTF_16LE;
-import static org.htmlunit.junit.annotation.TestedBrowser.FF;
-import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,13 +30,10 @@ import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -50,7 +45,6 @@ import org.openqa.selenium.WebElement;
  * @author Ronald Brill
  * @author Madis Pärn
  */
-@RunWith(BrowserRunner.class)
 public class WebSocketTest extends WebDriverTestCase {
 
     /**
@@ -59,7 +53,8 @@ public class WebSocketTest extends WebDriverTestCase {
     @Test
     @Alerts({"§§URL§§", "", "blob"})
     public void initialNoServerAvailable() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -89,7 +84,8 @@ public class WebSocketTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object WebSocket]", "§§URL§§"})
     public void earlyConstruction() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var location = 'ws://localhost:" + PORT + "/';\n"
@@ -128,7 +124,8 @@ public class WebSocketTest extends WebDriverTestCase {
             FF_ESR = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
                       "ws://localhost:22222/", "ws://localhost:22222/", "ws://localhost:22222/#"})
     public void initialWithoutUrl() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -173,7 +170,8 @@ public class WebSocketTest extends WebDriverTestCase {
     @Test
     @Alerts({"blob", "blob", "arraybuffer", "blob", "blob"})
     public void binaryType() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var location = 'ws://localhost:" + PORT + "/';\n"
@@ -227,7 +225,7 @@ public class WebSocketTest extends WebDriverTestCase {
             assertVisible("joined", driver);
 
             final WebElement chatE = driver.findElement(By.id("chat"));
-            long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+            long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
 
             do {
                 Thread.sleep(100);
@@ -239,7 +237,7 @@ public class WebSocketTest extends WebDriverTestCase {
             driver.findElement(By.id("phrase")).sendKeys("Hope you are fine!");
             driver.findElement(By.id("sendB")).click();
 
-            maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+            maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
             do {
                 Thread.sleep(100);
             }
@@ -305,7 +303,7 @@ public class WebSocketTest extends WebDriverTestCase {
     /**
      * {@inheritDoc}
      */
-    @After
+    @AfterEach
     @Override
     public void releaseResources() {
         super.releaseResources();
@@ -358,7 +356,7 @@ public class WebSocketTest extends WebDriverTestCase {
             driver.findElement(By.id("joinB")).click();
             final WebElement chatE = driver.findElement(By.id("chat"));
 
-            long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+            long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
             do {
                 Thread.sleep(100);
             }
@@ -369,7 +367,7 @@ public class WebSocketTest extends WebDriverTestCase {
             driver.findElement(By.id("phrase")).sendKeys("Hope you are fine!");
             driver.findElement(By.id("sendB")).click();
 
-            maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+            maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
             do {
                 Thread.sleep(100);
             }
@@ -463,7 +461,7 @@ public class WebSocketTest extends WebDriverTestCase {
             driver.get(URL_FIRST + "WebSocketTest_events.html");
 
             final WebElement logElement = driver.findElement(By.id("log"));
-            final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+            final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
 
             String text;
             do {
@@ -523,7 +521,32 @@ public class WebSocketTest extends WebDriverTestCase {
                       "[object ArrayBuffer]", "§§URL§§", "", "null",
                       "onCloseListener code: 1000  wasClean: false",
                       "onClose code: 1000  wasClean: false"})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"onOpenListener",
+                       "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
+                       "undefined", "undefined", "undefined", "undefined",
+                       "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
+                       "server_text", "§§URL§§", "", "null",
+                       "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
+                       "server_text", "§§URL§§", "", "null",
+                       "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
+                       "[object ArrayBuffer]", "§§URL§§", "", "null",
+                       "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
+                       "[object ArrayBuffer]", "§§URL§§", "", "null",
+                       "onCloseListener code: 1000  wasClean: true",
+                       "onClose code: 1000  wasClean: true"},
+            FF_ESR = {"onOpenListener",
+                      "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
+                      "undefined", "undefined", "undefined", "undefined",
+                      "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
+                      "server_text", "§§URL§§", "", "null",
+                      "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
+                      "server_text", "§§URL§§", "", "null",
+                      "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
+                      "[object ArrayBuffer]", "§§URL§§", "", "null",
+                      "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
+                      "[object ArrayBuffer]", "§§URL§§", "", "null",
+                      "onCloseListener code: 1000  wasClean: true",
+                      "onClose code: 1000  wasClean: true"})
     public void wasClean() throws Exception {
         expandExpectedAlertsVariables("ws://localhost:" + PORT);
         final String expected = String.join("\n", getExpectedAlerts());
@@ -535,7 +558,7 @@ public class WebSocketTest extends WebDriverTestCase {
             driver.get(URL_FIRST + "WebSocketTest_wasClean.html");
 
             final WebElement logElement = driver.findElement(By.id("log"));
-            final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+            final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
 
             String text;
             do {
@@ -569,7 +592,7 @@ public class WebSocketTest extends WebDriverTestCase {
             int counter = 0;
             String text;
             do {
-                Thread.sleep(DEFAULT_WAIT_TIME);
+                Thread.sleep(DEFAULT_WAIT_TIME.toMillis());
 
                 text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
@@ -658,7 +681,8 @@ public class WebSocketTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void prototypeUrl() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"

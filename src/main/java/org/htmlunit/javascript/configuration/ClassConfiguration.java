@@ -29,7 +29,7 @@ import org.htmlunit.javascript.HtmlUnitScriptable;
 /**
  * A container for all the JavaScript configuration information for one class.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Chris Erskine
  * @author Ahmed Ashour
  * @author Ronald Brill
@@ -278,7 +278,7 @@ public final class ClassConfiguration {
 
     /**
      * @return the JavaScript constructor method alias
-     * or null if there is nothing.
+     *         or null if there is nothing.
      */
     public String getJsConstructorAlias() {
         return jsConstructorAlias_;

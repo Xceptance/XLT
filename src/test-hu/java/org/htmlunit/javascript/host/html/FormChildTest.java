@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for form tag children.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class FormChildTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class FormChildTest extends WebDriverTestCase {
     @Test
     @Alerts({"f1", "f2"})
     public void formSimple() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -65,8 +62,8 @@ public class FormChildTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "null"})
     public void formBeforeAfter() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

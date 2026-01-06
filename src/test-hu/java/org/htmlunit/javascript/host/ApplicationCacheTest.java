@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ApplicationCache}.
@@ -28,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ApplicationCacheTest extends WebDriverTestCase {
 
     /**
@@ -37,7 +33,7 @@ public class ApplicationCacheTest extends WebDriverTestCase {
     @Test
     @Alerts("undefined")
     public void scriptableToString() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -115,7 +111,7 @@ public class ApplicationCacheTest extends WebDriverTestCase {
     }
 
     private void eventHandler(final String handler) throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -143,7 +139,7 @@ public class ApplicationCacheTest extends WebDriverTestCase {
     @Test
     @Alerts("no applicationCache")
     public void eventListener() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

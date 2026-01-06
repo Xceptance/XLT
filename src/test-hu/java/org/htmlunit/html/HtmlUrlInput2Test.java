@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlUrlInput}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Anton Demydenko
  */
-@RunWith(BrowserRunner.class)
 public class HtmlUrlInput2Test extends SimpleWebTestCase {
 
     /**
@@ -36,8 +33,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
     @Test
     @Alerts("http://htmlunit.sourceforge.net")
     public void asNormalizedText() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -54,8 +51,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void typingAndClone() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -77,8 +74,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void typingAndReset() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -103,8 +100,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void typingAndSetValueAttribute() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -129,8 +126,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void typingAndSetValue() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -155,8 +152,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void patternValidation() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -185,7 +182,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
     @Test
     @Alerts({"true", "true", "true", "", "https://github.com"})
     public void maxLengthValidation() throws Exception {
-        final String htmlContent = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -212,7 +210,8 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
     @Test
     @Alerts({"true", "false", "true", "", "https://github.com/HtmlUnit/htmlunit"})
     public void minLengthValidation() throws Exception {
-        final String htmlContent = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"

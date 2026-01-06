@@ -34,7 +34,7 @@ import org.htmlunit.javascript.host.dom.NodeList;
 /**
  * The JavaScript object for {@link HtmlSelect}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -396,7 +396,7 @@ public class HTMLSelectElement extends HTMLElement {
      * @return whether the element is a candidate for constraint validation
      */
     @JsxGetter
-    public boolean getWillValidate() {
+    public boolean isWillValidate() {
         return getDomNodeOrDie().willValidate();
     }
 
@@ -409,6 +409,9 @@ public class HTMLSelectElement extends HTMLElement {
         getDomNodeOrDie().setCustomValidity(message);
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return getOptions().iterator();

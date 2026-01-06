@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -31,7 +29,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlHeadTest extends WebDriverTestCase {
 
     /**
@@ -41,7 +38,8 @@ public class HtmlHeadTest extends WebDriverTestCase {
     @Test
     @Alerts("HEAD")
     public void addedWhenMissing() throws Exception {
-        final String htmlContent = "<html><body>\n"
+        final String htmlContent =
+            "<html><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  log(document.firstChild.firstChild.tagName);\n"
@@ -57,7 +55,8 @@ public class HtmlHeadTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLHeadElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head id='myId'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head id='myId'><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    log(document.getElementById('myId'));\n"

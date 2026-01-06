@@ -15,10 +15,8 @@
 package org.htmlunit.html.xpath;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for XPath evaluation on HtmlUnit DOM.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlUnitXPath2Test extends WebDriverTestCase {
 
     /**
@@ -44,7 +41,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts({"4", "null"})
     public void xPathNull() throws Exception {
-        final String content = "<html><head>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -55,7 +53,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    node = result.iterateNext();\n"
             + "    log(result.resultType);\n"
             + "    log(node);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -71,7 +69,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts({"4", "null"})
     public void xPathUndefined() throws Exception {
-        final String content = "<html><head>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -82,7 +81,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    node = result.iterateNext();\n"
             + "    log(result.resultType);\n"
             + "    log(node);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -98,7 +97,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts({"102", "111", "111", "160", "97", "110", "100", "160", "102", "111", "111"})
     public void optionText() throws Exception {
-        final String content = "<html><head>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -109,7 +109,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    for (var i = 0; i < value.length; i++) {\n"
             + "      log(value.charCodeAt(i));\n"
             + "    }\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -125,7 +125,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLParagraphElement][object HTMLDivElement]")
     public void pipe() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -138,7 +139,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -155,7 +156,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("a")
     public void math() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -168,7 +170,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -379,7 +381,9 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
         compareStringValue("substring(\"HtmlUnit\", 2, -1)");
     }
 
-    /** @throws Exception in case of problems */
+    /**
+     * @throws Exception in case of problems
+     */
     @Test
     @Alerts("''")
     public void substringNegativeStartWithLength() throws Exception {
@@ -450,7 +454,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     }
 
     private void compare(final String xpath) throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -463,7 +468,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -477,7 +482,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     }
 
     private void compareStringValue(final String xpath) throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -487,7 +493,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var expr = '" + xpath + "';\n"
             + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
             + "    log(\"'\" + result.stringValue + \"'\");\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -501,7 +507,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     }
 
     private void compareBooleanValue(final String xpath) throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -511,7 +518,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var expr = '" + xpath + "';\n"
             + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
             + "    log(result.booleanValue);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -525,7 +532,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     }
 
     private void compareError(final String xpath) throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -534,7 +542,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var expr = '" + xpath + "';\n"
             + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
             + "    log('error expected');\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -549,7 +557,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("mySpan")
     public void minimalParameters() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -561,7 +570,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -578,7 +587,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("mySpan")
     public void undefinedResult() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -591,7 +601,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -608,7 +618,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void stringResult() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -621,7 +632,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -638,7 +649,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("mySpan")
     public void objectResult() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -651,7 +663,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -670,7 +682,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             FF = "mySpan - myDiv - ",
             FF_ESR = "mySpan - myDiv - ")
     public void reuseResult() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -696,7 +709,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    }\n"
 
             + "    log(res);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -713,7 +726,8 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts("myDiv1")
     public void documentEvaluateFirst() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -722,7 +736,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var res = '';\n"
             + "    var result = document.evaluate('//div', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE);\n"
             + "    log(result.singleNodeValue.id);\n"
-            + "  } catch(e) {logEx(e)}\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

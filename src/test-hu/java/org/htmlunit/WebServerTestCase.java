@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +49,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.htmlunit.WebDriverTestCase.MockWebConnectionServlet;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.MimeType;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 
 /**
  * A WebTestCase which starts a local server, and doens't use WebDriver.
@@ -235,7 +236,7 @@ public abstract class WebServerTestCase extends WebTestCase {
      * Performs post-test deconstruction.
      * @throws Exception if an error occurs
      */
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (server_ != null) {
             server_.stop();
@@ -256,7 +257,7 @@ public abstract class WebServerTestCase extends WebTestCase {
      */
     protected final HtmlPage loadPageWithAlerts(final String html, final URL url)
         throws Exception {
-        return loadPageWithAlerts(html, url, 0);
+        return loadPageWithAlerts(html, url, Duration.ofSeconds(0));
     }
 
     /**
@@ -267,7 +268,7 @@ public abstract class WebServerTestCase extends WebTestCase {
      * @return the page
      * @throws Exception if something goes wrong
      */
-    protected final HtmlPage loadPageWithAlerts(final String html, final URL url, final long maxWaitTime)
+    protected final HtmlPage loadPageWithAlerts(final String html, final URL url, final Duration maxWaitTime)
         throws Exception {
         alertHandler_.clear();
         expandExpectedAlertsVariables(URL_FIRST);
@@ -276,7 +277,7 @@ public abstract class WebServerTestCase extends WebTestCase {
         final HtmlPage page = loadPage(html, url);
 
         List<String> actualAlerts = getCollectedAlerts(page);
-        final long maxWait = System.currentTimeMillis() + maxWaitTime;
+        final long maxWait = System.currentTimeMillis() + maxWaitTime.toMillis();
         while (actualAlerts.size() < expectedAlerts.length && System.currentTimeMillis() < maxWait) {
             Thread.sleep(30);
             actualAlerts = getCollectedAlerts(page);
@@ -505,7 +506,7 @@ public abstract class WebServerTestCase extends WebTestCase {
      * Cleanup after a test.
      */
     @Override
-    @After
+    @AfterEach
     public void releaseResources() {
         super.releaseResources();
         if (webClient_ != null) {

@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ActiveXObject}.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ActiveXObject2Test extends WebDriverTestCase {
 
     /**
@@ -37,7 +34,8 @@ public class ActiveXObject2Test extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "undefined", "NaN", "false", "No", "No", "No", "No"})
     public void browserDetection() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
@@ -64,8 +62,9 @@ public class ActiveXObject2Test extends WebDriverTestCase {
     @Test
     @Alerts("ReferenceError")
     public void xmlDocument() throws Exception {
-        final String html = "<html>\n"
-            + " <head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -87,7 +86,8 @@ public class ActiveXObject2Test extends WebDriverTestCase {
     @Test
     @Alerts("ActiveXObject undefined")
     public void activex() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

@@ -19,17 +19,15 @@ import java.util.Locale;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlElement} attributes.
  *
  * @author David D. Kilzer
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class AttributeCaseTest extends SimpleWebTestCase {
 
     private static final String ATTRIBUTE_NAME = "randomAttribute";
@@ -174,7 +172,8 @@ public class AttributeCaseTest extends SimpleWebTestCase {
 
     private void setupGetAttributeTest(final String attributeName, final String attributeValue) throws Exception {
         final String elementId = "p-id";
-        final String content = "<html><head><title>AttributeCaseTest</title></head><body>\n"
+        final String content = DOCTYPE_HTML
+                          + "<html><head><title>AttributeCaseTest</title></head><body>\n"
                           + "<p id=\"" + elementId + "\" " + attributeName + "=\"" + attributeValue + "\">\n"
                           + "</body></html>";
 
@@ -187,8 +186,8 @@ public class AttributeCaseTest extends SimpleWebTestCase {
         throws Exception {
 
         final String elementId = "p-id";
-        final String content
-            = "<html><head><title>AttributeCaseTest</title></head><body>\n"
+        final String content = DOCTYPE_HTML
+             + "<html><head><title>AttributeCaseTest</title></head><body>\n"
              + "<p id=\"" + elementId + "\" " + attributeName + "=\"" + attributeValue + "\">\n"
              + "<script language=\"javascript\" type=\"text/javascript\">\n<!--\n"
              + "  document.getElementById(\"" + elementId + "\").setAttribute(\"" + attributeName + "\", \""

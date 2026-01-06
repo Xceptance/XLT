@@ -16,11 +16,8 @@ package org.htmlunit.general.huge;
 
 import java.util.Collection;
 
-import org.htmlunit.junit.BrowserParameterizedRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.provider.Arguments;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -30,7 +27,6 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserParameterizedRunner.class)
 public class HostParentOfMTest extends HostParentOf {
 
     /**
@@ -40,527 +36,274 @@ public class HostParentOfMTest extends HostParentOf {
      * @throws Exception
      *             if an error occurs
      */
-    @Parameters
-    public static Collection<Object[]> data() throws Exception {
+    public static Collection<Arguments> data() throws Exception {
         return HostParentOf.data(input -> {
             final char ch = Character.toUpperCase(input.charAt(0));
             return ch == 'M';
         });
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIAccess_MIDIAccess() throws Exception {
+    @Alerts("true/false")
+    void _MIDIAccess_MIDIAccess() throws Exception {
         test("MIDIAccess", "MIDIAccess");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIConnectionEvent_MIDIConnectionEvent() throws Exception {
+    @Alerts("true/false")
+    void _MIDIConnectionEvent_MIDIConnectionEvent() throws Exception {
         test("MIDIConnectionEvent", "MIDIConnectionEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIInputMap_MIDIInputMap() throws Exception {
+    @Alerts("true/false")
+    void _MIDIInputMap_MIDIInputMap() throws Exception {
         test("MIDIInputMap", "MIDIInputMap");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIInput_MIDIInput() throws Exception {
+    @Alerts("true/false")
+    void _MIDIInput_MIDIInput() throws Exception {
         test("MIDIInput", "MIDIInput");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIMessageEvent_MIDIMessageEvent() throws Exception {
+    @Alerts("true/false")
+    void _MIDIMessageEvent_MIDIMessageEvent() throws Exception {
         test("MIDIMessageEvent", "MIDIMessageEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIOutputMap_MIDIOutputMap() throws Exception {
+    @Alerts("true/false")
+    void _MIDIOutputMap_MIDIOutputMap() throws Exception {
         test("MIDIOutputMap", "MIDIOutputMap");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIOutput_MIDIOutput() throws Exception {
+    @Alerts("true/false")
+    void _MIDIOutput_MIDIOutput() throws Exception {
         test("MIDIOutput", "MIDIOutput");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIPort_MIDIInput() throws Exception {
+    @Alerts("true/true")
+    void _MIDIPort_MIDIInput() throws Exception {
         test("MIDIPort", "MIDIInput");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIPort_MIDIOutput() throws Exception {
+    @Alerts("true/true")
+    void _MIDIPort_MIDIOutput() throws Exception {
         test("MIDIPort", "MIDIOutput");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MIDIPort_MIDIPort() throws Exception {
+    @Alerts("true/false")
+    void _MIDIPort_MIDIPort() throws Exception {
         test("MIDIPort", "MIDIPort");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaDeviceInfo_MediaDeviceInfo() throws Exception {
+    @Alerts("true/false")
+    void _MediaDeviceInfo_MediaDeviceInfo() throws Exception {
         test("MediaDeviceInfo", "MediaDeviceInfo");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaDevices_MediaDevices() throws Exception {
+    @Alerts("true/false")
+    void _MediaDevices_MediaDevices() throws Exception {
         test("MediaDevices", "MediaDevices");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaElementAudioSourceNode_MediaElementAudioSourceNode() throws Exception {
+    @Alerts("true/false")
+    void _MediaElementAudioSourceNode_MediaElementAudioSourceNode() throws Exception {
         test("MediaElementAudioSourceNode", "MediaElementAudioSourceNode");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaEncryptedEvent_MediaEncryptedEvent() throws Exception {
+    @Alerts("true/false")
+    void _MediaEncryptedEvent_MediaEncryptedEvent() throws Exception {
         test("MediaEncryptedEvent", "MediaEncryptedEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaError_MediaError() throws Exception {
+    @Alerts("true/false")
+    void _MediaError_MediaError() throws Exception {
         test("MediaError", "MediaError");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    public void _MediaKeyError_MediaKeyError() throws Exception {
+    @Alerts(DEFAULT = "false/false",
+            FF = "true/false",
+            FF_ESR = "true/false")
+    void _MediaKeyError_MediaKeyError() throws Exception {
         test("MediaKeyError", "MediaKeyError");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaKeyMessageEvent_MediaKeyMessageEvent() throws Exception {
+    @Alerts("true/false")
+    void _MediaKeyMessageEvent_MediaKeyMessageEvent() throws Exception {
         test("MediaKeyMessageEvent", "MediaKeyMessageEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaKeySession_MediaKeySession() throws Exception {
+    @Alerts("true/false")
+    void _MediaKeySession_MediaKeySession() throws Exception {
         test("MediaKeySession", "MediaKeySession");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaKeyStatusMap_MediaKeyStatusMap() throws Exception {
+    @Alerts("true/false")
+    void _MediaKeyStatusMap_MediaKeyStatusMap() throws Exception {
         test("MediaKeyStatusMap", "MediaKeyStatusMap");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaKeySystemAccess_MediaKeySystemAccess() throws Exception {
+    @Alerts("true/false")
+    void _MediaKeySystemAccess_MediaKeySystemAccess() throws Exception {
         test("MediaKeySystemAccess", "MediaKeySystemAccess");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaKeys_MediaKeys() throws Exception {
+    @Alerts("true/false")
+    void _MediaKeys_MediaKeys() throws Exception {
         test("MediaKeys", "MediaKeys");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaList_MediaList() throws Exception {
+    @Alerts("true/false")
+    void _MediaList_MediaList() throws Exception {
         test("MediaList", "MediaList");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaQueryListEvent_MediaQueryListEvent() throws Exception {
+    @Alerts("true/false")
+    void _MediaQueryListEvent_MediaQueryListEvent() throws Exception {
         test("MediaQueryListEvent", "MediaQueryListEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaQueryList_MediaQueryList() throws Exception {
+    @Alerts("true/false")
+    void _MediaQueryList_MediaQueryList() throws Exception {
         test("MediaQueryList", "MediaQueryList");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaRecorder_MediaRecorder() throws Exception {
+    @Alerts("true/false")
+    void _MediaRecorder_MediaRecorder() throws Exception {
         test("MediaRecorder", "MediaRecorder");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaSource_MediaSource() throws Exception {
+    @Alerts("true/false")
+    void _MediaSource_MediaSource() throws Exception {
         test("MediaSource", "MediaSource");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaStreamAudioDestinationNode_MediaStreamAudioDestinationNode() throws Exception {
+    @Alerts("true/false")
+    void _MediaStreamAudioDestinationNode_MediaStreamAudioDestinationNode() throws Exception {
         test("MediaStreamAudioDestinationNode", "MediaStreamAudioDestinationNode");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaStreamAudioSourceNode_MediaStreamAudioSourceNode() throws Exception {
+    @Alerts("true/false")
+    void _MediaStreamAudioSourceNode_MediaStreamAudioSourceNode() throws Exception {
         test("MediaStreamAudioSourceNode", "MediaStreamAudioSourceNode");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaStreamEvent_MediaStreamEvent() throws Exception {
+    @Alerts("true/false")
+    void _MediaStreamEvent_MediaStreamEvent() throws Exception {
         test("MediaStreamEvent", "MediaStreamEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaStreamTrackEvent_MediaStreamTrackEvent() throws Exception {
+    @Alerts("true/false")
+    void _MediaStreamTrackEvent_MediaStreamTrackEvent() throws Exception {
         test("MediaStreamTrackEvent", "MediaStreamTrackEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "true",
-            FF = "false",
-            FF_ESR = "false")
-    public void _MediaStreamTrack_CanvasCaptureMediaStreamTrack() throws Exception {
+    @Alerts(DEFAULT = "true/true",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _MediaStreamTrack_CanvasCaptureMediaStreamTrack() throws Exception {
         test("MediaStreamTrack", "CanvasCaptureMediaStreamTrack");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaStreamTrack_MediaStreamTrack() throws Exception {
+    @Alerts("true/false")
+    void _MediaStreamTrack_MediaStreamTrack() throws Exception {
         test("MediaStreamTrack", "MediaStreamTrack");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MediaStream_MediaStream() throws Exception {
+    @Alerts("true/false")
+    void _MediaStream_MediaStream() throws Exception {
         test("MediaStream", "MediaStream");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    public void _MediaStream_CanvasCaptureMediaStream() throws Exception {
+    @Alerts(DEFAULT = "false/false",
+            FF = "true/true",
+            FF_ESR = "true/true")
+    void _MediaStream_CanvasCaptureMediaStream() throws Exception {
         test("MediaStream", "CanvasCaptureMediaStream");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "true",
-            FF = "false",
-            FF_ESR = "false")
-    public void _MediaStream_webkitMediaStream() throws Exception {
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _MediaStream_webkitMediaStream() throws Exception {
         test("MediaStream", "webkitMediaStream");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MessageChannel_MessageChannel() throws Exception {
+    @Alerts("true/false")
+    void _MessageChannel_MessageChannel() throws Exception {
         test("MessageChannel", "MessageChannel");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MessageEvent_MessageEvent() throws Exception {
+    @Alerts("true/false")
+    void _MessageEvent_MessageEvent() throws Exception {
         test("MessageEvent", "MessageEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MessagePort_MessagePort() throws Exception {
+    @Alerts("true/false")
+    void _MessagePort_MessagePort() throws Exception {
         test("MessagePort", "MessagePort");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MimeTypeArray_MimeTypeArray() throws Exception {
+    @Alerts("true/false")
+    void _MimeTypeArray_MimeTypeArray() throws Exception {
         test("MimeTypeArray", "MimeTypeArray");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MimeType_MimeType() throws Exception {
+    @Alerts("true/false")
+    void _MimeType_MimeType() throws Exception {
         test("MimeType", "MimeType");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MouseEvent_DragEvent() throws Exception {
+    @Alerts("true/true")
+    void _MouseEvent_DragEvent() throws Exception {
         test("MouseEvent", "DragEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MouseEvent_MouseEvent() throws Exception {
+    @Alerts("true/false")
+    void _MouseEvent_MouseEvent() throws Exception {
         test("MouseEvent", "MouseEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    public void _MouseEvent_MouseScrollEvent() throws Exception {
+    @Alerts(DEFAULT = "false/false",
+            FF = "true/true",
+            FF_ESR = "true/true")
+    void _MouseEvent_MouseScrollEvent() throws Exception {
         test("MouseEvent", "MouseScrollEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MouseEvent_PointerEvent() throws Exception {
+    @Alerts("true/true")
+    void _MouseEvent_PointerEvent() throws Exception {
         test("MouseEvent", "PointerEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MouseEvent_WheelEvent() throws Exception {
+    @Alerts("true/true")
+    void _MouseEvent_WheelEvent() throws Exception {
         test("MouseEvent", "WheelEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    public void _MouseScrollEvent_MouseScrollEvent() throws Exception {
+    @Alerts(DEFAULT = "false/false",
+            FF = "true/false",
+            FF_ESR = "true/false")
+    void _MouseScrollEvent_MouseScrollEvent() throws Exception {
         test("MouseScrollEvent", "MouseScrollEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    public void _MutationEvent_MutationEvent() throws Exception {
+    @Alerts("false/false")
+    void _MutationEvent_MutationEvent() throws Exception {
         test("MutationEvent", "MutationEvent");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MutationObserver_MutationObserver() throws Exception {
+    @Alerts("true/false")
+    void _MutationObserver_MutationObserver() throws Exception {
         test("MutationObserver", "MutationObserver");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "true",
-            FF = "false",
-            FF_ESR = "false")
-    public void _MutationObserver_WebKitMutationObserver() throws Exception {
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _MutationObserver_WebKitMutationObserver() throws Exception {
         test("MutationObserver", "WebKitMutationObserver");
     }
 
-    /**
-     * @throws Exception
-     *             if the test fails
-     */
-    @Test
-    @Alerts("true")
-    public void _MutationRecord_MutationRecord() throws Exception {
+    @Alerts("true/false")
+    void _MutationRecord_MutationRecord() throws Exception {
         test("MutationRecord", "MutationRecord");
     }
 }

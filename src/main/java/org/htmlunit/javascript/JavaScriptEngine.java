@@ -14,9 +14,7 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_CAPTURE_STACK_TRACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
-import static org.htmlunit.BrowserVersionFeatures.JS_ITERATOR_VISIBLE_IN_WINDOW;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_INSTALL_TRIGGER_NULL;
 
 import java.io.IOException;
@@ -30,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -50,7 +47,7 @@ import org.htmlunit.corejs.javascript.JavaScriptException;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.NativeConsole;
-import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.RhinoException;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
@@ -79,6 +76,7 @@ import org.htmlunit.javascript.host.html.HTMLOptionElement;
 import org.htmlunit.javascript.host.intl.Intl;
 import org.htmlunit.javascript.host.xml.FormData;
 import org.htmlunit.javascript.polyfill.Polyfill;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A wrapper for the <a href="http://www.mozilla.org/rhino">Rhino JavaScript engine</a>
@@ -87,11 +85,11 @@ import org.htmlunit.javascript.polyfill.Polyfill;
  * <p>Like all classes in this package, this class is not intended for direct use
  * and may change without notice.</p>
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:chen_jun@users.sourceforge.net">Chen Jun</a>
+ * @author Mike Bowler
+ * @author Chen Jun
  * @author David K. Taylor
  * @author Chris Erskine
- * @author <a href="mailto:bcurren@esomnie.com">Ben Curren</a>
+ * @author Ben Curren
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Daniel Gredler
@@ -103,7 +101,7 @@ import org.htmlunit.javascript.polyfill.Polyfill;
  * @author Sven Strickroth
  *
  * @see <a href="http://groups-beta.google.com/group/netscape.public.mozilla.jseng/browse_thread/thread/b4edac57329cf49f/069e9307ec89111f">
- * Rhino and Java Browser</a>
+ *     Rhino and Java Browser</a>
  */
 public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
@@ -194,7 +192,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     /**
      * Returns the JavaScriptExecutor.
      * @return the JavaScriptExecutor or null if javascript is disabled
-     *  or no executor was required so far.
+     *         or no executor was required so far.
      */
     public JavaScriptExecutor getJavaScriptExecutor() {
         return javaScriptExecutor_;
@@ -213,15 +211,15 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final Window jsWindowScope = new Window();
         jsWindowScope.setClassName("Window");
 
-        context.initSafeStandardObjects(jsWindowScope);
+        final Scriptable scope = context.initSafeStandardObjects(jsWindowScope);
         configureRhino(webClient, browserVersion, jsWindowScope);
 
         final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
         final Map<String, Scriptable> prototypesPerJSName = new HashMap<>();
 
-        final ClassConfiguration windowConfig = jsConfig_.getClassConfiguration("Window");
-        final FunctionObject functionObject = new RecursiveFunctionObject(jsWindowScope.getClassName(),
-                        windowConfig.getJsConstructor().getValue(), jsWindowScope, browserVersion);
+        final ClassConfiguration windowConfig = jsConfig_.getWindowClassConfiguration();
+        final FunctionObject functionObject = new FunctionObject(jsWindowScope.getClassName(),
+                        windowConfig.getJsConstructor().getValue(), jsWindowScope);
         ScriptableObject.defineProperty(jsWindowScope, "constructor", functionObject,
                 ScriptableObject.DONTENUM  | ScriptableObject.PERMANENT | ScriptableObject.READONLY);
 
@@ -250,7 +248,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final Method imageCtor = HTMLImageElement.class.getDeclaredMethod("jsConstructorImage");
         additionalCtor(jsWindowScope, prototypesPerJSName.get("HTMLImageElement"), imageCtor, "Image", "HTMLImageElement");
         final Method optionCtor = HTMLOptionElement.class.getDeclaredMethod("jsConstructorOption",
-                new Class[] {Object.class, String.class, boolean.class, boolean.class});
+                Object.class, String.class, boolean.class, boolean.class);
         additionalCtor(jsWindowScope, prototypesPerJSName.get("HTMLOptionElement"), optionCtor, "Option", "HTMLOptionElement");
 
         if (!webClient.getOptions().isWebSocketEnabled()) {
@@ -282,64 +280,79 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             final BrowserVersion browserVersion,
             final Map<Class<? extends Scriptable>, Scriptable> prototypes,
             final Map<String, Scriptable> prototypesPerJSName) throws Exception {
-        // setup the prototypes
-        for (final ClassConfiguration config : jsConfig.getAll()) {
-            if (config != scopeConfig) {
-                final HtmlUnitScriptable prototype = configureClass(config, jsScope);
-                if (config.isJsObject()) {
-                    // Place object with prototype property in Window scope
-                    final HtmlUnitScriptable obj = config.getHostClass().getDeclaredConstructor().newInstance();
-                    prototype.defineProperty("__proto__", prototype, ScriptableObject.DONTENUM);
-                    obj.defineProperty("prototype", prototype, ScriptableObject.DONTENUM); // but not setPrototype!
-                    obj.setParentScope(jsScope);
-                    obj.setClassName(config.getClassName());
-                    ScriptableObject.defineProperty(jsScope, obj.getClassName(), obj, ScriptableObject.DONTENUM);
-                    // this obj won't have prototype, constants need to be configured on it again
-                    configureConstants(config, obj);
-                }
-                prototypes.put(config.getHostClass(), prototype);
-                prototypesPerJSName.put(config.getClassName(), prototype);
-            }
-        }
 
-        // once all prototypes have been build, it's possible to configure the chains
         final Scriptable objectPrototype = ScriptableObject.getObjectPrototype(jsScope);
-        for (final Map.Entry<String, Scriptable> entry : prototypesPerJSName.entrySet()) {
-            final String name = entry.getKey();
-            final ClassConfiguration config = jsConfig.getClassConfiguration(name);
-            final Scriptable prototype = entry.getValue();
-            if (!StringUtils.isEmpty(config.getExtendedClassName())) {
-                final Scriptable parentPrototype = prototypesPerJSName.get(config.getExtendedClassName());
-                prototype.setPrototype(parentPrototype);
-            }
-            else {
-                prototype.setPrototype(objectPrototype);
-            }
-        }
 
-        // setup constructors
+        final Map<String, Function> ctorPrototypesPerJSName = new HashMap<>();
         for (final ClassConfiguration config : jsConfig.getAll()) {
             final String jsClassName = config.getClassName();
-            final Scriptable prototype = prototypesPerJSName.get(jsClassName);
+            Scriptable prototype = prototypesPerJSName.get(jsClassName);
+            final String extendedClassName =
+                    StringUtils.isEmptyOrNull(config.getExtendedClassName()) ? null : config.getExtendedClassName();
 
+            // setup the prototypes
             if (config == scopeConfig) {
-                addAsConstructorAndAlias(scopeContructorFunctionObject, jsScope, prototype, config);
-                configureConstantsStaticPropertiesAndStaticFunctions(config, scopeContructorFunctionObject);
-                continue;
-            }
-
-            final Map.Entry<String, Member> jsConstructor = config.getJsConstructor();
-            if (prototype != null && config.isJsObject()) {
-                if (jsConstructor == null) {
-                    final ScriptableObject constructor = config.getHostClass().getDeclaredConstructor().newInstance();
-                    ((HtmlUnitScriptable) constructor).setClassName(jsClassName);
-                    defineConstructor(jsScope, prototype, constructor);
-                    configureConstantsStaticPropertiesAndStaticFunctions(config, constructor);
+                if (extendedClassName == null) {
+                    prototype.setPrototype(objectPrototype);
                 }
                 else {
-                    final FunctionObject function = new RecursiveFunctionObject(jsConstructor.getKey(), jsConstructor.getValue(), jsScope, browserVersion);
-                    addAsConstructorAndAlias(function, jsScope, prototype, config);
-                    configureConstantsStaticPropertiesAndStaticFunctions(config, function);
+                    prototype.setPrototype(prototypesPerJSName.get(extendedClassName));
+                }
+
+                // setup constructors
+                addAsConstructorAndAlias(scopeContructorFunctionObject, jsScope, prototype, config);
+                configureConstantsStaticPropertiesAndStaticFunctions(config, scopeContructorFunctionObject);
+
+                // adjust prototype if needed
+                if (extendedClassName != null) {
+                    scopeContructorFunctionObject.setPrototype(ctorPrototypesPerJSName.get(extendedClassName));
+                }
+            }
+            else {
+                final HtmlUnitScriptable classPrototype = configureClass(config, jsScope);
+                prototypes.put(config.getHostClass(), classPrototype);
+                prototypesPerJSName.put(jsClassName, classPrototype);
+                prototype = classPrototype;
+
+                if (extendedClassName == null) {
+                    classPrototype.setPrototype(objectPrototype);
+                }
+                else {
+                    classPrototype.setPrototype(prototypesPerJSName.get(extendedClassName));
+                }
+
+                // setup constructors
+                if (prototype != null) {
+                    final Map.Entry<String, Member> jsConstructor = config.getJsConstructor();
+                    if (jsConstructor == null) {
+                        final HtmlUnitScriptable constructor = config.getHostClass().getDeclaredConstructor().newInstance();
+                        constructor.setClassName(jsClassName);
+                        defineConstructor(jsScope, prototype, constructor);
+                        configureConstantsStaticPropertiesAndStaticFunctions(config, constructor);
+
+                        if (config.isJsObject()) {
+                            jsScope.defineProperty(jsClassName, constructor, ScriptableObject.DONTENUM);
+                        }
+                    }
+                    else {
+                        final FunctionObject function = new FunctionObject(jsConstructor.getKey(), jsConstructor.getValue(), jsScope);
+                        ctorPrototypesPerJSName.put(jsClassName, function);
+
+                        addAsConstructorAndAlias(function, jsScope, prototype, config);
+                        configureConstantsStaticPropertiesAndStaticFunctions(config, function);
+
+                        if (!config.isJsObject()) {
+                            // addAsConstructorAndAlias(..) calls addAsConstructor() from core-js
+                            // addAsConstructor(..) registeres the ctor in the scope already
+                            // therefore we have to remove here
+                            jsScope.delete(prototype.getClassName());
+                        }
+
+                        // adjust prototype if needed
+                        if (extendedClassName != null) {
+                            function.setPrototype(ctorPrototypesPerJSName.get(extendedClassName));
+                        }
+                    }
                 }
             }
         }
@@ -400,7 +413,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final ScriptableObject console = (ScriptableObject) ScriptableObject.getProperty(scope, "console");
         console.defineFunctionProperties(new String[] {"timeStamp"}, ConsoleCustom.class, ScriptableObject.DONTENUM);
 
-        // Rhino defines too much methods for us, particularly since implementation of ECMAScript5
+        // Rhino defines too many methods for us, particularly since implementation of ECMAScript5
         final ScriptableObject stringPrototype = (ScriptableObject) ScriptableObject.getClassPrototype(scope, "String");
         deleteProperties(stringPrototype, "equals", "equalsIgnoreCase", "toSource");
 
@@ -423,9 +436,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
         // remove some objects, that Rhino defines in top scope but that we don't want
         deleteProperties(scope, "Continuation", "StopIteration");
-        if (!browserVersion.hasFeature(JS_ITERATOR_VISIBLE_IN_WINDOW)) {
-            deleteProperties(scope, "Iterator");
-        }
 
         final ScriptableObject errorObject = (ScriptableObject) ScriptableObject.getProperty(scope, "Error");
         if (browserVersion.hasFeature(JS_ERROR_STACK_TRACE_LIMIT)) {
@@ -433,9 +443,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         }
         else {
             ScriptableObject.deleteProperty(errorObject, "stackTraceLimit");
-        }
-        if (!browserVersion.hasFeature(JS_ERROR_CAPTURE_STACK_TRACE)) {
-            ScriptableObject.deleteProperty(errorObject, "captureStackTrace");
         }
 
         // add Intl
@@ -492,8 +499,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                         + "prototype: " + prototype.getClassName(), e);
             }
         }
-
-        window.defineProperty(constructor.getClassName(), constructor, ScriptableObject.DONTENUM);
     }
 
     /**
@@ -718,18 +723,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             LOG.trace("Javascript compile " + sourceName + newline + sourceCode + newline);
         }
 
-        final HtmlUnitContextAction action = new HtmlUnitContextAction(owningPage) {
-            @Override
-            public Object doRun(final Context cx) {
-                return cx.compileString(sourceCode, sourceName, startLine, null);
-            }
-
-            @Override
-            protected String getSourceCode(final Context cx) {
-                return sourceCode;
-            }
-        };
-
+        final HtmlUnitCompileContextAction action = new HtmlUnitCompileContextAction(owningPage, sourceCode, sourceName, startLine);
         return (Script) getContextFactory().callSecured(action, owningPage);
     }
 
@@ -780,7 +774,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final HtmlUnitContextAction action = new HtmlUnitContextAction(page) {
             @Override
             public Object doRun(final Context cx) {
-                return script.exec(cx, scope);
+                return script.exec(cx, scope, scope);
             }
 
             @Override
@@ -854,12 +848,55 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
     /**
      * Indicates if JavaScript is running in current thread.
-     * <p>This allows code to know if there own evaluation is has been triggered by some JS code.
+     * <p>This allows code to know if their own evaluation has been triggered by some JS code.
      * @return {@code true} if JavaScript is running
      */
     @Override
     public boolean isScriptRunning() {
         return Boolean.TRUE.equals(javaScriptRunning_.get());
+    }
+
+    /**
+     * Special ContextAction only for compiling. This reduces some code and avoid
+     * some calls.
+     */
+    private final class HtmlUnitCompileContextAction implements ContextAction<Object> {
+        private final HtmlPage page_;
+        private final String sourceCode_;
+        private final String sourceName_;
+        private final int startLine_;
+
+        HtmlUnitCompileContextAction(final HtmlPage page, final String sourceCode, final String sourceName, final int startLine) {
+            page_ = page;
+            sourceCode_ = sourceCode;
+            sourceName_ = sourceName;
+            startLine_ = startLine;
+        }
+
+        @Override
+        public Object run(final Context cx) {
+            try {
+                final Object response;
+                cx.putThreadLocal(KEY_STARTING_PAGE, page_);
+                synchronized (page_) { // 2 scripts can't be executed in parallel for one page
+                    if (page_ != page_.getEnclosingWindow().getEnclosedPage()) {
+                        return null; // page has been unloaded
+                    }
+                    response = cx.compileString(sourceCode_, sourceName_, startLine_, null);
+
+                }
+
+                return response;
+            }
+            catch (final Exception e) {
+                handleJavaScriptException(new ScriptException(page_, e, sourceCode_), true);
+                return null;
+            }
+            catch (final TimeoutError e) {
+                handleJavaScriptTimeoutError(page_, e);
+                return null;
+            }
+        }
     }
 
     /**
@@ -881,7 +918,6 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
             try {
                 final Object response;
-                cx.putThreadLocal(KEY_STARTING_PAGE, page_);
                 synchronized (page_) { // 2 scripts can't be executed in parallel for one page
                     if (page_ != page_.getEnclosingWindow().getEnclosedPage()) {
                         return null; // page has been unloaded
@@ -896,6 +932,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                 if (!holdPostponedActions_) {
                     doProcessPostponedActions();
                 }
+
                 return response;
             }
             catch (final Exception e) {
@@ -937,8 +974,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         }
 
         final List<PostponedAction> actions = postponedActions_.get();
-        if (actions != null) {
-            postponedActions_.set(null);
+        if (actions != null && !actions.isEmpty()) {
+            postponedActions_.set(new ArrayList<>());
             try {
                 for (final PostponedAction action : actions) {
                     if (LOG.isDebugEnabled()) {
@@ -950,6 +987,9 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                         action.execute();
                     }
                 }
+            }
+            catch (final RuntimeException e) {
+                throw e;
             }
             catch (final Exception e) {
                 throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
@@ -1223,6 +1263,32 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
+     * Create a new javascript object by calling the ctor with the provided args.
+     *
+     * @param scope the scope to create the object in
+     * @param constructorName the name of the ctor function to call
+     * @param args the args
+     * @return the new object
+     */
+    public static Scriptable newObject(final Scriptable scope, final String constructorName, final Object[] args) {
+        return ScriptRuntime.newObject(Context.getCurrentContext(), scope, constructorName, args);
+    }
+
+    /**
+     * Create a new JavaScript object.
+     *
+     * <p>Equivalent to evaluating "new Object()".
+     *
+     * @param scope the scope to search for the constructor and to evaluate against
+     * @return the new object
+     */
+    public static Scriptable newObject(final Scriptable scope) {
+        final NativeObject result = new NativeObject();
+        ScriptRuntime.setBuiltinProtoAndParent(result, scope, TopLevel.Builtins.Object);
+        return result;
+    }
+
+    /**
      * Create an array with a specified initial length.
      *
      * @param scope the scope to create the object in
@@ -1335,6 +1401,15 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
+     * @param obj the value to check
+     * @return whether obj is an Array
+     */
+    public static boolean isArray(final Object obj) {
+        return (obj instanceof Scriptable)
+                    && "Array".equals(((Scriptable) obj).getClassName());
+    }
+
+    /**
      * @return the top call scope
      */
     public static Scriptable getTopCallScope() {
@@ -1376,11 +1451,11 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                 configureFunctions(config, scope);
             }
 
-            cx.evaluateString(scope, "var ProxyConfig = function() {}; ProxyConfig.bindings = {}", "<init>", 1, null);
+            cx.evaluateString(scope, "var ProxyConfig = function() {}; ProxyConfig.bindings = {}; ProxyConfig", "<init>", 1, null);
             cx.evaluateString(scope, content, "<Proxy Auto-Config>", 1, null);
 
             final Object[] functionArgs = {url.toExternalForm(), url.getHost()};
-            final NativeFunction f = (NativeFunction) scope.get("FindProxyForURL", scope);
+            final Function f = (Function) scope.get("FindProxyForURL", scope);
             final Object result = f.call(cx, scope, scope, functionArgs);
             return toString(result);
         }

@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -30,7 +28,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlPreformattedTextTest extends WebDriverTestCase {
 
     /**
@@ -39,7 +36,8 @@ public class HtmlPreformattedTextTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLPreElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -63,7 +61,8 @@ public class HtmlPreformattedTextTest extends WebDriverTestCase {
     @Test
     @Alerts("  hello   abc")
     public void getText() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head><body>\n"
             + "<pre id='foo'>  hello \t abc</pre>"
             + "</body></html>";
 
@@ -77,7 +76,8 @@ public class HtmlPreformattedTextTest extends WebDriverTestCase {
     @Test
     @Alerts("1\n2\n3\n4")
     public void asTextDifferentLineBreaks() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head><body>\n"
             + "<pre id='foo'>1\n2\r\n3\r4</pre>"
             + "</body></html>";
 
@@ -91,7 +91,8 @@ public class HtmlPreformattedTextTest extends WebDriverTestCase {
     @Test
     @Alerts("start\n  hello   abc \nend")
     public void asTextInsideDiv() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head><body>\n"
             + "<div id='foo'>start<pre>  hello \t abc </pre>end</div>"
             + "</body></html>";
 

@@ -29,7 +29,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -54,8 +53,12 @@ import org.htmlunit.util.UrlUtils;
  * @author Lai Quang Duong
  * @author Kristof Neirynck
  */
+@SuppressWarnings("PMD.TooManyFields")
 public class WebRequest implements Serializable {
 
+    /**
+     * Enum to configure request creation.
+     */
     public enum HttpHint {
         /** Force to include the charset. */
         IncludeCharsetInContentTypeHeader,
@@ -456,7 +459,7 @@ public class WebRequest implements Serializable {
      * Other request types result in {@link RuntimeException}.
      * Should not be used in combination with {@link #setRequestParameters(List) request parameters}.
      * @param requestBody the body content to be submitted if this is a {@code POST}, {@code PUT}
-     * or {@code PATCH} request
+     *        or {@code PATCH} request
      * @throws RuntimeException if the request parameters have already been set
      *                          or this is not a {@code POST}, {@code PUT} or {@code PATCH} request.
      */
@@ -557,17 +560,6 @@ public class WebRequest implements Serializable {
     }
 
     /**
-     * Sets the referer HTTP header - only if the provided url is valid.
-     * @param url the url for the referer HTTP header
-     *
-     * @deprecated as of version 4.5.0; use {@link #setRefererHeader(URL)} instead
-     */
-    @Deprecated
-    public void setRefererlHeader(final URL url) {
-        setRefererHeader(url);
-    }
-
-    /**
      * Sets the specified name/value pair in the additional HTTP headers.
      * @param name the name of the additional HTTP header
      * @param value the value of the additional HTTP header
@@ -652,9 +644,14 @@ public class WebRequest implements Serializable {
      * @param defaultResponseContentCharset the default character set of the response
      */
     public void setDefaultResponseContentCharset(final Charset defaultResponseContentCharset) {
-        this.defaultResponseContentCharset_ = Objects.requireNonNull(defaultResponseContentCharset);
+        WebAssert.notNull("defaultResponseContentCharset", defaultResponseContentCharset);
+        defaultResponseContentCharset_ = defaultResponseContentCharset;
     }
 
+    /**
+     * @param hint the hint to check for
+     * @return true if the hint is enabled
+     */
     public boolean hasHint(final HttpHint hint) {
         if (httpHints_ == null) {
             return false;
@@ -662,6 +659,10 @@ public class WebRequest implements Serializable {
         return httpHints_.contains(hint);
     }
 
+    /**
+     * Enables the hint.
+     * @param hint the hint to add
+     */
     public void addHint(final HttpHint hint) {
         if (httpHints_ == null) {
             httpHints_ = EnumSet.noneOf(HttpHint.class);
@@ -677,8 +678,9 @@ public class WebRequest implements Serializable {
     public String toString() {
         final StringBuilder builder = new StringBuilder(100)
                 .append(getClass().getSimpleName())
-                .append("[<url=\"").append(url_).append('"')
-                .append(", ").append(httpMethod_)
+                .append("[<url=\"")
+                .append(url_)
+                .append("\", ").append(httpMethod_)
                 .append(", ").append(encodingType_)
                 .append(", ").append(requestParameters_)
                 .append(", ").append(additionalHeaders_)

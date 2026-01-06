@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link NodeIterator}.
  *
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class NodeIteratorTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class NodeIteratorTest extends WebDriverTestCase {
     @Alerts({"[object HTMLDivElement]", "[object HTMLSpanElement]", "[object HTMLSpanElement]",
              "[object HTMLSpanElement]"})
     public void filterNull() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -69,8 +66,8 @@ public class NodeIteratorTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLParagraphElement]")
     public void filterFunction() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -106,8 +103,8 @@ public class NodeIteratorTest extends WebDriverTestCase {
     @Test
     @Alerts("def")
     public void filterObject() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -145,8 +142,8 @@ public class NodeIteratorTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "11", "12"})
     public void subroot() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

@@ -20,23 +20,21 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.host.css.CSSStyleRule;
 import org.htmlunit.javascript.host.css.CSSStyleSheet;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that {@code typeof} host class is correct.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
 
     private void test(final String className) throws Exception {
-        final String html = "<html><body>"
+        final String html = DOCTYPE_HTML
+                + "<html><body>"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "try {\n"
@@ -916,26 +914,6 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
     @Alerts("undefined")
     public void client() throws Exception {
         test("Client");
-    }
-
-    /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("undefined")
-    public void clientRect() throws Exception {
-        test("ClientRect");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("undefined")
-    public void clientRectList() throws Exception {
-        test("ClientRectList");
     }
 
     /**
@@ -1887,7 +1865,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
+     * Test {@link org.htmlunit.javascript.host.DOMRect}.
      *
      * @throws Exception if an error occurs
      */
@@ -4326,8 +4304,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -6051,8 +6028,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void permissions() throws Exception {
         test("Permissions");
     }
@@ -6070,8 +6046,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void permissionStatus() throws Exception {
         test("PermissionStatus");
     }
@@ -6351,8 +6326,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void pushManager() throws Exception {
         test("PushManager");
     }
@@ -6379,8 +6353,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void pushSubscription() throws Exception {
         test("PushSubscription");
     }
@@ -6389,8 +6362,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void pushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions");
     }
@@ -6548,9 +6520,8 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function",
-            FF = "undefined",
             FF_ESR = "undefined")
-    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined")
+    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined", FF = "undefined")
     public void rtcDataChannel() throws Exception {
         test("RTCDataChannel");
     }
@@ -6719,8 +6690,10 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "undefined",
-            FF = "function")
-    @HtmlUnitNYI(FF = "undefined")
+            FF = "function",
+            FF_ESR = "function")
+    @HtmlUnitNYI(FF = "undefined",
+            FF_ESR = "undefined")
     public void serviceWorker() throws Exception {
         test("ServiceWorker");
     }
@@ -6730,8 +6703,10 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "undefined",
-            FF = "function")
-    @HtmlUnitNYI(FF = "undefined")
+            FF = "function",
+            FF_ESR = "function")
+    @HtmlUnitNYI(FF = "undefined",
+            FF_ESR = "undefined")
     public void serviceWorkerContainer() throws Exception {
         test("ServiceWorkerContainer");
     }
@@ -6758,8 +6733,7 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void serviceWorkerRegistration() throws Exception {
         test("ServiceWorkerRegistration");
     }
@@ -10158,5 +10132,14 @@ public class DedicatedWorkerGlobalScopeTypeOfTest extends WebDriverTestCase {
     @Alerts("function")
     public void abortSignal() throws Exception {
         test("AbortSignal");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("undefined")
+    public void global() throws Exception {
+        test("global");
     }
 }

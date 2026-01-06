@@ -29,11 +29,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link WebRequest#getParameters()}.
@@ -46,14 +44,13 @@ import org.junit.runner.RunWith;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WebRequest2Test extends WebServerTestCase {
 
     /**
      * Performs pre-test construction.
      * @throws Exception if an error occurs
      */
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         // we have to stop all servers running already to free the port
         WebDriverTestCase.stopWebServers();
@@ -186,6 +183,9 @@ public class WebRequest2Test extends WebServerTestCase {
         assertEquals("d", parameters.get(1).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void getParametersFromQueryAndUrlEncodedBodyPostWhenEncodingTypeIsMultipart() throws Exception {
         final URL url = new URL(URL_FIRST, "?a=b");
@@ -206,6 +206,9 @@ public class WebRequest2Test extends WebServerTestCase {
         assertEquals("d", parameters.get(1).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void getParametersUrlEncodedPostNoBody() throws Exception {
         final URL url = new URL(URL_FIRST, "?a=b");
@@ -223,6 +226,9 @@ public class WebRequest2Test extends WebServerTestCase {
         assertEquals("b", parameters.get(0).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void getParametersTextEncodedPostNoBody() throws Exception {
         final URL url = new URL(URL_FIRST, "?a=b");
@@ -240,6 +246,9 @@ public class WebRequest2Test extends WebServerTestCase {
         assertEquals("b", parameters.get(0).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void getParametersTextEncodedPostBody() throws Exception {
         final URL url = new URL(URL_FIRST, "?a=b");

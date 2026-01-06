@@ -15,14 +15,15 @@
 package org.htmlunit.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.htmlunit.html.impl.Color;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link StringUtils}.
@@ -49,6 +50,67 @@ public class StringUtilsTest {
      * @throws Exception if the test fails
      */
     @Test
+    public void isEmptyOrNull() throws Exception {
+        assertTrue(StringUtils.isEmptyOrNull(null));
+        assertTrue(StringUtils.isEmptyOrNull(""));
+        assertFalse(StringUtils.isEmptyOrNull(" "));
+        assertFalse(StringUtils.isEmptyOrNull("\t"));
+        assertFalse(StringUtils.isEmptyOrNull("\r"));
+        assertFalse(StringUtils.isEmptyOrNull("\n"));
+        assertFalse(StringUtils.isEmptyOrNull("string"));
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void defaultIfEmptyOrNull() throws Exception {
+        assertEquals("X", StringUtils.defaultIfEmptyOrNull(null, "X"));
+        assertEquals("X", StringUtils.defaultIfEmptyOrNull("", "X"));
+
+        assertEquals(" ", StringUtils.defaultIfEmptyOrNull(" ", "X"));
+        assertEquals("a", StringUtils.defaultIfEmptyOrNull("a", "X"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void isBlank() throws Exception {
+        assertTrue(StringUtils.isBlank(null));
+        assertTrue(StringUtils.isBlank(""));
+        assertTrue(StringUtils.isBlank(" "));
+        assertTrue(StringUtils.isBlank("\t"));
+        assertTrue(StringUtils.isBlank("\r"));
+        assertTrue(StringUtils.isBlank("\n"));
+
+        assertFalse(StringUtils.isBlank("x"));
+        assertFalse(StringUtils.isBlank("string"));
+        assertFalse(StringUtils.isBlank("    x"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void isNotBlank() throws Exception {
+        assertFalse(StringUtils.isNotBlank(null));
+        assertFalse(StringUtils.isNotBlank(""));
+        assertFalse(StringUtils.isNotBlank(" "));
+        assertFalse(StringUtils.isNotBlank("\t"));
+        assertFalse(StringUtils.isNotBlank("\r"));
+        assertFalse(StringUtils.isNotBlank("\n"));
+
+        assertTrue(StringUtils.isNotBlank("x"));
+        assertTrue(StringUtils.isNotBlank("string"));
+        assertTrue(StringUtils.isNotBlank("    x"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     public void equalsChar() throws Exception {
         assertFalse(StringUtils.equalsChar('#', null));
         assertFalse(StringUtils.equalsChar('#', ""));
@@ -64,8 +126,10 @@ public class StringUtilsTest {
      */
     @Test
     public void startsWithIgnoreCase() throws Exception {
+        assertTrue(StringUtils.startsWithIgnoreCase("abcd", "a"));
         assertTrue(StringUtils.startsWithIgnoreCase("abcd", "ab"));
         assertTrue(StringUtils.startsWithIgnoreCase("abcd", "abcd"));
+        assertTrue(StringUtils.startsWithIgnoreCase("abcd", "A"));
         assertTrue(StringUtils.startsWithIgnoreCase("abcd", "AB"));
         assertTrue(StringUtils.startsWithIgnoreCase("Abcd", "abCd"));
 
@@ -76,9 +140,101 @@ public class StringUtilsTest {
 
         assertFalse(StringUtils.startsWithIgnoreCase(null, "x"));
 
-        assertThrows(IllegalArgumentException.class, () -> StringUtils.startsWithIgnoreCase("AB", null));
-        assertThrows(IllegalArgumentException.class, () -> StringUtils.startsWithIgnoreCase("AB", ""));
-        assertThrows(IllegalArgumentException.class, () -> StringUtils.startsWithIgnoreCase("", ""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.startsWithIgnoreCase("AB", null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.startsWithIgnoreCase("AB", ""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.startsWithIgnoreCase("", ""));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void endsWithIgnoreCase() throws Exception {
+        assertTrue(StringUtils.endsWithIgnoreCase("abcd", "d"));
+        assertTrue(StringUtils.endsWithIgnoreCase("abcd", "cd"));
+        assertTrue(StringUtils.endsWithIgnoreCase("abcd", "abcd"));
+        assertTrue(StringUtils.endsWithIgnoreCase("abcd", "D"));
+        assertTrue(StringUtils.endsWithIgnoreCase("abcd", "CD"));
+        assertTrue(StringUtils.endsWithIgnoreCase("Abcd", "abCd"));
+
+        assertFalse(StringUtils.endsWithIgnoreCase("AB", "x"));
+        assertFalse(StringUtils.endsWithIgnoreCase("AB", "xxzOO"));
+        assertFalse(StringUtils.endsWithIgnoreCase("", "x"));
+        assertFalse(StringUtils.endsWithIgnoreCase("abcd", "bc"));
+
+        assertFalse(StringUtils.endsWithIgnoreCase(null, "x"));
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.endsWithIgnoreCase("AB", null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.endsWithIgnoreCase("AB", ""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.endsWithIgnoreCase("", ""));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void containsIgnoreCase() throws Exception {
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "a"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "b"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "c"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "d"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "A"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "B"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "C"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "D"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "cd"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "Cd"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "abcd"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "D"));
+        assertTrue(StringUtils.containsIgnoreCase("abcd", "CD"));
+        assertTrue(StringUtils.containsIgnoreCase("Abcd", "abCd"));
+
+        assertFalse(StringUtils.containsIgnoreCase("AB", "x"));
+        assertFalse(StringUtils.containsIgnoreCase("AB", "xxzOO"));
+        assertFalse(StringUtils.containsIgnoreCase("", "x"));
+        assertFalse(StringUtils.containsIgnoreCase("abcd", "bd"));
+
+        assertFalse(StringUtils.containsIgnoreCase(null, "x"));
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.containsIgnoreCase("AB", null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.containsIgnoreCase("AB", ""));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.containsIgnoreCase("", ""));
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void containsOnly() {
+        assertFalse(StringUtils.containsOnly(null, "x".toCharArray()));
+        assertFalse(StringUtils.containsOnly("", "x".toCharArray()));
+        assertFalse(StringUtils.containsOnly("a", "x".toCharArray()));
+        assertFalse(StringUtils.containsOnly("ax", "x".toCharArray()));
+        assertFalse(StringUtils.containsOnly("xa", "x".toCharArray()));
+
+        assertTrue(StringUtils.containsOnly("x", "ax".toCharArray()));
+        assertTrue(StringUtils.containsOnly("aa", "ax".toCharArray()));
+        assertTrue(StringUtils.containsOnly("ax", "ax".toCharArray()));
+        assertTrue(StringUtils.containsOnly("axaaa", "ax".toCharArray()));
+        assertTrue(StringUtils.containsOnly("xaaxxxaa", "xa".toCharArray()));
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> StringUtils.containsOnly("AB", null));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> StringUtils.containsOnly("AB", ArrayUtils.EMPTY_CHAR_ARRAY));
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void toRootLowerCase() throws Exception {
+        assertEquals("abcd", StringUtils.toRootLowerCase("abcd"));
+        assertEquals("abcd", StringUtils.toRootLowerCase("ABcD"));
+
+        assertEquals("", StringUtils.toRootLowerCase(""));
+        assertNull(StringUtils.toRootLowerCase(null));
     }
 
     /**
@@ -204,6 +360,31 @@ public class StringUtilsTest {
     }
 
     /**
+     * Test for method {@link StringUtils#replaceChars(String, String, String)}.
+     */
+    @Test
+    public void replaceChars() {
+        assertEquals(null, StringUtils.replaceChars(null, "", ""));
+        assertEquals("", StringUtils.replaceChars("", "", null));
+        assertEquals("abc", StringUtils.replaceChars("abc", null, null));
+        assertEquals("abc", StringUtils.replaceChars("abc", "", ""));
+        assertEquals("ac", StringUtils.replaceChars("abc", "b", null));
+        assertEquals("ac", StringUtils.replaceChars("abc", "b", ""));
+        assertEquals("ayzya", StringUtils.replaceChars("abcba", "bc", "yz"));
+        assertEquals("ayya", StringUtils.replaceChars("abcba", "bc", "y"));
+        assertEquals("ayzya", StringUtils.replaceChars("abcba", "bc", "yzx"));
+
+        assertEquals("abc", StringUtils.replaceChars("abc", "d", "e"));
+
+        assertEquals("ebc", StringUtils.replaceChars("abc", "a", "e"));
+        assertEquals("bc", StringUtils.replaceChars("abc", "a", ""));
+
+        assertEquals("abe", StringUtils.replaceChars("abc", "c", "e"));
+        assertEquals("ab", StringUtils.replaceChars("abc", "c", null));
+    }
+
+
+    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -323,5 +504,95 @@ public class StringUtilsTest {
         assertEquals("", StringUtils.escapeXml("\uFFFE"));
 
         // [#x10000-#x10FFFF]
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void substringBefore() throws Exception {
+        assertThrows(IllegalArgumentException.class, () -> StringUtils.substringBefore(null, null));
+        assertThrows(IllegalArgumentException.class, () -> StringUtils.substringBefore(null, ""));
+
+        assertEquals("", StringUtils.substringBefore("", "a"));
+        assertEquals("xyz", StringUtils.substringBefore("xyz", "a"));
+        assertEquals("", StringUtils.substringBefore("a", "a"));
+        assertEquals("x", StringUtils.substringBefore("xaba", "a"));
+        assertEquals(" ", StringUtils.substringBefore(" a", "a"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void toInt() throws Exception {
+        assertEquals(17, StringUtils.toInt(null, 17));
+        assertEquals(17, StringUtils.toInt("", 17));
+        assertEquals(17, StringUtils.toInt(" ", 17));
+        assertEquals(4, StringUtils.toInt("\t", 4));
+        assertEquals(4, StringUtils.toInt("two", 4));
+
+        assertEquals(21, StringUtils.toInt("21", 4));
+        assertEquals(-21, StringUtils.toInt("-21", 4));
+        assertEquals(0, StringUtils.toInt(" 21 ", 0));
+        assertEquals(0, StringUtils.toInt(" -  21  \t", 0));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void toFloat() throws Exception {
+        assertEquals(17.2f, StringUtils.toFloat(null, 17.2f));
+        assertEquals(17.2f, StringUtils.toFloat("", 17.2f));
+        assertEquals(17.2f, StringUtils.toFloat(" ", 17.2f));
+        assertEquals(4f, StringUtils.toFloat("\t", 4f));
+        assertEquals(4f, StringUtils.toFloat("two", 4));
+
+        assertEquals(21f, StringUtils.toFloat("21", 4.1f));
+        assertEquals(-21f, StringUtils.toFloat("-21", 4.1f));
+        assertEquals(21f, StringUtils.toFloat(" 21 ", 0));
+        assertEquals(0, StringUtils.toFloat(" -  21  \t", 0f));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void substringAfter() throws Exception {
+        assertNull(StringUtils.substringAfter(null, null));
+        assertNull(StringUtils.substringAfter(null, ""));
+        assertNull(StringUtils.substringAfter(null, "abc"));
+
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter("", null));
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter("", ""));
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter("", "abc"));
+
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter(StringUtils.EMPTY_STRING, null));
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter(StringUtils.EMPTY_STRING, ""));
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter(StringUtils.EMPTY_STRING, "abc"));
+
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.substringAfter("abc", null));
+        assertEquals("abc", StringUtils.substringAfter("abc", ""));
+
+        assertEquals("bc", StringUtils.substringAfter("abc", "a"));
+        assertEquals("cba", StringUtils.substringAfter("abcba", "b"));
+        assertEquals("", StringUtils.substringAfter("abc", "c"));
+        assertEquals("", StringUtils.substringAfter("abc", "d"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void trimRight() throws Exception {
+        assertNull(StringUtils.trimRight(null));
+        assertEquals(StringUtils.EMPTY_STRING, StringUtils.trimRight(""));
+        assertEquals("", StringUtils.trimRight(StringUtils.EMPTY_STRING));
+
+        assertEquals("abc", StringUtils.trimRight("abc"));
+        assertEquals("  abc", StringUtils.trimRight("  abc"));
+        assertEquals("abc", StringUtils.trimRight("abc  "));
+        assertEquals(" a b c", StringUtils.trimRight(" a b c "));
     }
 }

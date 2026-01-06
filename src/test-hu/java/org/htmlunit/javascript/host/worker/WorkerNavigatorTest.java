@@ -17,18 +17,16 @@ package org.htmlunit.javascript.host.worker;
 import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link WorkerNavigator}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WorkerNavigatorTest extends WebDriverTestCase {
 
     /**
@@ -82,9 +80,9 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/143.0.0.0\\sSafari/537.36",
             EDGE = "5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36\\sEdg/133.0.0.0",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/143.0.0.0\\sSafari/537.36\\sEdg/143.0.0.0",
             FF = "5.0\\s(Windows)",
             FF_ESR = "5.0\\s(Windows)")
     public void appVersion() throws Exception {
@@ -124,7 +122,11 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("en-US,en")
+    @Alerts(DEFAULT = "en-US,en",
+            CHROME = "en-US",
+            EDGE = "en-US")
+    @HtmlUnitNYI(CHROME = "en-US,en",
+            EDGE = "en-US,en")
     public void languages() throws Exception {
         final String workerJs = "postMessage(navigator.languages);\n";
 
@@ -161,11 +163,11 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/143.0.0.0\\sSafari/537.36",
             EDGE = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36\\sEdg/133.0.0.0",
-            FF = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:135.0)\\sGecko/20100101\\sFirefox/135.0",
-            FF_ESR = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:128.0)\\sGecko/20100101\\sFirefox/128.0")
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/143.0.0.0\\sSafari/537.36\\sEdg/143.0.0.0",
+            FF = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:146.0)\\sGecko/20100101\\sFirefox/146.0",
+            FF_ESR = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:140.0)\\sGecko/20100101\\sFirefox/140.0")
     public void userAgent() throws Exception {
         final String workerJs = "postMessage(navigator.userAgent);\n";
 
@@ -190,7 +192,8 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
     }
 
     private void testJs(final String workerJs) throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script async>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
             + "try {\n"

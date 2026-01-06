@@ -14,12 +14,12 @@
  */
 package org.htmlunit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link NicelyResynchronizingAjaxController}.
  *
- * @author <a href="mailto:nnk@google.com">Nick Kralevich</a>
+ * @author Nick Kralevich
  */
 public class NicelyResynchronizingAjaxControllerTest extends WebServerTestCase {
 

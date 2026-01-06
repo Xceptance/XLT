@@ -27,20 +27,17 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.html.HtmlTableColumnGroup;
 import org.htmlunit.html.XHtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for {@link HTMLParser}.
  *
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Sudhan Moghe
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLParserTest extends SimpleWebTestCase {
 
     /**
@@ -56,7 +53,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final HtmlPage page = new HtmlPage(webResponse, webClient.getCurrentWindow());
         webClient.getCurrentWindow().setEnclosedPage(page);
 
-        webClient.getPageCreator().getHtmlParser().parse(webResponse, page, false, false);
+        webClient.getPageCreator().getHtmlParser().parse(null, webResponse, page, false, false);
 
         final String stringVal = page.<HtmlDivision>getFirstByXPath("//div").getFirstChild().getNodeValue();
         assertEquals("TEST", stringVal);
@@ -142,7 +139,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final XHtmlPage page = new XHtmlPage(webResponse, webClient.getCurrentWindow());
         webClient.getCurrentWindow().setEnclosedPage(page);
 
-        webClient.getPageCreator().getHtmlParser().parse(webResponse, page, true, false);
+        webClient.getPageCreator().getHtmlParser().parse(null, webResponse, page, true, false);
 
         final DomElement col = page.getElementsByTagName("col").get(0);
         assertEquals(col.getParentNode().getNodeName(), HtmlTableColumnGroup.TAG_NAME);

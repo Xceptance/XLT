@@ -21,11 +21,9 @@ import java.util.List;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebConsole;
 import org.htmlunit.WebConsole.Logger;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for Console.
@@ -34,7 +32,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class Console2Test extends SimpleWebTestCase {
 
     private final class LoggerMock implements Logger {
@@ -95,7 +92,7 @@ public class Console2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("info: [\"one\",\"two\",\"three\",\"[object HTMLCollection]\"]")
+    @Alerts("info: [\"one\",\"two\",\"three\",{}]")
     public void log() throws Exception {
         log("['one', 'two', 'three', document.body.children]");
     }
@@ -179,8 +176,8 @@ public class Console2Test extends SimpleWebTestCase {
         final List<String> messages = new ArrayList<>();
         console.setLogger(new LoggerMock(messages));
 
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "function test() {\n"
             + "  window.console.log(" + logInput + ");\n"
@@ -207,7 +204,8 @@ public class Console2Test extends SimpleWebTestCase {
         final String workerJs = "console.log('from worker');\n";
         getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.TEXT_JAVASCRIPT);
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body>\n"
                 + "<script async>\n"
                 + "try {\n"
                 + "  var myWorker = new Worker('worker.js');\n"

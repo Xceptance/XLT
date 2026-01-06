@@ -24,11 +24,9 @@ import static org.htmlunit.javascript.host.xml.XMLDocumentTest.callLoadXMLDocume
 import java.util.Collections;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -39,7 +37,6 @@ import org.openqa.selenium.WebDriver;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class XMLDocument3Test extends WebDriverTestCase {
 
     /**
@@ -48,7 +45,8 @@ public class XMLDocument3Test extends WebDriverTestCase {
     @Test
     @Alerts({"1610", "1575", "32", "1604", "1610", "1610", "1610", "1610", "1610", "1610", "1604"})
     public void load_Encoding() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -78,7 +76,8 @@ public class XMLDocument3Test extends WebDriverTestCase {
     @Test
     @Alerts({"230", "230"})
     public void parseIso88591Encoding() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -106,7 +105,8 @@ public class XMLDocument3Test extends WebDriverTestCase {
     @Test
     @Alerts({"1044", "1044"})
     public void parseUtf8Encoding() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

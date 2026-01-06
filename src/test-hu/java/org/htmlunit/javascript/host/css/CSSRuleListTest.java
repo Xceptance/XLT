@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CSSRuleList}.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class CSSRuleListTest extends WebDriverTestCase {
 
     /**
@@ -36,8 +33,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -56,7 +53,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "[object CSSStyleRule]"})
     public void ruleList() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -79,7 +77,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("undefined")
     public void wrongRuleListAccess() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -102,7 +101,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void has() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -124,7 +124,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "undefined"})
     public void ruleListUnknownAtRule() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  @UnknownAtRule valo-animate-in-fade {0 {opacity: 0;}}\n"
                 + "</style>\n"
@@ -147,7 +148,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "[object CSSKeyframesRule]"})
     public void ruleListKeyframes() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  @keyframes mymove {from {top: 0px;} to {top: 200px;}}\n"
                 + "</style>\n"
@@ -170,7 +172,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -196,7 +199,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CSSStyleRule]")
     public void index() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -218,7 +222,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("undefined")
     public void indexNotFound() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -240,7 +245,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CSSStyleRule]")
     public void item() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"
@@ -262,7 +268,8 @@ public class CSSRuleListTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void itemNotFound() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<style>\n"
                 + "  BODY { font-size: 1234px; }\n"
                 + "</style>\n"

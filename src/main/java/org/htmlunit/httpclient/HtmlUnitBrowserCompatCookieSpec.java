@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.FormattedHeader;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -47,6 +46,7 @@ import org.apache.http.message.ParserCursor;
 import org.apache.http.message.TokenParser;
 import org.apache.http.util.CharArrayBuffer;
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Customized BrowserCompatSpec for HtmlUnit.
@@ -56,7 +56,7 @@ import org.htmlunit.BrowserVersion;
 
  * Implementation is based on the HttpClient code.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Noboru Sinohara
  * @author David D. Kilzer
  * @author Marc Guillemot
@@ -223,7 +223,8 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
         final CharArrayBuffer buffer = new CharArrayBuffer(20 * cookies.size());
         buffer.append(SM.COOKIE);
         buffer.append(": ");
-        for (int i = 0; i < cookies.size(); i++) {
+        final int size = cookies.size();
+        for (int i = 0; i < size; i++) {
             final Cookie cookie = cookies.get(i);
             if (i > 0) {
                 buffer.append("; ");

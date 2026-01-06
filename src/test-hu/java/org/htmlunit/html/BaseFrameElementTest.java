@@ -15,16 +15,14 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link BaseFrameElement}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class BaseFrameElementTest extends SimpleWebTestCase {
 
     /**
@@ -32,7 +30,8 @@ public class BaseFrameElementTest extends SimpleWebTestCase {
      */
     @Test
     public void removeIFrameAndAddAgain() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    var frag1 = document.createDocumentFragment();\n"

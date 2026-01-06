@@ -35,12 +35,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.http.HttpStatus;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link WebResponse}.
@@ -50,7 +48,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Lai Quang Duong
  */
-@RunWith(BrowserRunner.class)
 public class WebResponseTest extends WebServerTestCase {
 
     /**
@@ -59,8 +56,8 @@ public class WebResponseTest extends WebServerTestCase {
     @Test
     public void encodingCharsetUtf8() throws Exception {
         final String title = "\u6211\u662F\u6211\u7684FOCUS";
-        final String content =
-            "<html><head>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<title>" + title + "</title>\n"
             + "</head>\n"
             + "<body>\n"
@@ -178,7 +175,8 @@ public class WebResponseTest extends WebServerTestCase {
      * Servlet for {@link #binaryResponseHeaders()}.
      */
     public static class BinaryResponseHeadersServlet extends HttpServlet {
-        private static final String RESPONSE = "<html><head><title>Foo</title></head><body>This is foo!</body></html>";
+        private static final String RESPONSE = DOCTYPE_HTML
+                + "<html><head><title>Foo</title></head><body>This is foo!</body></html>";
 
         /**
          * {@inheritDoc}
@@ -218,14 +216,14 @@ public class WebResponseTest extends WebServerTestCase {
                 page.getWebResponse().getContentAsString(UTF_8));
 
         assertEquals("gzip", page.getWebResponse().getResponseHeaderValue("Content-Encoding"));
-        assertEquals("73", page.getWebResponse().getResponseHeaderValue(HttpHeader.CONTENT_LENGTH));
+        assertEquals("85", page.getWebResponse().getResponseHeaderValue(HttpHeader.CONTENT_LENGTH));
     }
 
     /**
      * Stop the WebServer.
      * @throws Exception if it fails
      */
-    @After
+    @AfterEach
     public void stopServer() throws Exception {
         stopWebServer();
     }

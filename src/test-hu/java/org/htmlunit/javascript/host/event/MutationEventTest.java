@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link MutationEvent}.
@@ -28,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class MutationEventTest extends WebDriverTestCase {
 
     private static final String DUMP_EVENT_FUNCTION = "  function dump(event) {\n"
@@ -45,11 +41,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctor() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -69,11 +63,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorWithoutType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -93,11 +85,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorNumericType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -117,11 +107,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorNullType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -143,7 +131,7 @@ public class MutationEventTest extends WebDriverTestCase {
     @Test
     @Alerts("ReferenceError")
     public void create_ctorUnknownType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -163,11 +151,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorArbitraryType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -187,11 +173,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorAllDetails() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -213,11 +197,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorAllDetailsMissingData() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -238,11 +220,9 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "TypeError",
-            FF_ESR = "TypeError")
+    @Alerts("ReferenceError")
     public void create_ctorAllDetailsWrongData() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -264,12 +244,10 @@ public class MutationEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("false")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -290,10 +268,10 @@ public class MutationEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"DOM2: exception", "DOM3: exception"},
-            FF = {"DOM2: [object MutationEvent]", "DOM3: [object MutationEvent]"},
             FF_ESR = {"DOM2: [object MutationEvent]", "DOM3: [object MutationEvent]"})
     public void createEvent() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "  function test() {\n"
             + LOG_TITLE_FUNCTION
             + "    try {\n"
@@ -308,4 +286,31 @@ public class MutationEventTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "undefined", "ReferenceError", "ReferenceError", "ReferenceError",
+             "false", "undefined", "ReferenceError", "ReferenceError", "ReferenceError"})
+    public void windowScope() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html></body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log('mutationEvent' in window);\n"
+            + "  log(window.mutationEvent);\n"
+            + "  try { log(mutationEvent); } catch(e) { logEx(e); };\n"
+            + "  try { log(mutationEvent.prototype); } catch(e) { logEx(e); };\n"
+            + "  try { log(mutationEvent.__proto__); } catch(e) { logEx(e); };\n"
+
+            + "  log('MutationEvent' in window);\n"
+            + "  log(window.MutationEvent);\n"
+            + "  try { log(MutationEvent); } catch(e) { logEx(e); };\n"
+            + "  try { log(MutationEvent.prototype); } catch(e) { logEx(e); };\n"
+            + "  try { log(MutationEvent.__proto__); } catch(e) { logEx(e); };\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
 }

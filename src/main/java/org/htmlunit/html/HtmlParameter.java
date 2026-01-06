@@ -21,8 +21,8 @@ import org.htmlunit.SgmlPage;
 /**
  * Wrapper for the HTML element "param".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
@@ -50,7 +50,7 @@ public class HtmlParameter extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code id}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getIdAttribute() {
         return getAttributeDirect(ID_ATTRIBUTE);
@@ -62,7 +62,7 @@ public class HtmlParameter extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code name}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getNameAttribute() {
         return getAttributeDirect(NAME_ATTRIBUTE);
@@ -74,7 +74,7 @@ public class HtmlParameter extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code value}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getValueAttribute() {
         return getAttributeDirect(VALUE_ATTRIBUTE);
@@ -86,7 +86,7 @@ public class HtmlParameter extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code valuetype}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getValueTypeAttribute() {
         return getAttributeDirect("valuetype");
@@ -98,7 +98,7 @@ public class HtmlParameter extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getTypeAttribute() {
         return getAttributeDirect(TYPE_ATTRIBUTE);

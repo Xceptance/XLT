@@ -15,8 +15,8 @@
 package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import com.tngtech.archunit.thirdparty.com.google.common.base.Objects;
 
 /**
  * Tests for {@link BrowserVersionFeatures}.
@@ -76,9 +77,9 @@ public class BrowserVersionFeaturesTest {
                     useCount++;
                 }
             }
-            assertTrue("BrowserVersionFeatures.java: '" + feature.name() + "' in no longer in use.", useCount > 0);
-            assertTrue("BrowserVersionFeatures.java: '" + feature.name() + "' is enabled for all supported browsers.",
-                    useCount < browsers.size());
+            assertTrue(useCount > 0, "BrowserVersionFeatures.java: '" + feature.name() + "' in no longer in use.");
+            assertTrue(useCount < browsers.size(),
+                    "BrowserVersionFeatures.java: '" + feature.name() + "' is enabled for all supported browsers.");
         }
 
         for (final BrowserVersionFeatures feature : BrowserVersionFeatures.values()) {
@@ -88,22 +89,22 @@ public class BrowserVersionFeaturesTest {
             if (browserFeature != null) {
                 for (final SupportedBrowser annotatedBrowser : browserFeature.value()) {
                     boolean inUse = false;
-                    for (final BrowserVersion supportedBrowser : browsers) {
-                        if (AbstractJavaScriptConfiguration.isCompatible(expectedBrowserName(supportedBrowser),
-                                annotatedBrowser)) {
+                    for (final BrowserVersion supportedBrowserVersion : browsers) {
+                        if (Objects.equal(supportedBrowser(supportedBrowserVersion), annotatedBrowser)) {
                             inUse = true;
                             continue;
                         }
                     }
-                    assertTrue("BrowserVersionFeatures.java: Annotation '"
+                    assertTrue(inUse,
+                            "BrowserVersionFeatures.java: Annotation '"
                             + annotatedBrowser + "' of feature '"
-                            + feature.name() + "' in no longer in use.", inUse);
+                            + feature.name() + "' in no longer in use.");
                 }
             }
         }
     }
 
-    private static SupportedBrowser expectedBrowserName(final BrowserVersion browser) {
+    private static SupportedBrowser supportedBrowser(final BrowserVersion browser) {
         if (browser == BrowserVersion.EDGE) {
             return SupportedBrowser.EDGE;
         }

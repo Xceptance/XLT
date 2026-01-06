@@ -15,12 +15,9 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DocumentType}.
@@ -28,8 +25,8 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Frank Danek
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DocumentTypeTest extends WebDriverTestCase {
 
     /**
@@ -73,8 +70,8 @@ public class DocumentTypeTest extends WebDriverTestCase {
     @Alerts({"[object DocumentType]", "greeting,10,null,undefined,undefined,undefined",
              "greeting,MyIdentifier,hello.dtd,undefined,undefined,undefined"})
     public void doctype_xml() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + "      function test() {\n"
@@ -139,7 +136,8 @@ public class DocumentTypeTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DocumentType]", "[object HTMLHtmlElement]"})
     public void document_children() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <title>Test</title>\n"
             + "  <script>\n"

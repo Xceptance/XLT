@@ -15,10 +15,9 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.html.HTMLBaseFontElement;
 
 /**
  * Tests for {@link HTMLBaseFontElement}.
@@ -26,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLBaseFontElementTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +33,8 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLElement]", "undefined", "undefined", "undefined"})
     public void defaults() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <basefont id='base' />\n"
             + "    <script>\n"
@@ -62,8 +60,8 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "42"})
     public void size() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <basefont id='base' color='red' face='swiss' size='4' />\n"
             + "    <script>\n"
@@ -92,8 +90,8 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "helvetica"})
     public void face() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <basefont id='base' color='red' face='swiss' size='5' />\n"
             + "    <script>\n"
@@ -122,8 +120,8 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "blue"})
     public void color() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <basefont id='base' color='red' face='swiss' size='4' />\n"
             + "    <script>\n"
@@ -152,7 +150,7 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLElement]", "ReferenceError"})
     public void type() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

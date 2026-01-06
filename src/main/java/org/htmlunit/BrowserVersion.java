@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FilenameUtils;
+import org.htmlunit.css.CssPixelValueConverter;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
 import org.htmlunit.util.MimeType;
@@ -52,7 +53,7 @@ import org.htmlunit.util.MimeType;
  * outside is changed. This is more or less the same you can do with real browsers installing
  * plugins like UserAgentSwitcher.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -60,22 +61,22 @@ import org.htmlunit.util.MimeType;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals", "PMD.TooManyFields"})
 public final class BrowserVersion implements Serializable {
 
     /** Latest Firefox. */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(135, "FF");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(146, "FF");
 
-    private static final int FIREFOX_ESR_NUMERIC = 128;
+    private static final int FIREFOX_ESR_NUMERIC = 140;
 
     /** Firefox ESR. */
     public static final BrowserVersion FIREFOX_ESR = new BrowserVersion(FIREFOX_ESR_NUMERIC, "FF-ESR");
 
-    /** Latest Edge. */
-    public static final BrowserVersion EDGE = new BrowserVersion(133, "Edge");
-
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(133, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(143, "Chrome");
+
+    /** Latest Edge. */
+    public static final BrowserVersion EDGE = new BrowserVersion(143, "Edge");
 
     /**
      * Array with all supported browsers.
@@ -196,16 +197,9 @@ public final class BrowserVersion implements Serializable {
         CHROME.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         CHROME.scriptAcceptHeader_ = "*/*";
 
-        if (CHROME.getBrowserVersionNumeric() % 2 == 0) {
-            CHROME.secClientHintUserAgentHeader_ = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\""
-                            + CHROME.getBrowserVersionNumeric() + "\", \"Google Chrome\";v=\""
-                            + CHROME.getBrowserVersionNumeric() + "\"";
-        }
-        else {
-            CHROME.secClientHintUserAgentHeader_ = "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\""
-                    + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                    + CHROME.getBrowserVersionNumeric() + "\"";
-        }
+        CHROME.secClientHintUserAgentHeader_ = "\"Google Chrome\";v=\""
+                + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
+                + CHROME.getBrowserVersionNumeric() + "\", \"Not A(Brand\";v=\"24\"";
 
         CHROME.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
@@ -249,16 +243,11 @@ public final class BrowserVersion implements Serializable {
         EDGE.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         EDGE.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         EDGE.scriptAcceptHeader_ = "*/*";
-        if (CHROME.getBrowserVersionNumeric() % 2 == 0) {
-            EDGE.secClientHintUserAgentHeader_ = "\"Microsoft Edge\";v=\""
-                    + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                    + EDGE.getBrowserVersionNumeric() + "\", \"Not_A Brand\";v=\"24\"";
-        }
-        else {
-            EDGE.secClientHintUserAgentHeader_ = "\"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\""
-                    + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                    + EDGE.getBrowserVersionNumeric() + "\"";
-        }
+
+        EDGE.secClientHintUserAgentHeader_ = "\"Microsoft Edge\";v=\""
+                + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
+                + EDGE.getBrowserVersionNumeric() + "\", \"Not A(Brand\";v=\"24\"";
+
         EDGE.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
             27, 28, 30, 31, 32, 33, 34, 36, 37, 37, 38, 40, 42, 43, 44, 45, 47, 48, 48, 49, 51, 52, 53, 54, 55, 57,
@@ -339,7 +328,7 @@ public final class BrowserVersion implements Serializable {
         FIREFOX_ESR.registerUploadMimeType("mp3", "audio/mpeg");
         FIREFOX_ESR.registerUploadMimeType("ogv", "video/ogg");
         FIREFOX_ESR.registerUploadMimeType("ogm", "video/ogg");
-        FIREFOX_ESR.registerUploadMimeType("ogg", "video/ogg");
+        FIREFOX_ESR.registerUploadMimeType("ogg", "application/ogg");
         FIREFOX_ESR.registerUploadMimeType("oga", "audio/ogg");
         FIREFOX_ESR.registerUploadMimeType("opus", "audio/ogg");
         FIREFOX_ESR.registerUploadMimeType("webm", "video/webm");
@@ -366,7 +355,7 @@ public final class BrowserVersion implements Serializable {
         FIREFOX.registerUploadMimeType("mp3", "audio/mpeg");
         FIREFOX.registerUploadMimeType("ogv", "video/ogg");
         FIREFOX.registerUploadMimeType("ogm", "video/ogg");
-        FIREFOX.registerUploadMimeType("ogg", "video/ogg");
+        FIREFOX.registerUploadMimeType("ogg", "application/ogg");
         FIREFOX.registerUploadMimeType("oga", "audio/ogg");
         FIREFOX.registerUploadMimeType("opus", "audio/ogg");
         FIREFOX.registerUploadMimeType("webm", "video/webm");
@@ -800,13 +789,47 @@ public final class BrowserVersion implements Serializable {
      * @return the corresponding height
      */
     public int getFontHeight(final String fontSize) {
-        if (fontHeights_ == null) {
+        if (fontHeights_ == null || fontSize.isEmpty()) {
             return 18;
         }
-        final int fontSizeInt = Integer.parseInt(fontSize.substring(0, fontSize.length() - 2));
+
+        if ("xx-small".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[9];
+        }
+        if ("x-small".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[10];
+        }
+        if ("small".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[13];
+        }
+        if ("medium".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[16];
+        }
+        if ("large".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[18];
+        }
+        if ("x-large".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[24];
+        }
+        if ("xx-large".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[32];
+        }
+        if ("xxx-large".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[48];
+        }
+
+        if ("smaller".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[13];
+        }
+        if ("larger".equalsIgnoreCase(fontSize)) {
+            return fontHeights_[19];
+        }
+
+        final int fontSizeInt = CssPixelValueConverter.pixelValue(fontSize);
         if (fontSizeInt < fontHeights_.length) {
             return fontHeights_[fontSizeInt];
         }
+
         return (int) (fontSizeInt * 1.2);
     }
 
@@ -1023,7 +1046,7 @@ public final class BrowserVersion implements Serializable {
 
         /**
          * @param xmlHttpRequestAcceptHeader the {@code Accept} header to be used when
-         * performing XMLHttpRequests
+         *        performing XMLHttpRequests
          * @return this for fluent use
          */
         public BrowserVersionBuilder setXmlHttpRequestAcceptHeader(final String xmlHttpRequestAcceptHeader) {

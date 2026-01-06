@@ -14,9 +14,6 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.junit.annotation.TestedBrowser.CHROME;
-import static org.htmlunit.junit.annotation.TestedBrowser.EDGE;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,11 +26,9 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.impl.SimpleRange;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Selection}.
@@ -43,7 +38,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class Selection2Test extends SimpleWebTestCase {
 
     /**
@@ -195,7 +189,8 @@ public class Selection2Test extends SimpleWebTestCase {
     @Alerts(DEFAULT = {"0", "1"},
             CHROME = {"0", "3"},
             EDGE = {"0", "3"})
-    @NotYetImplemented({CHROME, EDGE})
+    @HtmlUnitNYI(CHROME = {"0", "1"},
+            EDGE = {"0", "1"})
     public void extend() throws Exception {
         test("try{selection.extend(s2, 1)}catch(e){alert('exception')}", "selection.focusOffset", "x");
     }
@@ -249,7 +244,8 @@ public class Selection2Test extends SimpleWebTestCase {
     private void test(final String action, final String x, final String alert)
         throws Exception {
 
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body onload='test()'>\n"
             + "  <span id='s1'>abc</span><span id='s2'>xyz</span><span id='s3'>foo</span>\n"
             + "  <input type='button' id='b' onclick=\"" + action + ";test();\" value='click'></input>\n"

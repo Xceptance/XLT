@@ -15,18 +15,14 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ProgressEvent}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ProgressEventTest extends WebDriverTestCase {
 
     private static final String DUMP_EVENT_FUNCTION = "  function dump(event) {\n"
@@ -51,7 +47,7 @@ public class ProgressEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object ProgressEvent]", "progress", "false", "false", "false", "false", "0", "0"})
     public void create_ctor() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -73,7 +69,7 @@ public class ProgressEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object ProgressEvent]", "test", "true", "false", "false", "true", "234", "666"})
     public void create_ctorWithDetails() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -100,7 +96,7 @@ public class ProgressEventTest extends WebDriverTestCase {
     @Test
     @Alerts("NotSupportedError/DOMException")
     public void create_createEvent() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"

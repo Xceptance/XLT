@@ -239,7 +239,7 @@ public class MouseEvent extends UIEvent {
     }
 
     /**
-     * Returns the horizontal coordinate of the event relative to whole document..
+     * Returns the horizontal coordinate of the event relative to whole document.
      * @return the horizontal coordinate (currently the same as {@link #getScreenX()})
      * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/event.pageX">Mozilla doc</a>
      */
@@ -469,7 +469,7 @@ public class MouseEvent extends UIEvent {
      * @return whether or not the "meta" key was pressed during the event firing
      */
     @JsxGetter
-    public boolean getMetaKey() {
+    public boolean isMetaKey() {
         return metaKey_;
     }
 

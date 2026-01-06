@@ -16,11 +16,9 @@ package org.htmlunit.html.parser;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -30,7 +28,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLParser2Test extends WebDriverTestCase {
 
     /**
@@ -258,6 +255,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"H2", "TABLE", "H2", "TABLE", "SCRIPT"})
     public void htmlTableMisplacedElementInside5() throws Exception {
@@ -287,6 +287,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"H2#x", "TABLE", "H2#y", "TABLE", "H2#z", "TABLE", "H2#a", "TABLE", "SCRIPT"})
     public void htmlTableMisplacedElementInside6() throws Exception {
@@ -328,6 +331,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"4", "TABLE", "TABLE", "SPAN", "SCRIPT"})
     public void tableInsideTable() throws Exception {
@@ -363,6 +369,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"4", "TABLE", "TABLE", "SPAN", "SCRIPT"})
     public void tableInsideTableTr() throws Exception {
@@ -400,6 +409,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"2", "TABLE", "SCRIPT"})
     public void tableInsideTableTd() throws Exception {
@@ -435,6 +447,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"1", "TABLE"})
     public void scriptInsideTable() throws Exception {
@@ -456,6 +471,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"1", "TABLE"})
     public void scriptInsideTableRows() throws Exception {
@@ -480,6 +498,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"1", "TABLE"})
     public void scriptInsideTableData() throws Exception {

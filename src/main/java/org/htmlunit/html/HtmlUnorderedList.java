@@ -21,9 +21,9 @@ import org.htmlunit.SgmlPage;
 /**
  * Wrapper for the HTML element "ul".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Frank Danek
  */
@@ -50,7 +50,7 @@ public class HtmlUnorderedList extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getTypeAttribute() {
         return getAttributeDirect(TYPE_ATTRIBUTE);
@@ -62,7 +62,7 @@ public class HtmlUnorderedList extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code compact}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getCompactAttribute() {
         return getAttributeDirect("compact");

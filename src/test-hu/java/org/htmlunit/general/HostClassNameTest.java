@@ -16,7 +16,6 @@ package org.htmlunit.general;
 
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.annotations.StandardsMode;
 import org.htmlunit.javascript.host.css.CSSFontFaceRule;
 import org.htmlunit.javascript.host.css.CSSImportRule;
 import org.htmlunit.javascript.host.css.CSSMediaRule;
@@ -29,12 +28,9 @@ import org.htmlunit.javascript.host.css.CSSStyleSheet;
 import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.css.MediaList;
 import org.htmlunit.javascript.host.css.StyleSheetList;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.AlertsStandards;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.css.CSS2Properties;
 
 /**
@@ -45,13 +41,11 @@ import org.w3c.dom.css.CSS2Properties;
  *
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API">Web API Interfaces</a>
  */
-@RunWith(BrowserRunner.class)
-@StandardsMode
 public class HostClassNameTest extends WebDriverTestCase {
 
     private void test(final String className) throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TEXTAREA_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -59,7 +53,7 @@ public class HostClassNameTest extends WebDriverTestCase {
             // normalize FF output
             + "      clsName = clsName.replace('{\\n    [native code]\\n}', '{ [native code] }');\n"
             + "      log(clsName);\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -957,28 +951,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("ReferenceError")
-    public void clientRect() throws Exception {
-        test("ClientRect");
-    }
-
-    /**
-     * Test {@link org.htmlunit.javascript.host.ClientRectList}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("ReferenceError")
-    public void clientRectList() throws Exception {
-        test("ClientRectList");
-    }
-
-    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -1191,10 +1163,21 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "ReferenceError",
-            FF = "function CSS2Properties() { [native code] }",
             FF_ESR = "function CSS2Properties() { [native code] }")
     public void css2Properties() throws Exception {
         test("CSS2Properties");
+    }
+
+    /**
+     * Test {@link CSSStyleProperties}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "ReferenceError",
+            FF = "function CSSStyleProperties() { [native code] }")
+    public void cssStyleProperties() throws Exception {
+        test("CSSStyleProperties");
     }
 
     /**
@@ -1204,8 +1187,10 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "ReferenceError",
-            FF = "function CSSPageDescriptors() { [native code] }")
-    @HtmlUnitNYI(FF = "ReferenceError")
+            FF = "function CSSPageDescriptors() { [native code] }",
+            FF_ESR = "function CSSPageDescriptors() { [native code] }")
+    @HtmlUnitNYI(FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void cssPageDescriptors() throws Exception {
         test("CSSPageDescriptors");
     }
@@ -1377,7 +1362,6 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("function CSSStyleRule() { [native code] }")
-    @AlertsStandards("function CSSStyleRule() { [native code] }")
     public void cssStyleRule() throws Exception {
         test("CSSStyleRule");
     }
@@ -1937,7 +1921,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
+     * Test {@link org.htmlunit.javascript.host.DOMRect}.
      *
      * @throws Exception if an error occurs
      */
@@ -4397,8 +4381,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function Iterator() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function Iterator() { [native code] }")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -4567,7 +4550,6 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("function Location() { [native code] }")
-    @AlertsStandards("function Location() { [native code] }")
     public void location() throws Exception {
         test("Location");
     }
@@ -5469,9 +5451,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "function MutationEvent() { [native code] }",
-            FF_ESR = "function MutationEvent() { [native code] }")
+    @Alerts("ReferenceError")
     public void mutationEvent() throws Exception {
         test("MutationEvent");
     }
@@ -7143,7 +7123,10 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("ReferenceError")
+    @Alerts(DEFAULT = "ReferenceError",
+            CHROME = "function SpeechGrammar() { [native code] }",
+            EDGE = "function SpeechGrammar() { [native code] }")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechGrammar() throws Exception {
         test("SpeechGrammar");
     }
@@ -7152,7 +7135,10 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("ReferenceError")
+    @Alerts(DEFAULT = "ReferenceError",
+            CHROME = "function SpeechGrammarList() { [native code] }",
+            EDGE = "function SpeechGrammarList() { [native code] }")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechGrammarList() throws Exception {
         test("SpeechGrammarList");
     }
@@ -7161,7 +7147,10 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("ReferenceError")
+    @Alerts(DEFAULT = "ReferenceError",
+            CHROME = "function SpeechRecognition() { [native code] }",
+            EDGE = "function SpeechRecognition() { [native code] }")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechRecognition() throws Exception {
         test("SpeechRecognition");
     }
@@ -7188,7 +7177,10 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("ReferenceError")
+    @Alerts(DEFAULT = "ReferenceError",
+            CHROME = "function SpeechRecognitionErrorEvent() { [native code] }",
+            EDGE = "function SpeechRecognitionErrorEvent() { [native code] }")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechRecognitionErrorEvent() throws Exception {
         test("SpeechRecognitionErrorEvent");
     }
@@ -7197,7 +7189,10 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("ReferenceError")
+    @Alerts(DEFAULT = "ReferenceError",
+            CHROME = "function SpeechRecognitionEvent() { [native code] }",
+            EDGE = "function SpeechRecognitionEvent() { [native code] }")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechRecognitionEvent() throws Exception {
         test("SpeechRecognitionEvent");
     }
@@ -8932,8 +8927,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function TextEvent() { [native code] }",
-            FF_ESR = "ReferenceError")
+    @Alerts("function TextEvent() { [native code] }")
     public void textEvent() throws Exception {
         test("TextEvent");
     }
@@ -10271,5 +10265,14 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts("function AbortSignal() { [native code] }")
     public void abortSignal() throws Exception {
         test("AbortSignal");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("ReferenceError")
+    public void global() throws Exception {
+        test("global");
     }
 }

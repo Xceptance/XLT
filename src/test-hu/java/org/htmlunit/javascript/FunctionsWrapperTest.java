@@ -15,17 +15,14 @@
 package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link FunctionWrapper}.
  *
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class FunctionsWrapperTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class FunctionsWrapperTest extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void function_toString() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"

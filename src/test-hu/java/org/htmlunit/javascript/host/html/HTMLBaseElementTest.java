@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLBaseElement}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Daniel Gredler
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLBaseElementTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class HTMLBaseElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"http://www.foo.com/images/", "§§URL§§", "", "_blank"})
     public void hrefAndTarget() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <base id='b1' href='http://www.foo.com/images/' />\n"
             + "    <base id='b2' target='_blank' />\n"
@@ -63,7 +60,7 @@ public class HTMLBaseElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLBaseElement]", "function HTMLBaseElement() { [native code] }"})
     public void type() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

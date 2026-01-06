@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
@@ -28,7 +26,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ahmed Ashour
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HtmlProgressTest extends WebDriverTestCase {
 
     /**
@@ -37,7 +34,8 @@ public class HtmlProgressTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLProgressElement]")
     public void simpleScriptable() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -66,7 +64,8 @@ public class HtmlProgressTest extends WebDriverTestCase {
     @Test
     @Alerts({"number70", "number100"})
     public void properties() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<progress id='it' value='70' max='100'>70%</progress>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

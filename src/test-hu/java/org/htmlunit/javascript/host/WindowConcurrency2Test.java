@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -27,7 +25,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WindowConcurrency2Test extends WebDriverTestCase {
 
     /**
@@ -39,8 +36,8 @@ public class WindowConcurrency2Test extends WebDriverTestCase {
     @Test
     @Alerts("xxx")
     public void setIntervalZeroDelay() throws Exception {
-        final String html
-            = "<html><body><div id='d'></div>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><div id='d'></div>\n"
             + "<script>\n"
             + "  var count = 0;\n"
 

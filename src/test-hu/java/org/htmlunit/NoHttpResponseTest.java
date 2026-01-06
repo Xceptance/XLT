@@ -14,19 +14,16 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.fail;
-
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -38,7 +35,6 @@ import org.openqa.selenium.WebDriverException;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(Enclosed.class)
 public class NoHttpResponseTest {
     private static final String HTML
         = "<html><body><script>\n"
@@ -57,10 +53,15 @@ public class NoHttpResponseTest {
     /**
      * Test using WebDriver.
      */
-    @RunWith(BrowserRunner.class)
-    public static class WithWebDriverTest extends WebDriverTestCase {
+    @Nested
+    public class WithWebDriverTest extends WebDriverTestCase {
 
-        @After
+        /**
+         * Resets the {@link MiniServer}.
+         *
+         * @throws Exception in case of error
+         */
+        @AfterEach
         public void after() throws Exception {
             MiniServer.resetDropRequests();
         }
@@ -79,7 +80,8 @@ public class NoHttpResponseTest {
             mockWebConnection.setResponse(URL_FIRST, HTML);
             MiniServer.configureDropRequest(new URL(URL_FIRST, "page2?textfield="));
             final URL urlRightSubmit = new URL(URL_FIRST, "page2?textfield=new+value");
-            mockWebConnection.setResponse(urlRightSubmit, "<html><head><title>right submit</title></head></html>");
+            mockWebConnection.setResponse(urlRightSubmit,
+                    DOCTYPE_HTML + "<html><head><title>right submit</title></head></html>");
 
             expandExpectedAlertsVariables(URL_FIRST);
             final WebDriver driver = getWebDriver();
@@ -89,6 +91,9 @@ public class NoHttpResponseTest {
 
                 driver.get(URL_FIRST.toString());
                 driver.findElement(By.id("inputSubmit")).click();
+                if (useRealBrowser()) {
+                    Thread.sleep(400);
+                }
                 assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
             }
             catch (final WebDriverException e) {
@@ -106,7 +111,8 @@ public class NoHttpResponseTest {
             mockWebConnection.setResponse(URL_FIRST, HTML);
             MiniServer.configureDropRequest(new URL(URL_FIRST, "page2?textfield="));
             final URL urlRightSubmit = new URL(URL_FIRST, "page2?textfield=new+value");
-            mockWebConnection.setResponse(urlRightSubmit, "<html><head><title>right submit</title></head></html>");
+            mockWebConnection.setResponse(urlRightSubmit,
+                    DOCTYPE_HTML + "<html><head><title>right submit</title></head></html>");
 
             final WebDriver driver = getWebDriver();
 
@@ -123,10 +129,15 @@ public class NoHttpResponseTest {
     /**
      * Test using WebClient with default configuration allowing to throw exception.
      */
-    @RunWith(BrowserRunner.class)
-    public static class WithWebClientTest extends SimpleWebTestCase {
+    @Nested
+    public class WithWebClientTest extends SimpleWebTestCase {
 
-        @After
+        /**
+         * Resets the {@link MiniServer}.
+         *
+         * @throws Exception in case of error
+         */
+        @AfterEach
         public void after() throws Exception {
             MiniServer.resetDropRequests();
         }
@@ -134,21 +145,29 @@ public class NoHttpResponseTest {
         /**
          * @throws Throwable if the test fails
          */
-        @Test(expected = FailingHttpStatusCodeException.class)
+        @Test
+        @Alerts("§§URL§§")
         public void submit() throws Throwable {
+            expandExpectedAlertsVariables(URL_FIRST);
+
             final MockWebConnection mockWebConnection = getMockWebConnection();
             mockWebConnection.setResponse(URL_FIRST, HTML);
+
             MiniServer.configureDropRequest(new URL(URL_FIRST, "page2?textfield="));
             final URL urlRightSubmit = new URL(URL_FIRST, "page2?textfield=new+value");
-            mockWebConnection.setResponse(urlRightSubmit, "<html><head><title>right submit</title></head></html>");
+            mockWebConnection.setResponse(urlRightSubmit,
+                    DOCTYPE_HTML + "<html><head><title>right submit</title></head></html>");
 
             expandExpectedAlertsVariables(URL_FIRST);
 
             try (MiniServer miniServer = new MiniServer(PORT, mockWebConnection)) {
                 miniServer.start();
 
-                HtmlPage page = getWebClient().getPage(URL_FIRST);
-                page = page.getElementById("inputSubmit").click();
+                final HtmlPage page = getWebClient().getPage(URL_FIRST);
+
+                Assertions.assertThrows(FailingHttpStatusCodeException.class,
+                            () -> page.getElementById("inputSubmit").click());
+
                 assertEquals(getExpectedAlerts()[0], page.getUrl());
             }
         }
@@ -162,7 +181,8 @@ public class NoHttpResponseTest {
             mockWebConnection.setResponse(URL_FIRST, HTML);
             MiniServer.configureDropRequest(new URL(URL_FIRST, "page2?textfield="));
             final URL urlRightSubmit = new URL(URL_FIRST, "page2?textfield=new+value");
-            mockWebConnection.setResponse(urlRightSubmit, "<html><head><title>right submit</title></head></html>");
+            mockWebConnection.setResponse(urlRightSubmit,
+                    DOCTYPE_HTML + "<html><head><title>right submit</title></head></html>");
 
             try (MiniServer miniServer = new MiniServer(PORT, mockWebConnection)) {
                 miniServer.start();
@@ -190,7 +210,7 @@ public class NoHttpResponseTest {
 
                 try {
                     getWebClient().getPage(getWebClient().getCurrentWindow().getTopWindow(), request);
-                    fail("FailingHttpStatusCodeException expected");
+                    Assertions.fail("FailingHttpStatusCodeException expected");
                 }
                 catch (final FailingHttpStatusCodeException e) {
                     // expected

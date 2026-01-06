@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link RadioNodeList}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Lai Quang Duong
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class RadioNodeListTest extends WebDriverTestCase {
 
     private static final String FORM_HTML = "<form name='form'>\n"
@@ -52,7 +49,8 @@ public class RadioNodeListTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true"})
     public void instanceOf() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
@@ -74,7 +72,8 @@ public class RadioNodeListTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "1", "1", "", "on"})
     public void getValue() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
@@ -98,7 +97,8 @@ public class RadioNodeListTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "on", "true"})
     public void setValue() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
@@ -121,7 +121,8 @@ public class RadioNodeListTest extends WebDriverTestCase {
     @Test
     @Alerts({"first", "first", "first", "first"})
     public void iterable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"

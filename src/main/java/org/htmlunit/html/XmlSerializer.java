@@ -54,6 +54,12 @@ public class XmlSerializer {
     private final StringBuilder indent_ = new StringBuilder();
     private File outputDir_;
 
+    /**
+     * Saves the given {@link SgmlPage} to the file.
+     * @param page the page to save
+     * @param file the destination
+     * @throws IOException in case of error
+     */
     public void save(final SgmlPage page, final File file) throws IOException {
         save(page, file, false);
     }
@@ -119,10 +125,7 @@ public class XmlSerializer {
             builder_.append(indent_).append('<');
             printOpeningTag(node);
 
-            if (!hasChildren && !node.isEmptyXmlTagExpanded()) {
-                builder_.append("/>\n");
-            }
-            else {
+            if (hasChildren || node.isEmptyXmlTagExpanded()) {
                 builder_.append(">\n");
                 for (DomNode child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
                     indent_.append("  ");
@@ -135,6 +138,9 @@ public class XmlSerializer {
                     indent_.setLength(indent_.length() - 2);
                 }
                 builder_.append(indent_).append("</").append(node.getTagName()).append(">\n");
+            }
+            else {
+                builder_.append("/>\n");
             }
         }
     }
@@ -275,11 +281,11 @@ public class XmlSerializer {
     protected Map<String, DomAttr> getAttributesFor(final HtmlLink link) throws IOException {
         final Map<String, DomAttr> map = createAttributesCopyWithClonedAttribute(link, "href");
         final DomAttr hrefAttr = map.get("href");
-        if (hrefAttr != null && StringUtils.isNotBlank(hrefAttr.getValue())) {
+        if (hrefAttr != null && org.htmlunit.util.StringUtils.isNotBlank(hrefAttr.getValue())) {
             final String protocol = link.getWebRequest().getUrl().getProtocol();
             if ("http".equals(protocol) || "https".equals(protocol)) {
                 try {
-                    final WebResponse response = link.getWebResponse(true, null);
+                    final WebResponse response = link.getWebResponse(true, null, false, null);
 
                     final File file = createFile(hrefAttr.getValue(), ".css");
                     FileUtils.writeStringToFile(file, response.getContentAsString(), ISO_8859_1);
@@ -306,7 +312,7 @@ public class XmlSerializer {
     protected Map<String, DomAttr> getAttributesFor(final HtmlImage image) {
         final Map<String, DomAttr> map = createAttributesCopyWithClonedAttribute(image, DomElement.SRC_ATTRIBUTE);
         final DomAttr srcAttr = map.get(DomElement.SRC_ATTRIBUTE);
-        if (srcAttr != null && StringUtils.isNotBlank(srcAttr.getValue())) {
+        if (srcAttr != null && org.htmlunit.util.StringUtils.isNotBlank(srcAttr.getValue())) {
             try {
                 final WebResponse response = image.getWebResponse(true);
 
@@ -334,7 +340,8 @@ public class XmlSerializer {
     private static String getSuffix(final WebResponse response) {
         // first try to take the one from the requested file
         final String url = response.getWebRequest().getUrl().toString();
-        final String fileName = StringUtils.substringAfterLast(StringUtils.substringBefore(url, "?"), "/");
+        final String fileName =
+                StringUtils.substringAfterLast(org.htmlunit.util.StringUtils.substringBefore(url, "?"), "/");
         // if there is a suffix with 2-4 letters, the take it
         final String suffix = StringUtils.substringAfterLast(fileName, ".");
         if (suffix.length() > 1 && suffix.length() < 5) {
@@ -381,8 +388,8 @@ public class XmlSerializer {
     private File createFile(final String url, final String extension) throws IOException {
         String name = url.replaceFirst("/$", "");
         name = CREATE_FILE_PATTERN.matcher(name).replaceAll("");
-        name = StringUtils.substringBefore(name, "?"); // remove query
-        name = StringUtils.substringBefore(name, ";"); // remove additional info
+        name = org.htmlunit.util.StringUtils.substringBefore(name, "?"); // remove query
+        name = org.htmlunit.util.StringUtils.substringBefore(name, ";"); // remove additional info
         name = StringUtils.substring(name, 0, 30); // many file systems have a limit at 255, let's limit it
         name = org.htmlunit.util.StringUtils.sanitizeForFileName(name);
         if (!name.endsWith(extension)) {
@@ -391,12 +398,12 @@ public class XmlSerializer {
         int counter = 0;
         while (true) {
             final String fileName;
-            if (counter != 0) {
-                fileName = StringUtils.substringBeforeLast(name, ".")
-                    + "_" + counter + "." + StringUtils.substringAfterLast(name, ".");
+            if (counter == 0) {
+                fileName = name;
             }
             else {
-                fileName = name;
+                fileName = StringUtils.substringBeforeLast(name, ".")
+                        + "_" + counter + "." + StringUtils.substringAfterLast(name, ".");
             }
             FileUtils.forceMkdir(outputDir_);
             final File f = new File(outputDir_, fileName);

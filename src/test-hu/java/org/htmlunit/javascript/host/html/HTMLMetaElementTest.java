@@ -16,10 +16,8 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HTMLMetaElement}.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLMetaElementTest extends WebDriverTestCase {
 
     /**
@@ -37,8 +34,8 @@ public class HTMLMetaElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "text/html; charset=utf-8", HttpHeader.CONTENT_TYPE, "", "", "undefined", ""})
     public void name() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>\n"
             + "    <script>\n"
@@ -67,8 +64,8 @@ public class HTMLMetaElementTest extends WebDriverTestCase {
     @Test
     @Alerts("only screen and (max-width: 600px)")
     public void media() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <meta http-equiv='Content-Type' media='only screen and (max-width: 600px)'>\n"
             + "    <script>\n"

@@ -15,7 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_ELEMENTS_BY_NAME_EMPTY;
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_ALSO_FRAMES;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
@@ -66,26 +67,26 @@ import org.htmlunit.util.UrlUtils;
 /**
  * A JavaScript object for {@code HTMLDocument}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:chen_jun@users.sourceforge.net">Chen Jun</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Chen Jun
+ * @author Christian Sell
  * @author Chris Erskine
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author Michael Ottati
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author George Murnock
  * @author Ahmed Ashour
  * @author Rob Di Marco
  * @author Sudhan Moghe
- * @author <a href="mailto:mike@10gen.com">Mike Dirolf</a>
+ * @author Mike Dirolf
  * @author Ronald Brill
  * @author Frank Danek
  * @author Sven Strickroth
  *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535862.aspx">MSDN documentation</a>
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-7068919">
- * W3C DOM Level 1</a>
+ *     W3C DOM Level 1</a>
  */
 @JsxClass
 public class HTMLDocument extends Document {
@@ -162,6 +163,21 @@ public class HTMLDocument extends Document {
     }
 
     /**
+     * Moves a given Node inside the invoking node as a direct child, before a given reference node.
+     *
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF})
+    public static void moveBefore(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.moveBefore(context, scope, thisObj, args, function);
+    }
+
+    /**
      * JavaScript function "writeln" may accept a variable number of arguments.
      * @param context the JavaScript context
      * @param scope the scope
@@ -179,7 +195,7 @@ public class HTMLDocument extends Document {
 
     /**
      * Returns the current document instance, using <code>thisObj</code> as a hint.
-     * @param thisObj a hint as to the current document (may be the prototype when function is used without "this")
+     * @param thisObj a hint as to the current document (maybe the prototype when function is used without "this")
      * @return the current document instance
      */
     private static HTMLDocument getDocument(final Scriptable thisObj) {
@@ -199,7 +215,7 @@ public class HTMLDocument extends Document {
 
     /**
      * This a hack!!! A cleaner way is welcome.
-     * Handle a case where document.write is simply ignored.
+     * Handle a case where document.write() is simply ignored.
      * See HTMLDocumentWrite2Test.write_fromScriptAddedWithAppendChild_external.
      * @param executing indicates if executing or not
      */
@@ -600,19 +616,17 @@ public class HTMLDocument extends Document {
             return NOT_FOUND;
         }
 
-        final boolean alsoFrames = getBrowserVersion().hasFeature(HTMLDOCUMENT_GET_ALSO_FRAMES);
-
-        // for performance
+        // for performance,
         // we will calculate the elements to decide if we really have
         // to really create a HTMLCollection or not
-        final List<DomNode> matchingElements = getItComputeElements(page, name, alsoFrames);
+        final List<DomNode> matchingElements = getItComputeElements(page, name);
         final int size = matchingElements.size();
         if (size == 0) {
             return NOT_FOUND;
         }
         if (size == 1) {
             final DomNode object = matchingElements.get(0);
-            if (alsoFrames && object instanceof BaseFrameElement) {
+            if (object instanceof BaseFrameElement) {
                 return ((BaseFrameElement) object).getEnclosedWindow().getScriptableObject();
             }
             return super.getScriptableFor(object);
@@ -621,7 +635,7 @@ public class HTMLDocument extends Document {
         final HTMLCollection coll = new HTMLCollection(page, matchingElements) {
             @Override
             protected HtmlUnitScriptable getScriptableFor(final Object object) {
-                if (alsoFrames && object instanceof BaseFrameElement) {
+                if (object instanceof BaseFrameElement) {
                     return ((BaseFrameElement) object).getEnclosedWindow().getScriptableObject();
                 }
                 return super.getScriptableFor(object);
@@ -630,7 +644,7 @@ public class HTMLDocument extends Document {
 
         coll.setElementsSupplier(
                 (Supplier<List<DomNode>> & Serializable)
-                () -> getItComputeElements(page, name, alsoFrames));
+                () -> getItComputeElements(page, name));
 
         coll.setEffectOnCacheFunction(
                 (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
@@ -646,13 +660,11 @@ public class HTMLDocument extends Document {
         return coll;
     }
 
-    static List<DomNode> getItComputeElements(final HtmlPage page, final String name,
-            final boolean alsoFrames) {
+    static List<DomNode> getItComputeElements(final HtmlPage page, final String name) {
         final List<DomElement> elements = page.getElementsByName(name);
         final List<DomNode> matchingElements = new ArrayList<>();
         for (final DomElement elt : elements) {
-            if (elt instanceof HtmlForm || elt instanceof HtmlImage
-                    || (alsoFrames && elt instanceof BaseFrameElement)) {
+            if (elt instanceof HtmlForm || elt instanceof HtmlImage || elt instanceof BaseFrameElement) {
                 matchingElements.add(elt);
             }
         }
@@ -741,7 +753,7 @@ public class HTMLDocument extends Document {
     @Override
     public Attr createAttribute(final String attributeName) {
         String name = attributeName;
-        if (StringUtils.isNotEmpty(name)) {
+        if (!org.htmlunit.util.StringUtils.isEmptyOrNull(name)) {
             name = org.htmlunit.util.StringUtils.toRootLowerCase(name);
         }
 

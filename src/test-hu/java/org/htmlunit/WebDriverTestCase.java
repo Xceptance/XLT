@@ -16,7 +16,6 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,14 +67,14 @@ import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.htmlunit.MockWebConnection.RawResponseData;
 import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.junit.TestCaseCorrector;
 import org.htmlunit.util.NameValuePair;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ComparisonFailure;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
@@ -90,7 +90,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v133.emulation.Emulation;
+import org.openqa.selenium.devtools.v143.emulation.Emulation;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -110,30 +110,49 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
  *
  * By default, this test runs with HtmlUnit, but this behavior can be changed by having a property file named
  * "{@code test.properties}" in the HtmlUnit root directory.
- * Sample:
+ * Sample (remove the part not matching your os):
  * <pre>
-   browsers=hu,ff,ie
-   chrome.bin=/path/to/chromedriver                     [Unix-like]
-   ff-esr.bin=/usr/bin/firefox                          [Unix-like]
-   ie.bin=C:\\path\\to\\32bit\\IEDriverServer.exe       [Windows]
-   edge.bin=C:\\path\\to\\msedgedriver.exe              [Windows]
-   autofix=true
+   browsers=hu,ff,chrome
+
+   ff.bin=/usr/bin/firefox                              [Unix]
+   ff-esr.bin=/usr/bin/firefox-esr                      [Unix]
+   geckodriver.bin=/usr/bin/driver/geckodriver          [Unix]
+   chrome.bin=/path/to/chromedriver                     [Unix]
+   edge.bin=/path/to/chromedriver                       [Unix]
+
+   geckodriver.bin=C:\\path\\to\\geckodriver.exe              [Windows]
+   ff.bin=C:\\path\\to\\Mozilla Firefox\\firefox.exe          [Windows]
+   ff-esr.bin=C:\\path\\to\\Mozilla Firefox ESR\\firefox.exe  [Windows]
+   chrome.bin=C:\\path\\to\\chromedriver.exe                  [Windows]
+   edge.bin=C:\\path\\to\\msedgedriver.exe                    [Windows]
+
+   autofix=false
    </pre>
+
  * The file could contain some properties:
  * <ul>
- *   <li>browsers: is a comma separated list contains any combination of "hu" (for HtmlUnit with all browser versions),
- *   "hu-ff", "hu-ff-esr", "ff", "chrome", which will be used to drive real browsers</li>
+ *   <li>browsers: is a comma separated list contains any combination of
+ *     <ul>
+ *       <li>hu (for HtmlUnit with all browser versions),</li>
+ *       <li>hu-ff,</li>
+ *       <li>hu-ff-esr,</li>
+ *       <li>hu-chrome,</li>
+ *       <li>hu-edge,</li>
+ *       <li>ff, (running test using real Firefox),</li>
+ *       <li>ff-esr, (running test using real Firefox ESR),</li>
+ *       <li>chrome (running test using real Chrome),</li>
+ *       <li>edge (running test using real Edge),</li>
+ *     </ul>
+ *   </li>
  *
  *   <li>chrome.bin (mandatory if it does not exist in the <i>path</i>): is the location of the ChromeDriver binary (see
- *   <a href="http://chromedriver.storage.googleapis.com/index.html">Chrome Driver downloads</a>)</li>
+ *   <a href="https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json">Chrome Driver downloads</a>)</li>
  *   <li>geckodriver.bin (mandatory if it does not exist in the <i>path</i>): is the location of the GeckoDriver binary
- *   (see <a href="https://firefox-source-docs.mozilla.org/testing/geckodriver/Usage.html">Gecko Driver Usage</a>)</li>
+ *   (see <a href="https://github.com/mozilla/geckodriver/releases">Gecko Driver Releases</a>)</li>
  *   <li>ff.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
  *   <li>ff-esr.bin (optional): is the location of the FF binary, in Windows use double back-slashes</li>
- *   <li>ie.bin (mandatory if it does not exist in the <i>path</i>): is the location of the IEDriverServer binary (see
- *   <a href="http://selenium-release.storage.googleapis.com/index.html">IEDriverServer downloads</a>)</li>
  *   <li>edge.bin (mandatory if it does not exist in the <i>path</i>): is the location of the MicrosoftWebDriver binary
- *   (see <a href="http://go.microsoft.com/fwlink/?LinkId=619687">MicrosoftWebDriver downloads</a>)</li>
+ *   (see <a href="https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/">Microsoft Edge WebDriver downloads</a>)</li>
  *   <li>autofix (optional): if {@code true}, try to automatically fix the real browser expectations,
  *   or add/remove {@code @NotYetImplemented} annotations, use with caution!</li>
  * </ul>
@@ -143,28 +162,29 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
  * @author Ronald Brill
  * @author Frank Danek
  */
+@ExtendWith(TestCaseCorrector.class)
 public abstract class WebDriverTestCase extends WebTestCase {
 
     private static final String LOG_EX_FUNCTION =
             "  function logEx(e) {\n"
-            + "  let toStr = null;\n"
-            + "  if (toStr === null && e instanceof EvalError) { toStr = ''; }\n"
-            + "  if (toStr === null && e instanceof RangeError) { toStr = ''; }\n"
-            + "  if (toStr === null && e instanceof ReferenceError) { toStr = ''; }\n"
-            + "  if (toStr === null && e instanceof SyntaxError) { toStr = ''; }\n"
-            + "  if (toStr === null && e instanceof TypeError) { toStr = ''; }\n"
-            + "  if (toStr === null && e instanceof URIError) { toStr = ''; }\n"
-            + "  if (toStr === null && e instanceof AggregateError) { toStr = '/AggregateError'; }\n"
-            + "  if (toStr === null && typeof InternalError == 'function' "
-                        + "&& e instanceof InternalError) { toStr = '/InternalError'; }\n"
-            + "  if (toStr === null) {\n"
-            + "    let rx = /\\[object (.*)\\]/;\n"
-            + "    toStr = Object.prototype.toString.call(e);\n"
-            + "    let match = rx.exec(toStr);\n"
-            + "    if (match != null) { toStr = '/' + match[1]; }\n"
-            + "  }"
-            + "  log(e.name + toStr);\n"
-            + "}\n";
+            + "    let toStr = null;\n"
+            + "    if (toStr === null && e instanceof EvalError) { toStr = ''; }\n"
+            + "    if (toStr === null && e instanceof RangeError) { toStr = ''; }\n"
+            + "    if (toStr === null && e instanceof ReferenceError) { toStr = ''; }\n"
+            + "    if (toStr === null && e instanceof SyntaxError) { toStr = ''; }\n"
+            + "    if (toStr === null && e instanceof TypeError) { toStr = ''; }\n"
+            + "    if (toStr === null && e instanceof URIError) { toStr = ''; }\n"
+            + "    if (toStr === null && e instanceof AggregateError) { toStr = '/AggregateError'; }\n"
+            + "    if (toStr === null && typeof InternalError == 'function' "
+                          + "&& e instanceof InternalError) { toStr = '/InternalError'; }\n"
+            + "    if (toStr === null) {\n"
+            + "      let rx = /\\[object (.*)\\]/;\n"
+            + "      toStr = Object.prototype.toString.call(e);\n"
+            + "      let match = rx.exec(toStr);\n"
+            + "      if (match != null) { toStr = '/' + match[1]; }\n"
+            + "    }"
+            + "    log(e.name + toStr);\n"
+            + "  }\n";
 
     /**
      * Function used in many tests.
@@ -192,7 +212,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Function used in many tests.
      */
     public static final String LOG_WINDOW_NAME_FUNCTION =
-            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n  window.top.name = '';"
+            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n"
+            + "  window.top.name = '';"
             + LOG_EX_FUNCTION;
 
     /**
@@ -267,7 +288,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
     private static final Executor EXECUTOR_POOL = Executors.newFixedThreadPool(4);
 
     private boolean useRealBrowser_;
-    private Boolean useStandards_;
 
     /**
      * The HtmlUnitDriver.
@@ -282,6 +302,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return false;
     }
 
+    /**
+     * @return the browser properties (and initializes them lazy)
+     */
     public static Set<String> getBrowsersProperties() {
         if (BROWSERS_PROPERTIES_ == null) {
             try {
@@ -393,7 +416,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Closes the drivers.
      * @throws Exception If an error occurs
      */
-    @AfterClass
+    @AfterAll
     public static void shutDownAll() throws Exception {
         for (final WebDriver driver : WEB_DRIVERS_.values()) {
             driver.quit();
@@ -458,9 +481,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @throws Exception if it fails
      */
     protected static void assertWebServersStopped() throws Exception {
-        Assert.assertNull(STATIC_SERVER_STARTER_, STATIC_SERVER_);
-        Assert.assertNull(STATIC_SERVER2_STARTER_, STATIC_SERVER2_);
-        Assert.assertNull(STATIC_SERVER3_STARTER_, STATIC_SERVER3_);
+        Assertions.assertNull(STATIC_SERVER_, STATIC_SERVER_STARTER_);
+        Assertions.assertNull(STATIC_SERVER2_, STATIC_SERVER2_STARTER_);
+        Assertions.assertNull(STATIC_SERVER3_, STATIC_SERVER3_STARTER_);
     }
 
     /**
@@ -491,7 +514,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
     /**
      * @return whether to use real browser or not.
      */
-    protected boolean useRealBrowser() {
+    public boolean useRealBrowser() {
         return useRealBrowser_;
     }
 
@@ -501,14 +524,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     public void setUseRealBrowser(final boolean useRealBrowser) {
         useRealBrowser_ = useRealBrowser;
-    }
-
-    /**
-     * Sets whether to use {@code Standards Mode} or not.
-     * @param useStandards whether to use {@code Standards Mode} or not
-     */
-    public void setUseStandards(final boolean useStandards) {
-        useStandards_ = useStandards;
     }
 
     /**
@@ -535,6 +550,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 // options.setCapability("webSocketUrl", true);
 
                 options.addArguments("--lang=" + locale);
+                // https://stackoverflow.com/questions/11289597/webdriver-how-to-specify-preferred-languages-for-chrome
+                options.setExperimentalOption("prefs", Map.of("intl.accept_languages", locale));
                 options.addArguments("--remote-allow-origins=*");
 
                 // seems to be not required for edge
@@ -571,6 +588,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 // options.setCapability("webSocketUrl", true);
 
                 options.addArguments("--lang=" + locale);
+                // https://stackoverflow.com/questions/11289597/webdriver-how-to-specify-preferred-languages-for-chrome
+                options.setExperimentalOption("prefs", Map.of("intl.accept_languages", locale));
                 options.addArguments("--remote-allow-origins=*");
                 options.addArguments("--disable-search-engine-choice-screen");
                 // see https://www.selenium.dev/blog/2024/chrome-browser-woes/
@@ -967,18 +986,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @return the web driver
      * @throws Exception if something goes wrong
      */
-    protected final WebDriver loadPage2(String html, final URL url,
+    protected final WebDriver loadPage2(final String html, final URL url,
             final String contentType, final Charset charset, final Charset serverCharset) throws Exception {
-        if (useStandards_ != null) {
-            if (html.startsWith(HtmlPageTest.STANDARDS_MODE_PREFIX_)) {
-                fail("HTML must not be prefixed with Standards Mode.");
-            }
-            if (useStandards_) {
-                html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + html;
-            }
-        }
         getMockWebConnection().setResponse(url, html, contentType, charset);
-
         return loadPage2(url, serverCharset);
     }
 
@@ -1111,7 +1121,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return verifyTitle2(driver, expectedAlerts);
     }
 
-    protected final WebDriver verifyTitle2(final long maxWaitTime, final WebDriver driver,
+    protected final WebDriver verifyTitle2(final Duration maxWaitTime, final WebDriver driver,
             final String... expectedAlerts) throws Exception {
 
         final StringBuilder expected = new StringBuilder();
@@ -1120,7 +1130,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
         final String expectedTitle = expected.toString();
 
-        final long maxWait = System.currentTimeMillis() + maxWaitTime;
+        final long maxWait = System.currentTimeMillis() + maxWaitTime.toMillis();
 
         while (System.currentTimeMillis() < maxWait) {
             try {
@@ -1217,9 +1227,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return driver;
     }
 
-    protected final WebDriver verifyWindowName2(final long maxWaitTime, final WebDriver driver,
+    protected final WebDriver verifyWindowName2(final Duration maxWaitTime, final WebDriver driver,
             final String... expectedAlerts) throws Exception {
-        final long maxWait = System.currentTimeMillis() + maxWaitTime;
+        final long maxWait = System.currentTimeMillis() + maxWaitTime.toMillis();
 
         while (System.currentTimeMillis() < maxWait) {
             try {
@@ -1262,7 +1272,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @return the web driver
      * @throws Exception if something goes wrong
      */
-    protected final WebDriver loadPageWithAlerts2(final String html, final long maxWaitTime) throws Exception {
+    protected final WebDriver loadPageWithAlerts2(final String html, final Duration maxWaitTime) throws Exception {
         return loadPageWithAlerts2(html, URL_FIRST, maxWaitTime);
     }
 
@@ -1285,7 +1295,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @return the web driver
      * @throws Exception if something goes wrong
      */
-    protected final WebDriver loadPageWithAlerts2(final String html, final URL url, final long maxWaitTime)
+    protected final WebDriver loadPageWithAlerts2(final String html, final URL url, final Duration maxWaitTime)
             throws Exception {
         final WebDriver driver = loadPage2(html, url);
 
@@ -1311,7 +1321,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @param expected the expected alerts
      * @throws Exception in case of failure
      */
-    protected void verifyAlerts(final long maxWaitTime, final WebDriver driver, final String... expected)
+    protected void verifyAlerts(final Duration maxWaitTime, final WebDriver driver, final String... expected)
             throws Exception {
         final List<String> actualAlerts = getCollectedAlerts(maxWaitTime, driver, expected.length);
 
@@ -1359,7 +1369,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @return the web driver
      * @throws Exception if something goes wrong
      */
-    protected final WebDriver loadPageWithAlerts2(final String html, final URL url, final long maxWaitTime,
+    protected final WebDriver loadPageWithAlerts2(final String html, final URL url, final Duration maxWaitTime,
             final Map<String, Class<? extends Servlet>> servlets) throws Exception {
 
         expandExpectedAlertsVariables(URL_FIRST);
@@ -1388,7 +1398,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @return the web driver
      * @throws Exception if something goes wrong
      */
-    protected final WebDriver loadPageWithAlerts2(final URL url, final long maxWaitTime) throws Exception {
+    protected final WebDriver loadPageWithAlerts2(final URL url, final Duration maxWaitTime) throws Exception {
         startWebServer(getMockWebConnection(), null);
 
         final WebDriver driver = getWebDriver();
@@ -1430,11 +1440,11 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @return the collected alerts
      * @throws Exception in case of problem
      */
-    protected List<String> getCollectedAlerts(final long maxWaitTime, final WebDriver driver, final int alertsLength)
-            throws Exception {
+    protected List<String> getCollectedAlerts(final Duration maxWaitTime,
+            final WebDriver driver, final int alertsLength) throws Exception {
         final List<String> collectedAlerts = new ArrayList<>();
 
-        long maxWait = System.currentTimeMillis() + maxWaitTime;
+        long maxWait = System.currentTimeMillis() + maxWaitTime.toMillis();
 
         while (collectedAlerts.size() < alertsLength && System.currentTimeMillis() < maxWait) {
             try {
@@ -1504,21 +1514,22 @@ public abstract class WebDriverTestCase extends WebTestCase {
         // check for duplicates
         if (realBrowserNyiExpectation != null) {
             if (realNyiExpectation != null) {
-                Assert.assertNotEquals("Duplicate NYI Expectation for Browser " + browserVersion.getNickname(),
-                        realBrowserNyiExpectation, realNyiExpectation);
+                Assertions.assertNotEquals(realBrowserNyiExpectation, realNyiExpectation,
+                        "Duplicate NYI Expectation for Browser " + browserVersion.getNickname());
             }
 
             if (browserExpectation == null) {
                 if (expectation != null) {
-                    Assert.assertNotEquals("NYI Expectation matches the expected "
-                            + "result for Browser " + browserVersion.getNickname(),
-                            realBrowserNyiExpectation, expectation);
+                    Assertions.assertNotEquals(realBrowserNyiExpectation, expectation,
+                            "NYI Expectation matches the expected "
+                                    + "result for Browser " + browserVersion.getNickname());
                 }
             }
             else {
-                Assert.assertNotEquals("NYI Expectation matches the expected "
-                        + "browser specific result for Browser " + browserVersion.getNickname(),
-                        realBrowserNyiExpectation, browserExpectation);
+                Assertions.assertNotEquals(realBrowserNyiExpectation, browserExpectation,
+                        "NYI Expectation matches the expected "
+                                + "browser specific result for Browser "
+                                + browserVersion.getNickname());
             }
 
             return realBrowserNyiExpectation;
@@ -1527,24 +1538,25 @@ public abstract class WebDriverTestCase extends WebTestCase {
         if (realNyiExpectation != null) {
             if (browserExpectation == null) {
                 if (expectation != null) {
-                    Assert.assertNotEquals("NYI Expectation matches the expected "
-                            + "result for Browser " + browserVersion.getNickname(),
-                            realNyiExpectation, expectation);
+                    Assertions.assertNotEquals(realNyiExpectation, expectation,
+                            "NYI Expectation matches the expected "
+                                    + "result for Browser " + browserVersion.getNickname());
                 }
             }
             else {
-                Assert.assertNotEquals("NYI Expectation matches the expected "
-                        + "browser specific result for Browser " + browserVersion.getNickname(),
-                        realNyiExpectation, browserExpectation);
+                Assertions.assertNotEquals(realNyiExpectation, browserExpectation,
+                            "NYI Expectation matches the expected "
+                                    + "browser specific result for Browser "
+                                    + browserVersion.getNickname());
             }
             return realNyiExpectation;
         }
 
         if (browserExpectation != null) {
             if (expectation != null) {
-                Assert.assertNotEquals("Browser specific NYI Expectation matches the expected "
-                        + "result for Browser " + browserVersion.getNickname(),
-                        browserExpectation, expectation);
+                Assertions.assertNotEquals(browserExpectation, expectation,
+                            "Browser specific NYI Expectation matches the expected "
+                                    + "result for Browser " + browserVersion.getNickname());
             }
             return browserExpectation;
         }
@@ -1567,7 +1579,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * This should be always 0, if {@link #isWebClientCached()} is {@code false}.
      * @throws InterruptedException in case of problems
      */
-    @Before
+    @BeforeEach
     public void beforeTest() throws InterruptedException {
         if (!isWebClientCached()) {
             if (!getJavaScriptThreads().isEmpty()) {
@@ -1584,7 +1596,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @throws Exception in case of failure
      */
     protected void assertTitle(final WebDriver webdriver, final String expected) throws Exception {
-        final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+        final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
 
         while (true) {
             final String title = webdriver.getTitle();
@@ -1592,7 +1604,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 assertEquals(expected, title);
                 return;
             }
-            catch (final ComparisonFailure e) {
+            catch (final org.opentest4j.AssertionFailedError e) {
                 if (expected.length() <= title.length()
                         || System.currentTimeMillis() > maxWait) {
                     throw e;
@@ -1606,7 +1618,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Release resources but DON'T close the browser if we are running with a real browser.
      * Note that HtmlUnitDriver is not cached by default, but that can be configured by {@link #isWebClientCached()}.
      */
-    @After
+    @AfterEach
     @Override
     public void releaseResources() {
         final List<String> unhandledAlerts = new ArrayList<>();

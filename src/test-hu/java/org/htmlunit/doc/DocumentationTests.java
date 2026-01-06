@@ -14,10 +14,9 @@
  */
 package org.htmlunit.doc;
 
-import static org.junit.Assert.assertEquals;
-
 import org.htmlunit.BrowserVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for code from the documentation.
@@ -43,8 +42,8 @@ public class DocumentationTests {
                     .setUserAgent(userAgent)
                     .build();
 
-        assertEquals(applicationName, browser.getApplicationName());
-        assertEquals(applicationVersion, browser.getApplicationVersion());
-        assertEquals(userAgent, browser.getUserAgent());
+        Assertions.assertEquals(applicationName, browser.getApplicationName());
+        Assertions.assertEquals(applicationVersion, browser.getApplicationVersion());
+        Assertions.assertEquals(userAgent, browser.getUserAgent());
     }
 }

@@ -20,20 +20,17 @@ import java.util.List;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextInput;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLInputElement} and buttons.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Marc Guillemot
  * @author Chris Erskine
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLInputElement2Test extends SimpleWebTestCase {
 
     /**
@@ -42,8 +39,8 @@ public class HTMLInputElement2Test extends SimpleWebTestCase {
     @Test
     @Alerts({"hello", "me te"})
     public void selectionRange() throws Exception {
-        final String html
-            = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
             + "  var input = document.getElementById('myInput');\n"
             + "  input.setSelectionRange(2, 7);\n"
@@ -68,10 +65,12 @@ public class HTMLInputElement2Test extends SimpleWebTestCase {
     @Test
     @Alerts("initial")
     public void focus() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<iframe name='theFrame' src='" + URL_SECOND + "'></iframe>\n"
             + "</body></html>";
-        final String frame = "<html><body>\n"
+        final String frame = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<input id='input' value='initial' onfocus='alert(this.value)'>\n"
             + "<div id='div'>click me</div>\n"
             + "</body></html>";

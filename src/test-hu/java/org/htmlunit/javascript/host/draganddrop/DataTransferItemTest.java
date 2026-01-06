@@ -15,18 +15,14 @@
 package org.htmlunit.javascript.host.draganddrop;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DataTransferItem}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DataTransferItemTest extends WebDriverTestCase {
 
     /**
@@ -38,7 +34,7 @@ public class DataTransferItemTest extends WebDriverTestCase {
              "string", "text/xml",
              "HtmlUnit", "HtmlUnit", "HtmlUnit", "HtmlUnit", "1234", "[object Object]"})
     public void string() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -86,7 +82,7 @@ public class DataTransferItemTest extends WebDriverTestCase {
     @Test
     @Alerts({"file", "", "file", "text/html", "TypeError"})
     public void file() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -118,7 +114,7 @@ public class DataTransferItemTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object File]", "true", "null"})
     public void getAsFile() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -147,7 +143,7 @@ public class DataTransferItemTest extends WebDriverTestCase {
     @Test
     @Alerts({"done", "HtmlUnit"})
     public void getAsString() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"

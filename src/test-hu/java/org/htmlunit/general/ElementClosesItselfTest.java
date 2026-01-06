@@ -15,10 +15,8 @@
 package org.htmlunit.general;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for an element to close itself, which is defined in
@@ -28,33 +26,35 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ElementClosesItselfTest extends WebDriverTestCase {
 
     private void test(final String tagName) throws Exception {
         if ("basefont".equals(tagName) || "isindex".equals(tagName)) {
-            loadPageWithAlerts2(headElementClosesItself(tagName));
+            loadPage2(headElementClosesItself(tagName));
+            verifyWindowName2(getWebDriver(), getExpectedAlerts());
             return;
         }
 
         if ("title".equals(tagName)) {
             // title is a bit special, we have to provide at least
             // one closing tab otherwise title spans to the end of the file
-            loadPageWithAlerts2("<html><head>\n"
+            loadPage2(DOCTYPE_HTML + "<html><head>\n"
                     + "<script>\n"
+                    + LOG_WINDOW_NAME_FUNCTION
                     + "function test() {\n"
                     + "  var e = document.getElementById('outer');\n"
-                    + "  alert(e == null ? e : e.children.length);\n"
+                    + "  log(e == null ? e : e.children.length);\n"
                     + "}\n"
                     + "</script>\n"
                     + "<title id='outer'><title></title>\n"
                     + "</head><body onload='test()'>\n"
                     + "</body></html>");
+            verifyWindowName2(getWebDriver(), getExpectedAlerts());
             return;
         }
 
         if ("frame".equals(tagName)) {
-            loadPageVerifyTitle2("<html><head>\n"
+            loadPageVerifyTitle2(DOCTYPE_HTML + "<html><head>\n"
                     + "<script>\n"
                     + LOG_TITLE_FUNCTION
                     + "function test() {\n"
@@ -70,7 +70,8 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
         }
 
         if ("script".equals(tagName)) {
-            loadPageVerifyTitle2("<html><head>\n"
+            loadPageVerifyTitle2(DOCTYPE_HTML
+                    + "<html><head>\n"
                     + "<script>\n"
                     + LOG_TITLE_FUNCTION
                     + "function test() {\n"
@@ -86,21 +87,25 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
         }
 
         if ("frameset".equals(tagName)) {
-            loadPageWithAlerts2("<html><head>\n"
+            loadPage2(DOCTYPE_HTML
+                    + "<html><head>\n"
                     + "<script>\n"
+                    + LOG_WINDOW_NAME_FUNCTION
                     + "function test() {\n"
                     + "  var e = document.getElementById('outer');\n"
-                    + "  alert(e == null ? e : e.children.length);\n"
+                    + "  log(e == null ? e : e.children.length);\n"
                     + "}\n"
                     + "</script>\n"
                     + "</head>\n"
                     + "<frameset onload='test()' id='outer'>\n"
                     + "<frameset>\n"
                     + "</frameset></html>");
+            verifyWindowName2(getWebDriver(), getExpectedAlerts());
             return;
         }
 
-        loadPageVerifyTitle2("<html><head>\n"
+        loadPageVerifyTitle2(DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function test() {\n"
@@ -116,12 +121,14 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     }
 
     private static String headElementClosesItself(final String tagName) {
-        return "<html><head>\n"
+        return DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<" + tagName + " id='outer'><" + tagName + ">\n"
                 + "<script>\n"
+                + LOG_WINDOW_NAME_FUNCTION
                 + "function test() {\n"
                 + "  var e = document.getElementById('outer');\n"
-                + "  alert(e == null ? e : e.children.length);\n"
+                + "  log(e == null ? e : e.children.length);\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head><body onload='test()'>\n"

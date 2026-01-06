@@ -23,13 +23,10 @@ import java.util.List;
 
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -42,7 +39,6 @@ import org.openqa.selenium.WebElement;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLDocumentWrite2Test extends WebDriverTestCase {
 
     /**
@@ -51,7 +47,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLDocument]")
     public void openResult() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_WINDOW_NAME_FUNCTION
@@ -76,7 +73,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("Hello There")
     public void write() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<title>Test</title>\n"
             + "<script>\n"
@@ -99,7 +97,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void writeSomeTags() throws Exception {
-        final String html = "<html><head></head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
             + "<body>\n"
             + "<script>\n"
             + "document.write(\"<div id='div1'></div>\");\n"
@@ -122,8 +121,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void write_nested() throws Exception {
-        final String html =
-              "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "var s = '\"<script>log(1);<\\/scr\" + \"ipt>\"';\n"
             + "document.write('<script><!--\\ndocument.write(' + s + ');\\n--><\\/script>');\n"
@@ -140,7 +139,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void write2_html_endhtml_in_head() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "document.write('<HTML></HTML>');\n"
             + "</script>\n"
@@ -157,8 +157,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void writeScript() throws Exception {
-        final String html =
-              "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "  document.write('<scr'+'ipt>log(1<2)</sc'+'ript>');\n"
             + "</script></body></html>";
@@ -172,7 +172,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void writeUnicode() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "document.open();\n"
             + "document.write('<div id=\"assert\">Hello worl\u0414</div>');\n"
             + "document.close();\n"
@@ -189,7 +190,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void writeISO_8859_1() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "document.open();\n"
             + "document.write('<div id=\"assert\">\u00e4\u00f6\u00fc\u00c4\u00d6\u00dc</div>');\n"
             + "document.close();\n"
@@ -206,7 +208,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void open_FF() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "  function performAction() {\n"
             + "    actionwindow = window.open('', '1205399746518', "
             + "'location=no,scrollbars=no,resizable=no,width=200,height=275');\n"
@@ -234,7 +237,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     public void writeExternalScriptAfterClick() throws Exception {
         shutDownAll();
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "document.write('<scr'+'ipt src=\"script.js\"></scr'+'ipt>');\n"
             + "window.name += ' after-write ';\n"
@@ -261,9 +265,14 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @NotYetImplemented
+    @Alerts("#1")
+    @HtmlUnitNYI(CHROME = "#0",
+            EDGE = "#0",
+            FF = "#0",
+            FF_ESR = "#0")
     public void writeInNewWindowAndReadFormCollection() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "function test() {\n"
             + "  var newWin = window.open('', 'myPopup', '');\n"
@@ -275,8 +284,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "</body></html>";
 
-        final WebDriver driver = loadPageWithAlerts2(html);
-        assertTitle(driver, "#1");
+        final WebDriver driver = loadPage2(html);
+        assertTitle(driver, getExpectedAlerts()[0]);
     }
 
     /**
@@ -287,7 +296,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"2", "§§URL§§foo"})
     public void urlResolutionInWriteForm() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "function test() {\n"
             + "  var newWin = window.open('', 'myPopup', '');\n"
@@ -306,6 +316,9 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.switchTo().window("myPopup");
         driver.findElement(By.id("it")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         assertEquals(Integer.parseInt(getExpectedAlerts()[0]),
                 getMockWebConnection().getRequestCount() - startCount);
@@ -320,8 +333,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("<form></form>#[object HTMLFormElement]")
     public void writeOnOpenedWindow_WindowIsProxied() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function test() {\n"
             + "  var w = window.open('','blah','width=460,height=420');\n"
             + "  w.document.write('<html><body><form></form></body></html>');\n"
@@ -345,8 +358,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("<form></form>#[object HTMLFormElement]")
     public void writeOnOpenedWindow_DocumentIsProxied() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function test() {\n"
             + "  var w = window.open('','blah','width=460,height=420');\n"
             + "  var d = w.document;\n"
@@ -373,7 +386,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void writeInFrameWithOnload() throws Exception {
-        final String html = "<html><head></head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
             + "<body>\n"
             + "<iframe id='theIframe' src='about:blank'></iframe>\n"
             + "<script>\n"
@@ -395,8 +409,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void write_loadScript() throws Exception {
-        final String html
-            = "<html><head><title>First</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<script src='script.js'></script>\n"
             + "</form></body></html>";
 
@@ -414,7 +428,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void write_fromScriptAddedWithAppendChild_inline() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head><body>\n"
             + "<div id='it'><script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "try {\n"
@@ -437,7 +452,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void write_fromScriptAddedWithAppendChild_external() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head></head><body>\n"
                 + "<div id='it'>here</div><script>\n"
                 + "  var s = document.createElement('script');\n"
                 + "  s.src = 'foo.js';\n"
@@ -462,8 +478,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"null", "[object HTMLBodyElement]", "s1 s2 s3 s4 s5"})
     public void write_Destination() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>" + LOG_WINDOW_NAME_FUNCTION + "</script>\n"
             + "    <script>log(document.body);</script>\n"
@@ -502,8 +518,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"null", "[object HTMLBodyElement]", "", "foo"})
     public void write_BodyAttributesKept() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>" + LOG_WINDOW_NAME_FUNCTION + "</script>\n"
             + "    <script>log(document.body);</script>\n"
@@ -529,8 +545,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"1", "2", "3"})
     public void write_ScriptExecutionOrder() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <title>test</title>\n"
             + "    <script>" + LOG_WINDOW_NAME_FUNCTION + "</script>\n"
@@ -552,7 +568,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("outer")
     public void writeInManyTimes() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "function doTest() {\n"
             + "  log(document.getElementById('inner').parentNode.id);\n"
@@ -577,7 +594,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"theBody", "theBody", "theBody"})
     public void writeAddNodesToCorrectParent() throws Exception {
-        final String html = "<html><head><title>foo</title></head>\n"
+        final String html = DOCTYPE_HTML
+             + "<html><head><title>foo</title></head>\n"
              + "<body id=\"theBody\">\n"
              + "<script>\n"
              + LOG_WINDOW_NAME_FUNCTION
@@ -602,7 +620,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"outer", "inner1"})
     public void writeAddNodesToCorrectParent_Bug1678826() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+             + "<html><head><title>foo</title><script>\n"
              + LOG_WINDOW_NAME_FUNCTION
              + "function doTest() {\n"
              + "  log(document.getElementById('inner1').parentNode.id);\n"
@@ -633,7 +652,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"STYLE", "SCRIPT"})
     public void writeStyle() throws Exception {
-        final String html = "<html><head><title>foo</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+             + "<html><head><title>foo</title></head><body>\n"
              + "<script>\n"
              + LOG_WINDOW_NAME_FUNCTION
              + "  document.write('<style type=\"text/css\" id=\"myStyle\">');\n"
@@ -655,7 +675,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void openReplace() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <title>Test</title>\n"
             + "<script>\n"
@@ -686,7 +707,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void write_scriptExecutionPostponed() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<div id='d'></div>\n"
             + "<script>function log(s) { document.getElementById('d').innerHTML += s + ' '; }</script>\n"
             + "<script src='a.js'></script>\n"
@@ -722,7 +744,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
         final URL secondUrl = new URL(URL_FIRST, "second.html");
         final URL scriptUrl = new URL(URL_FIRST, "script.js");
 
-        final String mainHtml = "<html>\n"
+        final String mainHtml = DOCTYPE_HTML
+            + "<html>\n"
             + "<head><title>Main</title></head>\n"
             + "<body>\n"
             + "  <iframe name='iframe' id='iframe' src='" + firstUrl + "'></iframe>\n"
@@ -733,10 +756,10 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
 
         getMockWebConnection().setResponse(mainUrl, mainHtml);
 
-        final String firstHtml = "<html><body><h1 id='first'>First</h1></body></html>";
+        final String firstHtml = DOCTYPE_HTML + "<html><body><h1 id='first'>First</h1></body></html>";
         getMockWebConnection().setResponse(firstUrl, firstHtml);
 
-        final String secondHtml = "<html><body><h1 id='second'>Second</h1></body></html>";
+        final String secondHtml = DOCTYPE_HTML + "<html><body><h1 id='second'>Second</h1></body></html>";
         getMockWebConnection().setResponse(secondUrl, secondHtml);
 
         final String script = "document.getElementById('iframe').src = '" + secondUrl + "';\n";
@@ -758,7 +781,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"A", "A"})
     public void write_InDOM() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <script type='text/javascript'>\n"
@@ -791,7 +815,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"foo called", "exception occurred"})
     public void write_AssignedToVar2() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<script>\n"
@@ -816,7 +841,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void write_WhenParsingFinished() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + "  function test() { document.write(1); document.write(2); document.close(); }\n"
@@ -837,7 +863,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void writeWithSplitAnchorTag() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body><script>\n"
             + "document.write(\"<a href=\'start.html\");\n"
             + "document.write(\"\'>\");\n"
@@ -859,7 +886,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void open_IgnoredDuringParsing() throws Exception {
-        final String html = "<html><body>1<script>document.open();document.write('2');</script>3</body></html>";
+        final String html = DOCTYPE_HTML
+                + "<html><body>1<script>document.open();document.write('2');</script>3</body></html>";
 
         final WebDriver driver = loadPage2(html);
         assertEquals("123", driver.findElement(By.tagName("body")).getText());
@@ -870,7 +898,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void writeWithSpace() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <script>\n"
             + "    document.write('Hello ');\n"
@@ -886,24 +915,127 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"foo", "foo2"})
+    @Alerts({"0", "foo1", "1", "2", "3", "4", "5", "A", "B", "foo3"})
+    @HtmlUnitNYI(CHROME = {"0", "foo1", "1", "2", "3", "4", "foo3", "A", "B", "5"},
+            EDGE = {"0", "foo1", "1", "2", "3", "4", "foo3", "A", "B", "5"},
+            FF = {"0", "foo1", "1", "2", "3", "4", "foo3", "A", "B", "5"},
+            FF_ESR = {"0", "foo1", "1", "2", "3", "4", "foo3", "A", "B", "5"})
     public void writeScriptInManyTimes() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
-            + "document.write('<script src=\"script.js\">');\n"
-            + "document.write('<' + '/script>');\n"
-            + "document.write('<script>log(\"foo2\");</' + 'script>');\n"
+            + "  log('0');\n"
+            + "  document.write('<script>log(\"foo1\");</' + 'script>');\n"
+
+            + "  log('1');\n"
+            + "  document.write('<script src=\"scriptA.js\"></' + 'script>');\n"
+            + "  log('2');\n"
+
+            + "  document.write('<script src=\"scriptB.js\">');\n"
+            + "  log('3');\n"
+            + "  document.write('<' + '/script>');\n"
+            + "  log('4');\n"
+            + "  document.write('<script>log(\"foo3\");</' + 'script>');\n"
+            + "  log('5');\n"
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
             + "</body></html>";
 
-        final URL scriptUrl = new URL(URL_FIRST, "script.js");
+        final URL scriptUrlA = new URL(URL_FIRST, "scriptA.js");
+        final URL scriptUrlB = new URL(URL_FIRST, "scriptB.js");
 
         getMockWebConnection().setDefaultResponse(html);
-        getMockWebConnection().setResponse(scriptUrl, "log('foo');\n", MimeType.TEXT_JAVASCRIPT);
+        getMockWebConnection().setResponse(scriptUrlA, "log('A');\n", MimeType.TEXT_JAVASCRIPT);
+        getMockWebConnection().setResponse(scriptUrlB, "log('B');\n", MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"0", "foo1", "1", "foo2", "2", "3", "4", "A", "foo3"})
+    @HtmlUnitNYI(CHROME = {"0", "foo1", "1", "foo2", "2", "3", "foo3", "A", "4"},
+            EDGE = {"0", "foo1", "1", "foo2", "2", "3", "foo3", "A", "4"},
+            FF = {"0", "foo1", "1", "foo2", "2", "3", "foo3", "A", "4"},
+            FF_ESR = {"0", "foo1", "1", "foo2", "2", "3", "foo3", "A", "4"})
+    public void writeScriptPostponed() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log('0');\n"
+            + "</script>\n"
+
+            + "<script>log(\"foo1\");</script>'\n"
+
+            + "<script>\n"
+            + "  log('1');\n"
+            + "  document.write('<script>log(\"foo2\");</' + 'script>');\n"
+            + "  log('2');\n"
+            + "  document.write('<script src=\"scriptA.js\"></' + 'script>');\n"
+            + "  log('3');\n"
+            + "  document.write('<script>log(\"foo3\");</' + 'script>');\n"
+            + "  log('4');\n"
+            + "</script>\n"
+
+            + "</head>\n"
+            + "<body>\n"
+            + "</body></html>";
+
+        final URL scriptUrlA = new URL(URL_FIRST, "scriptA.js");
+
+        getMockWebConnection().setDefaultResponse(html);
+        getMockWebConnection().setResponse(scriptUrlA, "log('A');\n", MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"0", "A", "1", "foo2", "2", "3", "4", "B", "foo3"})
+    @HtmlUnitNYI(CHROME = {"0", "A", "1", "foo2", "2", "3", "foo3", "B", "4"},
+            EDGE = {"0", "A", "1", "foo2", "2", "3", "foo3", "B", "4"},
+            FF = {"0", "A", "1", "foo2", "2", "3", "foo3", "B", "4"},
+            FF_ESR = {"0", "A", "1", "foo2", "2", "3", "foo3", "B", "4"})
+    public void writeScriptPostponedBeforeWrite() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log('0');\n"
+            + "</script>\n"
+
+            + "<script src='scriptA.js'></script>'\n"
+
+            + "<script>\n"
+            + "  log('1');\n"
+            + "  document.write('<script>log(\"foo2\");</' + 'script>');\n"
+            + "  log('2');\n"
+            + "  document.write('<script src=\"scriptB.js\"></' + 'script>');\n"
+            + "  log('3');\n"
+            + "  document.write('<script>log(\"foo3\");</' + 'script>');\n"
+            + "  log('4');\n"
+            + "</script>\n"
+
+            + "</head>\n"
+            + "<body>\n"
+            + "</body></html>";
+
+        final URL scriptUrlA = new URL(URL_FIRST, "scriptA.js");
+        final URL scriptUrlB = new URL(URL_FIRST, "scriptB.js");
+
+        getMockWebConnection().setDefaultResponse(html);
+        getMockWebConnection().setResponse(scriptUrlA, "log('A');\n", MimeType.TEXT_JAVASCRIPT);
+        getMockWebConnection().setResponse(scriptUrlB, "log('B');\n", MimeType.TEXT_JAVASCRIPT);
 
         loadPageVerifyTitle2(html);
     }
@@ -915,7 +1047,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts({"scr1", "scr2", "null", "null", "[object HTMLScriptElement]", "[object HTMLScriptElement]"})
     public void writeAddNodesInCorrectPositions() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body id=\"theBody\">\n"
             + "<div id='target1'></div>\n"
@@ -955,8 +1088,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      */
     @Test
     public void aboutURL() throws Exception {
-        final String html =
-            "<html><body><script language='JavaScript'>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script language='JavaScript'>\n"
             + "w2 = window.open('about:blank', 'AboutBlank');\n"
             + "w2.document.open();\n"
             + "w2.document.write('<html><head><title>hello</title></head><body></body></html>');\n"
@@ -974,7 +1107,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("§§URL§§")
     public void locationAfterWrite() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head><script>\n"
             + "function test() {\n"
             + "  window.document.title += 'abcd';\n"
@@ -1001,7 +1135,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @HtmlUnitNYI(FF = {"", "First", "First", "FORM", "true", "true"},
             FF_ESR = {"", "First", "First", "FORM", "true", "true"})
     public void newElementsAfterWrite() throws Exception {
-        final String html = "<html>"
+        final String html = DOCTYPE_HTML
+            + "<html>"
             + "<head><script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "function test() {\n"

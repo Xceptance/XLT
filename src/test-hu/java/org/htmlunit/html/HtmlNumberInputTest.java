@@ -14,17 +14,16 @@
  */
 package org.htmlunit.html;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collections;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.JavascriptExecutor;
@@ -40,7 +39,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Anton Demydenko
  * @author Raik Bieniek
  */
-@RunWith(BrowserRunner.class)
 public class HtmlNumberInputTest extends WebDriverTestCase {
 
     /**
@@ -50,8 +48,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getVisibleTextInteger() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -76,8 +74,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getVisibleTextDouble() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -100,7 +98,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void typeInteger() throws Exception {
-        final String html = "<html><head></head><body><input type='number' id='inpt'/></body></html>";
+        final String html = DOCTYPE_HTML + "<html><head></head><body><input type='number' id='inpt'/></body></html>";
         final WebDriver driver = loadPage2(html);
         final WebElement t = driver.findElement(By.id("inpt"));
 
@@ -134,7 +132,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"123", "true"})
     public void typeIntegerValid() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "  <input type='number' id='inpt'/>\n"
@@ -162,7 +161,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"12", "true", "123", "false"})
     public void typeIntegerTooLarge() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "  <input type='number' id='inpt' max='100'/>\n"
@@ -195,7 +195,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"12", "false", "123", "true"})
     public void typeIntegerTooSmall() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "  <input type='number' id='inpt' min='100'/>\n"
@@ -233,7 +234,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             FF = {"1", "1--null-true", "", "--null-false", "1.2", "1.2--null-false"},
             FF_ESR = {"1", "1--null-true", "", "--null-false", "1.2", "1.2--null-false"})
     public void typeIntegerWithDot() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + "  function test() {\n"
@@ -281,7 +283,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"})
     public void typeIntegerNegativeValid() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + "  function test() {\n"
@@ -329,7 +332,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "--null-false", "-12", "-12--null-false"})
     public void typeIntegerNegativeInvalid() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + "  function test() {\n"
@@ -370,7 +374,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void typeDouble() throws Exception {
-        final String html = "<html><head></head><body>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head></head><body>\n"
                 + "<input type='number' step='0.01' id='t'/>\n"
                 + "</body></html>";
         final WebDriver driver = loadPage2(html);
@@ -385,7 +390,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void typeWhileDisabled() throws Exception {
-        final String html = "<html><body><input type='number' id='p' disabled='disabled'/></body></html>";
+        final String html = DOCTYPE_HTML
+                + "<html><body><input type='number' id='p' disabled='disabled'/></body></html>";
         final WebDriver driver = loadPage2(html);
         final WebElement p = driver.findElement(By.id("p"));
         try {
@@ -406,7 +412,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "null"})
     public void typeDoesNotChangeValueAttribute() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "  <input type='number' id='t'/>\n"
@@ -433,7 +440,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"1234", "1234"})
     public void typeDoesNotChangeValueAttributeWithInitialValue() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "  <input type='number' id='t' value='1234'/>\n"
@@ -459,8 +467,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void preventDefault_OnKeyDown() throws Exception {
-        final String html =
-              "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "  function handler(e) {\n"
             + "    if (e && e.target.value.length > 2)\n"
             + "      e.preventDefault();\n"
@@ -487,8 +495,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void preventDefault_OnKeyPress() throws Exception {
-        final String html =
-              "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "  function handler(e) {\n"
             + "    if (e && e.target.value.length > 2)\n"
             + "      e.preventDefault();\n"
@@ -515,8 +523,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void typeOnChange() throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -555,8 +563,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void setValueOnChange() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+              + "<html>\n"
               + "<head>\n"
               + "<script>\n"
               + LOG_TITLE_FUNCTION
@@ -583,8 +591,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void setDefaultValueOnChange() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+              + "<html>\n"
               + "<head>"
               + "<script>\n"
               + LOG_TITLE_FUNCTION
@@ -613,7 +621,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"--null-true", "--null-true", "--null-true"})
     public void defaultValues() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -649,12 +658,16 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"8-8-8-true", "-abc-abc-true", "---true",
              "99999999999999999999999999999-99999999999999999999999999999"
                                + "-99999999999999999999999999999-true"})
     public void defaultValuesInvalidValue() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -696,12 +709,16 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"8-8-8-true", "-\\s\\s-\\s\\s-true",
              "-\\s\\s\\n\\s\\s\\t\\s-\\s\\s\\n\\s\\s\\t\\s-true",
              "-\\s3\\s9\\s-\\s3\\s9\\s-true"})
     public void defaultValuesBlankValue() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
@@ -743,10 +760,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"8-8-8-true", "7-7-7-false", "6-6-6-false"})
     public void defaultValuesIntegerValueOutside() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -781,10 +802,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"8-8-8-true", "7-7-7-false", "7.13-7.13-7.13-false"})
     public void defaultValuesInvalid() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -825,7 +850,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"--null", "--null", "--null"})
     public void defaultValuesAfterClone() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -862,7 +888,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
                 "5678-1234-1234", "5678-1234-1234",
                 "5678-2345-2345", "5678-2345-2345"})
     public void resetByClick() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -903,7 +930,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
                 "5678-1234-1234", "5678-1234-1234",
                 "5678-2345-2345", "5678-2345-2345"})
     public void resetByJS() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -943,7 +971,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
                 "3456-2345-2345-true", "3456-9876-9876-true",
                 "3456-44-44-true"})
     public void value() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -994,7 +1023,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"123-123-123-true", "2-2-2-false", "20000-2-2-false", "20000-9-9-false"})
     public void valueOutside() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -1038,7 +1068,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"12-12-12-true", "12", "12312", "12312-12-12-false"})
     public void typeValueOutside() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    var input = document.getElementById('testId');\n"
@@ -1074,7 +1105,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"2-2-2-false", "2", "42", "42-2-2-false"})
     public void typeValueNotReachableByStep() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    var input = document.getElementById('testId');\n"
@@ -1110,7 +1142,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"2.1-2.1-2.1-false", "2.1", "42.1", "42.1-2.1-2.1-false"})
     public void typeValueNotReachableByStepDouble() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    var input = document.getElementById('testId');\n"
@@ -1148,7 +1181,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             FF = {"--null-true", "4", "4--null-true", "", "--null-false"},
             FF_ESR = {"--null-true", "4", "4--null-true", "", "--null-false"})
     public void typeInvalidChars() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    var input = document.getElementById('testId');\n"
@@ -1192,7 +1226,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             FF = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
             FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"})
     public void typeCharsAndClear() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + "  function test() {\n"
@@ -1243,7 +1278,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             FF = "-0-0-false",
             FF_ESR = "-0-0-false")
     public void issue321() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -1278,7 +1314,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"13-13-13-true", "15-15-15-false", "17-15-15-false", "17-19-19-false"})
     public void valueNotReachableByStep() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -1322,7 +1359,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"1.3-1.3-1.3-true", "1.5-1.5-1.5-false", "1.7-1.5-1.5-false", "1.7-1.9-1.9-false"})
     public void valueNotReachableByStepDouble() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -1368,7 +1406,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             FF = "7",
             FF_ESR = "7")
     public void textLength() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -1395,8 +1434,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts("0")
     public void selection() throws Exception {
-        final String html =
-              "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -1449,7 +1488,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     }
 
     private void selection2(final int selectionStart, final int selectionEnd) throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "<input id='myTextInput' value='1234567' type='number'>\n"
             + "<script>\n"
@@ -1491,7 +1531,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"null,null", "InvalidStateError/DOMException"})
     public void selectionOnUpdate() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "<input id='myTextInput' value='1234567' type='number'>\n"
             + "<script>\n"
@@ -1528,8 +1569,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void submitOnEnter() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <form action='result.html'>\n"
             + "    <input id='t' value='1234'/>\n"
@@ -1542,6 +1583,9 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement field = driver.findElement(By.id("t"));
 
         field.sendKeys(Keys.ENTER);
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         assertEquals(2, getMockWebConnection().getRequestCount());
     }
@@ -1551,8 +1595,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      */
     @Test
     public void sendKeysEnterWithoutForm() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <input id='t' type='number' value='1234'>\n"
             + "</body>\n"
@@ -1567,17 +1611,18 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     /**
      * @throws Exception if the test fails
      */
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void submitWithoutForm() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <input id='t' type='number' value='1234'>\n"
             + "</body>\n"
             + "</html>";
 
         final WebDriver driver = loadPage2(html);
-        driver.findElement(By.id("t")).submit();
+        Assertions.assertThrows(UnsupportedOperationException.class,
+                () -> driver.findElement(By.id("t")).submit());
 
         assertEquals(1, getMockWebConnection().getRequestCount());
     }
@@ -1588,7 +1633,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts("--")
     public void minMaxStep() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1614,7 +1660,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"10", ""})
     public void clearInput() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "<form>\n"
             + "  <input type='number' id='tester' value='10'>\n"
@@ -1632,10 +1679,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts("false-true")
     public void maxValidation() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1655,10 +1706,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts("false-true")
     public void minValidation() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1916,8 +1971,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "true", "false", "true"})
     public void willValidate() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
@@ -2045,8 +2100,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     }
 
     private void validation(final String htmlPart, final String jsPart, final String sendKeys) throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function logValidityState(s) {\n"
@@ -2079,8 +2134,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
                 + "  </form>\n"
                 + "</body></html>";
 
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+                + "<html><head><title>second</title></head><body>\n"
                 + "  <p>hello world</p>\n"
                 + "</body></html>";
 
@@ -2100,6 +2155,9 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         verifyTitle2(driver, getExpectedAlerts()[2], getExpectedAlerts()[3], getExpectedAlerts()[4]);
 
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
         assertEquals(getExpectedAlerts()[5], getMockWebConnection().getLastWebRequest().getUrl());
         assertEquals(Integer.parseInt(getExpectedAlerts()[6]), getMockWebConnection().getRequestCount());
     }

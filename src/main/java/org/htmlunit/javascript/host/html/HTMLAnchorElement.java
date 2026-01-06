@@ -15,7 +15,6 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
@@ -27,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.SgmlPage;
@@ -42,13 +40,14 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * The JavaScript object that represents an anchor.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:gousseff@netscape.net">Alexei Goussev</a>
+ * @author Mike Bowler
+ * @author Alexei Goussev
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -213,7 +212,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getReferrerPolicy() {
         String attrib = getDomNodeOrDie().getAttribute("referrerPolicy");
-        if (StringUtils.isEmpty(attrib)) {
+        if (StringUtils.isEmptyOrNull(attrib)) {
             return "";
         }
         attrib = attrib.toLowerCase(Locale.ROOT);
@@ -254,7 +253,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the search portion of the link's URL (the portion starting with '?'
-     * and up to but not including any '#')..
+     * and up to but not including any '#').
      * @param search the new search portion of the link's URL
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
@@ -263,8 +262,8 @@ public class HTMLAnchorElement extends HTMLElement {
     public void setSearch(final String search) throws Exception {
         final String query;
         if (search == null
-                || org.htmlunit.util.StringUtils.isEmptyString(search)
-                || org.htmlunit.util.StringUtils.equalsChar('?', search)) {
+                || StringUtils.isEmptyString(search)
+                || StringUtils.equalsChar('?', search)) {
             query = null;
         }
         else if (search.charAt(0) == '?') {
@@ -380,7 +379,7 @@ public class HTMLAnchorElement extends HTMLElement {
                 setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
             }
         }
-        else if (!StringUtils.isEmpty(hostname)) {
+        else if (!StringUtils.isEmptyOrNull(hostname)) {
             setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
         }
     }
@@ -399,19 +398,12 @@ public class HTMLAnchorElement extends HTMLElement {
                 String href = anchor.getHrefAttribute();
                 if (href.length() > 1 && Character.isLetter(href.charAt(0)) && ':' == href.charAt(1)) {
                     if (browser.hasFeature(JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS)) {
-                        href = StringUtils.capitalize(href);
+                        href = org.apache.commons.lang3.StringUtils.capitalize(href);
                     }
                     if (browser.hasFeature(JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL)) {
                         href = "/" + href;
                     }
                     return href;
-                }
-            }
-            else if (browser.hasFeature(JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL)) {
-                final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
-                final String href = anchor.getHrefAttribute();
-                if (href.length() > 1 && Character.isLetter(href.charAt(0)) && ':' == href.charAt(1)) {
-                    return href.substring(2);
                 }
             }
             return getUrl().getPath();
@@ -664,7 +656,7 @@ public class HTMLAnchorElement extends HTMLElement {
             if (userInfo == null) {
                 return "";
             }
-            return StringUtils.substringBefore(userInfo, ':');
+            return org.apache.commons.lang3.StringUtils.substringBefore(userInfo, ':');
         }
         catch (final MalformedURLException e) {
             return "";

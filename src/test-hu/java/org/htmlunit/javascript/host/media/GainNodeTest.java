@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.media;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link GainNode}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class GainNodeTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class GainNodeTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -57,8 +54,8 @@ public class GainNodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "-3.4028234663852886e+38", "3.4028234663852886e+38", "1", "0.5"})
     public void ctor() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -96,8 +93,8 @@ public class GainNodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"Error 1", "Error 2", "Error 3", "Error 4"})
     public void ctorAudiocontextMissing() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION

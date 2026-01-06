@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link WebGLContextEvent}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WebGLContextEventTest extends WebDriverTestCase {
 
     /**
@@ -35,14 +32,15 @@ public class WebGLContextEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "2", "3"})
     public void constants() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
             + "      log(WebGLContextEvent.CAPTURING_PHASE);\n"
             + "      log(WebGLContextEvent.AT_TARGET);\n"
             + "      log(WebGLContextEvent.BUBBLING_PHASE);\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";

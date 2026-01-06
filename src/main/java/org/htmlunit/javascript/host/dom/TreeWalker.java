@@ -29,8 +29,8 @@ import org.w3c.dom.DOMException;
  * The JavaScript object that represents a {@code TreeWalker}.
  *
  * @see <a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/traversal.html">
- * DOM-Level-2-Traversal-Range</a>
- * @author <a href="mailto:mike@10gen.com">Mike Dirolf</a>
+ *     DOM-Level-2-Traversal-Range</a>
+ * @author Mike Dirolf
  * @author Frank Danek
  * @author Ahmed Ashour
  * @author Ronald Brill
@@ -228,13 +228,13 @@ public class TreeWalker extends HtmlUnitScriptable {
     }
 
     /**
-      * Moves the TreeWalker to the previous sibling of the current node, and
-      * returns the new node. If the current node has no visible previous
-      * sibling, returns {@code null}, and retains the current node.
-      *
-      * @return The new node, or {@code null} if the current node has no
-      *          previous sibling in the TreeWalker's logical view.
-      */
+     * Moves the TreeWalker to the previous sibling of the current node, and
+     * returns the new node. If the current node has no visible previous
+     * sibling, returns {@code null}, and retains the current node.
+     *
+     * @return The new node, or {@code null} if the current node has no
+     *          previous sibling in the TreeWalker's logical view.
+     */
     @JsxFunction
     public Node previousSibling() {
         return getNodeOrNull(walker_.previousSibling());

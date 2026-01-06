@@ -15,23 +15,20 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Navigator}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NavigatorTest extends WebDriverTestCase {
 
     /**
@@ -92,7 +89,8 @@ public class NavigatorTest extends WebDriverTestCase {
             CHROME = {"string", "20030107"},
             EDGE = {"string", "20030107"})
     public void productSub() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  log(typeof(navigator.productSub));\n"
@@ -175,7 +173,8 @@ public class NavigatorTest extends WebDriverTestCase {
         "Microsoft Edge PDF Viewer", "Portable Document Format", "internal-pdf-viewer", "undefined",
         "WebKit built-in PDF", "Portable Document Format", "internal-pdf-viewer", "undefined"})
     public void plugins() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
@@ -205,7 +204,8 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts("Shockwave Flash not available")
     public void pluginsShockwaveFlash() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
@@ -242,8 +242,8 @@ public class NavigatorTest extends WebDriverTestCase {
              "application/pdf", "Portable Document Format", "pdf", "[object Plugin]", "true",
              "text/pdf", "Portable Document Format", "pdf", "[object Plugin]", "true"})
     public void mimeTypes() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function doTest() {\n"
@@ -273,7 +273,8 @@ public class NavigatorTest extends WebDriverTestCase {
             CHROME = "TypeError",
             EDGE = "TypeError")
     public void taintEnabled() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
@@ -298,7 +299,8 @@ public class NavigatorTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     void attribute(final String name, final String value, final String... ignore) throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
@@ -322,8 +324,8 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts("en-US")
     public void language() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "  </script>\n"
@@ -339,10 +341,14 @@ public class NavigatorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("en-US,en")
+    @Alerts(DEFAULT = "en-US",
+            FF = "en-US,en",
+            FF_ESR = "en-US,en")
+    @HtmlUnitNYI(CHROME = "en-US,en",
+            EDGE = "en-US,en")
     public void languages() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "  </script>\n"
@@ -359,8 +365,8 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts({"number", "number"})
     public void mozilla() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -380,8 +386,8 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts("Gecko")
     public void product() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -400,8 +406,8 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts("[object Geolocation]")
     public void geolocation() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -422,8 +428,8 @@ public class NavigatorTest extends WebDriverTestCase {
             FF = "20181001000000",
             FF_ESR = "20181001000000")
     public void buildID() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -444,8 +450,8 @@ public class NavigatorTest extends WebDriverTestCase {
             FF = {"", ""},
             FF_ESR = {"", ""})
     public void vendor() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -467,8 +473,8 @@ public class NavigatorTest extends WebDriverTestCase {
             FF = "true",
             FF_ESR = "true")
     public void oscpu() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -489,7 +495,7 @@ public class NavigatorTest extends WebDriverTestCase {
             CHROME = {"[object NetworkInformation]", "undefined", "undefined"},
             EDGE = {"[object NetworkInformation]", "undefined", "undefined"})
     public void connection() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -513,7 +519,7 @@ public class NavigatorTest extends WebDriverTestCase {
             CHROME = {"null", "undefined", "undefined"},
             EDGE = {"null", "undefined", "undefined"})
     public void doNotTrack() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -535,7 +541,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object MediaDevices]", "true"})
     public void mediaDevices() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -556,7 +562,7 @@ public class NavigatorTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void pdfViewerEnabled() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

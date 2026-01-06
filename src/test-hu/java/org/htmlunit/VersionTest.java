@@ -14,7 +14,8 @@
  */
 package org.htmlunit;
 
-import org.junit.Test;
+import org.htmlunit.util.ArrayUtils;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Version}.
@@ -28,7 +29,7 @@ public class VersionTest {
      */
     @Test
     public void main() throws Exception {
-        Version.main(new String[] {});
+        Version.main(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
     /**

@@ -15,9 +15,7 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.w3c.dom.Node;
@@ -30,7 +28,6 @@ import org.w3c.dom.traversal.NodeIterator;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public final class DomNodeIteratorTest extends WebDriverTestCase {
 
     /**
@@ -38,7 +35,8 @@ public final class DomNodeIteratorTest extends WebDriverTestCase {
      */
     @Test
     public void nextNode() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head><script>\n"
                 + "function test() {\n"
                 + "}\n"
                 + "</script></head>\n"

@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link External}.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ExternalTest extends WebDriverTestCase {
 
     /**
@@ -36,7 +33,8 @@ public class ExternalTest extends WebDriverTestCase {
     @Test
     @Alerts({"external defined", "no AutoCompleteSaveForm"})
     public void autoCompleteSaveForm() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function fnSaveForm() {\n"
@@ -73,7 +71,8 @@ public class ExternalTest extends WebDriverTestCase {
     @Test
     @Alerts("AddSearchProvider defined")
     public void addSearchProvider() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -100,7 +99,8 @@ public class ExternalTest extends WebDriverTestCase {
     @Test
     @Alerts({"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
     public void isSearchProviderInstalled() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -122,6 +122,39 @@ public class ExternalTest extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "[object External]", "[object External]", "undefined", "[object External]",
+                       "true", "function External() { [native code] }", "function External() { [native code] }",
+                       "[object External]", "function () { [native code] }"},
+            FF = {"true", "[object External]", "[object External]", "undefined", "[object External]",
+                  "false", "undefined", "ReferenceError", "ReferenceError", "ReferenceError"},
+            FF_ESR = {"true", "[object External]", "[object External]", "undefined", "[object External]",
+                      "false", "undefined", "ReferenceError", "ReferenceError", "ReferenceError"})
+    public void windowScope() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html></body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log('external' in window);\n"
+            + "  log(window.external);\n"
+            + "  try { log(external); } catch(e) { logEx(e); };\n"
+            + "  try { log(external.prototype); } catch(e) { logEx(e); };\n"
+            + "  try { log(external.__proto__); } catch(e) { logEx(e); };\n"
+
+            + "  log('External' in window);\n"
+            + "  log(window.External);\n"
+            + "  try { log(External); } catch(e) { logEx(e); };\n"
+            + "  try { log(External.prototype); } catch(e) { logEx(e); };\n"
+            + "  try { log(External.__proto__); } catch(e) { logEx(e); };\n"
+            + "</script>\n"
+            + "</body></html>";
+
         loadPageVerifyTitle2(html);
     }
 }

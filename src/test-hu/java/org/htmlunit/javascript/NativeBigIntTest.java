@@ -15,17 +15,14 @@
 package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Some test for BigInt support.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NativeBigIntTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class NativeBigIntTest extends WebDriverTestCase {
     @Test
     @Alerts({"bigint", "bigint"})
     public void typeof() throws Exception {
-        final String html
-            = "<html>"
+        final String html = DOCTYPE_HTML
+            + "<html>"
             + "<body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

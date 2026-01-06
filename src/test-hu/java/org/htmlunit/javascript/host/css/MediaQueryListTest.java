@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link MediaQueryList}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class MediaQueryListTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class MediaQueryListTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void matches() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -56,8 +53,8 @@ public class MediaQueryListTest extends WebDriverTestCase {
     @Test
     @Alerts({"added", "removed"})
     public void listener() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function listener(mql) {\n"

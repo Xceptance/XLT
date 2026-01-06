@@ -15,11 +15,9 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CSSPageRule}.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CSSPageRuleTest extends WebDriverTestCase {
 
     /**
@@ -36,8 +33,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -56,8 +53,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object CSSPageRule]", "[object CSSPageRule]"})
     public void scriptableToString() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; };\n"
@@ -80,11 +77,10 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "@page { margin: 1cm; }",
-            FF_ESR = "@page  { margin: 1cm; }")
+    @Alerts("@page { margin: 1cm; }")
     public void cssText() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + LOG_TEXTAREA
 
@@ -108,11 +104,10 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "@page { }",
-            FF_ESR = "@page  { }")
+    @Alerts("@page { }")
     public void cssTextEmpty() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + LOG_TEXTAREA
 
@@ -136,11 +131,10 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "@page { margin-left: 4cm; margin-right: 3cm; }",
-            FF_ESR = "@page  { margin-left: 4cm; margin-right: 3cm; }")
+    @Alerts("@page { margin-left: 4cm; margin-right: 3cm; }")
     public void cssTextMultipleRules() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + LOG_TEXTAREA
 
@@ -164,11 +158,10 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "@page { margin: 1cm; }",
-            FF_ESR = "@page  { margin: 1cm; }")
+    @Alerts("@page { margin: 1cm; }")
     public void cssTextSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + LOG_TEXTAREA
 
@@ -199,8 +192,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void parentRule() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; }\n"
@@ -224,8 +217,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void parentRuleSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; }\n"
@@ -254,8 +247,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CSSStyleSheet]")
     public void parentStyleSheet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; }\n"
@@ -279,8 +272,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CSSStyleSheet]")
     public void parentStyleSheetSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; }\n"
@@ -309,8 +302,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void selectorTextEmpty() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; }\n"
@@ -338,8 +331,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(":first")
     public void selectorText() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :first { margin: 1cm; }\n"
@@ -367,8 +360,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(":first")
     public void selectorTextCaseInsensitive() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :FiRsT { margin: 1cm; }\n"
@@ -396,8 +389,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({":first", ":left"})
     public void selectorTextSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :first { margin: 1cm; }\n"
@@ -427,8 +420,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({":first", "null"})
     public void selectorTextSetNull() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :first { margin: 1cm; }\n"
@@ -458,8 +451,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({":first", ""})
     public void selectorTextSetEmpty() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :first { margin: 1cm; }\n"
@@ -489,8 +482,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({":first", ":first"})
     public void selectorTextSetInvalid() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :first { margin: 1cm; }\n"
@@ -520,8 +513,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({":first", ":left"})
     public void selectorTextSetCaseInsensitive() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page :first { margin: 1cm; }\n"
@@ -561,7 +554,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
                   "string margin-right",
                   "string margin-bottom",
                   "string margin-left"},
-            FF_ESR = {"[object CSS2Properties]", "[object CSS2Properties]", "4", "[object CSSPageRule]",
+            FF_ESR = {"[object CSSPageDescriptors]", "[object CSSPageDescriptors]", "4", "[object CSSPageRule]",
                       "margin: 1cm;",
                       "string margin-top",
                       "string margin-right",
@@ -577,8 +570,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
                       "1", "[object CSSPageRule]", "margin: 1cm;", "string margin: 1cm"})
     // FIXME FF returns CSS2Properties vs. default returns CSSStyleDeclaration :(
     public void style() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { margin: 1cm; }\n"
@@ -610,12 +603,12 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "0", "[object CSSPageRule]", ""},
             FF = {"[object CSSPageDescriptors]", "[object CSSPageDescriptors]", "0", "[object CSSPageRule]", ""},
-            FF_ESR = {"[object CSS2Properties]", "[object CSS2Properties]", "0", "[object CSSPageRule]", ""})
+            FF_ESR = {"[object CSSPageDescriptors]", "[object CSSPageDescriptors]", "0", "[object CSSPageRule]", ""})
     @HtmlUnitNYI(FF = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "0", "[object CSSPageRule]", ""},
             FF_ESR = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "0", "[object CSSPageRule]", ""})
     public void styleEmpty() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @page { }\n"

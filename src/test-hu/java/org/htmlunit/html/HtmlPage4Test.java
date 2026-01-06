@@ -30,26 +30,23 @@ import javax.servlet.http.HttpServletResponse;
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.ServletContentWrapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlPage}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Noboru Sinohara
  * @author David K. Taylor
  * @author Andreas Hangler
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlPage4Test extends WebServerTestCase {
 
     /**
@@ -84,7 +81,8 @@ public class HtmlPage4Test extends WebServerTestCase {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
             final Writer writer = resp.getWriter();
             resp.setContentType(MimeType.TEXT_HTML);
-            final String response = "<html>\n"
+            final String response = DOCTYPE_HTML
+                    + "<html>\n"
                     + "<body>\n"
                     + "  <form action='two.html' method='post'>\n"
                     + "  <input type='hidden' name='some_name' value='some_value'>\n"
@@ -119,7 +117,8 @@ public class HtmlPage4Test extends WebServerTestCase {
     @Test
     @Alerts("hello")
     public void bigJavaScript() throws Exception {
-        final StringBuilder html = new StringBuilder("<html><head>\n"
+        final StringBuilder html = new StringBuilder(DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script src='two.js'></script>\n"
                 + "<link rel='stylesheet' type='text/css' href='three.css'/>\n"
                 + "</head>\n"

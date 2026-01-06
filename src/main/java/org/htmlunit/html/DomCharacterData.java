@@ -21,7 +21,7 @@ import org.w3c.dom.CharacterData;
  * Wrapper for the DOM node CharacterData.
  *
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Philip Graf
  * @author Ronald Brill
@@ -105,9 +105,9 @@ public abstract class DomCharacterData extends DomNode implements CharacterData 
     /**
      * Deletes characters from character data.
      * @param offset the position of the first character to be deleted (can't be
-     * less than zero)
+     *        less than zero)
      * @param count the number of characters to be deleted, if less than zero
-     * leaves the first offset chars
+     *        leaves the first offset chars
      */
     @Override
     public void deleteData(final int offset, final int count) {

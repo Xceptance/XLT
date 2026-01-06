@@ -39,7 +39,6 @@ import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
-import org.htmlunit.javascript.RecursiveFunctionObject;
 import org.htmlunit.javascript.background.BasicJavaScriptJob;
 import org.htmlunit.javascript.background.JavaScriptJob;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
@@ -49,11 +48,6 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.configuration.WorkerJavaScriptConfiguration;
-import org.htmlunit.javascript.host.PermissionStatus;
-import org.htmlunit.javascript.host.Permissions;
-import org.htmlunit.javascript.host.PushManager;
-import org.htmlunit.javascript.host.PushSubscription;
-import org.htmlunit.javascript.host.PushSubscriptionOptions;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.WindowOrWorkerGlobalScopeMixin;
 import org.htmlunit.javascript.host.event.Event;
@@ -131,18 +125,13 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
 
-        context.initSafeStandardObjects(this);
+        final Scriptable scope = context.initSafeStandardObjects(this);
         JavaScriptEngine.configureRhino(webClient, browserVersion, this);
 
         final WorkerJavaScriptConfiguration jsConfig = WorkerJavaScriptConfiguration.getInstance(browserVersion);
 
-        ClassConfiguration config = jsConfig.getClassConfiguration(
-                DedicatedWorkerGlobalScope.class.getSuperclass().getSimpleName());
-        final HtmlUnitScriptable parentPrototype = JavaScriptEngine.configureClass(config, this);
-
-        config = jsConfig.getClassConfiguration(DedicatedWorkerGlobalScope.class.getSimpleName());
+        final ClassConfiguration config = jsConfig.getDedicatedWorkerGlobalScopeClassConfiguration();
         final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this);
-        prototype.setPrototype(parentPrototype);
         setPrototype(prototype);
 
         final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
@@ -152,8 +141,8 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         prototypesPerJSName.put(config.getClassName(), prototype);
 
         final FunctionObject functionObject =
-                new RecursiveFunctionObject(DedicatedWorkerGlobalScope.class.getSimpleName(),
-                        config.getJsConstructor().getValue(), this, browserVersion);
+                new FunctionObject(DedicatedWorkerGlobalScope.class.getSimpleName(),
+                        config.getJsConstructor().getValue(), this);
         functionObject.addAsConstructor(this, prototype, ScriptableObject.DONTENUM);
 
         JavaScriptEngine.configureScope(this, config, functionObject, jsConfig,
@@ -168,15 +157,6 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
             delete(SecurityPolicyViolationEvent.class.getSimpleName());
             delete(SourceBuffer.class.getSimpleName());
             delete(SourceBufferList.class.getSimpleName());
-        }
-
-        if (browserVersion.isFirefoxESR()) {
-            delete(Permissions.class.getSimpleName());
-            delete(PermissionStatus.class.getSimpleName());
-            delete(PushManager.class.getSimpleName());
-            delete(PushSubscription.class.getSimpleName());
-            delete(PushSubscriptionOptions.class.getSimpleName());
-            delete(ServiceWorkerRegistration.class.getSimpleName());
         }
 
         if (!webClient.getOptions().isWebSocketEnabled()) {
@@ -372,9 +352,8 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         final AbstractJavaScriptEngine<?> javaScriptEngine = webClient.getJavaScriptEngine();
 
         final DedicatedWorkerGlobalScope thisScope = this;
-        final ContextAction<Object> action = cx -> {
-            return javaScriptEngine.execute(page, thisScope, scriptCode, fullUrl.toExternalForm(), 1);
-        };
+        final ContextAction<Object> action =
+                cx -> javaScriptEngine.execute(page, thisScope, scriptCode, fullUrl.toExternalForm(), 1);
 
         final HtmlUnitContextFactory cf = javaScriptEngine.getContextFactory();
 
@@ -393,7 +372,7 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
      * and does not contain another page than the one that originated the setTimeout.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      *
      * @param context the JavaScript context
      * @param scope the scope
@@ -413,7 +392,7 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
      * Sets a chunk of JavaScript to be invoked each time a specified number of milliseconds has elapsed.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      * @param context the JavaScript context
      * @param scope the scope
      * @param thisObj the scriptable

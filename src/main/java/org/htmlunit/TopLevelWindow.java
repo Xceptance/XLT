@@ -22,7 +22,7 @@ import org.htmlunit.util.UrlUtils;
 /**
  * A window representing a top level browser window.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author David D. Kilzer
  * @author Ahmed Ashour
@@ -115,7 +115,7 @@ public class TopLevelWindow extends WebWindowImpl {
      *
      * Closes this window.
      * @param ignoreOnbeforeunloadAccepted if true the result of triggering the OnbeforeunloadAccepted event
-     * will be ignored
+     *        will be ignored
      */
     public void close(final boolean ignoreOnbeforeunloadAccepted) {
         final Page page = getEnclosedPage();

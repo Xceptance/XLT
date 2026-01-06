@@ -14,8 +14,7 @@
  */
 package org.htmlunit.doc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -30,7 +29,8 @@ import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the sample code from the documentation to make sure
@@ -82,7 +82,7 @@ public class FaqTest {
                 + "  </body>"
                 + "</html> ";
         try (WebClient webClient = new WebClient(browserVersion)) {
-            final HtmlPage page = webClient.loadXHtmlCodeIntoCurrentWindow(htmlCode);
+            final HtmlPage page = webClient.loadHtmlCodeIntoCurrentWindow(htmlCode);
 
             // work with the html page
 
@@ -99,7 +99,7 @@ public class FaqTest {
                 + "<circle cx=\"5\" cy=\"5\" r=\"4\" stroke=\"black\" stroke-width=\"1\" fill=\"red\" />"
                 + "</svg>";
         final BufferedImage img = ImageIO.read(new ByteArrayInputStream(svg.getBytes(StandardCharsets.US_ASCII)));
-        assertNotNull(img);
+        Assertions.assertNotNull(img);
     }
 
     /**

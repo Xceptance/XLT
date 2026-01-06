@@ -19,17 +19,14 @@ import java.security.KeyStore;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link WebClientOptions}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WebClientOptionsTest extends SimpleWebTestCase {
 
     /**
@@ -45,15 +42,37 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
         assertEquals(original.isJavaScriptEnabled(), deserialized.isJavaScriptEnabled());
         assertEquals(original.isCssEnabled(), deserialized.isCssEnabled());
 
-        assertEquals(original.isPrintContentOnFailingStatusCode(), deserialized.isPrintContentOnFailingStatusCode());
+        assertEquals(original.isPrintContentOnFailingStatusCode(),
+                        deserialized.isPrintContentOnFailingStatusCode());
         assertEquals(original.isThrowExceptionOnFailingStatusCode(),
                         deserialized.isThrowExceptionOnFailingStatusCode());
-        assertEquals(original.isThrowExceptionOnScriptError(), deserialized.isThrowExceptionOnScriptError());
-        assertEquals(original.isPopupBlockerEnabled(), deserialized.isPopupBlockerEnabled());
-        assertEquals(original.isRedirectEnabled(), deserialized.isRedirectEnabled());
+        assertEquals(original.isThrowExceptionOnScriptError(),
+                        deserialized.isThrowExceptionOnScriptError());
+        assertEquals(original.isPopupBlockerEnabled(),
+                        deserialized.isPopupBlockerEnabled());
+        assertEquals(original.isRedirectEnabled(),
+                        deserialized.isRedirectEnabled());
 
-        assertEquals(original.isGeolocationEnabled(), deserialized.isGeolocationEnabled());
-        assertEquals(original.getGeolocation(), deserialized.getGeolocation());
+        assertEquals(original.isGeolocationEnabled(),
+                        deserialized.isGeolocationEnabled());
+        assertEquals(original.getGeolocation(),
+                        deserialized.getGeolocation());
+
+        assertEquals(original.getNekoReaderBufferSize(),
+                        deserialized.getNekoReaderBufferSize());
+
+        assertEquals(original.isWebSocketEnabled(),
+                        deserialized.isWebSocketEnabled());
+        assertEquals(original.getWebSocketMaxTextMessageSize(),
+                        deserialized.getWebSocketMaxTextMessageSize());
+        assertEquals(original.getWebSocketMaxTextMessageBufferSize(),
+                        deserialized.getWebSocketMaxTextMessageBufferSize());
+        assertEquals(original.getWebSocketMaxBinaryMessageSize(),
+                        deserialized.getWebSocketMaxBinaryMessageSize());
+        assertEquals(original.getWebSocketMaxBinaryMessageBufferSize(),
+                        deserialized.getWebSocketMaxBinaryMessageBufferSize());
+
+        assertEquals(original.isFetchPolyfillEnabled(), deserialized.isFetchPolyfillEnabled());
     }
 
     /**
@@ -73,6 +92,16 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
 
         original.setGeolocationEnabled(true);
         original.setGeolocation(new WebClientOptions.Geolocation(1d, 2d, 3d, 4d, 5d, 6d, 7d));
+
+        original.setNekoReaderBufferSize(1234567);
+
+        original.setWebSocketEnabled(false);
+        original.setWebSocketMaxTextMessageSize(77);
+        original.setWebSocketMaxTextMessageBufferSize(771);
+        original.setWebSocketMaxBinaryMessageSize(44);
+        original.setWebSocketMaxBinaryMessageBufferSize(441);
+
+        original.setFetchPolyfillEnabled(true);
 
         final byte[] bytes = SerializationUtils.serialize(original);
         final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
@@ -96,6 +125,21 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
                 deserialized.getGeolocation().getAltitudeAccuracy());
         assertEquals(original.getGeolocation().getHeading(), deserialized.getGeolocation().getHeading());
         assertEquals(original.getGeolocation().getSpeed(), deserialized.getGeolocation().getSpeed());
+
+        assertEquals(original.getNekoReaderBufferSize(), deserialized.getNekoReaderBufferSize());
+
+        assertEquals(original.isWebSocketEnabled(),
+                        deserialized.isWebSocketEnabled());
+        assertEquals(original.getWebSocketMaxTextMessageSize(),
+                        deserialized.getWebSocketMaxTextMessageSize());
+        assertEquals(original.getWebSocketMaxTextMessageBufferSize(),
+                        deserialized.getWebSocketMaxTextMessageBufferSize());
+        assertEquals(original.getWebSocketMaxBinaryMessageSize(),
+                        deserialized.getWebSocketMaxBinaryMessageSize());
+        assertEquals(original.getWebSocketMaxBinaryMessageBufferSize(),
+                        deserialized.getWebSocketMaxBinaryMessageBufferSize());
+
+        assertEquals(original.isFetchPolyfillEnabled(), deserialized.isFetchPolyfillEnabled());
     }
 
     /**
@@ -142,6 +186,6 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
         final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
 
         assertNull(deserialized.getSSLClientCertificateStore());
-        Assert.assertArrayEquals("secret".toCharArray(), deserialized.getSSLClientCertificatePassword());
+        Assertions.assertArrayEquals("secret".toCharArray(), deserialized.getSSLClientCertificatePassword());
     }
 }

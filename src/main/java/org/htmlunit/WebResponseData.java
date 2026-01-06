@@ -28,13 +28,13 @@ import java.util.zip.InflaterInputStream;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.brotli.dec.BrotliInputStream;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
+import org.htmlunit.util.brotli.BrotliInputStream;
 
 /**
  * Simple data object to simplify WebResponse creation.
@@ -101,7 +101,7 @@ public class WebResponseData implements Serializable {
         final List<NameValuePair> headers = getResponseHeaders();
         final String encoding = getHeader(headers, "content-encoding");
         if (encoding != null) {
-            boolean isGzip = StringUtils.contains(encoding, "gzip") && !"no-gzip".equals(encoding);
+            boolean isGzip = StringUtils.containsIgnoreCase(encoding, "gzip") && !"no-gzip".equals(encoding);
             if ("gzip-only-text/html".equals(encoding)) {
                 isGzip = MimeType.TEXT_HTML.equals(getHeader(headers, "content-type"));
             }
@@ -113,7 +113,7 @@ public class WebResponseData implements Serializable {
                     LOG.error("Reading gzip encodec content failed.", e);
                     stream.close();
                     stream = IOUtils.toInputStream(
-                                "<html>\n"
+                                "<!DOCTYPE html><html>\n"
                                  + "<head><title>Problem loading page</title></head>\n"
                                  + "<body>\n"
                                  + "<h1>Content Encoding Error</h1>\n"
@@ -136,7 +136,7 @@ public class WebResponseData implements Serializable {
                     LOG.error("Reading Brotli encodec content failed.", e);
                     stream.close();
                     stream = IOUtils.toInputStream(
-                                "<html>\n"
+                                "<!DOCTYPE html><html>\n"
                                  + "<head><title>Problem loading page</title></head>\n"
                                  + "<body>\n"
                                  + "<h1>Content Encoding Error</h1>\n"
@@ -148,7 +148,7 @@ public class WebResponseData implements Serializable {
                 return stream;
             }
 
-            if (StringUtils.contains(encoding, "deflate")) {
+            if (StringUtils.containsIgnoreCase(encoding, "deflate")) {
                 boolean zlibHeader = false;
                 if (stream.markSupported()) { // should be always the case as the content is in a byte[] or in a file
                     stream.mark(2);

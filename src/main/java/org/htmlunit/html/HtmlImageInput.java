@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_NAME_VALUE_PARAMS;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +23,6 @@ import java.nio.file.Files;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.Page;
@@ -35,14 +32,15 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Wrapper for the HTML element "input".
  * HtmlUnit does not download the associated image for performance reasons.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author Ahmed Ashour
@@ -77,7 +75,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
         final String name = getNameAttribute();
         final String prefix;
         // a clicked image without name sends parameter x and y
-        if (StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmptyOrNull(name)) {
             prefix = "";
         }
         else {
@@ -87,10 +85,6 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
         if (wasPositionSpecified_) {
             final NameValuePair valueX = new NameValuePair(prefix + 'x', Integer.toString(xPosition_));
             final NameValuePair valueY = new NameValuePair(prefix + 'y', Integer.toString(yPosition_));
-            if (!prefix.isEmpty() && hasFeature(HTMLIMAGE_NAME_VALUE_PARAMS) && !getRawValue().isEmpty()) {
-                return new NameValuePair[] {valueX, valueY,
-                    new NameValuePair(getNameAttribute(), getRawValue()) };
-            }
             return new NameValuePair[] {valueX, valueY};
         }
         return new NameValuePair[]{new NameValuePair(getNameAttribute(), getRawValue())};
@@ -220,7 +214,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
     private void downloadImageIfNeeded() throws IOException {
         if (!downloaded_) {
             final String src = getSrc();
-            if (!org.htmlunit.util.StringUtils.isEmptyString(src)) {
+            if (!StringUtils.isEmptyString(src)) {
                 final HtmlPage page = (HtmlPage) getPage();
                 final WebClient webClient = page.getWebClient();
 

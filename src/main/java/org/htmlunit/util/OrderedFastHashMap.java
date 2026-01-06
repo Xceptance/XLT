@@ -31,24 +31,24 @@ import java.util.Set;
 /**
  * Simple and efficient linked map or better ordered map implementation to
  * replace the default linked list which is heavy.
- *
+ * <p>
  * This map does not support null and it is not thread-safe. It implements the
  * map interface but only for compatibility reason in the sense of replacing a
  * regular map. Iterator and streaming methods are either not implemented or
  * less efficient.
- *
+ * <p>
  * It goes the extra mile to avoid the overhead of wrapper objects.
- *
+ * <p>
  * Because you typically know what you do, we run minimal index checks only and
  * rely on the default exceptions by Java. Why should we do things twice?
- *
+ * <p>
  * Important Note: This is meant for small maps because to save on memory
  * allocation and churn, we are not keeping a wrapper for a reference from the
  * map to the list, only from the list to the map. Hence when you remove a key,
  * we have to iterate the entire list. Mostly, half of it most likely, but still
  * expensive enough. When you have something small like 10 to 20 entries, this
  * won't matter that much especially when a remove might be a rare event.
- *
+ * <p>
  * This is based on FashHashMap from XLT which is based on a version from:
  * https://github.com/mikvor/hashmapTest/blob/master/src/main/java/map/objobj/ObjObjMap.java
  * No concrete license specified at the source. The project is public domain.
@@ -200,7 +200,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
             final Object ret = mapData_[ptr + 1];
             mapData_[ptr + 1] = value;
 
-            /// existing entry, no need to update the position
+            // existing entry, no need to update the position
 
             return (V) ret;
         }
@@ -544,26 +544,54 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
         return this.put(key, value, Position.LAST);
     }
 
+    /**
+     * Insert at the beginning.
+     * @param key the key
+     * @param value the value
+     * @return the inserted value
+     */
     public V addFirst(final K key, final V value) {
         return this.put(key, value, Position.FIRST);
     }
 
+    /**
+     * Append at the end.
+     * @param key the key
+     * @param value the value
+     * @return the appended value
+     */
     public V add(final K key, final V value) {
         return this.put(key, value, Position.LAST);
     }
 
+    /**
+     * Append at the end.
+     * @param key the key
+     * @param value the value
+     * @return the appended value
+     */
     public V addLast(final K key, final V value) {
         return this.put(key, value, Position.LAST);
     }
 
+    /**
+     * @return the first value.
+     */
     public V getFirst() {
         return getValue(0);
     }
 
+    /**
+     * @return the last value.
+     */
     public V getLast() {
         return getValue(this.orderedListSize_ - 1);
     }
 
+    /**
+     * Removes the first entry.
+     * @return the removed value or null if the map was empty.
+     */
     public V removeFirst() {
         if (this.orderedListSize_ > 0) {
             final int pos = this.orderedList_[0];
@@ -573,6 +601,10 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
         return null;
     }
 
+    /**
+     * Removes the last entry.
+     * @return the removed value or null if the map was empty.
+     */
     public V removeLast() {
         if (this.orderedListSize_ > 0) {
             final int pos = this.orderedList_[this.orderedListSize_ - 1];

@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HTMLTitleElement}.
  * @author Sudhan Moghe
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLTitleElementTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class HTMLTitleElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"Page Title", "New Title"})
     public void text() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <title>Page Title</title>\n"
             + "    <script>\n"
@@ -62,8 +59,8 @@ public class HTMLTitleElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "New Title"})
     public void textCreateElement() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -89,8 +86,8 @@ public class HTMLTitleElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"Page Title", "</> htmx rocks!", "</> htmx rocks!"})
     public void innerHtml() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <title>Page Title</title>\n"
             + "    <script>\n"
@@ -118,8 +115,8 @@ public class HTMLTitleElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"Page Title", "<div>htmx rocks</div>", "<div>htmx rocks</div>"})
     public void innerHtmlTag() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <title>Page Title</title>\n"
             + "    <script>\n"
@@ -147,8 +144,8 @@ public class HTMLTitleElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "</> htmx rocks!", "</> htmx rocks!"})
     public void innerHtmlEscaping() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <title></title>\n"
             + "    <script>\n"

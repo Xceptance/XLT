@@ -19,13 +19,13 @@ import static org.htmlunit.util.EncodingSniffer.extractEncodingFromContentType;
 import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromCssDeclaration;
 import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromMetaTag;
 import static org.htmlunit.util.EncodingSniffer.sniffEncodingFromXmlDeclaration;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 
 import org.htmlunit.HttpHeader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link EncodingSniffer}.

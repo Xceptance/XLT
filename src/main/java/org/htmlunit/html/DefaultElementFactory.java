@@ -41,7 +41,7 @@ import org.xml.sax.Attributes;
  * where the first one is the owning page of the element, the second one is a map
  * holding the initial attributes for the element.
  *
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author David K. Taylor
@@ -51,18 +51,12 @@ import org.xml.sax.Attributes;
  */
 public class DefaultElementFactory implements ElementFactory {
 
-    // for performance optimization
-    static final class OrderedFastHashMapWithLowercaseKeys<K, V> extends OrderedFastHashMap<K, V> {
-        OrderedFastHashMapWithLowercaseKeys(final int size) {
-            super(size);
-        }
-    }
-
     /** Logging support. */
     private static final Log LOG = LogFactory.getLog(DefaultElementFactory.class);
 
     /**
-     * You can generate your own test cases by looking into ElementTestSource.generateTestForHtmlElements.
+     * You can generate your own test cases by looking into
+     * org.htmlunit.source.ElementTestSource#generateTestForHtmlElements(String, String).
      */
     public static final List<String> SUPPORTED_TAGS_ = Collections.unmodifiableList(Arrays.asList(
         HtmlAbbreviated.TAG_NAME, HtmlAcronym.TAG_NAME,
@@ -117,6 +111,13 @@ public class DefaultElementFactory implements ElementFactory {
         HtmlTitle.TAG_NAME, HtmlTrack.TAG_NAME, HtmlUnderlined.TAG_NAME, HtmlUnorderedList.TAG_NAME,
         HtmlVariable.TAG_NAME, HtmlVideo.TAG_NAME, HtmlWordBreak.TAG_NAME, HtmlExample.TAG_NAME
     ));
+
+    // for performance optimization
+    static final class OrderedFastHashMapWithLowercaseKeys<K, V> extends OrderedFastHashMap<K, V> {
+        OrderedFastHashMapWithLowercaseKeys(final int size) {
+            super(size);
+        }
+    }
 
     /**
      * @param page the owning page

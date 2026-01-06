@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -30,7 +28,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlTitle2Test extends WebDriverTestCase {
 
     /**
@@ -39,7 +36,8 @@ public class HtmlTitle2Test extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLTitleElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head><title id='myId'>foo</title>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title id='myId'>foo</title>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    alert(document.getElementById('myId'));\n"
@@ -60,7 +58,8 @@ public class HtmlTitle2Test extends WebDriverTestCase {
      */
     @Test
     public void isDisplayed() throws Exception {
-        final String html = "<html><head><title id='t'>Title</title></head><body></body></html>";
+        final String html = DOCTYPE_HTML
+                + "<html><head><title id='t'>Title</title></head><body></body></html>";
 
         final WebDriver driver = loadPageWithAlerts2(html);
         final boolean displayed = driver.findElement(By.id("t")).isDisplayed();

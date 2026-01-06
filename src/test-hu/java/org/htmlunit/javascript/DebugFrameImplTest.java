@@ -30,8 +30,8 @@ import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebConnection;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DebugFrameImpl}.
@@ -61,7 +61,7 @@ public class DebugFrameImplTest extends SimpleWebTestCase {
      * Cleans up the client, and resets the log to its original state.
      * @throws Exception when a problem occurs
      */
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         client_.getJavaScriptEngine().getContextFactory().setDebugger(null);
         client_.close();
@@ -73,7 +73,8 @@ public class DebugFrameImplTest extends SimpleWebTestCase {
      */
     @Test
     public void withCallable() throws Exception {
-        final String content = "<html><head><title>debug test</title>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head><title>debug test</title>\n"
             + "<script>\n"
             + "  var counter = 0;\n"
             + "  window.__defineGetter__('foo', function(a) { return counter++ });\n"

@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.Callable;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -53,7 +51,7 @@ import org.htmlunit.javascript.host.dom.AbstractList;
  * @author Ronald Brill
  */
 @JsxClass
-public class HTMLCollection extends AbstractList implements Callable {
+public class HTMLCollection extends AbstractList {
 
     /**
      * Creates an instance.
@@ -74,7 +72,7 @@ public class HTMLCollection extends AbstractList implements Callable {
      * Creates an instance.
      * @param domNode parent scope
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of parentScope changes (attribute added, modified or removed)
      */
     public HTMLCollection(final DomNode domNode, final boolean attributeChangeSensitive) {
         super(domNode, attributeChangeSensitive, null);
@@ -111,6 +109,9 @@ public class HTMLCollection extends AbstractList implements Callable {
         return new HTMLCollection(parentScope, initialElements);
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
@@ -124,34 +125,6 @@ public class HTMLCollection extends AbstractList implements Callable {
     @Override
     public final int getLength() {
         return super.getLength();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        if (supportsParentheses()) {
-            if (args.length == 0) {
-                throw JavaScriptEngine.reportRuntimeError("Zero arguments; need an index or a key.");
-            }
-            final Object object = getIt(args[0]);
-            if (object == NOT_FOUND) {
-                return null;
-            }
-            return object;
-        }
-
-        throw JavaScriptEngine.typeError("HTMLCollection does nont support function like access");
-    }
-
-    /**
-     * Is parentheses supported.
-     *
-     * @return true or false
-     */
-    protected boolean supportsParentheses() {
-        return false;
     }
 
     /**

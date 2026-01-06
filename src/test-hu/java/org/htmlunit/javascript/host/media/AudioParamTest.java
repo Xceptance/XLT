@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.media;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link AudioParam}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class AudioParamTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class AudioParamTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for WeakMap.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WeakMapTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class WeakMapTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "one"})
     public void constructorArray() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -58,8 +55,8 @@ public class WeakMapTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void constructorSetParam() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -82,8 +79,8 @@ public class WeakMapTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void constructorMapParam() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -109,8 +106,8 @@ public class WeakMapTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void constructorIteratorParam() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -151,7 +148,8 @@ public class WeakMapTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "value2"})
     public void get() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -171,7 +169,8 @@ public class WeakMapTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void setNonObject() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -180,7 +179,7 @@ public class WeakMapTest extends WebDriverTestCase {
             + "      var myMap = new WeakMap(kvArray);\n"
             + "      try {\n"
             + "        myMap.set(1, 2);\n"
-            + "      } catch(e) {logEx(e)}\n"
+            + "      } catch(e) { logEx(e) }\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"

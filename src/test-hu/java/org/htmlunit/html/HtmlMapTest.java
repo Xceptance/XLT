@@ -22,11 +22,9 @@ import org.apache.commons.io.IOUtils;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.BuggyWebDriver;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -38,7 +36,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlMapTest extends WebDriverTestCase {
 
     /**
@@ -47,7 +44,8 @@ public class HtmlMapTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLMapElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -79,8 +77,8 @@ public class HtmlMapTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>"
             + "<body>\n"
             + "  <img id='myImg' src='" + urlImage + "' usemap='#map1'>\n"
@@ -89,8 +87,8 @@ public class HtmlMapTest extends WebDriverTestCase {
             + "  </map>\n"
             + "</body></html>";
 
-        final String secondContent
-            = "<html><head><title>Second</title></head><body></body></html>";
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body></body></html>";
 
         final MockWebConnection webConnection = getMockWebConnection();
         webConnection.setDefaultResponse(secondContent);
@@ -115,7 +113,8 @@ public class HtmlMapTest extends WebDriverTestCase {
      */
     @Test
     public void isDisplayed() throws Exception {
-        final String html = "<html><head><title>Page A</title></head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head><title>Page A</title></head>\n"
                 + "<body>\n"
                 + "  <img id='myImg' usemap='#imgmap'"
                         + " src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAA"
@@ -142,7 +141,8 @@ public class HtmlMapTest extends WebDriverTestCase {
      */
     @Test
     public void isDisplayedHiddenImage() throws Exception {
-        final String html = "<html><head><title>Page A</title></head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head><title>Page A</title></head>\n"
                 + "<body>\n"
                 + "  <img id='myImg' usemap='#imgmap' style='display: none'"
                         + " src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAA"
@@ -166,7 +166,8 @@ public class HtmlMapTest extends WebDriverTestCase {
      */
     @Test
     public void isDisplayedHiddenMap() throws Exception {
-        final String html = "<html><head><title>Page A</title></head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head><title>Page A</title></head>\n"
                 + "<body>\n"
                 + "  <img id='myImg' usemap='#imgmap'"
                         + " src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAA"
@@ -190,7 +191,8 @@ public class HtmlMapTest extends WebDriverTestCase {
      */
     @Test
     public void isDisplayedMissingImage() throws Exception {
-        final String html = "<html><head><title>Page A</title></head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head><title>Page A</title></head>\n"
                 + "<body>\n"
                 + "  <map id='myMap' name='imgmap' style='display: none'>\n"
                 + "    <area id='myArea' shape='rect' coords='0,0,1,1'>\n"

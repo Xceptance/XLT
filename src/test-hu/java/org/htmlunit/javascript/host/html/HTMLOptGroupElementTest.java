@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HTMLOptGroupElement}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLOptGroupElementTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class HTMLOptGroupElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "true", "true", "false", "true"})
     public void disabledAttribute() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -76,8 +73,8 @@ public class HTMLOptGroupElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "newLabel", "", "label"})
     public void labelAttribute() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION

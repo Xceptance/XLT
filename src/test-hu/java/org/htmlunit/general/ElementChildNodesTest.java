@@ -15,10 +15,9 @@
 package org.htmlunit.general;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the result of {@code element.childNodes.length}.
@@ -28,11 +27,11 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class ElementChildNodesTest extends WebDriverTestCase {
 
     private static String test(final String tagName) {
-        return "<html><head>\n"
+        return DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function test() {\n"
@@ -1378,7 +1377,11 @@ public class ElementChildNodesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "2", "2", "3", "3", "2"})
+    @Alerts({"1", "0", "1", "1", "0", "1"})
+    @HtmlUnitNYI(CHROME = {"3", "2", "2", "3", "3", "2"},
+            EDGE = {"3", "2", "2", "3", "3", "2"},
+            FF = {"3", "2", "2", "3", "3", "2"},
+            FF_ESR = {"3", "2", "2", "3", "3", "2"})
     public void table() throws Exception {
         loadPageVerifyTitle2(test("table"));
     }

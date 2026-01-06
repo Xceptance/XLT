@@ -14,17 +14,15 @@
  */
 package org.htmlunit;
 
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the unit test utility {@link ErrorOutputChecker}.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ErrorOutputCheckerTest extends WebTestCase {
 
     // no need to specify Rule here as it is specified in {@link WebTestCase}
@@ -33,7 +31,7 @@ public class ErrorOutputCheckerTest extends WebTestCase {
      * Test expected to fail because it produces output on {@link System#err}.
      */
     @Test
-    @NotYetImplemented // in fact it IS implemented, but this allows to test that the test fails due to the output
+    @Disabled // in fact it IS implemented, but this allows to test that the test fails due to the output
     public void systemErrOutputShouldBreakTest() {
         System.err.println("Dummy output to test ErrorOutputChecker");
     }

@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.media;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link MediaStream}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class MediaStreamTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class MediaStreamTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -59,8 +56,8 @@ public class MediaStreamTest extends WebDriverTestCase {
             CHROME = {"[object MediaStream]", "[object MediaStream]", "true"},
             EDGE = {"[object MediaStream]", "[object MediaStream]", "true"})
     public void webkitRTCPeerConnection() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"

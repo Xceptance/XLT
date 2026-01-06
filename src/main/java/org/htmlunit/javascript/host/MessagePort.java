@@ -105,8 +105,9 @@ public class MessagePort extends EventTarget {
             final Window w = getWindow();
             final WebWindow webWindow = w.getWebWindow();
             final Page page = webWindow.getEnclosedPage();
-            final URL currentURL = page.getUrl();
+
             final MessageEvent event = new MessageEvent();
+            final URL currentURL = page.getUrl();
             final String origin = currentURL.getProtocol() + "://" + currentURL.getHost() + ':' + currentURL.getPort();
             event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin, "", w, transfer);
             event.setParentScope(port_);
@@ -124,4 +125,22 @@ public class MessagePort extends EventTarget {
         }
     }
 
+    /**
+     * Starts the sending of messages queued on the port
+     * (only needed when using EventTarget.addEventListener; it is implied when using onmessage).
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/MessagePort/start">MDN documentation</a>
+     */
+    @JsxFunction
+    public void start() {
+        // dummy for the moment
+    }
+
+    /**
+     * Disconnects the port, so it is no longer active.
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/MessagePort/close">MDN documentation</a>
+     */
+    @JsxFunction
+    public void close() {
+        // dummy for the moment
+    }
 }

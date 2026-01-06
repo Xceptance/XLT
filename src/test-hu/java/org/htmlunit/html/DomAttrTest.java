@@ -15,16 +15,14 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DomAttr}.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DomAttrTest extends SimpleWebTestCase {
 
     /**
@@ -32,7 +30,7 @@ public class DomAttrTest extends SimpleWebTestCase {
      */
     @Test
     public void getCanonicalXPath() throws Exception {
-        final String html = "<html id='foo'><body></body></html>";
+        final String html = DOCTYPE_HTML + "<html id='foo'><body></body></html>";
         final HtmlPage page = loadPage(html);
         final DomAttr attr = page.getHtmlElementById("foo").getAttributeNode("id");
 
@@ -44,7 +42,7 @@ public class DomAttrTest extends SimpleWebTestCase {
      */
     @Test
     public void textContent() throws Exception {
-        final String html = "<html id='foo'><body></body></html>";
+        final String html = DOCTYPE_HTML + "<html id='foo'><body></body></html>";
         final HtmlPage page = loadPage(html);
         final DomAttr attr = page.getDocumentElement().getAttributeNode("id");
 

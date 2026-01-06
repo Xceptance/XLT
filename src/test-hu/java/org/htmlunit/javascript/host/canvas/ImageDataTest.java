@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.canvas;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ImageData}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ImageDataTest extends WebDriverTestCase {
 
     /**
@@ -38,8 +35,8 @@ public class ImageDataTest extends WebDriverTestCase {
              "8", "2", "1",
              "0", "190", "3", "255", "0", "190", "3", "255"})
     public void ctorArray() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  if (typeof ImageData != 'function') { log('no ctor'); return; }"
@@ -87,8 +84,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Alerts({"8", "1", "2",
              "0", "190", "3", "255", "0", "190", "3", "255"})
     public void ctorArrayWidthHeight() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  if (typeof ImageData != 'function') { log('no ctor'); return; }"
@@ -126,8 +123,8 @@ public class ImageDataTest extends WebDriverTestCase {
              "IndexSizeError/DOMException", "IndexSizeError/DOMException",
              "InvalidStateError/DOMException", "IndexSizeError/DOMException"})
     public void ctorArrayInvalid() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
 
@@ -176,8 +173,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"8", "2", "1", "0", "0", "0", "0", "0", "0", "0", "0"})
     public void ctorWidthHeight() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  if (typeof ImageData != 'function') { log('no ctor'); return; }"
@@ -205,8 +202,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"200", "100", "50", "255", "100", "50", "125", "255", "123", "111", "222", "255"})
     public void getImageData() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -238,8 +235,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"})
     public void getImageDataOutside() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -271,8 +268,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"})
     public void getImageDataOutside2() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -304,8 +301,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "0", "0", "0", "200", "100", "50", "255", "100", "50", "125", "255"})
     public void getImageDataPartlyOutside() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -337,8 +334,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"})
     public void getImageDataPartlyOutside2() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -370,8 +367,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"200", "100", "50", "255", "200", "100", "50", "255", "0", "0", "0", "0"})
     public void getImageDataDrawAfter() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -405,8 +402,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"})
     public void data() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -439,8 +436,8 @@ public class ImageDataTest extends WebDriverTestCase {
     @Alerts({"8", "1", "2",
                 "13", "0", "17", "0", "0", "0", "0", "42"})
     public void setValues() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -478,8 +475,8 @@ public class ImageDataTest extends WebDriverTestCase {
                 "0", "0", "17", "0", "0", "0", "0", "0", "0", "0", "0", "0",
                 "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"})
     public void createImageData() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -513,8 +510,8 @@ public class ImageDataTest extends WebDriverTestCase {
                 "0", "0", "17", "0", "0", "0", "0", "0", "0", "0", "0", "0",
                 "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"})
     public void createImageDataFlipped() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -549,8 +546,8 @@ public class ImageDataTest extends WebDriverTestCase {
                 "8", "1", "2",
                 "0", "0", "0", "0", "0", "0", "0", "0"})
     public void createImageDataFromImageData() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"

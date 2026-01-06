@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Notification}.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class NotificationTest extends WebDriverTestCase {
 
     /**
@@ -36,7 +33,8 @@ public class NotificationTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "true"})
     public void prototype() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(typeof window.Notification);\n"
@@ -53,7 +51,8 @@ public class NotificationTest extends WebDriverTestCase {
     @Test
     @Alerts("default")
     public void permission() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(Notification.permission);\n"
@@ -67,9 +66,29 @@ public class NotificationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = "2",
+            FF = "undefined",
+            FF_ESR = "undefined")
+    public void maxActions() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "try {\n"
+            + "  log(Notification.maxActions);\n"
+            + "} catch(e) { logEx(e);}\n"
+            + "</script></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts({})
     public void minimalUsage() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  new Notification('Hello here');\n"
@@ -85,7 +104,8 @@ public class NotificationTest extends WebDriverTestCase {
     @Test
     @Alerts("function")
     public void requestPermission() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(typeof Notification.requestPermission);\n"

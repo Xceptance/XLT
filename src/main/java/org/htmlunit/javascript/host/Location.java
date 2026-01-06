@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -38,12 +37,13 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.HashChangeEvent;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * A JavaScript object for {@code Location}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Michael Ottati
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -229,7 +229,7 @@ public class Location extends HtmlUnitScriptable {
             request.setRefererHeader(htmlPage.getUrl());
         }
 
-        webWindow.getWebClient().download(webWindow, "", request, false, false, null, "JS location.reload");
+        webWindow.getWebClient().download(webWindow, "", request, false, null, "JS location.reload");
     }
 
     /**
@@ -306,7 +306,7 @@ public class Location extends HtmlUnitScriptable {
 
             URL url = page.getFullyQualifiedUrl(newLocation);
             // fix for empty url
-            if (StringUtils.isEmpty(newLocation)) {
+            if (StringUtils.isEmptyOrNull(newLocation)) {
                 url = UrlUtils.getUrlWithNewRef(url, null);
             }
 
@@ -315,7 +315,7 @@ public class Location extends HtmlUnitScriptable {
             request.setRefererHeader(page.getUrl());
 
             webWindow = window_.getWebWindow();
-            webWindow.getWebClient().download(webWindow, "", request, true, false, null, "JS set location");
+            webWindow.getWebClient().download(webWindow, "", request, true, null, "JS set location");
         }
         catch (final MalformedURLException e) {
             if (LOG.isErrorEnabled()) {
@@ -333,7 +333,7 @@ public class Location extends HtmlUnitScriptable {
     public String getSearch() {
         final URL url = getUrl();
         final String search = url.getQuery();
-        if (StringUtils.isEmpty(search)) {
+        if (StringUtils.isEmptyOrNull(search)) {
             return "";
         }
 
@@ -361,20 +361,14 @@ public class Location extends HtmlUnitScriptable {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
      */
     public String getHash() {
-        String hash = hash_;
-
-        if (hash_ != null) {
-            hash = decodeHash(hash);
+        if (StringUtils.isEmptyOrNull(hash_)) {
+            return "";
         }
 
-        if (StringUtils.isEmpty(hash)) {
-            // nothing to do
+        if (hash_.indexOf('%') == -1) {
+            return "#" + UrlUtils.encodeHash(hash_);
         }
-        else {
-            return "#" + UrlUtils.encodeHash(hash);
-        }
-
-        return "";
+        return "#" + UrlUtils.encodeHash(UrlUtils.decode(hash_));
     }
 
     private String getHash(final boolean encoded) {
@@ -432,13 +426,6 @@ public class Location extends HtmlUnitScriptable {
             final Event event = new HashChangeEvent(w, Event.TYPE_HASH_CHANGE, oldURL, getHref());
             w.executeEventLocally(event);
         }
-    }
-
-    private static String decodeHash(final String hash) {
-        if (hash.indexOf('%') == -1) {
-            return hash;
-        }
-        return UrlUtils.decode(hash);
     }
 
     /**

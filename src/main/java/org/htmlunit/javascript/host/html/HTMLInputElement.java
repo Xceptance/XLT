@@ -20,8 +20,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlCheckBoxInput;
@@ -37,16 +35,19 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.DOMRectList;
+import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.file.FileList;
+import org.htmlunit.util.StringUtils;
 
 /**
  * The JavaScript object for {@link HtmlInput}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -81,7 +82,7 @@ public class HTMLInputElement extends HTMLElement {
 
     /**
      * Sets the value of the attribute {@code type}.
-     * Note: this replace the DOM node with a new one.
+     * Note: this replaces the DOM node with a new one.
      * @param newType the new type to set
      */
     @JsxSetter
@@ -104,8 +105,8 @@ public class HTMLInputElement extends HTMLElement {
         }
 
         final String val = JavaScriptEngine.toString(newValue);
-        if ("file".equalsIgnoreCase(getType())) {
-            if (StringUtils.isNotEmpty(val)) {
+        if ("file".equals(getType())) {
+            if (!StringUtils.isEmptyOrNull(val)) {
                 throw JavaScriptEngine.asJavaScriptException(
                         getWindow(),
                         "Failed to set the 'value' property on 'HTMLInputElement'.",
@@ -145,7 +146,7 @@ public class HTMLInputElement extends HTMLElement {
      * checkbox and radio. This implementation does nothing. The
      * implementations in Checkbox and Radio actually do the work.
      *
-     *@return the checked property
+     * @return the checked property
      */
     @JsxGetter
     public boolean isChecked() {
@@ -221,7 +222,7 @@ public class HTMLInputElement extends HTMLElement {
     public Integer getSelectionStart() {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())) {
+            if ("number".equals(getType())) {
                 return null;
             }
 
@@ -239,7 +240,7 @@ public class HTMLInputElement extends HTMLElement {
     public void setSelectionStart(final int start) {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())) {
+            if ("number".equals(getType())) {
                 throw JavaScriptEngine.asJavaScriptException(
                         getWindow(),
                         "Failed to set the 'selectionStart' property"
@@ -267,7 +268,7 @@ public class HTMLInputElement extends HTMLElement {
     public Integer getSelectionEnd() {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())) {
+            if ("number".equals(getType())) {
                 return null;
             }
 
@@ -285,7 +286,7 @@ public class HTMLInputElement extends HTMLElement {
     public void setSelectionEnd(final int end) {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())) {
+            if ("number".equals(getType())) {
                 throw JavaScriptEngine.asJavaScriptException(
                         getWindow(),
                         "Failed to set the 'selectionEnd' property"
@@ -312,7 +313,7 @@ public class HTMLInputElement extends HTMLElement {
     @JsxGetter
     public int getMaxLength() {
         final String attrValue = getDomNodeOrDie().getAttribute("maxLength");
-        return NumberUtils.toInt(attrValue, -1);
+        return StringUtils.toInt(attrValue, -1);
     }
 
     /**
@@ -331,7 +332,7 @@ public class HTMLInputElement extends HTMLElement {
     @JsxGetter
     public int getMinLength() {
         final String attrValue = getDomNodeOrDie().getAttribute("minLength");
-        return NumberUtils.toInt(attrValue, -1);
+        return StringUtils.toInt(attrValue, -1);
     }
 
     /**
@@ -794,7 +795,7 @@ public class HTMLInputElement extends HTMLElement {
      * @return whether the element is a candidate for constraint validation
      */
     @JsxGetter
-    public boolean getWillValidate() {
+    public boolean isWillValidate() {
         return getDomNodeOrDie().willValidate();
     }
 
@@ -823,5 +824,22 @@ public class HTMLInputElement extends HTMLElement {
     @JsxSetter
     public void setFormNoValidate(final boolean value) {
         getDomNodeOrDie().setFormNoValidate(value);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DOMRectList getClientRects() {
+        if ("hidden".equals(getType())) {
+            final Window w = getWindow();
+            final DOMRectList rectList = new DOMRectList();
+            rectList.setParentScope(w);
+            rectList.setPrototype(getPrototype(rectList.getClass()));
+
+            return rectList;
+        }
+
+        return super.getClientRects();
     }
 }

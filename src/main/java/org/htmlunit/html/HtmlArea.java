@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.SgmlPage;
@@ -31,6 +30,7 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebWindow;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.geometry.Circle2D;
 import org.htmlunit.util.geometry.Polygon2D;
 import org.htmlunit.util.geometry.Rectangle2D;
@@ -39,9 +39,9 @@ import org.htmlunit.util.geometry.Shape2D;
 /**
  * Wrapper for the HTML element "area".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Frank Danek
@@ -218,7 +218,7 @@ public class HtmlArea extends HtmlElement {
      * @return {@code true} if the point is contained in this area
      */
     boolean containsPoint(final int x, final int y) {
-        final String shape = StringUtils.defaultIfEmpty(getShapeAttribute(), SHAPE_RECT);
+        final String shape = StringUtils.defaultIfEmptyOrNull(getShapeAttribute(), SHAPE_RECT);
 
         if ("default".equalsIgnoreCase(shape) && getCoordsAttribute() != null) {
             return true;
@@ -267,7 +267,7 @@ public class HtmlArea extends HtmlElement {
 
     private Rectangle2D parseRect() {
         // browsers seem to support comma and blank
-        final String[] coords = org.htmlunit.util.StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
+        final String[] coords = StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
 
         double leftX = 0;
         double topY = 0;
@@ -299,7 +299,7 @@ public class HtmlArea extends HtmlElement {
 
     private Circle2D parseCircle() {
         // browsers seem to support comma and blank
-        final String[] coords = org.htmlunit.util.StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
+        final String[] coords = StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
 
         double centerX = 0;
         double centerY = 0;
@@ -328,7 +328,7 @@ public class HtmlArea extends HtmlElement {
 
     private Shape2D parsePoly() {
         // browsers seem to support comma and blank
-        final String[] coords = org.htmlunit.util.StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
+        final String[] coords = StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
 
         try {
             if (coords.length > 1) {
@@ -361,7 +361,7 @@ public class HtmlArea extends HtmlElement {
     }
 
     private boolean isEmpty() {
-        final String shape = StringUtils.defaultIfEmpty(getShapeAttribute(), SHAPE_RECT);
+        final String shape = StringUtils.defaultIfEmptyOrNull(getShapeAttribute(), SHAPE_RECT);
 
         if ("default".equalsIgnoreCase(shape) && getCoordsAttribute() != null) {
             return false;

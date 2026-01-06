@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HTMLLinkElement}.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLLinkElementTest extends WebDriverTestCase {
 
     /**
@@ -37,8 +34,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "", "", "", "§§URL§§test.css", "text/css", "stylesheet", "stylesheet1"})
     public void basicLinkAttributes() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <body onload='test()'>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -71,8 +68,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "alternate help", "prefetch", "prefetch", "not supported", "notsupported"})
     public void readWriteRel() throws Exception {
-        final String html
-            = "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
             + LOG_TITLE_FUNCTION
             + "var l1 = document.getElementById('l1'), l2 = document.getElementById('l2');\n"
 
@@ -100,8 +97,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "2", "alternate", "help"})
     public void relList() throws Exception {
-        final String html
-            = "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
             + LOG_TITLE_FUNCTION
             + "var l1 = document.getElementById('l1'), l2 = document.getElementById('l2');\n"
 
@@ -125,8 +122,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "2", "2", "1", "alternate", "help", "abc", "alternate help", "abc"})
     public void setRelListString() throws Exception {
-        final String html
-            = "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
             + LOG_TITLE_FUNCTION
             + "var a1 = document.getElementById('l1'), a2 = document.getElementById('l2');\n"
 
@@ -162,8 +159,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "2", "0", "0", "", "\\s\\s\\t"})
     public void setRelListStringBlank() throws Exception {
-        final String html
-            = "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
             + "var a1 = document.getElementById('l1'), a2 = document.getElementById('l2');\n"
 
@@ -191,8 +188,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "2", "1", "1", "null", "null", "null", "null"})
     public void setRelListNull() throws Exception {
-        final String html
-            = "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
             + "var a1 = document.getElementById('l1'), a2 = document.getElementById('l2');\n"
 
@@ -228,8 +225,8 @@ public class HTMLLinkElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "2", "1", "1", "undefined", "undefined", "undefined", "undefined"})
     public void setRelListUndefined() throws Exception {
-        final String html
-            = "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><link id='l1'><link id='l2' rel='alternate help'><script>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
             + "var a1 = document.getElementById('l1'), a2 = document.getElementById('l2');\n"
 

@@ -14,7 +14,7 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -52,13 +52,11 @@ import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.http.HttpStatus;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.ServletContentWrapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests methods in {@link HttpWebConnection}.
@@ -69,7 +67,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Carsten Steul
  */
-@RunWith(BrowserRunner.class)
 public class HttpWebConnectionTest extends WebServerTestCase {
 
     /**
@@ -292,7 +289,8 @@ public class HttpWebConnectionTest extends WebServerTestCase {
     public static class EmptyPutServlet extends ServletContentWrapper {
         /** Constructor. */
         public EmptyPutServlet() {
-            super("<html>\n"
+            super(DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
                 + "    function test() {\n"
@@ -436,7 +434,8 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         /** Constructor. */
         public ContentLengthSmallerThanContentServlet() {
-            super("<html>\n"
+            super(DOCTYPE_HTML
+                + "<html>\n"
                 + "<body>\n"
                 + "  <p>visible text</p>\n"
                 + "  <p>missing text</p>\n"
@@ -473,7 +472,8 @@ public class HttpWebConnectionTest extends WebServerTestCase {
 
         /** Constructor. */
         public ContentLengthSmallerThanContentLargeContentServlet() {
-            super("<html>\n"
+            super(DOCTYPE_HTML
+                + "<html>\n"
                 + "<body>\n"
                 + "  <p>"
                 + StringUtils.repeat("HtmlUnit  ", 1024 * 1024)
@@ -501,7 +501,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
                 + "Content-Length: 2000\r\n"
                 + "Content-Type: text/html\r\n"
                 + "\r\n"
-                + "<html><body><p>visible text</p></body></html>";
+                + DOCTYPE_HTML + "<html><body><p>visible text</p></body></html>";
 
         try (PrimitiveWebServer primitiveWebServer = new PrimitiveWebServer(null, response, null)) {
             final WebClient client = getWebClient();
@@ -539,7 +539,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
     @Test
     public void makeWebResponse() throws Exception {
         final URL url = new URL("http://htmlunit.sourceforge.net/");
-        final String content = "<html><head></head><body></body></html>";
+        final String content = DOCTYPE_HTML + "<html><head></head><body></body></html>";
         final DownloadedContent downloadedContent = new DownloadedContent.InMemory(content.getBytes());
         final long loadTime = 500L;
 
@@ -632,10 +632,10 @@ public class HttpWebConnectionTest extends WebServerTestCase {
                     final WebRequest webRequest, final HttpResponse httpResponse,
                     final long startTime) throws IOException {
 
-                final int contentLenght = Integer.parseInt(
+                final int contentLength = Integer.parseInt(
                         httpResponse.getFirstHeader(HttpHeader.CONTENT_LENGTH).getValue());
 
-                if (contentLenght < 1_000) {
+                if (contentLength < 1_000) {
                     return super.downloadResponse(httpMethod, webRequest, httpResponse, startTime);
                 }
 
@@ -644,7 +644,7 @@ public class HttpWebConnectionTest extends WebServerTestCase {
                 final DownloadedContent downloaded = new DownloadedContent.InMemory(null);
                 final long endTime = System.currentTimeMillis();
                 final WebResponse response = makeWebResponse(httpResponse, webRequest, downloaded, endTime - startTime);
-                response.markAsBlocked("blocking " + contentLenght);
+                response.markAsBlocked("blocking " + contentLength);
                 return response;
             }
         });

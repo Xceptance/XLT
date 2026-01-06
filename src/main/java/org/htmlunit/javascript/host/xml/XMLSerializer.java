@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 
 /**
  * A JavaScript object for {@code XMLSerializer}.
+ * see https://w3c.github.io/DOM-Parsing/#the-xmlserializer-interface
  *
  * @author Ahmed Ashour
  * @author Darrell DeBoer
@@ -118,7 +119,8 @@ public class XMLSerializer extends HtmlUnitScriptable {
             return builder.toString().trim();
         }
 
-        if (root instanceof Document) {
+        final boolean rootIsDocument = root instanceof Document;
+        if (rootIsDocument) {
             root = ((Document) root).getDocumentElement();
         }
 
@@ -129,7 +131,7 @@ public class XMLSerializer extends HtmlUnitScriptable {
             final boolean isHtmlPage = page != null && page.isHtmlPage();
 
             String forcedNamespace = null;
-            if (isHtmlPage) {
+            if (!rootIsDocument && isHtmlPage) {
                 forcedNamespace = "http://www.w3.org/1999/xhtml";
             }
             toXml(1, node, builder, forcedNamespace);
@@ -167,7 +169,8 @@ public class XMLSerializer extends HtmlUnitScriptable {
         }
 
         final NamedNodeMap attributesMap = node.getAttributes();
-        for (int i = 0; i < attributesMap.getLength(); i++) {
+        final int length = attributesMap.getLength();
+        for (int i = 0; i < length; i++) {
             final DomAttr attrib = (DomAttr) attributesMap.item(i);
             builder.append(' ').append(attrib.getQualifiedName())
                    .append("=\"").append(attrib.getValue()).append('"');
@@ -198,7 +201,11 @@ public class XMLSerializer extends HtmlUnitScriptable {
                     break;
             }
         }
-        if (!startTagClosed) {
+
+        if (startTagClosed) {
+            builder.append("</").append(nodeName).append('>');
+        }
+        else {
             final String tagName = StringUtils.toRootLowerCase(nodeName);
             if (NON_EMPTY_TAGS.contains(tagName)) {
                 builder.append("></").append(nodeName).append('>');
@@ -206,9 +213,6 @@ public class XMLSerializer extends HtmlUnitScriptable {
             else {
                 builder.append(optionalPrefix).append("/>");
             }
-        }
-        else {
-            builder.append("</").append(nodeName).append('>');
         }
     }
 

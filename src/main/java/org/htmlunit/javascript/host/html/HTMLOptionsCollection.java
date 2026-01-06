@@ -36,7 +36,7 @@ import org.htmlunit.javascript.host.dom.DOMException;
  * This is the array returned by the "options" property of Select.
  *
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author Bruce Faulkner
@@ -233,8 +233,8 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      *
      * @param newOptionObject the DomNode to insert in the collection
      * @param beforeOptionObject An optional parameter which specifies the index position in the
-     * collection where the element is placed. If no value is given, the method places
-     * the element at the end of the collection.
+     *        collection where the element is placed. If no value is given, the method places
+     *        the element at the end of the collection.
      *
      * @see #put(int, Scriptable, Object)
      */
@@ -279,17 +279,11 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void remove(final int index) {
-        int idx = index;
-        if (idx < 0) {
+        if (index < 0 || index >= getLength()) {
             return;
         }
 
-        idx = Math.max(idx, 0);
-        if (idx >= getLength()) {
-            return;
-        }
-
-        htmlSelect_.removeOption(idx);
+        htmlSelect_.removeOption(index);
     }
 
     /**
@@ -310,6 +304,9 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
         htmlSelect_.setSelectedIndex(index);
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);

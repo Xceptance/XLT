@@ -22,10 +22,10 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
@@ -69,7 +69,7 @@ public class DataUrlDecoder {
      * @param url the string representation of the URL to decode
      * @return the {@link DataUrlDecoder} holding decoded information
      * @throws UnsupportedEncodingException if the encoding specified by the data URL is invalid or not
-     * available on the JVM
+     *         available on the JVM
      */
     public static DataUrlDecoder decodeDataURL(final String url) throws UnsupportedEncodingException {
         if (!url.startsWith(DATA_PREFIX)) {
@@ -90,10 +90,9 @@ public class DataUrlDecoder {
 
         try {
             byte[] data = url.substring(comma + 1).getBytes(charset);
-            data = UrlUtils.decodeDataUrl(data);
+            data = UrlUtils.decodeDataUrl(data, base64);
             if (base64) {
-                // the commons codec decoder skip's invalid chars
-                data = Base64.decodeBase64(data);
+                data = Base64.getDecoder().decode(data);
             }
             return new DataUrlDecoder(data, mediaType, charset);
         }

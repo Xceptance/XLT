@@ -28,18 +28,18 @@ import java.util.List;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.http.HttpStatus;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A response from a web server.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Brad Clarke
  * @author Noboru Sinohara
  * @author Marc Guillemot
@@ -175,25 +175,6 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the content charset specified explicitly in the header or in the content,
-     * or {@code null} if none was specified.
-     * @return the content charset specified explicitly in the header or in the content,
-     *         or {@code null} if none was specified
-     *
-     * @deprecated as of version 4.0.0; use {@link #getContentCharset()} instead
-     */
-    @Deprecated
-    public Charset getContentCharsetOrNull() {
-        try (InputStream is = getContentAsStream()) {
-            return EncodingSniffer.sniffEncoding(getResponseHeaders(), is);
-        }
-        catch (final IOException e) {
-            LOG.warn("Error trying to sniff encoding.", e);
-            return null;
-        }
-    }
-
-    /**
      * Returns the content charset for this response, even if no charset was specified explicitly.
      * <p>
      * This method always returns a valid charset. This method first checks the {@code Content-Type}
@@ -257,9 +238,9 @@ public class WebResponse implements Serializable {
      * For example, HTML meta-tag sniffing can be fooled by text that looks-like-a-meta-tag inside
      * JavaScript code (false positive) or if the meta-tag is after the first 1024 bytes (false negative).
      * @return {@code true} if the charset of the previous call to {@link #getContentCharset()} was
-     * "tentative".
+     *         "tentative".
      * @see <a href="https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence">
-     * https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence</a>
+     *     https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence</a>
      */
     public boolean wasContentCharsetTentative() {
         return wasContentCharsetTentative_;
@@ -268,7 +249,7 @@ public class WebResponse implements Serializable {
     /**
      * Returns the response content as a string, using the charset/encoding specified in the server response.
      * @return the response content as a string, using the charset/encoding specified in the server response
-     * or null if the content retrieval was failing
+     *         or null if the content retrieval was failing
      */
     public String getContentAsString() {
         return getContentAsString(getContentCharset());
@@ -360,15 +341,6 @@ public class WebResponse implements Serializable {
         if (responseData_ != null) {
             responseData_.cleanUp();
         }
-    }
-
-    /**
-     * Mark this response for using UTF-8 as default charset.
-     * @deprecated as of version 4.0.0; use {@link WebRequest#setDefaultResponseContentCharset(Charset)} instead
-     */
-    @Deprecated
-    public void defaultCharsetUtf8() {
-        getWebRequest().setDefaultResponseContentCharset(UTF_8);
     }
 
     /**

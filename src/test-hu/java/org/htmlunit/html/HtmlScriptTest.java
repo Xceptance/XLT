@@ -14,7 +14,7 @@
  */
 package org.htmlunit.html;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -25,11 +25,9 @@ import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlScript}.
@@ -39,7 +37,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlScriptTest extends SimpleWebTestCase {
 
     /**
@@ -52,7 +49,8 @@ public class HtmlScriptTest extends SimpleWebTestCase {
      */
     @Test
     public void badExternalScriptReference() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head><title>foo</title>\n"
                 + "<script src='inexistent.js'></script>\n"
                 + "</head><body></body></html>";
 
@@ -89,7 +87,7 @@ public class HtmlScriptTest extends SimpleWebTestCase {
      */
     @Test
     public void asNormalizedText() throws Exception {
-        final String html = "<html><body><script id='s'>var foo = 132;</script></body></html>";
+        final String html = DOCTYPE_HTML + "<html><body><script id='s'>var foo = 132;</script></body></html>";
         final HtmlPage page = loadPage(html);
         final HtmlScript script = page.getHtmlElementById("s");
         assertEquals("", script.asNormalizedText());
@@ -101,8 +99,8 @@ public class HtmlScriptTest extends SimpleWebTestCase {
     @Test
     @Alerts("hello")
     public void asXml() throws Exception {
-        final String html
-            = "<html><head><title>foo</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title></head><body>\n"
             + "<script id='script1'>\n"
             + "  alert('hello');\n"
             + "</script></body></html>";
@@ -111,6 +109,23 @@ public class HtmlScriptTest extends SimpleWebTestCase {
 
         // asXml() should be reusable
         final String xml = page.asXml();
+        assertEquals("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n"
+                + "<html>\r\n"
+                + "  <head>\r\n"
+                + "    <title>foo</title>\r\n"
+                + "  </head>\r\n"
+                + "  <body>\r\n"
+                + "    <script id=\"script1\">\r\n"
+                + "//<![CDATA[\r\n"
+                + "\n"
+                + "  alert('hello');\n"
+                + "\r\n"
+                + "//]]>\r\n"
+                + "    </script>\r\n"
+                + "  </body>\r\n"
+                + "</html>",
+                xml);
+
         loadPageWithAlerts(xml);
     }
 
@@ -122,10 +137,10 @@ public class HtmlScriptTest extends SimpleWebTestCase {
         final String script = "//<![CDATA[\n"
             + "var foo = 132;\n"
             + "//]]>";
-        final String html = "<html><body><script id='s'>" + script + "</script></body></html>";
+        final String html = DOCTYPE_HTML + "<html><body><script id='s'>" + script + "</script></body></html>";
         final HtmlPage page = loadPage(html);
         final HtmlScript scriptElement = page.getHtmlElementById("s");
-        assertEquals("<script id=\"s\">\r\n" + script + "\r\n</script>\r\n",
+        assertEquals("<script id=\"s\">\r\n" + script + "\r\n</script>",
                 scriptElement.asXml());
     }
 
@@ -136,7 +151,7 @@ public class HtmlScriptTest extends SimpleWebTestCase {
     @Test
     @Alerts("loaded")
     public void scriptCloneDoesNotReloadScript() throws Exception {
-        final String html = "<html><body><script src='" + URL_SECOND + "'></script></body></html>";
+        final String html = DOCTYPE_HTML + "<html><body><script src='" + URL_SECOND + "'></script></body></html>";
         final String js = "alert('loaded')";
 
         final WebClient client = getWebClient();
@@ -178,8 +193,8 @@ public class HtmlScriptTest extends SimpleWebTestCase {
 
     private void addEventListener_error(final boolean throwOnFailingStatusCode) throws Exception {
         final URL fourOhFour = new URL(URL_FIRST, "/404");
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    var s1 = document.createElement('script');\n"
@@ -218,6 +233,8 @@ public class HtmlScriptTest extends SimpleWebTestCase {
             + "</html>";
         final WebClient client = getWebClient();
         client.getOptions().setThrowExceptionOnFailingStatusCode(throwOnFailingStatusCode);
+        client.getOptions().setThrowExceptionOnScriptError(false);
+
         final MockWebConnection conn = new MockWebConnection();
         conn.setResponse(URL_FIRST, html);
         conn.setResponse(URL_SECOND, "var foo;", MimeType.TEXT_JAVASCRIPT);
@@ -226,7 +243,6 @@ public class HtmlScriptTest extends SimpleWebTestCase {
         client.setWebConnection(conn);
         final List<String> actual = new ArrayList<>();
         client.setAlertHandler(new CollectingAlertHandler(actual));
-        client.getOptions().setThrowExceptionOnScriptError(false);
         client.getPage(URL_FIRST);
         assertEquals(getExpectedAlerts(), actual);
     }
@@ -236,7 +252,8 @@ public class HtmlScriptTest extends SimpleWebTestCase {
      */
     @Test
     public void isDisplayed() throws Exception {
-        final String html = "<html><head><title>Page A</title></head><body><script>var x = 1;</script></body></html>";
+        final String html = DOCTYPE_HTML
+                + "<html><head><title>Page A</title></head><body><script>var x = 1;</script></body></html>";
         final HtmlPage page = loadPageWithAlerts(html);
         final HtmlScript script = page.getFirstByXPath("//script");
         assertFalse(script.isDisplayed());
@@ -250,16 +267,16 @@ public class HtmlScriptTest extends SimpleWebTestCase {
     @Test
     @Alerts({"First script executes", "Second page loading"})
     public void changingLocationSkipsFurtherScriptsOnPage() throws Exception {
-        final String html
-            = "<html><head></head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
             + "<body onload='alert(\"body onload executing but should be skipped\")'>\n"
             + "<script>alert('First script executes')</script>\n"
             + "<script>window.location.href='" + URL_SECOND + "'</script>\n"
             + "<script>alert('Third script executing but should be skipped')</script>\n"
             + "</body></html>";
 
-        final String secondPage
-            = "<html><head></head><body>\n"
+        final String secondPage = DOCTYPE_HTML
+            + "<html><head></head><body>\n"
             + "<script>alert('Second page loading')</script>\n"
             + "</body></html>";
 

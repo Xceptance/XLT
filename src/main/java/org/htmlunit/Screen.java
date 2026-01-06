@@ -19,7 +19,7 @@ import java.io.Serializable;
 /**
  * {@code Screen}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ronald Brill
@@ -45,7 +45,7 @@ public class Screen implements Serializable {
      * @return the {@code availHeight} property
      */
     public int getAvailHeight() {
-        return 1040;
+        return 1032;
     }
 
     /**

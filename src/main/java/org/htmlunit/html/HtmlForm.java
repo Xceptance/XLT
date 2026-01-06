@@ -32,8 +32,6 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -52,17 +50,19 @@ import org.htmlunit.http.HttpUtils;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.SubmitEvent;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * Wrapper for the HTML element "form".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Brad Clarke
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author George Murnock
  * @author Kent Tong
@@ -191,7 +191,7 @@ public class HtmlForm extends HtmlElement {
 
         final WebWindow webWindow = htmlPage.getEnclosingWindow();
         // Calling form.submit() twice forces double download.
-        webClient.download(webWindow, target, request, false, false, null, "JS form.submit()");
+        webClient.download(webWindow, target, request, false, null, "JS form.submit()");
     }
 
     /**
@@ -362,7 +362,7 @@ public class HtmlForm extends HtmlElement {
         String rel = getRelAttribute();
         if (rel != null) {
             rel = rel.toLowerCase(Locale.ROOT);
-            return ArrayUtils.contains(org.htmlunit.util.StringUtils.splitAtBlank(rel), "noreferrer");
+            return ArrayUtils.contains(StringUtils.splitAtBlank(rel), "noreferrer");
         }
         return false;
     }
@@ -414,10 +414,10 @@ public class HtmlForm extends HtmlElement {
      * @return the page contained by this form's window after the reset
      */
     public Page reset() {
-        final SgmlPage htmlPage = getPage();
+        final SgmlPage sgmlPage = getPage();
         final ScriptResult scriptResult = fireEvent(Event.TYPE_RESET);
         if (ScriptResult.isFalse(scriptResult)) {
-            return htmlPage.getWebClient().getCurrentWindow().getEnclosedPage();
+            return sgmlPage.getWebClient().getCurrentWindow().getEnclosedPage();
         }
 
         for (final HtmlElement next : getHtmlElementDescendants()) {
@@ -426,7 +426,7 @@ public class HtmlForm extends HtmlElement {
             }
         }
 
-        return htmlPage;
+        return sgmlPage;
     }
 
     /**
@@ -477,7 +477,7 @@ public class HtmlForm extends HtmlElement {
             return false;
         }
 
-        if (org.htmlunit.util.StringUtils.isEmptyString(element.getAttributeDirect(NAME_ATTRIBUTE))) {
+        if (StringUtils.isEmptyString(element.getAttributeDirect(NAME_ATTRIBUTE))) {
             return false;
         }
 
@@ -487,7 +487,7 @@ public class HtmlForm extends HtmlElement {
                 return ((HtmlInput) element).isChecked();
             }
         }
-        if (HtmlSelect.TAG_NAME.equals(tagName)) {
+        if (element instanceof HtmlSelect) {
             return ((HtmlSelect) element).isValidForSubmission();
         }
         return true;
@@ -541,36 +541,18 @@ public class HtmlForm extends HtmlElement {
             final String attributeName,
             final String attributeValue) {
 
-        final List<E> list = new ArrayList<>();
-        final String lowerCaseTagName = elementName.toLowerCase(Locale.ROOT);
-
-        for (final HtmlElement element : getElements()) {
-            if (element.getTagName().equals(lowerCaseTagName)) {
-                final String attValue = element.getAttribute(attributeName);
-                if (attValue.equals(attributeValue)) {
-                    list.add((E) element);
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * @return returns a list of all form controls contained in the &lt;form&gt; element or referenced by formId
-     *         but ignoring elements that are contained in a nested form
-     * @deprecated as of version 4.4.0; use {@link #getFormElements()}, {@link #getElementsJS()} instead
-     */
-    @Deprecated
-    public List<HtmlElement> getElements() {
-        return getElements(htmlElement -> SUBMITTABLE_TAG_NAMES.contains(htmlElement.getTagName()));
+        return (List<E>) getElements(htmlElement ->
+                                htmlElement.getTagName().equals(elementName)
+                                && htmlElement.getAttribute(attributeName).equals(attributeValue));
     }
 
     /**
      * @return A List containing all form controls in the form.
-     * The form controls in the returned collection are in the same order
-     * in which they appear in the form by following a preorder,
-     * depth-first traversal of the tree. This is called tree order. Only the following elements are returned:
-     * button, fieldset, input, object, output, select, textarea.
+     *         The form controls in the returned collection are in the same order
+     *         in which they appear in the form by following a preorder,
+     *         depth-first traversal of the tree. This is called tree order.
+     *         Only the following elements are returned:
+     *         button, fieldset, input, object, output, select, textarea.
      */
     public List<HtmlElement> getFormElements() {
         return getElements(htmlElement -> {
@@ -590,12 +572,13 @@ public class HtmlForm extends HtmlElement {
      * see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/elements
      *
      * @return A List containing all non-image controls in the form.
-     * The form controls in the returned collection are in the same order
-     * in which they appear in the form by following a preorder,
-     * depth-first traversal of the tree. This is called tree order. Only the following elements are returned:
-     * button, fieldset,
-     * input (with the exception that any whose type is "image" are omitted for historical reasons),
-     * object, output, select, textarea.
+     *         The form controls in the returned collection are in the same order
+     *         in which they appear in the form by following a preorder,
+     *         depth-first traversal of the tree. This is called tree order.
+     *         Only the following elements are returned:
+     *         button, fieldset,
+     *         input (with the exception that any whose type is "image" are omitted for historical reasons),
+     *         object, output, select, textarea.
      */
     public List<HtmlElement> getElementsJS() {
         return getElements(htmlElement -> {
@@ -645,7 +628,7 @@ public class HtmlForm extends HtmlElement {
      * @param name the input name to search for
      * @param <I> the input type
      * @return the first input element which is a member of this form and has the specified name
-     * @throws ElementNotFoundException if there is not input in this form with the specified name
+     * @throws ElementNotFoundException if there is no input in this form with the specified name
      */
     @SuppressWarnings("unchecked")
     public final <I extends HtmlInput> I getInputByName(final String name) throws ElementNotFoundException {

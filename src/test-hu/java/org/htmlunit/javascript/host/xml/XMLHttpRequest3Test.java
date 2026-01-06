@@ -42,14 +42,11 @@ import org.htmlunit.html.DomChangeListener;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSubmitInput;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.StreamingServlet;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.NotYetImplemented;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link XMLHttpRequest}.
@@ -62,7 +59,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class XMLHttpRequest3Test extends WebServerTestCase {
 
     private static final String MSG_NO_CONTENT = "no Content";
@@ -75,8 +71,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
     @Test
     @Alerts({"0", "1", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR})
     public void asyncUseWithNetworkConnectionFailure() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<title>XMLHttpRequest Test</title>\n"
             + "<script>\n"
@@ -142,7 +138,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      */
     @Test
     public void noParallelJSExecutionInPage() throws Exception {
-        final String content = "<html><head><script>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "var j = 0;\n"
             + "function test() {\n"
             + "  req = new XMLHttpRequest();\n"
@@ -206,7 +203,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      * @throws Exception if the test fails
      */
     private void testMethod(final HttpMethod method) throws Exception {
-        final String content = "<html><head><script>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function test() {\n"
             + "  var req = new XMLHttpRequest();\n"
             + "  req.open('" + method.name().toLowerCase(Locale.ROOT) + "', 'foo.xml', false);\n"
@@ -234,8 +232,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      */
     @Test
     public void xmlHttpRequestWithDomChangeListenerDeadlock() throws Exception {
-        final String content
-            = "<html><head><title>foo</title>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head><title>foo</title>\n"
             + "<script>\n"
             + "  function test() {\n"
             + "    frames[0].test('foo1.txt', true);\n"
@@ -248,8 +246,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
             + "<iframe src='page2.html'></iframe>\n"
             + "</body></html>";
 
-        final String content2
-            = "<html><head><title>foo</title>\n"
+        final String content2 = DOCTYPE_HTML
+            + "<html><head><title>foo</title>\n"
             + "<script>\n"
             + "function test(_src, _async)\n"
             + "{\n"
@@ -317,7 +315,11 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @NotYetImplemented
+    @Alerts({"0", "10"})
+    @HtmlUnitNYI(CHROME = {"0", "1"},
+            EDGE = {"0", "1"},
+            FF = {"0", "1"},
+            FF_ESR = {"0", "1"})
     public void streaming() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", StreamingServlet.class);
@@ -326,9 +328,9 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         startWebServer(resourceBase, null, servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "XMLHttpRequestTest_streaming.html");
-        assertEquals(0, client.waitForBackgroundJavaScriptStartingBefore(1000));
+        assertEquals(Integer.parseInt(getExpectedAlerts()[0]), client.waitForBackgroundJavaScriptStartingBefore(1000));
         final HtmlElement body = page.getBody();
-        assertEquals(10, body.asNormalizedText().split("\n").length);
+        assertEquals(Integer.parseInt(getExpectedAlerts()[1]), body.asNormalizedText().split("\n").length);
     }
 
     /**
@@ -338,8 +340,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
     @Test
     @Alerts("this == request")
     public void thisValueInHandler() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <title>XMLHttpRequest Test</title>\n"
             + "    <script>\n"
@@ -403,9 +405,9 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         while (STATE_ < 1) {
             Thread.sleep(42);
         }
-        ((HtmlSubmitInput) elem).click();
+        elem.click();
 
-        client.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+        client.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME.toMillis());
         assertEquals(COLLECTED_HEADERS.toString(), 2, COLLECTED_HEADERS.size());
 
         String headers = COLLECTED_HEADERS.get(0);
@@ -435,7 +437,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
          */
         @Override
         protected void doGet(final HttpServletRequest req, final HttpServletResponse res) throws IOException {
-            final String html = "<html><head><script>\n"
+            final String html = DOCTYPE_HTML
+                    + "<html><head><script>\n"
                     + "  function test() {\n"
                     + "    xhr = new XMLHttpRequest();\n"
                     + "    xhr.open('POST', 'ajax_headers.html', true);\n"
@@ -513,7 +516,8 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
             final String header = headers(request);
             STATE_ = 2;
 
-            final String html = "<html><head></head>\n"
+            final String html = DOCTYPE_HTML
+                    + "<html><head></head>\n"
                     + "<body>\n"
                     + "<p>Form: " + header + "</p<\n"
                     + "</body></html>";

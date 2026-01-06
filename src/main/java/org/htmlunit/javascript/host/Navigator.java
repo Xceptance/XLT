@@ -22,7 +22,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -34,11 +33,12 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.geo.Geolocation;
 import org.htmlunit.javascript.host.media.MediaDevices;
 import org.htmlunit.javascript.host.network.NetworkInformation;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A JavaScript object for {@code Navigator}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -106,16 +106,16 @@ public class Navigator extends HtmlUnitScriptable {
     @JsxGetter
     public Scriptable getLanguages() {
         final String acceptLang = getBrowserVersion().getAcceptLanguageHeader();
-        if (StringUtils.isEmpty(acceptLang)) {
+        if (StringUtils.isEmptyOrNull(acceptLang)) {
             return JavaScriptEngine.newArray(this, 0);
         }
 
         final ArrayList<String> res = new ArrayList<>();
-        final String[] parts = org.htmlunit.util.StringUtils.splitAtComma(acceptLang);
+        final String[] parts = StringUtils.splitAtComma(acceptLang);
         for (final String part : parts) {
-            if (!StringUtils.isEmpty(part)) {
+            if (!StringUtils.isEmptyOrNull(part)) {
                 final String lang = StringUtils.substringBefore(part, ";").trim();
-                if (!StringUtils.isEmpty(part)) {
+                if (!StringUtils.isEmptyOrNull(part)) {
                     res.add(lang);
                 }
             }
@@ -207,8 +207,8 @@ public class Navigator extends HtmlUnitScriptable {
 
         // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mimeTypes
         // Recent versions of the specification hard-code the returned set of MIME types.
-        // If PDF files can be displayed inline then application/pdf and text/pdf are listed.
-        // Otherwise an empty list is returned.
+        // If PDF files can be displayed inline then application/pdf and text/pdf are listed,
+        // otherwise an empty list is returned.
         mimeTypes_ = new MimeTypeArray();
         mimeTypes_.setParentScope(this);
         mimeTypes_.setPrototype(getPrototype(MimeTypeArray.class));
@@ -299,10 +299,10 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * @return true whether the browser supports inline display
-     * of PDF files when navigating to them
+     *         of PDF files when navigating to them
      */
     @JsxGetter
-    public boolean getPdfViewerEnabled() {
+    public boolean isPdfViewerEnabled() {
         return true;
     }
 

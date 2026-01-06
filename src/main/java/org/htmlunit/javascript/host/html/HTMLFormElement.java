@@ -53,7 +53,7 @@ import org.htmlunit.util.MimeType;
 /**
  * A JavaScript object {@code HTMLFormElement}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Kent Tong
  * @author Chris Erskine
@@ -131,6 +131,9 @@ public class HTMLFormElement extends HTMLElement implements Function {
         return elements;
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return getElements().iterator();
@@ -313,9 +316,9 @@ public class HTMLFormElement extends HTMLElement implements Function {
     /**
      * Submits the form by submitted using a specific submit button.
      * @param submitter The submit button whose attributes describe the method
-     * by which the form is to be submitted. This may be either
-     * an &lt;input&gt; or &lt;button&gt; element whose type attribute is submit.
-     * If you omit the submitter parameter, the form element itself is used as the submitter.
+     *        by which the form is to be submitted. This may be either
+     *        a &lt;input&gt; or &lt;button&gt; element whose type attribute is submit.
+     *        If you omit the submitter parameter, the form element itself is used as the submitter.
      */
     @JsxFunction
     public void requestSubmit(final Object submitter) {
@@ -414,16 +417,16 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * @return {@inheritDoc}
      */
     @Override
-    protected ScriptableObject getOwnPropertyDescriptor(final Context cx, final Object id) {
-        final ScriptableObject desc = super.getOwnPropertyDescriptor(cx, id);
-        if (desc != null) {
-            return desc;
+    protected DescriptorInfo getOwnPropertyDescriptor(final Context cx, final Object id) {
+        final DescriptorInfo descInfo = super.getOwnPropertyDescriptor(cx, id);
+        if (descInfo != null) {
+            return descInfo;
         }
 
         if (id instanceof CharSequence) {
             final HtmlElement element = findFirstElement(id.toString());
             if (element != null) {
-                return ScriptableObject.buildDataDescriptor(this, element.getScriptableObject(),
+                return ScriptableObject.buildDataDescriptor(element.getScriptableObject(),
                                             ScriptableObject.READONLY | ScriptableObject.DONTENUM);
             }
         }

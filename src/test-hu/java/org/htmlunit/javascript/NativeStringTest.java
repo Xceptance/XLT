@@ -15,10 +15,8 @@
 package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * String is a native JavaScript object and therefore provided by Rhino but some tests are needed here.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NativeStringTest extends WebDriverTestCase {
 
     /**
@@ -38,9 +35,9 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts("key\\:b_M")
     public void replace() throws Exception {
-        final String html
-            = "<html><head><script>\n"
-                    + LOG_TITLE_FUNCTION
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  log('key:b_M'.replace(':', '\\\\:'));\n"
             + "}\n"
@@ -94,8 +91,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void trim() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -116,8 +112,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts("3")
     public void trimRight() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -138,8 +133,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts("4")
     public void trimLeft() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -160,8 +154,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts("contains not supported")
     public void contains() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -198,8 +191,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true", "false"})
     public void startsWith() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -226,8 +218,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true", "false"})
     public void endsWith() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -254,8 +245,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true", "true", "false"})
     public void includes() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -283,8 +273,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "abc", "abcabc"})
     public void repeat() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -309,8 +298,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"\u0069\u0307", "\u0069"})
     public void toLocaleLowerCase() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function doTest() {\n"
@@ -330,8 +318,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"Error", "true"})
     public void includesRegExpMatch() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function doTest() {\n"
@@ -360,8 +347,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"TypeError", "true"})
     public void startsWithRegExpMatch() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function doTest() {\n"
@@ -388,8 +374,7 @@ public class NativeStringTest extends WebDriverTestCase {
     @Test
     @Alerts({"TypeError", "true"})
     public void endsWithRegExpMatch() throws Exception {
-        final String html
-            = "<!DOCTYPE html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function doTest() {\n"

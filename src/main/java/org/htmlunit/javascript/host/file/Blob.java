@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebRequest;
@@ -41,6 +40,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.ReadableStream;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A JavaScript object for {@code Blob}.
@@ -104,7 +104,7 @@ public class Blob extends HtmlUnitScriptable {
         }
 
         /**
-         * Returns the KeyDataPare for this Blob/File.
+         * Returns the KeyDataPair for this Blob/File.
          *
          * @param name the name
          * @param fileName the file name
@@ -157,7 +157,8 @@ public class Blob extends HtmlUnitScriptable {
             }
 
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
-            for (long i = 0; i < fileBits.getLength(); i++) {
+            final long length = fileBits.getLength();
+            for (long i = 0; i < length; i++) {
                 final Object fileBit = fileBits.get(i);
                 if (fileBit instanceof NativeArrayBuffer) {
                     final byte[] bytes = ((NativeArrayBuffer) fileBit).getBuffer();
@@ -299,9 +300,9 @@ public class Blob extends HtmlUnitScriptable {
             nativeBits = null;
         }
 
-        setBackend(InMemoryBackend.create(nativeBits, null,
+        backend_ = InMemoryBackend.create(nativeBits, null,
                             extractFileTypeOrDefault(properties),
-                            extractLastModifiedOrDefault(properties)));
+                            extractLastModifiedOrDefault(properties));
     }
 
     /**
@@ -335,7 +336,7 @@ public class Blob extends HtmlUnitScriptable {
 
     /**
      * @return a Promise that resolves with an ArrayBuffer containing the
-     * data in binary form.
+     *         data in binary form.
      */
     @JsxFunction
     public NativePromise arrayBuffer() {
@@ -349,6 +350,19 @@ public class Blob extends HtmlUnitScriptable {
         });
     }
 
+    /**
+     * @param start An index into the Blob indicating the first byte to include in the new Blob. If you specify
+     *        a negative value, it's treated as an offset from the end of the Blob toward the beginning.
+     *        For example, -10 would be the 10th from last byte in the Blob. The default value is 0.
+     *        If you specify a value for start that is larger than the size of the source Blob,
+     *        the returned Blob has size 0 and contains no data.
+     * @param end An index into the Blob indicating the first byte that will not be included in the
+     *        new Blob (i.e. the byte exactly at this index is not included). If you specify a negative value,
+     *        it's treated as an offset from the end of the Blob toward the beginning.
+     *        For example, -10 would be the 10th from last byte in the Blob. The default value is size.
+     * @param contentType The content type to assign to the new Blob; this will be the value of its type property. The default value is an empty string.
+     * @return a new Blob object which contains data from a subset of the blob on which it's called.
+     */
     @JsxFunction
     public Blob slice(final Object start, final Object end, final Object contentType) {
         final Blob blob = new Blob();
@@ -388,6 +402,9 @@ public class Blob extends HtmlUnitScriptable {
         return blob;
     }
 
+    /**
+     * @return a ReadableStream which, upon reading, returns the contents of the Blob.
+     */
     @JsxFunction
     public ReadableStream stream() {
         throw new UnsupportedOperationException("Blob.stream() is not yet implemented.");
@@ -395,13 +412,16 @@ public class Blob extends HtmlUnitScriptable {
 
     /**
      * @return a Promise that resolves with a string containing the
-     * contents of the blob, interpreted as UTF-8.
+     *         contents of the blob, interpreted as UTF-8.
      */
     @JsxFunction
     public NativePromise text() {
         return setupPromise(() -> getBackend().getText());
     }
 
+    /**
+     * @return the bytes of this blob
+     */
     public byte[] getBytes() {
         return getBackend().getBytes(0, (int) getBackend().getSize());
     }
@@ -423,9 +443,15 @@ public class Blob extends HtmlUnitScriptable {
         }
     }
 
+    /**
+     * Delegates the KeyDataPair construction to the backend.
+     * @param name the name
+     * @param fileName the filename
+     * @return the constructed {@link KeyDataPair}
+     */
     public KeyDataPair getKeyDataPair(final String name, final String fileName) {
         String contentType = getType();
-        if (StringUtils.isEmpty(contentType)) {
+        if (StringUtils.isEmptyOrNull(contentType)) {
             contentType = MimeType.APPLICATION_OCTET_STREAM;
         }
 

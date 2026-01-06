@@ -14,11 +14,9 @@
  */
 package org.htmlunit.selenium;
 
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -32,7 +30,6 @@ import org.openqa.selenium.WebElement;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class TypingTest extends SeleniumTest {
 
     /**
@@ -438,7 +435,8 @@ public class TypingTest extends SeleniumTest {
      */
     @Test
     public void typePreventedCharacterFirst() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function stopEnterKey(evt) {\n"
             + "    var evt = evt || window.event;\n"

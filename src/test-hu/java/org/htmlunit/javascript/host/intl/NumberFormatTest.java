@@ -15,19 +15,15 @@
 package org.htmlunit.javascript.host.intl;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link NumberFormat}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NumberFormatTest extends WebDriverTestCase {
 
     /**
@@ -44,7 +40,7 @@ public class NumberFormatTest extends WebDriverTestCase {
             FF_ESR = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                       "undefined", "undefined"})
     public void resolvedOptionsValues() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -75,7 +71,7 @@ public class NumberFormatTest extends WebDriverTestCase {
     @Test
     @Alerts("[object Object]")
     public void resolvedOptions() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -98,7 +94,7 @@ public class NumberFormatTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "42.247"})
     public void numberFormat() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION

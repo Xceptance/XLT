@@ -15,17 +15,14 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlInsertedText}.
  *
  * @author Marc Guillemot
  */
-@RunWith(BrowserRunner.class)
 public class HtmlInsertedTextTest extends WebDriverTestCase {
 
     /**
@@ -35,7 +32,8 @@ public class HtmlInsertedTextTest extends WebDriverTestCase {
     @Test
     @Alerts({"abcdef", "abcdef"})
     public void simple() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <a href='foo' id='it'>ab<ins>cd</ins>ef</a>\n"
             + "  <script>\n"

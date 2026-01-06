@@ -15,17 +15,14 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlRtc}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlRtcTest extends WebDriverTestCase {
 
     /**
@@ -36,7 +33,8 @@ public class HtmlRtcTest extends WebDriverTestCase {
             FF = {"", "ruby-text-container", "ruby-text-container"},
             FF_ESR = {"", "ruby-text-container", "ruby-text-container"})
     public void defaultStyle() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"

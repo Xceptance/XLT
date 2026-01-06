@@ -15,12 +15,9 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -32,7 +29,6 @@ import org.openqa.selenium.WebDriver;
  * @author Ronald Brill
  * @author Adam Afeltowicz
  */
-@RunWith(BrowserRunner.class)
 public class DOMImplementationTest extends WebDriverTestCase {
 
     /**
@@ -265,7 +261,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     }
 
     private void hasFeature(final String feature, final String versions) throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -290,7 +286,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("[object XMLDocument]")
     public void createDocument() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -308,7 +304,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts({"mydoc", "null", "mydoc", "null"})
     public void createDocument_qualifiedName() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -330,7 +326,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts({"mydoc", "null", "mydoc", "http://mynamespace"})
     public void createDocument_namespaceAndQualifiedName() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -352,7 +348,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts({"m:mydoc", "m", "mydoc", "http://mynamespace"})
     public void createDocument_namespaceAndQualifiedNameWithPrefix() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -374,7 +370,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLDocument]", "undefined"})
     public void createHTMLDocument() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -400,7 +396,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLDocument]", "newdoctitle"})
     public void createHTMLDocument_title() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -426,7 +422,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLDocument]", ""})
     public void createHTMLDocument_titleEmpty() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -452,7 +448,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void createHTMLDocument_jQuery() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -478,7 +474,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("createdElement")
     public void createHTMLDocument_createElement() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -507,7 +503,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
              "<html><head><title></title></head><body></body></html>",
              "<html><head><title>abc</title></head><body></body></html>"})
     public void createHTMLDocument_htmlCode() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -543,7 +539,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Alerts("<html><head><title>test</title></head>"
             + "<body><p>This is a new paragraph.</p></body></html>")
     public void createHTMLDocumentAddParagraph() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -571,7 +567,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("<html><head><title>test</title></head><body><p>Hello</p></body></html>")
     public void createHTMLDocumentInnerAddParagraph() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -597,7 +593,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("<html><head><title>test</title></head><body><img src=\"x\" onerror=\"log(1)\"></body></html>")
     public void createHTMLDocumentInnerAddImg() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -623,7 +619,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("before1")
     public void createHTMLDocumentInnerAddImgAddDocToIframe() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
@@ -662,7 +658,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
     @Test
     @Alerts("before import;after import;1")
     public void createHTMLDocumentInnerAddImgAddDocToIframe1() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"

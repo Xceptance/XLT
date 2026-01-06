@@ -18,14 +18,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -36,7 +33,6 @@ import org.openqa.selenium.WebDriver;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WebClient6Test extends WebDriverTestCase {
 
     /**
@@ -382,56 +378,62 @@ public class WebClient6Test extends WebDriverTestCase {
     }
 
     private void redirectGet(final int code, final HttpMethod httpMethod, final String redirectUrl) throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><body><a href='redirect.html'>redirect</a></body></html>";
-        final int reqCount = getMockWebConnection().getRequestCount();
+        final MockWebConnection webConn = getMockWebConnection();
+        final int reqCount = webConn.getRequestCount();
 
         final URL url = new URL(URL_FIRST, "page2.html");
-        getMockWebConnection().setResponse(url, html);
+        webConn.setResponse(url, html);
 
         final List<NameValuePair> headers = new ArrayList<>();
         headers.add(new NameValuePair("Location", redirectUrl));
-        getMockWebConnection().setDefaultResponse("", code, "Found", null, headers);
+        webConn.setDefaultResponse("", code, "Found", null, headers);
 
         expandExpectedAlertsVariables(URL_FIRST);
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.tagName("a")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
-        assertEquals(getExpectedAlerts()[0], getMockWebConnection().getLastWebRequest().getUrl().toString());
-        assertEquals(reqCount + Integer.parseInt(getExpectedAlerts()[1]), getMockWebConnection().getRequestCount());
-        assertEquals(httpMethod, getMockWebConnection().getLastWebRequest().getHttpMethod());
+        assertEquals(getExpectedAlerts()[0], webConn.getLastWebRequest().getUrl().toString());
+        assertEquals(reqCount + Integer.parseInt(getExpectedAlerts()[1]), webConn.getRequestCount());
+        assertEquals(httpMethod, webConn.getLastWebRequest().getHttpMethod());
         assertEquals(getExpectedAlerts()[2], driver.getCurrentUrl());
     }
 
     private void redirectPost(final int code, final HttpMethod httpMethod,
             final String redirectUrl, final boolean resendParams) throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><body><form action='redirect.html' method='POST'>\n"
                 + "  <input type='hidden' name='param1' value='paramValue'>\n"
                 + "  <input type='submit' id='postBtn' value='Submit'>\n"
                 + "</form></body></html>";
-        final int reqCount = getMockWebConnection().getRequestCount();
+        final MockWebConnection webConn = getMockWebConnection();
+        final int reqCount = webConn.getRequestCount();
 
         final URL url = new URL(URL_FIRST, "page2.html");
-        getMockWebConnection().setResponse(url, html);
+        webConn.setResponse(url, html);
 
         final List<NameValuePair> headers = new ArrayList<>();
         headers.add(new NameValuePair("Location", redirectUrl));
-        getMockWebConnection().setDefaultResponse("", code, "Found", null, headers);
+        webConn.setDefaultResponse("", code, "Found", null, headers);
 
         expandExpectedAlertsVariables(URL_FIRST);
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("postBtn")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
-        assertEquals(reqCount + Integer.parseInt(getExpectedAlerts()[1]), getMockWebConnection().getRequestCount());
-        assertEquals(httpMethod, getMockWebConnection().getLastWebRequest().getHttpMethod());
+        assertEquals(reqCount + Integer.parseInt(getExpectedAlerts()[1]), webConn.getRequestCount());
+        assertEquals(httpMethod, webConn.getLastWebRequest().getHttpMethod());
 
         if (resendParams) {
-            assertTrue(getMockWebConnection().getLastWebRequest().getRequestParameters().size() > 0);
+            assertTrue(webConn.getLastWebRequest().getRequestParameters().size() > 0);
 
-            final NameValuePair param = getMockWebConnection().getLastWebRequest().getRequestParameters().get(0);
+            final NameValuePair param = webConn.getLastWebRequest().getRequestParameters().get(0);
             if ("param1".equals(param.getName())) {
                 assertEquals("paramValue", param.getValue());
             }
@@ -439,14 +441,14 @@ public class WebClient6Test extends WebDriverTestCase {
                 assertEquals("foo", param.getValue());
             }
             else if (!param.getName().startsWith("ignore")) {
-                Assert.fail("unexpected param '" + param.getName() + "'");
+                Assertions.fail("unexpected param '" + param.getName() + "'");
             }
         }
         else {
-            assertEquals(0, getMockWebConnection().getLastWebRequest().getRequestParameters().size());
+            assertEquals(0, webConn.getLastWebRequest().getRequestParameters().size());
         }
 
-        assertEquals(getExpectedAlerts()[0], getMockWebConnection().getLastWebRequest().getUrl().toString());
+        assertEquals(getExpectedAlerts()[0], webConn.getLastWebRequest().getUrl().toString());
         assertEquals(getExpectedAlerts()[2], driver.getCurrentUrl());
     }
 
@@ -456,7 +458,7 @@ public class WebClient6Test extends WebDriverTestCase {
      */
     @Test
     public void redirect302WithoutLocation() throws Exception {
-        final String html = "<html><body><a href='page2'>to redirect</a></body></html>";
+        final String html = DOCTYPE_HTML + "<html><body><a href='page2'>to redirect</a></body></html>";
         getMockWebConnection().setDefaultResponse("", 302, "Found", null);
 
         final WebDriver driver = loadPage2(html);
@@ -470,7 +472,7 @@ public class WebClient6Test extends WebDriverTestCase {
      */
     @Test
     public void redirect302ChangePageUrl() throws Exception {
-        final String html = "<html><body><a href='redirect.html'>redirect</a></body></html>";
+        final String html = DOCTYPE_HTML + "<html><body><a href='redirect.html'>redirect</a></body></html>";
 
         final URL url = new URL(URL_FIRST, "page2.html");
         getMockWebConnection().setResponse(url, html);
@@ -491,7 +493,7 @@ public class WebClient6Test extends WebDriverTestCase {
      */
     @Test
     public void redirect302UrlsInQuery() throws Exception {
-        final String html = "<html><body><a href='redirect.html'>redirect</a></body></html>";
+        final String html = DOCTYPE_HTML + "<html><body><a href='redirect.html'>redirect</a></body></html>";
 
         final URL url = new URL(URL_FIRST, "page2.html");
         getMockWebConnection().setResponse(url, html);

@@ -14,9 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.annotation.TestedBrowser.FF;
-import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -28,15 +25,11 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -45,13 +38,12 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 /**
  * Tests for {@link HTMLImageElement}.
  *
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author George Murnock
  * @author Marc Guillemot
  * @author Ronald Brill
  * @author Frank Danek
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLImageElementTest extends WebDriverTestCase {
 
     /**
@@ -60,7 +52,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLImageElement]", "[object HTMLImageElement]"})
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -82,7 +75,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"IMG", "IMG"})
     public void nodeName() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -104,7 +98,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"IMG", "IMG"})
     public void tagName() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -131,7 +126,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             FF_ESR = {"[object HTMLImageElement]", "[object HTMLElement]", "IMG", "IMAGE",
                       "[object HTMLImageElement]", "[object HTMLImageElement]", "IMG", "IMG"})
     public void image() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -159,7 +155,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "undefined", "", ""})
     public void src() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -184,8 +181,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("§§URL§§foo.gif")
     public void getSrc() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -206,8 +203,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getSrc_newImage_srcNotSet() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -227,8 +224,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
      */
     @Test
     public void setSrc() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function doTest() {\n"
             + "  document.getElementById('anImage').src = 'bar.gif';\n"
             + "}\n"
@@ -256,8 +253,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"onLoad", "§§URL§§bar.gif"})
     public void setSrc_newImage() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -280,8 +277,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("foo")
     public void attributeName() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -302,7 +299,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
      */
     @Test
     public void onLoad_BadUrl() throws Exception {
-        final String html = "<html><body><img src='http:// [/url]http://x.com/a/b' onload='alert(1)'/></body></html>";
+        final String html = DOCTYPE_HTML
+                + "<html><body><img src='http:// [/url]http://x.com/a/b' onload='alert(1)'/></body></html>";
         loadPageWithAlerts2(html);
     }
 
@@ -312,8 +310,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "relative", "", ""})
     public void newImage() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -340,10 +338,13 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                   "top", "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
             FF_ESR = {"left", "right", "middle", "justify", "bottom", "middle",
                       "top", "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"left", "right", "center", "justify", "bottom", "middle",
+                       "top", "absbottom", "absmiddle", "baseline", "texttop", "wrong", ""},
+            FF_ESR = {"left", "right", "center", "justify", "bottom", "middle",
+                      "top", "absbottom", "absmiddle", "baseline", "texttop", "wrong", ""})
     public void getAlign() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <img id='i1' align='left' />\n"
             + "  <img id='i2' align='right' />\n"
             + "  <img id='i3' align='center' />\n"
@@ -379,10 +380,13 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                   "bottom", "middle", "top", "absbottom", "absmiddle", "bottom", "texttop"},
             FF_ESR = {"CenTer", "8", "foo", "left", "right", "middle", "justify",
                       "bottom", "middle", "top", "absbottom", "absmiddle", "bottom", "texttop"})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"CenTer", "8", "foo", "left", "right", "center", "justify",
+                       "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"},
+            FF_ESR = {"CenTer", "8", "foo", "left", "right", "center", "justify",
+                      "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"})
     public void setAlign() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <img id='i1' align='left' />\n"
 
             + "<script>\n"
@@ -425,7 +429,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"number: 300", "number: 200", "number: 0", "number: 0", "number: 0", "number: 0"})
     public void widthHeightWithoutSource() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function showInfo(imageId) {\n"
@@ -457,7 +462,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     public void widthHeightWithSource() throws Exception {
         getMockWebConnection().setDefaultResponse("");
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function showInfo(imageId) {\n"
@@ -489,15 +495,16 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     }
 
     /**
-      * Test that image's width and height are numbers.
-      * @throws Exception if the test fails
-      */
+     * Test that image's width and height are numbers.
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts({"number: 300", "number: 200", "number: 0", "number: 0", "number: 0", "number: 0"})
     public void widthHeightEmptySource() throws Exception {
         getMockWebConnection().setDefaultResponse("");
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function showInfo(imageId) {\n"
@@ -528,9 +535,9 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     }
 
     /**
-      * Test that image's width and height are numbers.
-      * @throws Exception if the test fails
-      */
+     * Test that image's width and height are numbers.
+     * @throws Exception if the test fails
+     */
     @Test
     @Alerts(DEFAULT = {"number: 300", "number: 200", "number: 24", "number: 24", "number: 24", "number: 24"},
             CHROME = {"number: 300", "number: 200", "number: 0", "number: 0", "number: 0", "number: 0"},
@@ -538,7 +545,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     public void widthHeightBlankSource() throws Exception {
         getMockWebConnection().setDefaultResponse("");
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function showInfo(imageId) {\n"
@@ -579,7 +587,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     public void widthHeightInvalidSource() throws Exception {
         getMockWebConnection().setDefaultResponse("");
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function showInfo(imageId) {\n"
@@ -616,7 +625,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setDefaultResponse("Test");
         }
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function showInfo(imageId) {\n"
@@ -667,7 +677,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
         }
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function showInfo(text) {\n"
             + "    document.title += text + ';';\n"
@@ -708,7 +719,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setDefaultResponse("Test");
         }
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function showInfo(text) {\n"
             + "    document.title += text + ';';\n"
@@ -744,7 +756,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setDefaultResponse("Test");
         }
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function showInfo(text) {\n"
             + "    document.title += text + ';';\n"
@@ -772,8 +785,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"test", "string", "hui", "", "null", "false", "true", ""})
     public void alt() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -814,7 +827,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"myImage clicked", "myImageNone clicked"})
     public void click() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -840,7 +854,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("myImageWithMap clicked")
     public void clickWithMap() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -873,7 +888,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + "  var i = new Image();\n"
             + "  i.src = 'img.jpg';\n"
@@ -904,7 +920,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + "  var i = new Image();\n"
             + "  i.onload = function() { document.title += 'onload;'; };\n"
@@ -936,7 +953,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + "  var i = new Image();\n"
             + "  i.src = 'img.jpg';\n"
@@ -977,7 +995,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + "  var i = new Image();\n"
             + "  i.src = 'img.jpg';\n"
@@ -1019,7 +1038,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + "  var i = new Image();\n"
             + "  i.onload = function() { document.title += 'onload;'; };\n"
@@ -1058,7 +1078,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body>\n"
                 + "<script>\n"
                 + "  var i = new Image();\n"
                 + "  i.src = 'img.jpg';\n"
@@ -1103,8 +1124,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
             getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
-        final String html
-                = "<html><body><img id='img' name='img'/><script>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body><img id='img' name='img'/><script>\n"
                 + "  var i = new Image();\n"
                 + "  i.onload = function() {\n"
                 + "    document.title += 'image one;';\n"
@@ -1139,8 +1160,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLImageElement]")
     public void ctorImage() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1163,8 +1184,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctorHTMLImageElement() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1189,8 +1210,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
     @Test
     @Alerts("{\"enumerable\":true,\"configurable\":true}")
     public void imagePrototype() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1223,7 +1244,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<body>\n"
                 + "  <img src='img.jpg' onload='test()'>\n"
                 + LOG_TEXTAREA
@@ -1261,7 +1283,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -1290,7 +1313,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -1320,7 +1344,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -1357,8 +1382,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<img id='img' name='img'/>\n"
             + "<script>\n"
@@ -1392,7 +1417,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
      */
     @Test
     public void onLoad_notCalledWhenImageNotDownloaded() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -1420,7 +1446,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -1450,7 +1477,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -1487,8 +1515,8 @@ public class HTMLImageElementTest extends WebDriverTestCase {
                     MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
                 + LOG_TEXTAREA_FUNCTION

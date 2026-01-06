@@ -26,8 +26,8 @@ import org.w3c.dom.traversal.NodeFilter;
  * therefore we have this impl as backend.
  *
  * @see <a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/traversal.html">
- * DOM-Level-2-Traversal-Range</a>
- * @author <a href="mailto:mike@10gen.com">Mike Dirolf</a>
+ *     DOM-Level-2-Traversal-Range</a>
+ * @author Mike Dirolf
  * @author Frank Danek
  * @author Ahmed Ashour
  * @author Ronald Brill
@@ -95,6 +95,7 @@ public class HtmlDomTreeWalker implements Serializable {
      * @see org.w3c.dom.traversal.TreeWalker#getExpandEntityReferences()
      * @return the ExpandEntityReferences setting
      */
+    @SuppressWarnings("PMD.BooleanGetMethodName")
     public boolean getExpandEntityReferences() {
         return expandEntityReferences_;
     }

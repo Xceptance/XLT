@@ -16,20 +16,17 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLTableElement}.
  *
  * @author David D. Kilzer
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Marc Guillemot
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLTableElement2Test extends SimpleWebTestCase {
 
     /**
@@ -37,8 +34,8 @@ public class HTMLTableElement2Test extends SimpleWebTestCase {
      */
     @Test
     public void width() throws Exception {
-        final String content
-            = "<html><head></head><body>\n"
+        final String content = DOCTYPE_HTML
+                + "<html><head></head><body>\n"
                 + "<table id='tableID' style='background:blue'><tr><td></td></tr></table>\n"
                 + "<script language='javascript'>\n"
                 + "    var table = document.getElementById('tableID');\n"

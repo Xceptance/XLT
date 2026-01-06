@@ -25,11 +25,11 @@ import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
  *
  * @param <SCRIPT> the script type
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:chen_jun@users.sourceforge.net">Chen Jun</a>
+ * @author Mike Bowler
+ * @author Chen Jun
  * @author David K. Taylor
  * @author Chris Erskine
- * @author <a href="mailto:bcurren@esomnie.com">Ben Curren</a>
+ * @author Ben Curren
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Daniel Gredler
@@ -99,7 +99,7 @@ public interface AbstractJavaScriptEngine<SCRIPT> {
 
     /**
      * Indicates if JavaScript is running in current thread.
-     * This allows code to know if their own evaluation is has been triggered by some JS code.
+     * This allows code to know if their own evaluation has been triggered by some JS code.
      * @return {@code true} if JavaScript is running
      */
     boolean isScriptRunning();

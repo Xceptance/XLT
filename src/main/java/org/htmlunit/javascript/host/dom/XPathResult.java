@@ -187,11 +187,11 @@ public class XPathResult extends HtmlUnitScriptable {
 
     /**
      * @return signifies that the iterator has become invalid.
-     * It is true if XPathResult.resultType is UNORDERED_NODE_ITERATOR_TYPE or
-     * ORDERED_NODE_ITERATOR_TYPE and the document has been modified since this result was returned.
+     *         It is true if XPathResult.resultType is UNORDERED_NODE_ITERATOR_TYPE or
+     *         ORDERED_NODE_ITERATOR_TYPE and the document has been modified since this result was returned.
      */
     @JsxGetter
-    public boolean getInvalidIteratorState() {
+    public boolean isInvalidIteratorState() {
         return false;
     }
 
@@ -263,6 +263,7 @@ public class XPathResult extends HtmlUnitScriptable {
      * @return the value of this boolean result
      */
     @JsxGetter
+    @SuppressWarnings("PMD.BooleanGetMethodName")
     public boolean getBooleanValue() {
         if (resultType_ != BOOLEAN_TYPE) {
             throw JavaScriptEngine.reportRuntimeError("Cannot get booleanValue for type: " + resultType_);

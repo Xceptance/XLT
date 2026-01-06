@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLVideoElement}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLVideoElementTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts("false")
     public void prototype() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
@@ -54,7 +51,7 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLVideoElement]", "function HTMLVideoElement() { [native code] }"})
     public void type() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -80,8 +77,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "VIDEO"})
     public void nodeTypeName() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v' src='flower.mp4'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -103,8 +100,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Alerts({"string", "§§URL§§flower.mp4", "§§URL§§tree.mp4",
              "<video id=\"v\" src=\"tree.mp4\"></video>"})
     public void src() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v' src='flower.mp4'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -131,8 +128,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Alerts({"string", "", "§§URL§§tree.mp4",
         "<video id=\"v\" src=\"tree.mp4\"><source src=\"flower.mp4\" type=\"video/mp4\"></video>"})
     public void srcChild() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v'><source src='flower.mp4' type='video/mp4'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -158,8 +155,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"string", ""})
     public void srcNotDefined() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -180,8 +177,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"string", ""})
     public void currentSrc() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v' src='flower.mp4'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -203,8 +200,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"string", ""})
     public void currentSrcChild() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v'><source src='flower.mp4' type='video/mp4'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -226,8 +223,8 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"string", ""})
     public void currentSrcNotDefined() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<video id='v'></video>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

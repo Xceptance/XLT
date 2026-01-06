@@ -33,12 +33,10 @@ import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -50,7 +48,6 @@ import org.openqa.selenium.WebDriver;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HtmlFileInput3Test extends WebDriverTestCase {
 
     /**
@@ -204,8 +201,8 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"CONTENT_TYPE:audio/ogg", "charset"},
-            FF = {"CONTENT_TYPE:video/ogg", "charset"},
-            FF_ESR = {"CONTENT_TYPE:video/ogg", "charset"})
+            FF = {"CONTENT_TYPE:application/ogg", "charset"},
+            FF_ESR = {"CONTENT_TYPE:application/ogg", "charset"})
     public void contentTypeOgg() throws Exception {
         contentType("ogg");
     }
@@ -325,7 +322,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
     /**
      * Starts the web server.
      */
-    @BeforeClass
+    @BeforeAll
     public static void before() {
         try {
             final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
@@ -352,7 +349,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
             assertTrue(tmpFile.delete());
         }
 
-        final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
+        final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME.toMillis();
 
         while (System.currentTimeMillis() < maxWait) {
             try {

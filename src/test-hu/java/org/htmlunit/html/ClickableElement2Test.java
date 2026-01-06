@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
@@ -32,7 +30,6 @@ import org.openqa.selenium.interactions.Actions;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class ClickableElement2Test extends WebDriverTestCase {
 
     /**
@@ -41,8 +38,8 @@ public class ClickableElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void clickOnFocus() throws Exception {
-        final String html
-            = "<html><head><script>" + LOG_TITLE_FUNCTION + "</script></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>" + LOG_TITLE_FUNCTION + "</script></head><body>\n"
             + "<form>\n"
             + "  <input type='button' id='textfield1' onfocus='log(1)'>\n"
             + "</form>\n"
@@ -60,7 +57,8 @@ public class ClickableElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"click", "click", "dblclick"})
     public void dblClick() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION

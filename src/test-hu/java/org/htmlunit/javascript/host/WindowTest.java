@@ -14,7 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,18 +46,16 @@ import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Window}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:chen_jun@users.sourceforge.net">Chen Jun</a>
+ * @author Mike Bowler
+ * @author Chen Jun
  * @author David K. Taylor
  * @author Darrell DeBoer
  * @author Marc Guillemot
@@ -69,7 +67,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WindowTest extends SimpleWebTestCase {
 
     /**
@@ -83,15 +80,15 @@ public class WindowTest extends SimpleWebTestCase {
         final List<String> collectedAlerts = new ArrayList<>();
         webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"MyNewWindow\").focus(); "
             + "return false;'>Click me</a>\n"
             + "</form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "<script>alert(self.name)</script>\n"
             + "</body></html>";
 
@@ -153,14 +150,14 @@ public class WindowTest extends SimpleWebTestCase {
         final List<String> collectedAlerts = new ArrayList<>();
         webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-        final String firstContent
-            = "<html><head><title>First</title><base target='MyNewWindow'></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title><base target='MyNewWindow'></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' href='" + URL_SECOND + "'>Click me</a>\n"
             + "</form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "<script>alert(self.name)</script>\n"
             + "</body></html>";
 
@@ -199,18 +196,18 @@ public class WindowTest extends SimpleWebTestCase {
         final List<String> collectedAlerts = new ArrayList<>();
         webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "  <iframe name='secondFrame' id='secondFrame' src='" + URL_SECOND + "'></iframe>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "  <a id='link' "
             + "onClick='window.open(\"" + URL_THIRD + "\", \"_blank\").focus(); '>\n"
             + "Click me</a>\n"
             + "</body></html>";
-        final String thirdContent
-            = "<html><head><title>Third</title></head><body>\n"
+        final String thirdContent = DOCTYPE_HTML
+            + "<html><head><title>Third</title></head><body>\n"
             + "</body></html>";
 
         webConnection.setResponse(URL_FIRST, firstContent);
@@ -262,14 +259,15 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"_self\"); "
             + "return false;'>Click me</a>\n"
             + "</form>\n"
             + "</body></html>";
-        final String secondContent = "<html><head><title>Second</title></head><body></body></html>";
+        final String secondContent = DOCTYPE_HTML
+                + "<html><head><title>Second</title></head><body></body></html>";
 
         webConnection.setResponse(URL_FIRST, firstContent);
         webConnection.setResponse(URL_SECOND, secondContent);
@@ -320,20 +318,21 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "  <iframe name='secondFrame' id='secondFrame' src='" + URL_SECOND + "'></iframe>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "  <iframe name='thirdFrame' id='thirdFrame' src='" + URL_THIRD + "'></iframe>\n"
             + "</body></html>";
-        final String thirdContent
-            = "<html><head><title>Third</title></head><body>\n"
-            + "    <a id='link' onClick='window.open(\"http://fourth\", \"_top\"); "
+        final String thirdContent = DOCTYPE_HTML
+            + "<html><head><title>Third</title></head><body>\n"
+            + "  <a id='link' onClick='window.open(\"http://fourth\", \"_top\"); "
             + "return false;'>Click me</a>\n"
             + "</body></html>";
-        final String fourthContent = "<html><head><title>Fourth</title></head><body></body></html>";
+        final String fourthContent = DOCTYPE_HTML
+            + "<html><head><title>Fourth</title></head><body></body></html>";
 
         webConnection.setResponse(URL_FIRST, firstContent);
         webConnection.setResponse(URL_SECOND, secondContent);
@@ -387,20 +386,21 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "  <iframe name='secondFrame' id='secondFrame' src='" + URL_SECOND + "'></iframe>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "  <iframe name='thirdFrame' id='thirdFrame' src='" + URL_THIRD + "'></iframe>\n"
             + "</body></html>";
-        final String thirdContent
-            = "<html><head><title>Third</title></head><body>\n"
-            + "    <a id='link' onClick='window.open(\"http://fourth\", \"_parent\"); "
+        final String thirdContent = DOCTYPE_HTML
+            + "<html><head><title>Third</title></head><body>\n"
+            + "  <a id='link' onClick='window.open(\"http://fourth\", \"_parent\"); "
             + "return false;'>Click me</a>\n"
             + "</body></html>";
-        final String fourthContent = "<html><head><title>Fourth</title></head><body></body></html>";
+        final String fourthContent = DOCTYPE_HTML
+            + "<html><head><title>Fourth</title></head><body></body></html>";
 
         webConnection.setResponse(URL_FIRST, firstContent);
         webConnection.setResponse(URL_SECOND, secondContent);
@@ -453,8 +453,8 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts({"true", "true", "true"})
     public void openWindow_existingWindow() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function test() {\n"
             + "  var w1 = window.open('about:blank', 'foo');\n"
             + "  alert(w1 != null);\n"
@@ -476,8 +476,8 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void openWindow_blocked() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + "  var w;\n"
@@ -510,8 +510,8 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void alert_NoAlertHandler() throws Exception {
-        final String firstContent
-            = "<html><head><title>First</title><script>function doTest() {alert('foo')}</script></head>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title><script>function doTest() {alert('foo')}</script></head>\n"
             + "<body onload='doTest()'></body></html>";
 
         final HtmlPage firstPage = loadPage(firstContent);
@@ -523,16 +523,16 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void parentAndTop() throws Exception {
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "  <iframe name='left' src='" + URL_SECOND + "'></iframe>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "  <iframe name='innermost' src='" + URL_THIRD + "'></iframe>\n"
             + "</body></html>";
-        final String thirdContent
-            = "<html><head><title>Third</title><script>\n"
+        final String thirdContent = DOCTYPE_HTML
+            + "<html><head><title>Third</title><script>\n"
             + "function doAlert() {\n"
             + "  alert(parent != this);\n"
             + "  alert(top != this);\n"
@@ -608,8 +608,8 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void confirm_noConfirmHandler() throws Exception {
-        final String html
-            = "<html><head><title>First</title><script>function doTest() {alert(confirm('foo'))}</script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>First</title><script>function doTest() {alert(confirm('foo'))}</script>\n"
             + "</head><body onload='doTest()'></body></html>";
 
         final List<String> collectedAlerts = new ArrayList<>();
@@ -634,8 +634,8 @@ public class WindowTest extends SimpleWebTestCase {
                     return "Flintstone";
                 });
 
-                final String html
-                        = "<html><head><title>First</title>\n"
+                final String html = DOCTYPE_HTML
+                        + "<html><head><title>First</title>\n"
                         + "<script>function doTest() {alert(prompt('foo'))}</script>\n"
                         + "</head><body onload='doTest()'></body></html>";
 
@@ -668,8 +668,8 @@ public class WindowTest extends SimpleWebTestCase {
                     return defaultValue;
                 });
 
-                final String html
-                        = "<html><head><title>First</title>\n"
+                final String html = DOCTYPE_HTML
+                        + "<html><head><title>First</title>\n"
                         + "<script>function doTest() {alert(prompt('foo', 'some default'))}</script>\n"
                         + "</head><body onload='doTest()'></body></html>";
 
@@ -697,8 +697,8 @@ public class WindowTest extends SimpleWebTestCase {
 
         webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-        final String firstContent
-            = "<html><head><title>First</title><script>function doTest() {alert(prompt('foo'))}</script>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title><script>function doTest() {alert(prompt('foo'))}</script>\n"
             + "</head><body onload='doTest()'></body></html>";
 
         webConnection.setResponse(URL_FIRST, firstContent);
@@ -719,18 +719,18 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String aContent
-            = "<html><head><title>A</title></head><body>\n"
+        final String aContent = DOCTYPE_HTML
+            + "<html><head><title>A</title></head><body>\n"
             + "<button id='clickme' onClick='window.open(\"b/b.html\");'>Click me</a>\n"
             + "</body></html>";
-        final String bContent
-            = "<html><head><title>B</title></head><body>\n"
+        final String bContent = DOCTYPE_HTML
+            + "<html><head><title>B</title></head><body>\n"
             + "<button id='clickme' onClick='opener.location.href=\"../c.html\";'>Click me</a>\n"
             + "</body></html>";
-        final String cContent
-            = "<html><head><title>C</title></head><body></body></html>";
-        final String failContent
-            = "<html><head><title>FAILURE!!!</title></head><body></body></html>";
+        final String cContent = DOCTYPE_HTML
+            + "<html><head><title>C</title></head><body></body></html>";
+        final String failContent = DOCTYPE_HTML
+            + "<html><head><title>FAILURE!!!</title></head><body></body></html>";
 
         webConnection.setResponse(new URL("http://opener/test/a.html"), aContent);
         webConnection.setResponse(new URL("http://opener/test/b/b.html"), bContent);
@@ -765,16 +765,16 @@ public class WindowTest extends SimpleWebTestCase {
         final List<String> collectedAlerts = new ArrayList<>();
         webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
-             + "<a href='" + URL_SECOND + "' id='link' target='_blank'>Link</a>\n"
-             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body>\n"
-             + "<h1>Second</h1><form>\n"
-             + "<input type='submit' name='action' value='Close' id='button' "
-             + "onclick='window.close(); return false;'>\n"
-             + "</form></body></html>";
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
+            + "<a href='" + URL_SECOND + "' id='link' target='_blank'>Link</a>\n"
+            + "</body></html>";
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
+            + "<h1>Second</h1><form>\n"
+            + "<input type='submit' name='action' value='Close' id='button' "
+            + "onclick='window.close(); return false;'>\n"
+            + "</form></body></html>";
 
         webConnection.setResponse(URL_FIRST, firstContent);
         webConnection.setResponse(URL_SECOND, secondContent);
@@ -831,8 +831,8 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent
-            = "<html><head><title>First</title><script>\n"
+        final String firstContent = DOCTYPE_HTML
+            +  "<html><head><title>First</title><script>\n"
             + "function doTest() {\n"
             + "  alert(window.status);\n"
             + "  window.status = 'newStatus';\n"
@@ -870,7 +870,8 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void print() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<script>\n"
@@ -892,7 +893,8 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"_blank\").focus(); return false;'"
             + "return false;'>Click me</a>\n"
@@ -956,7 +958,8 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"_blank\").focus(); return false;'"
             + "return false;'>Click me</a>\n"
@@ -1014,7 +1017,8 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"_blank\").focus(); return false;'"
             + "return false;'>Click me</a>\n"
@@ -1072,7 +1076,8 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"_blank\").focus(); return false;'"
             + "return false;'>Click me</a>\n"
@@ -1130,13 +1135,15 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form name='form1'>\n"
             + "  <a id='link' onClick='window.open(\"" + URL_SECOND + "\", \"_blank\").focus(); return false;'"
             + "return false;'>Click me</a>\n"
             + "</form>\n"
             + "</body></html>";
-        final String secondContent = "<html><head><title>Second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body>\n"
             + "<p>Hello World</p>\n"
             + "</body></html>";
 
@@ -1187,8 +1194,8 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts("not available")
     public void showModalDialog() throws Exception {
-        final String html1
-            = "<html><head><script>\n"
+        final String html1 = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "  function test() {\n"
             + "    if (!window.showModalDialog) {alert('not available'); return; }\n"
             + "    alert(window.returnValue);\n"
@@ -1203,8 +1210,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "  <button onclick='test()' id='b'>Test</button>\n"
             + "</body></html>";
 
-        final String html2
-            = "<html><head><script>\n"
+        final String html2 = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "  var o = window.dialogArguments;\n"
             + "  alert(o.firstName);\n"
             + "  alert(o.lastName);\n"
@@ -1245,8 +1252,8 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts({"undefined", "not available"})
     public void showModalDialogWithButton() throws Exception {
-        final String html1
-            = "<html><head>\n"
+        final String html1 = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + "    function test() {\n"
             + "      alert(window.returnValue);\n"
@@ -1261,8 +1268,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "  <button onclick='test()' id='openDlg'>Test</button>\n"
             + "</body></html>";
 
-        final String html2
-            = "<html><head>\n"
+        final String html2 = DOCTYPE_HTML
+            + "<html><head>\n"
             + "</head>\n"
             + "<body>\n"
             + "  <button id='closeDlg' onclick='window.returnValue = \"result\"; window.close();'></button>\n"
@@ -1293,8 +1300,8 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts("")
     public void showModelessDialog() throws Exception {
-        final String html1
-            = "<html><head><script>\n"
+        final String html1 = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "  var userName = '';\n"
             + "  function test() {\n"
             + "    if (window.showModelessDialog) {\n"
@@ -1307,8 +1314,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "  <input type='button' id='b' value='Test' onclick='test()'>\n"
             + "</body></html>";
 
-        final String html2
-            = "<html><head><script>\n"
+        final String html2 = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function update() {\n"
             + "  var w = dialogArguments;\n"
             + "  w.userName = document.getElementById('name').value;\n"
@@ -1343,50 +1350,14 @@ public class WindowTest extends SimpleWebTestCase {
     }
 
     /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"true", "[object Window]", "[object Window]"})
-    public void overwriteProperty_top() throws Exception {
-        final String html
-            = "<html><body><script>\n"
-            + "  alert(window.top == this);\n"
-            + "  var top = 123;\n"
-            + "  alert(top);\n"
-            + "  alert(window.top);\n"
-            + "</script></body></html>";
-        // this can't be tested using WebDriver currently (i.e. using loadPageWithAlerts2)
-        // because the hack currently used to capture alerts needs reference to property "top".
-        loadPageWithAlerts(html);
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"true", "[object Window]", "[object Window]"})
-    public void overwriteProperty_top2() throws Exception {
-        final String html
-            = "<html><body><script>\n"
-            + "  alert(window.top == this);\n"
-            + "  window.top = 123;\n"
-            + "  alert(top);\n"
-            + "  alert(window.top);\n"
-            + "</script></body></html>";
-        // this can't be tested using WebDriver currently (i.e. using loadPageWithAlerts2)
-        // because the hack currently used to capture alerts needs reference to property "top".
-        loadPageWithAlerts(html);
-    }
-
-    /**
      * Download of next page is done first after onbeforeunload is done.
      * @throws Exception if an error occurs
      */
     @Test
     @Alerts("x")
     public void onbeforeunload_calledBeforeDownload() throws Exception {
-        final String html
-            = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "  window.onbeforeunload = function() { alert('x'); return 'hello'; };\n"
             + "  window.location = 'foo.html';\n"
             + "</script></body></html>";
@@ -1414,7 +1385,8 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void serialization() throws Exception {
-        final String html = "<html><head></head><body><iframe></iframe><script>window.frames</script></body></html>";
+        final String html = DOCTYPE_HTML
+            + "<html><head></head><body><iframe></iframe><script>window.frames</script></body></html>";
         final HtmlPage page = loadPageWithAlerts(html);
         clone(page.getEnclosingWindow());
     }
@@ -1426,8 +1398,8 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts("x")
     public void onbeforeunload_setToFunction() throws Exception {
-        final String html
-            = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "  window.onbeforeunload = function() { alert('x'); return 'x'; };\n"
             + "  window.location = 'about:blank';\n"
             + "</script></body></html>";
@@ -1440,7 +1412,8 @@ public class WindowTest extends SimpleWebTestCase {
     @Test
     @Alerts({"10", "20", "30", "40"})
     public void viewportSetters() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "<script>\n"
@@ -1528,8 +1501,8 @@ public class WindowTest extends SimpleWebTestCase {
             }
         });
 
-        final String html
-            = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
             + "  if (window.dump) {\n"
             + "    window.dump('Dumper');\n"
@@ -1548,8 +1521,8 @@ public class WindowTest extends SimpleWebTestCase {
      */
     @Test
     public void overwriteFunctions_alert() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script language='JavaScript'>\n"
             + "    function alert(x) {\n"
@@ -1577,8 +1550,8 @@ public class WindowTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final String firstContent
-            = "<html><head>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function log(msg) { window.document.title += msg + '§'; }\n"
 
@@ -1600,7 +1573,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         HtmlPage page = webClient.getPage(URL_FIRST);
         page.getElementById("click").click();
-        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME.toMillis());
 
         assertEquals(getExpectedAlerts()[0], page.getTitleText());
 
@@ -1608,7 +1581,7 @@ public class WindowTest extends SimpleWebTestCase {
             @Override
             public void handlePrint(final HtmlPage pageToPrint) {
                 try {
-                    Thread.sleep(DEFAULT_WAIT_TIME);
+                    Thread.sleep(DEFAULT_WAIT_TIME.toMillis());
                 }
                 catch (final InterruptedException e) {
                     pageToPrint.executeJavaScript("log('" + e.getMessage() + "');");
@@ -1619,7 +1592,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         page = webClient.getPage(URL_FIRST);
         page.getElementById("click").click();
-        webClient.waitForBackgroundJavaScript(200000 * DEFAULT_WAIT_TIME);
+        webClient.waitForBackgroundJavaScript(200000 * DEFAULT_WAIT_TIME.toMillis());
 
         assertEquals(getExpectedAlerts()[1], page.getTitleText());
     }
@@ -1682,8 +1655,8 @@ public class WindowTest extends SimpleWebTestCase {
         });
 
 
-        final String firstContent
-            = "<html><head>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function log(msg) { window.document.title += msg + '§'; }\n"
 
@@ -1725,7 +1698,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         final HtmlPage page = webClient.getPage(URL_FIRST);
         page.getElementById("click").click();
-        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME.toMillis());
 
         assertEquals(getExpectedAlerts()[0], page.getTitleText());
     }
@@ -1752,8 +1725,8 @@ public class WindowTest extends SimpleWebTestCase {
         });
 
 
-        final String firstContent
-            = "<html><head>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function log(msg) { window.document.title += msg + '§'; }\n"
 
@@ -1780,7 +1753,7 @@ public class WindowTest extends SimpleWebTestCase {
 
         final HtmlPage page = webClient.getPage(URL_FIRST);
         page.getElementById("click").click();
-        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
+        webClient.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME.toMillis());
 
         assertEquals(getExpectedAlerts()[0], page.getTitleText());
     }

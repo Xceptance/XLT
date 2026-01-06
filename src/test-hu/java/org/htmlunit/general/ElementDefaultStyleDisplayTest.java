@@ -15,12 +15,8 @@
 package org.htmlunit.general;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.annotations.StandardsMode;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.AlertsStandards;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the result of the default 'display' style of an element.
@@ -28,12 +24,11 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
-@StandardsMode
 public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
 
     private void test(final String tagName) throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
             + "  function test() {\n"
@@ -378,7 +373,6 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"", "block"})
-    @AlertsStandards(DEFAULT = {"", "block"})
     public void dd() throws Exception {
         test("dd");
     }

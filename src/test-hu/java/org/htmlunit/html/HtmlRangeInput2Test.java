@@ -15,16 +15,13 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlRangeInput}.
  *
  * @author Anton Demydenko
  */
-@RunWith(BrowserRunner.class)
 public class HtmlRangeInput2Test extends SimpleWebTestCase {
 
     /**
@@ -32,7 +29,8 @@ public class HtmlRangeInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void testDefault() throws Exception {
-        final String htmlContent = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -65,7 +63,8 @@ public class HtmlRangeInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void minValidation() throws Exception {
-        final String htmlContent = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -122,7 +121,8 @@ public class HtmlRangeInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void maxValidation() throws Exception {
-        final String htmlContent = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"

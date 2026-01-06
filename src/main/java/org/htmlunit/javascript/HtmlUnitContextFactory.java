@@ -34,12 +34,10 @@ import org.htmlunit.corejs.javascript.Evaluator;
 import org.htmlunit.corejs.javascript.EvaluatorException;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Script;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.debug.Debugger;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy;
 
 /**
  * ContextFactory that supports termination of scripts if they exceed a timeout. Based on example from
@@ -96,7 +94,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
      * The HtmlUnit default implementation ({@link DebuggerImpl}, {@link DebugFrameImpl}) may be
      * used, or a custom debugger may be used instead. By default, no debugger is used.
      *
-     * @param debugger the JavaScript debugger to use (may be {@code null})
+     * @param debugger the JavaScript debugger to use (maybe {@code null})
      */
     public void setDebugger(final Debugger debugger) {
         debugger_ = debugger;
@@ -268,9 +266,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
             cx.setDebugger(debugger_, null);
         }
 
-        // register custom RegExp processing
-        ScriptRuntime.setRegExpProxy(cx, new HtmlUnitRegExpProxy(ScriptRuntime.getRegExpProxy(cx)));
-
         cx.setMaximumInterpreterStackDepth(5_000);
 
         return cx;
@@ -304,6 +299,19 @@ public class HtmlUnitContextFactory extends ContextFactory {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Object doTopCall(final Script script,
+            final Context cx, final Scriptable scope,
+            final Scriptable thisObj) {
+
+        final TimeoutContext tcx = (TimeoutContext) cx;
+        tcx.startClock();
+        return super.doTopCall(script, cx, scope, thisObj);
+    }
+
+    /**
      * Same as {@link ContextFactory}{@link #call(ContextAction)} but with handling
      * of some exceptions.
      *
@@ -329,21 +337,15 @@ public class HtmlUnitContextFactory extends ContextFactory {
     protected boolean hasFeature(final Context cx, final int featureIndex) {
         switch (featureIndex) {
             case Context.FEATURE_RESERVED_KEYWORD_AS_IDENTIFIER:
-                return true;
-            case Context.FEATURE_E4X:
-                return false;
             case Context.FEATURE_OLD_UNDEF_NULL_THIS:
-                return true;
-            case Context.FEATURE_NON_ECMA_GET_YEAR:
-                return false;
             case Context.FEATURE_LITTLE_ENDIAN:
-                return true;
             case Context.FEATURE_LOCATION_INFORMATION_IN_ERROR:
-                return true;
             case Context.FEATURE_INTL_402:
-                return true;
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
                 return true;
+            case Context.FEATURE_E4X:
+            case Context.FEATURE_NON_ECMA_GET_YEAR:
+                return false;
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
             case Context.FEATURE_HTMLUNIT_ARRAY_SORT_COMPERATOR_ACCEPTS_BOOL:
@@ -395,7 +397,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
         public void error(final String message, final String sourceName, final int line,
                 final String lineSource, final int lineOffset) {
             // no need to log here, this is only used to create the exception
-            // the exception gets logged if not catched later on
+            // gets logged if not catched later on
             throw new EvaluatorException(message, sourceName, line, lineSource, lineOffset);
         }
 
@@ -414,7 +416,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
                 final String message, final String sourceName, final int line,
                 final String lineSource, final int lineOffset) {
             // no need to log here, this is only used to create the exception
-            // the exception gets logged if not catched later on
+            // gets logged if not catched later on
             return new EvaluatorException(message, sourceName, line, lineSource, lineOffset);
         }
     }

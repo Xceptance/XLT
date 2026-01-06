@@ -15,7 +15,7 @@
 package org.htmlunit.javascript.configuration;
 
 import static org.htmlunit.BrowserVersion.FIREFOX;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,11 +38,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.RandomStringGenerator;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.MockWebConnection;
-import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
+import org.htmlunit.WebTestCase;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link JavaScriptConfiguration}.
@@ -51,7 +54,7 @@ import org.junit.Test;
  * @author Frank Danek
  * @author Joerg Werner
  */
-public class JavaScriptConfigurationTest extends SimpleWebTestCase {
+public class JavaScriptConfigurationTest {
 
     private static final Log LOG = LogFactory.getLog(JavaScriptConfigurationTest.class);
 
@@ -165,7 +168,7 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
         }
         foundJsxClasses.removeAll(definedClasses);
         if (!foundJsxClasses.isEmpty()) {
-            fail("Class " + foundJsxClasses.get(0) + " is not in JavaScriptConfiguration.CLASSES_");
+            Assertions.fail("Class " + foundJsxClasses.get(0) + " is not in JavaScriptConfiguration.CLASSES_");
         }
     }
 
@@ -253,26 +256,64 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
                     break;
                 }
             }
-            assertTrue("Class " + klass
-                    + " is member of JavaScriptConfiguration.CLASSES_ but does not define @JsxClasses/@JsxClass",
-                    found);
+            Assertions.assertTrue(found, "Class " + klass
+                    + " is member of JavaScriptConfiguration.CLASSES_ but does not define @JsxClasses/@JsxClass");
         }
     }
 
     /**
-     * Test of alphabetical order.
+     * Test of order.
      */
     @Test
-    public void lexicographicOrder() {
-        String lastClassName = null;
+    public void treeOrder() {
+        final List<String> defined = new ArrayList<>(JavaScriptConfiguration.CLASSES_.length);
+
+        final HashMap<Integer, List<String>> levels = new HashMap<>();
         for (final Class<?> c : JavaScriptConfiguration.CLASSES_) {
-            final String name = c.getSimpleName();
-            if (lastClassName != null && name.compareToIgnoreCase(lastClassName) < 0) {
-                fail("JavaScriptConfiguration.CLASSES_: '"
-                    + name + "' should be before '" + lastClassName + "'");
+            defined.add(c.getSimpleName());
+
+            int level = 1;
+            Class<?> parent = c.getSuperclass();
+            while (parent != HtmlUnitScriptable.class) {
+                level++;
+                parent = parent.getSuperclass();
             }
-            lastClassName = name;
+
+            List<String> clsAtLevel = levels.get(level);
+            if (clsAtLevel == null) {
+                clsAtLevel = new ArrayList<>();
+                levels.put(level, clsAtLevel);
+            }
+            clsAtLevel.add(c.getSimpleName());
         }
+
+        final List<String> all = new ArrayList<>(JavaScriptConfiguration.CLASSES_.length);
+        for (int level = 1; level <= levels.size(); level++) {
+            final List<String> clsAtLevel = levels.get(level);
+            Collections.sort(clsAtLevel);
+            all.addAll(clsAtLevel);
+
+            // dump
+            /*
+            final String indent = "       ";
+            System.out.println(indent + " // level " + level);
+
+            System.out.print(indent);
+            int chars = indent.length();
+            for (final String cls : clsAtLevel) {
+                final String toPrint = " " + cls + ".class,";
+                chars += toPrint.length();
+                if (chars > 120) {
+                    System.out.println();
+                    System.out.print(indent);
+                    chars = indent.length() + toPrint.length();
+                }
+                System.out.print(toPrint);
+            }
+            System.out.println();
+            */
+        }
+        assertEquals(all, defined);
     }
 
     /**
@@ -317,7 +358,8 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
     private static void test(final BrowserVersion browserVersion) throws IOException {
         try (WebClient webClient = new WebClient(browserVersion)) {
             final MockWebConnection conn = new MockWebConnection();
-            conn.setDefaultResponse("<html><body onload='document.body.firstChild'></body></html>");
+            conn.setDefaultResponse(WebTestCase.DOCTYPE_HTML
+                    + "<html><body onload='document.body.firstChild'></body></html>");
             webClient.setWebConnection(conn);
 
             webClient.getPage("http://localhost/");

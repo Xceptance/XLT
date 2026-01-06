@@ -21,6 +21,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import java.lang.reflect.Executable;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +33,6 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.junit.runner.RunWith;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -41,7 +41,6 @@ import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
-import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
@@ -52,7 +51,6 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
  *
  * @author Ronald Brill
  */
-@RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.htmlunit", importOptions = ImportOption.DoNotIncludeTests.class)
 public class ArchitectureTest {
 
@@ -64,6 +62,7 @@ public class ArchitectureTest {
         .that().haveNameMatching(".*Util.?")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.cssparser.util.ParserUtils")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.http.HttpUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.util.brotli.Utils")
 
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.AwtFontUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.FontUtil")
@@ -76,6 +75,8 @@ public class ArchitectureTest {
         .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.api.util.QuoteUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.ReflectUtils")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.TextUtil")
+
+        .and().resideOutsideOfPackage("org.htmlunit.corejs..")
 
         .should().resideInAPackage("org.htmlunit.util");
 
@@ -91,15 +92,88 @@ public class ArchitectureTest {
         .should().dependOnClassesThat().resideInAnyPackage("java.awt..");
 
     /**
-     * Do not use org.apache.commons.codec.binary.Base64 - use the jdk instead.
+     * Do not use org.apache.commons.lang3.StringUtils.isEmpty(CharSequence).
      */
     @ArchTest
-    public static final ArchRule jdkBase64Rule = noClasses()
-        .that()
-            .resideOutsideOfPackage("org.htmlunit.jetty..")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.protocol.data.DataUrlDecoder")
-        .should().dependOnClassesThat().haveFullyQualifiedName("org.apache.commons.codec.binary.Base64");
+    public static final ArchRule apacheStringUtilsIsEmptyRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.StringUtils.class, "isEmpty", CharSequence.class);
 
+    /**
+     * Do not use org.apache.commons.lang3.StringUtils.isBlank(CharSequence).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringUtilsIsBlankRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.StringUtils.class, "isBlank", CharSequence.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.StringUtils.isNotBlank(CharSequence).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringUtilsIsNotBlankRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.StringUtils.class, "isNotBlank", CharSequence.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.StringUtils.toRootLowerCase(String).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringUtilstoRootLowerCaseRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.StringUtils.class, "toRootLowerCase", String.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.StringUtils.substringBefore(String, string).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringUtilsSubstringBeforeRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.StringUtils.class, "substringBefore", String.class, String.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.StringUtils.isNotEmpty(String).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringUtilsIsNotEmptyRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.math.NumberUtils.class, "toInt", String.class, Integer.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.Strings.startsWith(CharSequence, CharSequence).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringsStartsWithRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.Strings.class, "startsWith", CharSequence.class, CharSequence.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.Strings.endsWith(CharSequence, CharSequence).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringsEndsWithRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.Strings.class, "endsWith", CharSequence.class, CharSequence.class);
+
+    /**
+     * Do not use org.apache.commons.lang3.Strings.contains(CharSequence, CharSequence).
+     */
+    @ArchTest
+    public static final ArchRule apacheStringsContainsRule = noClasses()
+        .should().callMethod(org.apache.commons.lang3.Strings.class, "contains", CharSequence.class, CharSequence.class);
+
+
+    /**
+     * Do not use org.apache.commons.lang3.math.NumberUtils.
+     */
+    @ArchTest
+    public static final ArchRule apacheNumberUtilsRule = noClasses()
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.apache.commons.lang3.math.NumberUtils");
+
+    /**
+     * The jetty websocket stuff is only used by one class.
+     */
+    @ArchTest
+    public static final ArchRule webSocketPackageRule = noClasses()
+            .that()
+                .resideOutsideOfPackage("org.htmlunit.jetty..")
+                .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter")
+                .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter$JettyWebSocketAdapterFactory")
+                .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter$JettyWebSocketAdapterImpl")
+            .should()
+                .dependOnClassesThat().resideInAnyPackage("org.htmlunit.jetty..");
 
     /**
      * JsxClasses are always in the javascript package.
@@ -226,6 +300,7 @@ public class ArchitectureTest {
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.file.FileReader.getResult()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLButtonElement.getValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLDataElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLElement.getHidden()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLInputElement.getValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLMeterElement.getValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionElement.getValue()")
@@ -271,11 +346,11 @@ public class ArchitectureTest {
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.css.CSSRuleList.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.css.StyleSheetList.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeList.item(java.lang.Object)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLAllCollection.item(java.lang.Object)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLCollection.item(java.lang.Object)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionsCollection.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.V8BreakIterator.resolvedOptions()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.performance.PerformanceNavigation.toJSON()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XSLTProcessor.getParameter(java.lang.String, java.lang.String)")
@@ -519,6 +594,7 @@ public class ArchitectureTest {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomElement")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDialog")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDialog$1")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlInput")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.util.WebClientUtils")
 
@@ -537,8 +613,7 @@ public class ArchitectureTest {
 
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.HtmlUnitContextFactory")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine$3")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine$2")
             .and().resideOutsideOfPackage("org.htmlunit.corejs..")
 
         .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.corejs.javascript.ScriptRuntime");
@@ -576,4 +651,20 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule jettyPackageRule = noClasses()
         .should().dependOnClassesThat().resideInAnyPackage("org.eclipse.jetty..");
+
+
+    /**
+     * Some methods should not be used.
+     */
+    @ArchTest
+    public static final ArchRule forbidObjectsRequireNonNull = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.corejs..")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomNode") // strange but reports method fireAddition() on jenkins
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage") // strange but reports method notifyNodeAdded() on jenkins
+
+            .and().resideOutsideOfPackage("org.htmlunit.jetty..")
+
+        .should().callMethod(Objects.class, "requireNonNull", Object.class); // Objects.requireNonNull(Object) is forbidden, always add a message
 }

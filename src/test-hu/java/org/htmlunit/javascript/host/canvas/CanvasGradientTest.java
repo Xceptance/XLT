@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.canvas;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link CanvasGradient}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CanvasGradientTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class CanvasGradientTest extends WebDriverTestCase {
     @Test
     @Alerts("function")
     public void functions() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"
@@ -56,8 +53,8 @@ public class CanvasGradientTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CanvasGradient]")
     public void addColorStop() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var canvas = document.getElementById('myCanvas');\n"

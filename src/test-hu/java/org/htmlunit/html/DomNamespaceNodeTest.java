@@ -15,16 +15,14 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DomNamespaceNode}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DomNamespaceNodeTest extends SimpleWebTestCase {
 
     /**
@@ -32,7 +30,7 @@ public class DomNamespaceNodeTest extends SimpleWebTestCase {
      */
     @Test
     public void getLocalName() throws Exception {
-        final String content = "<HTML></HTML>";
+        final String content = DOCTYPE_HTML + "<HTML></HTML>";
         final HtmlPage page = loadPage(content);
         assertEquals(1, page.getByXPath("//html").size());
     }

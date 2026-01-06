@@ -28,6 +28,7 @@ import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
+import org.htmlunit.util.StringUtils;
 
 /**
  * The implementation of {@code WindowOrWorkerGlobalScope}
@@ -57,17 +58,17 @@ public final class WindowOrWorkerGlobalScopeMixin {
      * @return the decoded value
      */
     public static String atob(final String encodedData, final HtmlUnitScriptable scriptable) {
-        final int l = encodedData.length();
-        for (int i = 0; i < l; i++) {
-            if (encodedData.charAt(i) > 255) {
-                throw JavaScriptEngine.asJavaScriptException(
-                        scriptable,
-                        "Function atob supports only latin1 characters",
-                        org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
-            }
+        final String withoutWhitespace = StringUtils.replaceChars(encodedData, " \t\r\n\u000c", "");
+        final byte[] bytes = withoutWhitespace.getBytes(StandardCharsets.ISO_8859_1);
+        try {
+            return new String(Base64.getDecoder().decode(bytes), StandardCharsets.ISO_8859_1);
         }
-        final byte[] bytes = encodedData.getBytes(StandardCharsets.ISO_8859_1);
-        return new String(Base64.getDecoder().decode(bytes), StandardCharsets.ISO_8859_1);
+        catch (final IllegalArgumentException e) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    scriptable,
+                    "Failed to execute atob(): " + e.getMessage(),
+                    org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
+        }
     }
 
     /**
@@ -86,8 +87,17 @@ public final class WindowOrWorkerGlobalScopeMixin {
                         org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
             }
         }
+
         final byte[] bytes = stringToEncode.getBytes(StandardCharsets.ISO_8859_1);
-        return new String(Base64.getEncoder().encode(bytes), StandardCharsets.UTF_8);
+        try {
+            return new String(Base64.getEncoder().encode(bytes), StandardCharsets.UTF_8);
+        }
+        catch (final IllegalArgumentException e) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    scriptable,
+                    "Failed to execute btoa(): " + e.getMessage(),
+                    org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
+        }
     }
 
     /**
@@ -96,7 +106,7 @@ public final class WindowOrWorkerGlobalScopeMixin {
      * and does not contain an other page than the one that originated the setTimeout.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      *
      * @param context the JavaScript context
      * @param thisObj the scriptable
@@ -121,7 +131,7 @@ public final class WindowOrWorkerGlobalScopeMixin {
      * Sets a chunk of JavaScript to be invoked each time a specified number of milliseconds has elapsed.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      * @param context the JavaScript context
      * @param thisObj the scriptable
      * @param args the arguments passed into the method

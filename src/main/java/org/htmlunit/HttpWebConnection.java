@@ -117,7 +117,7 @@ import org.htmlunit.util.UrlUtils;
 /**
  * Default implementation of {@link WebConnection}, using the HttpClient library to perform HTTP requests.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Noboru Sinohara
  * @author David D. Kilzer
  * @author Marc Guillemot
@@ -137,7 +137,7 @@ public class HttpWebConnection implements WebConnection {
     private static final String HACKED_COOKIE_POLICY = "mine";
 
     // have one per thread because this is (re)configured for every call (see configureHttpProcessorBuilder)
-    // do not use a ThreadLocal because this in only accessed form this class
+    // do not use a ThreadLocal because this in only accessed form this class, but we still need it synchronized
     private final Map<Thread, HttpClientBuilder> httpClientBuilder_ = new WeakHashMap<>();
     private final WebClient webClient_;
 
@@ -211,7 +211,9 @@ public class HttpWebConnection implements WebConnection {
                 // Calling code may catch the StackOverflowError, but due to the leak, the httpClient_ may
                 // come out of connections and throw a ConnectionPoolTimeoutException.
                 // => best solution, discard the HttpClient instance.
-                httpClientBuilder_.remove(Thread.currentThread());
+                synchronized (httpClientBuilder_) {
+                    httpClientBuilder_.remove(Thread.currentThread());
+                }
                 throw e;
             }
         }
@@ -297,12 +299,11 @@ public class HttpWebConnection implements WebConnection {
         // this has to be in sync with org.htmlunit.WebRequest.getRequestParameters()
 
         // POST, PUT, PATCH, DELETE, OPTIONS
-        if ((httpMethod instanceof HttpEntityEnclosingRequest)
-                && (httpMethod instanceof HttpPost
-                        || httpMethod instanceof HttpPut
-                        || httpMethod instanceof HttpPatch
-                        || httpMethod instanceof org.htmlunit.httpclient.HttpDelete
-                        || httpMethod instanceof org.htmlunit.httpclient.HttpOptions)) {
+        if (httpMethod instanceof HttpPost
+                || httpMethod instanceof HttpPut
+                || httpMethod instanceof HttpPatch
+                || httpMethod instanceof org.htmlunit.httpclient.HttpDelete
+                || httpMethod instanceof org.htmlunit.httpclient.HttpOptions) {
 
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
@@ -426,7 +427,8 @@ public class HttpWebConnection implements WebConnection {
                 final KeyDataPair pairWithFile = (KeyDataPair) pair;
                 if (pairWithFile.getData() == null && pairWithFile.getFile() != null) {
                     final String fileName = pairWithFile.getFile().getName();
-                    for (int i = 0; i < fileName.length(); i++) {
+                    final int length = fileName.length();
+                    for (int i = 0; i < length; i++) {
                         if (fileName.codePointAt(i) > 127) {
                             return charset;
                         }
@@ -531,23 +533,26 @@ public class HttpWebConnection implements WebConnection {
      */
     protected HttpClientBuilder getHttpClientBuilder() {
         final Thread currentThread = Thread.currentThread();
-        HttpClientBuilder builder = httpClientBuilder_.get(currentThread);
-        if (builder == null) {
-            builder = createHttpClientBuilder();
 
-            // this factory is required later
-            // to be sure this is done, we do it outside the createHttpClient() call
-            final RegistryBuilder<CookieSpecProvider> registeryBuilder
-                = RegistryBuilder.<CookieSpecProvider>create()
-                            .register(HACKED_COOKIE_POLICY, htmlUnitCookieSpecProvider_);
-            builder.setDefaultCookieSpecRegistry(registeryBuilder.build());
+        synchronized (httpClientBuilder_) {
+            HttpClientBuilder builder = httpClientBuilder_.get(currentThread);
+            if (builder == null) {
+                builder = createHttpClientBuilder();
 
-            builder.setDefaultCookieStore(new HtmlUnitCookieStore(webClient_.getCookieManager()));
-            builder.setUserAgent(webClient_.getBrowserVersion().getUserAgent());
-            httpClientBuilder_.put(currentThread, builder);
+                // this factory is required later
+                // to be sure this is done, we do it outside the createHttpClient() call
+                final RegistryBuilder<CookieSpecProvider> registeryBuilder
+                    = RegistryBuilder.<CookieSpecProvider>create()
+                                .register(HACKED_COOKIE_POLICY, htmlUnitCookieSpecProvider_);
+                builder.setDefaultCookieSpecRegistry(registeryBuilder.build());
+
+                builder.setDefaultCookieStore(new HtmlUnitCookieStore(webClient_.getCookieManager()));
+                builder.setUserAgent(webClient_.getBrowserVersion().getUserAgent());
+                httpClientBuilder_.put(currentThread, builder);
+            }
+
+            return builder;
         }
-
-        return builder;
     }
 
     /**
@@ -820,7 +825,7 @@ public class HttpWebConnection implements WebConnection {
     /**
      * Constructs an appropriate WebResponse.
      * May be overridden by subclasses to return a specialized WebResponse.
-     * @param responseData Data that was send back
+     * @param responseData Data that was sent back
      * @param webRequest the request used to get this response
      * @param loadTime How long the response took to be sent
      * @return the new WebResponse
@@ -1287,7 +1292,11 @@ public class HttpWebConnection implements WebConnection {
      */
     @Override
     public void close() {
-        httpClientBuilder_.clear();
+        synchronized (httpClientBuilder_) {
+            httpClientBuilder_.clear();
+        }
+        sharedAuthCache_.clear();
+        httpClientContextByThread_.clear();
 
         if (connectionManager_ != null) {
             connectionManager_.shutdown();

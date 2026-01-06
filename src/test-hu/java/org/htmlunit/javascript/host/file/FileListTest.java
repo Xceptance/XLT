@@ -20,11 +20,8 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -33,7 +30,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class FileListTest extends WebDriverTestCase {
 
     /**
@@ -42,8 +38,7 @@ public class FileListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "true"})
     public void in() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -89,8 +84,7 @@ public class FileListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "[object File]"})
     public void item() throws Exception {
-        final String html
-                = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
@@ -136,8 +130,7 @@ public class FileListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "null", "null"})
     public void itemWrong() throws Exception {
-        final String html
-                = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
@@ -184,8 +177,7 @@ public class FileListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "[object File]"})
     public void indexed() throws Exception {
-        final String html
-                = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
@@ -231,8 +223,7 @@ public class FileListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "undefined", "undefined"})
     public void indexedWrong() throws Exception {
-        final String html
-                = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
@@ -279,8 +270,7 @@ public class FileListTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "[object File]"})
     public void iterator() throws Exception {
-        final String html
-                = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html>\n"
                 + "<head>\n"
                 + "<script>\n"

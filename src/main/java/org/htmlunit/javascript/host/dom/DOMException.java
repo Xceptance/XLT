@@ -31,7 +31,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * Exception for DOM manipulations.
  *
  * @see <a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-17189187">
- * DOM-Level-2-Core</a>
+ *     DOM-Level-2-Core</a>
  * @author Marc Guillemot
  * @author Frank Danek
  * @author Ahmed Ashour
@@ -104,7 +104,7 @@ public class DOMException extends HtmlUnitScriptable {
     @JsxConstant
     public static final int VALIDATION_ERR = org.w3c.dom.DOMException.VALIDATION_ERR;
 
-    /** If the type of an object is incompatible with the expected type of the parameter. */
+    /** If the type of object is incompatible with the expected type of the parameter. */
     @JsxConstant
     public static final int TYPE_MISMATCH_ERR = org.w3c.dom.DOMException.TYPE_MISMATCH_ERR;
 
@@ -140,7 +140,7 @@ public class DOMException extends HtmlUnitScriptable {
     @JsxConstant
     public static final int DATA_CLONE_ERR = 25;
 
-    private static final List<String> COMMON_ERROR_NAMES = Arrays.asList(new String[] {
+    private static final List<String> COMMON_ERROR_NAMES = Arrays.asList(
         "IndexSizeError",
         null,
         "HierarchyRequestError",
@@ -165,7 +165,7 @@ public class DOMException extends HtmlUnitScriptable {
         "QuotaExceededError",
         "TimeoutError",
         "InvalidNodeTypeError",
-        "DataCloneError"});
+        "DataCloneError");
 
     private int code_;
     private String name_;
@@ -177,15 +177,27 @@ public class DOMException extends HtmlUnitScriptable {
      * Default constructor used to build the prototype.
      */
     public DOMException() {
+        super();
+    }
+
+    /**
+     * Constructor.
+     * @param message the exception message
+     * @param error the error code (on of the constants from the class)
+     */
+    public DOMException(final String message, final int error) {
+        message_ = message;
+        code_ = error;
+        name_ = COMMON_ERROR_NAMES.get(error - 1);
     }
 
     /**
      * JavaScript constructor.
      * @param message a description of the exception. If not present, the empty string '' is used
      * @param error If the specified name is a standard error name,
-     * then getting the code property of the DOMException object will return the
-     * code number corresponding to the specified name.
-     * If not present, the string 'Error' is used.
+     *        then getting the code property of the DOMException object will return the
+     *        code number corresponding to the specified name.
+     *        If not present, the string 'Error' is used.
      */
     @JsxConstructor
     public void jsConstructor(final String message, final Object error) {
@@ -212,17 +224,6 @@ public class DOMException extends HtmlUnitScriptable {
         }
 
         code_ = 0;
-    }
-
-    /**
-     * Constructor.
-     * @param message the exception message
-     * @param error the error code (on of the constants from the class)
-     */
-    public DOMException(final String message, final int error) {
-        message_ = message;
-        code_ = error;
-        name_ = COMMON_ERROR_NAMES.get(error - 1);
     }
 
     /**

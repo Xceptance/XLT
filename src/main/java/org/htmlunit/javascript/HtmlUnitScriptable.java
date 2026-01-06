@@ -42,7 +42,7 @@ import org.htmlunit.javascript.host.html.HTMLUnknownElement;
 /**
  * Base class for Rhino host objects in HtmlUnit (not bound to a DOM node).
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -117,22 +117,17 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
     /**
      * Gets a named property from the object.
      * Normally HtmlUnit objects don't need to overwrite this method as properties are defined
-     * on the prototypes from the XML configuration. In some cases where "content" of object
+     * on the prototypes. In some cases where "content" of object
      * has priority compared to the properties consider using utility {@link #getWithPreemption(String)}.
+     * <p>
      * {@inheritDoc}
      */
     @Override
     public Object get(final String name, final Scriptable start) {
         // Try to get property configured on object itself.
-        Object response = super.get(name, start);
-        if (response != NOT_FOUND) {
-            return response;
-        }
-        if (this == start) {
-            response = getWithPreemption(name);
-        }
-        if (response == NOT_FOUND && start instanceof Window) {
-            response = ((Window) start).getWithFallback(name);
+        final Object response = super.get(name, start);
+        if (response == NOT_FOUND && this == start) {
+            return getWithPreemption(name);
         }
         return response;
     }

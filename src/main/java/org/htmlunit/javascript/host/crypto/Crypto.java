@@ -85,7 +85,8 @@ public class Crypto extends HtmlUnitScriptable {
                     DOMException.QUOTA_EXCEEDED_ERR);
         }
 
-        for (int i = 0; i < array.getByteLength() / array.getBytesPerElement(); i++) {
+        final int length = array.getByteLength() / array.getBytesPerElement();
+        for (int i = 0; i < length; i++) {
             array.put(i, array, RANDOM.nextInt());
         }
         return array;
@@ -104,6 +105,9 @@ public class Crypto extends HtmlUnitScriptable {
         return stuble;
     }
 
+    /**
+     * @return a v4 UUID generated using a cryptographically secure random number generator
+     */
     @JsxFunction
     public String randomUUID() {
         // Let bytes be a byte sequence of length 16.

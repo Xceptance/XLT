@@ -17,10 +17,8 @@ package org.htmlunit.javascript.host.html;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlParagraph;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
@@ -30,7 +28,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ahmed Ashour
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLParagraphElementTest extends WebDriverTestCase {
 
     /**
@@ -39,7 +36,8 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLParagraphElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -63,8 +61,8 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "hello", "left", "hi", "right"})
     public void align() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -100,8 +98,8 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
     @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
              "undefined", "left", "none", "right", "all", "2", "abc", "8"})
     public void clear() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<p id='p1'>p1</p>\n"
             + "<p id='p2' clear='left'>p2</p>\n"
             + "<p id='p3' clear='all'>p3</p>\n"

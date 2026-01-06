@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLCollection}.
@@ -29,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLCollectionTest extends WebDriverTestCase {
 
     /**
@@ -38,7 +34,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void implicitToStringConversion() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -59,7 +56,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts("function")
     public void toStringFunction() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -79,8 +77,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"4", "HierarchyRequestError/DOMException"})
     public void getElements() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -103,7 +101,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"string 0", "string item", "string length", "string namedItem"})
     public void for_in() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -131,7 +130,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Alerts({"string 0", "string 1", "string 2", "string 3", "string 4", "string 5",
              "string item", "string length", "string namedItem"})
     public void for_in2() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -167,7 +167,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "false"})
     public void tags() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -188,7 +189,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "null", "undefined", "TypeError"})
     public void outOfBoundAccess() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -212,7 +214,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "undefined", "undefined"})
     public void inexistentProperties() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -232,7 +235,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "#text", "5"})
     public void childNodes() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -253,7 +257,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts("object")
     public void typeof() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -291,7 +296,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "function", "function", "function"})
     public void array_prototype() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -313,7 +319,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "function", "function", "function"})
     public void array_prototype_standards() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -335,7 +342,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void has() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -354,7 +362,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"myForm", "mySecondForm"})
     public void forOf() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -380,7 +389,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"myForm", "mySecondForm", "dynamicForm", "-", "myForm", "mySecondForm", "dynamicForm"})
     public void forOfDynamicAtEnd() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -418,7 +428,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"myForm", "myForm", "mySecondForm", "-", "dynamicForm", "myForm", "mySecondForm"})
     public void forOfDynamicAtStart() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -541,8 +552,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     }
 
     private void item(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -658,8 +668,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     }
 
     private void arrayIndex(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -775,8 +784,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     }
 
     private void functionIndex(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -930,8 +938,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     }
 
     private void namedItem(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -974,8 +981,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "1"})
     public void setLength() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1000,8 +1007,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "Type error"})
     public void setLengthStrictMode() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1029,7 +1036,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "false", "false", "false"})
     public void looselyEqualToUndefined() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"
@@ -1052,7 +1059,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "false", "false", "false"})
     public void looselyEqualToNull() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"
@@ -1075,7 +1082,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "7", "4", "[object HTMLCollection]", "1"})
     public void falsyInBooleanContexts() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"

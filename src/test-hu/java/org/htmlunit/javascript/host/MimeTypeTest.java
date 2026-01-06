@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link MimeType}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class MimeTypeTest extends WebDriverTestCase {
 
     /**
@@ -36,7 +33,8 @@ public class MimeTypeTest extends WebDriverTestCase {
     @Alerts({"2", "pdf", "Portable Document Format", "application/pdf",
              "pdf", "Portable Document Format", "text/pdf"})
     public void mimeType() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var mimeTypes = navigator.mimeTypes;\n"
@@ -62,7 +60,8 @@ public class MimeTypeTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false"})
     public void in() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  log('application/pdf' in navigator.mimeTypes);\n"
@@ -81,7 +80,8 @@ public class MimeTypeTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object MimeType]", "pdf", "PDF Viewer", "true", "true"})
     public void pdfMimeType() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var mimeTypePdf = navigator.mimeTypes['application/pdf'];\n"
@@ -107,7 +107,8 @@ public class MimeTypeTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object MimeType]", "pdf", "PDF Viewer", "true", "true"})
     public void textPdfMimeType() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var mimeTypePdf = navigator.mimeTypes['text/pdf'];\n"
@@ -133,7 +134,8 @@ public class MimeTypeTest extends WebDriverTestCase {
     @Test
     @Alerts("undefined")
     public void flashMimeType() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var mimeTypeFlash = navigator.mimeTypes['application/x-shockwave-flash'];\n"
@@ -151,7 +153,8 @@ public class MimeTypeTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "application/pdf", "text/pdf"})
     public void iterator() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var mimeTypes = navigator.mimeTypes;\n"

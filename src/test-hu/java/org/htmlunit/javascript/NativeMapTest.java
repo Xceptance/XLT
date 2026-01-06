@@ -15,17 +15,14 @@
 package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Native JavaScript object Map.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NativeMapTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class NativeMapTest extends WebDriverTestCase {
     @Test
     @Alerts({"key type string", "value type object"})
     public void entries() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

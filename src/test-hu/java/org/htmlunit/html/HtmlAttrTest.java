@@ -20,9 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DomAttr}.
@@ -31,8 +29,8 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author David K. Taylor
  * @author Frank Danek
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlAttrTest extends SimpleWebTestCase {
 
     /** Test object. */
@@ -128,7 +126,8 @@ public class HtmlAttrTest extends SimpleWebTestCase {
      */
     @Test
     public void nodeType() throws Exception {
-        final String content = "<html><head><title>foo</title><script>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
             + "    var attr = document.createAttribute('myAttrib');\n"
             + "    alert(attr.nodeType);\n"

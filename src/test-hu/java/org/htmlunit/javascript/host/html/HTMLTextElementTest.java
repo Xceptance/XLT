@@ -15,16 +15,13 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for text property.
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLTextElementTest extends WebDriverTestCase {
 
     /**
@@ -33,8 +30,8 @@ public class HTMLTextElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "New Text"})
     public void text() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
@@ -60,8 +57,8 @@ public class HTMLTextElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "New Text"})
     public void textCreateElement() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION

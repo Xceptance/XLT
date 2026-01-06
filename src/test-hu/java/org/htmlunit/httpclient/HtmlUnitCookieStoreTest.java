@@ -14,9 +14,9 @@
  */
 package org.htmlunit.httpclient;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 import java.util.List;
@@ -25,8 +25,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.htmlunit.CookieManager;
 import org.htmlunit.util.Cookie;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the HtmlUnitCookieStore, which is a wrapper around the CookieManager.
@@ -41,7 +41,7 @@ public class HtmlUnitCookieStoreTest {
     /**
      * Setup.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
         mgr_ = new CookieManager();
         store_ = new HtmlUnitCookieStore(mgr_);

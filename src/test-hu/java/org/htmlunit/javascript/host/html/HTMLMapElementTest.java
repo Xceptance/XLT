@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HTMLMapElement}.
  *
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLMapElementTest extends WebDriverTestCase {
 
     /**
@@ -34,7 +31,8 @@ public class HTMLMapElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "true", "true", "true"})
     public void areas() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

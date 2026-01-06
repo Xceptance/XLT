@@ -22,17 +22,15 @@ import javax.swing.Popup;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Popup}.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class PopupTest extends SimpleWebTestCase {
 
     /**
@@ -42,7 +40,8 @@ public class PopupTest extends SimpleWebTestCase {
     @Test
     @Alerts("Pop-up window is Open")
     public void popupWindowBecomesCurrent() throws Exception {
-        final String content = "<html><head><title>First</title><body>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><head><title>First</title><body>\n"
             + "<span id='button' onClick='openPopup()'>Push me</span>\n"
             + "<script>\n"
             + "  function openPopup() {\n "

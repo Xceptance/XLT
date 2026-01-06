@@ -15,11 +15,9 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -33,7 +31,6 @@ import org.openqa.selenium.WebElement;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
 
     /**
@@ -342,8 +339,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
             final boolean fromHtml,
             final boolean useFragment,
             boolean cloneNode) throws Exception {
-        String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -434,8 +430,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"true-true", "false-false", "true-true", "false-false", "false-false", "false-false"})
     public void defaultChecked() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -471,8 +466,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"false-false", "false-false", "true-true", "false-false", "false-false", "false-false"})
     public void defaultChecked_notchecked() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -511,8 +505,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"send request", "response read"})
     public void checkedOnXmlResponse() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -542,8 +535,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"foo", "change"})
     public void onchangeFires() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -568,8 +560,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"foo", "change", "boo", "blur"})
     public void onchangeFires2() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -598,16 +589,15 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts("Second")
     public void setChecked() throws Exception {
-        final String firstHtml =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String firstHtml = DOCTYPE_HTML
             + "<html><head><title>First</title></head><body>\n"
             + "<form>\n"
             + "<input type='radio' name='radioGroup' id='radio'"
             + " onchange=\"window.location.href='" + URL_SECOND + "'\">\n"
             + "</form>\n"
             + "</body></html>";
-        final String secondHtml
-            = "<html><head><title>Second</title></head><body></body></html>";
+        final String secondHtml = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body></body></html>";
 
         getMockWebConnection().setDefaultResponse(secondHtml);
         final WebDriver driver = loadPage2(firstHtml);
@@ -622,8 +612,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts("Second")
     public void setChecked2() throws Exception {
-        final String firstHtml =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String firstHtml = DOCTYPE_HTML
             + "<html><head><title>First</title></head><body>\n"
             + "<form>\n"
             + "<input type='radio' name='radioGroup' id='radio'"
@@ -631,8 +620,8 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
             + "<input id='myInput' type='text'>\n"
             + "</form>\n"
             + "</body></html>";
-        final String secondHtml
-            = "<html><head><title>Second</title></head><body></body></html>";
+        final String secondHtml = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body></body></html>";
 
         getMockWebConnection().setDefaultResponse(secondHtml);
         final WebDriver driver = loadPage2(firstHtml);
@@ -646,8 +635,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      */
     @Test
     public void preventDefault() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + "  function handler(e) {\n"
             + "    if (e)\n"
@@ -676,8 +664,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      */
     @Test
     public void defaultState() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title></head><body>\n"
             + "<form id='form1'>\n"
             + "  <input type='radio' name='radio' id='radio'>Check me</input>\n"
@@ -693,8 +680,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"on-", "on-", "on-", "on-"})
     public void defaultValues() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -731,8 +717,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"on-", "on-", "on-", "on-"})
     public void defaultValuesAfterClone() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -774,8 +759,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Alerts({"initial-initial", "initial-initial", "newValue-newValue", "newValue-newValue",
                 "newDefault-newDefault", "newDefault-newDefault"})
     public void resetByClick() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -816,8 +800,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Alerts({"initial-initial", "initial-initial", "newValue-newValue", "newValue-newValue",
                 "newDefault-newDefault", "newDefault-newDefault"})
     public void resetByJS() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -856,8 +839,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"initial-initial", "default-default", "newValue-newValue", "newDefault-newDefault"})
     public void defaultValue() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -891,8 +873,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts("changed")
     public void clickShouldTriggerOnchange() throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -920,8 +901,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"false,false", "true,false", "false,true"})
     public void radioInputChecked() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "</head>\n"
             + "<body>\n"
@@ -950,8 +930,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"true", "null", "true", "", "true", "yes"})
     public void checkedAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1001,8 +980,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Alerts({"false", "null", "true", "null", "false", "null", "true", "", "false", "",
              "true", "", "true", "yes", "false", "yes", "true", "yes"})
     public void checkedAttributeJS() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1069,8 +1047,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Alerts({"false", "null", "false", "null", "true", "", "true", "",
              "true", "yes", "true", "yes"})
     public void defaultCheckedAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1123,8 +1100,8 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      */
     @Test
     public void setCheckedOutsideForm() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "</head>\n"
             + "<body>\n"
             + "<input type='radio' id='radio1' name='myRadio'>\n"
@@ -1182,7 +1159,8 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts("--")
     public void minMaxStep() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1208,8 +1186,8 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "true", "false", "true"})
     public void willValidate() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
@@ -1382,8 +1360,8 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     }
 
     private void validation(final String htmlPart, final String jsPart) throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function logValidityState(s) {\n"

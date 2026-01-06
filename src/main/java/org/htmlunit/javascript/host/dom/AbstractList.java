@@ -34,7 +34,6 @@ import org.htmlunit.html.HtmlAttributeChangeListener;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.configuration.JsxClass;
 
 /**
  * The parent class of {@link NodeList} and {@link org.htmlunit.javascript.host.html.HTMLCollection}.
@@ -46,7 +45,6 @@ import org.htmlunit.javascript.configuration.JsxClass;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false)
 public class AbstractList extends HtmlUnitScriptable implements ExternalArrayData {
 
     /**
@@ -64,7 +62,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     private boolean attributeChangeSensitive_;
 
     /**
-     * Cache collection elements when possible, so as to avoid expensive XPath expression evaluations.
+     * Cache collection elements when possible, to avoid expensive XPath expression evaluations.
      */
     private List<DomNode> cachedElements_;
 
@@ -103,7 +101,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      *
      * @param domNode the {@link DomNode}
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of parentScope changes (attribute added, modified or removed)
      * @param initialElements the initial content for the cache
      */
     protected AbstractList(final DomNode domNode, final boolean attributeChangeSensitive,
@@ -114,8 +112,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
             final HtmlUnitScriptable parentScope = domNode.getScriptableObject();
             if (parentScope != null) {
                 setParentScope(parentScope);
-                setPrototype(getPrototype(getClass()));
             }
+            setPrototype(getPrototype(getClass()));
         }
         attributeChangeSensitive_ = attributeChangeSensitive;
         cachedElements_ = initialElements;
@@ -270,7 +268,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     protected Object getWithPreemption(final String name) {
         // Test to see if we are trying to get the length of this collection?
         // If so return NOT_FOUND here to let the property be retrieved using the prototype
-        if (/*xpath_ == null || */"length".equals(name)) {
+        if ("length".equals(name)) {
             return NOT_FOUND;
         }
 

@@ -15,18 +15,15 @@
 package org.htmlunit.javascript.host.xml;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link XMLHttpRequestEventTarget}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class XMLHttpRequestEventTargetTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class XMLHttpRequestEventTargetTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -58,7 +55,8 @@ public class XMLHttpRequestEventTargetTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function test() {\n"
@@ -279,8 +277,8 @@ public class XMLHttpRequestEventTargetTest extends WebDriverTestCase {
     }
 
     private void getOwnPropertyDescriptor(final String event) throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION

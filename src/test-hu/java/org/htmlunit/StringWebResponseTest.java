@@ -23,7 +23,7 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link StringWebResponse}.
@@ -43,6 +43,9 @@ public class StringWebResponseTest extends SimpleWebTestCase {
         assertSame(UTF_8, webResponse.getContentCharset());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void charsetImplicit() {
         final StringWebResponse webResponse = new StringWebResponse("hello", URL_FIRST);
@@ -54,7 +57,8 @@ public class StringWebResponseTest extends SimpleWebTestCase {
      */
     @Test
     public void charsetInContent() {
-        final String content = "<html><head>\n"
+        final String content = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<meta http-equiv='Content-Type' content='text/html; charset=windows-1250' />\n"
                 + "</head><body>\u010C\u00CDSLO</body></html>";
         final StringWebResponse webResponse = new StringWebResponse(content, UTF_8, URL_FIRST);
@@ -63,9 +67,13 @@ public class StringWebResponseTest extends SimpleWebTestCase {
         assertEquals(content, webResponse.getContentAsString());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void charsetInContentImplicit() {
-        final String content = "<html><head>\n"
+        final String content = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<meta http-equiv='Content-Type' content='text/html; charset=windows-1250' />\n"
                 + "</head><body>\u010C\u00CDSLO</body></html>";
         final StringWebResponse webResponse = new StringWebResponse(content, URL_FIRST);
@@ -75,11 +83,12 @@ public class StringWebResponseTest extends SimpleWebTestCase {
     }
 
     /**
-     * @throws IOException
+     * @throws IOException in case of error
      */
     @Test
     public void inputStream() throws IOException {
-        final String content = "<html><head>\n"
+        final String content = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<meta http-equiv='Content-Type' content='text/html; charset=windows-1250' />\n"
                 + "</head><body>\u010C\u00CDSLO</body></html>";
         final StringWebResponse webResponse = new StringWebResponse(content, URL_FIRST);

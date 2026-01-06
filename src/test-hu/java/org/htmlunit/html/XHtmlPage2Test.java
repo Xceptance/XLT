@@ -17,11 +17,9 @@ package org.htmlunit.html;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -30,7 +28,6 @@ import org.openqa.selenium.WebDriver;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class XHtmlPage2Test extends WebDriverTestCase {
 
     /**
@@ -94,18 +91,18 @@ public class XHtmlPage2Test extends WebDriverTestCase {
     @Alerts({"before<![CDATA[inside]]>after",
              "<div xmlns=\"http://www.w3.org/1999/xhtml\" id=\"tester\">before<![CDATA[inside]]>after</div>",
              "beforeinsideafter"})
-    @HtmlUnitNYI(CHROME = {"before<!--[CDATA[inside]]-->after",
-                           "<div id=\"tester\">before<!--[CDATA[inside]]-->after</div>",
-                           "beforeafter"},
-            EDGE = {"before<!--[CDATA[inside]]-->after",
-                    "<div id=\"tester\">before<!--[CDATA[inside]]-->after</div>",
-                    "beforeafter"},
-            FF = {"before<!--[CDATA[inside]]-->after",
-                  "<div id=\"tester\">before<!--[CDATA[inside]]-->after</div>",
-                  "beforeafter"},
-            FF_ESR = {"before<!--[CDATA[inside]]-->after",
-                      "<div id=\"tester\">before<!--[CDATA[inside]]-->after</div>",
-                      "beforeafter"})
+    @HtmlUnitNYI(CHROME = {"before<![CDATA[inside]]>after",
+                           "<div id=\"tester\">before<![CDATA[inside]]>after</div>",
+                           "beforeinsideafter"},
+            EDGE = {"before<![CDATA[inside]]>after",
+                    "<div id=\"tester\">before<![CDATA[inside]]>after</div>",
+                    "beforeinsideafter"},
+            FF = {"before<![CDATA[inside]]>after",
+                  "<div id=\"tester\">before<![CDATA[inside]]>after</div>",
+                  "beforeinsideafter"},
+            FF_ESR = {"before<![CDATA[inside]]>after",
+                      "<div id=\"tester\">before<![CDATA[inside]]>after</div>",
+                      "beforeinsideafter"})
     public void cdata() throws Exception {
         final String html
             = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -144,18 +141,18 @@ public class XHtmlPage2Test extends WebDriverTestCase {
     @Alerts({"before<![CDATA[<div></div>]]>after",
              "<div xmlns=\"http://www.w3.org/1999/xhtml\" id=\"tester\">before<![CDATA[<div></div>]]>after</div>",
              "before<div></div>after"})
-    @HtmlUnitNYI(CHROME = {"before<!--[CDATA[<div></div>]]-->after",
-                           "<div id=\"tester\">before<!--[CDATA[<div></div>]]-->after</div>",
-                           "beforeafter"},
-            EDGE = {"before<!--[CDATA[<div></div>]]-->after",
-                    "<div id=\"tester\">before<!--[CDATA[<div></div>]]-->after</div>",
-                    "beforeafter"},
-            FF = {"before<!--[CDATA[<div></div>]]-->after",
-                  "<div id=\"tester\">before<!--[CDATA[<div></div>]]-->after</div>",
-                  "beforeafter"},
-            FF_ESR = {"before<!--[CDATA[<div></div>]]-->after",
-                      "<div id=\"tester\">before<!--[CDATA[<div></div>]]-->after</div>",
-                      "beforeafter"})
+    @HtmlUnitNYI(CHROME = {"before<![CDATA[<div></div>]]>after",
+                           "<div id=\"tester\">before<![CDATA[<div></div>]]>after</div>",
+                           "before<div></div>after"},
+            EDGE = {"before<![CDATA[<div></div>]]>after",
+                    "<div id=\"tester\">before<![CDATA[<div></div>]]>after</div>",
+                    "before<div></div>after"},
+            FF = {"before<![CDATA[<div></div>]]>after",
+                  "<div id=\"tester\">before<![CDATA[<div></div>]]>after</div>",
+                  "before<div></div>after"},
+            FF_ESR = {"before<![CDATA[<div></div>]]>after",
+                      "<div id=\"tester\">before<![CDATA[<div></div>]]>after</div>",
+                      "before<div></div>after"})
     public void earlyClosingCdata() throws Exception {
         final String html
             = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

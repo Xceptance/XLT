@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlOptionGroup}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Daniel Gredler
  */
-@RunWith(BrowserRunner.class)
 public class HtmlOptionGroupTest extends SimpleWebTestCase {
 
     /**
@@ -34,7 +31,8 @@ public class HtmlOptionGroupTest extends SimpleWebTestCase {
      */
     @Test
     public void enclosingSelect() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "</head><body>\n"
             + "  <select>\n"
             + "    <optgroup id='myId' label='my label'>\n"
@@ -54,7 +52,8 @@ public class HtmlOptionGroupTest extends SimpleWebTestCase {
     @Test
     @Alerts({"false", "false", "true", "false", "true", "false", "false", "false"})
     public void disabled() throws Exception {
-        final String html = "<html><body onload='test()'><form name='f'>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body onload='test()'><form name='f'>\n"
             + "  <select name='s' id='s'>\n"
             + "    <optgroup id='g1' label='group 1'>\n"
             + "      <option value='o11' id='o11'>One</option>\n"

@@ -15,11 +15,9 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLMediaElement}.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLMediaElementTest extends WebDriverTestCase {
 
     /**
@@ -135,8 +132,8 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
     }
 
     private void canPlayType(final String type) throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -160,7 +157,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLAudioElement]", "done"})
     public void pause() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION

@@ -15,16 +15,13 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlDateInput}.
  *
  * @author Anton Demydenko
  */
-@RunWith(BrowserRunner.class)
 public class HtmlDateInput2Test extends SimpleWebTestCase {
 
     /**
@@ -32,7 +29,8 @@ public class HtmlDateInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void minValidation() throws Exception {
-        final String htmlContent = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
@@ -71,7 +69,9 @@ public class HtmlDateInput2Test extends SimpleWebTestCase {
      */
     @Test
     public void maxValidation() throws Exception {
-        final String htmlContent = "<html>\n" + "<head></head>\n"
+        final String htmlContent = DOCTYPE_HTML
+                + "<html>\n"
+                + "<head></head>\n"
                 + "<body>\n"
                 + "<form id='form1'>\n"
                 + "  <input type='date' id='first' max='2018-12-01'>\n"

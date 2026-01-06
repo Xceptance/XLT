@@ -15,19 +15,16 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLFieldSetElement}.
  *
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author George Murnock
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLFieldSetElementTest extends WebDriverTestCase {
 
     /**
@@ -37,8 +34,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
     @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
              "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void getAlign() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <form>\n"
             + "    <fieldset id='f1' align='left' ></fieldset>\n"
             + "    <fieldset id='f2' align='right' ></fieldset>\n"
@@ -71,8 +68,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
     @Alerts({"CenTer", "8", "foo", "left", "right",
              "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"})
     public void setAlign() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "  <form>\n"
             + "    <fieldset id='i1' align='left' />\n"
             + "  <form>\n"
@@ -113,8 +110,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLFormElement]")
     public void form() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <form>\n"
             + "    <fieldset id='a' />\n"
@@ -134,8 +131,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "false", "false", "false", "false"})
     public void willValidate() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
@@ -166,8 +163,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "true", "true", "true"})
     public void willValidateChild() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"

@@ -15,10 +15,8 @@
 package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Json is a native JavaScript object and therefore provided by Rhino but behavior should be
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NativeJSONTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class NativeJSONTest extends WebDriverTestCase {
     @Test
     @Alerts({"x,y", "SyntaxError"})
     public void getArraySyntax() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

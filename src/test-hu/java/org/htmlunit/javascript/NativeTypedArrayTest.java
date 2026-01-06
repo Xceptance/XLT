@@ -15,18 +15,14 @@
 package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the various TypedArray's.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NativeTypedArrayTest extends WebDriverTestCase {
 
     /**
@@ -37,18 +33,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Float32Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Float32Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Float32Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Float32Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringFloat32Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Float32Array(1)"));
     }
@@ -61,18 +45,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Float64Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Float64Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Float64Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Float64Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringFloat64Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Float64Array(1)"));
     }
@@ -85,18 +57,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Int8Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Int8Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Int8Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Int8Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringInt8Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Int8Array(1)"));
     }
@@ -109,18 +69,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Int16Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Int16Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Int16Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Int16Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringInt16Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Int16Array(1)"));
     }
@@ -133,18 +81,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Int32Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Int32Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Int32Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Int32Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringInt32Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Int32Array(1)"));
     }
@@ -157,18 +93,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Uint8Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Uint8Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Uint8Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Uint8Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringUint8Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Uint8Array(1)"));
     }
@@ -181,18 +105,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Uint16Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Uint16Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Uint16Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Uint16Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringUint16Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Uint16Array(1)"));
     }
@@ -205,18 +117,6 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Uint32Array", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Uint32Array", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Uint32Array", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Uint32Array", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringUint32Array() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Uint32Array(1)"));
     }
@@ -229,25 +129,14 @@ public class NativeTypedArrayTest extends WebDriverTestCase {
              "undefined", "false", "true",
              "undefined", "true", "true",
              "Symbol(Symbol.iterator),Symbol(Symbol.toStringTag)"})
-    @HtmlUnitNYI(CHROME = {"Uint8ClampedArray", "false", "false",
-                           "undefined", "false", "false",
-                           "undefined", "false", "false", ""},
-            EDGE = {"Uint8ClampedArray", "false", "false",
-                    "undefined", "false", "false",
-                    "undefined", "false", "false", ""},
-            FF = {"Uint8ClampedArray", "false", "false",
-                  "undefined", "false", "false",
-                  "undefined", "false", "false", ""},
-            FF_ESR = {"Uint8ClampedArray", "false", "false",
-                      "undefined", "false", "false",
-                      "undefined", "false", "false", ""})
     public void toStringUint8ClampedArray() throws Exception {
         loadPageVerifyTitle2(toStringTagTest("new Uint8ClampedArray(1)"));
     }
 
     private static String toStringTagTest(final String init) {
         return
-            "<html></head>\n"
+            DOCTYPE_HTML
+            + "<html></head>\n"
             + "<body>"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

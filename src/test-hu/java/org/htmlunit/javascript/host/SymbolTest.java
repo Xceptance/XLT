@@ -16,10 +16,8 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for Symbol.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class SymbolTest extends WebDriverTestCase {
 
     /**
@@ -130,8 +127,7 @@ public class SymbolTest extends WebDriverTestCase {
     }
 
     private void name(final String name) throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -183,8 +179,7 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts({"Symbol()", "Symbol(foo)", "Symbol(Symbol.iterator)"})
     public void defaultValue() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -195,7 +190,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "      log(Symbol().toString());\n"
             + "      log(Symbol('foo').toString());\n"
             + "      log(Symbol.iterator.toString());\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -211,8 +206,7 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "symbol", "symbol", "symbol"})
     public void typeOf() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -224,7 +218,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "      log(typeof Symbol());\n"
             + "      log(typeof Symbol('foo'));\n"
             + "      log(typeof Symbol.iterator);\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -240,8 +234,7 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "true", "Symbol(mario)"})
     public void symbolFor() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -254,7 +247,7 @@ public class SymbolTest extends WebDriverTestCase {
 
             + "      var sym = Symbol.for('mario');\n"
             + "      log(sym.toString());\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -270,8 +263,7 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false"})
     public void symbolForGlobal() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -284,7 +276,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(Symbol.for('global') === globSym);\n"
             + "      log(Symbol('global') === globSym);\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -300,8 +292,7 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts({"TypeError", "TypeError"})
     public void symbolNew() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -310,10 +301,10 @@ public class SymbolTest extends WebDriverTestCase {
             + "    if (!window.Symbol) { log('not supported'); return; }\n"
             + "    try {\n"
             + "      new Symbol();\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "    try {\n"
             + "      new Symbol('foo');\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -329,8 +320,7 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts({"TypeError", "TypeError"})
     public void globalSymbolRegistry() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -339,10 +329,10 @@ public class SymbolTest extends WebDriverTestCase {
             + "    if (!window.Symbol) { log('not supported'); return; }\n"
             + "    try {\n"
             + "      new Symbol();\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "    try {\n"
             + "      new Symbol('foo');\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -358,7 +348,8 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts("called")
     public void inFunction() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -381,7 +372,8 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts("called")
     public void inFunction2() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -406,7 +398,8 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts("function")
     public void prototypeAddFunction() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function test() {\n"
@@ -427,7 +420,8 @@ public class SymbolTest extends WebDriverTestCase {
     @Test
     @Alerts("object")
     public void prototypeTypeOf() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function test() {\n"

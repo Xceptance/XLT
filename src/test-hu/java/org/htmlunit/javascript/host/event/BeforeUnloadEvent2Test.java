@@ -18,18 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.htmlunit.WebServerTestCase;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link BeforeUnloadEvent}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class BeforeUnloadEvent2Test extends WebServerTestCase {
 
     /**
@@ -78,7 +75,7 @@ public class BeforeUnloadEvent2Test extends WebServerTestCase {
     }
 
     private void onbeforeunload(final String functionBody) throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>First</title><script>\n"
             + "  window.onbeforeunload = function (e) {\n"
             + "    " + functionBody + ";\n"
@@ -87,7 +84,7 @@ public class BeforeUnloadEvent2Test extends WebServerTestCase {
             + "  <a href='" + URL_SECOND + "'>Click Here</a>\n"
             + "</body></html>";
 
-        final String html2 = "<html><head><title>Second</title></head><body></body></html>";
+        final String html2 = DOCTYPE_HTML + "<html><head><title>Second</title></head><body></body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
         final AtomicBoolean called = new AtomicBoolean();

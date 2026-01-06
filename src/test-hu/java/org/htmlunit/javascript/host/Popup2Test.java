@@ -17,10 +17,8 @@ package org.htmlunit.javascript.host;
 import javax.swing.Popup;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Popup}.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class Popup2Test extends WebDriverTestCase {
 
     /**
@@ -38,7 +35,8 @@ public class Popup2Test extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void popup() throws Exception {
-        final String html = "<html><head></title><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head></title><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  try {\n"
@@ -62,7 +60,8 @@ public class Popup2Test extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void popupBodyStyle() throws Exception {
-        final String html = "<html><head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><body>\n"
             + "<script language='javascript'>\n"
             + LOG_TITLE_FUNCTION
             + "  try {\n"

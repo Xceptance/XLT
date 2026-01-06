@@ -15,9 +15,7 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Navigator}.
@@ -25,7 +23,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class Navigator2Test extends SimpleWebTestCase {
 
     /**
@@ -39,8 +36,8 @@ public class Navigator2Test extends SimpleWebTestCase {
     }
 
     private void cookieEnabled(final boolean cookieEnabled) throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "function test() {\n"
             + "  alert(navigator.cookieEnabled);\n"
@@ -74,7 +71,8 @@ public class Navigator2Test extends SimpleWebTestCase {
      * @throws Exception on test failure
      */
     void attribute(final String name, final String value) throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <title>test</title>\n"
                 + "  <script>\n"

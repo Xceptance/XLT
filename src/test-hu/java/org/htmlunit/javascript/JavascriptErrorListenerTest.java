@@ -14,7 +14,7 @@
  */
 package org.htmlunit.javascript;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,10 +26,9 @@ import org.htmlunit.ScriptException;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebServerTestCase;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests for {@link JavaScriptErrorListener}.
@@ -37,7 +36,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Marc Guillemot
  */
-@RunWith(BrowserRunner.class)
 
 public class JavascriptErrorListenerTest extends WebServerTestCase {
 
@@ -52,11 +50,12 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         webClient.getOptions().setThrowExceptionOnScriptError(false);
         webClient.setJavaScriptErrorListener(null);
         final MockWebConnection webConnection = new MockWebConnection();
-        final String errorContent = "<html><head><title>ERROR 500</title></head><body></body></html>";
+        final String errorContent = DOCTYPE_HTML + "<html><head><title>ERROR 500</title></head><body></body></html>";
         webConnection.setResponse(URL_SECOND, errorContent, 500, "BOOM", MimeType.TEXT_HTML, Collections.emptyList());
 
         // test script exception
-        String content = "<html><head><title>Throw JavaScript Error</title>\n"
+        String content = DOCTYPE_HTML
+            + "<html><head><title>Throw JavaScript Error</title>\n"
             + "<script>unknown.foo();</script></head>\n"
             + "<body></body></html>";
         webConnection.setResponse(URL_FIRST, content);
@@ -64,7 +63,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         webClient.getPage(URL_FIRST);
 
         // test load script error
-        content = "<html><head><title>Throw JavaScript Error</title>\n"
+        content = DOCTYPE_HTML
+            + "<html><head><title>Throw JavaScript Error</title>\n"
             + "<script src='" + URL_SECOND + "' type='text/javascript'></script></head>\n"
             + "<body></body></html>";
         webConnection.setResponse(URL_FIRST, content);
@@ -77,7 +77,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         }
 
         // test malformed script url error
-        content = "<html><head><title>Throw JavaScript Error</title>\n"
+        content = DOCTYPE_HTML
+            + "<html><head><title>Throw JavaScript Error</title>\n"
             + "<script src='unknown://nowhere' type='text/javascript'></script></head>\n"
             + "<body></body></html>";
         webConnection.setResponse(URL_FIRST, content);
@@ -86,7 +87,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         // test timeout error
         webClient.setJavaScriptTimeout(100);
 
-        content = "<html><head><title>Throw JavaScript Timeout Error</title>\n"
+        content = DOCTYPE_HTML
+            + "<html><head><title>Throw JavaScript Timeout Error</title>\n"
             + "<script>while(1) {}</script></head>\n"
             + "<body></body></html>";
         webConnection.setResponse(URL_FIRST, content);
@@ -105,7 +107,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         webClient.setJavaScriptErrorListener(javaScriptErrorListener);
 
         // test script exception
-        final String html = "<html><head><title>Throw JavaScript Error</title>"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>Throw JavaScript Error</title>"
             + "<script>unknown.foo();</script></head>"
             + "<body></body></html>";
         loadPage(html);
@@ -113,7 +116,7 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         assertEquals("", javaScriptErrorListener.getWarnings());
         assertEquals("org.htmlunit.ScriptException: "
                 + "ReferenceError: \"unknown\" is not defined. "
-                + "(script in http://localhost:" + PORT + "/ from (1, 58) to (1, 81)#1)",
+                + "(script in http://localhost:" + PORT + "/ from (2, 58) to (2, 81)#2)",
                 javaScriptErrorListener.getScriptExceptions());
         assertEquals("", javaScriptErrorListener.getLoadScriptErrors());
         assertEquals("", javaScriptErrorListener.getMalformedScriptURLErrors());
@@ -133,7 +136,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
 
         getMockWebConnection().setDefaultResponse("", 500, "Server Error", MimeType.TEXT_HTML);
 
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script src='notExisting.js' type='text/javascript'></script></head>\n"
             + "<body></body></html>";
 
@@ -165,7 +169,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         final CollectingJavaScriptErrorListener javaScriptErrorListener = new CollectingJavaScriptErrorListener();
         webClient.setJavaScriptErrorListener(javaScriptErrorListener);
 
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head><title>Throw JavaScript Error</title>\n"
                 + "<script src='unknown://nowhere' type='text/javascript'></script>\n"
                 + "</head>\n"
@@ -187,7 +192,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
      * Configured with a timeout as the build server seemed to have problem with this test from time to time.
      * @throws Exception if the test fails
      */
-    @Test(timeout = 10_000)
+    @Test
+    @Timeout(10)
     public void listenForTimeoutError() throws Exception {
         final WebClient webClient = getWebClient();
         webClient.getOptions().setThrowExceptionOnScriptError(false);
@@ -195,7 +201,8 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         webClient.setJavaScriptErrorListener(javaScriptErrorListener);
         webClient.setJavaScriptTimeout(100);
 
-        final String html = "<html><head><title>Throw JavaScript Timeout Error</title>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>Throw JavaScript Timeout Error</title>\n"
             + "<script>while(1) {}</script></head>\n"
             + "<body></body></html>";
 

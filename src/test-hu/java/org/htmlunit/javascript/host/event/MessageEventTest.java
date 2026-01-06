@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link MessageEvent}.
@@ -28,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class MessageEventTest extends WebDriverTestCase {
 
     private static final String DUMP_EVENT_FUNCTION = "  function dump(event) {\n"
@@ -54,7 +50,7 @@ public class MessageEventTest extends WebDriverTestCase {
     @Alerts({"[object MessageEvent]", "type-message", "false", "false", "false",
              "null", "", "", "null"})
     public void create_ctor() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -77,7 +73,7 @@ public class MessageEventTest extends WebDriverTestCase {
     @Alerts({"[object MessageEvent]", "type-message", "false", "false", "false",
              "test-data", "test-origin", "42", "[object Window]"})
     public void create_ctorWithDetails() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -104,7 +100,8 @@ public class MessageEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"DOM2: exception", "DOM3: [object MessageEvent]"})
     public void createEvent() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -133,7 +130,8 @@ public class MessageEventTest extends WebDriverTestCase {
         }
 
         final String origin = "http://localhost:" + PORT;
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "var e = document.createEvent('MessageEvent');\n"
             + "if (e.initMessageEvent) {\n"
@@ -164,7 +162,8 @@ public class MessageEventTest extends WebDriverTestCase {
         }
 
         final String origin = "http://localhost:" + PORT;
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "var e = document.createEvent('MessageEvent');\n"
             + "if (e.initMessageEvent) {\n"
@@ -193,7 +192,8 @@ public class MessageEventTest extends WebDriverTestCase {
         setExpectedAlerts(expectedAlerts);
 
         final String origin = "http://localhost:" + PORT;
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "var e = document.createEvent('MessageEvent');\n"
             + "if (e.initMessageEvent) {\n"

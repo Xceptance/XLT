@@ -27,22 +27,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.client.utils.DateUtils;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.Cookie;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link CookieManager}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CookieManager5Test extends WebServerTestCase {
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     public void sameDomainWithClientCookie() throws Exception {
         final List<NameValuePair> headers = new ArrayList<>();
@@ -64,6 +63,9 @@ public class CookieManager5Test extends WebServerTestCase {
         }
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     public void unqualifiedHostWithClientCookie() throws Exception {
         final List<NameValuePair> headers = new ArrayList<>();
@@ -85,6 +87,9 @@ public class CookieManager5Test extends WebServerTestCase {
         }
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     public void subdomainWithClientCookie() throws Exception {
         final List<NameValuePair> headers = new ArrayList<>();
@@ -106,6 +111,9 @@ public class CookieManager5Test extends WebServerTestCase {
         }
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     public void differentSubdomainWithClientCookie() throws Exception {
         final List<NameValuePair> headers = new ArrayList<>();
@@ -197,7 +205,7 @@ public class CookieManager5Test extends WebServerTestCase {
      * Helper class for {@link #updateCookieExpires}.
      */
     public abstract static class SetCookieExpiresServlet extends HttpServlet {
-        private static final String HTML_ = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        private static final String HTML_ = DOCTYPE_HTML
                 + "<html><head></head>\n"
                 + "<body>\n"
                 + "</body></html>";

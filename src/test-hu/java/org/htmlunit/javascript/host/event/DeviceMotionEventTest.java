@@ -15,19 +15,15 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DeviceMotionEvent}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DeviceMotionEventTest extends WebDriverTestCase {
 
     private static final String DUMP_EVENT_FUNCTION = "  function dump(event) {\n"
@@ -49,7 +45,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "motion", "false", "false", "false"})
     public void create_ctor() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -75,7 +71,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
             FF = {"[object DeviceMotionEvent]", "undefined", "false", "false", "false"},
             FF_ESR = {"[object DeviceMotionEvent]", "undefined", "false", "false", "false"})
     public void create_ctorWithoutType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -97,7 +93,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "42", "false", "false", "false"})
     public void create_ctorNumericType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -119,7 +115,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "null", "false", "false", "false"})
     public void create_ctorNullType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -141,7 +137,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts("ReferenceError")
     public void create_ctorUnknownType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -163,7 +159,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "HtmlUnitEvent", "false", "false", "false"})
     public void create_ctorArbitraryType() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -185,7 +181,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "motion", "false", "false", "false"})
     public void create_ctorAllDetails() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -209,7 +205,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "motion", "false", "false", "false"})
     public void create_ctorAllDetailsMissingData() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -232,7 +228,7 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object DeviceMotionEvent]", "motion", "false", "false", "false"})
     public void create_ctorAllDetailsWrongData() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -256,8 +252,8 @@ public class DeviceMotionEventTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

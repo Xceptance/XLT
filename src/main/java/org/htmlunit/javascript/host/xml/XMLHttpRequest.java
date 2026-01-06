@@ -15,7 +15,6 @@
 package org.htmlunit.javascript.host.xml;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF;
 import static org.htmlunit.BrowserVersionFeatures.XHR_HANDLE_SYNC_NETWORK_ERRORS;
 import static org.htmlunit.BrowserVersionFeatures.XHR_LOAD_ALWAYS_AFTER_DONE;
 import static org.htmlunit.BrowserVersionFeatures.XHR_RESPONSE_TEXT_EMPTY_UNSENT;
@@ -43,7 +42,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.AjaxController;
@@ -51,6 +49,7 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
+import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebRequest.HttpHint;
@@ -76,6 +75,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.DOMException;
@@ -88,9 +88,12 @@ import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
+import org.htmlunit.util.UrlUtils;
 import org.htmlunit.util.WebResponseWrapper;
 import org.htmlunit.util.XUserDefinedCharset;
 import org.htmlunit.xml.XmlPage;
+import org.w3c.dom.DocumentType;
 
 /**
  * A JavaScript object for an {@code XMLHttpRequest}.
@@ -291,7 +294,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * @return returns the response's body content as an ArrayBuffer, Blob, Document, JavaScript Object,
-     * or DOMString, depending on the value of the request's responseType property.
+     *         or DOMString, depending on the value of the request's responseType property.
      */
     @JsxGetter
     public Object getResponse() {
@@ -385,7 +388,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             if (webResponse_ != null) {
                 String contentType = webResponse_.getContentType();
-                if (StringUtils.isEmpty(contentType)) {
+                if (org.htmlunit.util.StringUtils.isEmptyOrNull(contentType)) {
                     contentType = MimeType.TEXT_XML;
                 }
                 return buildResponseXML(contentType);
@@ -518,7 +521,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
 
         String contentType = webResponse_.getContentType();
-        if (StringUtils.isEmpty(contentType)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(contentType)) {
             contentType = MimeType.TEXT_XML;
         }
 
@@ -609,12 +612,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         if (webResponse_ != null) {
             final StringBuilder builder = new StringBuilder();
             for (final NameValuePair header : webResponse_.getResponseHeaders()) {
-                builder.append(header.getName()).append(": ").append(header.getValue());
-
-                if (!getBrowserVersion().hasFeature(XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF)) {
-                    builder.append('\r');
-                }
-                builder.append('\n');
+                builder
+                    .append(header.getName())
+                    .append(": ")
+                    .append(header.getValue())
+                    .append("\r\n");
             }
             return builder.toString();
         }
@@ -690,29 +692,36 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 return;
             }
 
-            isSameOrigin_ = isSameOrigin(pageUrl, fullUrl);
-            final boolean alwaysAddOrigin = HttpMethod.GET != request.getHttpMethod()
-                                            && HttpMethod.PATCH != request.getHttpMethod()
-                                            && HttpMethod.HEAD != request.getHttpMethod();
-            if (alwaysAddOrigin || !isSameOrigin_) {
-                final StringBuilder origin = new StringBuilder().append(pageUrl.getProtocol()).append("://")
-                        .append(pageUrl.getHost());
-                if (pageUrl.getPort() != -1) {
-                    origin.append(':').append(pageUrl.getPort());
-                }
-                request.setAdditionalHeader(HttpHeader.ORIGIN, origin.toString());
+            final boolean isDataUrl = "data".equals(fullUrl.getProtocol());
+            if (isDataUrl) {
+                isSameOrigin_ = true;
             }
-
-            // password is ignored if no user defined
-            if (user != null && !JavaScriptEngine.isUndefined(user)) {
-                final String userCred = user.toString();
-
-                String passwordCred = "";
-                if (password != null && !JavaScriptEngine.isUndefined(password)) {
-                    passwordCred = password.toString();
+            else {
+                isSameOrigin_ = UrlUtils.isSameOrigin(pageUrl, fullUrl);
+                final boolean alwaysAddOrigin = HttpMethod.GET != request.getHttpMethod()
+                                                && HttpMethod.PATCH != request.getHttpMethod()
+                                                && HttpMethod.HEAD != request.getHttpMethod();
+                if (alwaysAddOrigin || !isSameOrigin_) {
+                    final StringBuilder origin = new StringBuilder().append(pageUrl.getProtocol()).append("://")
+                            .append(pageUrl.getHost());
+                    if (pageUrl.getPort() != -1) {
+                        origin.append(':').append(pageUrl.getPort());
+                    }
+                    request.setAdditionalHeader(HttpHeader.ORIGIN, origin.toString());
                 }
 
-                request.setCredentials(new HtmlUnitUsernamePasswordCredentials(userCred, passwordCred.toCharArray()));
+                // password is ignored if no user defined
+                if (user != null && !JavaScriptEngine.isUndefined(user)) {
+                    final String userCred = user.toString();
+
+                    String passwordCred = "";
+                    if (password != null && !JavaScriptEngine.isUndefined(password)) {
+                        passwordCred = password.toString();
+                    }
+
+                    request.setCredentials(
+                                new HtmlUnitUsernamePasswordCredentials(userCred, passwordCred.toCharArray()));
+                }
             }
             webRequest_ = request;
         }
@@ -729,22 +738,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         // Change the state!
         setState(OPENED);
         fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
-    }
-
-    private static boolean isSameOrigin(final URL originUrl, final URL newUrl) {
-        if (!originUrl.getHost().equals(newUrl.getHost())) {
-            return false;
-        }
-
-        int originPort = originUrl.getPort();
-        if (originPort == -1) {
-            originPort = originUrl.getDefaultPort();
-        }
-        int newPort = newUrl.getPort();
-        if (newPort == -1) {
-            newPort = newUrl.getDefaultPort();
-        }
-        return originPort == newPort;
     }
 
     /**
@@ -818,10 +811,18 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             if (content instanceof HTMLDocument) {
                 // final String body = ((HTMLDocument) content).getDomNodeOrDie().asXml();
-                final String body = new XMLSerializer().serializeToString((HTMLDocument) content);
+                String body = new XMLSerializer().serializeToString((HTMLDocument) content);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Setting request body to: " + body);
                 }
+
+                final Element docElement = ((Document) content).getDocumentElement();
+                final SgmlPage page = docElement.getDomNodeOrDie().getPage();
+                final DocumentType doctype = page.getDoctype();
+                if (doctype != null && !StringUtils.isEmptyOrNull(doctype.getName())) {
+                    body = "<!DOCTYPE " + doctype.getName() + ">" + body;
+                }
+
                 webRequest_.setRequestBody(body);
                 if (setEncodingType) {
                     webRequest_.setAdditionalHeader(HttpHeader.CONTENT_TYPE, "text/html;charset=UTF-8");
@@ -1122,7 +1123,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     final String[] values = org.htmlunit.util.StringUtils.splitAtComma(value);
                     for (String part : values) {
                         part = part.trim();
-                        if (StringUtils.isNotEmpty(part)) {
+                        if (!org.htmlunit.util.StringUtils.isEmptyOrNull(part)) {
                             accessControlValues.add(part);
                         }
                     }
@@ -1272,11 +1273,19 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         super.setOnreadystatechange(readyStateChangeHandler);
     }
 
+    /**
+     * @return the number of milliseconds a request can take before automatically being terminated.
+     *         The default value is 0, which means there is no timeout.
+     */
     @JsxGetter
     public int getTimeout() {
         return timeout_;
     }
 
+    /**
+     * Sets the number of milliseconds a request can take before automatically being terminated.
+     * @param timeout the timeout in milliseconds
+     */
     @JsxSetter
     public void setTimeout(final int timeout) {
         timeout_ = timeout;
@@ -1334,11 +1343,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
         @Override
         public Charset getContentCharset() {
-            return null;
-        }
-
-        @Override
-        public Charset getContentCharsetOrNull() {
             return null;
         }
 

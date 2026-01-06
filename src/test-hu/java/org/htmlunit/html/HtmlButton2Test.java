@@ -17,11 +17,9 @@ package org.htmlunit.html;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -30,7 +28,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 /**
  * Tests for {@link HtmlButton}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Brad Clarke
  * @author Marc Guillemot
@@ -38,7 +36,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HtmlButton2Test extends WebDriverTestCase {
 
     /**
@@ -337,13 +334,13 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts({"submit", "1", "button-pushme", "Second"})
     public void defaultButtonType_StandardsCompliantBrowser() throws Exception {
-        final String firstContent
-            = "<html><head><title>First</title></head><body>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head><title>First</title></head><body>\n"
             + "<form id='form1' action='" + URL_SECOND + "' method='post'>\n"
             + "  <button name='button' id='button' value='pushme'>PushMe</button>\n"
             + "</form></body></html>";
-        final String secondContent
-            = "<html><head><title>Second</title></head><body'></body></html>";
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>Second</title></head><body'></body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
@@ -353,6 +350,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[0], button.getAttribute("type"));
 
         button.click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final List<NameValuePair> params = getMockWebConnection().getLastParameters();
         assertEquals(getExpectedAlerts()[1], "" + params.size());
@@ -369,15 +369,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void typeUnknown() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <button type='unknown' id='myButton'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -385,6 +385,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -398,16 +401,16 @@ public class HtmlButton2Test extends WebDriverTestCase {
      */
     @Test
     public void typeSubmit() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <input name='text' type='text'>\n"
             + "    <button type='submit' id='myButton'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -415,6 +418,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         assertEquals(2, getMockWebConnection().getRequestCount());
         assertEquals(URL_SECOND.toString() + "?text=", getMockWebConnection().getLastWebRequest().getUrl());
@@ -425,15 +431,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
      */
     @Test
     public void typeReset() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <button type='reset' id='myButton'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -450,15 +456,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
      */
     @Test
     public void typeButton() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <button type='button' id='myButton'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -475,15 +481,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
      */
     @Test
     public void typeEmpty() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <button type='button' id='myButton'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -501,15 +507,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void submitWithoutType() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "    <button id='myButton'>Implicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -517,6 +523,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -531,15 +540,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void typeUnknownExternal() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
             + "  <button type='unknown' id='myButton' form='myForm'>Explicit Submit</button>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -547,6 +556,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -561,15 +573,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void typeSubmitExternal() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
             + "  <button type='submit' id='myButton' form='myForm'>Explicit Submit</button>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -577,6 +589,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -591,15 +606,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void typeResetExternal() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
             + "  <button type='reset' id='myButton' form='myForm'>Explicit Submit</button>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -621,15 +636,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void submitWithoutTypeExternal() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
             + "  <button id='myButton' form='myForm'>Implicit Submit</button>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -637,6 +652,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -651,15 +669,15 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void externalUnknownFrom() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
             + "  <button type='submit' id='myButton' form='unknown'>Explicit Submit</button>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -681,8 +699,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts({"2", "second"})
     public void externalPreferenceFrom() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm2' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
@@ -690,12 +708,12 @@ public class HtmlButton2Test extends WebDriverTestCase {
             + "    <button type='submit' id='myButton' form='myForm2'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
-        final String thirdContent
-            = "<html><head><title>third</title></head><body>\n"
+        final String thirdContent = DOCTYPE_HTML
+            + "<html><head><title>third</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -704,6 +722,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -716,8 +737,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts({"2", "second"})
     public void internalDifferentFrom() throws Exception {
-        final String html
-            = "<html><head><title>first</title></head><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>first</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "  <form id='myForm' action='" + URL_SECOND + "'>\n"
             + "  </form>\n"
@@ -725,12 +746,12 @@ public class HtmlButton2Test extends WebDriverTestCase {
             + "    <button type='submit' id='myButton' form='myForm'>Explicit Submit</button>\n"
             + "  </form>\n"
             + "</body></html>";
-        final String secondContent
-            = "<html><head><title>second</title></head><body>\n"
+        final String secondContent = DOCTYPE_HTML
+            + "<html><head><title>second</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
-        final String thirdContent
-            = "<html><head><title>third</title></head><body>\n"
+        final String thirdContent = DOCTYPE_HTML
+            + "<html><head><title>third</title></head><body>\n"
             + "  <p>hello world</p>\n"
             + "</body></html>";
 
@@ -739,6 +760,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
 
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
@@ -751,7 +775,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("submit")
     public void type() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -774,7 +799,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("submit")
     public void typeStandards() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -798,7 +823,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void onclickDisablesSubmit() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script type='text/javascript'>\n"
             + "    function submitForm() {\n"
@@ -827,7 +853,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts({"foo", "foonewValue", "foonewValue"})
     public void onclickDisablesReset() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script type='text/javascript'>\n"
             + "    function submitForm() {\n"
             + "      document.deliveryChannelForm.resetBtn.disabled = true;\n"
@@ -866,8 +893,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
             FF = {"true", "false", "true", "true", "true", "true", "false", "false", "true", "true"},
             FF_ESR = {"true", "false", "true", "true", "true", "true", "false", "false", "true", "true"})
     public void willValidate() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
@@ -1071,8 +1098,8 @@ public class HtmlButton2Test extends WebDriverTestCase {
     }
 
     private void validation(final String htmlPart, final String jsPart) throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function logValidityState(s) {\n"

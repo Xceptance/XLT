@@ -17,11 +17,9 @@ package org.htmlunit.javascript.host.css;
 import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -33,7 +31,6 @@ import org.openqa.selenium.WebDriver;
  * @author Guy Burton
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class CSSImportRuleTest extends WebDriverTestCase {
 
     /**
@@ -42,8 +39,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -62,8 +59,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object CSSImportRule]", "[object CSSImportRule]"})
     public void scriptableToString() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -91,8 +88,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("@import url(\"imp.css\");")
     public void cssText() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -119,8 +116,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("@import url(\"imp.css\");")
     public void cssTextSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -152,8 +149,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void parentRule() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -180,8 +177,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void parentRuleSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -213,8 +210,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CSSStyleSheet]")
     public void parentStyleSheet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -241,8 +238,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("[object CSSStyleSheet]")
     public void parentStyleSheetSet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @media screen { p { background-color:#FFFFFF; }};\n"
@@ -271,8 +268,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"imp.css", "@import url(\"imp.css\");"})
     public void hrefSimpleRelative() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import  'imp.css';\n"
@@ -300,8 +297,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"§§URL§§imp.css", "@import url(\"§§URL§§imp.css\");"})
     public void hrefSimpleAbsolute() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import  '" + new URL(URL_FIRST, "imp.css").toExternalForm() + "';\n"
@@ -330,8 +327,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"imp.css", "@import url(\"imp.css\");"})
     public void hrefUrlRelative() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import url( 'imp.css' );\n"
@@ -359,8 +356,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"§§URL§§imp.css", "@import url(\"§§URL§§imp.css\");"})
     public void hrefUrlAbsolute() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import  url('" + new URL(URL_FIRST, "imp.css").toExternalForm() + "');\n"
@@ -389,8 +386,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object MediaList]", "", "0", "", "@import url(\"imp.css\");"})
     public void mediaNone() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -425,8 +422,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object MediaList]", "all", "1", "all", "all", "@import url(\"imp.css\") all;"})
     public void mediaAll() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css' all;\n"
@@ -461,8 +458,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object MediaList]", "screen", "1", "screen", "screen", "@import url(\"imp.css\") screen;"})
     public void media() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css' screen;\n"
@@ -500,8 +497,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
              "@import url(\"imp.css\") only screen and (color), "
                                + "print and (max-width: 12cm) and (min-width: 30em);"})
     public void mediaQuery() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css' only screen and  (color ),print and ( max-width:12cm) and (min-width: 30em);\n"
@@ -535,8 +532,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Alerts({"[object HTMLStyleElement]", "[object CSSStyleSheet]", "§§URL§§imp.css",
              "null", "div { color: green; }"})
     public void styleSheet() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -569,8 +566,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Alerts({"[object HTMLStyleElement]", "[object CSSStyleSheet]", "§§URL§§imp.css",
              "[object CSSRuleList]", "null", "0"})
     public void styleSheetNotAvailable() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css';\n"
@@ -600,8 +597,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object CSSStyleSheet]", "§§URL§§imp.css", "div { color: green; }"})
     public void styleSheetMediaNotMatching() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css' print;\n"
@@ -632,8 +629,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void styleSheetSameObject() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
 
             + "<style>\n"
             + "  @import 'imp.css' print;\n"
@@ -681,8 +678,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
 
     private void getImportFromCssRulesCollection(final URL pageUrl, final String cssRef, final URL cssUrl)
         throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<style>@import url('" + cssRef + "');</style><div id='d'>foo</div>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -713,8 +710,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void importedStylesheetsLoaded() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<style>@import url('" + URL_SECOND + "');</style>\n"
             + "<div id='d'>foo</div>\n"
             + "<script>\n"
@@ -737,7 +734,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void importedStylesheetsURLResolution() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<link rel='stylesheet' type='text/css' href='dir1/dir2/file1.css'></link>\n"
             + "<body>\n"
             + "<div id='d'>foo</div>\n"
@@ -767,7 +765,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void circularImportedStylesheets() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<link rel='stylesheet' type='text/css' href='dir1/dir2/file1.css'></link>\n"
             + "<body>\n"
             + "<div id='d'>foo</div>\n"
@@ -799,7 +798,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true"})
     public void circularImportedStylesheetsComplexCase() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<link rel='stylesheet' type='text/css' href='dir1/dir2/file1.css'></link>\n"
             + "<body>\n"
             + "<div id='d'>foo</div>\n"
@@ -851,8 +851,8 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("42px")
     public void importedStylesheetsLoadedAccordingToMediaType() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <style>\n"
             + "    @import url('" + URL_SECOND  + "');\n"
             + "    @import url('" + URL_THIRD + "') print;\n"

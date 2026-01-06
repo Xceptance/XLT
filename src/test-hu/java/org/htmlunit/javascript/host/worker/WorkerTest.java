@@ -17,11 +17,9 @@ package org.htmlunit.javascript.host.worker;
 import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -30,7 +28,6 @@ import org.openqa.selenium.WebDriver;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WorkerTest extends WebDriverTestCase {
 
     /**
@@ -39,7 +36,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("Received:worker loaded")
     public void postMessageFromWorker() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script async>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
@@ -64,7 +62,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("Received:worker loaded")
     public void postMessageFromWorker2() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script async>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
@@ -89,7 +88,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("Received: Result = 15")
     public void postMessageToWorker() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  var myWorker = new Worker('worker.js');\n"
@@ -117,7 +117,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("start worker in imported script1 in imported script2 end worker")
     public void importScripts() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "try {\n"
             + "  var myWorker = new Worker('worker.js');\n"
             + "  myWorker.onmessage = function(e) {\n"
@@ -177,7 +178,8 @@ public class WorkerTest extends WebDriverTestCase {
     }
 
     private void importScripts(final String contentType) throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "try {\n"
             + "  var myWorker = new Worker('worker.js');\n"
             + "  myWorker.onmessage = function(e) {\n"
@@ -208,7 +210,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("[object DedicatedWorkerGlobalScope] [object DedicatedWorkerGlobalScope] true")
     public void thisAndSelf() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + "try {\n"
             + "  var myWorker = new Worker('worker.js');\n"
             + "  myWorker.onmessage = function(e) {\n"
@@ -233,7 +236,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void createFromPrototypeAndDefineProperty() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
             + "var f = function() {};\n"
             + "f.prototype = Object.create(window.Worker.prototype);\n"
@@ -252,7 +256,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("function")
     public void onmessageFunction() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body><script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  var myWorker = new Worker('worker.js');\n"
                 + "  myWorker.onmessage = function(e) {};\n"
@@ -269,7 +274,8 @@ public class WorkerTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void onmessageNumber() throws Exception {
-        final String html = "<html><body><script>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body><script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  var myWorker = new Worker('worker.js');\n"
                 + "  try {\n"
@@ -397,7 +403,8 @@ public class WorkerTest extends WebDriverTestCase {
     }
 
     private void testJs(final String workerJs) throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script async>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
             + "try {\n"
@@ -422,7 +429,8 @@ public class WorkerTest extends WebDriverTestCase {
             FF = {},
             FF_ESR = {})
     public void workerCodeWithWrongMimeType() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script async>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"

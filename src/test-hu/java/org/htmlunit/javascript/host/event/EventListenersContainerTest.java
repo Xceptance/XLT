@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link EventListenersContainer}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class EventListenersContainerTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class EventListenersContainerTest extends WebDriverTestCase {
     @Test
     @Alerts({"someName", "myevent", "[object Window]"})
     public void addEventListener() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function MyEventListener(name) {\n"
@@ -73,8 +70,8 @@ public class EventListenersContainerTest extends WebDriverTestCase {
     @Test
     @Alerts({"someName", "myevent", "[object HTMLBodyElement]"})
     public void addEventListener_node() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function MyEventListener(name) {\n"
@@ -111,8 +108,8 @@ public class EventListenersContainerTest extends WebDriverTestCase {
     @Test
     @Alerts({})
     public void addEventListener_no_handleEvent() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function MyEventListener(name) {\n"

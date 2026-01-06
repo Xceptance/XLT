@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLAllCollection}.
@@ -26,7 +24,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Ahmed Ashour
  */
-@RunWith(BrowserRunner.class)
 public class HTMLAllCollectionTest extends WebDriverTestCase {
 
     /**
@@ -147,8 +144,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     }
 
     private void namedItem(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
+        final String html = DOCTYPE_HTML
             + "<html id='myHtml'><head id='myHead'><title id='myTitle'>First</title><script>\n"
             + "  alerts = ''\n"
             + "  function log(msg) { alerts += msg + '§';}\n"
@@ -281,11 +277,11 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     }
 
     private void item(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
-            + "<html id='myHtml'><head id='myHead'><title id='myTitle'>First</title><script>\n"
-            + "  alerts = ''\n"
-            + "  function log(msg) { alerts += msg + '§';}\n"
+        final String html = DOCTYPE_HTML
+            + "<html id='myHtml'>\n"
+            + "<head id='myHead'>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function report(result) {\n"
             + "    if (result == null || result == undefined) {\n"
             + "      log(result);\n"
@@ -306,7 +302,6 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
             + "      var item = document.all.item(" + name + ");\n"
             + "      report(item);\n"
             + "    } catch(e) { logEx(e); }\n"
-            + "    document.title = alerts;"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>\n"
@@ -393,17 +388,17 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("myTitle-undefined")
+    @Alerts("myScript-undefined")
     public void arrayIndex_IndexAsString() throws Exception {
         arrayIndex("'2'");
     }
 
     private void arrayIndex(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
-            + "<html id='myHtml'><head id='myHead'><title id='myTitle'>First</title><script>\n"
-            + "  alerts = ''\n"
-            + "  function log(msg) { alerts += msg + '§';}\n"
+        final String html = DOCTYPE_HTML
+            + "<html id='myHtml'>\n"
+            + "<head id='myHead'>\n"
+            + "<script id='myScript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function report(result) {\n"
             + "    if (result == null || result == undefined) {\n"
             + "      log(result);\n"
@@ -424,7 +419,6 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
             + "      var item = document.all[" + name + "];\n"
             + "      report(item);\n"
             + "    } catch(e) { logEx(e); }\n"
-            + "    document.title = alerts;"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>\n"
@@ -511,17 +505,17 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("myTitle-undefined")
+    @Alerts("myScript-undefined")
     public void functionIndex_IndexAsString() throws Exception {
         functionIndex("'2'");
     }
 
     private void functionIndex(final String name) throws Exception {
-        final String html
-            = "<!doctype html>\n"
-            + "<html id='myHtml'><head id='myHead'><title id='myTitle'>First</title><script>\n"
-            + "  alerts = ''\n"
-            + "  function log(msg) { alerts += msg + '§';}\n"
+        final String html = DOCTYPE_HTML
+            + "<html id='myHtml'>\n"
+            + "<head id='myHead'>\n"
+            + "<script id='myScript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function report(result) {\n"
             + "    if (result == null || result == undefined) {\n"
             + "      log(result);\n"
@@ -542,7 +536,6 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
             + "      var item = document.all(" + name + ");\n"
             + "      report(item);\n"
             + "    } catch(e) { logEx(e); }\n"
-            + "    document.title = alerts;"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>\n"
@@ -559,7 +552,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLAllCollection]", "function HTMLAllCollection() { [native code] }"})
     public void type() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -583,7 +576,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts("function () { [native code] }")
     public void proto() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -606,7 +599,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "true", "false", "true"})
     public void looselyEqualToUndefined() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"
@@ -629,7 +622,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "true", "false", "true"})
     public void looselyEqualToNull() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"
@@ -652,7 +645,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"7", "1", "3", "[object HTMLAllCollection]", "5"})
     public void falsyInBooleanContexts() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"
@@ -682,7 +675,7 @@ public class HTMLAllCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts("undefined")
     public void typeof() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<script>\n"

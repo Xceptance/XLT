@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -29,7 +27,6 @@ import org.openqa.selenium.WebElement;
  * @author Ronald Brill
  * @author Anton Demydenko
  */
-@RunWith(BrowserRunner.class)
 public class HtmlRangeInputTest extends WebDriverTestCase {
 
     /**
@@ -38,7 +35,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"50----", "50----", "50----"})
     public void defaultValues() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -76,7 +74,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"50----", "50----", "50----"})
     public void defaultValuesAfterClone() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -117,7 +116,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"7-7---", "7-7---", "4-7---", "4-7---", "4-2---", "4-2---"})
     public void resetByClick() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -168,7 +168,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"7-7---", "7-7---", "4-7---", "4-7---", "4-2---", "4-2---"})
     public void resetByJS() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -218,7 +219,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"7-7---", "4-4---", "2-4---", "2-8---"})
     public void defaultValue() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -259,7 +261,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Alerts({"50----", "50--100-0-", "5--10-0-", "4--7-0-",
                 "2--7--4-", "4.3--7.01-1.3-"})
     public void valueDependsOnMinMax() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -294,7 +297,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"41-42-1234-2-13", "5-5-10-2-1", "6-5-10-2-2"})
     public void properties() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -326,7 +330,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"42", "50"})
     public void clearInput() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "<form>\n"
             + "  <input type='range' id='tester' value='42'>\n"
@@ -351,7 +356,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts("--")
     public void minMaxStep() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -371,10 +377,14 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"true-true-true-true-true-true", "55-10-10-100-0-0"})
     public void minValidation() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -407,10 +417,14 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"true-true-true-true-true-true", "5-1-10-10-0-0"})
     public void maxValidation() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -450,8 +464,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "true", "false", "true"})
     public void willValidate() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
@@ -544,8 +558,8 @@ public class HtmlRangeInputTest extends WebDriverTestCase {
     }
 
     private void validation(final String htmlPart, final String jsPart) throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function logValidityState(s) {\n"

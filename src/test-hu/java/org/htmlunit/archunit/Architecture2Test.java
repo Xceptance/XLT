@@ -23,15 +23,13 @@ import java.util.stream.Collectors;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.junit.annotation.AnnotationUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
-import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
@@ -42,16 +40,23 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
  *
  * @author Ronald Brill
  */
-@RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.htmlunit")
 public class Architecture2Test {
 
+    /**
+     * All property test should test the same objects.
+     * @param classes all classes
+     */
     @ArchTest
     public static void allPropertyTestShouldTestTheSameObjects(final JavaClasses classes) {
         compare(classes, "ElementPropertiesTest", "ElementOwnPropertiesTest");
         compare(classes, "ElementPropertiesTest", "ElementOwnPropertySymbolsTest");
     }
 
+    /**
+     * All element test should test the same objects.
+     * @param classes all classes
+     */
     @ArchTest
     public static void allElementTestShouldTestTheSameObjects(final JavaClasses classes) {
         compare(classes, "ElementChildNodesTest", "ElementClosesItselfTest");
@@ -60,6 +65,10 @@ public class Architecture2Test {
         compare(classes, "ElementChildNodesTest", "ElementOuterHtmlTest");
     }
 
+    /**
+     * All host test should test the same objects.
+     * @param classes all classes
+     */
     @ArchTest
     public static void allHostTestShouldTestTheSameObjects(final JavaClasses classes) {
         compare(classes, "HostClassNameTest", "HostTypeOfTest");
@@ -86,18 +95,18 @@ public class Architecture2Test {
 
         if (tmp.size() + oneTests.size() > 0) {
             if (tmp.size() == 0) {
-                Assert.fail("The " + oneTests.size() + " method(s) "
+                Assertions.fail("The " + oneTests.size() + " method(s) "
                     + oneTests.stream().sorted().collect(Collectors.toList())
                     + " are available in " + oneName + " but missing in " + anotherName + ".");
             }
             else if (oneTests.size() == 0) {
                 anotherTests.removeAll(oneTests);
-                Assert.fail("The " + tmp.size() + " method(s) "
+                Assertions.fail("The " + tmp.size() + " method(s) "
                     + tmp.stream().sorted().collect(Collectors.toList())
                     + " are available in " + anotherName + " but missing in " + oneName + ".");
             }
 
-            Assert.fail("The " + tmp.size() + " method(s) "
+            Assertions.fail("The " + tmp.size() + " method(s) "
                     + tmp.stream().sorted().collect(Collectors.toList())
                     + " are available in " + anotherName + " but missing in " + oneName
                     + " and the " + oneTests.size() + " method(s) "
@@ -160,6 +169,7 @@ public class Architecture2Test {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.css.BrowserConfiguration$ChromeAndEdgeAndFirefox")
 
             .and().doNotHaveFullyQualifiedName("org.htmlunit.general.huge.ElementClosesElementTest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.general.huge.ElementClosesElement2Test")
         .should().callMethod(BrowserVersion.class, "isFirefox", new Class[] {});
 
     /**
@@ -175,7 +185,6 @@ public class Architecture2Test {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.DateTimeFormat")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.NumberFormat")
         .should().callMethod(BrowserVersion.class, "isFirefoxESR", new Class[] {});
-
 
     /**
      * Do not use hamcrest.
@@ -201,7 +210,7 @@ public class Architecture2Test {
      * Validate test annotations.
      */
     @ArchTest
-    public static final ArchRule jsxGetterAnnotationStartsWithGet = methods()
+    public static final ArchRule consistentTestAnnotations = methods()
             .that().areAnnotatedWith(Test.class)
             .and().areNotDeclaredIn("org.htmlunit.junit.annotation.AnnotationUtilsTest")
             .should(haveConsistentTestAnnotations);

@@ -14,14 +14,14 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.TimeZone;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link BrowserVersion}.
@@ -38,10 +38,10 @@ public class BrowserVersionTest {
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(135, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
-        assertEquals(128, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
-        assertEquals(133, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(133, BrowserVersion.EDGE.getBrowserVersionNumeric());
+        assertEquals(146, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(140, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
+        assertEquals(143, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(143, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**
@@ -75,6 +75,6 @@ public class BrowserVersionTest {
         assertFalse(BrowserVersion.FIREFOX == ffBerlin);
         assertFalse(BrowserVersion.FIREFOX.equals(ffBerlin));
 
-        assertNotEquals(BrowserVersion.FIREFOX.getSystemTimezone(), ffBerlin.getSystemTimezone());
+        Assertions.assertNotEquals(BrowserVersion.FIREFOX.getSystemTimezone(), ffBerlin.getSystemTimezone());
     }
 }

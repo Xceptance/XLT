@@ -22,6 +22,21 @@ package org.htmlunit.util;
 public final class ArrayUtils {
 
     /**
+     * An empty immutable {@code byte} array.
+     */
+    public static final byte[] EMPTY_BYTE_ARRAY = {};
+
+    /**
+     * An empty immutable {@code char} array.
+     */
+    public static final char[] EMPTY_CHAR_ARRAY = {};
+
+    /**
+     * An empty immutable {@link String} array.
+     */
+    public static final String[] EMPTY_STRING_ARRAY = {};
+
+    /**
      * Disallow instantiation of this class.
      */
     private ArrayUtils() {
@@ -29,22 +44,82 @@ public final class ArrayUtils {
     }
 
     /**
-     * @param s the string[] to check
+     * @param strings the string[] to check
      * @param expected the string that we expect
-     * @return true if at least one element of the array equalsIgnoreCase to the expected string
+     * @return true if at least one element of the array equals to the expected string
      */
-    public static boolean containsIgnoreCase(final String[] s, final String expected) {
+    public static boolean contains(final String[] strings, final String expected) {
         if (expected == null) {
             throw new IllegalArgumentException("Expected string can't be null");
         }
 
-        if (s == null) {
+        if (strings == null) {
             return false;
         }
 
-        for (int i = 0; i < s.length; i++) {
-            final String string = s[i];
-            if (expected.equalsIgnoreCase(string)) {
+        for (final String s : strings) {
+            if (expected.equals(s)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param chars the char[] to check
+     * @param expected the char that we expect
+     * @return true if at least one element of the array equals to the expected char
+     */
+    public static boolean contains(final char[] chars, final char expected) {
+        if (chars == null) {
+            return false;
+        }
+
+        for (final char c : chars) {
+            if (expected == c) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param bytes the byte[] to check
+     * @param expected the byte that we expect
+     * @return true if at least one element of the array equals to the expected byte
+     */
+    public static boolean contains(final byte[] bytes, final byte expected) {
+        if (bytes == null) {
+            return false;
+        }
+
+        for (final byte b : bytes) {
+            if (expected == b) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param strings the string[] to check
+     * @param expected the string that we expect
+     * @return true if at least one element of the array equalsIgnoreCase to the expected string
+     */
+    public static boolean containsIgnoreCase(final String[] strings, final String expected) {
+        if (expected == null) {
+            throw new IllegalArgumentException("Expected string can't be null");
+        }
+
+        if (strings == null) {
+            return false;
+        }
+
+        for (final String s : strings) {
+            if (expected.equalsIgnoreCase(s)) {
                 return true;
             }
         }

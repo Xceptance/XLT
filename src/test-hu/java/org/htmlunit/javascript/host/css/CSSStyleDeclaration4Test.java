@@ -16,16 +16,14 @@ package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link CSSStyleDeclaration}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CSSStyleDeclaration4Test extends SimpleWebTestCase {
 
     /**
@@ -33,8 +31,8 @@ public class CSSStyleDeclaration4Test extends SimpleWebTestCase {
      */
     @Test
     public void serialize() throws Exception {
-        final String html
-            = "<html><head><\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><\n"
             + "<script>\n"
             + "function doTest() {\n"
             + "  var node = document.getElementById('div1');\n"

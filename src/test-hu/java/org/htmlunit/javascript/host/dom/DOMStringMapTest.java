@@ -15,18 +15,16 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DOMStringMap}.
  *
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DOMStringMapTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +33,8 @@ public class DOMStringMapTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "there"})
     public void get() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -57,8 +55,8 @@ public class DOMStringMapTest extends WebDriverTestCase {
     @Test
     @Alerts({"old", "old", "null", "null"})
     public void put() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"

@@ -15,18 +15,15 @@
 package org.htmlunit.javascript.host.media;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link OfflineAudioContext}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class OfflineAudioContextTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +32,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -58,8 +55,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "TypeError", "[object OfflineAudioContext]"})
     public void ctor() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -92,8 +89,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
     @Test
     @Alerts("[object AudioBufferSourceNode]")
     public void createBufferSource() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -130,8 +127,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
             FF_ESR = {"OfflineAudioContext prep done", "Error with decoding audio data",
                       "NotSupportedError/DOMException"})
     public void decodeAudioData() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -174,8 +171,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
             FF_ESR = {"OfflineAudioContext prep done", "Error with decoding audio data",
                       "NotSupportedError/DOMException"})
     public void decodeAudioData2() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -210,8 +207,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "-3.4028234663852886e+38", "3.4028234663852886e+38", "1", "0.5"})
     public void createGain() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -248,8 +245,8 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
     @Test
     @Alerts("function startRendering() { [native code] }")
     public void startRendering() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

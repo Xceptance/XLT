@@ -16,11 +16,9 @@ package org.htmlunit.html.parser;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -34,7 +32,6 @@ import org.openqa.selenium.WebDriver;
  * @author Carsten Steul
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class MalformedHtmlTest extends WebDriverTestCase {
 
     /**
@@ -184,9 +181,9 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug #889.
-    * @throws Exception if an error occurs
-    */
+     * Regression test for bug #889.
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts("0")
     public void missingSingleQuote() throws Exception {
@@ -207,9 +204,9 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug #889.
-    * @throws Exception if an error occurs
-    */
+     * Regression test for bug #889.
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts("0")
     public void missingDoubleQuote() throws Exception {
@@ -230,9 +227,9 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug #1192.
-    * @throws Exception if an error occurs
-    */
+     * Regression test for bug #1192.
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"submit", "button"})
     public void brokenInputSingleQuote() throws Exception {
@@ -253,9 +250,9 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug #1192.
-    * @throws Exception if an error occurs
-    */
+     * Regression test for bug #1192.
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"submit", "button"})
     public void brokenInputDoubleQuote() throws Exception {
@@ -300,6 +297,9 @@ public class MalformedHtmlTest extends WebDriverTestCase {
         assertTitle(driver, getExpectedAlerts()[0]);
 
         driver.findElement(By.id("button")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
         assertEquals(URL_FIRST + "?FromDate=inFirst", driver.getCurrentUrl());
     }
 
@@ -320,7 +320,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug 1564.
+     * Regression test for bug 1564.
      * @throws Exception if an error occurs
      */
     @Test
@@ -339,7 +339,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug 1562.
+     * Regression test for bug 1562.
      * @throws Exception if an error occurs
      */
     @Test
@@ -456,7 +456,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     }
 
     /**
-    * Regression test for bug 1598.
+     * Regression test for bug 1598.
      * @throws Exception if an error occurs
      */
     @Test

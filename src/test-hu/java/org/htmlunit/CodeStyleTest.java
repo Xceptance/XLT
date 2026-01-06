@@ -14,8 +14,6 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -37,11 +35,14 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 /**
  * Test of coding style for issues which cannot be detected by Checkstyle.
@@ -62,9 +63,9 @@ public class CodeStyleTest {
 
     /**
      * After.
-     * @throws IOException
+     * @throws IOException in case of error
      */
-    @After
+    @AfterEach
     public void after() throws IOException {
         final StringBuilder sb = new StringBuilder();
         for (final String error : failures_) {
@@ -77,10 +78,10 @@ public class CodeStyleTest {
 
         final int errorsNumber = failures_.size();
         if (errorsNumber == 1) {
-            fail(title_ + " error: " + sb);
+            Assertions.fail(title_ + " error: " + sb);
         }
         else if (errorsNumber > 1) {
-            fail(title_ + " " + errorsNumber + " errors: " + sb);
+            Assertions.fail(title_ + " " + errorsNumber + " errors: " + sb);
         }
     }
 
@@ -127,6 +128,7 @@ public class CodeStyleTest {
             for (final File child : children) {
                 if (child.isDirectory()
                         && !".git".equals(child.getName())
+                        && !"brotli".equals(child.getName())
                         && !("test".equals(dir.getName()) && "resources".equals(child.getName()))) {
                     addAll(child, files);
                 }
@@ -922,11 +924,13 @@ public class CodeStyleTest {
                             if (ctor.getParameterTypes().length == 0) {
                                 for (final Method method : clazz.getDeclaredMethods()) {
                                     if (Modifier.isPublic(method.getModifiers())
-                                            && method.getAnnotation(Before.class) == null
-                                            && method.getAnnotation(BeforeClass.class) == null
-                                            && method.getAnnotation(After.class) == null
-                                            && method.getAnnotation(AfterClass.class) == null
+                                            && method.getAnnotation(BeforeEach.class) == null
+                                            && method.getAnnotation(BeforeAll.class) == null
+                                            && method.getAnnotation(AfterEach.class) == null
+                                            && method.getAnnotation(AfterAll.class) == null
                                             && method.getAnnotation(Test.class) == null
+                                            && method.getAnnotation(RepeatedTest.class) == null
+                                            && method.getAnnotation(RetryingTest.class) == null
                                             && method.getReturnType() == Void.TYPE
                                             && method.getParameterTypes().length == 0) {
                                         final List<String> lines = FileUtils.readLines(file, SOURCE_ENCODING);

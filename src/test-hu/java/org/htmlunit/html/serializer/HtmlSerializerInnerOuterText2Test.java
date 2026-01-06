@@ -15,11 +15,9 @@
 package org.htmlunit.html.serializer;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -31,7 +29,6 @@ import org.openqa.selenium.WebElement;
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
 
     /**
@@ -95,8 +92,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceBreak(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <br id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">\n"
@@ -169,8 +166,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceInputHidden(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -247,8 +244,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceScript(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <script id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
@@ -322,8 +319,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceStyle(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <style id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
@@ -397,8 +394,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceNoframes(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <noframes id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
@@ -466,8 +463,7 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "A B C D\nEF\nG\nH\nI",
-            FF_ESR = "A B C D\nEFGH\nI")
+    @Alerts("A B C D\nEF\nG\nH\nI")
     @HtmlUnitNYI(CHROME = "A B C D\nEF\nG\nH\n I",
             EDGE = "A B C D\nEF\nG\nH\n I",
             FF = "A B C D\nEF\nG\nH\n I",
@@ -477,8 +473,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceDiv(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <div id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
@@ -550,8 +546,7 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "A B C D\nEF\nG\nH\nI",
-            FF_ESR = "A B C D\nEFGH\nI")
+    @Alerts("A B C D\nEF\nG\nH\nI")
     @HtmlUnitNYI(CHROME = "A B C D\nEF\nG\nH\n I",
             EDGE = "A B C D\nEF\nG\nH\n I",
             FF = "A B C D\nEF\nG\nH\n I",
@@ -561,8 +556,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpacePre(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <pre id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
@@ -636,8 +631,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceTextArea(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <textarea id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
@@ -711,8 +706,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceTitle(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<title id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">"
             + "  A B  C\t \t  D \r\nEF\nG \n H  <br> I  </title>\n"
@@ -823,8 +818,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceSelect(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <form>\n"
@@ -902,8 +897,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceInputSubmit(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -926,8 +921,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getInnerTextInputSubmitNoValue() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -948,8 +943,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getInnerTextInputResetNoValue() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -970,8 +965,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getInnerTextInputResetBlankValue() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -992,8 +987,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     @Test
     @Alerts("")
     public void getInnerTextInputSubmitBlankValue() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -1068,8 +1063,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceInputReset(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -1146,8 +1141,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceInputCheckbox(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -1224,8 +1219,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceInputRadio(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "<form id='form1'>\n"
@@ -1314,9 +1309,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "\n\nfirst item\n\n\nA B C D\nEF\nG\nH\nI"
-                + "\n\n\nthird item\n4. item\n\nsome text\n\nlast item\n\n",
-            FF_ESR = "first item\nA B C D\nEFGH\nI\nthird item\n4. item\nsome text\nlast item")
+    @Alerts("\n\nfirst item\n\n\nA B C D\nEF\nG\nH\nI"
+                + "\n\n\nthird item\n4. item\n\nsome text\n\nlast item\n\n")
     @HtmlUnitNYI(CHROME = "first item\n\n\n A B C D\nEF\nG\nH\n I"
                 + "\n\n\nthird item\n4. item\n\nsome text\n\nlast item\n\n",
             EDGE = "first item\n\n\n A B C D\nEF\nG\nH\n I"
@@ -1330,8 +1324,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceOrderedList(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <ol id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">\n"
@@ -1422,9 +1416,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "\n\nfirst item\n\n\nA B C D\nEF\nG\nH\nI\n"
-                + "\n\nthird item\n4. item\n\nsome text\n\nlast item\n\n",
-            FF_ESR = "first item\nA B C D\nEFGH\nI\nthird item\n4. item\nsome text\nlast item")
+    @Alerts("\n\nfirst item\n\n\nA B C D\nEF\nG\nH\nI\n"
+                + "\n\nthird item\n4. item\n\nsome text\n\nlast item\n\n")
     @HtmlUnitNYI(CHROME = "first item\n\n\n A B C D\nEF\nG\nH\n I"
                 + "\n\n\nthird item\n4. item\n\nsome text\n\nlast item\n\n",
             EDGE = "first item\n\n\n A B C D\nEF\nG\nH\n I"
@@ -1438,8 +1431,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextWhiteSpaceUnorderedList(final String whiteSpace) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  <ul id='tester' " + (whiteSpace == null ? "" : ("style='white-space: " + whiteSpace + "'")) + ">\n"
@@ -1714,8 +1707,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getInnerTextFormated(final String htmlTesterSnipped) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  " + htmlTesterSnipped + "\n"
@@ -1728,8 +1721,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     }
 
     private void getOuterTextFormated(final String htmlTesterSnipped) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  " + htmlTesterSnipped + "\n"
@@ -1761,8 +1754,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
 
     private void getInnerTextFormatedAfterTyping(final String htmlTesterSnipped,
                         final String... typed) throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body>\n"
             + "  " + htmlTesterSnipped + "\n"
@@ -1820,8 +1813,8 @@ public class HtmlSerializerInnerOuterText2Test extends WebDriverTestCase {
     @Test
     @Alerts("y")
     public void getInnerTextTitleInHead() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head id='tester'><title>y</title></head>\n"
             + "<body>\n"
             + "</body></html>";

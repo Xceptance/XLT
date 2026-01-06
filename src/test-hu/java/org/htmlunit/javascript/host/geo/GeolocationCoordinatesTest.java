@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.geo;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link GeolocationCoordinates}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class GeolocationCoordinatesTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class GeolocationCoordinatesTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"

@@ -32,8 +32,8 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 /**
  * The JavaScript object {@code HTMLImageElement}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author Mike Bowler
+ * @author George Murnock
  * @author Chris Erskine
  * @author Marc Guillemot
  * @author Ahmed Ashour
@@ -224,7 +224,7 @@ public class HTMLImageElement extends HTMLElement {
     }
 
     /**
-     * Support for the image.complete property.
+     * Support for the image.complete() property.
      * @return the value of the {@code complete} property
      */
     @JsxGetter

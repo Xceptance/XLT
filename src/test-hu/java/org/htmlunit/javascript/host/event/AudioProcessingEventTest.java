@@ -15,12 +15,9 @@
 package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link AudioProcessingEvent}.
@@ -29,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Madis Pärn
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class AudioProcessingEventTest extends WebDriverTestCase {
 
     private static final String DUMP_EVENT_FUNCTION = "  function dump(event) {\n"
@@ -46,7 +42,7 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void create_ctor() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -71,7 +67,7 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "TypeError",
             EDGE = "TypeError")
     public void create_ctorAllDetails() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -100,7 +96,7 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void create_ctorMissingDetails() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -122,7 +118,7 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
     @Test
     @Alerts("NotSupportedError/DOMException")
     public void create_createEvent() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -144,8 +140,8 @@ public class AudioProcessingEventTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void inWindow() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

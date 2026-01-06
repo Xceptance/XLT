@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -28,7 +26,6 @@ import org.w3c.dom.traversal.NodeIterator;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public final class DomNodeIterator2Test extends SimpleWebTestCase {
 
     /**
@@ -37,8 +34,8 @@ public final class DomNodeIterator2Test extends SimpleWebTestCase {
      */
     @Test
     public void subroot() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "</head>\n"
             + "<body>\n"
@@ -60,14 +57,14 @@ public final class DomNodeIterator2Test extends SimpleWebTestCase {
         final NodeIterator iterator = page.createNodeIterator(subroot, NodeFilter.SHOW_ELEMENT, null, true);
 
         HtmlElement element = (HtmlElement) iterator.nextNode();
-        Assert.assertEquals("1", element.getId());
+        Assertions.assertEquals("1", element.getId());
 
         element = (HtmlElement) iterator.nextNode();
-        Assert.assertEquals("11", element.getId());
+        Assertions.assertEquals("11", element.getId());
 
         element = (HtmlElement) iterator.nextNode();
-        Assert.assertEquals("12", element.getId());
+        Assertions.assertEquals("12", element.getId());
 
-        Assert.assertNull(iterator.nextNode());
+        Assertions.assertNull(iterator.nextNode());
     }
 }

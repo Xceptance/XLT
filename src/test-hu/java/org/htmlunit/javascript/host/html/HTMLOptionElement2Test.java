@@ -14,18 +14,11 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.annotation.TestedBrowser.FF;
-import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
-
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
@@ -38,7 +31,6 @@ import org.openqa.selenium.interactions.Actions;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLOptionElement2Test extends WebDriverTestCase {
 
     /**
@@ -50,8 +42,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             EDGE = {})
     //https://bugs.chromium.org/p/chromedriver/issues/detail?id=1352
     public void clickSelect() throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<title>foo</title>\n"
                 + "<script>\n"
@@ -95,14 +86,16 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"opt-a", "opt-b"},
             CHROME = "opt-b")
     @BuggyWebDriver({"opt-a", "b"})
-    @NotYetImplemented
-    //TODO: Needs further investigation of clicking an option without clicking the select
+    @HtmlUnitNYI(CHROME = {"opt-a", "b"},
+            EDGE = {"opt-a", "b"},
+            FF = {"opt-a", "b"},
+            FF_ESR = {"opt-a", "b"})
+    // TODO: Needs further investigation of clicking an option without clicking the select
     // See the first comment in http://code.google.com/p/selenium/issues/detail?id=2131#c1
     // Additionally, FF and Chrome drivers look buggy as they don't allow to capture
     // what happens when running the test manually in the browser.
     public void click2() throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<title>foo</title>\n"
                 + "<script>\n"
@@ -148,8 +141,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             FF = {"onchange-select", "onclick-select"},
             FF_ESR = {"onchange-select", "onclick-select"})
     public void clickOptionEventSequence1() throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TEXTAREA_FUNCTION
@@ -186,8 +178,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             FF = {"change-SELECT", "click-SELECT"},
             FF_ESR = {"change-SELECT", "click-SELECT"})
     public void clickOptionEventSequence2() throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TEXTAREA_FUNCTION
@@ -239,8 +230,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
             FF = {"onchange-select", "change-SELECT", "onclick-select", "click-SELECT"},
             FF_ESR = {"onchange-select", "change-SELECT", "onclick-select", "click-SELECT"})
     public void clickOptionEventSequence3() throws Exception {
-        final String html =
-                HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TEXTAREA_FUNCTION
@@ -290,8 +280,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"1", "option1", "0"})
     public void unselectResetToFirstOption() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -312,11 +301,13 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+    /**
+     * @throws Exception if an error occurs
+     */
     @Test
     @Alerts({"1", "", "-1"})
     public void unselectResetToFirstOption1() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -343,8 +334,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("1")
     public void selectFromJSTriggersNoFocusEvent() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -370,8 +360,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"false", "true", "true", "false", "true"})
     public void disabledAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
@@ -408,8 +397,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"some text", "some value", "false", "some other text", "some other value", "true"})
     public void readPropsBeforeAdding() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -437,8 +425,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      */
     @Test
     public void selectingOrphanedOptionCreatedByDocument() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "<form name='myform'/>\n"
@@ -462,8 +449,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"2", "2"})
     public void setSelected() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -490,8 +476,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      */
     @Test
     public void setAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -519,8 +504,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "undefined"})
     public void optionIndexOutOfBound() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -553,8 +537,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
              "o3: text: Option 3, label: Option 3, value: 3, defaultSelected: true, selected: false",
              "0", "1"})
     public void constructor() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function dumpOption(_o) {\n"
@@ -591,8 +574,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("0")
     public void insideBold() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -619,8 +601,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Alerts({"null", "[object Attr]", "null", "null", "null",
              "null", "null", "null", "null", "null"})
     public void getAttributeNode() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -660,8 +641,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
              "false null null", "true null null", "false *selected selected",
              "true null null", "false null null", "false *selected selected"})
     public void selectedAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -713,8 +693,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
              "true null null", "true null null", "true *selected selected",
              "true null null", "false null null", "true *selected selected"})
     public void selectedAttributeMultiple() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -763,8 +742,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLOptionsCollection]", "0", "1"})
     public void with_new() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -792,8 +770,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLOptionsCollection]", "0", "TypeError", "0"})
     public void without_new() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -821,8 +798,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"text1", "New Text1", "", "New Text2", "text3", "New Text3", "text4", "New Text4"})
     public void text() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
@@ -868,8 +844,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"null", "[object Text]", "null"})
     public void setText() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -901,8 +876,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"text1", "text1b", "text2"})
     public void text_when_not_displayed() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -937,8 +911,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"text0", "text1", "text1b", "text2"})
     public void defaultValueFromNestedNodes() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -976,8 +949,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLFormElement]")
     public void form() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "  <form>\n"
@@ -1122,8 +1094,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     }
 
     private void xpathSelected(final String selectionChangeCode, final boolean multiple) throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1174,8 +1145,8 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"value1", "text1", "label1", "value2", "text2", "text2"})
     public void label() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var s = document.getElementById('testSelect');\n"
@@ -1206,8 +1177,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"", "", "", "", "text2", "text2", "text2", "label2"})
     public void setLabel() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -1245,8 +1215,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1", "2", "0"})
     public void index() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1287,8 +1256,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
              "true-null", "false-selected", "false-null",
              "false-null", "false-selected", "false-null"})
     public void selectAndAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1338,10 +1306,10 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                   "false-selected", "false-null", "false-true"},
             FF_ESR = {"false-null", "true-true", "true-null",
                       "false-selected", "false-null", "false-true"})
-    @NotYetImplemented({FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"false-null", "true-true", "true-null", "false-selected", "false-null", "true-true"},
+            FF_ESR = {"false-null", "true-true", "true-null", "false-selected", "false-null", "true-true"})
     public void setSelectedAttribute() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1386,8 +1354,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Alerts({"false-null", "true-true", "false-null",
              "false-null", "true-true", "false-null"})
     public void createOption() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1437,8 +1404,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     public void mouseOver() throws Exception {
         shutDownAll();
 
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
@@ -1491,8 +1457,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     public void mouseOverDisabledSelect() throws Exception {
         shutDownAll();
 
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
@@ -1547,8 +1512,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     public void mouseOverDisabledOption() throws Exception {
         shutDownAll();
 
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"

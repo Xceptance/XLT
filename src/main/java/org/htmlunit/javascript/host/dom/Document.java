@@ -18,9 +18,7 @@ import static org.htmlunit.BrowserVersionFeatures.EVENT_ONANIMATION_DOCUMENT_CRE
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONPOPSTATE_DOCUMENT_CREATE_NOT_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_MUTATIONEVENT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_TEXTEVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_WHEELEVENT;
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_COOKIES_IGNORE_BLANK;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_EVALUATE_RECREATES_RESULT;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_SELECTION_RANGE_COUNT;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
@@ -44,13 +42,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Callable;
@@ -127,6 +123,7 @@ import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLFrameSetElement;
 import org.htmlunit.util.Cookie;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xpath.xml.utils.PrefixResolver;
 import org.w3c.dom.CDATASection;
@@ -137,15 +134,15 @@ import org.w3c.dom.ProcessingInstruction;
 /**
  * A JavaScript object for {@code Document}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:chen_jun@users.sourceforge.net">Chen Jun</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Chen Jun
+ * @author Christian Sell
  * @author Chris Erskine
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author Michael Ottati
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author George Murnock
  * @author Ahmed Ashour
  * @author Rob Di Marco
  * @author Ronald Brill
@@ -163,7 +160,10 @@ public class Document extends Node {
 
     private static final Log LOG = LogFactory.getLog(Document.class);
 
-    /** https://developer.mozilla.org/en/Rich-Text_Editing_in_Mozilla#Executing_Commands */
+    /**
+     * See <a href="https://developer.mozilla.org/en/Rich-Text_Editing_in_Mozilla#Executing_Commands">
+     *     Executing Commands</a>
+     */
     private static final Set<String> EXECUTE_CMDS_FF = new HashSet<>();
     private static final Set<String> EXECUTE_CMDS_CHROME = new HashSet<>();
     /** The formatter to use for the <code>lastModified</code> attribute. */
@@ -467,7 +467,7 @@ public class Document extends Node {
 
     /**
      * Adopts a node from an external document.
-     * The node and its subtree is removed from the document it's in (if any),
+     * The node and its subtree are removed from the document it's in (if any),
      * and its ownerDocument is changed to the current document.
      * The node can then be inserted into the current document.
      *
@@ -608,7 +608,7 @@ public class Document extends Node {
         // NameChar      ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
         // Name          ::= NameStartChar (NameChar)*
 
-        // but i have no idea what the browsers are doing
+        // but I have no idea what the browsers are doing
         // the following code is a wild guess that might be good enough for the moment
         final String tagNameString = JavaScriptEngine.toString(tagName);
         if (tagNameString.length() > 0) {
@@ -624,7 +624,8 @@ public class Document extends Node {
                         "createElement: Provided string '" + tagNameString + "' contains an invalid character",
                         org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
             }
-            for (int i = 1; i < tagNameString.length(); i++) {
+            final int length = tagNameString.length();
+            for (int i = 1; i < length; i++) {
                 final int c = tagNameString.charAt(i);
                 if (!(Character.isLetterOrDigit(c)
                         || ':' == c
@@ -722,7 +723,7 @@ public class Document extends Node {
     public HTMLCollection getElementsByTagName(final String tagName) {
         final HTMLCollection collection = new HTMLCollection(getDomNodeOrDie(), false);
 
-        if (org.htmlunit.util.StringUtils.equalsChar('*', tagName)) {
+        if (StringUtils.equalsChar('*', tagName)) {
             collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
         }
         else {
@@ -790,7 +791,7 @@ public class Document extends Node {
      * Returns the value of the JavaScript property {@code anchors}.
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms537435.aspx">MSDN documentation</a>
      * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_doc_ref4.html#1024543">
-     * Gecko DOM reference</a>
+     *     Gecko DOM reference</a>
      * @return the value of this property
      */
     @JsxGetter
@@ -823,9 +824,9 @@ public class Document extends Node {
     /**
      * Returns the value of the JavaScript property {@code applets}.
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms537436.aspx">
-     * MSDN documentation</a>
+     *     MSDN documentation</a>
      * @see <a href="https://developer.mozilla.org/En/DOM:document.applets">
-     * Gecko DOM reference</a>
+     *     Gecko DOM reference</a>
      * @return the value of this property
      */
     @JsxGetter
@@ -959,7 +960,7 @@ public class Document extends Node {
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
-     * Called from the HTMLParser if a 'X-UA-Compatible' meta tag found.
+     * Called from the HTMLParser if an 'X-UA-Compatible' meta tag found.
      * @param documentMode the mode forced by the meta tag
      */
     public void forceDocumentMode(final int documentMode) {
@@ -1111,18 +1112,16 @@ public class Document extends Node {
     /**
      * Adds a cookie, as long as cookies are enabled.
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533693.aspx">MSDN documentation</a>
-     * @param newCookie in the format "name=value[;expires=date][;domain=domainname][;path=path][;secure]
+     * @param newCookie in the format "name=value[;expires=date][;domain=domainname][;path=path][;secure]"
      */
     @JsxSetter
     public void setCookie(final String newCookie) {
-        final SgmlPage sgmlPage = getPage();
-        final WebClient client = sgmlPage.getWebClient();
-
-        if (StringUtils.isBlank(newCookie)
-                && client.getBrowserVersion().hasFeature(HTMLDOCUMENT_COOKIES_IGNORE_BLANK)) {
+        if (StringUtils.isBlank(newCookie)) {
             return;
         }
-        client.addCookie(newCookie, sgmlPage.getUrl(), this);
+
+        final SgmlPage sgmlPage = getPage();
+        sgmlPage.getWebClient().addCookie(newCookie, sgmlPage.getUrl(), this);
     }
 
     /**
@@ -1144,10 +1143,6 @@ public class Document extends Node {
             if (CloseEvent.class == clazz
                     && getBrowserVersion().hasFeature(EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED)) {
                 clazz = null;
-            }
-            else if (TextEvent.class == clazz
-                    && !getBrowserVersion().hasFeature(EVENT_TYPE_TEXTEVENT)) {
-                clazz = CompositionEvent.class;
             }
         }
 
@@ -1202,7 +1197,7 @@ public class Document extends Node {
      *
      * @param root The root node at which to begin the NodeIterator's traversal.
      * @param whatToShow an optional long representing a bitmask created by combining
-     * the constant properties of {@link NodeFilter}
+     *        the constant properties of {@link NodeFilter}
      * @param filter an object implementing the {@link NodeFilter} interface
      * @return a new NodeIterator object
      */
@@ -1260,16 +1255,14 @@ public class Document extends Node {
      */
     @JsxFunction
     public TreeWalker createTreeWalker(final Node root, final double whatToShow, final Scriptable filter,
-            boolean expandEntityReferences) throws DOMException {
+            final boolean expandEntityReferences) throws DOMException {
 
         // seems that Rhino doesn't like long as parameter type
         // this strange conversation preserves NodeFilter.SHOW_ALL
         final int whatToShowI = (int) Double.valueOf(whatToShow).longValue();
 
-        expandEntityReferences = false;
-
         final org.w3c.dom.traversal.NodeFilter filterWrapper = createFilterWrapper(filter, false);
-        final TreeWalker t = new TreeWalker(root, whatToShowI, filterWrapper, expandEntityReferences);
+        final TreeWalker t = new TreeWalker(root, whatToShowI, filterWrapper, false);
         t.setParentScope(getWindow(this));
         t.setPrototype(staticGetPrototype(getWindow(this), TreeWalker.class));
         return t;
@@ -1303,7 +1296,7 @@ public class Document extends Node {
      * cannot be identified by a domain name.
      * @return the domain name of the server that served the document
      * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-2250147">
-     * W3C documentation</a>
+     *     W3C documentation</a>
      */
     @JsxGetter
     public String getDomain() {
@@ -1328,7 +1321,7 @@ public class Document extends Node {
      * Sets the domain of this document.
      *
      * <p>Domains can only be set to suffixes of the existing domain
-     * with the exception of setting the domain to itself.</p>
+     * with the except of setting the domain to itself.</p>
      * <p>
      * The domain will be set according to the following rules:
      * <ol>
@@ -1668,7 +1661,7 @@ public class Document extends Node {
      * @return the {@code hidden} property
      */
     @JsxGetter
-    public boolean getHidden() {
+    public boolean isHidden() {
         return false;
     }
 
@@ -1704,13 +1697,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public HTMLCollection getForms() {
-        final HTMLCollection forms = new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            public Object call(final Context cx, final Scriptable scope,
-                    final Scriptable thisObj, final Object[] args) {
-                throw JavaScriptEngine.typeError("document.forms is not a function");
-            }
-        };
+        final HTMLCollection forms = new HTMLCollection(getDomNodeOrDie(), false);
 
         forms.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
@@ -1724,13 +1711,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public HTMLCollection getEmbeds() {
-        final HTMLCollection embeds = new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            public Object call(final Context cx, final Scriptable scope,
-                    final Scriptable thisObj, final Object[] args) {
-                throw JavaScriptEngine.typeError("document.embeds is not a function");
-            }
-        };
+        final HTMLCollection embeds = new HTMLCollection(getDomNodeOrDie(), false);
 
         embeds.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlEmbed);
         return embeds;
@@ -1742,13 +1723,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public HTMLCollection getImages() {
-        final HTMLCollection images = new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            public Object call(final Context cx, final Scriptable scope,
-                    final Scriptable thisObj, final Object[] args) {
-                throw JavaScriptEngine.typeError("document.images is not a function");
-            }
-        };
+        final HTMLCollection images = new HTMLCollection(getDomNodeOrDie(), false);
 
         images.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlImage);
         return images;
@@ -1760,13 +1735,7 @@ public class Document extends Node {
      */
     @JsxGetter
     public HTMLCollection getScripts() {
-        final HTMLCollection scripts = new HTMLCollection(getDomNodeOrDie(), false) {
-            @Override
-            public Object call(final Context cx, final Scriptable scope,
-                    final Scriptable thisObj, final Object[] args) {
-                throw JavaScriptEngine.typeError("document.scripts is not a function");
-            }
-        };
+        final HTMLCollection scripts = new HTMLCollection(getDomNodeOrDie(), false);
 
         scripts.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> node instanceof HtmlScript);
         return scripts;
@@ -3504,8 +3473,8 @@ public class Document extends Node {
      * @return the value of the {@code all} property
      */
     @JsxGetter
-    public HTMLCollection getAll() {
-        final HTMLCollection all = new HTMLAllCollection(getDomNodeOrDie());
+    public HTMLAllCollection getAll() {
+        final HTMLAllCollection all = new HTMLAllCollection(getDomNodeOrDie());
         all.setAvoidObjectDetection(true);
         all.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
         return all;
@@ -3571,8 +3540,7 @@ public class Document extends Node {
     /**
      * Generate and return the URL for the given blob.
      * @param blob the Blob containing the data
-     * @return the URL
-     * {@link org.htmlunit.javascript.host.URL#createObjectURL(Object)}
+     * @return the URL {@link org.htmlunit.javascript.host.URL#createObjectURL(Object)}
      */
     public String generateBlobUrl(final Blob blob) {
         final URL url = getPage().getUrl();
@@ -3597,8 +3565,7 @@ public class Document extends Node {
 
     /**
      * Revokes the URL for the given blob.
-     * @param url the url to revoke
-     * {@link org.htmlunit.javascript.host.URL#revokeObjectURL(Scriptable)}
+     * @param url the url to revoke {@link org.htmlunit.javascript.host.URL#revokeObjectURL(Scriptable)}
      */
     public void revokeBlobUrl(final String url) {
         blobUrl2Blobs_.remove(url);

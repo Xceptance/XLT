@@ -17,18 +17,15 @@ package org.htmlunit.javascript.host.worker;
 import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link WorkerLocation}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WorkerLocationTest extends WebDriverTestCase {
 
     /**
@@ -168,7 +165,8 @@ public class WorkerLocationTest extends WebDriverTestCase {
     }
 
     private void testJs(final String workerJs) throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script async>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
             + "try {\n"

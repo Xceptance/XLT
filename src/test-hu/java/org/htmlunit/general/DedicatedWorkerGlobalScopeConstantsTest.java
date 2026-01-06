@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -29,21 +30,17 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
 import org.htmlunit.javascript.configuration.WorkerJavaScriptConfiguration;
-import org.htmlunit.junit.BrowserParameterizedRunner;
-import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests that constants class are correct.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserParameterizedRunner.class)
 public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
 
     /**
@@ -51,36 +48,33 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
      * @return the parameterized data
      * @throws Exception if an error occurs
      */
-    @Parameters
-    public static Collection<Object[]> data() throws Exception {
-        final List<Object[]> list = new ArrayList<>();
-        final Set<String> strings = TestCaseTest.getAllConfiguredJsClassNames();
-        for (final String host : strings) {
+    public static Collection<Arguments> data() throws Exception {
+        final List<Arguments> list = new ArrayList<>();
+        final Set<String> classNames = TestCaseTest.getAllConfiguredJsClassNames();
+        final ArrayList<String> classNamesSorted = new ArrayList<>(classNames);
+        Collections.sort(classNamesSorted);
+
+        for (final String host : classNamesSorted) {
             if (!"Audio".equals(host)) {
-                list.add(new Object[] {host});
+                list.add(Arguments.of(host));
             }
         }
         return list;
     }
 
     /**
-     * The parent element name.
-     */
-    @Parameter
-    public String host_;
-
-    /**
      * The default test.
      * @throws Exception if an error occurs
      */
-    @Test
-    @Default
-    public void test() throws Exception {
-        test(host_, getExpectedString(host_));
+    @ParameterizedTest(name = "_{0}")
+    @MethodSource("data")
+    void test(final String host) throws Exception {
+        test(host, getExpectedString(host));
     }
 
     private void test(final String className, final String[] expectedAlerts) throws Exception {
-        final String html = "<html><body>"
+        final String html = DOCTYPE_HTML
+                + "<html><body>"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "try {\n"
@@ -118,8 +112,15 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
     }
 
     private String[] getExpectedString(final String className) {
-        if (getExpectedAlerts() != null && getExpectedAlerts().length > 0) {
-            return getExpectedAlerts();
+        final String[] expectedAlerts = getExpectedAlerts();
+
+        if (expectedAlerts != null && expectedAlerts.length == 1
+                && "-".equals(expectedAlerts[0])) {
+            return new String[0];
+        }
+
+        if (expectedAlerts != null && expectedAlerts.length > 0) {
+            return expectedAlerts;
         }
 
         if (className.endsWith("Array") || "Image".equals(className) || "Option".equals(className)) {
@@ -131,8 +132,13 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
 
         final WorkerJavaScriptConfiguration javaScriptConfig
                 = WorkerJavaScriptConfiguration.getInstance(getBrowserVersion());
+        final HashMap<String, ClassConfiguration> classConfigurationIndex = new HashMap<>();
+        for (final ClassConfiguration config : javaScriptConfig.getAll()) {
+            classConfigurationIndex.put(config.getClassName(), config);
+        }
+
         final List<String> constants = new ArrayList<>();
-        ClassConfiguration classConfig = javaScriptConfig.getClassConfiguration(className);
+        ClassConfiguration classConfig = classConfigurationIndex.get(className);
 
         boolean first = true;
         while (classConfig != null) {
@@ -147,7 +153,7 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
                     }
                 }
             }
-            classConfig = javaScriptConfig.getClassConfiguration(classConfig.getExtendedClassName());
+            classConfig = classConfigurationIndex.get(classConfig.getExtendedClassName());
             first = false;
         }
 
@@ -171,17 +177,11 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
     /**
      * @throws Exception if the test fails
      */
-    @Test
     @Alerts(CHROME = {"AT_TARGET:2", "BUBBLING_PHASE:3", "CAPTURING_PHASE:1", "NONE:0"},
             EDGE = {"AT_TARGET:2", "BUBBLING_PHASE:3", "CAPTURING_PHASE:1", "NONE:0"},
             FF = "-",
             FF_ESR = "-")
-    public void _SecurityPolicyViolationEvent() throws Exception {
-        final String[] expected = getExpectedAlerts();
-        if (expected.length == 1 && "-".equals(expected[0])) {
-            test("SecurityPolicyViolationEvent", new String[0]);
-            return;
-        }
-        test("SecurityPolicyViolationEvent", expected);
+    void _SecurityPolicyViolationEvent() throws Exception {
+        test("SecurityPolicyViolationEvent", getExpectedString("SecurityPolicyViolationEvent"));
     }
 }

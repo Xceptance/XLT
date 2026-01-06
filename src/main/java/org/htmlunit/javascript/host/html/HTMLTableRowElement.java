@@ -36,6 +36,7 @@ import org.htmlunit.javascript.host.dom.DOMException;
 /**
  * The JavaScript object {@code HTMLTableRowElement}.
  *
+ * @author Daniel Gredler
  * @author Marc Guillemot
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -43,7 +44,10 @@ import org.htmlunit.javascript.host.dom.DOMException;
  * @author Frank Danek
  */
 @JsxClass(domClass = HtmlTableRow.class)
-public class HTMLTableRowElement extends HTMLTableComponent {
+public class HTMLTableRowElement extends HTMLElement {
+
+    /** The default value of the "vAlign" property. */
+    private static final String VALIGN_DEFAULT_VALUE = "top";
 
     /**
      * JavaScript constructor.
@@ -74,7 +78,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * @return the index of the row within the enclosing thead, tbody or tfoot
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534621.aspx">MSDN Documentation</a>
      * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-79105901">
-     * DOM Level 1</a>
+     *     DOM Level 1</a>
      */
     @JsxGetter
     public int getSectionRowIndex() {
@@ -131,7 +135,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * is -1 or there is no index specified, then the cell is appended at the end of the
      * element's cells collection.
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536455.aspx">MSDN Documentation</a>
-     * @param index specifies where to insert the cell in the tr.
+     * @param index specifies where to insert the cell in the 'tr'.
      *        The default value is -1, which appends the new cell to the end of the cells collection
      * @return the newly-created cell
      */
@@ -198,5 +202,89 @@ public class HTMLTableRowElement extends HTMLTableComponent {
     @Override
     public void setOuterHTML(final Object value) {
         throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag 'tr'");
+    }
+
+    /**
+     * Returns the value of the {@code align} property.
+     * @return the value of the {@code align} property
+     */
+    @JsxGetter
+    public String getAlign() {
+        return getAlign(true);
+    }
+
+    /**
+     * Sets the value of the {@code align} property.
+     * @param align the value of the {@code align} property
+     */
+    @JsxSetter
+    public void setAlign(final String align) {
+        setAlign(align, false);
+    }
+
+    /**
+     * Returns the value of the {@code vAlign} property.
+     * @return the value of the {@code vAlign} property
+     */
+    @JsxGetter
+    public String getVAlign() {
+        return getVAlign(getValidVAlignValues(), VALIGN_DEFAULT_VALUE);
+    }
+
+    /**
+     * Sets the value of the {@code vAlign} property.
+     * @param vAlign the value of the {@code vAlign} property
+     */
+    @JsxSetter
+    public void setVAlign(final Object vAlign) {
+        setVAlign(vAlign, getValidVAlignValues());
+    }
+
+    /**
+     * Returns the valid "vAlign" values for this element, depending on the browser being emulated.
+     * @return the valid "vAlign" values for this element, depending on the browser being emulated
+     */
+    private String[] getValidVAlignValues() {
+        return null;
+    }
+
+    /**
+     * Returns the value of the {@code ch} property.
+     * @return the value of the {@code ch} property
+     */
+    @Override
+    @JsxGetter
+    public String getCh() {
+        return super.getCh();
+    }
+
+    /**
+     * Sets the value of the {@code ch} property.
+     * @param ch the value of the {@code ch} property
+     */
+    @Override
+    @JsxSetter
+    public void setCh(final String ch) {
+        super.setCh(ch);
+    }
+
+    /**
+     * Returns the value of the {@code chOff} property.
+     * @return the value of the {@code chOff} property
+     */
+    @Override
+    @JsxGetter
+    public String getChOff() {
+        return super.getChOff();
+    }
+
+    /**
+     * Sets the value of the {@code chOff} property.
+     * @param chOff the value of the {@code chOff} property
+     */
+    @Override
+    @JsxSetter
+    public void setChOff(final String chOff) {
+        super.setChOff(chOff);
     }
 }

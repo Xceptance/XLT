@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
@@ -125,15 +126,20 @@ public class EventTarget extends HtmlUnitScriptable {
             // Then add all our parents if we have any (pure JS object such as XMLHttpRequest
             // and MessagePort, etc. will not have any parents)
             for (DomNode parent = ourParentNode; parent != null; parent = parent.getParentNode()) {
+                // scroll does not bubble into the document/window
+                if (Event.TYPE_SCROLL.equals(event.getType()) && parent instanceof Page) {
+                    break;
+                }
+
                 propagationPath.add(parent.getScriptableObject());
             }
 
             // The load event has some unnatural behavior that we need to handle specially
-            // The load event for other elements target that element and but path only
+            // The load event for other elements target that element but path only
             // up to Document and not Window, so do nothing here
             // (see Note in https://www.w3.org/TR/DOM-Level-3-Events/#event-type-load)
             if (!Event.TYPE_LOAD.equals(event.getType())) {
-                // Add Window if the the propagation path reached Document
+                // Add Window if the propagation path reached Document
                 if (propagationPath.get(propagationPath.size() - 1) instanceof Document) {
                     propagationPath.add(window);
                 }
@@ -278,7 +284,7 @@ public class EventTarget extends HtmlUnitScriptable {
      * @param listener the event listener
      * @param useCapture If {@code true}, indicates that the user wishes to initiate capture (not yet implemented)
      * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/element.removeEventListener">Mozilla
-     * documentation</a>
+     *     documentation</a>
      */
     @JsxFunction
     public void removeEventListener(final String type, final Scriptable listener, final boolean useCapture) {

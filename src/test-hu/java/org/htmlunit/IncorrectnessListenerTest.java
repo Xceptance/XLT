@@ -17,9 +17,7 @@ package org.htmlunit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link IncorrectnessListener}.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public final class IncorrectnessListenerTest extends SimpleWebTestCase {
 
     /**
@@ -35,7 +32,8 @@ public final class IncorrectnessListenerTest extends SimpleWebTestCase {
      */
     @Test
     public void notification() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script src='script.js'></script>\n"
                 + "</head>\n"
                 + "<body>\n"

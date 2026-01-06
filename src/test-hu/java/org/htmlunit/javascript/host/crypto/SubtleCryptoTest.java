@@ -15,12 +15,9 @@
 package org.htmlunit.javascript.host.crypto;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link SubtleCrypto}.
@@ -29,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Atsushi Nakagawa
  */
-@RunWith(BrowserRunner.class)
 public class SubtleCryptoTest extends WebDriverTestCase {
 
     /**
@@ -38,8 +34,8 @@ public class SubtleCryptoTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "TypeError"})
     public void ctor() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -71,8 +67,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
             FF = "TypeError false",
             FF_ESR = "TypeError false")
     public void unsupportedCall() throws Exception {
-        final String html
-            = ""
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -101,11 +96,14 @@ public class SubtleCryptoTest extends WebDriverTestCase {
              "publicExponent 1,0,1",
              "private", "false", "sign",
              "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
-             "publicExponent 1,0,1"})
-    @NotYetImplemented
+             "publicExponent 1,0,1", "done"})
+    @HtmlUnitNYI(CHROME = {"[object Crypto]", "[object DOMException]"},
+            EDGE = {"[object Crypto]", "[object DOMException]"},
+            FF = {"[object Crypto]", "[object DOMException]"},
+            FF_ESR = {"[object Crypto]", "[object DOMException]"})
     public void rsassa() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    log(window.crypto);\n"
@@ -133,18 +131,17 @@ public class SubtleCryptoTest extends WebDriverTestCase {
             + "        for(var x in key.privateKey.algorithm) {\n"
             + "          log(x + ' ' + key.publicKey.algorithm[x]);\n"
             + "        }\n"
-            + "        alert('done');\n"
+            + "        log('done');\n"
             + "      })\n"
             + "      .catch(function(err) {\n"
             + "        log(err);\n"
             + "      });\n"
-            + "    } else { alert('done'); }\n"
+            + "    } else { log('no window.crypto'); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
         loadPage2(html);
-        verifyAlerts(getWebDriver(), "done");
-        verifyTitle2(getWebDriver(), getExpectedAlerts());
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 }

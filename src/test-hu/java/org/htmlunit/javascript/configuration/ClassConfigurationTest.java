@@ -14,17 +14,18 @@
  */
 package org.htmlunit.javascript.configuration;
 
-import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ClassConfiguration}.
  *
  * @author Chris Erskine
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-public class ClassConfigurationTest extends SimpleWebTestCase {
+public class ClassConfigurationTest {
 
     /**
      * @throws Exception on error
@@ -32,7 +33,7 @@ public class ClassConfigurationTest extends SimpleWebTestCase {
     @Test
     public void forJSFlagTrue() throws Exception {
         final ClassConfiguration config1 = new ClassConfiguration(ConfigTestClass.class, null, true, null, "");
-        assertTrue("JSObject Flag should have been set", config1.isJsObject());
+        Assertions.assertTrue(config1.isJsObject(), "JSObject Flag should have been set");
     }
 
     /**
@@ -41,7 +42,7 @@ public class ClassConfigurationTest extends SimpleWebTestCase {
     @Test
     public void forJSFlagFalse() throws Exception {
         final ClassConfiguration config1 = new ClassConfiguration(ConfigTestClass.class, null, false, null, "");
-        assertFalse("JSObject Flag should not have been set", config1.isJsObject());
+        Assertions.assertFalse(config1.isJsObject(), "JSObject Flag should not have been set");
     }
 
     /**

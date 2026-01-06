@@ -50,11 +50,11 @@ import org.htmlunit.javascript.host.html.HTMLHtmlElement;
  * The JavaScript object {@code Node} which is the base class for all DOM
  * objects. This will typically wrap an instance of {@link DomNode}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Barnaby Court
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author Christian Sell
+ * @author George Murnock
  * @author Chris Erskine
  * @author Bruce Faulkner
  * @author Ahmed Ashour
@@ -64,75 +64,111 @@ import org.htmlunit.javascript.host.html.HTMLHtmlElement;
 @JsxClass
 public class Node extends EventTarget {
 
-    /** @see org.w3c.dom.Node#ELEMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#ELEMENT_NODE
+     */
     @JsxConstant
     public static final int ELEMENT_NODE = org.w3c.dom.Node.ELEMENT_NODE;
 
-    /** @see org.w3c.dom.Node#ATTRIBUTE_NODE */
+    /**
+     * @see org.w3c.dom.Node#ATTRIBUTE_NODE
+     */
     @JsxConstant
     public static final int ATTRIBUTE_NODE = org.w3c.dom.Node.ATTRIBUTE_NODE;
 
-    /** @see org.w3c.dom.Node#TEXT_NODE */
+    /**
+     * @see org.w3c.dom.Node#TEXT_NODE
+     */
     @JsxConstant
     public static final int TEXT_NODE = org.w3c.dom.Node.TEXT_NODE;
 
-    /** @see org.w3c.dom.Node#CDATA_SECTION_NODE */
+    /**
+     * @see org.w3c.dom.Node#CDATA_SECTION_NODE
+     */
     @JsxConstant
     public static final int CDATA_SECTION_NODE = org.w3c.dom.Node.CDATA_SECTION_NODE;
 
-    /** @see org.w3c.dom.Node#ENTITY_REFERENCE_NODE */
+    /**
+     * @see org.w3c.dom.Node#ENTITY_REFERENCE_NODE
+     */
     @JsxConstant
     public static final int ENTITY_REFERENCE_NODE = org.w3c.dom.Node.ENTITY_REFERENCE_NODE;
 
-    /** @see org.w3c.dom.Node#ENTITY_NODE */
+    /**
+     * @see org.w3c.dom.Node#ENTITY_NODE
+     */
     @JsxConstant
     public static final int ENTITY_NODE = org.w3c.dom.Node.ENTITY_NODE;
 
-    /** @see org.w3c.dom.Node#PROCESSING_INSTRUCTION_NODE */
+    /**
+     * @see org.w3c.dom.Node#PROCESSING_INSTRUCTION_NODE
+     */
     @JsxConstant
     public static final int PROCESSING_INSTRUCTION_NODE = org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE;
 
-    /** @see org.w3c.dom.Node#COMMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#COMMENT_NODE
+     */
     @JsxConstant
     public static final int COMMENT_NODE = org.w3c.dom.Node.COMMENT_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_NODE
+     */
     @JsxConstant
     public static final int DOCUMENT_NODE = org.w3c.dom.Node.DOCUMENT_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_TYPE_NODE */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_TYPE_NODE
+     */
     @JsxConstant
     public static final int DOCUMENT_TYPE_NODE = org.w3c.dom.Node.DOCUMENT_TYPE_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_FRAGMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_FRAGMENT_NODE
+     */
     @JsxConstant
     public static final int DOCUMENT_FRAGMENT_NODE = org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE;
 
-    /** @see org.w3c.dom.Node#NOTATION_NODE */
+    /**
+     * @see org.w3c.dom.Node#NOTATION_NODE
+     */
     @JsxConstant
     public static final int NOTATION_NODE = org.w3c.dom.Node.NOTATION_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_DISCONNECTED */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_DISCONNECTED
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_DISCONNECTED = org.w3c.dom.Node.DOCUMENT_POSITION_DISCONNECTED;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_PRECEDING */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_PRECEDING
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_PRECEDING = org.w3c.dom.Node.DOCUMENT_POSITION_PRECEDING;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_FOLLOWING */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_FOLLOWING
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_FOLLOWING = org.w3c.dom.Node.DOCUMENT_POSITION_FOLLOWING;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINS */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINS
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_CONTAINS = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINS;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINED_BY */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINED_BY
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_CONTAINED_BY = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINED_BY;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
         = org.w3c.dom.Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
@@ -436,6 +472,51 @@ public class Node extends EventTarget {
     }
 
     /**
+     * Moves a given Node inside the invoking node as a direct child, before a given reference node.
+     *
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     */
+    public static void moveBefore(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        if (args.length < 2) {
+            throw JavaScriptEngine.typeError(
+                    "Failed to execute 'moveBefore' on 'Element': 2 arguments required, but only 0 present.");
+        }
+
+        final Object movedNodeObject = args[0];
+        if (!(movedNodeObject instanceof Node)) {
+            throw JavaScriptEngine.typeError(
+                    "Failed to execute 'moveBefore' on 'Element': parameter 1 is not of type 'Node'.");
+        }
+        final Object referenceNodeObject = args[1];
+        if (referenceNodeObject != null && !(referenceNodeObject instanceof Node)) {
+            throw JavaScriptEngine.typeError(
+                    "Failed to execute 'moveBefore' on 'Element': parameter 2 is not of type 'Node'.");
+        }
+
+        final Node node = (Node) thisObj;
+        try {
+            if (referenceNodeObject == null) {
+                node.getDomNodeOrDie().moveBefore(((Node) movedNodeObject).getDomNodeOrDie(), null);
+                return;
+            }
+
+            node.getDomNodeOrDie().moveBefore(
+                    ((Node) movedNodeObject).getDomNodeOrDie(), ((Node) referenceNodeObject).getDomNodeOrDie());
+        }
+        catch (final org.w3c.dom.DOMException e) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    node.getWindow(),
+                    "Failed to execute 'moveChild' on '" + node + ": " + e.getMessage(),
+                    e.code);
+        }
+    }
+
+    /**
      * Clones this node.
      * @param deep if {@code true}, recursively clones all descendants
      * @return the newly cloned node
@@ -459,6 +540,10 @@ public class Node extends EventTarget {
     public boolean isEqualNode(final Node other) {
         if (isSameNode(other)) {
             return true;
+        }
+
+        if (other == null) {
+            return false;
         }
 
         if (!getClassName().equals(other.getClassName())) {
@@ -550,7 +635,7 @@ public class Node extends EventTarget {
             }
 
             final int length = childNodes.getLength();
-            final int otherLength = childNodes.getLength();
+            final int otherLength = otherChildNodes.getLength();
             if (length != otherLength) {
                 return false;
             }
@@ -580,7 +665,7 @@ public class Node extends EventTarget {
      */
     @JsxFunction
     public boolean isSameNode(final Object other) {
-        return other == this;
+        return this == other;
     }
 
     /**
@@ -595,8 +680,8 @@ public class Node extends EventTarget {
     /**
      * @param namespace string containing the namespace to look the prefix up
      * @return a string containing the prefix for a given namespace URI,
-     * if present, and null if not. When multiple prefixes are possible,
-     * the first prefix is returned.
+     *         if present, and null if not. When multiple prefixes are possible,
+     *         the first prefix is returned.
      */
     @JsxFunction
     public String lookupPrefix(final String namespace) {
@@ -648,7 +733,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code nextSibling} for the node that
      * contains the current node.
      * @return the next sibling node or null if the current node has
-     * no next sibling.
+     *         no next sibling.
      */
     @JsxGetter
     public Node getNextSibling() {
@@ -659,7 +744,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code previousSibling} for the node that
      * contains the current node.
      * @return the previous sibling node or null if the current node has
-     * no previous sibling.
+     *         no previous sibling.
      */
     @JsxGetter
     public Node getPreviousSibling() {
@@ -670,7 +755,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code firstChild} for the node that
      * contains the current node.
      * @return the first child node or null if the current node has
-     * no children.
+     *         no children.
      */
     @JsxGetter
     public Node getFirstChild() {
@@ -681,7 +766,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code lastChild} for the node that
      * contains the current node.
      * @return the last child node or null if the current node has
-     * no children.
+     *         no children.
      */
     @JsxGetter
     public Node getLastChild() {

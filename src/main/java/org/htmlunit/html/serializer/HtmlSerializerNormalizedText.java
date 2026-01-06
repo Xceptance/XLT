@@ -20,7 +20,6 @@ import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebWindow;
@@ -61,6 +60,7 @@ import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.html.HtmlUnorderedList;
 import org.htmlunit.html.TableRowGroup;
 import org.htmlunit.html.serializer.HtmlSerializerNormalizedText.HtmlSerializerTextBuilder.Mode;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Utility to handle conversion from HTML code to string.
@@ -341,11 +341,11 @@ public class HtmlSerializerNormalizedText {
     protected void appendTableRow(final HtmlSerializerTextBuilder builder, final HtmlTableRow htmlTableRow) {
         boolean first = true;
         for (final HtmlTableCell cell : htmlTableRow.getCells()) {
-            if (!first) {
-                builder.appendTab();
+            if (first) {
+                first = false;
             }
             else {
-                first = false;
+                builder.appendTab();
             }
             appendChildren(builder, cell); // trim?
         }
@@ -634,11 +634,14 @@ public class HtmlSerializerNormalizedText {
 
             String text = content;
             if (mode == Mode.PRESERVE_BLANK_NEWLINE) {
-                text = StringUtils.stripEnd(text, null);
+                text = StringUtils.trimRight(text);
             }
 
             boolean crFound = false;
-            for (final char c : text.toCharArray()) {
+            final int textLength = text.length();
+            for (int i = 0; i < textLength; i++) {
+                final char c = text.charAt(i);
+
                 if (mode == Mode.NORMALIZE) {
                     if (isSpace(c)) {
                         switch (state_) {
@@ -708,7 +711,7 @@ public class HtmlSerializerNormalizedText {
             }
 
             if (mode != Mode.NORMALIZE) {
-                // reset state to empty to restart whitespace normalization afterwards
+                // reset state to empty to restart whitespace normalization afterward
                 state_ = State.TRIM;
             }
         }

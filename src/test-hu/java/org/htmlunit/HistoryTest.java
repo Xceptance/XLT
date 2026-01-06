@@ -28,12 +28,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -43,7 +41,6 @@ import org.openqa.selenium.WebDriver;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HistoryTest extends WebDriverTestCase {
 
     /**
@@ -63,11 +60,17 @@ public class HistoryTest extends WebDriverTestCase {
         driver.get(URL_FIRST + "post1");
 
         driver.findElement(By.id("mySubmit")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
         assertEquals(URL_FIRST + "post2", driver.getCurrentUrl());
         assertTrue(driver.getPageSource().contains("POST"));
         assertTrue(driver.getPageSource().contains("para1=value1"));
 
         driver.findElement(By.linkText("Go to GET")).click();
+        if (useRealBrowser()) {
+            Thread.sleep(400);
+        }
         assertEquals(URL_FIRST + "post3", driver.getCurrentUrl());
         assertTrue(driver.getPageSource().contains("GET"));
 
@@ -111,7 +114,7 @@ public class HistoryTest extends WebDriverTestCase {
             }
 
             if (count != Post1Servlet.Count_) {
-                Assert.fail("Server called for " + i);
+                Assertions.fail("Server called for " + i);
                 break;
             }
         }
@@ -135,7 +138,8 @@ public class HistoryTest extends WebDriverTestCase {
             response.setCharacterEncoding(UTF_8.name());
             response.setContentType(MimeType.TEXT_HTML);
             response.getWriter().write(
-                    "<html>\n"
+                    DOCTYPE_HTML
+                    + "<html>\n"
                     + "<body>\n"
                     + "  <h1>Call: " + Count_ + "</h1>\n"
                     + "  <form action='post2' method='post'>\n"

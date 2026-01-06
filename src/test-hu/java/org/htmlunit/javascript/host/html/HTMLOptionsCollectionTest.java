@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLOptionsCollection}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLOptionsCollectionTest extends WebDriverTestCase {
 
     /**
@@ -371,8 +368,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     }
 
     private void add(final String param, final boolean empty, final boolean multi) throws Exception {
-        String html
-            = "<html>\n"
+        String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -481,8 +478,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     }
 
     private void get(final String pos, final boolean empty) throws Exception {
-        String html
-            = "<html>\n"
+        String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -693,8 +690,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     }
 
     private void put(final String pos, final String param, final boolean empty, final boolean multi) throws Exception {
-        String html
-            = "<html>\n"
+        String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -875,8 +872,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     }
 
     private void remove(final String pos, final boolean empty, final boolean multi) throws Exception {
-        String html
-            = "<html>\n"
+        String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -916,8 +913,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1", "3"})
     public void length() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var sel = document.form1.select0;\n"
@@ -1003,14 +1000,14 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
         setLength("10");
     }
 
-    private void setLength(final String lenght) throws Exception {
-        final String html
-            = "<html><head><script>\n"
+    private void setLength(final String length) throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var sel = document.form1.select0;\n"
             + "  try {\n"
-            + "    sel.options.length = " + lenght + ";\n"
+            + "    sel.options.length = " + length + ";\n"
             + "    log(sel.options.length);\n"
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
@@ -1019,7 +1016,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
 
             + "  var sel = document.form1.select1;\n"
             + "  try {\n"
-            + "    sel.options.length = " + lenght + ";\n"
+            + "    sel.options.length = " + length + ";\n"
             + "    log(sel.options.length);\n"
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
@@ -1028,7 +1025,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
 
             + "  var sel = document.form1.select3;\n"
             + "  try {\n"
-            + "    sel.options.length = " + lenght + ";\n"
+            + "    sel.options.length = " + length + ";\n"
             + "    log(sel.options.length);\n"
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
@@ -1061,8 +1058,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "", "4", "One", "1", "", "0"})
     public void setLength_increase() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var sel = document.form1.select0;\n"
@@ -1102,8 +1099,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var opts = document.form1.select.options;\n"
@@ -1131,8 +1128,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "undefined", "[object HTMLOptionElement]", "undefined", "undefined"})
     public void index() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var opts = document.form1.select.options;\n"
@@ -1160,8 +1157,8 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "null", "[object HTMLOptionElement]", "null", "null"})
     public void item() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var opts = document.form1.select.options;\n"

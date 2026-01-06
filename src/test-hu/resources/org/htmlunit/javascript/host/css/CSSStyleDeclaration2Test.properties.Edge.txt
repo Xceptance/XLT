@@ -113,6 +113,7 @@ breakBefore
 breakInside
 bufferedRendering
 captionSide
+caretAnimation
 caretColor
 clear
 clip
@@ -144,6 +145,23 @@ containerName
 containerType
 content
 contentVisibility
+cornerBlockEndShape
+cornerBlockStartShape
+cornerBottomLeftShape
+cornerBottomRightShape
+cornerBottomShape
+cornerEndEndShape
+cornerEndStartShape
+cornerInlineEndShape
+cornerInlineStartShape
+cornerLeftShape
+cornerRightShape
+cornerShape
+cornerStartEndShape
+cornerStartStartShape
+cornerTopLeftShape
+cornerTopRightShape
+cornerTopShape
 counterIncrement
 counterReset
 counterSet
@@ -157,6 +175,7 @@ descentOverride
 direction
 display
 dominantBaseline
+dynamicRangeLimit
 emptyCells
 fallback
 fieldSizing
@@ -179,6 +198,7 @@ fontDisplay
 fontFamily
 fontFeatureSettings
 fontKerning
+fontLanguageOverride
 fontOpticalSizing
 fontPalette
 fontSize
@@ -236,6 +256,10 @@ insetBlockStart
 insetInline
 insetInlineEnd
 insetInlineStart
+interactivity
+interestDelay
+interestDelayEnd
+interestDelayStart
 interpolateSize
 isolation
 justifyContent
@@ -310,7 +334,9 @@ outlineStyle
 outlineWidth
 overflow
 overflowAnchor
+overflowBlock
 overflowClipMargin
+overflowInline
 overflowWrap
 overflowX
 overflowY
@@ -353,10 +379,14 @@ positionTryFallbacks
 positionTryOrder
 positionVisibility
 prefix
+printColorAdjust
 quotes
 r
 range
+readingFlow
+readingOrder
 resize
+result
 right
 rotate
 rowGap
@@ -378,6 +408,7 @@ scrollMarginInlineStart
 scrollMarginLeft
 scrollMarginRight
 scrollMarginTop
+scrollMarkerGroup
 scrollPadding
 scrollPaddingBlock
 scrollPaddingBlockEnd
@@ -392,6 +423,7 @@ scrollPaddingTop
 scrollSnapAlign
 scrollSnapStop
 scrollSnapType
+scrollTargetGroup
 scrollTimeline
 scrollTimelineAxis
 scrollTimelineName
@@ -426,6 +458,7 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
+textAutospace
 textBox
 textBoxEdge
 textBoxTrim
@@ -478,6 +511,7 @@ viewTimelineAxis
 viewTimelineInset
 viewTimelineName
 viewTransitionClass
+viewTransitionGroup
 viewTransitionName
 visibility
 webkitAlignContent

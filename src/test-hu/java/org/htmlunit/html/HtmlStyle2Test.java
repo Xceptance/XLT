@@ -15,10 +15,8 @@
 package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -30,7 +28,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlStyle2Test extends WebDriverTestCase {
 
     /**
@@ -39,7 +36,8 @@ public class HtmlStyle2Test extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLStyleElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<style type='text/css' id='myId'>\n"
             + "img { border: 0px }\n"
             + "</style>\n"
@@ -64,8 +62,8 @@ public class HtmlStyle2Test extends WebDriverTestCase {
      */
     @Test
     public void getText() throws Exception {
-        final String html
-                = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <title>foo</title>\n"
                 + "  <style type='text/css' id='s'>\n"
@@ -86,8 +84,8 @@ public class HtmlStyle2Test extends WebDriverTestCase {
      */
     @Test
     public void isDisplayed() throws Exception {
-        final String html
-                = "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <title>foo</title>\n"
                 + "  <style type='text/css' id='s'>\n"

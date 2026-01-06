@@ -19,7 +19,6 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.JavaScriptException;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomNode;
 
 /**
@@ -45,8 +44,6 @@ public class EventHandler extends BaseFunction {
         node_ = node;
         eventName_ = eventName;
         jsSnippet_ = jsSnippet;
-
-        setPrototype(ScriptableObject.getClassPrototype(node.getScriptableObject(), "Function"));
     }
 
     /**
@@ -61,7 +58,7 @@ public class EventHandler extends BaseFunction {
         // final HtmlUnitScriptable jsObj = node_.getScriptableObject();
         // have changed this - the scope is now thisObj to fix
         // https://github.com/HtmlUnit/htmlunit/issues/347
-        // but i still have not found any description about the right scope
+        // but still have not found any description about the right scope
 
         // compile "just in time"
         if (realFunction_ == null) {

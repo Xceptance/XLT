@@ -40,9 +40,9 @@ import org.w3c.dom.Attr;
 /**
  * Base class for frame and iframe.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author David D. Kilzer
  * @author Stefan Anzinger
@@ -387,26 +387,32 @@ public abstract class BaseFrameElement extends HtmlElement {
      * {@inheritDoc}
      */
     @Override
-    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, String attributeValue,
+    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObserver) {
         final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+
         if (null != attributeValue && SRC_ATTRIBUTE.equals(qualifiedNameLC)) {
-            attributeValue = attributeValue.trim();
+            final String attributeValueTrimmed = attributeValue.trim();
+
+            super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValueTrimmed, notifyAttributeChangeListeners,
+                    notifyMutationObserver);
+
+            // do not use equals() here
+            // see HTMLIFrameElement2Test.documentCreateElement_onLoad_srcAboutBlank()
+            if (UrlUtils.ABOUT_BLANK != attributeValueTrimmed) {
+                if (isAttachedToPage()) {
+                    loadSrc();
+                }
+                else {
+                    loadSrcWhenAddedToPage_ = true;
+                }
+            }
+
+            return;
         }
 
         super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObserver);
-
-        // do not use equals() here
-        // see HTMLIFrameElement2Test.documentCreateElement_onLoad_srcAboutBlank()
-        if (SRC_ATTRIBUTE.equals(qualifiedNameLC) && UrlUtils.ABOUT_BLANK != attributeValue) {
-            if (isAttachedToPage()) {
-                loadSrc();
-            }
-            else {
-                loadSrcWhenAddedToPage_ = true;
-            }
-        }
     }
 
     /**

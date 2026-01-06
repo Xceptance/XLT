@@ -17,16 +17,14 @@ package org.htmlunit;
 import java.net.URL;
 
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link NiceRefreshHandler}.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public final class NiceRefreshHandlerTest extends SimpleWebTestCase {
 
     /**
@@ -46,7 +44,8 @@ public final class NiceRefreshHandlerTest extends SimpleWebTestCase {
     }
 
     private void doTest(final int handlerMaxDelay, final URL expectedUrl) throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head><title>Meta Redirect Page</title>\n"
             + "<meta http-equiv='Refresh' content='2; URL=" + URL_THIRD + "'>\n"
             + "</head>\n"

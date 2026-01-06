@@ -15,10 +15,9 @@
 package org.htmlunit.javascript.host.crypto;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -27,7 +26,6 @@ import org.openqa.selenium.WebDriver;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CryptoTest extends WebDriverTestCase {
 
     /**
@@ -36,8 +34,8 @@ public class CryptoTest extends WebDriverTestCase {
     @Test
     @Alerts({"function", "TypeError"})
     public void ctor() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -64,7 +62,8 @@ public class CryptoTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true", "false", "false", "false", "10", "true"})
     public void getRandomValues() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  var array = new Uint32Array(10);\n"
@@ -91,7 +90,8 @@ public class CryptoTest extends WebDriverTestCase {
     @Test
     @Alerts("[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}§")
     public void randomUUID() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(window.crypto.randomUUID());\n"
@@ -109,9 +109,14 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("QuotaExceededError/DOMException")
+    @Alerts(DEFAULT = "QuotaExceededError/DOMException",
+            CHROME = "QuotaExceededError/QuotaExceededError",
+            EDGE = "QuotaExceededError/QuotaExceededError")
+    @HtmlUnitNYI(CHROME = "QuotaExceededError/DOMException",
+            EDGE = "QuotaExceededError/DOMException")
     public void getRandomValuesQuotaExceeded() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  var array = new Uint32Array(16385);\n"
@@ -129,7 +134,8 @@ public class CryptoTest extends WebDriverTestCase {
     @Test
     @Alerts("[object SubtleCrypto]")
     public void subtle() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(window.crypto.subtle);\n"

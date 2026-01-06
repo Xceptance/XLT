@@ -21,11 +21,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.Cookie;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link CookieManager}.
@@ -35,7 +33,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CookieManager2Test extends SimpleWebTestCase {
 
     /**
@@ -43,8 +40,8 @@ public class CookieManager2Test extends SimpleWebTestCase {
      */
     @Test
     public void resettingCookie() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + "  function createCookie(name, value, days, path) {\n"
             + "    if (days) {\n"
@@ -151,7 +148,8 @@ public class CookieManager2Test extends SimpleWebTestCase {
      */
     @Test
     public void getCookiesShouldReturnACopyOfCurentState() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body>\n"
                 + "<button id='it' onclick=\"document.cookie = 'foo=bla'\">click me</button>\n"
                 + "<script>\n"
                 + "document.cookie = 'cookie1=value1';\n"

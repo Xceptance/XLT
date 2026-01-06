@@ -28,10 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.xml.XmlPage;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DefaultPageCreator}.
@@ -40,7 +38,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DefaultPageCreatorTest extends WebServerTestCase {
 
     /**
@@ -375,7 +372,7 @@ public class DefaultPageCreatorTest extends WebServerTestCase {
         @Override
         protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
             final Writer writer = response.getWriter();
-            writer.write("<html><head><title>\u00d3</title></head><body></body></html>");
+            writer.write(DOCTYPE_HTML + "<html><head><title>\u00d3</title></head><body></body></html>");
         }
     }
 
@@ -431,7 +428,7 @@ public class DefaultPageCreatorTest extends WebServerTestCase {
             output.write('\u00ff');
             output.flush();
             final Writer writer = new OutputStreamWriter(output, "UTF16");
-            writer.write("<html><head></head><body></body></html>");
+            writer.write(DOCTYPE_HTML + "<html><head></head><body></body></html>");
             writer.flush();
         }
     }

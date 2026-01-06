@@ -24,19 +24,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Wrapper for the HTML element "input".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Daniel Gredler
  * @author Ahmed Ashour
  * @author Marc Guillemot
@@ -68,7 +68,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
     /**
      * Returns the in-memory data assigned to this file input element, if any.
-     * @return {@code null} if {@link #setData(byte[])} hasn't be used
+     * @return {@code null} if {@link #setData(byte[])} hasn't been used
      */
     public final byte[] getData() {
         return data_;
@@ -110,7 +110,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
             String contentType;
             if (contentType_ == null) {
                 contentType = getPage().getWebClient().getBrowserVersion().getUploadMimeType(file);
-                if (StringUtils.isEmpty(contentType)) {
+                if (StringUtils.isEmptyOrNull(contentType)) {
                     contentType = MimeType.APPLICATION_OCTET_STREAM;
                 }
             }
@@ -137,7 +137,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
     /**
      * Gets the content type that should be sent together with the uploaded file.
      * @return the content type, or {@code null} if this has not been explicitly set
-     * and should be guessed from file content
+     *         and should be guessed from file content
      */
     public String getContentType() {
         return contentType_;
@@ -181,7 +181,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public void setValue(final String newValue) {
-        if (StringUtils.isEmpty(newValue)) {
+        if (StringUtils.isEmptyOrNull(newValue)) {
             setFiles();
             return;
         }

@@ -21,13 +21,10 @@ import static org.htmlunit.javascript.host.xml.XMLDocumentTest.callSerializeXMLD
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -36,14 +33,13 @@ import org.openqa.selenium.WebElement;
  * Tests for {@link Node}.
  *
  * @author Brad Clarke
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author George Murnock
  * @author Bruce Faulkner
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class NodeTest extends WebDriverTestCase {
 
     /**
@@ -52,7 +48,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLSpanElement]", "[object Text]", "null"})
     public void lastChild() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -77,7 +74,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void hasChildNodes_true() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -97,7 +95,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("false")
     public void hasChildNodes_false() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -117,7 +116,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"4", "function", "3"})
     public void remove() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<div id='div1'></div>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -141,8 +141,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true"})
     public void removeChild() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var form = document.forms['form1'];\n"
@@ -164,8 +164,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("NotFoundError/DOMException")
     public void removeChildSibling() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var div1 = document.getElementById('div1');\n"
@@ -190,8 +190,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true"})
     public void replaceChild_Normal() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
             + "  var form = document.forms['form1'];\n"
@@ -218,7 +218,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("DIV")
     public void nodeNameIsUppercase() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -238,7 +239,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "SPAN", "2", "#text", "H1", "H2"})
     public void getChildNodes() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -266,7 +268,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"nb nodes: 2", "8", "1"})
     public void childNodes_Comments() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "</head>\n"
             + "<body><!-- comment --><script>\n"
             + LOG_TITLE_FUNCTION
@@ -287,7 +290,8 @@ public class NodeTest extends WebDriverTestCase {
         "tempNode.name: undefined", "tempNode.name: input1", "tempNode.name: undefined",
         "tempNode.name: input2", "tempNode.name: undefined"})
     public void getChildNodesProperties() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function doTest() {\n"
@@ -318,7 +322,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"document: 9", "document.body: 1", "body child 1: 3", "body child 2: 8"})
     public void nodeType() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -342,7 +347,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void attachEvent() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -365,25 +371,20 @@ public class NodeTest extends WebDriverTestCase {
         verifyTitle2(driver, getExpectedAlerts());
     }
 
+
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"false", "false", "true", "false", "false", "false"})
-    public void isEqualNode() throws Exception {
-        final String html = "<html><head><script>\n"
+    @Alerts("true")
+    public void isEqualNodeSame() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head><script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var list1 = document.getElementById('list1');\n"
-                + "    var list2 = document.getElementById('list2');\n"
-                + "    log(list1.isEqualNode(list2));\n"
+                + "    log(list1.isEqualNode(list1));\n"
                 + "\n"
-                + "    var nodes = document.getElementsByClassName('test');\n"
-                + "    log(nodes[0].isEqualNode(nodes[1]));\n"
-                + "    log(nodes[0].isEqualNode(nodes[2]));\n"
-                + "    log(nodes[0].isEqualNode(nodes[3]));\n"
-                + "    log(nodes[0].isEqualNode(nodes[4]));\n"
-                + "    log(nodes[0].isEqualNode(nodes[5]));"
                 + "  }\n"
                 + "</script></head>\n"
                 + "<body onload='test()'>\n"
@@ -391,11 +392,129 @@ public class NodeTest extends WebDriverTestCase {
                 + "    <li>foo</li>\n"
                 + "    <li>bar</li>\n"
                 + "  </ul>\n"
-                + "  <ul id='list2'>\n"
+                + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "false"})
+    public void isEqualNodeNull() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var list1 = document.getElementById('list1');\n"
+                + "    log(list1.isEqualNode(null));\n"
+                + "    log(list1.isEqualNode(undefined));\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'>\n"
+                + "  <ul id='list1'>\n"
                 + "    <li>foo</li>\n"
                 + "    <li>bar</li>\n"
                 + "  </ul>\n"
-                + "\n"
+                + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "true", "false", "true", "true", "false", "false", "false", "true"})
+    public void isEqualNodeEmpty() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var list1 = document.getElementById('list1');\n"
+                + "    var list1 = document.getElementById('list2');\n"
+
+                + "    log(list1.isEqualNode(list1));\n"
+                + "    log(list1.isEqualNode(list2));\n"
+                + "    log(list1.isEqualNode(list3));\n"
+
+                + "    log(list2.isEqualNode(list1));\n"
+                + "    log(list2.isEqualNode(list2));\n"
+                + "    log(list2.isEqualNode(list3));\n"
+
+                + "    log(list3.isEqualNode(list1));\n"
+                + "    log(list3.isEqualNode(list2));\n"
+                + "    log(list3.isEqualNode(list3));\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'>\n"
+                + "  <ul id='list1'>\n"
+                + "  </ul>\n"
+                + "  <ul id='list2'>\n"
+                + "  </ul>\n"
+                + "  <ul id='list3'>\n"
+                + "    <li>foo</li>\n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"6", "false", "true", "false", "false", "false",
+             "true", "false", "false", "false", "false",
+             "false", "true", "false", "false", "false",
+             "false", "false", "true", "false", "false",
+             "false", "false", "false", "true", "false",
+             "false", "false", "false", "false", "true"})
+    public void isEqualNodeAttr() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var nodes = document.getElementsByClassName('test');\n"
+                + "    log(nodes.length);\n"
+
+                + "    log(nodes[0].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[5]));\n"
+
+                + "    log(nodes[1].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[1].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[1].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[1].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[1].isEqualNode(nodes[5]));\n"
+
+                + "    log(nodes[2].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[2].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[2].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[2].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[2].isEqualNode(nodes[5]));\n"
+
+                + "    log(nodes[3].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[3].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[3].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[3].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[3].isEqualNode(nodes[5]));\n"
+
+                + "    log(nodes[4].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[4].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[4].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[4].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[4].isEqualNode(nodes[5]));\n"
+
+                + "    log(nodes[5].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[5].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[5].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[5].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[5].isEqualNode(nodes[5]));\n"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'>\n"
                 + "  <ul class='test'>\n"
                 + "    <li>foo</li>\n"
                 + "    <li>bar</li>\n"
@@ -432,7 +551,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false"})
     public void isSameNode() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var d1 = document.getElementById('div1');\n"
@@ -460,7 +580,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "null"})
     public void appendChild_parentNode() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var div1 = document.createElement('div');\n"
@@ -486,7 +607,8 @@ public class NodeTest extends WebDriverTestCase {
     @Alerts({"1", "HierarchyRequestError/DOMException", "1",
              "HierarchyRequestError/DOMException", "1", "HierarchyRequestError/DOMException", "1"})
     public void append_insert_html_node() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var htmlNode = document.documentElement;\n"
@@ -510,7 +632,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("2")
     public void appendChild_of_DocumentFragment() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var fragment = document.createDocumentFragment();\n"
@@ -537,7 +660,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "3", "3", "3", "3", "3", "3", "3"})
     public void nodePrototype() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -570,7 +694,8 @@ public class NodeTest extends WebDriverTestCase {
     @Alerts({"<div id=\"myDiv2\"></div><div id=\"myDiv3\"></div>", "myDiv2",
              "<div>one</div><div>two</div><div id=\"myDiv3\"></div>"})
     public void replaceChild() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -598,7 +723,8 @@ public class NodeTest extends WebDriverTestCase {
     @Alerts({"<div id=\"myDiv2\"></div><div id=\"myDiv3\"></div>", "myDiv2",
              "<div id=\"myDiv3\"></div>"})
     public void replaceChild_EmptyDocumentFragment() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var element = document.getElementById('myDiv2');\n"
@@ -626,8 +752,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("in click")
     public void cloneNode_copiesListenerOnlyForIE() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -665,7 +791,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "1", "2", "4", "8", "16", "32"})
     public void documentPositionConstants() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -692,8 +819,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "20", "20", "4", "10", "10", "2", "20", "TypeError"})
     public void compareDocumentPosition() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -734,7 +861,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "16"})
     public void compareDocumentPosition2() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var div = document.createElement('div');\n"
@@ -757,7 +885,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "37", "35"})
     public void compareDocumentPositionFragment() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    let range = document.createRange();\n"
@@ -785,7 +914,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("bk")
     public void prefix() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var text = \"<bk:book xmlns:bk='urn:loc.gov:books'></bk:book>\";\n"
@@ -805,7 +935,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("<root><![CDATA[abc]]><![CDATA[def]]></root>")
     public void xml() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var doc = document.implementation.createDocument('', '', null);\n"
@@ -856,7 +987,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("done")
     public void insertBefore_undefinedRef() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -900,7 +1032,8 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     private void insertBefore(final String insertJSLine) throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -969,7 +1102,8 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     private void insertBeforeFragment(final String insertJSLine) throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1003,7 +1137,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "null"})
     public void insertBefore_parentNode() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var div1 = document.createElement('div');\n"
@@ -1027,8 +1162,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLTableColElement]")
     public void insertBefore_inTable() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -1049,7 +1184,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void insertBefore_newElement() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "function doTest() {\n"
@@ -1072,7 +1208,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"4", "3", "abc", "def", "123456", "true", "0", "2", "123", "456", "1", "true"})
     public void normalize() throws Exception {
-        final String html = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var doc = document.implementation.createDocument('', '', null);\n"
@@ -1110,7 +1247,7 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object Element]", "[object HTMLHtmlElement]"})
     public void parentElement() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -1132,7 +1269,7 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"hi", "undefined", "abcd", "undefined"})
     public void attributes() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -1160,8 +1297,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true"})
     public void addEventListener() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1185,7 +1322,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void event() throws Exception {
-        final String firstHtml = "<html>\n"
+        final String firstHtml = DOCTYPE_HTML
+            + "<html>\n"
             + "<head><title>First Page</title>\n"
             + "<script>\n"
             + LOG_WINDOW_NAME_FUNCTION
@@ -1201,8 +1339,8 @@ public class NodeTest extends WebDriverTestCase {
             + "  <div id='myDiv'></div>\n"
             + "</body>\n"
             + "</html>";
-        final String secondHtml =
-            "<html>\n"
+        final String secondHtml = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + LOG_WINDOW_NAME_FUNCTION
@@ -1239,8 +1377,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("id=bar")
     public void cloneAttributesAvailable() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1271,8 +1409,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("Hello")
     public void setTextContent() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -1329,8 +1467,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("<div><span></span>nullundefinedhello<p></p></div>")
     public void before() throws Exception {
-        final String html =
-              "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function test() {\n"
@@ -1357,8 +1495,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("<div><p></p><span></span>nullundefinedhello</div>")
     public void after() throws Exception {
-        final String html =
-              "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function test() {\n"
@@ -1385,8 +1523,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts("<div><span></span>nullundefinedhello</div>")
     public void replaceWith() throws Exception {
-        final String html =
-              "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function test() {\n"
@@ -1413,8 +1551,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "2", "§§URL§§second"})
     public void eventListener() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "  function clicking1() {\n"
@@ -1432,7 +1570,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  <a href='second' id='myAnchor'>Click me</a>\n"
             + "</body></html>";
 
-        getMockWebConnection().setDefaultResponse("<html><body>Test</body></html>");
+        getMockWebConnection().setDefaultResponse(DOCTYPE_HTML + "<html><body>Test</body></html>");
         expandExpectedAlertsVariables(URL_FIRST);
 
         final WebDriver driver = loadPage2(html);
@@ -1448,8 +1586,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "2", "§§URL§§second"})
     public void eventListener_return_false() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "  function clicking1() {\n"
@@ -1469,7 +1607,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  <a href='second' id='myAnchor'>Click me</a>\n"
             + "</body></html>";
 
-        getMockWebConnection().setDefaultResponse("<html><body>Test</body></html>");
+        getMockWebConnection().setDefaultResponse(DOCTYPE_HTML + "<html><body>Test</body></html>");
         expandExpectedAlertsVariables(URL_FIRST);
 
         final WebDriver driver = loadPage2(html);
@@ -1485,8 +1623,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "2", "§§URL§§"})
     public void eventListener_returnValue_false() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_WINDOW_NAME_FUNCTION
             + "  function clicking1() {\n"
@@ -1507,7 +1645,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  <a href='second' id='myAnchor'>Click me</a>\n"
             + "</body></html>";
 
-        getMockWebConnection().setDefaultResponse("<html><body>Test</body></html>");
+        getMockWebConnection().setDefaultResponse(DOCTYPE_HTML + "<html><body>Test</body></html>");
         expandExpectedAlertsVariables(URL_FIRST);
 
         final WebDriver driver = loadPage2(html);
@@ -1523,8 +1661,8 @@ public class NodeTest extends WebDriverTestCase {
     @Test
     @Alerts({"null", "null", "null", "null", "null", "null", "null"})
     public void lookupPrefix() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "</script></head>\n"
@@ -1591,8 +1729,8 @@ public class NodeTest extends WebDriverTestCase {
             FF = {"null", "null", "null", "null", "null", "null", "null", "null", "null", "null"},
             FF_ESR = {"null", "null", "null", "null", "null", "null", "null", "null", "null", "null"})
     public void lookupPrefixXml() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

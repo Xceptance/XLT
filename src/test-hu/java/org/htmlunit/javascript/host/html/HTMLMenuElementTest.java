@@ -16,10 +16,8 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlMenu;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -32,7 +30,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HTMLMenuElementTest extends WebDriverTestCase {
 
     /**
@@ -41,7 +38,8 @@ public class HTMLMenuElementTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLMenuElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -66,8 +64,8 @@ public class HTMLMenuElementTest extends WebDriverTestCase {
     @Alerts({"false", "true", "true", "true", "null", "", "blah", "2",
              "true", "false", "true", "false", "", "null", "", "null"})
     public void compact() throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "  <head>\n"
                 + "    <script>\n"
                 + LOG_TITLE_FUNCTION
@@ -115,8 +113,8 @@ public class HTMLMenuElementTest extends WebDriverTestCase {
              "null", "", "blah", "context", "ToolBar", "list",
              "context", "toolbar", "ConText", "", "unknown"})
     public void type() throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "  <head>\n"
                 + "    <script>\n"
                 + LOG_TITLE_FUNCTION
@@ -170,8 +168,8 @@ public class HTMLMenuElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "undefined", "new", ""})
     public void label() throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "  <head>\n"
                 + "    <script>\n"
                 + LOG_TITLE_FUNCTION

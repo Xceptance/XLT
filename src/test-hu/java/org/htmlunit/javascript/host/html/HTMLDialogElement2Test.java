@@ -19,16 +19,13 @@ import org.htmlunit.WebClient;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlDialog;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HTMLDialogElement}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLDialogElement2Test extends SimpleWebTestCase {
 
     /**
@@ -36,8 +33,8 @@ public class HTMLDialogElement2Test extends SimpleWebTestCase {
      */
     @Test
     public void formClosesDialogWithoutJs() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <body>\n"
             + "    <dialog id='tester' onclose='document.title=\"closed\"'>\n"
             + "      <p>HtmlUNit dialog</p>\n"
