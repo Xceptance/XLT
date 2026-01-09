@@ -343,6 +343,10 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-compute</artifactId>
         </dependency>
