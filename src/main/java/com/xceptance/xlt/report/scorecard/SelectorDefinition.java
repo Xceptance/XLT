@@ -30,7 +30,7 @@ public class SelectorDefinition
 
     private final String expression;
 
-    SelectorDefinition(final String id, final String expression)
+    public SelectorDefinition(final String id, final String expression)
     {
         this.id = Objects.requireNonNull(id, "Selector ID must not be null");
         this.expression = Objects.requireNonNull(expression, "Selector expression must not be null");
