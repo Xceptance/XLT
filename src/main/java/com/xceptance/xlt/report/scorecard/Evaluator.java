@@ -58,6 +58,13 @@ import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XdmValue;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+
+import com.xceptance.xlt.report.scorecard.builder.ScorecardBuilder;
+import com.xceptance.xlt.api.util.XltProperties;
+
 public class Evaluator
 {
     private static final String SCHEMA_RESOURCE_PATH = "configuration-schema.json";
@@ -176,6 +183,10 @@ public class Evaluator
                 throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as YAML", e);
             }
         }
+        else if (fileName.endsWith(".groovy"))
+        {
+            return parseGroovyConfiguration();
+        }
         else
         {
             try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
@@ -207,7 +218,6 @@ public class Evaluator
         {
             throw new ValidationException("Configuration file '" + configFile.getName() + "' is malformed", e);
         }
-
     }
 
     protected Scorecard doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
@@ -616,6 +626,86 @@ public class Evaluator
     private static double getPercentage(final int numerator, final int denominator)
     {
         return denominator > 0 ? (Math.round((numerator * 1000.0) / denominator) / 10.0) : 0.0;
+    }
+
+    protected Configuration parseGroovyConfiguration() throws ValidationException, IOException
+    {
+        // Compiler config
+        final CompilerConfiguration config = new CompilerConfiguration();
+        config.setScriptBaseClass(null); // No custom base class needed for now
+        config.addCompilationCustomizers(GroovySecurityUtils.createSecureCustomizer());
+
+        // Prepare context and binding
+        // Assuming we might have report properties, but here we don't have them in Evaluator context yet?
+        // XltProperties are statics, typically available.
+        // Let's pass an empty map or maybe XltProperties.getInstance() properties if needed,
+        // but ScriptContext handles XltProperties internally.
+
+        final ScriptContext context = new ScriptContext(Collections.emptyMap());
+        final Binding binding = createGroovyBinding(context);
+
+        final GroovyShell shell = new GroovyShell(binding, config);
+
+        try
+        {
+            final Object result = shell.evaluate(configFile);
+            if (result instanceof Configuration)
+            {
+                return (Configuration) result;
+            }
+            else if (result instanceof ScorecardBuilder)
+            {
+                return ((ScorecardBuilder) result).build();
+            }
+            else
+            {
+                // Check if the script just configured the builder in the binding
+                ScorecardBuilder builder = (ScorecardBuilder) binding.getVariable("scorecard");
+                // Actually, DSL entry point usually returns the object.
+                // If the user does "scorecard { ... }", it returns the result of the closure if valid?
+                // We will need to see how the DSL is invoked.
+                // Usually: new ScorecardBuilder().tap { ... } or similar.
+
+                // If the script follows the pattern:
+                // return new ScorecardBuilder().tap { ... }.build()
+                // nothing to do.
+
+                // If the script just executes code, we might need to inspect binding.
+                // But let's assume the script must return the Configuration object.
+                throw new ValidationException("Groovy script must return a Configuration object or ScorecardBuilder.");
+            }
+        }
+        catch (Exception e)
+        {
+            throw new ValidationException("Failed to evaluate Groovy configuration: " + e.getMessage(), e);
+        }
+    }
+
+    private Binding createGroovyBinding(ScriptContext context)
+    {
+        final Binding binding = new Binding();
+        binding.setVariable("context", context);
+        // Expose builder entry point
+        // But in Groovy, usually we import the class or have a method.
+        // "scorecard { ... }" -> method call?
+        // We can add a closure or method to binding?
+        // Simply importing ScorecardBuilder (via whitelist) allows: new ScorecardBuilder()...
+
+        // To support "scorecard { ... }", we need a base script class or a binding variable that IS a closure.
+        // Let's add that for convenience!
+
+        // We can't easily add a closure to binding that acts as a top level method easily without a base script.
+        // But users can do:
+        // import ... ScorecardBuilder
+        // new ScorecardBuilder().tap { ... }.build()
+
+        // OR we provide a variable "builder" = new ScorecardBuilder()
+        // builder.selectors { ... }
+        // return builder.build()
+
+        binding.setVariable("builder", new ScorecardBuilder());
+
+        return binding;
     }
 
 }

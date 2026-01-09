@@ -55,6 +55,11 @@ public class Configuration
     @XStreamConverter(value = MappedValuesConverter.class)
     private final Map<String, RatingDefinition> ratings = new LinkedHashMap<>();
 
+    public Configuration()
+    {
+        this(1);
+    }
+
     public Configuration(final int version)
     {
         this.version = Math.max(1, version);
@@ -83,7 +88,7 @@ public class Configuration
         return Collections.unmodifiableCollection(selectors.values());
     }
 
-    void addRule(final RuleDefinition rule) throws ValidationException
+    public void addRule(final RuleDefinition rule) throws ValidationException
     {
         final String ruleId = rule.getId();
         validateId(ruleId);
@@ -114,7 +119,7 @@ public class Configuration
         return rules.get(ruleId);
     }
 
-    void addGroup(final GroupDefinition group) throws ValidationException
+    public void addGroup(final GroupDefinition group) throws ValidationException
     {
         final String groupId = group.getId();
         validateId(groupId);
@@ -145,7 +150,7 @@ public class Configuration
         return Collections.unmodifiableCollection(groups.values());
     }
 
-    void addRating(final RatingDefinition rating) throws ValidationException
+    public void addRating(final RatingDefinition rating) throws ValidationException
     {
         final String ratingId = rating.getId();
         validateId(ratingId);
