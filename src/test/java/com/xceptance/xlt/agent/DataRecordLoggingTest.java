@@ -940,7 +940,7 @@ public class DataRecordLoggingTest
             public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
                                           DataRecordLoggingTest thisTestInstance)
             {
-                return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer()).getThread();
+                return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer(), new XltThreadFactory(false)).getThread();
             }
         },
 
@@ -956,7 +956,7 @@ public class DataRecordLoggingTest
                                           DataRecordLoggingTest thisTestInstance)
             {
                 final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
-                return new XltThreadFactory(false, null).newThread(r);
+                return new XltThreadFactory(false).newThread(r);
             }
         };
 

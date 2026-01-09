@@ -33,7 +33,6 @@ import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.Holder;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.agent.AbstractExecutionTimer;
 import com.xceptance.xlt.api.actions.AbstractAction;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.NetworkDataManager;
@@ -85,13 +84,20 @@ public class SessionImpl extends Session
     private static final String UNKNOWN_USER_NAME = "UnknownUser";
 
     /**
-     * All Session instances keyed by thread. Needed by {@link AbstractExecutionTimer} only.
+     * All Session instances keyed by their holder.
+     * <p>
+     * Note: A user's main thread and its child threads have access to the same Holder instance so the holder appears to
+     * be the right choice for the map key.
      */
-    private static final Map<Thread, SessionImpl> sessions = new ConcurrentHashMap<>(101);
+    // TODO: Needed by AbstractExecutionTimer only. Would be nice to get rid of that.
+    private static final Map<Holder<SessionImpl>, SessionImpl> sessions = new ConcurrentHashMap<>(101);
 
     /**
-     * The Session instance of the current thread. We use a Holder in-between so the main thread and sub-threads can
-     * share the same session and also remove the session if needed.
+     * The Session instance of the current thread.
+     * <p>
+     * Note: The session is stored as an inheritable thread-local, so the session is automatically shared with all child
+     * threads. Furthermore, the session is not stored directly but with a Holder in-between, so the user's main thread
+     * or any of its child threads can remove the session for all of these threads.
      */
     private static final InheritableThreadLocal<Holder<SessionImpl>> sessionHolder = new InheritableThreadLocal<>()
     {
@@ -103,7 +109,8 @@ public class SessionImpl extends Session
     };
 
     /**
-     * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
+     * Returns the Session instance for the calling thread and its related threads. If no such instance exists yet, it
+     * will be created.
      *
      * @return the Session instance for the calling thread
      */
@@ -116,32 +123,36 @@ public class SessionImpl extends Session
         {
             synchronized (holder)
             {
+                // check again
+                sessionImpl = holder.get();
                 if (sessionImpl == null)
                 {
                     sessionImpl = new SessionImpl(XltPropertiesImpl.getInstance());
                     holder.set(sessionImpl);
+
+                    sessions.putIfAbsent(holder, sessionImpl);
                 }
             }
         }
-
-        // TODO: would be cool to get rid of that
-        sessions.putIfAbsent(Thread.currentThread(), sessionImpl);
 
         return sessionImpl;
     }
 
     /**
-     * Removes the Session instance for the calling thread. Typically, sessions are reused, so this method is especially
-     * useful for testing purposes.
+     * Removes the Session instance for the calling thread and its related threads. Typically, sessions are reused, so
+     * this method is especially useful for testing purposes.
      *
      * @return the Session instance just removed
      */
     public static SessionImpl removeCurrent()
     {
-        // TODO: remove for all threads sharing the same session
-        sessions.remove(Thread.currentThread());
+        final Holder<SessionImpl> currentHolder = sessionHolder.get();
 
-        return sessionHolder.get().remove();
+        // remove the current session
+        sessions.remove(currentHolder);
+        final SessionImpl currentSession = currentHolder.remove();
+
+        return currentSession;
     }
 
     /**
@@ -151,7 +162,7 @@ public class SessionImpl extends Session
      */
     public static SessionImpl getSessionForThread(final Thread thread)
     {
-        return sessions.get(thread);
+        return sessions.get(sessionHolder.get());
     }
 
     /**
