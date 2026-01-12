@@ -112,12 +112,6 @@ dsiutils
   * Not the full library has been used and modifications have been applied.
   * More information in folder: doc/3rd-party-licenses/dsiutils
 
-freemarker
-
-  * License: Apache License 2.0
-  * Homepage: https://freemarker.apache.org/
-  * More information in folder: doc/3rd-party-licenses/freemarker
-
 google-api-services-compute
 
   * License: Apache License 2.0
@@ -243,12 +237,6 @@ opentelemetry
   * License: Apache License 2.0
   * Homepage: https://github.com/open-telemetry
   * More information in folder: doc/3rd-party-licenses/opentelemetry
-
-pegdown
-
-  * License: Apache License 2.0
-  * Homepage: https://github.com/sirthias/pegdown
-  * More information in folder: doc/3rd-party-licenses/pegdown
 
 progressbar
 
