@@ -1,31 +1,41 @@
-/*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * NOTE: This file is generated. Do not edit! Your changes will be lost.
- */
 package posters.functional.scenarios;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
-import com.xceptance.xlt.api.engine.scripting.ScriptName;
+import org.junit.Test;
+import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
+import posters.functional.modules.CreateRandomUser;
+import posters.functional.modules.Login;
+import posters.functional.modules.OpenHomepage;
 
 /**
  * <p>Simulates customer registration.</p>
  */
-@ScriptName
-("posters.functional.scenarios.TRegister")
-public class TRegister extends AbstractScriptTestCase
+public class TRegister extends AbstractWebDriverScriptTestCase
 {
+
+    /**
+     * Constructor.
+     */
+    public TRegister()
+    {
+        super("https://localhost:8443");
+    }
+
+
+    /**
+     * Executes the test.
+     *
+     * @throws Throwable if anything went wrong
+     */
+    @Test
+    public void test() throws Throwable
+    {
+        OpenHomepage.execute();
+
+        CreateRandomUser.execute();
+
+        Login.execute("${generatedEmail}", "${password}", "${firstName}");
+
+
+    }
+
 }

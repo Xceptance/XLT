@@ -3,17 +3,18 @@ import org.junit.Test;
 import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
 import posters.functional.modules.OpenHomepage;
+import posters.functional.modules.Search;
 
 /**
  * <p>Verifies that an info message is shown after a search for an empty search term.</p>
  */
-public class TEmptySearch extends AbstractWebDriverScriptTestCase
+public class TNoHitsSearch extends AbstractWebDriverScriptTestCase
 {
 
     /**
      * Constructor.
      */
-    public TEmptySearch()
+    public TNoHitsSearch()
     {
         super("https://localhost:8443");
     }
@@ -33,15 +34,13 @@ public class TEmptySearch extends AbstractWebDriverScriptTestCase
         // ~~~ Search-NoHits ~~~
         //
         startAction("Search_NoHits");
-        // Cick the the search button to submit
-        click("id=header-search-trigger");
-        waitForElementPresent("id=header-menu-search");
-        type("id=s", "");
-        // Cick the the search button to submit
-        click("id=btnSearch");
-        assertNotVisible("id=errorMessage");
-        // Assert presence of info maessage element
-        assertElementPresent("id=header-search-trigger");
+        // Execute the search (module call)
+        Search.execute("${searchTerm_noHits}");
+
+        // validate
+        assertVisible("id=errorMessage");
+        // Validate the 'no results' message
+        assertText("xpath=id('errorMessage')/div/strong", "*Sorry! No results found matching your search. Please try again.*");
 
     }
 
