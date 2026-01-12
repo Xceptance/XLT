@@ -58,7 +58,8 @@ public class LoadTest
         gracePeriod = (v < 0) ? DEFAULT_GRACE_PERIOD : v;
 
         // thread factory
-        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED, false);
+        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED,
+                                                            XltConstants.PROP_VIRTUAL_THREADS_ENABLED_DEFAULT);
         xltThreadFactory = new XltThreadFactory(useVirtualThreads, false);
     }
 

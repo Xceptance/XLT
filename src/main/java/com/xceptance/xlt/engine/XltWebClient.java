@@ -290,7 +290,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             threadCount = 1;
         }
 
-        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED, false);
+        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED,
+                                                            XltConstants.PROP_VIRTUAL_THREADS_ENABLED_DEFAULT);
 
         requestQueue = new RequestQueue(this, threadCount, useVirtualThreads);
 
