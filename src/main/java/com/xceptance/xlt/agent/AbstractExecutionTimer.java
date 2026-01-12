@@ -16,7 +16,9 @@
 package com.xceptance.xlt.agent;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,9 +43,10 @@ public abstract class AbstractExecutionTimer
     private final Collection<Thread> waitingThreads;
 
     /**
-     * The collection of threads that have ever registered for waiting with this execution timer.
+     * The sessions keyed by their main thread. Contains the sessions for all threads that have ever registered for
+     * waiting with this execution timer.
      */
-    private final Collection<Thread> knownThreads;
+    private final Map<Thread, SessionImpl> sessions;
 
     /**
      * Creates a new {@link AbstractExecutionTimer} instance.
@@ -60,7 +63,7 @@ public abstract class AbstractExecutionTimer
     protected AbstractExecutionTimer(final String userTypeName, final long initialDelay, final long duration, final int shutdownPeriod)
     {
         waitingThreads = new HashSet<Thread>();
-        knownThreads = new HashSet<Thread>();
+        sessions = new HashMap<>();
 
         if (duration > 0)
         {
@@ -93,7 +96,7 @@ public abstract class AbstractExecutionTimer
      */
     public Collection<Thread> getThreads()
     {
-        return knownThreads;
+        return sessions.keySet();
     }
 
     /**
@@ -113,7 +116,7 @@ public abstract class AbstractExecutionTimer
     {
         final Thread t = Thread.currentThread();
         waitingThreads.add(t);
-        knownThreads.add(t);
+        sessions.putIfAbsent(t, SessionImpl.getCurrent());
     }
 
     /**
@@ -131,7 +134,7 @@ public abstract class AbstractExecutionTimer
     public synchronized void stop()
     {
         stopped = true;
-        stopThreads(knownThreads);
+        stopThreads(sessions.keySet());
     }
 
     /**
@@ -218,13 +221,8 @@ public abstract class AbstractExecutionTimer
             else
             {
                 // the thread is currently executing a test case -> just mark its session as expired
-                final SessionImpl sessionImpl = SessionImpl.getSessionForThread(thread);
-
-                // check for a valid session -> if the thread died in between, there will be no session any longer
-                if (sessionImpl != null)
-                {
-                    sessionImpl.markAsExpired();
-                }
+                final SessionImpl sessionImpl = sessions.get(thread);
+                sessionImpl.markAsExpired();
             }
         }
     }

@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.runners.model.MultipleFailureException;
 
@@ -84,15 +83,6 @@ public class SessionImpl extends Session
     private static final String UNKNOWN_USER_NAME = "UnknownUser";
 
     /**
-     * All Session instances keyed by their holder.
-     * <p>
-     * Note: A user's main thread and its child threads have access to the same Holder instance so the holder appears to
-     * be the right choice for the map key.
-     */
-    // TODO: Needed by AbstractExecutionTimer only. Would be nice to get rid of that.
-    private static final Map<Holder<SessionImpl>, SessionImpl> sessions = new ConcurrentHashMap<>(101);
-
-    /**
      * The Session instance of the current thread.
      * <p>
      * Note: The session is stored as an inheritable thread-local, so the session is automatically shared with all child
@@ -129,8 +119,6 @@ public class SessionImpl extends Session
                 {
                     sessionImpl = new SessionImpl(XltPropertiesImpl.getInstance());
                     holder.set(sessionImpl);
-
-                    sessions.putIfAbsent(holder, sessionImpl);
                 }
             }
         }
@@ -146,23 +134,7 @@ public class SessionImpl extends Session
      */
     public static SessionImpl removeCurrent()
     {
-        final Holder<SessionImpl> currentHolder = sessionHolder.get();
-
-        // remove the current session
-        sessions.remove(currentHolder);
-        final SessionImpl currentSession = currentHolder.remove();
-
-        return currentSession;
-    }
-
-    /**
-     * Returns the Session instance for the given thread.
-     *
-     * @return the Session instance for the given thread
-     */
-    public static SessionImpl getSessionForThread(final Thread thread)
-    {
-        return sessions.get(sessionHolder.get());
+        return sessionHolder.get().remove();
     }
 
     /**
