@@ -84,7 +84,7 @@ class DummyReportProviderConfiguration implements ReportProviderConfiguration
     }
 
     @Override
-    public int getMovingAveragePercentage()
+    public double getMovingAveragePercentage()
     {
         return 0;
     }

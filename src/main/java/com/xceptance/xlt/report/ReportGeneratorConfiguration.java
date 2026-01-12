@@ -237,7 +237,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final File homeDirectory;
 
-    private final int movingAveragePoints;
+    private final double movingAveragePoints;
 
     private final List<String> outputFileNames;
 
@@ -491,7 +491,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.0f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
-        movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
+        movingAveragePoints = getDoubleProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5.0);
 
         dynamicChartsEnabled = getBooleanProperty(PROP_DYNAMIC_CHARTS_ENABLED, true);
 
@@ -767,7 +767,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * {@inheritDoc}
      */
     @Override
-    public int getMovingAveragePercentage()
+    public double getMovingAveragePercentage()
     {
         return movingAveragePoints;
     }

@@ -86,7 +86,7 @@ public interface ReportProviderConfiguration
      * 
      * @return the percentage
      */
-    public int getMovingAveragePercentage();
+    public double getMovingAveragePercentage();
 
     /**
      * Returns all the settings from the file "xlt/config/reportgenerator.properties" as raw properties. Use these

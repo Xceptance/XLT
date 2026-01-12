@@ -164,14 +164,14 @@ public final class JFreeChartUtils
      */
     public enum MoreColors
     {
-     BROWN(0xB97A57),
-     GRAY(0xAAAAAA),
-     GREEN(0x00AA00),
-     LIGHT_GRAY(0x757575),
-     LIGHT_GREEN(0xB5E61D),
-     LILAC(0xC8BFE7),
-     ORANGE(0xFF9900),
-     STEEL_BLUE(0x7092BE);
+        BROWN(0xB97A57),
+        GRAY(0xAAAAAA),
+        GREEN(0x00AA00),
+        LIGHT_GRAY(0x757575),
+        LIGHT_GREEN(0xB5E61D),
+        LILAC(0xC8BFE7),
+        ORANGE(0xFF9900),
+        STEEL_BLUE(0x7092BE);
 
         private final Color color;
 
@@ -672,7 +672,7 @@ public final class JFreeChartUtils
      */
     public static JFreeChart createLineChart(final String chartTitle, final String rangeAxisTitle, final TimeSeries series,
                                              final long startTime, final long endTime, final boolean includeMovingAverage,
-                                             final int percentage)
+                                             final double percentage)
     {
         return createLineChart(chartTitle, rangeAxisTitle, series, startTime, endTime, includeMovingAverage, percentage, true);
     }
@@ -700,7 +700,7 @@ public final class JFreeChartUtils
      */
     public static JFreeChart createLineChart(final String chartTitle, final String rangeAxisTitle, final TimeSeries series,
                                              final long startTime, final long endTime, final boolean includeMovingAverage,
-                                             final int percentage, final boolean showDots)
+                                             final double percentage, final boolean showDots)
     {
         final TimeSeries movingAverageSeries = includeMovingAverage ? createMovingAverageTimeSeries(series, percentage) : null;
 
@@ -934,10 +934,10 @@ public final class JFreeChartUtils
      *            the percentaged amount of values for building the moving average
      * @return the time series
      */
-    public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final int percentage)
+    public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final double percentage)
     {
         // take the last X percent of the values
-        final int samples = Math.max(2, series.getItemCount() * percentage / 100);
+        final int samples = Math.max(2, (int) (series.getItemCount() * percentage / 100.0));
 
         // derive the name from the source series
         final String avgSeriesName = series.getKey() + " (Moving Average)";

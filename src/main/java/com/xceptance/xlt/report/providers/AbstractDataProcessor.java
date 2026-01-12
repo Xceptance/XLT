@@ -36,7 +36,7 @@ public abstract class AbstractDataProcessor
 
     private File csvDir;
 
-    private int movingAveragePercentage;
+    private double movingAveragePercentage;
 
     private ChartCappingInfo chartCappingInfo;
 
@@ -140,7 +140,7 @@ public abstract class AbstractDataProcessor
      * 
      * @return the value of movingAveragePercentage
      */
-    public int getMovingAveragePercentage()
+    public double getMovingAveragePercentage()
     {
         return movingAveragePercentage;
     }
@@ -248,7 +248,7 @@ public abstract class AbstractDataProcessor
      * @param movingAveragePercentage
      *            the new movingAveragePercentage value
      */
-    public void setMovingAveragePercentage(final int movingAveragePercentage)
+    public void setMovingAveragePercentage(final double movingAveragePercentage)
     {
         this.movingAveragePercentage = movingAveragePercentage;
     }
