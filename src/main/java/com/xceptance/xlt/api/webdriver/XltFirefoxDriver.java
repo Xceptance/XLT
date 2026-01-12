@@ -25,7 +25,6 @@ import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.firefox.FileExtension;
-import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -531,37 +530,20 @@ public final class XltFirefoxDriver extends FirefoxDriver
      */
     public static final class Builder
     {
-        private FirefoxBinary binary;
-
-        private FirefoxProfile profile;
+        private FirefoxOptions options;
 
         private boolean headless = HEADLESS_ENABLED;
 
-        private FirefoxOptions options;
-
         /**
-         * Sets the desired binary and clears the GeckoDriver service setting.
+         * Sets the desired options.
          *
-         * @param binary
-         *            the binary
+         * @param options
+         *            the options
          * @return this builder instance
          */
-        public Builder setBinary(final FirefoxBinary binary)
+        public Builder setOptions(final FirefoxOptions options)
         {
-            this.binary = binary;
-            return this;
-        }
-
-        /**
-         * Sets the desired profile.
-         *
-         * @param profile
-         *            the profile
-         * @return this builder instance
-         */
-        public Builder setProfile(final FirefoxProfile profile)
-        {
-            this.profile = profile;
+            this.options = options;
             return this;
         }
 
@@ -585,17 +567,7 @@ public final class XltFirefoxDriver extends FirefoxDriver
          */
         public XltFirefoxDriver build()
         {
-            final FirefoxOptions opts = ObjectUtils.defaultIfNull(this.options, new FirefoxOptions());
-            if (binary != null)
-            {
-                opts.setBinary(binary);
-            }
-            if (profile != null)
-            {
-                opts.setProfile(profile);
-            }
-
-            return new XltFirefoxDriver(opts, headless);
+            return new XltFirefoxDriver(options, headless);
         }
     }
 }
