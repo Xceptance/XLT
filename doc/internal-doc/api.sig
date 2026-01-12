@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 9.2.0-SNAPSHOT
+#Version 9.2.2
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -1666,9 +1666,9 @@ meth public boolean wantsDataRecords()
 
 CLSS public abstract interface com.xceptance.xlt.api.report.ReportProviderConfiguration
 meth public abstract boolean shouldChartsGenerated()
+meth public abstract double getMovingAveragePercentage()
 meth public abstract int getChartHeight()
 meth public abstract int getChartWidth()
-meth public abstract int getMovingAveragePercentage()
 meth public abstract java.io.File getChartDirectory()
 meth public abstract java.io.File getCsvDirectory()
 meth public abstract java.io.File getReportDirectory()
