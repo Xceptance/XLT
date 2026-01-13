@@ -16,7 +16,6 @@
 package com.xceptance.xlt.report.providers;
 
 import java.util.Date;
-import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 

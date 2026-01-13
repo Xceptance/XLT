@@ -570,6 +570,8 @@
             function initAndLoadEChart(echartDiv) {
                 var name = echartDiv.getAttribute('name');
                 var url = echartDiv.getAttribute('src');
+                const timeZoneLabel = echartDiv.getAttribute('data-timezone-label');
+                const timeZoneOffset = parseInt(echartDiv.getAttribute('data-timezone-offset'));
 
                 // create an initially empty echart
                 var echart = echarts.init(echartDiv);
@@ -594,19 +596,24 @@
                         var dataCountPerSec = [];
 
                         for (var item of data) {
+                            // shift time values by timezone offset
+                            const shiftedTime = item[0] + timeZoneOffset;
                             // timestamp and mean value
-                            dataMean.push([item[0], item[1]]);
+                            dataMean.push([shiftedTime, item[1]]);
                             // timestamp and min value
-                            dataMinimum.push([item[0], item[2]]);
+                            dataMinimum.push([shiftedTime, item[2]]);
                             // timestamp and max value
-                            dataMaximum.push([item[0], item[3]]);
+                            dataMaximum.push([shiftedTime, item[3]]);
                             // timestamp and diff value
-                            dataMaxMinDiff.push([item[0], item[3] - item[2]]);
+                            dataMaxMinDiff.push([shiftedTime, item[3] - item[2]]);
                             // timestamp and count/s value
-                            dataCountPerSec.push([item[0], item[4]]);
+                            dataCountPerSec.push([shiftedTime, item[4]]);
                         }
 
                         // set up the chart
+                        // note: echarts doesn't support setting a custom time zone (only UTC or the local time zone);
+                        // as a hack to work around that, we set the "useUTC" flag but label the time axis with the
+                        // intended time zone's name and shift the UTC time values by the intended time zone's offset
                         echart.setOption({
                             animation: false,
                             backgroundColor: "#fafafa",
@@ -647,7 +654,8 @@
                                         brushStyle: {
                                             color: '#a00',
                                             opacity: 0.25,
-                                        }
+                                        },
+                                        filterMode: 'none'
                                     }
                                 }
                             },
@@ -676,7 +684,7 @@
                             useUTC: true,
                             xAxis: {
                                 type: "time",
-                                name: "Time [UTC]",
+                                name: "Time [" + timeZoneLabel + "]",
                                 nameLocation: "center",
                                 nameGap: 24,
                                 axisLine: {
