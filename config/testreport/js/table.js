@@ -367,6 +367,11 @@ var Table = (function(){
 	 * otherwise we want to be able to handle sorting on inputs and other types
 	 */
 	table.getCellValue = function(td,useInnerText) {
+	    // If "data-cell-value" is defined on a table cell, get that value instead of the text.
+	    // This can be used if the displayed value doesn't exactly match the actual value.
+		if (td.hasAttribute("data-cell-value")) {
+		    return td.getAttribute("data-cell-value");
+		}
 		if (useInnerText && def(td.innerText)) {
 			return td.innerText;
 		}

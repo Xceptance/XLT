@@ -104,9 +104,9 @@ public class MergeRule_Name_Test extends MergeRuleTestBase
         
         // both match, exclude wins
         {
-            var data = new RequestData("originalName");
+            var data = new RequestData("MyNameFoobar");
             assertEquals(1, rule.process(data));
-            assertEquals("originalName", data.getName());
+            assertEquals("MyNameFoobar", data.getName());
         }
         // no match
         {

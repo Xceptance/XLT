@@ -27,4 +27,13 @@ public class ActionReport extends TimerReport
      * The Apdex value.
      */
     public final ApdexReport apdex = new ApdexReport();
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTypeCode()
+    {
+        return TimerReportType.ACTION.getTypeCode();
+    }
 }

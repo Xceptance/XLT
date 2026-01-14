@@ -29,10 +29,37 @@ import com.xceptance.xlt.report.util.CustomMapConverter;
 @XStreamAlias("timer")
 public class TimerReport
 {
+    public enum TimerReportType
+    {
+        TRANSACTION("T"), ACTION("A"), REQUEST("R");
+
+        final String typeCode;
+
+        TimerReportType(final String typeCode)
+        {
+            this.typeCode = typeCode;
+        }
+
+        /**
+         * Get the type code for this timer report type.
+         *
+         * @return the type code
+         */
+        public String getTypeCode()
+        {
+            return typeCode;
+        }
+    }
+
     /**
      * The timer name.
      */
     public String name;
+
+    /**
+     * The label string.
+     */
+    public String label;
 
     /**
      * The number how often the timer has fired.
@@ -104,4 +131,14 @@ public class TimerReport
      */
     @XStreamConverter(CustomMapConverter.class)
     public Map<String, BigDecimal> percentiles = new LinkedHashMap<>();
+
+    /**
+     * Get the type code of this report.
+     *
+     * @return the type code
+     */
+    public String getTypeCode()
+    {
+        return null;
+    }
 }

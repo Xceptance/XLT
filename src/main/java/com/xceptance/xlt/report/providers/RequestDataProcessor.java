@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.stream.Collectors;
 
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPointerAnnotation;
@@ -153,6 +154,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      */
     private int distinctUrlSetLimitedSize;
 
+    private final LabelingRuleProcessor labelingRuleProcessor;
+
     /**
      * Constructor.
      *
@@ -210,6 +213,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         // set capping parameters
         setChartCappingInfo(config.getRequestChartCappingInfo());
+
+        // labeling rules
+        labelingRuleProcessor = new LabelingRuleProcessor(config.getLabelingRules());
     }
 
     /**
@@ -285,6 +291,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         timerReport.receiveTime = createStatisticsReport(receiveTimeStatistics);
         timerReport.timeToFirstBytes = createStatisticsReport(timeToFirstBytesStatistics);
         timerReport.timeToLastBytes = createStatisticsReport(timeToLastBytesStatistics);
+
+        // apply labeling rules
+        labelingRuleProcessor.process(timerReport);
 
         return timerReport;
     }

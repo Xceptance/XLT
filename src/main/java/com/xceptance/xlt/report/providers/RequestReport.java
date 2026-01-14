@@ -84,5 +84,13 @@ public class RequestReport extends TimerReport
      */
     public UrlData urls;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTypeCode()
+    {
+        return TimerReportType.REQUEST.getTypeCode();
+    }
     
 }

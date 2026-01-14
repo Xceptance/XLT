@@ -43,6 +43,18 @@
 				</xsl:if>
 			</td>
 
+			<!-- labels -->
+			<xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+				<td class="text colgroup1">
+					<xsl:attribute name="data-cell-value">
+						<xsl:value-of select="normalize-space(label)"/>
+					</xsl:attribute>
+					<xsl:call-template name="timer-labels">
+						<xsl:with-param name="labelString" select="label"/>
+					</xsl:call-template>
+				</td>
+			</xsl:if>
+
 			<!-- count -->
 			<td class="value number">
 				<xsl:value-of select="format-number(count, '#,##0')" />

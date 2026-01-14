@@ -13,28 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.providers;
-
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+package com.xceptance.xlt.report.labelingrules;
 
 /**
- * Represents the transaction timer statistics in a test report. The statistics is generated from a series of
- * transaction data.
+ * Exception used to indicate an invalid labeling rule.
  */
-@XStreamAlias("transaction")
-public class TransactionReport extends TimerReport
+public class InvalidLabelingRuleException extends Exception
 {
-    /**
-     * The number of events.
-     */
-    public int events;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getTypeCode()
+    public InvalidLabelingRuleException(final String message)
     {
-        return TimerReportType.TRANSACTION.getTypeCode();
+        super(message);
     }
 }

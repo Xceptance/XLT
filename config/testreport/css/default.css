@@ -1384,6 +1384,44 @@ table * {
 
 /*
  * ----------------------------------------------------
+ * The chip elements for displaying labels
+ * ----------------------------------------------------
+ */
+.label-chip
+{
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+
+    padding: 1px 5px;
+    margin: 0 1px;
+
+    border: 1px solid;
+    border-radius: 999px;
+    border-color: #888888;
+
+    background-color: #E5E5E5;
+}
+
+.label-chip.label-chip-more
+{
+    background-color: #FFFFFF;
+}
+
+.label-container
+{
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 500px;
+
+    padding: 3px;
+    row-gap: 3px;
+}
+
+/*
+ * ----------------------------------------------------
  * The chart area, usually as tabs, but sometimes standalone.
  * You find the tab stuff below.
  * ----------------------------------------------------

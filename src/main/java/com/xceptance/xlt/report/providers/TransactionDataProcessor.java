@@ -18,6 +18,7 @@ package com.xceptance.xlt.report.providers;
 import java.io.File;
 import java.util.List;
 
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -68,6 +69,8 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
      */
     private int numberOfEvents = 0;
 
+    private final LabelingRuleProcessor labelingRuleProcessor;
+
     /**
      * Constructor.
      *
@@ -86,6 +89,9 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
         // set capping parameters
         final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
         setChartCappingInfo(config.getTransactionChartCappingInfo());
+
+        // labeling rules
+        labelingRuleProcessor = new LabelingRuleProcessor(config.getLabelingRules());
     }
 
     /**
@@ -134,6 +140,9 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
         // create the standard timer report
         final TransactionReport transactionReport = (TransactionReport) super.createTimerReport(generateHistogram);
         transactionReport.events = numberOfEvents;
+
+        // apply labeling rules
+        labelingRuleProcessor.process(transactionReport);
 
         return transactionReport;
     }

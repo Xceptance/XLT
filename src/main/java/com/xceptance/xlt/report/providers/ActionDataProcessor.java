@@ -21,6 +21,7 @@ import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.Apdex;
 import com.xceptance.xlt.report.util.ApdexCalculator;
 
@@ -38,6 +39,8 @@ public class ActionDataProcessor extends BasicTimerDataProcessor
      * The Apdex calculator.
      */
     private final ApdexCalculator apdexCalculator;
+
+    private final LabelingRuleProcessor labelingRuleProcessor;
 
     /**
      * Constructor.
@@ -61,6 +64,9 @@ public class ActionDataProcessor extends BasicTimerDataProcessor
         // apdex
         final double threshold = config.getApdexThresholdForAction(getName());
         apdexCalculator = new ApdexCalculator(threshold);
+
+        // labeling rules
+        labelingRuleProcessor = new LabelingRuleProcessor(config.getLabelingRules());
     }
 
     /**
@@ -90,6 +96,9 @@ public class ActionDataProcessor extends BasicTimerDataProcessor
 
         timerReport.apdex.value = apdex.getValue();
         timerReport.apdex.longValue = apdex.getLongValue();
+
+        // apply labeling rules
+        labelingRuleProcessor.process(timerReport);
 
         return timerReport;
     }
