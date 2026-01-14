@@ -6,9 +6,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.report.scorecard.Configuration;
-import com.xceptance.xlt.report.scorecard.Evaluator;
-import com.xceptance.xlt.report.scorecard.ValidationException;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.s9api.XPathCompiler;
 
 public class EvaluatorGroovyTest
 {
@@ -57,12 +57,6 @@ public class EvaluatorGroovyTest
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
-
-            var evaluator = new Evaluator(tempFile);
-            // We have to access parseGroovyConfiguration via reflection or subclass,
-            // OR simpler: assume evaluate() calls parseConfiguration() and check if it throws or works.
-            // But evaluate() requires an XML file.
-            // Let's use a subclass to expose parseConfiguration for testing.
 
             var config = new TestEvaluator(tempFile).parseConfiguration();
 
@@ -151,17 +145,32 @@ public class EvaluatorGroovyTest
     }
 
     // Helper subclass to access protected method
-    static class TestEvaluator extends Evaluator
+    static class TestEvaluator extends GroovyEvaluator
     {
+        private final Processor proc = new Processor(false);
+
         public TestEvaluator(java.io.File file)
         {
-            super(file);
+            super(file, new Processor(false));
         }
 
-        @Override
         public Configuration parseConfiguration() throws java.io.IOException, ValidationException
         {
-            return super.parseConfiguration();
+            try
+            {
+                XdmNode doc = proc.newDocumentBuilder()
+                                  .build(new javax.xml.transform.stream.StreamSource(new java.io.StringReader("<dummy/>")));
+                XPathCompiler compiler = proc.newXPathCompiler();
+                return super.parseGroovyConfiguration(doc, compiler);
+            }
+            catch (Exception e)
+            {
+                if (e instanceof ValidationException)
+                    throw (ValidationException) e;
+                if (e instanceof java.io.IOException)
+                    throw (java.io.IOException) e;
+                throw new RuntimeException(e);
+            }
         }
     }
 }
