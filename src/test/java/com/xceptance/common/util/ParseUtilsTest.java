@@ -471,9 +471,11 @@ public class ParseUtilsTest
     public void parseIntPercentage() throws ParseException
     {
         Assert.assertEquals(25, ParseUtils.parseIntPercentage("25%"));
+        Assert.assertEquals(25, ParseUtils.parseIntPercentage("25 %"));
         Assert.assertEquals(25, ParseUtils.parseIntPercentage("25"));
 
         Assert.assertEquals(25, ParseUtils.parseIntPercentage(" 25% "));
+        Assert.assertEquals(25, ParseUtils.parseIntPercentage(" 25 % "));
         Assert.assertEquals(25, ParseUtils.parseIntPercentage(" 25 "));
 
         Assert.assertEquals(0, ParseUtils.parseIntPercentage("0%"));
