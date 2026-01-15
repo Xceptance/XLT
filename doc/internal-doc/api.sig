@@ -1640,6 +1640,29 @@ meth public void unlock()
 supr java.lang.Object
 hfds configuration,lock
 
+CLSS public com.xceptance.xlt.api.report.MovingAverageConfiguration
+innr public final static !enum MovingAverageType
+meth public com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType getType()
+meth public int getValue()
+meth public java.lang.String getName()
+meth public java.lang.String toString()
+meth public static com.xceptance.xlt.api.report.MovingAverageConfiguration createPercentageConfig(int)
+meth public static com.xceptance.xlt.api.report.MovingAverageConfiguration createTimeConfig(int)
+meth public static com.xceptance.xlt.api.report.MovingAverageConfiguration createTimeConfig(int,java.lang.String)
+supr java.lang.Object
+hfds name,type,value
+
+CLSS public final static !enum com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType
+ outer com.xceptance.xlt.api.report.MovingAverageConfiguration
+fld public final static com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType PERCENTAGE
+fld public final static com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType TIME
+meth public java.lang.String getName()
+meth public static com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType valueOf(java.lang.String)
+meth public static com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType[] values()
+meth public static java.util.List<java.lang.String> getNames()
+supr java.lang.Enum<com.xceptance.xlt.api.report.MovingAverageConfiguration$MovingAverageType>
+hfds name
+
 CLSS public com.xceptance.xlt.api.report.PostProcessedDataContainer
 cons public init(int,int)
 fld public final int sampleFactor
@@ -1666,12 +1689,13 @@ meth public boolean wantsDataRecords()
 
 CLSS public abstract interface com.xceptance.xlt.api.report.ReportProviderConfiguration
 meth public abstract boolean shouldChartsGenerated()
+meth public abstract com.xceptance.xlt.api.report.MovingAverageConfiguration getCommonMovingAverageConfig()
 meth public abstract int getChartHeight()
 meth public abstract int getChartWidth()
-meth public abstract int getMovingAveragePercentage()
 meth public abstract java.io.File getChartDirectory()
 meth public abstract java.io.File getCsvDirectory()
 meth public abstract java.io.File getReportDirectory()
+meth public abstract java.util.List<com.xceptance.xlt.api.report.MovingAverageConfiguration> getAdditionalMovingAverageConfigs()
 meth public abstract java.util.Properties getProperties()
 meth public abstract long getChartEndTime()
 meth public abstract long getChartStartTime()
@@ -2196,6 +2220,27 @@ intf java.lang.annotation.Annotation
 meth public abstract !hasdefault boolean forRemoval()
 meth public abstract !hasdefault java.lang.String since()
 
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+innr public final static EnumDesc
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+intf java.lang.constant.Constable
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="18")
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public final java.util.Optional<java.lang.Enum$EnumDesc<{java.lang.Enum%0}>> describeConstable()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds hash,name,ordinal
+
 CLSS public java.lang.Exception
 cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
@@ -2297,6 +2342,9 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
+
+CLSS public abstract interface java.lang.constant.Constable
+meth public abstract java.util.Optional<? extends java.lang.constant.ConstantDesc> describeConstable()
 
 CLSS public abstract interface java.util.Collection<%0 extends java.lang.Object>
 intf java.lang.Iterable<{java.util.Collection%0}>

@@ -32,9 +32,9 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.JFreeChartUtils.ColorSet;
-import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -154,7 +154,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                                                                                                    totalTransactionsValueSet,
                                                                                                    minMaxValueSetSize, "Error Rate");
                     final TimeSeries errorRateAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(errorRateTimeSeries,
-                                                                                                                getConfiguration().getMovingAveragePercentage());
+                                                                                                                getConfiguration().getCommonMovingAverageConfig());
 
                     createErrorsChart(failedTransactionsTimeSeries, errorRateAverageTimeSeries, "Transaction Errors", "TransactionErrors",
                                       chartsDir);
@@ -247,7 +247,7 @@ public class GeneralReportProvider extends AbstractReportProvider
 
         final JFreeChart chart = JFreeChartUtils.createLineChart(title, yAxisTitle, timeSeries, config.getChartStartTime(),
                                                                  config.getChartEndTime(), showMovingAverage,
-                                                                 config.getMovingAveragePercentage());
+                                                                 config.getCommonMovingAverageConfig());
 
         JFreeChartUtils.saveChart(chart, fileName, outputDir, config.getChartWidth(), config.getChartHeight());
 

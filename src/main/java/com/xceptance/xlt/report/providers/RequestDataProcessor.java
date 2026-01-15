@@ -43,10 +43,10 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.HistogramValueSet;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
-import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 
 import net.agkn.hll.HLL;
@@ -265,12 +265,14 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // just int is safe, more than 2 billion urls is unlikely
         timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
-        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length] : new BigDecimal[]{};
+        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
+                                                                    : new BigDecimal[] {};
         if (countPerSegment != null)
         {
             for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
             {
-                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count);
+                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n],
+                                                                                       timerReport.count);
             }
         }
 
@@ -358,7 +360,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // final long start = TimerUtils.getTime();
 
         final JFreeChart chart = JFreeChartUtils.createLineChart(timerName, "Bytes", timeSeries, getStartTime(), getEndTime(), true,
-                                                                 getMovingAveragePercentage());
+                                                                 getCommonMovingAverageConfig());
         JFreeChartUtils.saveChart(chart, timerName + "_ResponseSize", getChartDir(), getChartWidth(), getChartHeight());
 
         // System.out.printf("OK (%,d values, %,d ms)\n", timeSeries.getItemCount(), TimerUtils.getTime() - start);

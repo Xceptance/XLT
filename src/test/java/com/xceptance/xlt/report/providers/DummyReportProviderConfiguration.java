@@ -16,8 +16,10 @@
 package com.xceptance.xlt.report.providers;
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 
@@ -84,9 +86,15 @@ class DummyReportProviderConfiguration implements ReportProviderConfiguration
     }
 
     @Override
-    public int getMovingAveragePercentage()
+    public MovingAverageConfiguration getCommonMovingAverageConfig()
     {
-        return 0;
+        return null;
+    }
+
+    @Override
+    public List<MovingAverageConfiguration> getAdditionalMovingAverageConfigs()
+    {
+        return null;
     }
 
     @Override
