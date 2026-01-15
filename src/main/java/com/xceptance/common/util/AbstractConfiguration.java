@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,6 +41,10 @@ public class AbstractConfiguration
      * Format of error message used when parsing of a certain property value failed.
      */
     private static final String PROPERTY_PARSING_ERROR_FORMAT = "The value '%s' of property '%s' cannot be resolved to a %s.";
+
+    static final String PROPERTY_PARSING_ERROR_INVALID_INDEX_FORMAT = "Index '%s' in properties with prefix '%s' is not a valid integer.";
+
+    static final String PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS = "Index '%s' in properties with prefix '%s' is out of bounds. Index must be between '%d' and '%d'.";
 
     /**
      * The internal store of properties.
@@ -253,7 +260,7 @@ public class AbstractConfiguration
      * @return the property value
      * @throws RuntimeException
      *             if the value cannot be found
-     * @see #getDoubleProperty(String, int)
+     * @see #getDoubleProperty(String, double)
      */
     public double getDoubleProperty(final String key)
     {
@@ -419,6 +426,72 @@ public class AbstractConfiguration
     }
 
     /**
+     * <p>
+     * Get a list of all integer indexes (in order) that are used in properties starting with the given prefix.
+     * </p>
+     * <p>
+     * For example, the properties contain:
+     * </p>
+     * 
+     * <pre>{@code
+     * ...
+     * test.prop.1.type = typeA
+     * test.prop.1.value = valueA
+     * test.prop.3.type = typeB
+     * test.prop.3.value = valueB
+     * ...
+     * }
+     * </pre>
+     * <p>
+     * Calling this method with prefix "test.prop." will return a list containing [1,3].
+     * </p>
+     * <p>
+     * This method will validate that all matching indexes are no smaller than "minIndex" and no bigger than "maxIndex",
+     * and throw an exception if any index is outside of this range.
+     * </p>
+     *
+     * @param prefix
+     *            the property prefix
+     * @param minIndex
+     *            the smallest allowed index value
+     * @param maxIndex
+     *            the biggest allowed index value
+     * @return a sorted list of all matching indexes
+     * @throws NumberFormatException
+     *             if any of the indexes isn't a valid integer value
+     * @throws IndexOutOfBoundsException
+     *             if any of the indexes is below the minIndex or above the maxIndex
+     */
+    public List<Integer> getPropertyKeyIndexes(final String prefix, final int minIndex, final int maxIndex)
+    {
+        final TreeSet<Integer> sortedIndexes = new TreeSet<>();
+
+        for (final String indexString : getPropertyKeyFragment(prefix))
+        {
+            final int index;
+
+            try
+            {
+                index = ParseUtils.parseInt(indexString);
+            }
+            catch (final ParseException e)
+            {
+                throw new NumberFormatException(String.format(PROPERTY_PARSING_ERROR_INVALID_INDEX_FORMAT, indexString, prefix));
+            }
+
+            if (index < minIndex || index > maxIndex)
+            {
+                throw new IndexOutOfBoundsException(String.format(PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, indexString, prefix, minIndex,
+                                                                  maxIndex));
+            }
+
+            sortedIndexes.add(index);
+        }
+
+        return new ArrayList<>(sortedIndexes);
+    }
+
+    /**
      * Returns the value of the given property. If the property value cannot be found, an exception will be thrown.
      *
      * @param key
@@ -512,8 +585,6 @@ public class AbstractConfiguration
      *
      * @param key
      *            the property name
-     * @param defaultValue
-     *            the default property value
      * @return the property value
      * @throws RuntimeException
      *             if there is no property configured for the argument key

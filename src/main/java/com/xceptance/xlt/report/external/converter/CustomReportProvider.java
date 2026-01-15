@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.data.time.TimeSeries;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.report.external.config.ChartConfig;
 import com.xceptance.xlt.report.external.config.SeriesConfig;
@@ -441,8 +442,8 @@ public class CustomReportProvider extends AbstractDataConverter
                 {
                     try
                     {
-                        final int percentage = Integer.parseInt(seriesConfig.getAverage());
-                        final TimeSeries avgTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(timeSeries, percentage);
+                        final MovingAverageConfiguration averageConfig = MovingAverageConfiguration.createPercentageConfig(Integer.parseInt(seriesConfig.getAverage()));
+                        final TimeSeries avgTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(timeSeries, averageConfig);
                         final Color avgColor = getColor(seriesConfig.getAverageColor());
                         final TimeSeriesConfiguration avgTsConfig = new TimeSeriesConfiguration(avgTimeSeries, avgColor, Style.LINE);
                         axisCollections.get(seriesConfig.getAxis() - 1).add(avgTsConfig);
@@ -450,7 +451,7 @@ public class CustomReportProvider extends AbstractDataConverter
                     catch (final NumberFormatException e)
                     {
                         XltLogger.reportLogger.warn("Skip moving average for series " + valueName + ". Can not parse average '" +
-                                                     seriesConfig.getAverage() + "' to integer value");
+                                                    seriesConfig.getAverage() + "' to integer value");
                     }
                 }
 

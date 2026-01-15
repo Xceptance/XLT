@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -73,6 +74,15 @@ public class AbstractConfigurationTest
         props.setProperty("one.two.three", "testValue1");
         props.setProperty("one.two.four", "testvalue2");
         props.setProperty("one.two.four.one", "testValue3");
+
+        // props with indexes for "getPropertyKeyIndexes" tests
+        // (Valid indexes are 3,4,6,7. Index 4 appears twice. Index 5 doesn't exist. Indexes aren't sorted.)
+        props.setProperty("prop.index.4.abc", "testValue1");
+        props.setProperty("prop.index.7.xyz", "testValue2");
+        props.setProperty("prop.index.3.abc", "testValue3");
+        props.setProperty("prop.index.4.xyz", "testValue4");
+        props.setProperty("prop.index.6.xyz", "testValue5");
+        props.setProperty("prop.invalidIndex.abc", "testValue6");
 
         conf.addProperties(props);
 
@@ -328,6 +338,48 @@ public class AbstractConfigurationTest
         Assert.assertFalse(keys.contains("one.two.three"));
         Assert.assertTrue(keys.contains("one.two.four"));
         Assert.assertTrue(keys.contains("one.two.four.one"));
+    }
+
+    @Test
+    public void testGetPropertyKeyIndexes()
+    {
+        final List<Integer> indexes = conf.getPropertyKeyIndexes("prop.index.", 0, 10);
+
+        // All matching indexes are returned. Duplicates aren't included. Indexes are sorted. No exceptions thrown.
+        Assert.assertEquals(4, indexes.size());
+        Assert.assertEquals(3, indexes.get(0).intValue());
+        Assert.assertEquals(4, indexes.get(1).intValue());
+        Assert.assertEquals(6, indexes.get(2).intValue());
+        Assert.assertEquals(7, indexes.get(3).intValue());
+    }
+
+    @Test
+    public void testGetPropertyKeyIndexes_nonNumericIndex()
+    {
+        final NumberFormatException exception = Assert.assertThrows(NumberFormatException.class,
+                                                                    () -> conf.getPropertyKeyIndexes("prop.invalidIndex.", 0, 10));
+        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INVALID_INDEX_FORMAT, "abc", "prop.invalidIndex."),
+                            exception.getMessage());
+    }
+
+    @Test
+    public void testGetPropertyKeyIndexes_indexTooLow()
+    {
+        // Index 3 is not within the provided boundaries of 4 to 7
+        final IndexOutOfBoundsException exception = Assert.assertThrows(IndexOutOfBoundsException.class,
+                                                                        () -> conf.getPropertyKeyIndexes("prop.index.", 4, 7));
+        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, 3, "prop.index.", 4, 7),
+                            exception.getMessage());
+    }
+
+    @Test
+    public void testGetPropertyKeyIndexes_indexTooHigh()
+    {
+        // Index 7 is not within the provided boundaries of 3 to 6
+        final IndexOutOfBoundsException exception = Assert.assertThrows(IndexOutOfBoundsException.class,
+                                                                        () -> conf.getPropertyKeyIndexes("prop.index.", 3, 6));
+        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, 7, "prop.index.", 3, 6),
+                            exception.getMessage());
     }
 
     /**

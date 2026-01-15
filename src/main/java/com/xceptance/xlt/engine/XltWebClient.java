@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ import com.xceptance.xlt.api.util.ResponseProcessor;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.htmlunit.apache.XltApacheHttpWebConnection;
 import com.xceptance.xlt.engine.htmlunit.okhttp3.OkHttp3WebConnection;
 import com.xceptance.xlt.engine.socket.XltSockets;
@@ -288,7 +289,11 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.staticContent.downloadThreads' is set to an invalid value. Will use 1 instead.");
             threadCount = 1;
         }
-        requestQueue = new RequestQueue(this, threadCount);
+
+        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED,
+                                                            XltConstants.PROP_VIRTUAL_THREADS_ENABLED_DEFAULT);
+
+        requestQueue = new RequestQueue(this, threadCount, useVirtualThreads);
 
         /*
          * Configure the super class.

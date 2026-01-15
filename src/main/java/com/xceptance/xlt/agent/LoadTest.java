@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.xceptance.xlt.agentcontroller.AgentStatus;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.XltThreadFactory;
 
 /**
  * Class responsible for running a load test.
@@ -38,16 +39,28 @@ public class LoadTest
     private static final long DEFAULT_GRACE_PERIOD = 30 * 1000;
 
     /**
+     * The thread factory that creates either virtual threads or platform threads for the {@link LoadTestRunner}
+     * instances.
+     */
+    private static final XltThreadFactory xltThreadFactory;
+
+    /**
      * The configured time period [ms] to wait for threads to finish voluntarily before quitting the JVM.
      */
     private static final long gracePeriod;
 
     static
     {
-        final long v = XltProperties.getInstance().getProperty(XltConstants.XLT_PACKAGE_PATH + ".hangingUsersGracePeriod",
-                                                               DEFAULT_GRACE_PERIOD);
+        final XltProperties props = XltProperties.getInstance();
 
+        // grace period
+        final long v = props.getProperty(XltConstants.XLT_PACKAGE_PATH + ".hangingUsersGracePeriod", DEFAULT_GRACE_PERIOD);
         gracePeriod = (v < 0) ? DEFAULT_GRACE_PERIOD : v;
+
+        // thread factory
+        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED,
+                                                            XltConstants.PROP_VIRTUAL_THREADS_ENABLED_DEFAULT);
+        xltThreadFactory = new XltThreadFactory(useVirtualThreads, false);
     }
 
     /**
@@ -85,8 +98,7 @@ public class LoadTest
             final AbstractExecutionTimer timer = ExecutionTimerFactory.createTimer(config);
 
             // create runner for configuration
-            final LoadTestRunner runner = new LoadTestRunner(config, agentInfo, timer);
-            runner.setDaemon(true);
+            final LoadTestRunner runner = new LoadTestRunner(config, agentInfo, timer, xltThreadFactory);
 
             // add runner to list of known runners
             testRunners.add(runner);

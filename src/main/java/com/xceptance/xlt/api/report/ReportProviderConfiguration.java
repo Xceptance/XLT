@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.xceptance.xlt.api.report;
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -81,12 +82,18 @@ public interface ReportProviderConfiguration
     public File getCsvDirectory();
 
     /**
-     * Returns the preferred percentage of the available values used to calculate moving average values. For example,
-     * with 5 percent and 1000 values, the moving average is generated from the last 50 values.
+     * Returns the configuration for the common moving average (see {@link MovingAverageConfiguration}).
      * 
-     * @return the percentage
+     * @return the common moving average configuration
      */
-    public int getMovingAveragePercentage();
+    public MovingAverageConfiguration getCommonMovingAverageConfig();
+
+    /**
+     * Returns a list of configurations for additional moving averages (see {@link MovingAverageConfiguration}).
+     * 
+     * @return a list of additional moving average configurations
+     */
+    public List<MovingAverageConfiguration> getAdditionalMovingAverageConfigs();
 
     /**
      * Returns all the settings from the file "xlt/config/reportgenerator.properties" as raw properties. Use these

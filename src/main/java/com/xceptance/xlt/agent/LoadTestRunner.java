@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.DataManagerImpl;
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltThreadFactory;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
@@ -40,7 +41,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
-public class LoadTestRunner extends Thread
+public class LoadTestRunner
 {
     /**
      * Class logger instance.
@@ -73,6 +74,11 @@ public class LoadTestRunner extends Thread
     private volatile boolean aborted;
 
     /**
+     * The main thread of this runner.
+     */
+    private final Thread thread;
+
+    /**
      * Creates a new LoadTestRunner object for the given load test configuration. Typically, multiple runners are
      * started for one test case configuration, so the number of the current runner is passed as well.
      *
@@ -82,19 +88,49 @@ public class LoadTestRunner extends Thread
      *            load test agent information
      * @param timer
      *            the execution timer that controls this load test runner
+     * @param xltThreadFactory
+     *            the thread factory to create the worker thread
      */
-    public LoadTestRunner(final TestUserConfiguration config, final AgentInfo agentInfo, final AbstractExecutionTimer timer)
+    public LoadTestRunner(final TestUserConfiguration config, final AgentInfo agentInfo, final AbstractExecutionTimer timer,
+                          final XltThreadFactory xltThreadFactory)
     {
-        // create a new thread group for each LoadTestRunner as a means
-        // to keep the main thread and any supporting threads together
-        super(new ThreadGroup(config.getUserId()), config.getUserId());
-
         this.config = config;
         this.agentInfo = agentInfo;
         this.timer = timer;
 
         status = new TestUserStatus();
         status.setUserName(config.getUserId());
+
+        thread = xltThreadFactory.newThread(this::run);
+        thread.setName(config.getUserId());
+    }
+
+    /**
+     * Returns the thread this runner is using under the hood.
+     * <p>
+     * Note: For unit-testing only.
+     * 
+     * @return the thread
+     */
+    Thread getThread()
+    {
+        return thread;
+    }
+
+    /**
+     * Starts this runner.
+     */
+    public void start()
+    {
+        thread.start();
+    }
+
+    /**
+     * Waits until this runner is finished.
+     */
+    public void join() throws InterruptedException
+    {
+        thread.join();
     }
 
     /**
@@ -110,8 +146,7 @@ public class LoadTestRunner extends Thread
     /**
      * Runs the test case as configured in the test case configuration.
      */
-    @Override
-    public void run()
+    private void run()
     {
         try
         {
@@ -196,7 +231,7 @@ public class LoadTestRunner extends Thread
         }
         catch (final Exception ex)
         {
-            log.error("Failed to run test as user: " + getName(), ex);
+            log.error("Failed to run test as user: " + thread.getName(), ex);
 
             status.setState(TestUserStatus.State.Failed);
             status.setException(ex);
