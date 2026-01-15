@@ -15,17 +15,18 @@
  */
 package com.xceptance.xlt.report.labelingrules;
 
-import com.xceptance.common.lang.ThrowableUtils;
-import com.xceptance.common.util.RegExUtils;
-import com.xceptance.xlt.report.providers.TimerReport;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.xceptance.common.lang.ThrowableUtils;
+import com.xceptance.common.util.RegExUtils;
+import com.xceptance.xlt.report.providers.TimerReport;
 
 /**
  * Base class for all labeling rule conditions. Even if they don't use any regex, they will inherit from this class.
@@ -89,14 +90,14 @@ public abstract class LabelingRuleCondition
     /**
      * Apply this condition to the given report object.
      *
-     * @param report the timer report object to apply the condition to
+     * @param report
+     *            the timer report object to apply the condition to
      */
     protected boolean apply(final TimerReport report)
     {
         /**
-         * Because we now have a special Condition that is taking care of empty patterns,
-         * we can assume that if we are here, we have a pattern to match against.
-         * One less if!
+         * Because we now have a special Condition that is taking care of empty patterns, we can assume that if we are
+         * here, we have a pattern to match against. One less if!
          */
 
         // get the data to match against
@@ -141,8 +142,7 @@ public abstract class LabelingRuleCondition
     }
 
     /**
-     * Returns the right text for the replacement of a certain group or
-     * if no group given, we return the entire text
+     * Returns the right text for the replacement of a certain group or if no group given, we return the entire text
      */
     protected CharSequence getReplacementText(final TimerReport report, final int capturingGroupIndex)
     {

@@ -24,12 +24,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.report.labelingrules.reportlabel.ReportLabelCondition;
 import com.xceptance.xlt.report.labelingrules.reportname.ReportNameCondition;
 import com.xceptance.xlt.report.providers.TimerReport;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A {@link LabelingRule} governs the process of labeling report objects. It represents a bundle of criteria a report
@@ -108,7 +109,8 @@ public class LabelingRule
      *            exclude pattern for the report name
      * @param labelExcludePattern
      *            exclude pattern for the report label
-     * @throws InvalidLabelingRuleException if any rule parameter is invalid
+     * @throws InvalidLabelingRuleException
+     *             if any rule parameter is invalid
      */
     public LabelingRule(final String newLabel, final String typeString, final String namePattern, final String labelPattern,
                         final boolean stopOnMatch, final String nameExcludePattern, final String labelExcludePattern)
@@ -223,7 +225,8 @@ public class LabelingRule
      *
      * @param labelWithPlaceholders
      *            the label with placeholders
-     * @throws InvalidLabelingRuleException if a placeholder contains an invalid matching group index
+     * @throws InvalidLabelingRuleException
+     *             if a placeholder contains an invalid matching group index
      */
     private List<PlaceholderPosition> parsePlaceholderPositions(final String labelWithPlaceholders) throws InvalidLabelingRuleException
     {
@@ -418,7 +421,8 @@ public class LabelingRule
     /**
      * Return a string representation of an array of conditions.
      *
-     * @param conditions the conditions to stringify
+     * @param conditions
+     *            the conditions to stringify
      * @return the resulting string representation
      */
     private String conditionsToString(final LabelingRuleCondition[] conditions)

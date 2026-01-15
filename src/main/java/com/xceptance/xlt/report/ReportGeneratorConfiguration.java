@@ -45,6 +45,8 @@ import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMethod;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
+import com.xceptance.xlt.report.labelingrules.InvalidLabelingRuleException;
+import com.xceptance.xlt.report.labelingrules.LabelingRule;
 import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
@@ -69,10 +71,8 @@ import com.xceptance.xlt.report.mergerules.MergeRule.UrlExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlPattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlText;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlTextExclude;
-import com.xceptance.xlt.report.labelingrules.LabelingRule;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
-import com.xceptance.xlt.report.labelingrules.InvalidLabelingRuleException;
 
 /**
  * The ReportGeneratorConfiguration is the central place where all configuration information for the report generator
@@ -1706,8 +1706,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // create and validate the rules
             try
             {
-                final LabelingRule rule = new LabelingRule(newLabel, typeString, namePattern, labelPattern, stopOnMatch,
-                                                           nameExcludePattern, labelExcludePattern);
+                final LabelingRule rule = new LabelingRule(newLabel, typeString, namePattern, labelPattern, stopOnMatch, nameExcludePattern,
+                                                           labelExcludePattern);
                 labelingRules.add(rule);
             }
             catch (final InvalidLabelingRuleException e)

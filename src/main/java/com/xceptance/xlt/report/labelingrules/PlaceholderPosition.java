@@ -46,20 +46,25 @@ public class PlaceholderPosition
      * The length of the placeholder in the pattern.
      */
     public final int length;
-    
+
     /**
      * The condition associated with the placeholder, if any.
      */
     public LabelingRuleCondition condition = null;
-    
+
     /**
      * Constructor to initialize all fields of the placeholder.
      *
-     * @param typeCode The type code of the placeholder.
-     * @param capturingGroupIndex The index of the capturing group in the pattern.
-     * @param start The start position of the placeholder in the pattern.
-     * @param end The end position of the placeholder in the pattern.
-     * @param length The length of the placeholder in the pattern.
+     * @param typeCode
+     *            The type code of the placeholder.
+     * @param capturingGroupIndex
+     *            The index of the capturing group in the pattern.
+     * @param start
+     *            The start position of the placeholder in the pattern.
+     * @param end
+     *            The end position of the placeholder in the pattern.
+     * @param length
+     *            The length of the placeholder in the pattern.
      */
     public PlaceholderPosition(final String typeCode, final int capturingGroupIndex, final int start, final int end, final int length)
     {
@@ -69,13 +74,16 @@ public class PlaceholderPosition
         this.end = end;
         this.length = length;
     }
-    
+
     /**
      * Constructor to initialize a placeholder with minimal information.
      *
-     * @param typeCode The type code of the placeholder.
-     * @param capturingGroupIndex The index of the capturing group in the pattern.
-     * @param start The start position of the placeholder in the pattern.
+     * @param typeCode
+     *            The type code of the placeholder.
+     * @param capturingGroupIndex
+     *            The index of the capturing group in the pattern.
+     * @param start
+     *            The start position of the placeholder in the pattern.
      */
     public PlaceholderPosition(final String typeCode, final int capturingGroupIndex, final int start)
     {
@@ -89,7 +97,7 @@ public class PlaceholderPosition
     @Override
     public String toString()
     {
-        return "[typeCode=" + typeCode + ", capturingGroupIndex=" + capturingGroupIndex + ", start=" + start +
-               ", end=" + end + ", length=" + length + ", condition=" + condition + "]";
+        return "[typeCode=" + typeCode + ", capturingGroupIndex=" + capturingGroupIndex + ", start=" + start + ", end=" + end +
+               ", length=" + length + ", condition=" + condition + "]";
     }
 }

@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.stream.Collectors;
 
-import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPointerAnnotation;
@@ -42,12 +41,13 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.HistogramValueSet;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
-import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 
 import net.agkn.hll.HLL;
@@ -271,12 +271,14 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // just int is safe, more than 2 billion urls is unlikely
         timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
-        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length] : new BigDecimal[]{};
+        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
+                                                                    : new BigDecimal[] {};
         if (countPerSegment != null)
         {
             for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
             {
-                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count);
+                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n],
+                                                                                       timerReport.count);
             }
         }
 

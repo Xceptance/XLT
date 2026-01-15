@@ -31,7 +31,9 @@ public class TimerReport
 {
     public enum TimerReportType
     {
-        TRANSACTION("T"), ACTION("A"), REQUEST("R");
+        TRANSACTION("T"),
+        ACTION("A"),
+        REQUEST("R");
 
         final String typeCode;
 
@@ -90,7 +92,7 @@ public class TimerReport
      * The number how often the timed item has failed.
      */
     public int errors;
-    
+
     /**
      * The calculated number which percentage of the total timed items (see count) has failed.
      */

@@ -18,7 +18,6 @@ package com.xceptance.xlt.report.providers;
 import java.io.File;
 import java.util.List;
 
-import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -35,6 +34,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.JFreeChartUtils.ColorSet;
@@ -177,8 +177,8 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
     @Override
     protected JFreeChart createResponseTimeAndErrorsChart(final String name, final TimeSeries responseTimeSeries,
                                                           final TimeSeries responseTimeAverageSeries,
-                                                          final XYIntervalSeries responseTimeHistogramSeries,
-                                                          final TimeSeries errorsSeries, final int chartCappingValue)
+                                                          final XYIntervalSeries responseTimeHistogramSeries, final TimeSeries errorsSeries,
+                                                          final int chartCappingValue)
     {
         final JFreeChart chart = super.createResponseTimeAndErrorsChart(name, responseTimeSeries, responseTimeAverageSeries,
                                                                         responseTimeHistogramSeries, errorsSeries, chartCappingValue);
@@ -265,7 +265,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
     {
         final ReportProviderConfiguration config = getConfiguration();
 
-        //System.out.printf("Creating %s chart for timer '%s' ...\n", chartType, title);
+        // System.out.printf("Creating %s chart for timer '%s' ...\n", chartType, title);
 
         // final long start = TimerUtils.getTime();
 

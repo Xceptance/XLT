@@ -15,9 +15,10 @@
  */
 package com.xceptance.xlt.report.labelingrules.reportname;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.xceptance.xlt.report.labelingrules.LabelingRuleCondition;
 import com.xceptance.xlt.report.providers.TimerReport;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Filters data records based on their name.
@@ -56,8 +57,8 @@ public class ReportNameCondition extends LabelingRuleCondition
     /**
      * Returns the right condition
      *
-     * @param regex the regular expression to identify matching requests
-     *
+     * @param regex
+     *            the regular expression to identify matching requests
      * @return the condition
      */
     public static LabelingRuleCondition build(final String regex)

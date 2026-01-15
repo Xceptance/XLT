@@ -1,15 +1,31 @@
+/*
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.xlt.report;
 
-import com.xceptance.xlt.api.util.XltException;
-import com.xceptance.xlt.report.labelingrules.LabelingRule;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import org.junit.Test;
+
+import com.xceptance.xlt.api.util.XltException;
+import com.xceptance.xlt.report.labelingrules.LabelingRule;
 
 public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGeneratorConfigurationTestBase
 {
@@ -128,10 +144,12 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
 
         final XltException ex = assertThrows(XltException.class, () -> readReportGeneratorProperties());
 
-        final String expectedMessage = new StringBuilder("Leading zeros are not allowed in merge or labeling rule indices.\n")
-                .append("Please check your configuration and fix the following properties:\n\t")
-                .append(ReportGeneratorConfiguration.PROP_LABELING_RULES_PREFIX).append("01.newLabel\n").toString();
-        assertEquals(expectedMessage, ex.getMessage());
+        final StringBuilder expectedMessageBuilder = new StringBuilder();
+        expectedMessageBuilder.append("Leading zeros are not allowed in merge or labeling rule indices.\n");
+        expectedMessageBuilder.append("Please check your configuration and fix the following properties:\n\t");
+        expectedMessageBuilder.append(ReportGeneratorConfiguration.PROP_LABELING_RULES_PREFIX).append("01.newLabel\n");
+
+        assertEquals(expectedMessageBuilder.toString(), ex.getMessage());
     }
 
     @Test
@@ -145,10 +163,13 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     }
 
     /**
-     * Helper method to assert the configuration of a minimal labeling rule, i.e. a rule with only a "newLabel" configured.
+     * Helper method to assert the configuration of a minimal labeling rule, i.e. a rule with only a "newLabel"
+     * configured.
      *
-     * @param rule the rule to assert
-     * @param expectedNewLabel the expected "newLabel" of the rule
+     * @param rule
+     *            the rule to assert
+     * @param expectedNewLabel
+     *            the expected "newLabel" of the rule
      */
     private void assertMinimalLabelingRule(final LabelingRule rule, final String expectedNewLabel)
     {
@@ -162,7 +183,9 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     /**
      * Helper method for appending all properties of a labeling rule to the "reportgenerator.properties" file.
      */
-    private void appendLabelingRuleToProperties(final String index, final String newLabel, final String types, final String namePattern, final String labelPattern, final Boolean stopOnMatch, final String nameExcludePattern, final String labelExcludePattern)
+    private void appendLabelingRuleToProperties(final String index, final String newLabel, final String types, final String namePattern,
+                                                final String labelPattern, final Boolean stopOnMatch, final String nameExcludePattern,
+                                                final String labelExcludePattern)
     {
         final List<String> lines = new ArrayList<>();
         final String prefix = ReportGeneratorConfiguration.PROP_LABELING_RULES_PREFIX + index + ".";
