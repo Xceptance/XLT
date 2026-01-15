@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 9.2.0
+#Version 9.2.2
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -2118,11 +2118,10 @@ CLSS public final static com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builde
  outer com.xceptance.xlt.api.webdriver.XltFirefoxDriver
 cons public init()
 meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver build()
-meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder setBinary(org.openqa.selenium.firefox.FirefoxBinary)
 meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder setHeadless(boolean)
-meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder setProfile(org.openqa.selenium.firefox.FirefoxProfile)
+meth public com.xceptance.xlt.api.webdriver.XltFirefoxDriver$Builder setOptions(org.openqa.selenium.firefox.FirefoxOptions)
 supr java.lang.Object
-hfds binary,headless,options,profile
+hfds headless,options
 
 CLSS public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
 cons protected init(org.htmlunit.BrowserVersion)

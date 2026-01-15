@@ -516,4 +516,12 @@ public final class XltConstants
      * The name of the HTML output file for rendering the scorecard report page.
      */
     public static final String SCORECARD_REPORT_HTML_FILENAME = "scorecard.html";
+
+    /*
+     * Virtual threads
+     */
+
+    public static final String PROP_VIRTUAL_THREADS_ENABLED = XLT_PACKAGE_PATH + ".virtualThreads.enabled";
+
+    public static final boolean PROP_VIRTUAL_THREADS_ENABLED_DEFAULT = true;
 }

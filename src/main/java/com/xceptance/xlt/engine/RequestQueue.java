@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import com.xceptance.common.util.SynchronizingCounter;
-import com.xceptance.common.util.concurrent.DaemonThreadFactory;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 
@@ -74,14 +73,16 @@ public class RequestQueue
      *            the web client to use
      * @param threadCount
      *            the number of threads
+     * @param useVirtualThreads
+     *            whether to use virtual threads instead of platform threads
      */
-    public RequestQueue(final XltWebClient webClient, final int threadCount)
+    public RequestQueue(final XltWebClient webClient, final int threadCount, final boolean useVirtualThreads)
     {
         this.webClient = webClient;
         this.threadCount = threadCount;
         parallelModeEnabled = true;
 
-        final ThreadFactory threadFactory = new DaemonThreadFactory(i -> Session.getCurrent().getUserID() + "-pool-" + i);
+        final ThreadFactory threadFactory = new XltThreadFactory(useVirtualThreads, true, Session.getCurrent().getUserID() + "-pool-");
 
         executorService = Executors.newFixedThreadPool(threadCount, threadFactory);
         ongoingRequestsCount = new SynchronizingCounter(0);
