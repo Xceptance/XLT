@@ -234,6 +234,7 @@
                                     <tfoot>
                                         <tr>
                                             <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
 
                                             <td></td>
                                             <td></td>
@@ -509,6 +510,7 @@
                                 <xsl:otherwise>
                                     <tfoot>
                                         <tr>
+                                            <td class="colgroup1"></td>
                                             <td class="colgroup1"></td>
 
                                             <td></td>
