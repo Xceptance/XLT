@@ -28,9 +28,9 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.ArithmeticMean;
 import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
 import com.xceptance.xlt.report.util.DoubleSummaryStatistics;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.MinMaxTimeSeriesCollection;
-import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 
@@ -158,7 +158,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
         agentReport.transactions = transactions;
         agentReport.transactionErrors = transactionErrors;
-        
+
         agentReport.transactionErrorPercentage = ReportUtils.calculatePercentage(transactionErrors, transactions);
 
         return agentReport;
@@ -260,7 +260,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
         final TimeSeriesCollection cpuTimeSeriesCollection = new TimeSeriesCollection();
         final TimeSeries cpuTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(cpuUsageValueSet, "Agent CPU Usage");
-        final TimeSeries avgCpuTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(cpuTimeSeries, getMovingAveragePercentage());
+        final TimeSeries avgCpuTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(cpuTimeSeries, getCommonMovingAverageConfig());
         final TimeSeries gcCpuTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(gcCpuUsageValueSet, "Agent GC CPU Usage");
         final TimeSeries totalCpuUsageTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(totalCpuUsageValueSet, "Total CPU Usage");
 
@@ -296,7 +296,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
         final TimeSeries totalHeapSeries = JFreeChartUtils.toMinMaxTimeSeries(totalHeapValueSet, "Total Heap");
         // final TimeSeries usedMemSeries = JFreeChartUtils.toMinMaxTimeSeries(usedMemValueSet, "Used Physical Memory");
 
-        final TimeSeries usedHeapAvgSeries = JFreeChartUtils.createMovingAverageTimeSeries(usedHeapSeries, getMovingAveragePercentage());
+        final TimeSeries usedHeapAvgSeries = JFreeChartUtils.createMovingAverageTimeSeries(usedHeapSeries, getCommonMovingAverageConfig());
 
         memoryCollection.addSeries(usedHeapAvgSeries);
         memoryCollection.addSeries(usedHeapSeries);

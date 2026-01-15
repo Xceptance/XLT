@@ -86,6 +86,7 @@ import com.xceptance.xlt.api.tests.AbstractTestCase;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.DataManagerImpl;
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltThreadFactory;
 import com.xceptance.xlt.engine.XltWebClient;
 
 import util.xlt.IntentionalError;
@@ -109,7 +110,7 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
 })
 @PowerMockIgnore(
     {
-        "javax.*", "org.xml.*", "org.w3c.dom.*"
+        "javax.*", "org.xml.*", "org.w3c.dom.*", "org.apache.commons.vfs2.*"
 })
 public class DataRecordLoggingTest
 {
@@ -167,7 +168,7 @@ public class DataRecordLoggingTest
     public void clear()
     {
         dataRecordCaptors.clear();
-        mockDataManagers.clear();
+        mockDataManager = null;
     }
 
     @Test
@@ -203,12 +204,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup),
-                                    expect(RequestData.class, hasName("Action1.1"), hasFailed(false), hasUrl(url1)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(RequestData.class, hasName("Action1.1"), hasFailed(false), hasUrl(url1)),
                                     expect(ActionData.class, hasName("Action1"), hasFailed(false)),
                                     expect(EventData.class, hasName("Event 1"), hasMessage("Message 1"),
                                            hasTestCaseName(expectedUserName())),
@@ -242,12 +240,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup),
-                                    expect(ActionData.class, hasName("FailedAction-Caught"), hasFailed(true)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(ActionData.class, hasName("FailedAction-Caught"), hasFailed(true)),
                                     expect(ActionData.class, hasName("FailedAction-Uncaught"), hasFailed(true)),
                                     // failedActionName is only set once
                                     expect(TransactionData.class, hasFailed(true), hasFailedActionName("FailedAction-Caught")));
@@ -270,11 +265,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup), expect(1, ActionData.class, hasName("FirstAction"), hasFailed(false)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(1, ActionData.class, hasName("FirstAction"), hasFailed(false)),
                                     expect(0, ActionData.class, hasName("NotApplicableAction")),
                                     expect(1, ActionData.class, hasName("LastAction"), hasFailed(false)),
                                     expect(1, TransactionData.class, hasFailed(false), hasFailedActionName(null),
@@ -300,12 +293,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup),
-                                    expect(ActionData.class, hasName("FailedAction-Caught"), hasFailed(true)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(ActionData.class, hasName("FailedAction-Caught"), hasFailed(true)),
                                     expect(ActionData.class, hasName("LastAction"), hasFailed(false)),
                                     expect(TransactionData.class, hasFailed(false), hasFailureStackTrace(null),
                                            hasFailedActionName("FailedAction-Caught")));
@@ -329,12 +319,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup),
-                                    expect(ActionData.class, hasName("FailedAction-Caught"), hasFailed(true)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(ActionData.class, hasName("FailedAction-Caught"), hasFailed(true)),
                                     expect(TransactionData.class, hasFailed(false), hasFailureStackTrace(null),
                                            hasFailedActionName("FailedAction-Caught")));
     }
@@ -352,21 +339,18 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        final DataManagerImpl instance = mockDataManagerFor(threadGroup);
         if (kindOfLoadTestClass.isXltDerived() || testExecutionThreadStrategy.usesLoadTestRunner)
         {
-            verifyDataRecordsLoggedWith(instance, expect(0, ActionData.class),
+            verifyDataRecordsLoggedWith(mockDataManager, expect(0, ActionData.class),
                                         expect(TransactionData.class, hasName(expectedUserName()), hasFailed(true), hasFailedActionName(""),
                                                hasFailureStackTraceMatching(expectedFailureStacktraceRegex(STACKTRACE_REGEX_FOR_THROW_INTENTIONAL_ERROR,
                                                                                                            defaultUserId()))));
         }
         else
         {
-            Assert.assertNull("No action -> no session -> no data manager", instance);
+            Assert.assertNull("No action -> no session -> no data manager", mockDataManager);
         }
     }
 
@@ -384,12 +368,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
-        final DataManagerImpl instance = mockDataManagerFor(threadGroup);
 
-        verifyDataRecordsLoggedWith(instance, expect(1, ActionData.class, hasName("FirstAction"), hasFailed(false)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(1, ActionData.class, hasName("FirstAction"), hasFailed(false)),
                                     expect(TransactionData.class, hasName(expectedUserName()), hasFailed(true), hasFailedActionName(""),
                                            hasFailureStackTraceMatching(expectedFailureStacktraceRegex(STACKTRACE_REGEX_FOR_THROW_INTENTIONAL_ERROR,
                                                                                                        defaultUserId()))));
@@ -416,11 +397,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup), expect(ActionData.class, hasName("FirstAction"), hasFailed(false)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(ActionData.class, hasName("FirstAction"), hasFailed(false)),
                                     expect(ActionData.class, hasName("FailedAction-preValidate"), hasFailed(true)),
                                     expect(TransactionData.class, hasName(expectedUserName()), hasFailed(true),
                                            hasFailedActionName("FailedAction-preValidate"),
@@ -442,11 +421,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup), expect(ActionData.class, hasName("FirstAction"), hasFailed(false)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(ActionData.class, hasName("FirstAction"), hasFailed(false)),
                                     expect(ActionData.class, hasName("FailedAction-execute"), hasFailed(true)),
                                     expect(TransactionData.class, hasName(expectedUserName()), hasFailed(true),
                                            hasFailedActionName("FailedAction-execute"),
@@ -468,11 +445,9 @@ public class DataRecordLoggingTest
             }
         });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
-
         startAndWaitFor(testExecutionThread);
 
-        verifyDataRecordsLoggedWith(mockDataManagerFor(threadGroup), expect(ActionData.class, hasName("FirstAction"), hasFailed(false)),
+        verifyDataRecordsLoggedWith(mockDataManager, expect(ActionData.class, hasName("FirstAction"), hasFailed(false)),
                                     expect(ActionData.class, hasName("FailedAction-postValidate"), hasFailed(true)),
                                     expect(TransactionData.class, hasName(expectedUserName()), hasFailed(true),
                                            hasFailedActionName("FailedAction-postValidate"),
@@ -522,16 +497,14 @@ public class DataRecordLoggingTest
                                                                              }
                                                                          });
 
-        final ThreadGroup threadGroup = testExecutionThread.getThreadGroup();
         GlobalClock.installFixed(startTime);
 
         startAndWaitFor(testExecutionThread);
 
-        final DataManagerImpl dataManager = mockDataManagerFor(threadGroup);
-        final InOrder inOrder = Mockito.inOrder(dataManager);
-        inOrder.verify(dataManager).setStartOfLoggingPeriod(startTime + initialDelay + warmUpPeriod);
-        inOrder.verify(dataManager).setEndOfLoggingPeriod(startTime + initialDelay + warmUpPeriod + measurementPeriod);
-        inOrder.verify(dataManager).logDataRecord(argThat(has(EventData.class, hasTime(eventTime), hasName(eventName))));
+        final InOrder inOrder = Mockito.inOrder(mockDataManager);
+        inOrder.verify(mockDataManager).setStartOfLoggingPeriod(startTime + initialDelay + warmUpPeriod);
+        inOrder.verify(mockDataManager).setEndOfLoggingPeriod(startTime + initialDelay + warmUpPeriod + measurementPeriod);
+        inOrder.verify(mockDataManager).logDataRecord(argThat(has(EventData.class, hasTime(eventTime), hasName(eventName))));
     }
 
     static final Pattern EOL_PLACEHOLDER_PATTERN = Pattern.compile(EOL_PLACEHOLDER_IN_STACKTRACE_REGEXES);
@@ -647,7 +620,7 @@ public class DataRecordLoggingTest
         throw new IntentionalError();
     }
 
-    private Map<ThreadGroup, DataManagerImpl> mockDataManagers = createThreadSafeWeakHashMap();
+    private DataManagerImpl mockDataManager;
 
     private Map<DataManagerImpl, ArgumentCaptor<Data>> dataRecordCaptors = createThreadSafeWeakHashMap();
 
@@ -664,6 +637,13 @@ public class DataRecordLoggingTest
             @Override
             public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
             {
+                // This method seems to be called immediately and with null parameters as part of setting up the answer
+                // (Powermock bug?) -> ignore.
+                if (invocation.getArgument(0, Session.class) == null)
+                {
+                    return null;
+                }
+
                 // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
                 final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, new Class<?>[]
                     {
@@ -672,40 +652,28 @@ public class DataRecordLoggingTest
                     {
                         invocation.getArgument(0, Session.class)
                     });
-                return mockDataManagers.computeIfAbsent(Thread.currentThread().getThreadGroup(), __ -> createMockDataManager(instance));
+
+                return createMockDataManager(instance);
             }
         });
     }
 
-    /**
-     * Returns the mock {@link DataManagerImpl} that will be used by the {@link SessionImpl} object for the specified
-     * thread group.
-     * <p>
-     * <b>ATTENTION:</b> If using this in a test, it needs to be called <i>before</i> the thread has finished
-     *
-     * @param thread
-     * @param session
-     * @return mock {@link DataManagerImpl} object used by {@link SessionImpl} for the specified thread
-     * @see #mockDataManagerCreation()
-     */
-    private DataManagerImpl mockDataManagerFor(ThreadGroup threadGroup)
-    {
-        return mockDataManagers.get(threadGroup);
-    }
-
     private DataManagerImpl createMockDataManager(final DataManagerImpl instance)
     {
-        final ArgumentCaptor<Data> dataRecordCaptor = ArgumentCaptor.forClass(Data.class);
-        final DataManagerImpl mock = Mockito.spy(instance);
+        // set up mock only if not done so before
+        if (mockDataManager == null)
+        {
+            final ArgumentCaptor<Data> dataRecordCaptor = ArgumentCaptor.forClass(Data.class);
+            final DataManagerImpl mock = Mockito.spy(instance);
 
-        Mockito.doNothing().when(mock).logDataRecord(dataRecordCaptor.capture());
+            Mockito.doNothing().when(mock).logDataRecord(dataRecordCaptor.capture());
 
-        // We want to see the logging of EventData records, so we'll have to let logEvent do its job
-        Mockito.doCallRealMethod().when(mock).logEvent(Mockito.any(), Mockito.any());
+            dataRecordCaptors.put(mock, dataRecordCaptor);
 
-        dataRecordCaptors.put(mock, dataRecordCaptor);
+            mockDataManager = mock;
+        }
 
-        return mock;
+        return mockDataManager;
     }
 
     public List<Data> getDataRecordsCapturedFor(DataManager mockDataManager)
@@ -736,7 +704,6 @@ public class DataRecordLoggingTest
         }
     }
 
-    @SuppressWarnings("serial")
     static class CountingMap<Key> extends LinkedHashMap<Key, Integer>
     {
         public void increaseValueFor(final Key key, final int increaseBy)
@@ -973,9 +940,8 @@ public class DataRecordLoggingTest
             public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
                                           DataRecordLoggingTest thisTestInstance)
             {
-                return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer());
+                return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer(), new XltThreadFactory(false)).getThread();
             }
-
         },
 
         /**
@@ -990,7 +956,7 @@ public class DataRecordLoggingTest
                                           DataRecordLoggingTest thisTestInstance)
             {
                 final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
-                return new Thread(new ThreadGroup("JUnitRequestRunner"), r);
+                return new XltThreadFactory(false).newThread(r);
             }
         };
 

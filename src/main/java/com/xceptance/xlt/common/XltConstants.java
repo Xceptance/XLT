@@ -184,7 +184,7 @@ public final class XltConstants
      * The prefix of custom log files.
      */
     public static final String CUSTOM_LOG_PREFIX = "custom_log_";
-    
+
     /**
      * The option name of the <em>from</em> option on the command line.
      */
@@ -334,6 +334,11 @@ public final class XltConstants
     public static final String REPORT_CHART_DIR = "charts";
 
     /**
+     * The maximum amount of additional moving averages that can be configured to appear in the "Averages" tabs.
+     */
+    public static final int REPORT_CHART_MAX_ADDITIONAL_AVERAGES = 5;
+
+    /**
      * Placeholder file name for reports
      */
     public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.webp";
@@ -464,17 +469,19 @@ public final class XltConstants
     /**
      * The name if we want to collect more request information
      */
-    public static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectAdditionalRequestInfo";
+    public static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = XltConstants.XLT_PACKAGE_PATH +
+                                                                      ".results.data.request.collectAdditionalRequestInfo";
 
     /**
      * The name if we want to collect the used IP address.
      */
-    public static final String PROP_COLLECT_USED_IP_ADDRESS = XltConstants.XLT_PACKAGE_PATH +  ".results.data.request.collectUsedIpAddress";
+    public static final String PROP_COLLECT_USED_IP_ADDRESS = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.collectUsedIpAddress";
 
     /**
      * The name if we want to clean the user info
      */
-    public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+    public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH +
+                                                                       ".results.data.request.removeUserInfoFromURL";
 
     /**
      * The name of the property for specifying the test suite's data directory.
@@ -509,4 +516,12 @@ public final class XltConstants
      * The name of the HTML output file for rendering the scorecard report page.
      */
     public static final String SCORECARD_REPORT_HTML_FILENAME = "scorecard.html";
+
+    /*
+     * Virtual threads
+     */
+
+    public static final String PROP_VIRTUAL_THREADS_ENABLED = XLT_PACKAGE_PATH + ".virtualThreads.enabled";
+
+    public static final boolean PROP_VIRTUAL_THREADS_ENABLED_DEFAULT = true;
 }
