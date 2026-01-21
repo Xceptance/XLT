@@ -144,6 +144,77 @@ public class EvaluatorGroovyTest
         }
     }
 
+    @Test
+    public void testParseConfigurationGroovyFormatter() throws Exception
+    {
+        var groovy = """
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    checks {
+                        check {
+                            selector '//foo'
+                            condition 'exists'
+                            formatter '%.2f ms'
+                        }
+                    }
+                }
+            }
+            return builder
+            """;
+
+        var tempFile = java.nio.file.Files.createTempFile("scorecard-formatter", ".groovy").toFile();
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+            var config = new TestEvaluator(tempFile).parseConfiguration();
+
+            var rule = config.getRule("rule1");
+            Assert.assertEquals("%.2f ms", rule.getChecks()[0].getFormatter());
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+        }
+    }
+
+    @Test
+    public void testParseConfigurationGroovyManualResult() throws Exception
+    {
+        var groovy = """
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    checks {
+                        check {
+                            status 'FAILED'
+                            value 'Manual Value'
+                            message 'Manual Error'
+                        }
+                    }
+                }
+            }
+            return builder
+            """;
+
+        var tempFile = java.nio.file.Files.createTempFile("scorecard-manual", ".groovy").toFile();
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+            var config = new TestEvaluator(tempFile).parseConfiguration();
+
+            var rule = config.getRule("rule1");
+            var check = rule.getChecks()[0];
+            Assert.assertEquals(Status.FAILED, check.getManualStatus());
+            Assert.assertEquals("Manual Value", check.getManualValue());
+            Assert.assertEquals("Manual Error", check.getManualErrorMessage());
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+        }
+    }
+
     // Helper subclass to access protected method
     static class TestEvaluator extends GroovyEvaluator
     {

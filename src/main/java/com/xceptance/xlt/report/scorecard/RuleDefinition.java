@@ -186,15 +186,42 @@ public class RuleDefinition
         @XStreamAsAttribute
         private final boolean displayValue;
 
+        @XStreamAsAttribute
+        private final String formatter;
+
+        @XStreamAsAttribute
+        private final Status manualStatus;
+
+        private final String manualValue;
+
+        private final String manualErrorMessage;
+
         public Check(final int index, final String selector, final String selectorId, final String condition, final boolean enabled,
                      final boolean displayValue)
+        {
+            this(index, selector, selectorId, condition, enabled, displayValue, null);
+        }
+
+        public Check(final int index, final String selector, final String selectorId, final String condition, final boolean enabled,
+                     final boolean displayValue, final String formatter)
+        {
+            this(index, selector, selectorId, condition, enabled, displayValue, formatter, null, null, null);
+        }
+
+        public Check(final int index, final String selector, final String selectorId, final String condition, final boolean enabled,
+                     final boolean displayValue, final String formatter, final Status manualStatus, final String manualValue,
+                     final String manualErrorMessage)
         {
             this.index = Math.max(0, index);
             this.selectorId = selectorId;
             this.selector = selector;
-            this.condition = Objects.requireNonNull(condition, "Rule check condition must not be null");
+            this.condition = manualStatus == null ? Objects.requireNonNull(condition, "Rule check condition must not be null") : condition;
             this.enabled = enabled;
             this.displayValue = displayValue;
+            this.formatter = formatter;
+            this.manualStatus = manualStatus;
+            this.manualValue = manualValue;
+            this.manualErrorMessage = manualErrorMessage;
         }
 
         public int getIndex()
@@ -227,6 +254,26 @@ public class RuleDefinition
             return condition;
         }
 
+        public String getFormatter()
+        {
+            return formatter;
+        }
+
+        public Status getManualStatus()
+        {
+            return manualStatus;
+        }
+
+        public String getManualValue()
+        {
+            return manualValue;
+        }
+
+        public String getManualErrorMessage()
+        {
+            return manualErrorMessage;
+        }
+
     }
 
     static RuleDefinition fromJSON(final JSONObject jsonObject) throws ValidationException
@@ -257,13 +304,15 @@ public class RuleDefinition
                 final boolean displayValue = checkObj.optBoolean("displayValue", true);
                 final boolean checkEnabled = checkObj.optBoolean("enabled", true);
 
+                final String formatter = StringUtils.trimToNull(checkObj.optString("formatter", null));
+
                 if (!(selector == null ^ selectorId == null))
                 {
                     throw new ValidationException("Check #" + i +
                                                   " is ambiguous: either 'selector' or 'selectorId' property must be given");
                 }
 
-                checkList.add(new Check(i, selector, selectorId, condition, checkEnabled, displayValue));
+                checkList.add(new Check(i, selector, selectorId, condition, checkEnabled, displayValue, formatter));
             }
         }
         if (rulePoints < 0)

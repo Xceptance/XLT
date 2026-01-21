@@ -115,6 +115,48 @@ Available `xpath` methods:
 * `xpath.get(expression)`: Returns the string value of the first match.
 * `xpath.getList(expression)`: Returns a List of string values for all matches.
 
+### Value Formatting
+
+You can optionally format the values displayed in the scorecard report using Java string formatter syntax.
+
+```groovy
+builder.rules {
+    rule {
+        id 'formatted_rule'
+        checks {
+            check {
+                selector '//performance/value'
+                condition '< 1000'
+                formatter '%,.2f ms' // Formats 1234.5678 as 1,234.57 ms
+            }
+        }
+    }
+}
+```
+
+The evaluator automatically attempts to parse the value as a `Double` or `Long` before applying the formatter. If parsing fails, it persists as a `String`.
+
+### Manual Results
+
+In some cases, you may want to skip the evaluation (XPath and condition) for a rule and provide a result directly from your Groovy code. This can be achieved by setting the `status`, `value`, and optionally a `message` within a check:
+
+```groovy
+builder.rules {
+    rule {
+        id 'manual_result_rule'
+        checks {
+            check {
+                status 'PASSED'     // SKIPPED, PASSED, FAILED, ERROR
+                value 'Manually Set'
+                message 'Optional message'
+            }
+        }
+    }
+}
+```
+
+When a `status` is provided, the `selector` and `condition` are ignored, and the check result is set exactly as specified.
+
 ## DSL Reference
 
 ### `selectors`
@@ -144,6 +186,7 @@ Defines evaluation rules.
       * `condition (String)`: XPath condition (e.g., `< 500`, `exists`).
       * `displayValue (boolean)`: Whether to show the value in the report.
       * `enabled (boolean)`: Default true.
+      * `formatter (String)`: Optional Java string formatter syntax (e.g., `%,.2f`).
 
 ### `groups`
 

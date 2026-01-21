@@ -214,6 +214,18 @@ public class StaticEvaluator extends AbstractEvaluator
     private void evaluateRuleCheck(final Scorecard.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
                                    final Function<String, SelectorDefinition> selectorLookup)
     {
+        final Status manualStatus = check.getDefinition().getManualStatus();
+        if (manualStatus != null)
+        {
+            check.setStatus(manualStatus);
+            check.setErrorMessage(check.getDefinition().getManualErrorMessage());
+            if (check.getDefinition().isDisplayValue())
+            {
+                check.setValue(formatValue(check.getDefinition().getManualValue(), check.getDefinition().getFormatter()));
+            }
+            return;
+        }
+
         final String selector;
         final String selectorId = check.getDefinition().getSelectorId();
         if (selectorId != null)
@@ -268,14 +280,14 @@ public class StaticEvaluator extends AbstractEvaluator
         check.setErrorMessage(message);
         if (check.getDefinition().isDisplayValue())
         {
-            check.setValue(value);
+            check.setValue(formatValue(value, check.getDefinition().getFormatter()));
         }
     }
 
     private boolean evaluateConditionSafe(final String condition, final XPathCompiler compiler, final XdmValue contextValue)
     {
         String expr = StringUtils.strip(condition);
-        if (StringUtils.startsWithAny(expr, "=", "<", ">", "!="))
+        if (startsWithAny(expr, "=", "<", ">", "!="))
         {
             expr = ". " + expr;
         }

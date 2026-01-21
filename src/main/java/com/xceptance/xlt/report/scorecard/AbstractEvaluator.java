@@ -64,4 +64,72 @@ public abstract class AbstractEvaluator
     {
         return denominator > 0 ? (Math.round((numerator * 1000.0) / denominator) / 10.0) : 0.0;
     }
+
+    /**
+     * Formats the given value using the specified formatter string.
+     *
+     * @param value
+     *                      the value to format
+     * @param formatter
+     *                      the Java string formatter syntax
+     * @return the formatted value
+     */
+    protected String formatValue(final String value, final String formatter)
+    {
+        if (value == null || formatter == null)
+        {
+            return value;
+        }
+
+        try
+        {
+            // try to parse as double first
+            try
+            {
+                return String.format(java.util.Locale.US, formatter, Double.valueOf(value));
+            }
+            catch (final NumberFormatException e1)
+            {
+                // try to parse as long
+                try
+                {
+                    return String.format(java.util.Locale.US, formatter, Long.valueOf(value));
+                }
+                catch (final NumberFormatException e2)
+                {
+                    // continue as string
+                    return String.format(java.util.Locale.US, formatter, value);
+                }
+            }
+        }
+        catch (final Exception e)
+        {
+            // fallback to original value on formatting error
+            return value;
+        }
+    }
+
+    /**
+     * Checks if the given sequence starts with any of the provided search strings.
+     *
+     * @param sequence
+     *                          the sequence to check
+     * @param searchStrings
+     *                          the search strings to look for
+     * @return <code>true</code> if the sequence starts with any of the search strings, <code>false</code> otherwise
+     */
+    protected boolean startsWithAny(final String sequence, final String... searchStrings)
+    {
+        if (sequence != null && searchStrings != null)
+        {
+            for (final String searchString : searchStrings)
+            {
+                if (sequence.startsWith(searchString))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

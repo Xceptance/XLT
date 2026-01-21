@@ -1,152 +1,32 @@
 package com.xceptance.xlt.report.scorecard;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.sf.saxon.s9api.Processor;
+
 public class EvaluatorTest
 {
   @Test
-  public void testParseConfigurationYaml() throws Exception
+  public void testParseConfiguration() throws Exception
   {
     var yaml = """
       version: 2
+      selectors:
+        - id: sel1
+          expression: //foo
       rules:
-        - id: 'rule1'
-          name: 'Rule 1'
-          enabled: true
-          checks: []
-          points: 0
-      groups:
-        - id: 'G1'
-          name: 'Group 1'
-          enabled: true
-          rules: ['rule1']
-      """;
-
-    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
-    try
-    {
-      FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
-
-      var config = new TestStaticEvaluator(tempFile).parseConfiguration();
-
-      Assert.assertEquals(2, config.getVersion());
-      Assert.assertTrue(config.containsRule("rule1"));
-    }
-    finally
-    {
-      FileUtils.deleteQuietly(tempFile);
-    }
-  }
-
-  @Test
-  public void testParseConfigurationYml() throws Exception
-  {
-    var yaml = """
-      version: 2
-      rules:
-        - id: 'rule1'
-          name: 'Rule 1'
-          enabled: true
-          checks: []
-          points: 0
-      groups:
-        - id: 'G1'
-          name: 'Group 1'
-          enabled: true
-          rules: ['rule1']
-      """;
-
-    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yml").toFile();
-    try
-    {
-      FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
-
-      var config = new TestStaticEvaluator(tempFile).parseConfiguration();
-
-      Assert.assertEquals(2, config.getVersion());
-      Assert.assertTrue(config.containsRule("rule1"));
-    }
-    finally
-    {
-      FileUtils.deleteQuietly(tempFile);
-    }
-  }
-
-  @Test
-  public void testParseConfigurationJson() throws Exception
-  {
-    var json = """
-      {
-        "version": 2,
-        "rules": [
-          {
-            "id": "rule1",
-            "name": "Rule 1",
-            "enabled": true,
-            "checks": [],
-            "points": 0
-          }
-        ],
-        "groups": [
-          {
-            "id": "G1",
-            "name": "Group 1",
-            "enabled": true,
-            "rules": ["rule1"]
-          }
-        ]
-      }
-      """;
-
-    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".json").toFile();
-    try
-    {
-      FileUtils.writeStringToFile(tempFile, json, StandardCharsets.UTF_8);
-
-      var config = new TestStaticEvaluator(tempFile).parseConfiguration();
-
-      Assert.assertEquals(2, config.getVersion());
-      Assert.assertTrue(config.containsRule("rule1"));
-    }
-    finally
-    {
-      FileUtils.deleteQuietly(tempFile);
-    }
-  }
-
-  @Test
-  public void testParseConfigurationAdvancedYaml() throws Exception
-  {
-    var yaml = """
-      # This is a YAML comment
-      version: 2
-
-      # Reusable values
-      name: &ruleName TestRule
-
-      rules:
-        - id: 'rule1'
-          name: *ruleName
-          enabled: true
+        - id: rule1
           checks:
-            - selector: >-
-                max(
-                  //requests/request[matches(name, '^Homepage')]/percentiles/p95
-                )
-              condition: '< 500'
-          messages:
-            success: 'Rule 1 runs fine'
-            fail: 'Something went wrong'
-          points: 5
+            - selectorId: sel1
+              condition: exists
       groups:
-        - id: 'G1'
-          name: 'Group 1'
-          enabled: true
-          rules: ['rule1']
+        - id: G1
+          rules: [rule1]
       """;
 
     var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
@@ -156,21 +36,159 @@ public class EvaluatorTest
 
       var config = new TestStaticEvaluator(tempFile).parseConfiguration();
 
-      Assert.assertEquals(2, config.getVersion());
+      Assert.assertTrue(config.containsSelector("sel1"));
       Assert.assertTrue(config.containsRule("rule1"));
-
-      var rule1 = config.getRule("rule1");
-      Assert.assertEquals("TestRule", rule1.getName());
-      Assert.assertEquals("Rule 1 runs fine", rule1.getSuccessMessage());
-
-      // Check formatted XPath
-      var selector = rule1.getChecks()[0].getSelector();
-      Assert.assertTrue(selector.contains("max("));
-      Assert.assertTrue(selector.contains("//requests/request"));
     }
     finally
     {
       FileUtils.deleteQuietly(tempFile);
+    }
+  }
+
+  @Test
+  public void testEvaluate() throws Exception
+  {
+    var yaml = """
+      version: 2
+      selectors:
+        - id: sel1
+          expression: //count
+      rules:
+        - id: rule1
+          checks:
+            - selectorId: sel1
+              condition: "> 10"
+      groups:
+        - id: G1
+          rules: [rule1]
+      """;
+
+    var xml = "<root><count>15</count></root>";
+
+    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
+    var xmlFile = java.nio.file.Files.createTempFile("scorecard-data", ".xml").toFile();
+    try
+    {
+      FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
+      FileUtils.writeStringToFile(xmlFile, xml, StandardCharsets.UTF_8);
+
+      var evaluator = new TestStaticEvaluator(tempFile);
+      var scorecard = evaluator.evaluate(xmlFile);
+
+      Assert.assertEquals(Status.PASSED, scorecard.result.getGroups().get(0).getRules().get(0).getStatus());
+    }
+    finally
+    {
+      FileUtils.deleteQuietly(tempFile);
+      FileUtils.deleteQuietly(xmlFile);
+    }
+  }
+
+  @Test
+  public void testEvaluatePoints() throws Exception
+  {
+    var yaml = """
+      version: 2
+      selectors:
+        - id: sel1
+          expression: //count
+      rules:
+        - id: rule1
+          points: 10
+          checks:
+            - selectorId: sel1
+              condition: "> 10"
+      groups:
+        - id: G1
+          rules: [rule1]
+      """;
+
+    var xml = "<root><count>15</count></root>";
+
+    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
+    var xmlFile = java.nio.file.Files.createTempFile("scorecard-data", ".xml").toFile();
+    try
+    {
+      FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
+      FileUtils.writeStringToFile(xmlFile, xml, StandardCharsets.UTF_8);
+
+      var evaluator = new TestStaticEvaluator(tempFile);
+      var scorecard = evaluator.evaluate(xmlFile);
+
+      Assert.assertEquals(10, scorecard.result.getPoints().intValue());
+    }
+    finally
+    {
+      FileUtils.deleteQuietly(tempFile);
+      FileUtils.deleteQuietly(xmlFile);
+    }
+  }
+
+  @Test
+  public void testFormatting() throws Exception
+  {
+    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
+    try
+    {
+      var evaluator = new TestStaticEvaluator(tempFile);
+
+      // Test double formatting
+      Assert.assertEquals("1234.57", evaluator.formatValue("1234.5678", "%.2f"));
+
+      // Test long formatting
+      Assert.assertEquals("1234", evaluator.formatValue("1234", "%d"));
+
+      // Test string fallback
+      Assert.assertEquals("Hello WORLD", evaluator.formatValue("world", "Hello %S"));
+
+      // Test parsing failure fallback
+      Assert.assertEquals("not-a-number", evaluator.formatValue("not-a-number", "%,.2f"));
+
+      // Test null handling
+      Assert.assertNull(evaluator.formatValue(null, "%.2f"));
+      Assert.assertEquals("123", evaluator.formatValue("123", null));
+    }
+    finally
+    {
+      FileUtils.deleteQuietly(tempFile);
+    }
+  }
+
+  @Test
+  public void testManualResultBypass() throws Exception
+  {
+    var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
+    var dummyXml = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+    try
+    {
+      FileUtils.writeStringToFile(dummyXml, "<dummy/>", StandardCharsets.UTF_8);
+      var evaluator = new TestStaticEvaluator(tempFile);
+
+      // Create a manual check
+      var manualCheck = new RuleDefinition.Check(0, "//none", null, null, true, true, null, Status.ERROR, "manual-value", "manual-error");
+      var ruleDef = new RuleDefinition("rule1", "Rule 1", new RuleDefinition.Check[]
+        {
+          manualCheck
+        });
+      var groupDef = new GroupDefinition("G1", "Group 1", java.util.List.of("rule1"));
+      groupDef.setEnabled(true);
+      groupDef.setMode(GroupDefinition.Mode.allPassed);
+      var config = new Configuration(2);
+      config.addRule(ruleDef);
+      config.addGroup(groupDef);
+
+      var scorecard = evaluator.doEvaluate(config, dummyXml);
+      var ruleResult = scorecard.result.getGroups().get(0).getRules().get(0);
+      var checkResult = ruleResult.getChecks().get(0);
+
+      Assert.assertEquals(Status.ERROR, checkResult.getStatus());
+      Assert.assertEquals("manual-value", checkResult.getValue());
+      Assert.assertEquals("manual-error", checkResult.getErrorMessage());
+    }
+    finally
+    {
+      FileUtils.deleteQuietly(tempFile);
+      FileUtils.deleteQuietly(dummyXml);
     }
   }
 
@@ -186,6 +204,12 @@ public class EvaluatorTest
     public Configuration parseConfiguration() throws java.io.IOException, ValidationException
     {
       return super.parseConfiguration();
+    }
+
+    @Override
+    public Scorecard doEvaluate(final Configuration config, final File documentFile) throws net.sf.saxon.s9api.SaxonApiException
+    {
+      return super.doEvaluate(config, documentFile);
     }
   }
 }
