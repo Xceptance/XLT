@@ -19,7 +19,7 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
 import com.thoughtworks.xstream.converters.enums.EnumToStringConverter;
 
 @XStreamConverter(EnumToStringConverter.class)
-enum Status
+public enum Status
 {
     SKIPPED,
     PASSED,
@@ -65,12 +65,11 @@ enum Status
     }
 
     /**
-     * Returns the negated status of this status (PASSED &rarr; FAILED; FAILED &rarr; PASSED; SKIPPED and ERROR stay as
-     * is).
+     * Returns the negated status of this status (PASSED &rarr; FAILED; FAILED &rarr; PASSED; SKIPPED and ERROR stay as is).
      * 
      * @return this status negated
      */
-    Status negate()
+    public Status negate()
     {
         if (isPassed())
         {

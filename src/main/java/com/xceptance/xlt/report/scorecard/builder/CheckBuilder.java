@@ -1,6 +1,7 @@
 package com.xceptance.xlt.report.scorecard.builder;
 
 import com.xceptance.xlt.report.scorecard.RuleDefinition.Check;
+import com.xceptance.xlt.report.scorecard.Status;
 
 /**
  * Builder for {@link Check}.
@@ -18,6 +19,14 @@ public class CheckBuilder
     private boolean displayValue = true;
 
     private int index = 0;
+
+    private String formatter;
+
+    private Status manualStatus;
+
+    private String manualValue;
+
+    private String manualErrorMessage;
 
     public void selector(String selector)
     {
@@ -44,6 +53,26 @@ public class CheckBuilder
         this.displayValue = displayValue;
     }
 
+    public void formatter(String formatter)
+    {
+        this.formatter = formatter;
+    }
+
+    public void status(String status)
+    {
+        this.manualStatus = Status.valueOf(status.toUpperCase());
+    }
+
+    public void value(String value)
+    {
+        this.manualValue = value;
+    }
+
+    public void message(String message)
+    {
+        this.manualErrorMessage = message;
+    }
+
     void index(int index)
     {
         this.index = index;
@@ -51,6 +80,7 @@ public class CheckBuilder
 
     public Check build()
     {
-        return new Check(index, selector, selectorId, condition, enabled, displayValue);
+        return new Check(index, selector, selectorId, condition, enabled, displayValue, formatter, manualStatus, manualValue,
+                         manualErrorMessage);
     }
 }
