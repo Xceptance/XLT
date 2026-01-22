@@ -28,6 +28,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 @XStreamAlias("scorecard")
 public class Scorecard
@@ -51,6 +52,9 @@ public class Scorecard
         private String error;
 
         private String rating;
+
+        @XStreamImplicit(itemFieldName = "log")
+        private List<String> logs;
 
         public String getError()
         {
@@ -129,6 +133,20 @@ public class Scorecard
         void setRating(final String rating)
         {
             this.rating = rating;
+        }
+
+        public List<String> getLogs()
+        {
+            if (logs == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(logs);
+        }
+
+        void setLogs(final List<String> logs)
+        {
+            this.logs = logs;
         }
 
     }

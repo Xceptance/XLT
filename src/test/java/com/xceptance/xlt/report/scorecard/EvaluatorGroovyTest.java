@@ -1,6 +1,7 @@
 package com.xceptance.xlt.report.scorecard;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -212,6 +213,53 @@ public class EvaluatorGroovyTest
         finally
         {
             FileUtils.deleteQuietly(tempFile);
+        }
+    }
+
+    @Test
+    public void testLogging() throws Exception
+    {
+        var groovy = """
+            log.info("Info message")
+            log.warn("Warn message")
+            log.error("Error message")
+
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    checks {
+                        check {
+                            selector '//foo'
+                            condition 'exists'
+                        }
+                    }
+                }
+            }
+            return builder
+            """;
+
+        var tempFile = java.nio.file.Files.createTempFile("scorecard-logging", ".groovy").toFile();
+        var xmlFile = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(xmlFile, "<foo/>", StandardCharsets.UTF_8);
+
+            var proc = new Processor(false);
+            var evaluator = new GroovyEvaluator(tempFile, proc);
+
+            var scorecard = evaluator.evaluate(xmlFile);
+            List<String> logs = scorecard.result.getLogs();
+
+            Assert.assertEquals(3, logs.size());
+            Assert.assertEquals("[INFO] Info message", logs.get(0));
+            Assert.assertEquals("[WARN] Warn message", logs.get(1));
+            Assert.assertEquals("[ERROR] Error message", logs.get(2));
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
         }
     }
 
