@@ -155,7 +155,7 @@ builder.rules {
 }
 ```
 
-When a `status` is provided, the `selector` and `condition` are ignored, and the check result is set exactly as specified.
+When a `status` is provided, the `selector`, `condition` and `formatter` are ignored, and the check result is set exactly as specified.
 
 ## DSL Reference
 
