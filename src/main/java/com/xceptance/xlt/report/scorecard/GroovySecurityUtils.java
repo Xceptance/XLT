@@ -20,7 +20,8 @@ public class GroovySecurityUtils
 
         // Imports
         List<String> starImports = Arrays.asList("java.util", "java.math", "java.text", "com.xceptance.xlt.report.scorecard.builder",
-                                                 "com.xceptance.xlt.report.scorecard");
+                                                 "com.xceptance.xlt.report.scorecard",
+                                                 "com.xceptance.xlt.report.scorecard.ScorecardLogger");
         secure.setStarImportsWhitelist(starImports);
 
         // allow static imports if needed, for now none

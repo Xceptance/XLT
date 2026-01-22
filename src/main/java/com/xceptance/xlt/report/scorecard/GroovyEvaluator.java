@@ -33,6 +33,8 @@ public class GroovyEvaluator extends AbstractEvaluator
         super(configFile, processor);
     }
 
+    private Binding binding;
+
     @Override
     public Scorecard evaluate(final File documentFile)
     {
@@ -57,10 +59,13 @@ public class GroovyEvaluator extends AbstractEvaluator
         final CompilerConfiguration config = new CompilerConfiguration();
         config.addCompilationCustomizers(GroovySecurityUtils.createSecureCustomizer());
 
-        final Binding binding = new Binding();
+        binding = new Binding();
         binding.setVariable("xpath", new ScorecardData(document, compiler));
         binding.setVariable("properties", new ScorecardProperties());
         binding.setVariable("builder", new ScorecardBuilder());
+
+        final ScorecardLogger logger = new ScorecardLogger();
+        binding.setVariable("log", logger);
 
         final GroovyShell shell = new GroovyShell(binding, config);
 
@@ -121,6 +126,12 @@ public class GroovyEvaluator extends AbstractEvaluator
                 erroneousGroups.add(group);
             }
             result.addGroup(group);
+        }
+
+        final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
+        if (logger != null && !logger.getLogs().isEmpty())
+        {
+            result.setLogs(logger.getLogs());
         }
 
         if (!erroneousGroups.isEmpty())
