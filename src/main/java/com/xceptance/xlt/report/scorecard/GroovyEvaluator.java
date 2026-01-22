@@ -38,6 +38,7 @@ public class GroovyEvaluator extends AbstractEvaluator
     @Override
     public Scorecard evaluate(final File documentFile)
     {
+        Scorecard scorecard = null;
         try
         {
             final XdmNode docNode = processor.newDocumentBuilder().build(documentFile);
@@ -45,12 +46,24 @@ public class GroovyEvaluator extends AbstractEvaluator
             xpathCompiler.setUnprefixedElementMatchingPolicy(UnprefixedElementMatchingPolicy.DEFAULT_NAMESPACE);
 
             final Configuration config = parseGroovyConfiguration(docNode, xpathCompiler);
-            return doEvaluate(config, docNode, xpathCompiler);
+            scorecard = doEvaluate(config, docNode, xpathCompiler);
         }
         catch (final Exception ex)
         {
-            return Scorecard.error(ex);
+            scorecard = Scorecard.error(ex);
         }
+
+        // Always attach logs if we have them, even on error
+        if (binding != null)
+        {
+            final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
+            if (logger != null && !logger.getLogs().isEmpty())
+            {
+                scorecard.result.setLogs(logger.getLogs());
+            }
+        }
+
+        return scorecard;
     }
 
     protected Configuration parseGroovyConfiguration(final XdmNode document, final XPathCompiler compiler)
@@ -92,6 +105,7 @@ public class GroovyEvaluator extends AbstractEvaluator
         }
         catch (final Exception e)
         {
+            logger.error("Failed to evaluate Groovy configuration", e);
             throw new ValidationException("Failed to evaluate Groovy configuration: " + e.getMessage(), e);
         }
     }

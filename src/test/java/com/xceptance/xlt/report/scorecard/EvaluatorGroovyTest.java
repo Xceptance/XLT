@@ -263,6 +263,40 @@ public class EvaluatorGroovyTest
         }
     }
 
+    @Test
+    public void testExceptionLogging() throws Exception
+    {
+        var groovy = """
+            log.info("Before error")
+            throw new RuntimeException("Hard failure")
+            """;
+
+        var tempFile = java.nio.file.Files.createTempFile("scorecard-exception", ".groovy").toFile();
+        var xmlFile = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(xmlFile, "<foo/>", StandardCharsets.UTF_8);
+
+            var proc = new Processor(false);
+            var evaluator = new GroovyEvaluator(tempFile, proc);
+
+            var scorecard = evaluator.evaluate(xmlFile);
+            List<String> logs = scorecard.result.getLogs();
+
+            // Should have 2 logs: "Before error" and then the error log with stacktrace
+            Assert.assertTrue(logs.size() >= 2);
+            Assert.assertEquals("[INFO] Before error", logs.get(0));
+            Assert.assertTrue(logs.get(1).startsWith("[ERROR] Failed to evaluate Groovy configuration"));
+            Assert.assertTrue(logs.get(1).contains("java.lang.RuntimeException: Hard failure"));
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
+
     // Helper subclass to access protected method
     static class TestEvaluator extends GroovyEvaluator
     {
