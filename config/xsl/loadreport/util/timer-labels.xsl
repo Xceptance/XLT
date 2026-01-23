@@ -14,13 +14,13 @@
 
             <xsl:choose>
                 <!-- 1 label -->
-                <xsl:when test="$count eq 1">
+                <xsl:when test="$count = 1">
                     <xsl:call-template name="label-tag">
                         <xsl:with-param name="text" select="$normalizedText"/>
                     </xsl:call-template>
                 </xsl:when>
                 <!-- 2 labels -->
-                <xsl:when test="$count eq 2">
+                <xsl:when test="$count = 2">
                     <xsl:call-template name="label-tag">
                         <xsl:with-param name="text" select="substring-before($normalizedText, ' ')"/>
                     </xsl:call-template>
@@ -29,7 +29,7 @@
                     </xsl:call-template>
                 </xsl:when>
                 <!-- 3 or more labels -->
-                <xsl:when test="$count ge 3">
+                <xsl:when test="$count &gt;= 3">
                     <!-- show the first two labels -->
                     <xsl:call-template name="label-tag">
                         <xsl:with-param name="text" select="substring-before($normalizedText, ' ')"/>

@@ -34,9 +34,9 @@ import com.xceptance.xlt.report.providers.TimerReport;
 
 /**
  * A {@link LabelingRule} governs the process of labeling report objects. It represents a bundle of criteria a report
- * object must meet to be labeled and defines the new label to apply.
+ * object must meet to be labeled and defines the new labels to apply.
  * 
- * @see TimerReport#label
+ * @see TimerReport#labels
  */
 public class LabelingRule
 {
@@ -62,9 +62,9 @@ public class LabelingRule
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([nl])(?::(.+?))?\\}");
 
     /**
-     * The label to apply if the rule matches.
+     * The new label string to apply if the rule matches.
      */
-    private final String newLabel;
+    private final String newLabels;
 
     /**
      * Whether the next rule should be processed if the current rule applied.
@@ -87,15 +87,15 @@ public class LabelingRule
     private final LabelingRuleCondition[] excludeConditions;
 
     /**
-     * The list of placeholders with info where to insert the data to form a new label.
+     * The list of placeholders with info where to insert the data to form a new label string.
      */
-    private final PlaceholderPosition[] newLabelPlaceholders;
+    private final PlaceholderPosition[] newLabelsPlaceholders;
 
     /**
      * Constructor.
      *
-     * @param newLabel
-     *            the label to add to the report if all conditions match (required)
+     * @param newLabels
+     *            the label string to assign to the report if all conditions match (required)
      * @param typeString
      *            string containing the type codes of all report types this rule should be evaluated for; multiple type
      *            codes must be delimited by comma, semicolon or whitespaces
@@ -112,20 +112,20 @@ public class LabelingRule
      * @throws InvalidLabelingRuleException
      *             if any rule parameter is invalid
      */
-    public LabelingRule(final String newLabel, final String typeString, final String namePattern, final String labelPattern,
+    public LabelingRule(final String newLabels, final String typeString, final String namePattern, final String labelPattern,
                         final boolean stopOnMatch, final String nameExcludePattern, final String labelExcludePattern)
         throws InvalidLabelingRuleException
     {
-        if (StringUtils.isBlank(newLabel))
+        if (StringUtils.isBlank(newLabels))
         {
-            throw new InvalidLabelingRuleException("The 'newLabel' must be provided when creating a labeling rule.");
+            throw new InvalidLabelingRuleException("The 'newLabels' must be provided when creating a labeling rule.");
         }
 
         this.typeCodes = readTypeCodesFromString(typeString);
         this.stopOnMatch = stopOnMatch;
 
         // parse the placeholder positions now (and only once)
-        final var tempPlaceHolderPositions = parsePlaceholderPositions(newLabel);
+        final var tempPlaceHolderPositions = parsePlaceholderPositions(newLabels);
 
         List<LabelingRuleCondition> includeConditions = new ArrayList<>();
         List<LabelingRuleCondition> excludeConditions = new ArrayList<>();
@@ -150,10 +150,10 @@ public class LabelingRule
         this.includeConditions = includeConditions.toArray(new LabelingRuleCondition[includeConditions.size()]);
         this.excludeConditions = excludeConditions.toArray(new LabelingRuleCondition[excludeConditions.size()]);
 
-        this.newLabel = adjustNewLabel(newLabel, tempPlaceHolderPositions);
-        this.newLabelPlaceholders = tempPlaceHolderPositions.toArray(new PlaceholderPosition[tempPlaceHolderPositions.size()]);
+        this.newLabels = adjustNewLabels(newLabels, tempPlaceHolderPositions);
+        this.newLabelsPlaceholders = tempPlaceHolderPositions.toArray(new PlaceholderPosition[tempPlaceHolderPositions.size()]);
 
-        assignConditionsToPlaceholders(this.newLabelPlaceholders);
+        assignConditionsToPlaceholders(this.newLabelsPlaceholders);
 
         // Validate the entire rule set, because we might still have issues
         validateRule();
@@ -220,8 +220,8 @@ public class LabelingRule
     }
 
     /**
-     * Parses the position of the placeholders in the new label field of the rule. Composes a newLabel without the
-     * placeholders for later speed
+     * Parses the position of the placeholders in the "newLabels" field of the rule. Composes a "newLabels" string
+     * without the placeholders for later speed
      *
      * @param labelWithPlaceholders
      *            the label with placeholders
@@ -271,15 +271,15 @@ public class LabelingRule
      * Get us a new label that has no longer any placeholders in it. Instead, the placeholder positions get updated with
      * information where to insert data in the new label.
      *
-     * @param labelWithPlaceholders
-     *            the current label with placeholders
+     * @param labelsWithPlaceholders
+     *            the current label string with placeholders
      * @param positions
      *            a set of already parsed placeholder positions
      * @return the new label clean of placeholders
      */
-    public static String adjustNewLabel(final String labelWithPlaceholders, final List<PlaceholderPosition> positions)
+    public static String adjustNewLabels(final String labelsWithPlaceholders, final List<PlaceholderPosition> positions)
     {
-        final StringBuilder label = new StringBuilder(labelWithPlaceholders);
+        final StringBuilder labels = new StringBuilder(labelsWithPlaceholders);
         int displacement = 0;
 
         // we already reversed the positions, so do it the other way around
@@ -287,8 +287,8 @@ public class LabelingRule
         {
             final PlaceholderPosition pos = positions.get(i);
 
-            // remove the placeholder from the newLabel
-            label.delete(pos.start - displacement, pos.end - displacement);
+            // remove the placeholder from the newLabels
+            labels.delete(pos.start - displacement, pos.end - displacement);
 
             // update the placeholder, it is now different from before because it does not
             // really reflect room anymore, rather a position
@@ -298,7 +298,7 @@ public class LabelingRule
             displacement += pos.length;
         }
 
-        return label.toString();
+        return labels.toString();
     }
 
     /**
@@ -317,15 +317,6 @@ public class LabelingRule
             return ReturnState.CONTINUE;
         }
 
-        // return if the report doesn't match all include conditions
-        for (final LabelingRuleCondition includeCondition : includeConditions)
-        {
-            if (!includeCondition.apply(report))
-            {
-                return ReturnState.CONTINUE;
-            }
-        }
-
         // return if the report matches any of the exclude conditions
         for (final LabelingRuleCondition excludeCondition : excludeConditions)
         {
@@ -335,14 +326,23 @@ public class LabelingRule
             }
         }
 
+        // return if the report doesn't match all include conditions
+        for (final LabelingRuleCondition includeCondition : includeConditions)
+        {
+            if (!includeCondition.apply(report))
+            {
+                return ReturnState.CONTINUE;
+            }
+        }
+
         // anything to do?
-        if (newLabelPlaceholders.length > 0)
+        if (newLabelsPlaceholders.length > 0)
         {
             final StringBuilder result = new StringBuilder(50);
-            result.append(newLabel);
+            result.append(newLabels);
 
-            // search as long as there are placeholders in the label
-            for (final PlaceholderPosition placeholder : newLabelPlaceholders)
+            // search as long as there are placeholders in the label string
+            for (final PlaceholderPosition placeholder : newLabelsPlaceholders)
             {
                 final LabelingRuleCondition condition = placeholder.condition;
 
@@ -353,13 +353,13 @@ public class LabelingRule
                 result.insert(placeholder.start, replacement);
             }
 
-            // set the final label
-            report.label = result.toString();
+            // set the final label string
+            report.labels = result.toString();
         }
         else
         {
-            // nothing to do, keep the newLabel
-            report.label = newLabel;
+            // nothing to do, keep the newLabels
+            report.labels = newLabels;
         }
 
         return stopOnMatch ? ReturnState.STOP : ReturnState.CONTINUE;
@@ -406,7 +406,7 @@ public class LabelingRule
     {
         final StringBuilder sb = new StringBuilder();
         sb.append("Labeling rule: '");
-        sb.append(newLabel);
+        sb.append(newLabels);
         sb.append("', reportTypes: ");
         sb.append(typeCodes);
         sb.append(", includeConditions: [");
@@ -451,13 +451,13 @@ public class LabelingRule
     }
 
     /**
-     * Return the new label (with all placeholders removed) for testing purposes
+     * Return the "newLabels" string (with all placeholders removed) for testing purposes
      *
-     * @return the new label
+     * @return the "newLabels" string
      */
-    public String getNewLabel()
+    public String getNewLabels()
     {
-        return newLabel;
+        return newLabels;
     }
 
     /**
@@ -510,7 +510,7 @@ public class LabelingRule
      */
     private void validateRule() throws InvalidLabelingRuleException
     {
-        for (final PlaceholderPosition placeholderPosition : newLabelPlaceholders)
+        for (final PlaceholderPosition placeholderPosition : newLabelsPlaceholders)
         {
             for (final LabelingRuleCondition c : includeConditions)
             {

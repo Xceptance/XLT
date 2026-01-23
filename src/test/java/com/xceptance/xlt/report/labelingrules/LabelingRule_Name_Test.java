@@ -34,13 +34,13 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report1 = new RequestReport();
         report1.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report1));
-        assertEquals("test", report1.label);
+        assertEquals("test", report1.labels);
 
         // no match
         final RequestReport report2 = new RequestReport();
         report2.name = "Any Name";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report2));
-        assertEquals(null, report2.label);
+        assertEquals(null, report2.labels);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         // report has no name, so labeling rule cannot match
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report));
-        assertEquals(null, report.label);
+        assertEquals(null, report.labels);
     }
 
     @Test
@@ -67,13 +67,13 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report1 = new RequestReport();
         report1.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report1));
-        assertEquals(null, report1.label);
+        assertEquals(null, report1.labels);
 
         // exclude doesn't match, label is set
         final RequestReport report2 = new RequestReport();
         report2.name = "Any Name";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report2));
-        assertEquals("test", report2.label);
+        assertEquals("test", report2.labels);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         // report has no name, so labeling rule always matches
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("test", report.label);
+        assertEquals("test", report.labels);
     }
 
     @Test
@@ -100,25 +100,25 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report1 = new RequestReport();
         report1.name = "MyNameFoobar";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report1));
-        assertEquals(null, report1.label);
+        assertEquals(null, report1.labels);
 
         // none match
         final RequestReport report2 = new RequestReport();
         report2.name = "Any Name";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report2));
-        assertEquals(null, report2.label);
+        assertEquals(null, report2.labels);
 
         // only include matches
         final RequestReport report3 = new RequestReport();
         report3.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report3));
-        assertEquals("test", report3.label);
+        assertEquals("test", report3.labels);
 
         // only exclude matches
         final RequestReport report4 = new RequestReport();
         report4.name = "Foobar";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report4));
-        assertEquals(null, report4.label);
+        assertEquals(null, report4.labels);
     }
 
     @Test
@@ -131,7 +131,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         // report has no name, so labeling rule cannot match
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report));
-        assertEquals(null, report.label);
+        assertEquals(null, report.labels);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report = new RequestReport();
         report.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("Name:MyName123", report.label);
+        assertEquals("Name:MyName123", report.labels);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report = new RequestReport();
         report.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("Name:MyName123", report.label);
+        assertEquals("Name:MyName123", report.labels);
     }
 
     @Test
@@ -173,7 +173,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report = new RequestReport();
         report.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("Name:MyName123", report.label);
+        assertEquals("Name:MyName123", report.labels);
     }
 
     @Test
@@ -187,7 +187,7 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         final RequestReport report = new RequestReport();
         report.name = "MyName123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("My:123:My", report.label);
+        assertEquals("My:123:My", report.labels);
     }
 
     @Test
@@ -200,6 +200,6 @@ public class LabelingRule_Name_Test extends LabelingRuleTestBase
         // report has no name, so labeling rule cannot match
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report));
-        assertEquals(null, report.label);
+        assertEquals(null, report.labels);
     }
 }

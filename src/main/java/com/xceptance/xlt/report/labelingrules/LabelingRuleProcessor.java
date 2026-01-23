@@ -30,7 +30,7 @@ public class LabelingRuleProcessor
     }
 
     /**
-     * Process the labeling rules and update the label of the given report on match.
+     * Process the labeling rules and update the labels of the given report on match.
      *
      * @param report
      *            the report

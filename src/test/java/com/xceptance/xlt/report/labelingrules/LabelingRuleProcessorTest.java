@@ -41,19 +41,19 @@ public class LabelingRuleProcessorTest
         final RequestReport report1 = new RequestReport();
         report1.name = "xyz-abc-123";
         processor.process(report1);
-        assertEquals("label1 label2 label3", report1.label);
+        assertEquals("label1 label2 label3", report1.labels);
 
         // one rule doesn't match
         final RequestReport report2 = new RequestReport();
         report2.name = "xyz-abc";
         processor.process(report2);
-        assertEquals("label1 label3", report2.label);
+        assertEquals("label1 label3", report2.labels);
 
         // no rule matches
         final RequestReport report3 = new RequestReport();
         report3.name = "foobar";
         processor.process(report3);
-        assertEquals(null, report3.label);
+        assertEquals(null, report3.labels);
     }
 
     @Test
@@ -69,19 +69,19 @@ public class LabelingRuleProcessorTest
         final RequestReport report1 = new RequestReport();
         report1.name = "xyz-abc-123";
         processor.process(report1);
-        assertEquals("label1 label2", report1.label);
+        assertEquals("label1 label2", report1.labels);
 
         // second rule doesn't match; third rule is processed
         final RequestReport report2 = new RequestReport();
         report2.name = "xyz-abc";
         processor.process(report2);
-        assertEquals("label1 label3", report2.label);
+        assertEquals("label1 label3", report2.labels);
 
         // no rules match
         final RequestReport report3 = new RequestReport();
         report3.name = "foobar";
         processor.process(report3);
-        assertEquals(null, report3.label);
+        assertEquals(null, report3.labels);
     }
 
     @Test

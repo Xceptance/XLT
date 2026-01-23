@@ -23,11 +23,11 @@ import org.junit.Test;
 public class LabelingRule_Errors_Test extends LabelingRuleTestBase
 {
     @Test
-    public void noNewLabel()
+    public void noNewLabels()
     {
         final InvalidLabelingRuleException ex = assertThrows(InvalidLabelingRuleException.class,
                                                              () -> new LabelingRule(null, null, null, null, false, null, null));
-        assertEquals("The 'newLabel' must be provided when creating a labeling rule.", ex.getMessage());
+        assertEquals("The 'newLabels' must be provided when creating a labeling rule.", ex.getMessage());
     }
 
     @Test

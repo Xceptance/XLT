@@ -39,12 +39,12 @@ public class LabelingRule_Type_Test extends LabelingRuleTestBase
         // match
         final RequestReport requestReport = new RequestReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(requestReport));
-        assertEquals("test", requestReport.label);
+        assertEquals("test", requestReport.labels);
 
         // no match
         final TransactionReport transactionReport = new TransactionReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(transactionReport));
-        assertEquals(null, transactionReport.label);
+        assertEquals(null, transactionReport.labels);
     }
 
     @Test
@@ -58,17 +58,17 @@ public class LabelingRule_Type_Test extends LabelingRuleTestBase
         // match
         final TransactionReport transactionReport = new TransactionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(transactionReport));
-        assertEquals("test", transactionReport.label);
+        assertEquals("test", transactionReport.labels);
 
         // match
         final ActionReport actionReport = new ActionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(actionReport));
-        assertEquals("test", actionReport.label);
+        assertEquals("test", actionReport.labels);
 
         // no match
         final RequestReport requestReport = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(requestReport));
-        assertEquals(null, requestReport.label);
+        assertEquals(null, requestReport.labels);
     }
 
     @Test
@@ -82,17 +82,17 @@ public class LabelingRule_Type_Test extends LabelingRuleTestBase
         // match
         final TransactionReport transactionReport = new TransactionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(transactionReport));
-        assertEquals("test", transactionReport.label);
+        assertEquals("test", transactionReport.labels);
 
         // match
         final ActionReport actionReport = new ActionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(actionReport));
-        assertEquals("test", actionReport.label);
+        assertEquals("test", actionReport.labels);
 
         // no match
         final RequestReport requestReport = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(requestReport));
-        assertEquals(null, requestReport.label);
+        assertEquals(null, requestReport.labels);
     }
 
     @Test
@@ -106,22 +106,22 @@ public class LabelingRule_Type_Test extends LabelingRuleTestBase
         // match
         final TransactionReport transactionReport = new TransactionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(transactionReport));
-        assertEquals("test", transactionReport.label);
+        assertEquals("test", transactionReport.labels);
 
         // match
         final ActionReport actionReport = new ActionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(actionReport));
-        assertEquals("test", actionReport.label);
+        assertEquals("test", actionReport.labels);
 
         // match
         final RequestReport requestReport = new RequestReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(requestReport));
-        assertEquals("test", requestReport.label);
+        assertEquals("test", requestReport.labels);
 
         // no match
         final PageLoadTimingReport pageLoadTimingReport = new PageLoadTimingReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(pageLoadTimingReport));
-        assertEquals(null, pageLoadTimingReport.label);
+        assertEquals(null, pageLoadTimingReport.labels);
     }
 
     @Test
@@ -136,21 +136,21 @@ public class LabelingRule_Type_Test extends LabelingRuleTestBase
         // match
         final TransactionReport transactionReport = new TransactionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(transactionReport));
-        assertEquals("test", transactionReport.label);
+        assertEquals("test", transactionReport.labels);
 
         // match
         final ActionReport actionReport = new ActionReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(actionReport));
-        assertEquals("test", actionReport.label);
+        assertEquals("test", actionReport.labels);
 
         // match
         final RequestReport requestReport = new RequestReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(requestReport));
-        assertEquals("test", requestReport.label);
+        assertEquals("test", requestReport.labels);
 
         // no match
         final PageLoadTimingReport pageLoadTimingReport = new PageLoadTimingReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(pageLoadTimingReport));
-        assertEquals(null, pageLoadTimingReport.label);
+        assertEquals(null, pageLoadTimingReport.labels);
     }
 }

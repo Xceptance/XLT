@@ -59,9 +59,12 @@ public class TimerReport
     public String name;
 
     /**
-     * The label string.
+     * The string representing all labels assigned to this report. Whitespaces in this string are interpreted as
+     * delimiters between multiple labels (e.g. for visualization purposes in the report). For example, the label string
+     * "checkout" describes just a single label, while "guest checkout" can be interpreted as two labels, "guest" and
+     * "checkout".
      */
-    public String label;
+    public String labels;
 
     /**
      * The number how often the timer has fired.

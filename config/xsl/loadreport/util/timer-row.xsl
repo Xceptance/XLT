@@ -47,10 +47,10 @@
 			<xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
 				<td class="text colgroup1">
 					<xsl:attribute name="data-cell-value">
-						<xsl:value-of select="normalize-space(label)"/>
+						<xsl:value-of select="normalize-space(labels)"/>
 					</xsl:attribute>
 					<xsl:call-template name="timer-labels">
-						<xsl:with-param name="labelString" select="label"/>
+						<xsl:with-param name="labelString" select="labels"/>
 					</xsl:call-template>
 				</td>
 			</xsl:if>

@@ -30,16 +30,16 @@ import com.xceptance.xlt.report.labelingrules.LabelingRule;
 public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGeneratorConfigurationTestBase
 {
     @Test
-    public void readLabelingRules_noRules()
+    public void getLabelingRules_noRules()
     {
         final List<LabelingRule> labelingRules = readReportGeneratorProperties().getLabelingRules();
         assertEquals(0, labelingRules.size());
     }
 
     @Test
-    public void readLabelingRules_minimalRule()
+    public void getLabelingRules_minimalRule()
     {
-        // add a rule with the least number of settings, i.e. only the "newLabel" is configured
+        // add a rule with the least number of settings, i.e. only the "newLabels" is configured
         appendLabelingRuleToProperties("1", "label1", null, null, null, null, null, null);
 
         final List<LabelingRule> labelingRules = readReportGeneratorProperties().getLabelingRules();
@@ -49,7 +49,7 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     }
 
     @Test
-    public void readLabelingRules_singleRule()
+    public void getLabelingRules_singleRule()
     {
         // add a rule with all settings
         appendLabelingRuleToProperties("1", "{l} label1", "A,R", "MyName.*", "^(MyLabel|MyOtherLabel)", false, "Fo+bar", "Any Label");
@@ -61,7 +61,7 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
 
         // Validate new label; placeholders are removed from label
         final LabelingRule rule = labelingRules.get(0);
-        assertEquals(" label1", rule.getNewLabel());
+        assertEquals(" label1", rule.getNewLabels());
 
         // Validate type codes
         assertEquals(Set.of("A", "R"), rule.getTypeCodes());
@@ -85,7 +85,7 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     }
 
     @Test
-    public void readLabelingRules_multipleRules()
+    public void getLabelingRules_multipleRules()
     {
         appendLabelingRuleToProperties("1", "label1", "T", "MyName.*", null, false, null, "Any Label");
         appendLabelingRuleToProperties("2", "{n} label_{l}_123", "A,R,T", null, "^(MyLabel|MyOtherLabel)", true, null, null);
@@ -96,7 +96,7 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
 
         // Validate rule 1
         final LabelingRule rule1 = labelingRules.get(0);
-        assertEquals("label1", rule1.getNewLabel());
+        assertEquals("label1", rule1.getNewLabels());
         assertEquals(Set.of("T"), rule1.getTypeCodes());
         assertEquals(false, rule1.getStopOnMatch());
         assertEquals(1, rule1.getIncludeConditions().length);
@@ -108,7 +108,7 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
 
         // Validate rule 2
         final LabelingRule rule2 = labelingRules.get(1);
-        assertEquals(" label__123", rule2.getNewLabel());
+        assertEquals(" label__123", rule2.getNewLabels());
         assertEquals(Set.of("T", "A", "R"), rule2.getTypeCodes());
         assertEquals(true, rule2.getStopOnMatch());
         // Empty include conditions are kept for the placeholders
@@ -121,7 +121,7 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     }
 
     @Test
-    public void readLabelingRules_indexOrderAndGaps()
+    public void getLabelingRules_indexOrderAndGaps()
     {
         // rule indexes are in random order and have gaps
         appendLabelingRuleToProperties("10", "label1", null, null, null, null, null, null);
@@ -138,42 +138,42 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     }
 
     @Test
-    public void readLabelingRules_error_leadingZeroes()
+    public void getLabelingRules_error_leadingZeroes()
     {
         appendLabelingRuleToProperties("01", "label1", null, null, null, null, null, null);
 
-        final XltException ex = assertThrows(XltException.class, () -> readReportGeneratorProperties());
+        final XltException ex = assertThrows(XltException.class, () -> readReportGeneratorProperties().getLabelingRules());
 
         final StringBuilder expectedMessageBuilder = new StringBuilder();
         expectedMessageBuilder.append("Leading zeros are not allowed in merge or labeling rule indices.\n");
         expectedMessageBuilder.append("Please check your configuration and fix the following properties:\n\t");
-        expectedMessageBuilder.append(ReportGeneratorConfiguration.PROP_LABELING_RULES_PREFIX).append("01.newLabel\n");
+        expectedMessageBuilder.append(ReportGeneratorConfiguration.PROP_LABELING_RULES_PREFIX).append("01.newLabels\n");
 
         assertEquals(expectedMessageBuilder.toString(), ex.getMessage());
     }
 
     @Test
-    public void readLabelingRules_error_invalidRule()
+    public void getLabelingRules_error_invalidRule()
     {
         // invalid name pattern regex
         appendLabelingRuleToProperties("1", "label1", null, "([]-]", null, null, null, null);
 
-        final XltException ex = assertThrows(XltException.class, () -> readReportGeneratorProperties());
+        final XltException ex = assertThrows(XltException.class, () -> readReportGeneratorProperties().getLabelingRules());
         assertEquals("Please check your configuration. At least one labeling rule is invalid and needs to be fixed.", ex.getMessage());
     }
 
     /**
-     * Helper method to assert the configuration of a minimal labeling rule, i.e. a rule with only a "newLabel"
+     * Helper method to assert the configuration of a minimal labeling rule, i.e. a rule with only "newLabels"
      * configured.
      *
      * @param rule
      *            the rule to assert
-     * @param expectedNewLabel
-     *            the expected "newLabel" of the rule
+     * @param expectedNewLabels
+     *            the expected "newLabels" of the rule
      */
-    private void assertMinimalLabelingRule(final LabelingRule rule, final String expectedNewLabel)
+    private void assertMinimalLabelingRule(final LabelingRule rule, final String expectedNewLabels)
     {
-        assertEquals(expectedNewLabel, rule.getNewLabel());
+        assertEquals(expectedNewLabels, rule.getNewLabels());
         assertEquals(Set.of("T", "A", "R"), rule.getTypeCodes());
         assertEquals(true, rule.getStopOnMatch());
         assertEquals(0, rule.getIncludeConditions().length);
@@ -183,16 +183,16 @@ public class ReportGeneratorConfiguration_LabelingRules_Test extends ReportGener
     /**
      * Helper method for appending all properties of a labeling rule to the "reportgenerator.properties" file.
      */
-    private void appendLabelingRuleToProperties(final String index, final String newLabel, final String types, final String namePattern,
+    private void appendLabelingRuleToProperties(final String index, final String newLabels, final String types, final String namePattern,
                                                 final String labelPattern, final Boolean stopOnMatch, final String nameExcludePattern,
                                                 final String labelExcludePattern)
     {
         final List<String> lines = new ArrayList<>();
         final String prefix = ReportGeneratorConfiguration.PROP_LABELING_RULES_PREFIX + index + ".";
 
-        if (newLabel != null)
+        if (newLabels != null)
         {
-            lines.add(prefix + "newLabel = " + newLabel);
+            lines.add(prefix + "newLabels = " + newLabels);
         }
         if (types != null)
         {

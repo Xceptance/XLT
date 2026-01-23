@@ -32,28 +32,28 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // match
         final RequestReport report1 = new RequestReport();
-        report1.label = "MyLabel123";
+        report1.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report1));
-        assertEquals("test", report1.label);
+        assertEquals("test", report1.labels);
 
         // no match
         final RequestReport report2 = new RequestReport();
-        report2.label = "Any Label";
+        report2.labels = "Any Label";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report2));
-        assertEquals("Any Label", report2.label);
+        assertEquals("Any Label", report2.labels);
     }
 
     @Test
-    public void include_noExistingLabel()
+    public void include_noExistingLabels()
     {
         final LabelingRule rule = getLabelLabelingRule("test", "MyLabel.*", null);
         assertEquals(1, rule.getIncludeConditions().length);
         assertEquals(0, rule.getExcludeConditions().length);
 
-        // report has no existing label, so labeling rule cannot match
+        // report has no existing labels, so labeling rule cannot match
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report));
-        assertEquals(null, report.label);
+        assertEquals(null, report.labels);
     }
 
     @Test
@@ -65,28 +65,28 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // exclude rule matches, label isn't updated
         final RequestReport report1 = new RequestReport();
-        report1.label = "MyLabel123";
+        report1.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report1));
-        assertEquals("MyLabel123", report1.label);
+        assertEquals("MyLabel123", report1.labels);
 
         // exclude rule doesn't match, label is updated
         final RequestReport report2 = new RequestReport();
-        report2.label = "Any Label";
+        report2.labels = "Any Label";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report2));
-        assertEquals("test", report2.label);
+        assertEquals("test", report2.labels);
     }
 
     @Test
-    public void exclude_noExistingLabel()
+    public void exclude_noExistingLabels()
     {
         final LabelingRule rule = getLabelLabelingRule("test", null, "MyLabel.*");
         assertEquals(0, rule.getIncludeConditions().length);
         assertEquals(1, rule.getExcludeConditions().length);
 
-        // report has no existing label, so labeling rule always matches
+        // report has no existing labels, so labeling rule always matches
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("test", report.label);
+        assertEquals("test", report.labels);
     }
 
     @Test
@@ -98,40 +98,40 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // both match, exclude wins
         final RequestReport report1 = new RequestReport();
-        report1.label = "MyLabelFoobar";
+        report1.labels = "MyLabelFoobar";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report1));
-        assertEquals("MyLabelFoobar", report1.label);
+        assertEquals("MyLabelFoobar", report1.labels);
 
         // no match
         final RequestReport report2 = new RequestReport();
-        report2.label = "Any Label";
+        report2.labels = "Any Label";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report2));
-        assertEquals("Any Label", report2.label);
+        assertEquals("Any Label", report2.labels);
 
         // only include matches
         final RequestReport report3 = new RequestReport();
-        report3.label = "MyLabel123";
+        report3.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report3));
-        assertEquals("test", report3.label);
+        assertEquals("test", report3.labels);
 
         // only exclude matches
         final RequestReport report4 = new RequestReport();
-        report4.label = "Foobar";
+        report4.labels = "Foobar";
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report4));
-        assertEquals("Foobar", report4.label);
+        assertEquals("Foobar", report4.labels);
     }
 
     @Test
-    public void include_exclude_noExistingLabel()
+    public void include_exclude_noExistingLabels()
     {
         final LabelingRule rule = getLabelLabelingRule("test", "MyLabel.*", "Fo+bar");
         assertEquals(1, rule.getIncludeConditions().length);
         assertEquals(1, rule.getExcludeConditions().length);
 
-        // report has no existing label, so labeling rule cannot match
+        // report has no existing labels, so labeling rule cannot match
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report));
-        assertEquals(null, report.label);
+        assertEquals(null, report.labels);
     }
 
     @Test
@@ -143,9 +143,9 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // match
         final RequestReport report = new RequestReport();
-        report.label = "MyLabel123";
+        report.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("Label:MyLabel123", report.label);
+        assertEquals("Label:MyLabel123", report.labels);
     }
 
     @Test
@@ -157,9 +157,9 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // match
         final RequestReport report = new RequestReport();
-        report.label = "MyLabel123";
+        report.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("Label:MyLabel123", report.label);
+        assertEquals("Label:MyLabel123", report.labels);
     }
 
     @Test
@@ -171,9 +171,9 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // match
         final RequestReport report = new RequestReport();
-        report.label = "MyLabel123";
+        report.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("Label:MyLabel123", report.label);
+        assertEquals("Label:MyLabel123", report.labels);
     }
 
     @Test
@@ -185,21 +185,21 @@ public class LabelingRule_Label_Test extends LabelingRuleTestBase
 
         // match
         final RequestReport report = new RequestReport();
-        report.label = "MyLabel123";
+        report.labels = "MyLabel123";
         assertEquals(LabelingRule.ReturnState.STOP, rule.process(report));
-        assertEquals("My:123:My", report.label);
+        assertEquals("My:123:My", report.labels);
     }
 
     @Test
-    public void placeholderButNoExistingLabel()
+    public void placeholderButNoExistingLabels()
     {
         final LabelingRule rule = getLabelLabelingRule("Label:{l}", "MyLabel.*", null);
         assertEquals(1, rule.getIncludeConditions().length);
         assertEquals(0, rule.getExcludeConditions().length);
 
-        // report has no existing label, so labeling rule cannot match
+        // report has no existing labels, so labeling rule cannot match
         final RequestReport report = new RequestReport();
         assertEquals(LabelingRule.ReturnState.CONTINUE, rule.process(report));
-        assertEquals(null, report.label);
+        assertEquals(null, report.labels);
     }
 }

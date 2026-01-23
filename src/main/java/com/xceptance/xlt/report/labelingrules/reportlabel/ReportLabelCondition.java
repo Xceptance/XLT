@@ -42,7 +42,7 @@ public class ReportLabelCondition extends LabelingRuleCondition
     @Override
     protected CharSequence getText(final TimerReport report)
     {
-        return report.label;
+        return report.labels;
     }
 
     /**

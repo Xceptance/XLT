@@ -270,8 +270,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final File homeDirectory;
 
-    private final List<LabelingRule> labelingRules;
-
     private final List<String> outputFileNames;
 
     private final List<Class<? extends ReportProvider>> reportProviderClasses;
@@ -568,7 +566,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         runtimeIntervalBoundaries = readRuntimeIntervalBoundaries();
         runtimePercentiles = readRuntimePercentiles();
 
-        labelingRules = readLabelingRules();
         requestTableColorization = readRequestTableColorization(runtimeIntervalBoundaries, runtimePercentiles);
 
         slowestRequestsPerBucket = getIntProperty(PROP_SLOWEST_REQUESTS_PER_BUCKET, 20);
@@ -887,11 +884,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public double[] getRuntimePercentiles()
     {
         return runtimePercentiles;
-    }
-
-    public List<LabelingRule> getLabelingRules()
-    {
-        return labelingRules;
     }
 
     public List<RequestTableColorization> getRequestTableColorizations()
@@ -1714,11 +1706,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Reads and returns the configured labeling rules.
+     * Reads the configured labeling rules and returns a new instance.
      *
      * @return the list of labeling rules
      */
-    protected List<LabelingRule> readLabelingRules()
+    public List<LabelingRule> getLabelingRules()
     {
         final List<LabelingRule> labelingRules = new ArrayList<>();
 
@@ -1728,7 +1720,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String basePropertyName = PROP_LABELING_RULES_PREFIX + i;
 
             // general stuff
-            final String newLabel = getStringProperty(basePropertyName + ".newLabel", "");
+            final String newLabels = getStringProperty(basePropertyName + ".newLabels", "");
             final String typeString = getStringProperty(basePropertyName + ".types", "");
             final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
 
@@ -1743,7 +1735,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // create and validate the rules
             try
             {
-                final LabelingRule rule = new LabelingRule(newLabel, typeString, namePattern, labelPattern, stopOnMatch, nameExcludePattern,
+                final LabelingRule rule = new LabelingRule(newLabels, typeString, namePattern, labelPattern, stopOnMatch, nameExcludePattern,
                                                            labelExcludePattern);
                 labelingRules.add(rule);
             }
