@@ -53,13 +53,18 @@ public class GroovyEvaluator extends AbstractEvaluator
             scorecard = Scorecard.error(ex);
         }
 
-        // Always attach logs if we have them, even on error
-        if (binding != null)
+        // If we have an error and logs, bundle them together
+        if (binding != null && scorecard != null)
         {
             final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
             if (logger != null && !logger.getLogs().isEmpty())
             {
-                scorecard.result.setLogs(logger.getLogs());
+                // If there's already an error, update it with the log
+                if (!scorecard.result.getErrors().isEmpty())
+                {
+                    final String logText = String.join("\n", logger.getLogs());
+                    scorecard.result.updateFirstErrorLog(logText);
+                }
             }
         }
 
@@ -143,10 +148,7 @@ public class GroovyEvaluator extends AbstractEvaluator
         }
 
         final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
-        if (logger != null && !logger.getLogs().isEmpty())
-        {
-            result.setLogs(logger.getLogs());
-        }
+        final String logText = (logger != null && !logger.getLogs().isEmpty()) ? String.join("\n", logger.getLogs()) : null;
 
         if (!erroneousGroups.isEmpty())
         {
@@ -160,7 +162,7 @@ public class GroovyEvaluator extends AbstractEvaluator
                                                                   .collect(Collectors.joining("\n\n"));
                 if (StringUtils.isNotBlank(errorMessagesJoined))
                 {
-                    result.setError(errorMessagesJoined);
+                    result.addError(errorMessagesJoined, logText);
                 }
             }
         }

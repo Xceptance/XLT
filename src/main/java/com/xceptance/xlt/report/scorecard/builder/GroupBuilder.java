@@ -68,9 +68,14 @@ public class GroupBuilder
         this.mode = mode;
     }
 
-    public void rules(List<String> rules)
+    public void rules(List<?> rules)
     {
-        this.ruleIds.addAll(rules);
+        // Convert any GString instances to String to avoid ClassCastException
+        // when Groovy string interpolation is used
+        for (Object rule : rules)
+        {
+            this.ruleIds.add(rule.toString());
+        }
     }
 
     public void messages(@DelegatesTo(MessagesBuilder.class) Closure<?> closure)

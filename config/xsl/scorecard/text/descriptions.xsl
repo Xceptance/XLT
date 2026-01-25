@@ -22,8 +22,14 @@
         </xsl:call-template>
     </p>
     <div id="more-{$gid}" class="more">
-        <p>Based on the total score and the maximum possible score, a percentage score is calculated that serves as the final verdict for the test.</p>
-        <p>This summary page gives you the insight you need into the assessment and helps you to derive recommendations for next steps. It also helps you identifying areas for improvement.</p>
+        <p>
+            Based on the total score and the maximum possible score, a percentage score is calculated that serves as the final
+            verdict for the test.
+        </p>
+        <p>
+            This summary page gives you the insight you need into the assessment and helps you to derive recommendations for next steps. 
+            It also helps you identifying areas for improvement.
+        </p>
     </div>
 </div>
 </xsl:template>

@@ -43,8 +43,8 @@ public class RatingDefinition
     @XStreamAsAttribute
     private final boolean failsTest;
 
-    RatingDefinition(final String id, final String name, final String description, final double value, final boolean enabled,
-                     final boolean failsTest)
+    public RatingDefinition(final String id, final String name, final String description, final double value, final boolean enabled,
+                            final boolean failsTest)
     {
         this.id = Objects.requireNonNull(id, "Rating ID must not be null");
         this.name = name;

@@ -4,7 +4,7 @@
 <xsl:template name="scorecard">
     <xsl:param name="rootNode" />
 
-    <xsl:variable name="error" select="$rootNode/error" />
+    <xsl:variable name="error" select="$rootNode/error[1]" />
     <xsl:variable name="ratingId" select="$rootNode/rating" />
     <xsl:variable name="config" select="$rootNode/preceding-sibling::configuration" />
     <xsl:variable name="ratingDefinition" select="$config/ratings/rating[@id=$ratingId]" />
@@ -16,10 +16,17 @@
             <xsl:call-template name="description-scorecard" />
 
             <xsl:choose>
-                <xsl:when test="string-length($error) &gt; 0">
+                <xsl:when test="$error">
                     <div class="error">
                        The test could not be evaluated for the following reason:
-                       <pre><xsl:value-of select="$error" /></pre>
+                       <pre>
+                            <xsl:value-of select="$error/message" />
+                       </pre>
+                       <xsl:if test="string-length($error/log) &gt; 0">
+                           <pre>
+                                <xsl:value-of select="$error/log" />
+                           </pre>
+                       </xsl:if>
                     </div><!-- /error -->
                 </xsl:when>
                 <xsl:otherwise>

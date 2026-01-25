@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error">
+    <Appenders>
+        <RollingFile name="File" fileName="${sys:com.xceptance.xlt.agent.home}/results/agent.xml.log" filePattern="${sys:com.xceptance.xlt.agent.home}/results/agent-%i.log">
+            <PatternLayout>
+                <Pattern>[%d{yyyy/MM/dd-HH:mm:ss,SSS}] %-5p [%t] %c - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="9"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.htmlunit.IncorrectnessListenerImpl" level="off" />
+        <Logger name="org.htmlunit.DefaultCssErrorHandler" level="off" />
+        <Logger name="org.htmlunit.javascript.StrictErrorReporter" level="off" />
+        <Logger name="org.htmlunit.javascript.host.css.CSSRule" level="off" />
+        <Root level="error">
+            <AppenderRef ref="File"/>
+        </Root>
+        <Logger name="runtime" level="warn" additivity="false">
+            <AppenderRef ref="File"/>
+        </Logger>
+        <Logger name="com.xceptance" level="error" additivity="false">
+            <AppenderRef ref="File"/>
+        </Logger>
+        <Logger name="org.htmlunit" level="error" additivity="false">
+            <AppenderRef ref="File"/>
+        </Logger>
+        <Logger name="org.apache.http" level="error" additivity="false">
+            <AppenderRef ref="File"/>
+        </Logger>
+        <Logger name="org.apache.http.wire" level="error" additivity="false">
+            <AppenderRef ref="File"/>
+        </Logger>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="generator" content="XLT">
+      <title>XLT Report - Custom Values</title>
+      <link href="css/default.css" type="text/css" rel="stylesheet">
+      <link href="css/print.css" type="text/css" rel="stylesheet" media="print"><script src="js/jquery-3.6.4.min.js"></script><script src="js/jquery.hoverIntent-1.10.2.min.js"></script><script src="js/jquery.scrollTo-2.1.3.min.js"></script><script src="js/tabs.js"></script><script src="js/table.js"></script><script src="js/crosshair.js"></script><script src="js/echarts-6.0.0.min.js"></script><link rel="icon" href="images/favicon.png" sizes="any">
+      <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+      <style type="text/css">
+            .chart-group .chart img, .chart-group .echart {
+                width: 900px;
+                height: 300px;
+            }
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
+                height: 450px;
+            }
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
+                height: 690px;
+            }
+        </style>
+   </head>
+   <body id="loadtestreport">
+      <div id="container">
+         <div id="content">
+            <nav><input class="hamburger-btn" type="checkbox" id="hamburger-btn"><label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label><ul class="nav-menu">
+                  <li><a href="index.html">Overview</a><ul>
+                        <li><a href="index.html#load-profile">Load Profile</a></li>
+                        <li><a href="index.html#comment">Test Comment</a></li>
+                        <li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#agents">Agent Summary</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+                        <li><a href="index.html#network">Network</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="transactions.html">Transactions</a></li>
+                  <li><a href="actions.html">Actions</a></li>
+                  <li><a href="requests.html">Requests</a><ul>
+                        <li><a href="slowest-requests.html">Slowest Requests</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="network.html">Network</a><ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#ip-addresses">IP Addresses</a></li>
+                        <li><a href="network.html#http-request-methods">HTTP Request Methods</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="page-load-timings.html">Page Load Timings</a></li>
+                  <li><a href="web-vitals.html">Web Vitals</a></li>
+                  <li><a href="custom-timers.html">Custom Timers</a></li>
+                  <li><a href="custom-values.html">Custom Data</a><ul>
+                        <li><a href="custom-values.html#custom-values-summary">Custom Values</a></li>
+                        <li><a href="custom-values.html#custom-data-logs-summary">Custom Data Logs</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="external.html">External Data</a></li>
+                  <li><a href="errors.html">Errors</a><ul>
+                        <li><a href="errors.html#request-errors">Request Errors</a></li>
+                        <li><a href="errors.html#transaction-error-overview">Transaction Error Overview</a></li>
+                        <li><a href="errors.html#transaction-error-details">Transaction Error Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="events.html">Events</a><ul>
+                        <li><a href="events.html#event-overview">Overview</a></li>
+                        <li><a href="events.html#event-details">Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="agents.html">Agents</a></li>
+                  <li><a href="configuration.html">Configuration</a><ul>
+                        <li><a href="configuration.html#load-profile">Load Profile</a></li>
+                        <li><a href="configuration.html#configuration">Load Test Settings</a></li>
+                        <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="scorecard.html">Scorecard</a></li>
+               </ul>
+            </nav>
+            <header id="header">
+               <div class="brand"><img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo"></div>
+               <div class="title">
+                  <h1>Performance Test Report</h1>
+                  <div>
+                     <div class="ltinfo"><span class="key">Organization:</span><span class="value">test2</span></div>
+                     <div class="ltinfo"><span class="key">Project:</span><span class="value">doc-load</span></div>
+                     <div class="ltinfo"><span class="key">Load Test:</span><span class="value">#41</span></div>
+                     <div class="ltinfo"><span class="key">Result:</span><span class="value">#1</span></div>
+                     <div class="ltinfo"><span class="key">Report:</span><span class="value">#1</span></div>
+                  </div>
+               </div>
+            </header>
+            <div id="data-content">
+               <div class="section" id="custom-values-summary">
+                  <h2>Custom Values</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           The custom values include all values that have been recorded by your custom samplers.
+                           </p>
+                        <p>*) Numbers may be projected</p>
+                     </div>
+                     <table class="c-tab-content table-autosort:0">
+                        <thead>
+                           <tr>
+                              <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
+                                 Value Name
+                                 <br><input class="filter" placeholder="Enter filter substrings" title=""><button class="clear-input" type="clear" title="Click to clear">✕</button></th>
+                              <th colspan="4">Count</th>
+                              <th colspan="4" class="colgroup1">Stats</th>
+                              <th colspan="4">Percentiles</th>
+                           </tr>
+                           <tr>
+                              <th class="table-sortable:numeric" id="sortByCountTotal">Total</th>
+                              <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                              <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                              <th class="table-sortable:numeric" id="sortByCountPerDay">1/d*</th>
+                              <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByStatsMean">Mean</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByStatsMin">Min.</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByStatsMax">Max.</th>
+                              <th class="table-sortable:numeric colgroup1" title="The standard deviation." id="sortByStatsDev">Dev.</th>
+                              <th class="table-sortable:numeric" title="The nth percentile of the data series." id="sortByPercentile50">P50</th>
+                              <th class="table-sortable:numeric" title="The nth percentile of the data series." id="sortByPercentile95">P95</th>
+                              <th class="table-sortable:numeric" title="The nth percentile of the data series." id="sortByPercentile99">P99</th>
+                              <th class="table-sortable:numeric" title="The nth percentile of the data series." id="sortByPercentile99.9">P99.9</th>
+                           </tr>
+                        </thead>
+                        <tfoot>
+                           <tr>
+                              <td class="colgroup1"></td>
+                              <td class=""></td>
+                              <td class=""></td>
+                              <td class=""></td>
+                              <td class=""></td>
+                              <td class="colgroup1"></td>
+                              <td class="colgroup1"></td>
+                              <td class="colgroup1"></td>
+                              <td class="colgroup1"></td>
+                              <td class=""></td>
+                              <td class=""></td>
+                              <td class=""></td>
+                              <td class=""></td>
+                           </tr>
+                           <tr class="totals filtered" style="display: none;"></tr>
+                        </tfoot>
+                        <tbody class="table-nosort">
+                           <tr>
+                              <td colspan="13" class="no-data">No data available</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+               <div class="section" id="custom-data-logs-summary">
+                  <h2>Custom Data Logs</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           The custom data logs contain custom data collected by test scripts.
+                           </p>
+                     </div>
+                     <table class="c-tab-content table-autosort:0">
+                        <thead>
+                           <tr>
+                              <th>Scope</th>
+                              <th>Size</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                              <td colspan="2" class="no-data">No data available</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               Copyright (c) 2005-2025 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br>
+               Created with
+               <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">?.?.?</span></a></footer>
+         </div>
+      </div><script type="text/javascript" src="js/xlt.js"></script></body>
+</html>

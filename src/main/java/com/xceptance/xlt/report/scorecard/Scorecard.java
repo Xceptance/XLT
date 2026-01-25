@@ -33,6 +33,45 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
 @XStreamAlias("scorecard")
 public class Scorecard
 {
+    @XStreamAlias("error")
+    public static class Error
+    {
+        private String message;
+
+        private String log;
+
+        public Error()
+        {
+            // Default constructor for XStream
+        }
+
+        public Error(final String message, final String log)
+        {
+            this.message = message;
+            this.log = log;
+        }
+
+        public String getMessage()
+        {
+            return message;
+        }
+
+        public String getLog()
+        {
+            return log;
+        }
+
+        void setMessage(final String message)
+        {
+            this.message = message;
+        }
+
+        void setLog(final String log)
+        {
+            this.log = log;
+        }
+    }
+
     public static class Result
     {
         @XStreamAsAttribute
@@ -49,21 +88,50 @@ public class Scorecard
 
         private List<Group> groups;
 
-        private String error;
+        @XStreamImplicit(itemFieldName = "error")
+        private List<Error> errors;
 
         private String rating;
 
-        @XStreamImplicit(itemFieldName = "log")
-        private List<String> logs;
-
+        /**
+         * Returns the first error message for backward compatibility.
+         * 
+         * @return the first error message or null if no errors
+         */
         public String getError()
         {
-            return error;
+            if (errors == null || errors.isEmpty())
+            {
+                return null;
+            }
+            return errors.get(0).getMessage();
         }
 
-        void setError(final String error)
+        public List<Error> getErrors()
         {
-            this.error = Objects.requireNonNull(error);
+            if (errors == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(errors);
+        }
+
+        void addError(final String message, final String log)
+        {
+            if (errors == null)
+            {
+                errors = new LinkedList<>();
+            }
+            errors.add(new Error(message, log));
+        }
+
+        void updateFirstErrorLog(final String log)
+        {
+            if (errors != null && !errors.isEmpty())
+            {
+                final Error firstError = errors.get(0);
+                firstError.setLog(log);
+            }
         }
 
         public Integer getPoints()
@@ -135,20 +203,6 @@ public class Scorecard
             this.rating = rating;
         }
 
-        public List<String> getLogs()
-        {
-            if (logs == null)
-            {
-                return Collections.emptyList();
-            }
-            return Collections.unmodifiableList(logs);
-        }
-
-        void setLogs(final List<String> logs)
-        {
-            this.logs = logs;
-        }
-
     }
 
     public final Configuration configuration;
@@ -165,7 +219,8 @@ public class Scorecard
     {
         final Scorecard r = new Scorecard(null);
         final String errMsg = ExceptionUtils.stream(t).map(Throwable::getMessage).collect(Collectors.joining(" -> "));
-        r.result.setError(errMsg);
+        final String stackTrace = ExceptionUtils.getStackTrace(t);
+        r.result.addError(errMsg, stackTrace);
         return r;
     }
 
