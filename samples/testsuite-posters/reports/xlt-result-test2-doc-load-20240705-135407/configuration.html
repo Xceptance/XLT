@@ -1,0 +1,1038 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="generator" content="XLT">
+      <title>XLT Report - Configuration</title>
+      <link href="css/default.css" type="text/css" rel="stylesheet">
+      <link href="css/print.css" type="text/css" rel="stylesheet" media="print"><script src="js/jquery-3.6.4.min.js"></script><script src="js/jquery.hoverIntent-1.10.2.min.js"></script><script src="js/jquery.scrollTo-2.1.3.min.js"></script><script src="js/tabs.js"></script><script src="js/table.js"></script><script src="js/crosshair.js"></script><script src="js/echarts-6.0.0.min.js"></script><link rel="icon" href="images/favicon.png" sizes="any">
+      <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+      <style type="text/css">
+            .chart-group .chart img, .chart-group .echart {
+                width: 900px;
+                height: 300px;
+            }
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
+                height: 450px;
+            }
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
+                height: 690px;
+            }
+        </style>
+   </head>
+   <body id="loadtestreport">
+      <div id="container">
+         <div id="content">
+            <nav><input class="hamburger-btn" type="checkbox" id="hamburger-btn"><label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label><ul class="nav-menu">
+                  <li><a href="index.html">Overview</a><ul>
+                        <li><a href="index.html#load-profile">Load Profile</a></li>
+                        <li><a href="index.html#comment">Test Comment</a></li>
+                        <li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#agents">Agent Summary</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+                        <li><a href="index.html#network">Network</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="transactions.html">Transactions</a></li>
+                  <li><a href="actions.html">Actions</a></li>
+                  <li><a href="requests.html">Requests</a><ul>
+                        <li><a href="slowest-requests.html">Slowest Requests</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="network.html">Network</a><ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#ip-addresses">IP Addresses</a></li>
+                        <li><a href="network.html#http-request-methods">HTTP Request Methods</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="page-load-timings.html">Page Load Timings</a></li>
+                  <li><a href="web-vitals.html">Web Vitals</a></li>
+                  <li><a href="custom-timers.html">Custom Timers</a></li>
+                  <li><a href="custom-values.html">Custom Data</a><ul>
+                        <li><a href="custom-values.html#custom-values-summary">Custom Values</a></li>
+                        <li><a href="custom-values.html#custom-data-logs-summary">Custom Data Logs</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="external.html">External Data</a></li>
+                  <li><a href="errors.html">Errors</a><ul>
+                        <li><a href="errors.html#request-errors">Request Errors</a></li>
+                        <li><a href="errors.html#transaction-error-overview">Transaction Error Overview</a></li>
+                        <li><a href="errors.html#transaction-error-details">Transaction Error Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="events.html">Events</a><ul>
+                        <li><a href="events.html#event-overview">Overview</a></li>
+                        <li><a href="events.html#event-details">Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="agents.html">Agents</a></li>
+                  <li><a href="configuration.html">Configuration</a><ul>
+                        <li><a href="configuration.html#load-profile">Load Profile</a></li>
+                        <li><a href="configuration.html#configuration">Load Test Settings</a></li>
+                        <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="scorecard.html">Scorecard</a></li>
+               </ul>
+            </nav>
+            <header id="header">
+               <div class="brand"><img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo"></div>
+               <div class="title">
+                  <h1>Performance Test Report</h1>
+                  <div>
+                     <div class="ltinfo"><span class="key">Organization:</span><span class="value">test2</span></div>
+                     <div class="ltinfo"><span class="key">Project:</span><span class="value">doc-load</span></div>
+                     <div class="ltinfo"><span class="key">Load Test:</span><span class="value">#41</span></div>
+                     <div class="ltinfo"><span class="key">Result:</span><span class="value">#1</span></div>
+                     <div class="ltinfo"><span class="key">Report:</span><span class="value">#1</span></div>
+                  </div>
+               </div>
+            </header>
+            <div id="data-content">
+               <div class="section" id="load-profile">
+                  <h2>Load Profile</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           This section shows the load profile as configured in the properties files of your
+                           test suite.
+                           </p>
+                     </div>
+                     <div class="data">
+                        <table class="">
+                           <thead>
+                              <tr>
+                                 <th rowspan="2">Transaction Name</th>
+                                 <th colspan="2">Users</th>
+                                 <th rowspan="2">Iterations</th>
+                                 <th colspan="2">Arrival Rate</th>
+                                 <th rowspan="2">Initial Delay</th>
+                                 <th rowspan="2">Ramp-Up</th>
+                                 <th rowspan="2">Warm-Up</th>
+                                 <th rowspan="2">Measurement</th>
+                                 <th rowspan="2">Shutdown</th>
+                                 <th rowspan="2" title="Thinking time between actions">Think Time [ms]</th>
+                              </tr>
+                              <tr>
+                                 <th>Total</th>
+                                 <th>Share</th>
+                                 <th>1/h</th>
+                                 <th>Share</th>
+                              </tr>
+                           </thead>
+                           <tfoot>
+                              <tr class="totals">
+                                 <td class="key">Totals (4 entries)</td>
+                                 <td class="value number">0...1,400</td>
+                                 <td class="value number">100.00%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">0...536,000</td>
+                                 <td class="value number">100.00%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">01:00:00</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">50...150</td>
+                              </tr>
+                           </tfoot>
+                           <tbody>
+                              <tr>
+                                 <td class="key text" title="com.xceptance.posters.loadtest.tests.TBrowse">TBrowse</td>
+                                 <td class="value number">0...500</td>
+                                 <td class="value number load-meter" style="--loadp:35.714">35.71%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number" title="0s/0 1h/220000">0...220,000</td>
+                                 <td class="value number load-meter" style="--loadp:41.045">41.04%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">01:00:00</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">50...150</td>
+                              </tr>
+                              <tr>
+                                 <td class="key text" title="com.xceptance.posters.loadtest.tests.TOrder">TOrder</td>
+                                 <td class="value number">0...300</td>
+                                 <td class="value number load-meter" style="--loadp:21.429">21.43%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number" title="0s/0 1h/36000">0...36,000</td>
+                                 <td class="value number load-meter" style="--loadp:6.716">6.72%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">01:00:00</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">50...150</td>
+                              </tr>
+                              <tr>
+                                 <td class="key text" title="com.xceptance.posters.loadtest.tests.TSearch">TSearch</td>
+                                 <td class="value number">0...500</td>
+                                 <td class="value number load-meter" style="--loadp:35.714">35.71%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number" title="0s/0 1h/180000">0...180,000</td>
+                                 <td class="value number load-meter" style="--loadp:33.582">33.58%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">01:00:00</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">50...150</td>
+                              </tr>
+                              <tr>
+                                 <td class="key text" title="com.xceptance.posters.loadtest.tests.TVisit">TVisit</td>
+                                 <td class="value number">0...100</td>
+                                 <td class="value number load-meter" style="--loadp:7.143">7.14%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number" title="0s/0 1h/100000">0...100,000</td>
+                                 <td class="value number load-meter" style="--loadp:18.657">18.66%</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">01:00:00</td>
+                                 <td class="value number">&ndash;</td>
+                                 <td class="value number">50...150</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+               <div class="section" id="configuration">
+                  <h2>Load Test Settings</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           See the table below for details on the test configuration used to run this test. It
+                           helps to make the test
+                           reproducible and preserves the test settings for later test evaluation.
+                           </p>
+                     </div>
+                     <div class="data">
+                        <table class="properties">
+                           <thead>
+                              <tr>
+                                 <th>Property Name</th>
+                                 <th>Property Value</th>
+                              </tr>
+                           </thead>
+                           <tfoot>
+                              <tr>
+                                 <td></td>
+                                 <td></td>
+                              </tr>
+                           </tfoot>
+                           <tbody>
+                              <tr>
+                                 <td class="key">browsing.topCategoryProbability</td>
+                                 <td class="value text wrap">50</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.abortLongRunningTransactions</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.api.validators.XHTMLValidator.enabled</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.browser</td>
+                                 <td class="value text wrap">FF</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.css.cache.size</td>
+                                 <td class="value text wrap">100</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.css.download.images</td>
+                                 <td class="value text wrap">onDemand</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.cssEnabled</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.chart.title</td>
+                                 <td class="value text wrap">Demo Value Sampler</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.chart.yAxisTitle</td>
+                                 <td class="value text wrap">Value</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.class</td>
+                                 <td class="value text wrap">posters.loadtest.samplers.ValueSamplerDemo</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.description</td>
+                                 <td class="value text wrap">This is a value sampler demo.</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.interval</td>
+                                 <td class="value text wrap">3000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.name</td>
+                                 <td class="value text wrap">DemoValueSampler</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.property.generatedValueLowerLimit</td>
+                                 <td class="value text wrap">50</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.customSamplers.1.property.generatedValueUpperLimit</td>
+                                 <td class="value text wrap">60</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.data.directory</td>
+                                 <td class="value text wrap">./config/data</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.home</td>
+                                 <td class="value text wrap">/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.filter.exclude</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.filter.include</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.gzip</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.keepAlive</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.keepAlive.staleConnectionCheck</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.requestId.appendToUserAgent</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.requestId.enabled</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.requestId.headerName</td>
+                                 <td class="value text wrap">X-XLT-RequestId</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.requestId.length</td>
+                                 <td class="value text wrap">15</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.responseId.enabled</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.responseId.headerName</td>
+                                 <td class="value text wrap">X-XLT-ResponseId</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.retry.count</td>
+                                 <td class="value text wrap">3</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.retry.enabled</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.http.retry.nonIdempotentRequests</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.javaScriptEnabled</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.js.cache.size</td>
+                                 <td class="value text wrap">100</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.js.debugger.enabled</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadStaticContent</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtest.elapsed</td>
+                                 <td class="value text wrap">1479617</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtest.rampUp</td>
+                                 <td class="value text wrap">0</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtest.start</td>
+                                 <td class="value text wrap">1720187647909</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests</td>
+                                 <td class="value text wrap">TVisit TBrowse TSearch TOrder</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TBrowse.arrivalRate</td>
+                                 <td class="value text wrap">22000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TBrowse.class</td>
+                                 <td class="value text wrap">com.xceptance.posters.loadtest.tests.TBrowse</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TBrowse.users</td>
+                                 <td class="value text wrap">50</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TOrder.arrivalRate</td>
+                                 <td class="value text wrap">3600</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TOrder.class</td>
+                                 <td class="value text wrap">com.xceptance.posters.loadtest.tests.TOrder</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TOrder.users</td>
+                                 <td class="value text wrap">30</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TSearch.arrivalRate</td>
+                                 <td class="value text wrap">18000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TSearch.class</td>
+                                 <td class="value text wrap">com.xceptance.posters.loadtest.tests.TSearch</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TSearch.users</td>
+                                 <td class="value text wrap">50</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TVisit.arrivalRate</td>
+                                 <td class="value text wrap">10000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TVisit.class</td>
+                                 <td class="value text wrap">com.xceptance.posters.loadtest.tests.TVisit</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.TVisit.users</td>
+                                 <td class="value text wrap">10</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.comment</td>
+                                 <td class="value text wrap">Test run using the posters simple loadtest suite.</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.comment.commandLine</td>
+                                 <td class="value text wrap">&lt;div class='xtc_comment'&gt;&lt;strong&gt;All, new 2 cpu non-shared machine&lt;/strong&gt;&lt;p&gt;Let's
+                                    ramp up more
+                                    &lt;/p&gt;&lt;/div&gt;</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.default.loadFactor</td>
+                                 <td class="value text wrap">0/0 60m/10</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.default.measurementPeriod</td>
+                                 <td class="value text wrap">60m</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.default.rampUpPeriod</td>
+                                 <td class="value text wrap">30s</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.loadtests.default.shutdownPeriod</td>
+                                 <td class="value text wrap">0m</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.maxErrors</td>
+                                 <td class="value text wrap">1000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.maximumTransactionRunTime</td>
+                                 <td class="value text wrap">900000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.output2disk</td>
+                                 <td class="value text wrap">onError</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.output2disk.onError.dumpMode</td>
+                                 <td class="value text wrap">finalPagesOnly</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.output2disk.size</td>
+                                 <td class="value text wrap">3</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.proxy</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.proxy.host</td>
+                                 <td class="value text wrap">127.0.0.1</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.proxy.port</td>
+                                 <td class="value text wrap">8888</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.1.contentTypePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.1.namePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.1.newName</td>
+                                 <td class="value text wrap">{n} JS</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.1.statusCodePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.1.stopOnMatch</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.1.urlPattern</td>
+                                 <td class="value text wrap">\.js$</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.10.contentTypePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.10.namePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.10.newName</td>
+                                 <td class="value text wrap">{n} [{s}]</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.10.statusCodePattern</td>
+                                 <td class="value text wrap">3[0-9][0-9]</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.10.stopOnMatch</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.10.urlPattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.3.contentTypePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.3.namePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.3.newName</td>
+                                 <td class="value text wrap">{n} Images</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.3.statusCodePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.3.stopOnMatch</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.3.urlPattern</td>
+                                 <td class="value text wrap">\.(gif|png|jpg|ico)$</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.5.contentTypePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.5.namePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.5.newName</td>
+                                 <td class="value text wrap">{n} CSS</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.5.statusCodePattern</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.5.stopOnMatch</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requestMergeRules.5.urlPattern</td>
+                                 <td class="value text wrap">\.css$</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.reportgenerator.requests.removeIndexes</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.result-dir</td>
+                                 <td class="value text wrap">./results</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.results.data.request.removeUserInfoFromURL</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.results.openResultBrowser</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.scorecard.config</td>
+                                 <td class="value text wrap">scorecard-config.groovy</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.ssl.easyMode</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.staticContent.downloadThreads</td>
+                                 <td class="value text wrap">4</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.staticContentCache</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.staticContentCache.size</td>
+                                 <td class="value text wrap">1000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.stopTestOnHttpErrors.embedded</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.stopTestOnHttpErrors.page</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.stopTestOnJavaScriptErrors</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.testPropertiesFile</td>
+                                 <td class="value text wrap">test.properties</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.thinktime.action</td>
+                                 <td class="value text wrap">100</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.thinktime.action.deviation</td>
+                                 <td class="value text wrap">50</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.thinktime.transaction</td>
+                                 <td class="value text wrap">0</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.thinktime.transaction.deviation</td>
+                                 <td class="value text wrap">0</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.timeout</td>
+                                 <td class="value text wrap">30000</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xlt.useHighPrecisionTimer</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xtc.loadtest.report.id</td>
+                                 <td class="value text wrap">#1</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xtc.loadtest.result.id</td>
+                                 <td class="value text wrap">#1</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xtc.loadtest.run.id</td>
+                                 <td class="value text wrap">#41</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xtc.organization</td>
+                                 <td class="value text wrap">test2</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">com.xceptance.xtc.project</td>
+                                 <td class="value text wrap">doc-load</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">file.encoding</td>
+                                 <td class="value text wrap">UTF-8</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">file.separator</td>
+                                 <td class="value text wrap">/</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.awt.headless</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.class.path</td>
+                                 <td class="value text wrap">/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/target/classes:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-codec-1.18.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-io-2.18.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-lang3-3.18.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-logging-1.3.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/dec-0.1.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/htmlunit-core-js-4.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/htmlunit-csp-4.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/htmlunit-cssparser-4.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/htmlunit-websocket-client-4.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/htmlunit-xpath-4.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/httpmime-4.5.14.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/httpclient-4.5.14.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/neko-htmlunit-4.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/ec2-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/aws-query-protocol-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/protocol-core-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/http-auth-aws-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/checksums-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/checksums-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/sdk-core-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/profiles-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/retries-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/reactive-streams-1.0.4.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/auth-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/http-auth-aws-eventstream-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/eventstream-1.0.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/http-auth-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/http-auth-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/identity-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/http-client-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/regions-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/annotations-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/utils-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/aws-core-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/metrics-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/json-utils-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/third-party-jackson-core-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/endpoints-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/retries-spi-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/apache-client-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-nio-client-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-codec-http-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-codec-http2-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-codec-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-transport-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-common-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-buffer-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-handler-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-transport-native-unix-common-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-transport-classes-epoll-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/netty-resolver-4.1.118.Final.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/url-connection-client-2.31.18.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jackson-annotations-2.18.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jackson-core-2.18.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jackson-databind-2.18.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jackson-dataformat-yaml-2.18.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/snakeyaml-2.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/groovy-4.0.24.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/google-cloud-compute-1.70.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/api-common-2.46.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/auto-value-annotations-1.11.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jsr305-3.0.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/javax.annotation-api-1.3.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/error_prone_annotations-2.36.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/j2objc-annotations-3.0.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/proto-google-cloud-compute-v1-1.70.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/failureaccess-1.0.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/checker-qual-3.49.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/gax-2.63.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/google-auth-library-credentials-1.33.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/protobuf-java-util-3.25.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opencensus-api-0.31.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/grpc-context-1.70.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/grpc-api-1.70.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/google-auth-library-oauth2-http-1.33.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/gax-httpjson-2.63.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/gson-2.12.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/google-http-client-1.46.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/httpcore-4.4.16.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opencensus-contrib-http-util-0.31.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/google-http-client-gson-1.46.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/threetenbp-1.7.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/proto-google-common-protos-2.54.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/protobuf-java-3.25.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-cli-1.9.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-configuration2-2.11.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-math3-3.6.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-text-1.13.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-vfs2-2.10.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/dnsjava-3.6.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/hessian-4.0.66.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jaxen-2.0.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-servlet-9.4.57.v20241219.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-security-9.4.57.v20241219.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-server-9.4.57.v20241219.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-util-ajax-9.4.57.v20241219.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-util-9.4.57.v20241219.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jfreechart-1.5.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jna-platform-5.17.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jna-5.17.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/json-20250107.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/junit-4.13.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/hamcrest-core-1.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/log4j-api-2.24.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/log4j-core-2.24.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/log4j-jcl-2.24.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/log4j-slf4j2-impl-2.24.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/okhttp-4.12.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/okio-3.6.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/okio-jvm-3.6.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/kotlin-stdlib-common-1.9.10.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/kotlin-stdlib-jdk8-1.8.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/kotlin-stdlib-1.8.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/annotations-13.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/kotlin-stdlib-jdk7-1.8.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-java-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-api-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jspecify-1.0.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-chrome-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/auto-service-annotations-1.1.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-chromium-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-json-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-manager-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-devtools-v131-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-devtools-v132-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-devtools-v133-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-devtools-v85-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-edge-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-firefox-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-http-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-ie-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-remote-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-context-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-exporter-logging-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-os-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/commons-exec-1.4.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-safari-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/selenium-support-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/htmlunit3-driver-4.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/webp-imageio-0.3.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/xstream-1.4.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/mxparser-1.2.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/xmlpull-1.1.3.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/asm-util-9.7.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/asm-9.7.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/asm-tree-9.7.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/asm-analysis-9.7.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/byte-buddy-1.15.11.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/guava-33.4.0-jre.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/slf4j-api-2.0.16.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/freemarker-2.3.34.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/pegdown-1.6.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/parboiled-java-1.4.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/parboiled-core-1.4.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/tyrus-container-grizzly-server-1.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/grizzly-framework-2.4.4.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/grizzly-http-server-2.4.4.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/grizzly-http-2.4.4.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/tyrus-server-1.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jakarta.websocket-api-1.1.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/tyrus-client-1.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/tyrus-core-1.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/tyrus-spi-1.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/tyrus-container-grizzly-client-1.21.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/hll-1.6.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/fastutil-6.5.11.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jaxb-api-2.4.0-b180830.0359.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/javax.activation-api-1.2.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jaxb-core-4.0.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jakarta.xml.bind-api-4.0.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jakarta.activation-api-2.1.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/angus-activation-2.0.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jaxb-impl-4.0.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/progressbar-0.9.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jline-3.29.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/json-schema-1.8.1.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/Saxon-HE-12.5.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/xmlresolver-5.2.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/httpclient5-5.1.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/httpcore5-h2-5.1.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/httpcore5-5.1.3.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/xmlresolver-5.2.2-data.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-semconv-1.28.0-alpha.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-logs-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-api-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-common-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-api-incubator-1.46.0-alpha.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-exporter-otlp-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-trace-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-metrics-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-exporter-otlp-common-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-exporter-common-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-exporter-sender-okhttp-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-extension-autoconfigure-spi-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-extension-autoconfigure-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/opentelemetry-sdk-1.46.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/javassist-3.30.2-GA.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/reflections-0.10.2.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-io-9.4.57.v20241219.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/javax.servlet-api-3.1.0.jar:/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/lib/jetty-http-9.4.57.v20241219.jar</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.class.version</td>
+                                 <td class="value text wrap">65.0</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.home</td>
+                                 <td class="value text wrap">/home/rschwietzke/.sdkman/candidates/java/21.0.6-tem</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.io.tmpdir</td>
+                                 <td class="value text wrap">/tmp</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.library.path</td>
+                                 <td class="value text wrap">/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.runtime.name</td>
+                                 <td class="value text wrap">OpenJDK Runtime Environment</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.runtime.version</td>
+                                 <td class="value text wrap">21.0.6+7-LTS</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.specification.name</td>
+                                 <td class="value text wrap">Java Platform API Specification</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.specification.vendor</td>
+                                 <td class="value text wrap">Oracle Corporation</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.specification.version</td>
+                                 <td class="value text wrap">21</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vendor</td>
+                                 <td class="value text wrap">Eclipse Adoptium</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vendor.url</td>
+                                 <td class="value text wrap">https://adoptium.net/</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vendor.url.bug</td>
+                                 <td class="value text wrap">https://github.com/adoptium/adoptium-support/issues</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vendor.version</td>
+                                 <td class="value text wrap">Temurin-21.0.6+7</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.version</td>
+                                 <td class="value text wrap">21.0.6</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.version.date</td>
+                                 <td class="value text wrap">2025-01-21</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.compressedOopsMode</td>
+                                 <td class="value text wrap">Zero based</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.info</td>
+                                 <td class="value text wrap">mixed mode, sharing</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.name</td>
+                                 <td class="value text wrap">OpenJDK 64-Bit Server VM</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.specification.name</td>
+                                 <td class="value text wrap">Java Virtual Machine Specification</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.specification.vendor</td>
+                                 <td class="value text wrap">Oracle Corporation</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.specification.version</td>
+                                 <td class="value text wrap">21</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.vendor</td>
+                                 <td class="value text wrap">Eclipse Adoptium</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">java.vm.version</td>
+                                 <td class="value text wrap">21.0.6+7-LTS</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">jdk.debug</td>
+                                 <td class="value text wrap">release</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">jna.loaded</td>
+                                 <td class="value text wrap">true</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">jna.platform.library.path</td>
+                                 <td class="value text wrap">/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu:/usr/lib64:/lib64:/usr/lib:/lib:/lib/i386-linux-gnu:/lib32:/usr/lib/x86_64-linux-gnu/libfakeroot</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">jnidispatch.path</td>
+                                 <td class="value text wrap">/home/rschwietzke/.cache/JNA/temp/jna4445190675328485484.tmp</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">line.separator</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">log4j2.configurationFile</td>
+                                 <td class="value text wrap">/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/config/reportgenerator.properties</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">native.encoding</td>
+                                 <td class="value text wrap">UTF-8</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">os.arch</td>
+                                 <td class="value text wrap">amd64</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">os.name</td>
+                                 <td class="value text wrap">Linux</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">os.version</td>
+                                 <td class="value text wrap">6.14.0-37-generic</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">paging.max</td>
+                                 <td class="value text wrap">3</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">paging.min</td>
+                                 <td class="value text wrap">1</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">paging.probability</td>
+                                 <td class="value text wrap">30</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">path.separator</td>
+                                 <td class="value text wrap">:</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">products.max</td>
+                                 <td class="value text wrap">3</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">products.min</td>
+                                 <td class="value text wrap">1</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">search.nohits.probability</td>
+                                 <td class="value text wrap">20</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">stderr.encoding</td>
+                                 <td class="value text wrap">UTF-8</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">stdout.encoding</td>
+                                 <td class="value text wrap">UTF-8</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">store-url</td>
+                                 <td class="value text wrap">https://34.122.180.215:8443/</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.arch.data.model</td>
+                                 <td class="value text wrap">64</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.boot.library.path</td>
+                                 <td class="value text wrap">/home/rschwietzke/.sdkman/candidates/java/21.0.6-tem/lib</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.cpu.endian</td>
+                                 <td class="value text wrap">little</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.io.unicode.encoding</td>
+                                 <td class="value text wrap">UnicodeLittle</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.java.command</td>
+                                 <td class="value text wrap">com.xceptance.xlt.report.ReportGeneratorMain ../samples/testsuite-posters/results/xlt-result-test2-doc-load-20240705-135407/
+                                    -o ../samples/testsuite-posters/reports/xlt-result-test2-doc-load-20240705-135407</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.java.launcher</td>
+                                 <td class="value text wrap">SUN_STANDARD</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.jnu.encoding</td>
+                                 <td class="value text wrap">UTF-8</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">sun.management.compiler</td>
+                                 <td class="value text wrap">HotSpot 64-Bit Tiered Compilers</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">user.country</td>
+                                 <td class="value text wrap">US</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">user.dir</td>
+                                 <td class="value text wrap">/home/rschwietzke/projects/GIT/XLT.Scorecard.YAML/bin</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">user.home</td>
+                                 <td class="value text wrap">/home/rschwietzke</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">user.language</td>
+                                 <td class="value text wrap">en</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">user.name</td>
+                                 <td class="value text wrap">rschwietzke</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">user.timezone</td>
+                                 <td class="value text wrap">Europe/Berlin</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.reporting.graphite.host</td>
+                                 <td class="value text wrap">localhost</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.reporting.graphite.port</td>
+                                 <td class="value text wrap">2003</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.reporting.interval</td>
+                                 <td class="value text wrap">5</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.reporting.metricNamePrefix</td>
+                                 <td class="value text wrap">xlt.Posters.</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver</td>
+                                 <td class="value text wrap">xlt</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.chrome.browserArgs</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.chrome_clientperformance.browserArgs</td>
+                                 <td class="value text wrap">${xlt.webDriver.chrome.browserArgs}</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.chrome_clientperformance.screenless</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.firefox.browserArgs</td>
+                                 <td class="value text wrap"></td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.firefox_clientperformance.browserArgs</td>
+                                 <td class="value text wrap">${xlt.webDriver.firefox.browserArgs}</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.firefox_clientperformance.screenless</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.reuseDriver</td>
+                                 <td class="value text wrap">false</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.window.height</td>
+                                 <td class="value text wrap">900</td>
+                              </tr>
+                              <tr>
+                                 <td class="key">xlt.webDriver.window.width</td>
+                                 <td class="value text wrap">1200</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+               <div class="section" id="jvm-configuration">
+                  <h2>Agent JVM Settings</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           This section lists custom JVM settings for the agents as specified in the <code>jvmargs.cfg</code> file of the test suite.
+                           </p>
+                     </div>
+                     <div class="data">
+                        <table class="">
+                           <thead>
+                              <tr>
+                                 <th>Settings</th>
+                              </tr>
+                           </thead>
+                           <tfoot>
+                              <tr>
+                                 <td></td>
+                              </tr>
+                           </tfoot>
+                           <tbody>
+                              <tr>
+                                 <td class="value text">-XX:InitialRAMPercentage=70</td>
+                              </tr>
+                              <tr>
+                                 <td class="value text">-XX:MaxRAMPercentage=70</td>
+                              </tr>
+                              <tr>
+                                 <td class="value text">-XX:G1ReservePercent=20</td>
+                              </tr>
+                              <tr>
+                                 <td class="value text">-XX:+ParallelRefProcEnabled</td>
+                              </tr>
+                              <tr>
+                                 <td class="value text">-XX:MaxGCPauseMillis=100</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               Copyright (c) 2005-2025 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br>
+               Created with
+               <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">?.?.?</span></a></footer>
+         </div>
+      </div><script type="text/javascript" src="js/xlt.js"></script></body>
+</html>

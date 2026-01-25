@@ -52,6 +52,7 @@ public abstract class AbstractEvaluator
         // Important for backward compatibility/consistency
         xstream.alias("scorecard", Scorecard.class);
         xstream.alias("outcome", Scorecard.Result.class);
+        xstream.alias("error", Scorecard.Error.class);
         xstream.alias("group", Scorecard.Group.class);
         xstream.alias("rule", Scorecard.Rule.class);
         xstream.alias("check", Scorecard.Rule.Check.class);

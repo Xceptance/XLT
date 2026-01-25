@@ -167,7 +167,7 @@ public class StaticEvaluator extends AbstractEvaluator
                                                                   .collect(Collectors.joining("\n\n"));
                 if (StringUtils.isNotBlank(errorMessagesJoined))
                 {
-                    result.setError(errorMessagesJoined);
+                    result.addError(errorMessagesJoined, null);
                 }
             }
         }

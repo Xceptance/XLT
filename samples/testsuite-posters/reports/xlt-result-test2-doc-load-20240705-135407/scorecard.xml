@@ -1,0 +1,1016 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scorecard>
+  <configuration version="1">
+    <selectors>
+      <selector id="homepageP95">
+        <expression>max(//requests/request[matches(name, &apos;^Homepage&apos;)]/percentiles/p95)</expression>
+      </selector>
+      <selector id="homepageP99">
+        <expression>max(//requests/request[matches(name, &apos;^Homepage&apos;)]/percentiles/p99)</expression>
+      </selector>
+      <selector id="catalogP95">
+        <expression>max(//requests/request[matches(name, &apos;^(SelectTopCategory|SelectCategory|ProductDetailView)&apos;)]/percentiles/p95)</expression>
+      </selector>
+      <selector id="catalogP99">
+        <expression>max(//requests/request[matches(name, &apos;^(SelectTopCategory|SelectCategory|ProductDetailView)&apos;)]/percentiles/p99)</expression>
+      </selector>
+      <selector id="accountP95">
+        <expression>max(//requests/request[matches(name, &apos;^(Login|Logout|Register|GoToRegistrationForm|GoToSignIn)&apos;)]/percentiles/p95)</expression>
+      </selector>
+      <selector id="accountP99">
+        <expression>max(//requests/request[matches(name, &apos;^(Login|Logout|Register|GoToRegistrationForm|GoToSignIn)&apos;)]/percentiles/p99)</expression>
+      </selector>
+      <selector id="cartP95">
+        <expression>max(//requests/request[matches(name, &apos;^(AddToCart|ViewCart)&apos;)]/percentiles/p95)</expression>
+      </selector>
+      <selector id="cartP99">
+        <expression>max(//requests/request[matches(name, &apos;^(AddToCart|ViewCart)&apos;)]/percentiles/p99)</expression>
+      </selector>
+      <selector id="checkoutP95">
+        <expression>max(//requests/request[matches(name, &apos;^(StartCheckout|EnterShippingAddress|EnterBillingAddress|EnterPaymentMethod)&apos;)]/percentiles/p95)</expression>
+      </selector>
+      <selector id="checkoutP99">
+        <expression>max(//requests/request[matches(name, &apos;^(StartCheckout|EnterShippingAddress|EnterBillingAddress|EnterPaymentMethod)&apos;)]/percentiles/p99)</expression>
+      </selector>
+      <selector id="checkoutP95Safe">
+        <expression>max(//requests/request[matches(name, &apos;^(StartCheckout|EnterShippingAddress|EnterBillingAddress|EnterPaymentMethod)&apos;) and count &gt; 50]/percentiles/p95)</expression>
+      </selector>
+      <selector id="transactionErrors">
+        <expression>/testreport/summary/transactions/errorPercentage</expression>
+      </selector>
+      <selector id="actionErrors">
+        <expression>/testreport/summary/actions/errorPercentage</expression>
+      </selector>
+      <selector id="requestErrors">
+        <expression>/testreport/summary/requests/errorPercentage</expression>
+      </selector>
+      <selector id="agentCpuMean">
+        <expression>count(//agents/agent/totalCpuUsage/mean[number() &gt; 60])</expression>
+      </selector>
+      <selector id="agentCpuMax">
+        <expression>max(//agents/agent/totalCpuUsage/max)</expression>
+      </selector>
+      <selector id="agentCpuLow">
+        <expression>count(//agents/agent/totalCpuUsage/mean[number() &lt; 25])</expression>
+      </selector>
+    </selectors>
+    <rules>
+      <rule id="homepageAplus" name="Homepage Aplus" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="12">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="homepageP95"/>
+            <condition>&lt;= 100</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="homepageP99"/>
+            <condition>&lt;= 250</condition>
+          </check>
+        </checks>
+        <successMessage>Aplus</successMessage>
+      </rule>
+      <rule id="homepageA" name="Homepage A" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="11">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="homepageP95"/>
+            <condition>&lt;= 250</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="homepageP99"/>
+            <condition>&lt;= 750</condition>
+          </check>
+        </checks>
+        <successMessage>A</successMessage>
+      </rule>
+      <rule id="homepageB" name="Homepage B" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="10">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="homepageP95"/>
+            <condition>&lt;= 500</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="homepageP99"/>
+            <condition>&lt;= 1500</condition>
+          </check>
+        </checks>
+        <successMessage>B</successMessage>
+      </rule>
+      <rule id="homepageC" name="Homepage C" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="6">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="homepageP95"/>
+            <condition>&lt;= 1000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="homepageP99"/>
+            <condition>&lt;= 3000</condition>
+          </check>
+        </checks>
+        <successMessage>C</successMessage>
+      </rule>
+      <rule id="homepageD" name="Homepage D" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="2">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="homepageP95"/>
+            <condition>&lt;= 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="homepageP99"/>
+            <condition>&lt;= 7000</condition>
+          </check>
+        </checks>
+        <successMessage>D</successMessage>
+      </rule>
+      <rule id="homepageF" name="Homepage F" enabled="false" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="homepageP95"/>
+            <condition>&gt; 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="homepageP99"/>
+            <condition>&gt; 7000</condition>
+          </check>
+        </checks>
+        <successMessage>F</successMessage>
+      </rule>
+      <rule id="catalogAplus" name="Catalog Aplus" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="12">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="catalogP95"/>
+            <condition>&lt;= 100</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="catalogP99"/>
+            <condition>&lt;= 250</condition>
+          </check>
+        </checks>
+        <successMessage>Aplus</successMessage>
+      </rule>
+      <rule id="catalogA" name="Catalog A" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="11">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="catalogP95"/>
+            <condition>&lt;= 250</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="catalogP99"/>
+            <condition>&lt;= 750</condition>
+          </check>
+        </checks>
+        <successMessage>A</successMessage>
+      </rule>
+      <rule id="catalogB" name="Catalog B" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="10">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="catalogP95"/>
+            <condition>&lt;= 500</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="catalogP99"/>
+            <condition>&lt;= 1500</condition>
+          </check>
+        </checks>
+        <successMessage>B</successMessage>
+      </rule>
+      <rule id="catalogC" name="Catalog C" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="6">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="catalogP95"/>
+            <condition>&lt;= 1000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="catalogP99"/>
+            <condition>&lt;= 3000</condition>
+          </check>
+        </checks>
+        <successMessage>C</successMessage>
+      </rule>
+      <rule id="catalogD" name="Catalog D" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="2">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="catalogP95"/>
+            <condition>&lt;= 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="catalogP99"/>
+            <condition>&lt;= 7000</condition>
+          </check>
+        </checks>
+        <successMessage>D</successMessage>
+      </rule>
+      <rule id="catalogF" name="Catalog F" enabled="false" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="catalogP95"/>
+            <condition>&gt; 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="catalogP99"/>
+            <condition>&gt; 7000</condition>
+          </check>
+        </checks>
+        <successMessage>F</successMessage>
+      </rule>
+      <rule id="accountAplus" name="Account Aplus" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="12">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="accountP95"/>
+            <condition>&lt;= 100</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="accountP99"/>
+            <condition>&lt;= 250</condition>
+          </check>
+        </checks>
+        <successMessage>Aplus</successMessage>
+      </rule>
+      <rule id="accountA" name="Account A" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="11">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="accountP95"/>
+            <condition>&lt;= 250</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="accountP99"/>
+            <condition>&lt;= 750</condition>
+          </check>
+        </checks>
+        <successMessage>A</successMessage>
+      </rule>
+      <rule id="accountB" name="Account B" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="10">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="accountP95"/>
+            <condition>&lt;= 500</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="accountP99"/>
+            <condition>&lt;= 1500</condition>
+          </check>
+        </checks>
+        <successMessage>B</successMessage>
+      </rule>
+      <rule id="accountC" name="Account C" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="6">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="accountP95"/>
+            <condition>&lt;= 1000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="accountP99"/>
+            <condition>&lt;= 3000</condition>
+          </check>
+        </checks>
+        <successMessage>C</successMessage>
+      </rule>
+      <rule id="accountD" name="Account D" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="2">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="accountP95"/>
+            <condition>&lt;= 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="accountP99"/>
+            <condition>&lt;= 7000</condition>
+          </check>
+        </checks>
+        <successMessage>D</successMessage>
+      </rule>
+      <rule id="accountF" name="Account F" enabled="false" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="accountP95"/>
+            <condition>&gt; 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="accountP99"/>
+            <condition>&gt; 7000</condition>
+          </check>
+        </checks>
+        <successMessage>F</successMessage>
+      </rule>
+      <rule id="cartAplus" name="Cart Aplus" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="12">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="cartP95"/>
+            <condition>&lt;= 100</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="cartP99"/>
+            <condition>&lt;= 250</condition>
+          </check>
+        </checks>
+        <successMessage>Aplus</successMessage>
+      </rule>
+      <rule id="cartA" name="Cart A" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="11">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="cartP95"/>
+            <condition>&lt;= 250</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="cartP99"/>
+            <condition>&lt;= 750</condition>
+          </check>
+        </checks>
+        <successMessage>A</successMessage>
+      </rule>
+      <rule id="cartB" name="Cart B" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="10">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="cartP95"/>
+            <condition>&lt;= 500</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="cartP99"/>
+            <condition>&lt;= 1500</condition>
+          </check>
+        </checks>
+        <successMessage>B</successMessage>
+      </rule>
+      <rule id="cartC" name="Cart C" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="6">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="cartP95"/>
+            <condition>&lt;= 1000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="cartP99"/>
+            <condition>&lt;= 3000</condition>
+          </check>
+        </checks>
+        <successMessage>C</successMessage>
+      </rule>
+      <rule id="cartD" name="Cart D" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="2">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="cartP95"/>
+            <condition>&lt;= 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="cartP99"/>
+            <condition>&lt;= 7000</condition>
+          </check>
+        </checks>
+        <successMessage>D</successMessage>
+      </rule>
+      <rule id="cartF" name="Cart F" enabled="false" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="cartP95"/>
+            <condition>&gt; 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="cartP99"/>
+            <condition>&gt; 7000</condition>
+          </check>
+        </checks>
+        <successMessage>F</successMessage>
+      </rule>
+      <rule id="checkoutAplus" name="Checkout Aplus" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="12">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP95"/>
+            <condition>&lt;= 100</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP99"/>
+            <condition>&lt;= 250</condition>
+          </check>
+        </checks>
+        <successMessage>Aplus</successMessage>
+      </rule>
+      <rule id="checkoutA" name="Checkout A" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="11">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP95"/>
+            <condition>&lt;= 250</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP99"/>
+            <condition>&lt;= 750</condition>
+          </check>
+        </checks>
+        <successMessage>A</successMessage>
+      </rule>
+      <rule id="checkoutB" name="Checkout B" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="10">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP95"/>
+            <condition>&lt;= 500</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP99"/>
+            <condition>&lt;= 1500</condition>
+          </check>
+        </checks>
+        <successMessage>B</successMessage>
+      </rule>
+      <rule id="checkoutC" name="Checkout C" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="6">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP95"/>
+            <condition>&lt;= 1000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP99"/>
+            <condition>&lt;= 3000</condition>
+          </check>
+        </checks>
+        <successMessage>C</successMessage>
+      </rule>
+      <rule id="checkoutD" name="Checkout D" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="2">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP95"/>
+            <condition>&lt;= 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP99"/>
+            <condition>&lt;= 7000</condition>
+          </check>
+        </checks>
+        <successMessage>D</successMessage>
+      </rule>
+      <rule id="checkoutF" name="Checkout F" enabled="false" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP95"/>
+            <condition>&gt; 2000</condition>
+          </check>
+          <check index="1" enabled="true" displayValue="true">
+            <selector ref-id="checkoutP99"/>
+            <condition>&gt; 7000</condition>
+          </check>
+        </checks>
+        <successMessage>F</successMessage>
+      </rule>
+      <rule id="baseCpuCheck" name="Agent CPU Usage" enabled="true" failsTest="false" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="agentCpuMean"/>
+            <condition>= 0</condition>
+          </check>
+        </checks>
+      </rule>
+      <rule id="critialCpuCheck" name="Max Agent CPU Usage" enabled="true" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="agentCpuMax"/>
+            <condition>&lt; 95</condition>
+          </check>
+        </checks>
+      </rule>
+      <rule id="transactionErrorsRule" name="transactionErrors Check" enabled="true" failsTest="true" failsOn="NOTPASSED" negateResult="false" points="5">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="transactionErrors"/>
+            <condition>&lt; 0.5</condition>
+          </check>
+        </checks>
+      </rule>
+      <rule id="actionErrorsRule" name="actionErrors Check" enabled="true" failsTest="true" failsOn="NOTPASSED" negateResult="false" points="5">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="actionErrors"/>
+            <condition>&lt; 0.5</condition>
+          </check>
+        </checks>
+      </rule>
+      <rule id="requestErrorsRule" name="requestErrors Check" enabled="true" failsTest="true" failsOn="NOTPASSED" negateResult="false" points="5">
+        <checks>
+          <check index="0" enabled="true" displayValue="true">
+            <selector ref-id="requestErrors"/>
+            <condition>&lt; 0.5</condition>
+          </check>
+        </checks>
+      </rule>
+      <rule id="fallThroughF" name="F" enabled="true" failsTest="true" failsOn="PASSED" negateResult="false" points="0">
+        <checks/>
+      </rule>
+    </rules>
+    <groups>
+      <group id="Homepage" name="Homepage Rating" enabled="true" failsTest="false" failsOn="PASSED" mode="firstPassed">
+        <rules>
+          <rule ref-id="homepageAplus"/>
+          <rule ref-id="homepageA"/>
+          <rule ref-id="homepageB"/>
+          <rule ref-id="homepageC"/>
+          <rule ref-id="homepageD"/>
+          <rule ref-id="homepageF"/>
+          <rule ref-id="fallThroughF"/>
+        </rules>
+      </group>
+      <group id="Catalog" name="Catalog Rating" enabled="true" failsTest="false" failsOn="PASSED" mode="firstPassed">
+        <rules>
+          <rule ref-id="catalogAplus"/>
+          <rule ref-id="catalogA"/>
+          <rule ref-id="catalogB"/>
+          <rule ref-id="catalogC"/>
+          <rule ref-id="catalogD"/>
+          <rule ref-id="catalogF"/>
+          <rule ref-id="fallThroughF"/>
+        </rules>
+      </group>
+      <group id="Account" name="Account Rating" enabled="true" failsTest="false" failsOn="PASSED" mode="firstPassed">
+        <rules>
+          <rule ref-id="accountAplus"/>
+          <rule ref-id="accountA"/>
+          <rule ref-id="accountB"/>
+          <rule ref-id="accountC"/>
+          <rule ref-id="accountD"/>
+          <rule ref-id="accountF"/>
+          <rule ref-id="fallThroughF"/>
+        </rules>
+      </group>
+      <group id="Cart" name="Cart Rating" enabled="true" failsTest="false" failsOn="PASSED" mode="firstPassed">
+        <rules>
+          <rule ref-id="cartAplus"/>
+          <rule ref-id="cartA"/>
+          <rule ref-id="cartB"/>
+          <rule ref-id="cartC"/>
+          <rule ref-id="cartD"/>
+          <rule ref-id="cartF"/>
+          <rule ref-id="fallThroughF"/>
+        </rules>
+      </group>
+      <group id="Checkout" name="Checkout Rating" enabled="true" failsTest="false" failsOn="PASSED" mode="firstPassed">
+        <rules>
+          <rule ref-id="checkoutAplus"/>
+          <rule ref-id="checkoutA"/>
+          <rule ref-id="checkoutB"/>
+          <rule ref-id="checkoutC"/>
+          <rule ref-id="checkoutD"/>
+          <rule ref-id="checkoutF"/>
+          <rule ref-id="fallThroughF"/>
+        </rules>
+      </group>
+      <group id="CPUs" name="CPU Checks" enabled="true" failsTest="false" failsOn="PASSED" mode="allPassed">
+        <rules>
+          <rule ref-id="baseCpuCheck"/>
+          <rule ref-id="critialCpuCheck"/>
+        </rules>
+      </group>
+    </groups>
+    <ratings>
+      <rating id="A" value="100.0" enabled="true" failsTest="false"/>
+      <rating id="B" value="90.0" enabled="true" failsTest="false"/>
+      <rating id="C" value="80.0" enabled="true" failsTest="false"/>
+      <rating id="D" value="60.0" enabled="true" failsTest="false"/>
+      <rating id="F" value="50.0" enabled="true" failsTest="true"/>
+    </ratings>
+  </configuration>
+  <outcome pointsPercentage="0.0" points="0" totalPoints="60" testFailed="true">
+    <groups>
+      <group ref-id="Homepage" points="0" totalPoints="12" testFailed="false">
+        <rules>
+          <rule points="0" ref-id="homepageAplus" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>10870</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>13070</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="homepageA" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>10870</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>13070</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="homepageB" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>10870</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>13070</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="homepageC" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>10870</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>13070</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="homepageD" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>10870</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>13070</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="homepageF" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>SKIPPED</result>
+              </check>
+              <check index="1">
+                <result>SKIPPED</result>
+              </check>
+            </checks>
+            <result>SKIPPED</result>
+          </rule>
+          <rule points="0" ref-id="fallThroughF" testFailed="true">
+            <checks/>
+            <result>PASSED</result>
+          </rule>
+        </rules>
+        <result>PASSED</result>
+      </group>
+      <group ref-id="Catalog" points="0" totalPoints="12" testFailed="false">
+        <rules>
+          <rule points="0" ref-id="catalogAplus" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3730</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5060</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="catalogA" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3730</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5060</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="catalogB" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3730</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5060</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="catalogC" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3730</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5060</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="catalogD" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3730</value>
+              </check>
+              <check index="1">
+                <result>PASSED</result>
+                <value>5060</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="catalogF" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>SKIPPED</result>
+              </check>
+              <check index="1">
+                <result>SKIPPED</result>
+              </check>
+            </checks>
+            <result>SKIPPED</result>
+          </rule>
+          <rule points="0" ref-id="fallThroughF" testFailed="true">
+            <checks/>
+            <result>PASSED</result>
+          </rule>
+        </rules>
+        <result>PASSED</result>
+      </group>
+      <group ref-id="Account" points="0" totalPoints="12" testFailed="false">
+        <rules>
+          <rule points="0" ref-id="accountAplus" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>9020</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>11030</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="accountA" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>9020</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>11030</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="accountB" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>9020</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>11030</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="accountC" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>9020</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>11030</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="accountD" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>9020</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>11030</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="accountF" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>SKIPPED</result>
+              </check>
+              <check index="1">
+                <result>SKIPPED</result>
+              </check>
+            </checks>
+            <result>SKIPPED</result>
+          </rule>
+          <rule points="0" ref-id="fallThroughF" testFailed="true">
+            <checks/>
+            <result>PASSED</result>
+          </rule>
+        </rules>
+        <result>PASSED</result>
+      </group>
+      <group ref-id="Cart" points="0" totalPoints="12" testFailed="false">
+        <rules>
+          <rule points="0" ref-id="cartAplus" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3380</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>4600</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="cartA" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3380</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>4600</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="cartB" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3380</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>4600</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="cartC" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3380</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>4600</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="cartD" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3380</value>
+              </check>
+              <check index="1">
+                <result>PASSED</result>
+                <value>4600</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="cartF" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>SKIPPED</result>
+              </check>
+              <check index="1">
+                <result>SKIPPED</result>
+              </check>
+            </checks>
+            <result>SKIPPED</result>
+          </rule>
+          <rule points="0" ref-id="fallThroughF" testFailed="true">
+            <checks/>
+            <result>PASSED</result>
+          </rule>
+        </rules>
+        <result>PASSED</result>
+      </group>
+      <group ref-id="Checkout" points="0" totalPoints="12" testFailed="false">
+        <rules>
+          <rule points="0" ref-id="checkoutAplus" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3630</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5280</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="checkoutA" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3630</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5280</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="checkoutB" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3630</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5280</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="checkoutC" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3630</value>
+              </check>
+              <check index="1">
+                <result>NOTPASSED</result>
+                <value>5280</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="checkoutD" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>NOTPASSED</result>
+                <value>3630</value>
+              </check>
+              <check index="1">
+                <result>PASSED</result>
+                <value>5280</value>
+              </check>
+            </checks>
+            <result>NOTPASSED</result>
+          </rule>
+          <rule points="0" ref-id="checkoutF" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>SKIPPED</result>
+              </check>
+              <check index="1">
+                <result>SKIPPED</result>
+              </check>
+            </checks>
+            <result>SKIPPED</result>
+          </rule>
+          <rule points="0" ref-id="fallThroughF" testFailed="true">
+            <checks/>
+            <result>PASSED</result>
+          </rule>
+        </rules>
+        <result>PASSED</result>
+      </group>
+      <group ref-id="CPUs" points="0" totalPoints="0" testFailed="false">
+        <rules>
+          <rule points="0" ref-id="baseCpuCheck" testFailed="false">
+            <checks>
+              <check index="0">
+                <result>PASSED</result>
+                <value>0</value>
+              </check>
+            </checks>
+            <result>PASSED</result>
+          </rule>
+          <rule points="0" ref-id="critialCpuCheck" testFailed="true">
+            <checks>
+              <check index="0">
+                <result>PASSED</result>
+                <value>37.42</value>
+              </check>
+            </checks>
+            <result>PASSED</result>
+          </rule>
+        </rules>
+        <result>PASSED</result>
+      </group>
+    </groups>
+    <rating>A</rating>
+  </outcome>
+</scorecard>
