@@ -5,86 +5,86 @@
     "selectors" : [
         {
             "id" : "homepageP95",
-            "expression" : "max(//requests/request[label = 'homepage']/percentiles/p95)",
+            "expression" : "max(//requests/request[labels = 'homepage']/percentiles/p95)",
             "comment" : "Get us the max of all P95 of homepage like requests"
         },
         {
             "id" : "homepageP99",
-            "expression" : "max(//requests/request[label = 'homepage']/percentiles/p99)",
+            "expression" : "max(//requests/request[labels = 'homepage']/percentiles/p99)",
             "comment" : "Get us the max of all P99 of homepage like requests"
         },
 
 
         {
             "id" : "catalogP95",
-            "expression" : "max(//requests/request[label = 'catalog']/percentiles/p95)",
+            "expression" : "max(//requests/request[labels = 'catalog']/percentiles/p95)",
             "comment" : "Get us the max of all P95 of catalog like requests"
         },
         {
             "id" : "catalogP99",
-            "expression" : "max(//requests/request[label = 'catalog']/percentiles/p99)",
+            "expression" : "max(//requests/request[labels = 'catalog']/percentiles/p99)",
             "comment" : "Get us the max of all P99 of catalog like requests"
         },
 
 
         {
             "id" : "accountP95",
-            "expression" : "max(//requests/request[label = 'account']/percentiles/p95)",
+            "expression" : "max(//requests/request[labels = 'account']/percentiles/p95)",
             "comment" : "Get us the max of all P95 of account like requests"
         },
         {
             "id" : "accountP99",
-            "expression" : "max(//requests/request[label = 'account']/percentiles/p99)",
+            "expression" : "max(//requests/request[labels = 'account']/percentiles/p99)",
             "comment" : "Get us the max of all P99 of account like requests"
         },
 
 
         {
             "id" : "cartP95",
-            "expression" : "max(//requests/request[label = 'cart']/percentiles/p95)",
+            "expression" : "max(//requests/request[labels = 'cart']/percentiles/p95)",
             "comment" : "Get us the max of all P95 of cart like requests"
         },
         {
             "id" : "cartP99",
-            "expression" : "max(//requests/request[label = 'cart']/percentiles/p99)",
+            "expression" : "max(//requests/request[labels = 'cart']/percentiles/p99)",
             "comment" : "Get us the max of all P99 of cart like requests"
         },
 
 
         {
             "id" : "checkoutP95",
-            "expression" : "max(//requests/request[label = 'checkout' and count > 50]/percentiles/p95)",
+            "expression" : "max(//requests/request[labels = 'checkout' and count > 50]/percentiles/p95)",
             "comment" : "Get us the max of all P95 of checkout like requests, ensure that we don't hit PlaceOrder and have enough samples to consider it."
         },
         {
             "id" : "checkoutP99",
-            "expression" : "max(//requests/request[label = 'checkout' and count > 50]/percentiles/p99)",
+            "expression" : "max(//requests/request[labels = 'checkout' and count > 50]/percentiles/p99)",
             "comment" : "Get us the max of all P99 of checkout like requests, ensure that we don't hit PlaceOrder and have enough samples to consider it."
         },
 
 
         {
             "id" : "orderP95",
-            "expression" : "max(//requests/request[label = 'order']/percentiles/p95)",
+            "expression" : "max(//requests/request[labels = 'order']/percentiles/p95)",
             "comment" : "Get us the max of all P95 of order like requests"
         },
         {
             "id" : "orderP99",
-            "expression" : "max(//requests/request[label = 'order']/percentiles/p99)",
+            "expression" : "max(//requests/request[labels = 'order']/percentiles/p99)",
             "comment" : "Get us the max of all P99 of order like requests"
         },
 
 
         {
             "id" : "orderCount",
-            "expression" : "max(//requests/request[label = 'order']/count)",
+            "expression" : "max(//requests/request[labels = 'order']/count)",
             "comment" : "Get us the order count"
         },
 
 
         {
             "id" : "orderErrors",
-            "expression" : "sum(//actions/action[label = 'order']/errorPercentage)",
+            "expression" : "sum(//actions/action[labels = 'order']/errorPercentage)",
             "comment" : "Get us the order percentage errors"
         },
         {
