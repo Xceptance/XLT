@@ -157,6 +157,20 @@ builder.rules {
 
 When a `status` is provided, the `selector`, `condition` and `formatter` are ignored, and the check result is set exactly as specified.
 
+### Manual Rating Selection
+
+Instead of computing the rating automatically based on achieved points percentage, you can manually select a rating by marking it as `active`. When any rating has `active true`, the point-based calculation is bypassed entirely.
+
+```groovy
+builder.ratings {
+    rating { id 'A'; value 100.0 }
+    rating { id 'B'; value 80.0 }
+    rating { id 'F'; value 0.0; active true; failsTest true }  // Always use this
+}
+```
+
+> **Note**: If multiple ratings have `active true`, the first one in definition order is used.
+
 ## DSL Reference
 
 ### `selectors`
@@ -209,6 +223,7 @@ Defines the overall scorecard rating thresholds.
   * `value (double)`: Maximum percentage for this rating.
   * `failsTest (boolean)`: If this rating is achieved, test fails.
   * `enabled (boolean)`: Default true.
+  * `active (boolean)`: Manually select this rating, bypassing point-based calculation. Default false.
 
 ## Advanced Example
 

@@ -297,6 +297,58 @@ public class EvaluatorGroovyTest
         }
     }
 
+    @Test
+    public void testManualRatingActive() throws Exception
+    {
+        var groovy = """
+            builder.selectors {
+                selector { id 'sel1'; expression '//foo' }
+            }
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    points 100
+                    checks {
+                        check { selectorId 'sel1'; condition 'exists(.)' }
+                    }
+                }
+            }
+            builder.groups {
+                group { id 'G1'; rules(['rule1']) }
+            }
+            builder.ratings {
+                rating { id 'A'; value 100.0 }
+                rating { id 'B'; value 80.0 }
+                rating { id 'F'; value 0.0; active true; failsTest true }
+            }
+            return builder
+            """;
+
+        var tempFile = java.nio.file.Files.createTempFile("scorecard-active-rating", ".groovy").toFile();
+        var xmlFile = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(xmlFile, "<foo/>", StandardCharsets.UTF_8);
+
+            var proc = new Processor(false);
+            var evaluator = new GroovyEvaluator(tempFile, proc);
+
+            var scorecard = evaluator.evaluate(xmlFile);
+
+            // Despite perfect score (rule passes), rating should be 'F' because it's marked active
+            Assert.assertEquals("F", scorecard.result.getRating());
+            Assert.assertTrue(scorecard.result.isTestFailed());
+            // Points percentage should be null for manual rating
+            Assert.assertNull(scorecard.result.getPointsPercentage());
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
+
     // Helper subclass to access protected method
     static class TestEvaluator extends GroovyEvaluator
     {
