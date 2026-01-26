@@ -24,7 +24,7 @@ public class RuleBuilder
 
     private boolean failsTest = false;
 
-    private TestFailTrigger testFailTrigger = TestFailTrigger.PASSED; // Default
+    private TestFailTrigger testFailTrigger = TestFailTrigger.NOTPASSED; // Default
 
     private boolean negateResult = false;
 

@@ -28,6 +28,7 @@ import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.xceptance.xlt.api.report.ReportCreator;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.util.xstream.SafePropertiesConverter;
 import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
 
 /**
@@ -88,8 +89,11 @@ public class XmlReportGenerator
             osw.write(XltConstants.XML_HEADER);
 
             final XStream xstream = new XStream(new SanitizingDomDriver());
+            
             xstream.autodetectAnnotations(true);
             xstream.registerConverter(new DateConverter("yyyy-MM-dd HH:mm:ss z", null, TimeZone.getDefault()));
+            // ensure we don't need an open package permission for java.util.Properties
+            xstream.registerConverter(new SafePropertiesConverter());
             xstream.aliasSystemAttribute(null, "class");
             xstream.setMode(XStream.NO_REFERENCES);
 
