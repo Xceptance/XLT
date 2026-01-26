@@ -41,6 +41,7 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.HistogramValueSet;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.IntSummaryStatistics;
@@ -153,6 +154,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      */
     private int distinctUrlSetLimitedSize;
 
+    private final LabelingRuleProcessor labelingRuleProcessor;
+
     /**
      * Constructor.
      *
@@ -210,6 +213,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         // set capping parameters
         setChartCappingInfo(config.getRequestChartCappingInfo());
+
+        // labeling rules
+        labelingRuleProcessor = new LabelingRuleProcessor(config.getLabelingRules());
     }
 
     /**
@@ -287,6 +293,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         timerReport.receiveTime = createStatisticsReport(receiveTimeStatistics);
         timerReport.timeToFirstBytes = createStatisticsReport(timeToFirstBytesStatistics);
         timerReport.timeToLastBytes = createStatisticsReport(timeToLastBytesStatistics);
+
+        // apply labeling rules
+        labelingRuleProcessor.process(timerReport);
 
         return timerReport;
     }

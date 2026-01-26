@@ -50,6 +50,8 @@ import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMethod;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
+import com.xceptance.xlt.report.labelingrules.InvalidLabelingRuleException;
+import com.xceptance.xlt.report.labelingrules.LabelingRule;
 import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
@@ -192,6 +194,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_RESULTS_ROOT_DIR = PROP_PREFIX + "results";
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
+
+    static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
 
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
@@ -582,24 +586,35 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Checks the given string for leading zero digits.
+     * Get an ordered set of the index numbers for rules with the given rule prefix.
      *
-     * @param s
-     *            the string to be checked
+     * @param rulePrefix
+     *            the rule prefix
+     * @return an ordered set of the rule index numbers
      */
-    private void checkForLeadingZeros(final String s)
+    private TreeSet<Integer> getRuleNumbers(final String rulePrefix)
     {
-        if (s.length() > 1 && s.startsWith("0"))
+        final TreeSet<Integer> ruleNumbers = new TreeSet<>();
+        final Set<String> ruleNumberStrings = getPropertyKeyFragment(rulePrefix);
+        for (final String s : ruleNumberStrings)
         {
-            final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in request merge rule indices.\nPlease check your configuration and fix the following properties:");
-            for (final String prop : getPropertyKeysWithPrefix(PROP_REQUEST_MERGE_RULES_PREFIX + s + "."))
+            // check for leading zero digits
+            if (s.length() > 1 && s.startsWith("0"))
             {
-                sb.append("\n\t").append(prop);
-            }
-            sb.append("\n");
+                final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in merge or labeling rule indices.\nPlease check your configuration and fix the following properties:");
+                for (final String prop : getPropertyKeysWithPrefix(rulePrefix + s + "."))
+                {
+                    sb.append("\n\t").append(prop);
+                }
+                sb.append("\n");
 
-            throw new XltException(sb.toString());
+                throw new XltException(sb.toString());
+            }
+
+            ruleNumbers.add(Integer.parseInt(s));
         }
+
+        return ruleNumbers;
     }
 
     /**
@@ -1607,16 +1622,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         final List<MergeRule> requestProcessingRules = new ArrayList<>();
 
-        final Set<Integer> requestMergerNumbers = new TreeSet<>();
-        final Set<String> requestMergerNumberStrings = getPropertyKeyFragment(PROP_REQUEST_MERGE_RULES_PREFIX);
-        for (final String s : requestMergerNumberStrings)
-        {
-            checkForLeadingZeros(s);
-            requestMergerNumbers.add(Integer.parseInt(s));
-        }
-
         boolean invalidRulePresent = false;
-        for (final int i : requestMergerNumbers)
+        for (final int i : getRuleNumbers(PROP_REQUEST_MERGE_RULES_PREFIX))
         {
             final String basePropertyName = PROP_REQUEST_MERGE_RULES_PREFIX + i;
 
@@ -1696,6 +1703,58 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         }
 
         return requestProcessingRules;
+    }
+
+    /**
+     * Reads the configured labeling rules and returns a new instance.
+     *
+     * @return the list of labeling rules
+     */
+    public List<LabelingRule> getLabelingRules()
+    {
+        final List<LabelingRule> labelingRules = new ArrayList<>();
+
+        boolean invalidRulePresent = false;
+        for (final int i : getRuleNumbers(PROP_LABELING_RULES_PREFIX))
+        {
+            final String basePropertyName = PROP_LABELING_RULES_PREFIX + i;
+
+            // general stuff
+            final String newLabels = getStringProperty(basePropertyName + ".newLabels", "");
+            final String typeString = getStringProperty(basePropertyName + ".types", "");
+            final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
+
+            // include patterns
+            final String namePattern = getStringProperty(basePropertyName + ".namePattern", "");
+            final String labelPattern = getStringProperty(basePropertyName + ".labelPattern", "");
+
+            // exclude patterns
+            final String nameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
+            final String labelExcludePattern = getStringProperty(basePropertyName + ".labelPattern.exclude", "");
+
+            // create and validate the rules
+            try
+            {
+                final LabelingRule rule = new LabelingRule(newLabels, typeString, namePattern, labelPattern, stopOnMatch, nameExcludePattern,
+                                                           labelExcludePattern);
+                labelingRules.add(rule);
+            }
+            catch (final InvalidLabelingRuleException e)
+            {
+                // Log it and continue with next rule.
+                final String errMsg = "Labeling rule '" + basePropertyName + "' is invalid. " + e.getMessage();
+                System.err.println(errMsg);
+                // remember that we encountered an invalid labeling rule
+                invalidRulePresent = true;
+            }
+        }
+
+        if (invalidRulePresent)
+        {
+            throw new XltException("Please check your configuration. At least one labeling rule is invalid and needs to be fixed.");
+        }
+
+        return labelingRules;
     }
 
     /**
