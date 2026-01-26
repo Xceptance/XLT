@@ -173,6 +173,16 @@ public class Configuration
         return Collections.unmodifiableCollection(ratings.values());
     }
 
+    /**
+     * Checks if any rating is manually marked as active.
+     *
+     * @return true if at least one rating has active=true
+     */
+    public boolean hasActiveRating()
+    {
+        return ratings.values().stream().anyMatch(RatingDefinition::isActive);
+    }
+
     public int getVersion()
     {
         return version;

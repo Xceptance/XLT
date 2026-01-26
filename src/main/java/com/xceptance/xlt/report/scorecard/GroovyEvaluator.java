@@ -170,21 +170,37 @@ public class GroovyEvaluator extends AbstractEvaluator
         {
             result.setPoints(points);
             result.setTotalPoints(totalPoints);
-            final double pointsPercentage = getPercentage(points, totalPoints);
 
             String rating = null;
-            for (final RatingDefinition ratingDef : config.getRatings())
+
+            // Check for manually active ratings first
+            final RatingDefinition activeRating = config.getRatings().stream().filter(r -> r.isActive() && r.isEnabled()).findFirst()
+                                                        .orElse(null);
+
+            if (activeRating != null)
             {
-                if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
+                // Manual rating selection - use the first active rating
+                rating = activeRating.getId();
+                testFailed = testFailed || activeRating.isFailsTest();
+                result.setPointsPercentage(null);  // Points percentage meaningless for manual
+            }
+            else
+            {
+                // Auto-calculate based on points percentage
+                final double pointsPercentage = getPercentage(points, totalPoints);
+                for (final RatingDefinition ratingDef : config.getRatings())
                 {
-                    rating = ratingDef.getId();
-                    testFailed = testFailed || ratingDef.isFailsTest();
-                    break;
+                    if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
+                    {
+                        rating = ratingDef.getId();
+                        testFailed = testFailed || ratingDef.isFailsTest();
+                        break;
+                    }
                 }
+                result.setPointsPercentage(pointsPercentage);
             }
 
             result.setTestFailed(testFailed);
-            result.setPointsPercentage(pointsPercentage);
             result.setRating(rating);
         }
 

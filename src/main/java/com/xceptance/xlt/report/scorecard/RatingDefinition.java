@@ -43,8 +43,11 @@ public class RatingDefinition
     @XStreamAsAttribute
     private final boolean failsTest;
 
+    @XStreamAsAttribute
+    private final boolean active;
+
     public RatingDefinition(final String id, final String name, final String description, final double value, final boolean enabled,
-                            final boolean failsTest)
+                            final boolean failsTest, final boolean active)
     {
         this.id = Objects.requireNonNull(id, "Rating ID must not be null");
         this.name = name;
@@ -52,6 +55,7 @@ public class RatingDefinition
         this.description = description;
         this.enabled = enabled;
         this.failsTest = failsTest;
+        this.active = active;
     }
 
     public String getId()
@@ -84,6 +88,16 @@ public class RatingDefinition
         return failsTest;
     }
 
+    /**
+     * Returns whether this rating is manually activated.
+     *
+     * @return true if this rating is manually selected, bypassing point-based evaluation
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
     static RatingDefinition fromJSON(final JSONObject jsonObject) throws ValidationException
     {
         final String id = jsonObject.getString("id");
@@ -98,6 +112,6 @@ public class RatingDefinition
             throw new ValidationException("Property 'value' must be greater than or equal to 0.0 and less than or equal to 100.0");
         }
 
-        return new RatingDefinition(id, name, desc, value, enabled, failsTest);
+        return new RatingDefinition(id, name, desc, value, enabled, failsTest, false);
     }
 }

@@ -46,6 +46,9 @@ public class RatingBuilder
     /** If true, achieving this rating causes the overall test to fail */
     private boolean failsTest = false;
 
+    /** If true, manually selects this rating bypassing point-based evaluation */
+    private boolean active = false;
+
     /**
      * Sets the unique identifier for this rating.
      *
@@ -121,12 +124,27 @@ public class RatingBuilder
     }
 
     /**
+     * Manually activates this rating, bypassing point-based evaluation.
+     * <p>
+     * When a rating is marked as active, it will be selected regardless of the achieved points percentage. If multiple
+     * ratings are marked active, the first one in definition order is used.
+     * </p>
+     *
+     * @param active
+     *                   if true, this rating is manually selected
+     */
+    public void active(boolean active)
+    {
+        this.active = active;
+    }
+
+    /**
      * Builds and returns the configured {@link RatingDefinition}.
      *
      * @return a new RatingDefinition instance with all configured properties
      */
     public RatingDefinition build()
     {
-        return new RatingDefinition(id, name, description, value, enabled, failsTest);
+        return new RatingDefinition(id, name, description, value, enabled, failsTest, active);
     }
 }
