@@ -165,5 +165,16 @@ builder.groups {
     }
 }
 
+//
+// 4. Define Ratings
+//
+builder.ratings {
+    rating { id 'A'; value 100.0; description "All good." }
+    rating { id 'B'; value 90.0 }
+    rating { id 'C'; value 80.0 }
+    rating { id 'D'; value 60.0 }
+    rating { id 'F'; value 50.0; failsTest true }
+}
+
 // Return the builder to let the Evaluator build the configuration
 builder
