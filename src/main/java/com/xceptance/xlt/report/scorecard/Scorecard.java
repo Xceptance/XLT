@@ -93,6 +93,9 @@ public class Scorecard
 
         private String rating;
 
+        @XStreamImplicit(itemFieldName = "log")
+        private List<String> logs;
+
         /**
          * Returns the first error message for backward compatibility.
          * 
@@ -203,6 +206,99 @@ public class Scorecard
             this.rating = rating;
         }
 
+        /**
+         * Returns the log messages collected during scorecard evaluation.
+         *
+         * @return unmodifiable list of log messages, or empty list if none
+         */
+        public List<String> getLogs()
+        {
+            if (logs == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(logs);
+        }
+
+        /**
+         * Sets the log messages from scratch.
+         *
+         * @param logs
+         *                 list of log messages
+         */
+        void setLogs(final List<String> logs)
+        {
+            this.logs = logs != null ? new LinkedList<>(logs) : null;
+        }
+
+        @XStreamAlias("issues")
+        private List<Issue> issues;
+
+        /**
+         * Returns the issues collected during scorecard evaluation.
+         *
+         * @return unmodifiable list of issues, or empty list if none
+         */
+        public List<Issue> getIssues()
+        {
+            if (issues == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(issues);
+        }
+
+        /**
+         * Adds an issue to the result.
+         *
+         * @param issue
+         *                  the issue to add
+         */
+        void addIssue(final Issue issue)
+        {
+            if (issues == null)
+            {
+                issues = new LinkedList<>();
+            }
+            issues.add(issue);
+        }
+
+    }
+
+    /**
+     * Represents an issue logged during scorecard evaluation.
+     */
+    @XStreamAlias("issue")
+    public static class Issue
+    {
+        @XStreamAsAttribute
+        private final String severity;
+
+        private final String message;
+
+        private final String location;
+
+        public Issue(final String severity, final String message, final String location)
+        {
+            this.severity = severity;
+            this.message = message;
+            this.location = location;
+        }
+
+        public String getSeverity()
+        {
+            return severity;
+        }
+
+        public String getMessage()
+        {
+            return message;
+        }
+
+        public String getLocation()
+        {
+            return location;
+        }
     }
 
     public final Configuration configuration;

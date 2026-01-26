@@ -59,6 +59,9 @@ public class GroovyEvaluator extends AbstractEvaluator
             final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
             if (logger != null && !logger.getLogs().isEmpty())
             {
+                // Copy logs to the result for test access
+                scorecard.result.setLogs(logger.getLogs());
+
                 // If there's already an error, update it with the log
                 if (!scorecard.result.getErrors().isEmpty())
                 {
@@ -152,6 +155,19 @@ public class GroovyEvaluator extends AbstractEvaluator
 
         if (!erroneousGroups.isEmpty())
         {
+            // Collect issues from erroneous rules
+            for (final Scorecard.Group g : erroneousGroups)
+            {
+                for (final Scorecard.Rule r : g.getRules())
+                {
+                    if (r.getStatus().isError() && StringUtils.isNotBlank(r.getMessage()))
+                    {
+                        final String location = String.format("group '%s' / rule '%s'", g.getId(), r.getId());
+                        result.addIssue(new Scorecard.Issue("ERROR", r.getMessage(), location));
+                    }
+                }
+            }
+
             if (StringUtils.isBlank(result.getError()))
             {
                 final String errorMessagesJoined = erroneousGroups.stream().flatMap(g -> g.getRules().stream())
