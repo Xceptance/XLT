@@ -119,6 +119,17 @@ public class StaticEvaluator extends AbstractEvaluator
         }
     }
 
+    /**
+     * Performs the actual evaluation of the scorecard configuration against the document.
+     *
+     * @param config
+     *                         the parsed configuration
+     * @param documentFile
+     *                         the XML file to evaluate against
+     * @return the resulting scorecard
+     * @throws SaxonApiException
+     *                               thrown if XPath evaluation fails
+     */
     protected Scorecard doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
     {
         final XdmNode docNode = processor.newDocumentBuilder().build(documentFile);
@@ -126,25 +137,37 @@ public class StaticEvaluator extends AbstractEvaluator
         xpathCompiler.setUnprefixedElementMatchingPolicy(UnprefixedElementMatchingPolicy.DEFAULT_NAMESPACE);
         xpathCompiler.setCaching(true);
 
-        int points = 0, totalPoints = 0;
-        boolean testFailed = false;
+        int points = 0, totalPoints = 0; // counters for achieved and achievable points
+        boolean testFailed = false; // whether to mark test as failed
 
+        // initialize scorecard and its result objects
         final Scorecard scorecard = new Scorecard(config);
         final Scorecard.Result result = scorecard.result;
+        // remember the erroneous groups to decide whether evaluation has a meaningful result later on
         final List<Scorecard.Group> erroneousGroups = new ArrayList<>();
 
+        // loop through the list of configured groups (in definition order)
         for (final GroupDefinition groupDef : config.getGroups())
         {
+            // create a group result object
             final Scorecard.Group group = new Scorecard.Group(groupDef);
+            // loop through the group's rule IDs (in definition order)
             for (final String ruleId : groupDef.getRuleIds())
             {
+                // lookup the rule's definition for this ID
                 final RuleDefinition ruleDef = config.getRule(ruleId);
+                // create a rule result object
                 final Scorecard.Rule rule = new Scorecard.Rule(ruleDef, groupDef.isEnabled());
+                // evaluate the rule
                 evaluateRule(rule, xpathCompiler, docNode, config::getSelector);
+                // add rule result to group
                 group.addRule(rule);
             }
 
+            // conclude the evaluation of the group
             testFailed = conclude(group) | testFailed;
+
+            // add number of group's achieved and achievable points to the counters
             points += group.getPoints();
             totalPoints += group.getTotalPoints();
 
@@ -152,13 +175,17 @@ public class StaticEvaluator extends AbstractEvaluator
             {
                 erroneousGroups.add(group);
             }
+            // add group result to scorecard result
             result.addGroup(group);
         }
 
+        // determine if evaluation failed due to erroneous groups
         if (!erroneousGroups.isEmpty())
         {
+            // do not "overwrite" any previous error
             if (StringUtils.isBlank(result.getError()))
             {
+                // collect error messages from erroneous groups/rules and join them with two new-line characters
                 final String errorMessagesJoined = erroneousGroups.stream().flatMap(g -> g.getRules().stream())
                                                                   .filter(r -> r.getStatus().isError() &&
                                                                                StringUtils.isNotBlank(r.getMessage()))
@@ -173,10 +200,14 @@ public class StaticEvaluator extends AbstractEvaluator
         }
         else
         {
+            // set overall number of achieved and achievable points
             result.setPoints(points);
             result.setTotalPoints(totalPoints);
+
+            // compute final score
             final double pointsPercentage = getPercentage(points, totalPoints);
 
+            // determine the test's rating and whether it has failed
             String rating = null;
             for (final RatingDefinition ratingDef : config.getRatings())
             {
@@ -188,6 +219,7 @@ public class StaticEvaluator extends AbstractEvaluator
                 }
             }
 
+            // set final values
             result.setTestFailed(testFailed);
             result.setPointsPercentage(pointsPercentage);
             result.setRating(rating);
@@ -196,6 +228,18 @@ public class StaticEvaluator extends AbstractEvaluator
         return scorecard;
     }
 
+    /**
+     * Evaluates a single rule by processing all its checks and determining the final rule status.
+     *
+     * @param rule
+     *                           the rule to evaluate
+     * @param compiler
+     *                           the XPath compiler
+     * @param document
+     *                           the document to evaluate against
+     * @param selectorLookup
+     *                           function to lookup selector definitions by ID
+     */
     private void evaluateRule(final Scorecard.Rule rule, final XPathCompiler compiler, final XdmNode document,
                               final Function<String, SelectorDefinition> selectorLookup)
     {
@@ -211,9 +255,22 @@ public class StaticEvaluator extends AbstractEvaluator
         conclude(rule);
     }
 
+    /**
+     * Evaluates a single check within a rule.
+     *
+     * @param check
+     *                           the check to evaluate
+     * @param compiler
+     *                           the XPath compiler
+     * @param document
+     *                           the document to evaluate against
+     * @param selectorLookup
+     *                           function to lookup selector definitions by ID
+     */
     private void evaluateRuleCheck(final Scorecard.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
                                    final Function<String, SelectorDefinition> selectorLookup)
     {
+        // check for manually set status first
         final Status manualStatus = check.getDefinition().getManualStatus();
         if (manualStatus != null)
         {
@@ -226,6 +283,7 @@ public class StaticEvaluator extends AbstractEvaluator
             return;
         }
 
+        // pick the right selector (specified directly or referenced by ID)
         final String selector;
         final String selectorId = check.getDefinition().getSelectorId();
         if (selectorId != null)
@@ -284,9 +342,23 @@ public class StaticEvaluator extends AbstractEvaluator
         }
     }
 
+    /**
+     * Safely evaluates a condition expression against a context value. If the expression starts with a comparison operator,
+     * it prepends '.' to make it a valid XPath.
+     *
+     * @param condition
+     *                         the condition expression
+     * @param compiler
+     *                         the XPath compiler
+     * @param contextValue
+     *                         the context value to evaluate against
+     * @return true if the condition evaluates to true, false otherwise
+     */
     private boolean evaluateConditionSafe(final String condition, final XPathCompiler compiler, final XdmValue contextValue)
     {
+        // strip any leading/trailing whitespace
         String expr = StringUtils.strip(condition);
+        // if expression starts with a comparison operator, put a '.' in front of it
         if (startsWithAny(expr, "=", "<", ">", "!="))
         {
             expr = ". " + expr;
@@ -301,25 +373,38 @@ public class StaticEvaluator extends AbstractEvaluator
         }
     }
 
+    /**
+     * Concludes the evaluation of a rule by determining its final status based on its checks. Sets the rule's status,
+     * message, and points accordingly.
+     *
+     * @param rule
+     *                 the rule to conclude
+     */
     private void conclude(final Scorecard.Rule rule)
     {
+        // nothing to do for disabled rules
         if (!rule.isEnabled())
         {
             return;
         }
 
         Status lastStatus = Status.PASSED;
+        // loop through rule's checks
         for (final Scorecard.Rule.Check c : rule.getChecks())
         {
             final Status checkStatus = c.getStatus();
+            // ignore skipped checks
             if (checkStatus.isSkipped())
             {
                 continue;
             }
 
+            // remember most recent check status that doesn't indicate a passed check
+            // or just the very first check status if all checks did pass
             if (!checkStatus.isPassed())
             {
                 lastStatus = checkStatus;
+                // encountered erroneous check -> set rule message to the check's error message and stop looping
                 if (checkStatus.isError())
                 {
                     rule.setMessage(String.format("[Check #%d] %s", c.getIndex(), c.getErrorMessage()));
@@ -328,6 +413,10 @@ public class StaticEvaluator extends AbstractEvaluator
             }
         }
 
+        // take action according to rule's final status
+        // (pass: set message to success message and points to all achievable points, fail: set message to fail message)
+
+        // negate rule status if desired
         if (rule.getDefinition().isNegateResult())
         {
             lastStatus = lastStatus.negate();
@@ -344,8 +433,17 @@ public class StaticEvaluator extends AbstractEvaluator
         }
     }
 
+    /**
+     * Concludes the evaluation of a group by determining its final status based on its rules. Sets the group's status,
+     * message, points, and determines if the test should fail.
+     *
+     * @param group
+     *                  the group to conclude
+     * @return true if the test should fail due to this group's evaluation
+     */
     private boolean conclude(final Scorecard.Group group)
     {
+        // nothing to do for disabled groups
         if (!group.isEnabled())
         {
             return false;
@@ -355,10 +453,23 @@ public class StaticEvaluator extends AbstractEvaluator
         int maxPoints = 0, sumPointsTotal = 0, sumPointsMatching = 0;
         boolean somePassed = false, someFailed = false, someError = false;
 
+        // loop through group's rules and determine
+        // - the points of the first matching rule,
+        // - the points of the last matching rule,
+        // - the points of all matching rules (sum of),
+        // - the maximum number of all rules' points and
+        // - the overall sum of all rules' points
+        // - the rules' messages
+        // - the overall status of the group
+        // - + PASSED if at least one rule passed and mode is 'first' or 'last' OR if all rules did pass and mode is 'all'
+        // - + FAILED if at least one rule failed if mode is 'all' OR all rules did fail and mode is 'first' or 'last'
+        // - + ERROR if some rule was erroneous
         final List<Scorecard.Rule> rules = group.getRules();
         for (final Scorecard.Rule rule : rules)
         {
-            if (!rule.getDefinition().isEnabled())
+            // rules must be enabled in order to participate in point calculation
+            // N.B. Rule status is SKIPPED if and only if rule is disabled
+            if (!rule.getDefinition().isEnabled()) // no need to check group for being enabled
             {
                 continue;
             }
@@ -400,6 +511,7 @@ public class StaticEvaluator extends AbstractEvaluator
             return false;
         }
 
+        // pick the correct values for group's points and total points according to its mode
         final int points, totalPoints;
         final Status groupStatus;
         final List<Scorecard.Rule> rulesThatMayFailTest;
