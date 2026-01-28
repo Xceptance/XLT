@@ -170,7 +170,8 @@ public class Configuration
 
     public Collection<RatingDefinition> getRatings()
     {
-        return Collections.unmodifiableCollection(ratings.values());
+        // sort ratings by value ascending
+        return ratings.values().stream().sorted((r1, r2) -> Double.compare(r1.getValue(), r2.getValue())).collect(Collectors.toList());
     }
 
     /**
