@@ -61,6 +61,15 @@ public abstract class AbstractEvaluator
         xstream.toXML(scorecard, writer);
     }
 
+    /**
+     * Returns the ratio in percent rounded to one decimal place.
+     *
+     * @param numerator
+     *                        the numerator value
+     * @param denominator
+     *                        the denominator value
+     * @return given ratio in percent
+     */
     protected static double getPercentage(final int numerator, final int denominator)
     {
         return denominator > 0 ? (Math.round((numerator * 1000.0) / denominator) / 10.0) : 0.0;

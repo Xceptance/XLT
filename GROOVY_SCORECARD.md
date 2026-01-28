@@ -9,27 +9,59 @@ To use a Groovy scorecard, create a file with the `.groovy` extension (e.g., `sc
 A basic Groovy configuration looks like this:
 
 ```groovy
+// We need rules to evaluate, each rule needs at least one check
+// Each check needs a selector and a condition
 builder.rules {
     rule {
         id 'rule1'
-        name 'Homepage Responsive'
+        name 'Max P95'
         points 10
         checks {
             check {
-                selector '//requests/request[name="Homepage"]/performance'
-                condition '< 500'
+                // get us the max of all requests p95 values
+                // we don't want to filter by name
+                // the selector result must be comparable in the 
+                // condition
+                selector 'max(//requests/request/percentiles/p95)'
+                condition '<= 500'
             }
+        }
+        messages {
+            success "Runtimes within range"
+            fail "Runtime exceeds 500 ms"
         }
     }
 }
 
+// We need groups to group rules together
+// Each group needs at least one rule
 builder.groups {
     group {
-        id 'performance'
-        name 'Performance KPIs'
+        id 'runtime'
+        name 'Runtime KPIs'
+        description 'Evaluate our runtime KPIs'
         rules(['rule1'])
     }
 }
+
+// We need ratings to rate the scorecard
+// The ratings is based on a percentage of the total points
+builder.ratings {
+    rating { 
+        id 'Fail'
+        description 'We have not met all our criteria'
+        value 99.99
+        failsTest true
+    }
+    rating { 
+        id 'Pass'
+        description 'We have met all our criteria'
+        value 100.0 
+    }
+}
+
+// at the end, we have to return the builder
+builder
 ```
 
 ## Core Concepts
@@ -201,6 +233,9 @@ Defines evaluation rules.
       * `displayValue (boolean)`: Whether to show the value in the report.
       * `enabled (boolean)`: Default true.
       * `formatter (String)`: Optional Java string formatter syntax (e.g., `%,.2f`).
+  * `messages { ... }`
+    * `success (String)`: Message to display when the rule passes.
+    * `fail (String)`: Message to display when the rule fails.
 
 ### `groups`
 
