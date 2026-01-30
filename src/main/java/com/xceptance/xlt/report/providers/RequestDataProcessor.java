@@ -74,9 +74,6 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private final IntMinMaxValueSet responseSizeValueSet;
 
     /**
-     * Using a memory efficient HyperLogLog algorithmm for counting distinct urls
-     */
-    /**
      * Using HyperLogLog algorithm for counting distinct urls.
      */
     private final HllSketch distinctUrlsHLL = new HllSketch(21/* log2m */);
@@ -326,9 +323,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         if (countDistinctUrls)
         {
-            // store the URL's hash code only to save space
-            // HllSketch handles hashing internally (MurmurHash3)
-            distinctUrlsHLL.update(reqData.getUrl().toString());
+            // use a HyperLogLog sketch to count distinct URLs
+            distinctUrlsHLL.update(reqData.hashCodeOfUrlWithoutFragment());
 
             // remember some URLs (up to the limit)
             if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
