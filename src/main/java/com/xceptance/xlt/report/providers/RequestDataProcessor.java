@@ -50,8 +50,7 @@ import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.TaskManager;
 
-import com.dynatrace.hash4j.distinctcount.HyperLogLog;
-import com.dynatrace.hash4j.hashing.Hashing;
+import org.apache.datasketches.hll.HllSketch;
 
 /**
  * The {@link RequestDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -80,7 +79,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * Using HyperLogLog algorithm for counting distinct urls.
      */
-    private final HyperLogLog distinctUrlsHLL = HyperLogLog.create(21);
+    private final HllSketch distinctUrlsHLL = new HllSketch(21/* log2m */);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -273,7 +272,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         final RequestReport timerReport = (RequestReport) super.createTimerReport(generateHistograms);
 
         // just int is safe, more than 2 billion urls is unlikely
-        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.getDistinctCountEstimate());
+        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.getEstimate());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
         timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
                                                                     : new BigDecimal[] {};
@@ -328,9 +327,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         if (countDistinctUrls)
         {
             // store the URL's hash code only to save space
-            // store the URL's hash code only to save space
-            // HyperLogLog requires a 64-bit hash, so we mix the URL characters to get a good distribution
-            distinctUrlsHLL.add(Hashing.wyhashFinal3().hashCharsToLong(reqData.getUrl()));
+            // HllSketch handles hashing internally (MurmurHash3)
+            distinctUrlsHLL.update(reqData.getUrl().toString());
 
             // remember some URLs (up to the limit)
             if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
@@ -357,6 +355,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         receiveTimeStatistics.addValue(reqData.getReceiveTime());
         timeToFirstBytesStatistics.addValue(reqData.getTimeToFirstBytes());
         timeToLastBytesStatistics.addValue(reqData.getTimeToLastBytes());
+
     }
 
     /**
