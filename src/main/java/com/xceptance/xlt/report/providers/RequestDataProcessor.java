@@ -51,6 +51,7 @@ import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.TaskManager;
 
 import org.apache.datasketches.hll.HllSketch;
+import org.apache.datasketches.hll.TgtHllType;
 
 /**
  * The {@link RequestDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -74,9 +75,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private final IntMinMaxValueSet responseSizeValueSet;
 
     /**
-     * Using HyperLogLog algorithm for counting distinct urls.
+     * Using HyperLogLog algorithm for counting distinct urls. We use the 8 bit version which is the fastest.
      */
-    private final HllSketch distinctUrlsHLL = new HllSketch(21/* log2m */);
+    private final HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -324,6 +325,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         if (countDistinctUrls)
         {
             // use a HyperLogLog sketch to count distinct URLs
+            // For backward compatibility, ignore URL fragments (part after '#')
+            // when counting distinct URLs.
             distinctUrlsHLL.update(reqData.hashCodeOfUrlWithoutFragment());
 
             // remember some URLs (up to the limit)

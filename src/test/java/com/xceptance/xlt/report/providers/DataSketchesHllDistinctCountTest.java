@@ -3,7 +3,10 @@ package com.xceptance.xlt.report.providers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.UUID;
+
 import org.apache.datasketches.hll.HllSketch;
+import org.apache.datasketches.hll.TgtHllType;
 
 /**
  * Tests for HllSketch-based distinct URL counting functionality used in RequestDataProcessor.
@@ -11,7 +14,7 @@ import org.apache.datasketches.hll.HllSketch;
 public class DataSketchesHllDistinctCountTest
 {
     // Same configuration as RequestDataProcessor
-    private static final int LOG_K = 21;
+    private static final int LOG_K = 20;
 
     /**
      * Tests that HllSketch correctly counts a small number of distinct values.
@@ -19,7 +22,7 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testSmallDistinctCount()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         // Add 10 distinct values
         for (int i = 1; i <= 10; i++)
@@ -39,7 +42,7 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testDuplicatesDoNotIncreaseCount()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         // Add the same 5 values multiple times
         for (int repeat = 0; repeat < 100; repeat++)
@@ -62,7 +65,7 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testLargeDistinctCount()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         final int expectedCount = 100_000;
 
@@ -84,7 +87,7 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testWithUrlStrings()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         String url1 = "http://example.com/page1";
         String url2 = "http://example.com/page2";
@@ -107,7 +110,7 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testRealisticUrlScenario()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         // Simulate a realistic scenario: 1000 unique URLs, each hit 10 times
         final int uniqueUrls = 1000;
@@ -135,7 +138,7 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testCastToInt()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         for (int i = 1; i <= 1000; i++)
         {
@@ -155,20 +158,44 @@ public class DataSketchesHllDistinctCountTest
     @Test
     public void testVeryLargeDistinctCount()
     {
-        final HllSketch sketch = new HllSketch(LOG_K);
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
 
         final int expectedCount = 1_000_000;
 
         for (int i = 0; i < expectedCount; i++)
         {
             String url = "http://example.com/product/?r=" + i;
-            sketch.update(url);
+            sketch.update(url.hashCode());
         }
 
         final double estimate = sketch.getEstimate();
 
         // Allow 2% error for 1M values
-        final double tolerance = expectedCount * 0.02;
+        final double tolerance = expectedCount * 0.01;
+        Assert.assertEquals("Distinct count should be close to " + expectedCount, expectedCount, estimate, tolerance);
+    }
+
+    /**
+     * Mimics production URLs with UUIDs
+     */
+    @Test
+    public void testMimicsProductionUrls()
+    {
+        final HllSketch sketch = new HllSketch(LOG_K, TgtHllType.HLL_8);
+
+        final int expectedCount = 87_151;
+
+        for (int i = 0; i < expectedCount; i++)
+        {
+            String url = "https://anytestserver-test-anywhere.com/acmecorp/proxy/api/shopper/shopper-context/v1/organizations/f_iuqz_abcd_prd/shopper-context/" +
+                         UUID.randomUUID().toString() + "?siteId=SiteWithAName";
+            sketch.update(url.hashCode());
+        }
+
+        final double estimate = sketch.getEstimate();
+
+        // Allow 0.5% error for 87k values
+        final double tolerance = expectedCount * 0.001;
         Assert.assertEquals("Distinct count should be close to " + expectedCount, expectedCount, estimate, tolerance);
     }
 }
