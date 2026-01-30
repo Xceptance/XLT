@@ -50,7 +50,8 @@ import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.TaskManager;
 
-import net.agkn.hll.HLL;
+import com.dynatrace.hash4j.distinctcount.HyperLogLog;
+import com.dynatrace.hash4j.hashing.Hashing;
 
 /**
  * The {@link RequestDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -76,7 +77,10 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * Using a memory efficient HyperLogLog algorithmm for counting distinct urls
      */
-    private final HLL distinctUrlsHLL = new HLL(21/* log2m */, 5/* registerWidth */);
+    /**
+     * Using HyperLogLog algorithm for counting distinct urls.
+     */
+    private final HyperLogLog distinctUrlsHLL = HyperLogLog.create(21);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -160,9 +164,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      * Constructor.
      *
      * @param name
-     *            the timer name
+     *                     the timer name
      * @param provider
-     *            the provider that owns this data processor
+     *                     the provider that owns this data processor
      */
     public <T extends AbstractDataProcessor> RequestDataProcessor(final String name, final AbstractReportProvider provider)
     {
@@ -173,11 +177,11 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      * Constructor.
      *
      * @param name
-     *            the timer name
+     *                              the timer name
      * @param provider
-     *            the provider that owns this data processor
+     *                              the provider that owns this data processor
      * @param countDistinctUrls
-     *            whether to count distinct URLs
+     *                              whether to count distinct URLs
      */
     public <T extends AbstractDataProcessor> RequestDataProcessor(final String name, final AbstractReportProvider provider,
                                                                   final boolean countDistinctUrls)
@@ -269,7 +273,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         final RequestReport timerReport = (RequestReport) super.createTimerReport(generateHistograms);
 
         // just int is safe, more than 2 billion urls is unlikely
-        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
+        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.getDistinctCountEstimate());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
         timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
                                                                     : new BigDecimal[] {};
@@ -324,7 +328,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         if (countDistinctUrls)
         {
             // store the URL's hash code only to save space
-            distinctUrlsHLL.addRaw(reqData.hashCodeOfUrlWithoutFragment());
+            // store the URL's hash code only to save space
+            // HyperLogLog requires a 64-bit hash, so we mix the URL characters to get a good distribution
+            distinctUrlsHLL.add(Hashing.wyhashFinal3().hashCharsToLong(reqData.getUrl()));
 
             // remember some URLs (up to the limit)
             if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
@@ -354,13 +360,13 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     }
 
     /**
-     * Creates a chart from the passed bytes received values. The chart's title and file name are derived from the
-     * specified timer name. The chart is generated to the charts directory.
+     * Creates a chart from the passed bytes received values. The chart's title and file name are derived from the specified
+     * timer name. The chart is generated to the charts directory.
      *
      * @param timerName
-     *            the name of the timer
+     *                       the name of the timer
      * @param timeSeries
-     *            the value list
+     *                       the value list
      */
     protected void createResponseSizeChart(final String timerName, final TimeSeries timeSeries)
     {
@@ -376,15 +382,15 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     }
 
     /**
-     * Creates a histogram chart from the given timer list and stores it to the passed directory. The histogram shows
-     * the number of requests that fall into certain runtime intervals.
+     * Creates a histogram chart from the given timer list and stores it to the passed directory. The histogram shows the
+     * number of requests that fall into certain runtime intervals.
      *
      * @param chartTitle
-     *            the chart title
+     *                                     the chart title
      * @param histogramSeries
-     *            the histogram series data
+     *                                     the histogram series data
      * @param runtimeSegmentBoundaries
-     *            the runtime segments to show in the chart
+     *                                     the runtime segments to show in the chart
      */
     protected JFreeChart createHistogramChart(final String chartTitle, final XYIntervalSeries histogramSeries,
                                               final int[] runtimeSegmentBoundaries)
@@ -437,15 +443,15 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     }
 
     /**
-     * Creates a histogram chart from the run time values in the passed value set. The chart also contains indicators
-     * that mark the runtime segmentation boundaries as configured in the properties.
+     * Creates a histogram chart from the run time values in the passed value set. The chart also contains indicators that
+     * mark the runtime segmentation boundaries as configured in the properties.
      *
      * @param timerName
-     *            the name of the timer
+     *                            the name of the timer
      * @param histogramSeries
-     *            the histogram series data
+     *                            the histogram series data
      * @param boundaries
-     *            the values marking the segmentation boundaries
+     *                            the values marking the segmentation boundaries
      */
     protected void saveResponseTimeHistogramChart(final String timerName, final XYIntervalSeries histogramSeries, final int[] boundaries)
     {
@@ -473,9 +479,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      * Returns a list of different URLs used for requests handled by this data processor.
      *
      * @param urls
-     *            a set of distinct URL strings
+     *                          a set of distinct URL strings
      * @param totalUrlCount
-     *            the total number of distinct URLs
+     *                          the total number of distinct URLs
      * @return the URL list
      */
     private UrlData getUrlList(final FastHashMap<XltCharBuffer, XltCharBuffer> urls, final int totalUrlCount)
