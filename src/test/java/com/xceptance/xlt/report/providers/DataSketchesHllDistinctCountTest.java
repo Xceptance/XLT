@@ -6,8 +6,7 @@ import org.junit.Test;
 import org.apache.datasketches.hll.HllSketch;
 
 /**
- * Tests for the Apache DataSketches HllSketch-based distinct URL counting functionality. RequestDataProcessor uses: new
- * HllSketch(21) It uses sketch.update(String) which uses internal MurmurHash3.
+ * Tests for HllSketch-based distinct URL counting functionality used in RequestDataProcessor.
  */
 public class DataSketchesHllDistinctCountTest
 {
