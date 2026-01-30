@@ -170,8 +170,8 @@ public class DataSketchesHllDistinctCountTest
 
         final double estimate = sketch.getEstimate();
 
-        // Allow 2% error for 1M values
-        final double tolerance = expectedCount * 0.01;
+        // Allow 0.2% error for 1M values
+        final double tolerance = expectedCount * 0.002;
         Assert.assertEquals("Distinct count should be close to " + expectedCount, expectedCount, estimate, tolerance);
     }
 
@@ -194,8 +194,8 @@ public class DataSketchesHllDistinctCountTest
 
         final double estimate = sketch.getEstimate();
 
-        // Allow 1% error for 87k values
-        final double tolerance = expectedCount * 0.01;
+        // Allow 0.1% error for 87k values
+        final double tolerance = expectedCount * 0.001;
         Assert.assertEquals("Distinct count should be close to " + expectedCount, expectedCount, estimate, tolerance);
     }
 }
