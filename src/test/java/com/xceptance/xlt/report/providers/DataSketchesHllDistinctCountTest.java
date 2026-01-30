@@ -15,10 +15,10 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.UUID;
 
 import org.apache.datasketches.hll.HllSketch;
 import org.apache.datasketches.hll.TgtHllType;
