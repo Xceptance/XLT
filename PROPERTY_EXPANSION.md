@@ -67,42 +67,44 @@ browseUsers = #{ ${totalUsers} * 0.4 }
 browseUsers = #{ props['totalUsers'] as int * 0.4 }
 ```
 
+## Multi-Line Scripts
+
+Groovy expressions can span multiple lines:
+
+```properties
+com.xceptance.xlt.loadtests.config = #{ \
+    def total = props['totalUsers'] as int \
+    def browse = (total * 0.4) as int \
+    def order = (total * 0.1) as int \
+    \
+    ctx['totalUsers'] = total \
+    ctx['browseUsers'] = browse \
+    ctx['orderUsers'] = order \
+    \
+    'configured' \
+}
+
+com.xceptance.xlt.loadtests.TBrowse.users = #{ ctx['browseUsers'] }
+com.xceptance.xlt.loadtests.TOrder.users = #{ ctx['orderUsers'] }
+```
+
+> **Note**: Java properties do not support multi-line text directly. If you need to use multi-line scripts, you must use the `\` line ending to tell the properties file parser that the data continues on the next line.
+
 ### `ctx` - Shared Context Map
 
 Store and share values between expressions:
 
 ```properties
 # Store computed values
-init = #{
-    ctx['base'] = props['totalUsers'] as int
-    ctx['loaded'] = true
-    'initialized'
+init = #{ \
+    ctx['base'] = props['totalUsers'] as int \
+    ctx['loaded'] = true \
+    'initialized' \
 }
 
 # Use stored values later
 browse.users = #{ ctx['base'] * 0.4 }
 order.users = #{ ctx['base'] * 0.1 }
-```
-
-## Multi-Line Scripts
-
-Groovy expressions can span multiple lines:
-
-```properties
-com.xceptance.xlt.loadtests.config = #{
-    def total = props['totalUsers'] as int
-    def browse = (total * 0.4) as int
-    def order = (total * 0.1) as int
-    
-    ctx['totalUsers'] = total
-    ctx['browseUsers'] = browse
-    ctx['orderUsers'] = order
-    
-    'configured'
-}
-
-com.xceptance.xlt.loadtests.TBrowse.users = #{ ctx['browseUsers'] }
-com.xceptance.xlt.loadtests.TOrder.users = #{ ctx['orderUsers'] }
 ```
 
 ## Practical Examples
@@ -138,8 +140,8 @@ hourlyRequests = 10000
 testDurationHours = 1
 
 # Calculate arrival rate per hour
-com.xceptance.xlt.loadtests.TSearch.arrivalRate = #{
-    props['hourlyRequests'] as int
+com.xceptance.xlt.loadtests.TSearch.arrivalRate = #{ \
+    props['hourlyRequests'] as int \
 }
 ```
 
