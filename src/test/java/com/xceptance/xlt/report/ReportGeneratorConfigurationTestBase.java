@@ -51,6 +51,15 @@ public class ReportGeneratorConfigurationTestBase
     }
 
     /**
+     * Helper method for appending a property with the given key and value to the 'reportgenerator.properties' test
+     * file.
+     */
+    protected void appendPropertyToFile(final String key, final String value)
+    {
+        appendPropertyLinesToFile(List.of(key + " = " + value));
+    }
+
+    /**
      * Helper method for appending lines to the 'reportgenerator.properties' test file.
      */
     protected void appendPropertyLinesToFile(final List<String> lines)
