@@ -10,6 +10,7 @@ commons-math3,Apache License 2.0,https://commons.apache.org/proper/commons-math/
 commons-net,Apache License 2.0,https://commons.apache.org/proper/commons-net/,
 commons-text,Apache License 2.0,https://commons.apache.org/proper/commons-text/,
 commons-vfs2,Apache License 2.0,https://commons.apache.org/proper/commons-vfs/,
+datasketches-java,Apache License 2.0,https://datasketches.apache.org/,
 dec,MIT License,https://brotli.org/,
 dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
 dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,Not the full library has been used and modifications have been applied.
