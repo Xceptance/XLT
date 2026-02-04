@@ -542,11 +542,11 @@
             <artifactId>tyrus-container-grizzly-server</artifactId>
             <version>1.21</version>
         </dependency>
-        <!-- https://github.com/aggregateknowledge/java-hll -->
+        <!-- https://github.com/apache/datasketches-java -->
         <dependency>
-            <groupId>net.agkn</groupId>
-            <artifactId>hll</artifactId>
-            <version>1.6.0</version>
+            <groupId>org.apache.datasketches</groupId>
+            <artifactId>datasketches-java</artifactId>
+            <version>7.0.1</version>
         </dependency>
         <!-- Java EE libs -->
         <dependency>
