@@ -151,13 +151,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RUNTIME_INTERVAL_BOUNDARIES = PROP_PREFIX + "runtimeIntervalBoundaries";
 
-    private static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
+    static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
 
-    private static final String PROP_REQUESTS_TABLE_COLORIZE_DEFAULT = "default";
+    static final String PROP_REQUESTS_TABLE_COLORIZE_DEFAULT = "default";
 
-    private static final String PROP_SUFFIX_MATCHING = "matching";
+    static final String PROP_SUFFIX_MATCHING = "matching";
 
-    private static final String PROP_SUFFIX_MEAN = "mean";
+    static final String PROP_SUFFIX_MATCHING_NAME = "matching.name";
+
+    static final String PROP_SUFFIX_MATCHING_LABEL = "matching.label";
+
+    static final String PROP_SUFFIX_MEAN = "mean";
 
     private static final String PROP_SUFFIX_MIN = "min";
 
@@ -251,6 +255,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     static final String ERROR_AVERAGE_TYPE_INVALID = "Moving average type '%s' configured in property '%s' is invalid. Valid types are: " +
                                                      MovingAverageType.getNames() + ".";
+
+    static final String ERROR_COLORIZATION_PATTERN_MISSING = "At least one of the following properties must be defined for colorization group '%s':\n" +
+                                                             "%s\n%s\n%s (Deprecated. Equivalent to 'matching.name')";
 
     static final String ERROR_INVALID_PROPERTY_VALUE_FORMAT = "Failed to read property '%s' because value format is invalid.";
 
@@ -1273,31 +1280,55 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 final String propertyGroup = PROP_REQUESTS_TABLE_COLORIZE + "." + eachGroupName;
 
-                final String matchingPattern;
-                final String propertyMatching = propertyGroup + "." + PROP_SUFFIX_MATCHING;
+                String namePattern;
+                String labelPattern;
+
+                final String namePatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING_NAME;
+                final String labelPatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING_LABEL;
+                final String deprecatedNamePatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING;
+
+                boolean useDeprecatedNameProperty = false;
+
                 if (PROP_REQUESTS_TABLE_COLORIZE_DEFAULT.equals(eachGroupName))
                 {
-                    matchingPattern = ".*";
+                    // set match-all patterns for the "default" group
+                    namePattern = ".*";
+                    labelPattern = ".*";
                 }
                 else
                 {
-                    matchingPattern = getStringProperty(propertyMatching);
+                    // get name and label patterns
+                    namePattern = getStringProperty(namePatternProperty, "");
+                    labelPattern = getStringProperty(labelPatternProperty, "");
 
-                    if (StringUtils.isBlank(matchingPattern))
+                    // if name pattern is blank, check the deprecated property name as a fallback
+                    if (StringUtils.isBlank(namePattern))
                     {
-                        throw new XltException(propertyMatching + " has no value. The value must be a regular expression");
+                        useDeprecatedNameProperty = true;
+                        namePattern = getStringProperty(deprecatedNamePatternProperty, "");
+                    }
+
+                    // validate that at least one pattern was provided
+                    if (StringUtils.isBlank(namePattern) && StringUtils.isBlank(labelPattern))
+                    {
+                        throw new XltException(String.format(ERROR_COLORIZATION_PATTERN_MISSING, eachGroupName, namePatternProperty,
+                                                             labelPatternProperty, deprecatedNamePatternProperty));
+                    }
+
+                    // if we have at least one pattern, all blank patterns are updated to match everything
+                    if (StringUtils.isBlank(namePattern))
+                    {
+                        namePattern = ".*";
+                    }
+                    if (StringUtils.isBlank(labelPattern))
+                    {
+                        labelPattern = ".*";
                     }
                 }
 
-                // just to break early in case the pattern is invalid
-                try
-                {
-                    compileRegEx(matchingPattern, propertyMatching);
-                }
-                catch (XltException e)
-                {
-                    throw new XltException(e.getMessage());
-                }
+                // just to break early in case the patterns are invalid
+                compileRegEx(namePattern, useDeprecatedNameProperty ? deprecatedNamePatternProperty : namePatternProperty);
+                compileRegEx(labelPattern, labelPatternProperty);
 
                 final List<RequestTableColorization.ColorizationRule> colorizationRules = new ArrayList<>();
                 colorizationRules.add(readColorizationRule(propertyGroup, PROP_SUFFIX_MEAN, PROP_SUFFIX_MEAN, false));
@@ -1306,7 +1337,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                 colorizationRules.addAll(readPercentileColorizationRules(propertyGroup, percentileIntervals));
                 colorizationRules.addAll(readSegmentationColorizationRules(propertyGroup, segmentationIntervals));
 
-                colorizationConfigs.add(new RequestTableColorization(eachGroupName, matchingPattern, colorizationRules));
+                colorizationConfigs.add(new RequestTableColorization(eachGroupName, namePattern, labelPattern, colorizationRules));
             }
 
             return colorizationConfigs;
@@ -1735,8 +1766,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // create and validate the rules
             try
             {
-                final LabelingRule rule = new LabelingRule(newLabels, typeString, namePattern, labelPattern, stopOnMatch, nameExcludePattern,
-                                                           labelExcludePattern);
+                final LabelingRule rule = new LabelingRule(newLabels, typeString, namePattern, labelPattern, stopOnMatch,
+                                                           nameExcludePattern, labelExcludePattern);
                 labelingRules.add(rule);
             }
             catch (final InvalidLabelingRuleException e)

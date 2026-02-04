@@ -15,17 +15,10 @@
  */
 package com.xceptance.xlt.report;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import com.xceptance.xlt.api.report.MovingAverageConfiguration;
@@ -37,33 +30,10 @@ import junitparams.Parameters;
 import util.JUnitParamsUtils;
 
 @RunWith(JUnitParamsRunner.class)
-public class ReportGeneratorConfigurationTest
+public class ReportGeneratorConfiguration_MovingAverageConfigurations_Test extends ReportGeneratorConfigurationTestBase
 {
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
-
-    public File homeDir;
-
-    public File configDir;
-
-    public File propertyFile;
-
-    @Before
-    public void setup() throws IOException
-    {
-        homeDir = tempFolder.getRoot();
-        configDir = tempFolder.newFolder("config");
-
-        // Create required "mastercontroller.properties" file in config directory
-        new File(configDir, "mastercontroller.properties").createNewFile();
-
-        // Create "reportgenerator.properties" file in config directory for testing
-        propertyFile = new File(configDir, "reportgenerator.properties");
-        propertyFile.createNewFile();
-    }
-
     @Test
-    public void commonAverage_defaultValue() throws IOException
+    public void commonAverage_defaultValue()
     {
         // If no common average is configured, the default value is returned
         final MovingAverageConfiguration commonAverage = readReportGeneratorProperties().getCommonMovingAverageConfig();
@@ -74,14 +44,14 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void additionalAverages_defaultValue() throws IOException
+    public void additionalAverages_defaultValue()
     {
         // If no additional averages are configured, an empty list is returned
         Assert.assertEquals(0, readReportGeneratorProperties().getAdditionalMovingAverageConfigs().size());
     }
 
     @Test
-    public void commonAverage_percentage() throws IOException
+    public void commonAverage_percentage()
     {
         addCommonAverageConfig("percentage", "25%");
 
@@ -93,7 +63,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void commonAverage_time() throws IOException
+    public void commonAverage_time()
     {
         addCommonAverageConfig("time", "1h15m45s");
 
@@ -105,7 +75,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void additionalAverages_singleAdditionalAverage() throws IOException
+    public void additionalAverages_singleAdditionalAverage()
     {
         addAdditionalAverageConfig("1", "time", "15:30");
 
@@ -118,7 +88,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void additionalAverages_multipleAdditionalAverages() throws IOException
+    public void additionalAverages_multipleAdditionalAverages()
     {
         addAdditionalAverageConfig("1", "percentage", "1%");
         addAdditionalAverageConfig("2", "percentage", "25%");
@@ -141,7 +111,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void additionalAverages_maxNumberOfAdditionalAverages() throws IOException
+    public void additionalAverages_maxNumberOfAdditionalAverages()
     {
         // Configure the maximum allowed number of additional averages
         addAdditionalAverageConfig("1", "percentage", "2%");
@@ -180,7 +150,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void additionalAverages_gapsBetweenIndexes() throws IOException
+    public void additionalAverages_gapsBetweenIndexes()
     {
         // Add additional averages with indexes 2 and 4, skipping indexes 1 and 3
         addAdditionalAverageConfig("2", "time", "3:01");
@@ -199,7 +169,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void additionalAverages_unsortedIndexes() throws IOException
+    public void additionalAverages_unsortedIndexes()
     {
         // Add additional averages with indexes out of order
         addAdditionalAverageConfig("3", "percentage", "25%");
@@ -224,7 +194,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void commonAndAdditionalAverages() throws IOException
+    public void commonAndAdditionalAverages()
     {
         // Configure common average and 2 additional averages
         addAdditionalAverageConfig("4", "time", "2m30s");
@@ -252,7 +222,7 @@ public class ReportGeneratorConfigurationTest
     }
 
     @Test
-    public void commonAndAdditionalAverages_blankProperties() throws IOException
+    public void commonAndAdditionalAverages_blankProperties()
     {
         // Configure common average and 2 additional averages, all with blank types and values
         addAdditionalAverageConfig("4", "", "\t");
@@ -473,14 +443,6 @@ public class ReportGeneratorConfigurationTest
     }
 
     /**
-     * Helper method for reading the contents of the "reportgenerator.properties" test file.
-     */
-    private ReportGeneratorConfiguration readReportGeneratorProperties() throws IOException
-    {
-        return new ReportGeneratorConfiguration(homeDir, configDir, null, null, null);
-    }
-
-    /**
      * Helper method to add the properties for the common average configuration with the given type and value.
      */
     private void addCommonAverageConfig(final String type, final String value)
@@ -528,21 +490,6 @@ public class ReportGeneratorConfigurationTest
     private void addAdditionalAverageValue(final String index, final String value)
     {
         appendPropertyToFile(getAdditionalAverageValueKey(index), value);
-    }
-
-    /**
-     * Helper method for writing a property to the 'reportgenerator.properties' test file.
-     */
-    private void appendPropertyToFile(final String key, final String value)
-    {
-        try
-        {
-            Files.write(propertyFile.toPath(), List.of(key + " = " + value), StandardOpenOption.APPEND);
-        }
-        catch (final IOException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
