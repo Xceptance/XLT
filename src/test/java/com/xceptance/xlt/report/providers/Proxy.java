@@ -19,8 +19,8 @@ import java.io.File;
 
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
-import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.IntSummaryStatistics;
+import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.ValueSet;
 
 /**

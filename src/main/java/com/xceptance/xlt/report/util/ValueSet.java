@@ -23,7 +23,7 @@ import java.util.Arrays;
  * <p>
  * Potential bug: no value vs. a value of 0
  */
-public class ValueSet
+public class LosslessValueSet implements TimeValueSet
 {
     /**
      * The default initial value set size.
@@ -94,10 +94,10 @@ public class ValueSet
      * @param value
      *            the value
      */
-    public void addOrUpdateValue(final long time, final int value)
+    public void addOrUpdateValue(final long timeInMs, final int value)
     {
         // get the corresponding second
-        final long second = time / 1000L;
+        final long second = timeInMs / 1000L;
 
         // check whether this is the first value added
         if (valueCount == 0)
@@ -107,7 +107,7 @@ public class ValueSet
             values[0] = value;
 
             // maintain statistics
-            minimumTime = maximumTime = time;
+            minimumTime = maximumTime = timeInMs;
             valueCount = 1;
         }
         else

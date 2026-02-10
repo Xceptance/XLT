@@ -97,7 +97,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         final TimerReport timerReport = createTimerReport();
 
         final IntTimeSeries.Statistics timeSeriesStats = this.timeSeries.getStatistics();
-        
+
         timerReport.mean = ReportUtils.convertToBigDecimal(this.timeSeries.getMean());
         timerReport.errors = (int) timeSeriesStats.errorCount;
         timerReport.max = timeSeriesStats.maxValue;
@@ -137,45 +137,33 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
             // create charts asynchronously
             final TaskManager taskManager = TaskManager.getInstance();
 
-            taskManager.addTask(new Runnable()
+            taskManager.addTask(() -> 
             {
-                @Override
-                public void run()
-                {
-                    // determine the capping value
-                    final int chartCappingValue = JFreeChartUtils.getChartCappingValue(getChartCappingInfo(), runTimeStatistics.getMean(),
-                                                                                       runTimeStatistics.getMaximum());
+                // determine the capping value
+                final int chartCappingValue = JFreeChartUtils.getChartCappingValue(getChartCappingInfo(), runTimeStatistics.getMean(),
+                                                                                   runTimeStatistics.getMaximum());
 
-                    final XYIntervalSeries runTimeHistogramSeries = histogramValueSet.toSeries("Distribution");
+                final XYIntervalSeries runTimeHistogramSeries = histogramValueSet.toSeries("Distribution");
 
-                    final TimeSeries errorsPerSecondTimeSeries = JFreeChartUtils.toStandardTimeSeries(errorsPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
-                        "Errors/s");
+                final TimeSeries errorsPerSecondTimeSeries = JFreeChartUtils.toStandardTimeSeries(errorsPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
+                    "Errors/s");
 
-                    saveResponseTimeChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, runTimeHistogramSeries,
-                                          errorsPerSecondTimeSeries, chartCappingValue);
-                }
+                saveResponseTimeChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, runTimeHistogramSeries,
+                                      errorsPerSecondTimeSeries, chartCappingValue);
             });
 
-            taskManager.addTask(new Runnable()
+            taskManager.addTask(() -> 
             {
-                @Override
-                public void run()
-                {
-                    saveResponseTimeAverageChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, timerReport.median.doubleValue(),
-                                                 timerReport.mean.doubleValue());
-                }
+                saveResponseTimeAverageChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, timerReport.median.doubleValue(),
+                                             timerReport.mean.doubleValue());
             });
 
-            taskManager.addTask(new Runnable()
+            taskManager.addTask(() -> 
             {
-                @Override
-                public void run()
-                {
-                    final TimeSeries countPerSecondTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(countPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
-                                                                                                   "Count/s");
+                final TimeSeries countPerSecondTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(countPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
+                                                                                               "Count/s");
 
-                    saveCountPerSecondChart(name, countPerSecondTimeSeries);
-                }
+                saveCountPerSecondChart(name, countPerSecondTimeSeries);
             });
         }
 
@@ -184,17 +172,17 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
     protected ValueSet getCountPerSecondValueSet()
     {
-        return null;//countPerSecondValueSet;
+        return countPerSecondValueSet;
     }
 
     protected ValueSet getErrorsPerSecondValueSet()
     {
-        return null;//errorsPerSecondValueSet;
+        return errorsPerSecondValueSet;
     }
 
     protected FixedSizeHistogramValueSet getHistogramValueSet()
     {
-        return null;//histogramValueSet;
+        return histogramValueSet;
     }
 
     /**

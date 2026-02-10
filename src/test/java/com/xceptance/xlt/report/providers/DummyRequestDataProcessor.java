@@ -20,8 +20,8 @@ import java.util.Set;
 
 import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.report.util.HistogramValueSet;
-import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.IntSummaryStatistics;
+import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.ValueSet;
 
 /**

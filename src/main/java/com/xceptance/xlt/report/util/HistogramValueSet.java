@@ -21,7 +21,7 @@ import org.jfree.data.xy.XYIntervalSeries;
  * Note: We cannot use JFreeChart classes here since they want all data at once, but we need incremental updates.
  */
 
-public class HistogramValueSet
+public class HistogramValueSet implements ValueSet
 {
     private final int countPerBin[];
 
