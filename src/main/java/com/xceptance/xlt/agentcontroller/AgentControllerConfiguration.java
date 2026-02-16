@@ -29,6 +29,8 @@ import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
+import info.schnatterer.mobynamesgenerator.MobyNamesGenerator;
+
 /**
  * The AgentControllerConfiguration is the central place where all configuration information of the agent controller can
  * be retrieved from.
@@ -50,6 +52,32 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     private static final String PROP_PORT = PROP_PREFIX + "port";
 
     private static final String PROP_TEMP_DIR = PROP_PREFIX + "tempdir";
+
+    private static final String PROP_PRIVATE_AGENT_PREFIX = PROP_PREFIX + "privateAgent.";
+
+    private static final String PROP_PRIVATE_AGENT_ENABLED = PROP_PRIVATE_AGENT_PREFIX + "enabled";
+
+    private static final String PROP_PRIVATE_AGENT_NAME = PROP_PRIVATE_AGENT_PREFIX + "agentName";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_PREFIX = PROP_PRIVATE_AGENT_PREFIX + "xtc.";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_URL = PROP_PRIVATE_AGENT_XTC_PREFIX + "url";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_HOST = PROP_PRIVATE_AGENT_XTC_PREFIX + "host";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_PORT = PROP_PRIVATE_AGENT_XTC_PREFIX + "port";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_RELAY_HOST = PROP_PRIVATE_AGENT_XTC_PREFIX + "relayHost";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_RELAY_PORT = PROP_PRIVATE_AGENT_XTC_PREFIX + "relayPort";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_CLIENT_ID = PROP_PRIVATE_AGENT_XTC_PREFIX + "clientId";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_CLIENT_SECRET = PROP_PRIVATE_AGENT_XTC_PREFIX + "clientSecret";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_ORG = PROP_PRIVATE_AGENT_XTC_PREFIX + "org";
+
+    private static final String PROP_PRIVATE_AGENT_XTC_PROJECT = PROP_PRIVATE_AGENT_XTC_PREFIX + "project";
 
     private final File agentBinDirectory;
 
@@ -76,6 +104,29 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     private final int port;
 
     private File tempDir;
+
+    private final boolean privateAgentModeEnabled;
+
+    private final String privateAgentName;
+
+    private final String xtcUrl;
+
+    private String xtcHost;
+
+    private int xtcPort;
+
+    private String xtcRelayHost;
+
+    private int xtcRelayPort;
+
+    private final String xtcClientId;
+
+    private final String xtcClientSecret;
+
+    private final String xtcOrg;
+
+    private final String xtcProject;
+
 
     /**
      * Creates a new AgentControllerConfiguration object.
@@ -142,7 +193,8 @@ public class AgentControllerConfiguration extends AbstractConfiguration
             }
             else
             {
-                throw new XltException("The value '" + hostName + "' of property '" + PROP_HOST + "' does not denote a valid local address");
+                throw new XltException("The value '" + hostName + "' of property '" + PROP_HOST +
+                                       "' does not denote a valid local address");
             }
         }
 
@@ -154,6 +206,19 @@ public class AgentControllerConfiguration extends AbstractConfiguration
                 new File(agentBinDirectory, scriptName).getAbsolutePath(), Integer.toString(port), "<agentControllerName>",
                 "<agentControllerHost>", "<agentNumber>", "<totalAgentCount>", "<acRemoteAddress>"
             };
+
+        // private agent configuration
+        privateAgentModeEnabled = getBooleanProperty(PROP_PRIVATE_AGENT_ENABLED, false);
+        privateAgentName = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_NAME, MobyNamesGenerator.getRandomName());
+        xtcUrl = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_URL, "https://xtc.xceptance.com/");
+        xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_HOST, "xtc.xceptance.com");
+        xtcPort = getIntProperty(PROP_PRIVATE_AGENT_XTC_PORT, 443);
+        xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_RELAY_HOST, "xtc.xceptance.com");
+        xtcRelayPort = getIntProperty(PROP_PRIVATE_AGENT_XTC_RELAY_PORT, 8889);
+        xtcClientId = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_CLIENT_ID);
+        xtcClientSecret = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_CLIENT_SECRET);
+        xtcOrg = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_ORG);
+        xtcProject = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_PROJECT);
     }
 
     /**
@@ -300,5 +365,60 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     public File getTempDir()
     {
         return tempDir;
+    }
+
+    public boolean isPrivateAgentModeEnabled()
+    {
+        return privateAgentModeEnabled;
+    }
+
+    public String getPrivateAgentName()
+    {
+        return privateAgentName;
+    }
+
+    public String getXtcUrl()
+    {
+        return xtcUrl;
+    }
+
+    public String getXtcHost()
+    {
+        return xtcHost;
+    }
+
+    public int getXtcPort()
+    {
+        return xtcPort;
+    }
+
+    public String getXtcRelayHost()
+    {
+        return xtcRelayHost;
+    }
+
+    public int getXtcRelayPort()
+    {
+        return xtcRelayPort;
+    }
+
+    public String getXtcClientId()
+    {
+        return xtcClientId;
+    }
+
+    public String getXtcClientSecret()
+    {
+        return xtcClientSecret;
+    }
+
+    public String getXtcOrg()
+    {
+        return xtcOrg;
+    }
+
+    public String getXtcProject()
+    {
+        return xtcProject;
     }
 }

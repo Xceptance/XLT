@@ -189,6 +189,15 @@ public class AgentControllerProxy extends AgentControllerImpl
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void startPrivateAgentMode()
+    {
+        // ignore
+    }
+
+    /**
      * Returns the client-side AgentController implementation.
      *
      * @return the agent controller

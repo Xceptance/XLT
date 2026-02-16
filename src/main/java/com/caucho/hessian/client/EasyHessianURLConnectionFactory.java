@@ -68,6 +68,8 @@ public class EasyHessianURLConnectionFactory implements HessianConnectionFactory
             }
         }
 
+        conn.setRequestProperty("Connection", "close");
+
         return new HessianURLConnection(url, conn);
     }
 

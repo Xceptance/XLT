@@ -181,6 +181,10 @@ public class MasterControllerMain
             System.setProperty("https.proxyPort", config.getHttpsProxyPort());
             System.setProperty("https.nonProxyHosts", config.getHttpsProxyBypassHosts());
 
+//            System.setProperty("http.proxyHost", config.getHttpsProxyHost());
+//            System.setProperty("http.proxyPort", config.getHttpsProxyPort());
+//            System.setProperty("http.nonProxyHosts", config.getHttpsProxyBypassHosts());
+
             final XltProxySelector proxySel = new XltProxySelector(ProxySelector.getDefault());
             ProxySelector.setDefault(proxySel);
         }
