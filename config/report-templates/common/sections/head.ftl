@@ -32,17 +32,17 @@
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     
     <style type="text/css">
-        <#assign chartWidth = (configuration.chartWidth[0]!600)?number>
-        <#assign chartHeight = (configuration.chartHeight[0]!400)?number>
+        <#assign chartWidth = configuration.chartWidth[0]!"">
+        <#assign chartHeight = configuration.chartHeight[0]!"">
         .chart-group .chart img, .chart-group .echart {
             width: ${chartWidth}px;
             height: ${chartHeight}px;
         }
         #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
-            height: ${chartHeight * 1.5}px;
+            height: <#if chartHeight?has_content>${chartHeight?number * 1.5}<#else>nan</#if>px;
         }
         #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
-            height: ${chartHeight * 2.3}px;
+            height: <#if chartHeight?has_content>${chartHeight?number * 2.3}<#else>nan</#if>px;
         }
     </style>
 </#macro>

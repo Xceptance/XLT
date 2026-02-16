@@ -278,6 +278,58 @@ public class FreeMarkerParityTest
         renderAndCompare("web-vitals.xsl", "web-vitals.ftl", "web-vitals.html");
     }
 
+    @Test
+    public void testScorecardParity() throws Exception
+    {
+        Map<String, Object> params = new HashMap<>();
+        params.put("scorecardPresent", true);
+        params.put("projectName", "xltproject");
+        params.put("productName", "Xceptance LoadTest");
+        params.put("productVersion", "?.?.?");
+        params.put("productUrl", "http://www.xceptance-loadtest.com/");
+        
+        // Create a minimal scorecard.xml with necessary structure
+        // Note: configuration must precede outcome for XSLT's preceding-sibling lookup
+        String scorecardXml = "<scorecard>" +
+                              "  <configuration>" +
+                              "    <ratings>" +
+                              "      <rating id=\"r1\" description=\"Good\" failsTest=\"false\">" +
+                              "        <description>Good</description>" +
+                              "      </rating>" +
+                              "    </ratings>" +
+                              "    <groups>" +
+                              "      <group id=\"g1\" name=\"Group 1\" description=\"Group 1 Description\" failsTest=\"false\" enabled=\"true\">" +
+                              "        <description>Group 1 Description</description>" +
+                              "        <rules>" +
+                              "          <rule ref-id=\"ru1\"/>" +
+                              "        </rules>" +
+                              "      </group>" +
+                              "    </groups>" +
+                              "    <rules>" +
+                              "      <rule id=\"ru1\" name=\"Rule 1\" description=\"Rule 1 Description\" failsTest=\"true\" enabled=\"true\">" +
+                              "        <description>Rule 1 Description</description>" +
+                              "      </rule>" +
+                              "    </rules>" +
+                              "  </configuration>" +
+                              "  <outcome points=\"100\" totalPoints=\"100\" pointsPercentage=\"100\" rating=\"r1\" testFailed=\"false\">" +
+                              "    <groups>" +
+                              "      <group name=\"Group 1\" ref-id=\"g1\" description=\"Group desc\" enabled=\"true\" testFailed=\"false\">" +
+                              "        <rules>" +
+                              "          <rule ref-id=\"ru1\" testFailed=\"false\"/>" +
+                              "        </rules>" +
+                              "      </group>" +
+                              "    </groups>" +
+                              "    <rating>r1</rating>" +
+                              "  </outcome>" +
+                              "</scorecard>";
+                              
+        File scorecardFile = tempFolder.newFile("scorecard.xml");
+        FileUtils.writeStringToFile(scorecardFile, scorecardXml, "UTF-8");
+
+        // The XSLT file is in xsl/scorecard/index.xsl, relative to xsl/loadreport it is ../scorecard/index.xsl
+        renderAndCompare("../scorecard/index.xsl", "sections/scorecard.ftl", "scorecard.html", params, config, scorecardFile);
+    }
+
     private void renderAndCompare(String xslFile, String ftlFile, String outputFileName) throws Exception
     {
         renderAndCompare(xslFile, ftlFile, outputFileName, null, config);
@@ -303,6 +355,7 @@ public class FreeMarkerParityTest
         params.put("productName", "Xceptance LoadTest");
         params.put("productVersion", "?.?.?");
         params.put("productUrl", "http://www.xceptance-loadtest.com/");
+        params.put("projectName", "XLT Project");
         params.put("scorecardPresent", false);
         
         if (extraParams != null)
@@ -373,6 +426,9 @@ public class FreeMarkerParityTest
                    .replace("&#x2715;", "✕")      // normalize hex entity to char
                    .replace("&#x2003;", "")       // normalize em space entity to empty (matching XSLT where it's stripped)
                    .replace("\u2003", "")          // also strip actual Unicode em space (U+2003) that XSLT resolves
+                   .replace("&#8212;", "—")        // normalize em-dash entity to char
+                   .replace("&quot;", "\"")        // normalize quote entity to char
+                   .replace("&QUOT;", "\"")        // also handle upper case if present
                    .replace("919.9999999999999px", "920px") // normalize floating point precision issue in XSLT output
                    .toLowerCase();
 
@@ -410,7 +466,7 @@ public class FreeMarkerParityTest
         // Handle singleton description IDs independently (as XSLT might reuse IDs while FTL uses unique timestamps)
         // We replace them with a fixed suffix
         // IMPORTANT: Longer prefixes must come before shorter ones to avoid partial matching (e.g. more-request matching more-requesterrorcharts)
-        String descPrefixes = "more-requesterrorcharts|more-transactionoverview|more-transactiondetails|more-transaction|more-action|more-request|more-network|more-httprequest|more-httpresponse|more-contenttype|more-errors|more-events|more-agents|more-slowest-requests|more-pageload|more-web-vitals";
+        String descPrefixes = "more-requesterrorcharts|more-transactionoverview|more-transactiondetails|more-transaction|more-action|more-request|more-network|more-httprequest|more-httpresponse|more-contenttype|more-errors|more-events|more-agents|more-slowest-requests|more-pageload|more-web-vitals|more-scorecard|more-ratings|more-rules|more-groups|more-rulechecks";
         for (String prefix : descPrefixes.split("\\|"))
         {
              // Match prefix followed by common ID patterns
@@ -460,7 +516,7 @@ public class FreeMarkerParityTest
              // .toLowerCase() at line 267.
              // So "more-requesterrorcharts" is correct.
              
-             result = result.replaceAll("(" + prefix + ")(d\\d+e\\d+|gid\\d+|id\\d+|summary|\\d+|[a-f0-9]+)", "$1-fixed");
+             result = result.replaceAll("(" + prefix + ")(-)?(d\\d+e\\d+|gid\\d+|id\\d+|summary|\\d+|[a-f0-9]+)", "$1-fixed");
         }
         return result;
     }
