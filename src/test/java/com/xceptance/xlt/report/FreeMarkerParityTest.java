@@ -37,9 +37,33 @@ public class FreeMarkerParityTest
         
         outputDir = tempFolder.newFolder("output");
         
+        // Inject configuration into XML so XSLT engine finds chart dimensions
+        String xmlContent = FileUtils.readFileToString(testReportXml, "UTF-8");
+        String chartConfig = "<chartWidth>600</chartWidth><chartHeight>400</chartHeight>";
+        
+        if (xmlContent.contains("<configuration>"))
+        {
+             // Inject inside existing config
+             xmlContent = xmlContent.replace("</configuration>", chartConfig + "</configuration>");
+        }
+        else
+        {
+             // Inject new config block
+             String configXml = "<configuration>" + chartConfig + "</configuration>";
+             // Insert after <testreport>
+             xmlContent = xmlContent.replaceFirst("<testreport>", "<testreport>" + configXml);
+        }
+        
+        // Save as new temp file
+        File tempXml = tempFolder.newFile("testreport-with-config.xml");
+        FileUtils.writeStringToFile(tempXml, xmlContent, "UTF-8");
+        testReportXml = tempXml;
+        
         Properties props = new Properties();
         // Force FreeMarker for the FM renderer test
         props.setProperty("com.xceptance.xlt.reportgenerator.renderingEngine", "freemarker");
+        props.setProperty("com.xceptance.xlt.reportgenerator.charts.width", "600");
+        props.setProperty("com.xceptance.xlt.reportgenerator.charts.height", "400");
         
         // Define only the overview transformation to avoid errors about missing templates for other sections
         props.setProperty("com.xceptance.xlt.reportgenerator.transformations.1.styleSheetFileName", "index.xsl");
@@ -70,6 +94,8 @@ public class FreeMarkerParityTest
         FileUtils.writeStringToFile(tempPropsFile, "com.xceptance.xlt.reportgenerator.transformations.1.styleSheetFileName = index.xsl\n" +
                                                    "com.xceptance.xlt.reportgenerator.transformations.1.templateFileName = index.ftl\n" +
                                                    "com.xceptance.xlt.reportgenerator.transformations.1.outputFileName = index.html\n" +
+                                                   "com.xceptance.xlt.reportgenerator.charts.width = 600\n" +
+                                                   "com.xceptance.xlt.reportgenerator.charts.height = 400\n" +
                                                    "com.xceptance.xlt.reportgenerator.runtimePercentiles = 50, 95, 99, 99.9\n" +
                                                    "com.xceptance.xlt.reportgenerator.runtimeIntervalBoundaries = 1000, 3000, 5000\n", "UTF-8");
 
