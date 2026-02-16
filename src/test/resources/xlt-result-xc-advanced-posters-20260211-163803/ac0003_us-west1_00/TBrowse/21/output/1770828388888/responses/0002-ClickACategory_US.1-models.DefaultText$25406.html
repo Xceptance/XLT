@@ -1,0 +1,551 @@
+	<!DOCTYPE html>
+	<html lang="en-US">
+
+	<head>
+
+		<title>The Poster Demo Store - The Ultimate Online Shop</title>
+
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+
+		<!-- Icomoon Icon Fonts-->
+		<link rel="stylesheet" href="/assets/css/icomoon.css">
+
+		<!-- Bootstrap  -->
+		<link rel="stylesheet" href="/assets/css/bootstrap.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-grid.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-reboot.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-utilities.css">
+
+		<!-- Theme style  -->
+		<link rel="stylesheet" href="/assets/css/style_reworked.css">
+
+		<script type="text/javascript">
+			const CONTEXT_PATH = '';
+			const LOCALE = 'en-US';
+		</script>
+		<script src="/assets/js/posterMiniCart.js"></script>
+	</head>
+
+	<body>
+		<!-- header -->
+		<header>
+
+<div id="top-demo-disclaimer" class="demo-disclaimer container-fluid text-center">This is a demo application. Orders will not be fulfilled. Do not enter ANY personal and sensitive data!</div>
+
+<nav id="header-navigation-bar" class="header-navigation-bar navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container top-menu">
+    <a id="header-brand" class="navbar-brand" href="/en-US">
+      <img id="header-brand-logo" class="shop-logo" src="/assets/img/xceptanceLogo.png" title="Logo" alt="Logo">
+      The Poster Demo Store</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#header-navigation-elements" aria-controls="header-navigation-elements" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="header-navigation-elements" class="collapse navbar-collapse">
+      <ul id="header-categories" class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%401?categoryId=1" role="button" data-bs-auto-close="true" aria-expanded="false">
+            World of Nature
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%402?categoryId=1" title="models.DefaultText@2">Animals</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%403?categoryId=2" title="models.DefaultText@3">Flowers</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%404?categoryId=3" title="models.DefaultText@4">Trees</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%405?categoryId=2" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Dining
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%406?categoryId=4" title="models.DefaultText@6">Cold Cuts</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%407?categoryId=5" title="models.DefaultText@7">Main Dishes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%408?categoryId=6" title="models.DefaultText@8">Sweets</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%409?categoryId=3" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Transportation
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40a?categoryId=7" title="models.DefaultText@a">Air Travel</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40b?categoryId=8" title="models.DefaultText@b">Classic Cars</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40c?categoryId=9" title="models.DefaultText@c">Railways</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%40d?categoryId=4" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Panoramas
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40e?categoryId=10" title="models.DefaultText@e">Architecture</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40f?categoryId=11" title="models.DefaultText@f">Fireworks</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4010?categoryId=12" title="models.DefaultText@10">Landscapes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4011?categoryId=13" title="models.DefaultText@11">XXL Panoramas</a></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="header-actions me-0 ms-auto d-flex">
+        <form id="header-search-form" class="d-flex" role="search" action="/en-US/search" method="get">
+          <input id="header-search-text" name="searchText" class="form-control me-2" type="search" placeholder="Search" aria-label="Search" title="Search" value="">
+          <button id="header-search-button" class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+        </form>
+        <ul id="header-customer-menus" class="navbar-nav mb-2 mb-lg-0">
+          <li id="locale-switcher" class="nav-item dropdown">
+<a id="show-locale-menu" class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    en-US
+</a>
+
+<ul id="locale-menu" class="dropdown-menu">
+    <li><a id="loc-en-us" class="dropdown-item" href="/en-US">en-US</a></li>
+    <li><a id="loc-en-uk" class="dropdown-item" href="/en-UK">en-UK</a></li>
+    <li><a id="loc-de-de" class="dropdown-item" href="/de-DE">de-DE</a></li>
+</ul>
+
+          </li>
+          <li id="user" class=" nav-item dropdown">
+
+<!-- login -->
+<a id="show-user-menu" class="nav-link dropdown-toggle" href="#" title="Sign In" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <span class="icon-user2"></span>
+</a>
+<ul id="user-menu" class="dropdown-menu">
+<li class="header-user-menu-heading mb-2">Welcome</li>
+<li class="header-user-menu-content mb-2">
+  <a href="/en-US/registration" id="go-to-registration" class="btn btn-primary header-user-menu-button" title="Create Account">
+	<span class="icon-user-add-outline"></span>
+	<span>Create Account</span>
+  </a>
+</li>
+<li class="header-user-menu-content">
+  <a href="/en-US/login" id="go-to-login" class="btn btn-primary header-user-menu-button" title="Sign In">
+	<span class="icon-log-in"></span>
+	<span>Sign In</span>
+  </a>
+</li>
+</ul>
+
+          </li>
+
+          <li id="mini-cart" class="nav-item ">
+            <a id="header-cart-overview" class="dropdown-toggle header-cart-overview nav-link" href="#"  title="Cart" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="icon-shopping-cart"></span> &nbsp; 
+              <span id="count-wide-view" class="header-cart-product-count">0</span>
+            </a>
+            <ul id="mini-cart-menu" class="dropdown-menu" style="display: none;">
+              <li><div class="cart-mini cart-mini-wrap">
+	<div class="cart-mini-empty">Your cart is empty.</div>
+
+	<div class="cart-mini-header">
+		<div class="cart-mini-product-counter">
+			<span class="value font-bold">0</span>
+			
+			items in the cart 
+		</div>
+	</div>
+
+	<div class="cart-mini-element-list-wrap">
+		<span class="notifications-loader"></span>
+		<ul class="list-unstyled cart-mini-element-list">
+
+		</ul>
+	</div>
+
+	<div class="cart-mini-total">
+		<div class="cart-mini-suborder-total row">
+			<div class="col-sm-7 text-left labelText">Subtotal</div>
+			<div class="col-sm-5 text-right value">
+				<div class="suborder-price">$0.00</div>
+			</div>
+		</div>
+		<div class="link-button">
+			<a href="/en-US/cart"
+				class="btn btn-primary form-control go-to-cart">View Cart</a>
+		</div>
+	</div>
+
+</div></li>
+            </ul>
+
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+		</header>
+
+		<!-- main/content -->
+		<main> <!-- message: no java script -->
+			<noscript>
+				<div class="section">
+					<div class="container">
+						<div class="noscriptmsg card">
+							<p>JavaScript must be enabled in order for you to use the XLT Poster. However, it seems JavaScript is either disabled or not supported by your browser. Please enable JavaScript by changing your browser options and try again.</p>
+						</div>
+					</div>
+				</div>
+			</noscript>
+
+			<!-- messages -->
+			<div id="alert-placeholder">
+				
+			</div>
+
+			<!-- body -->
+			<div id="main">
+<script type="text/javascript">
+    function paginationFirst() {
+        paginationNum(1);
+    }
+    function paginationBack() {
+        var page;
+        page = parseInt(document.querySelector('#pagination-bottom .page-link.active').getAttribute("data-page")) - 1;
+        paginationNum(page);
+    }
+    function paginationNum(pageNumber) {
+        // error protection
+        if(pageNumber < 1) {
+            pageNumber = 1;
+        } else if(pageNumber > 2) {
+            pageNumber = 2;
+        }
+        // AJAX call
+        var url;
+        var params;
+        var pathname = location.pathname;
+        // this base part is usually something like "/en-US/"
+        var basePartLength = CONTEXT_PATH.length + 1 + LOCALE.length +  1;
+        // since string indeces start at 0 this will start right after the base parts last / and take everything until the next /
+        var pageType = pathname.substring(basePartLength, pathname.indexOf('/', basePartLength));
+
+        if(pageType == "topCategory") {
+            url = "/en-US/getProductOfTopCategory";
+            params = "categoryId=" + encodeURIComponent(4) + "&page=" + encodeURIComponent(pageNumber);
+        }
+        else if(pageType == "category") {
+            url = "/en-US/getProductOfSubCategory";
+            params = "categoryId=" + encodeURIComponent(4) + "&page=" + encodeURIComponent(pageNumber);
+        }
+        else {
+            url = "/en-US/getProductOfSearch";
+            params = "searchText=" + encodeURIComponent(document.getElementById('header-search-text').value) + "&page=" + encodeURIComponent(pageNumber);
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+            if(xhr.readyState !== 4) return;
+
+            if(xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                updateProductOverview(data);
+                // disable/enable previous or next functionality
+                if(pageNumber == 1) {
+                    // disable prev - enable next
+                    document.querySelector('li:has(> #pagfirst)').classList.add("disabled");
+                    document.querySelector('li:has(> #pagprev').classList.add("disabled");
+                    document.querySelector('li:has(> #pagnext').classList.remove("disabled");
+                    document.querySelector('li:has(> #paglast').classList.remove("disabled");
+                } else if(pageNumber == 2) {
+                    // disable next - enable prev
+                    document.querySelector('li:has(> #pagfirst').classList.remove("disabled");
+                    document.querySelector('li:has(> #pagprev').classList.remove("disabled");
+                    document.querySelector('li:has(> #pagnext').classList.add("disabled");
+                    document.querySelector('li:has(> #paglast').classList.add("disabled");
+                } else {
+                    // enable both
+                    document.querySelector('li:has(> #pagfirst').classList.remove("disabled");
+                    document.querySelector('li:has(> #pagprev').classList.remove("disabled");
+                    document.querySelector('li:has(> #pagnext').classList.remove("disabled");
+                    document.querySelector('li:has(> #paglast').classList.remove("disabled");
+                }
+                // shift active class
+                document.querySelector('#pagination-bottom .page-link.active').classList.remove('active');
+                var currentPageLink = document.querySelector('#pagination-bottom a.page-link[data-page="' + pageNumber + '"]');
+                currentPageLink.classList.add('active');
+
+                // Update the current page attribute
+                document.getElementById("product-overview").setAttribute('currentPage', pageNumber);
+            } else {
+
+            }
+        }
+        xhr.open("POST", url);
+	    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(params);
+
+    }
+    function paginationForw() {
+        var page;
+        page = parseInt(document.querySelector('#pagination-bottom .page-link.active').getAttribute("data-page")) + 1;
+        paginationNum(page);
+    }
+    function paginationLast() {
+        paginationNum(2);
+    }
+</script>
+
+
+
+<div class="container text-center mt-3">
+	<div class="product-overview-heading">
+		<div id="title-category-name" class="header-title">Cold Cuts (<span id="total-product-count">10</span>  posters)</div>
+		  	</div>
+</div>
+	
+<div id="product-overview" class="container text-center">
+	<div class="row product-display-case">
+			<div id="product-0" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%406c?productId=31">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/tomato-and-mozzarella-bites/tomato-and-mozzarella-bites-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/tomato-and-mozzarella-bites/tomato-and-mozzarella-bites-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/tomato-and-mozzarella-bites/tomato-and-mozzarella-bites-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/tomato-and-mozzarella-bites/tomato-and-mozzarella-bites-original.webp"
+                        alt="picture of Tomato and Mozzarella Bites"
+                        class="card-img-top"
+                        id="overview-product-0">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Tomato and Mozzarella Bites</h5>
+					<p class="card-text product-tile-text">The Italian classic Tomato mozzarella in a close up shot.</p>
+					<p class="card-text product-tile-price">$17.99</p>
+				    <a href="/en-US/productDetail/models.DefaultText%406c?productId=31" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-1" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%406f?productId=32">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/rolled-bacon/rolled-bacon-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/rolled-bacon/rolled-bacon-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/rolled-bacon/rolled-bacon-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/rolled-bacon/rolled-bacon-original.webp"
+                        alt="picture of Rolled Bacon"
+                        class="card-img-top"
+                        id="overview-product-1">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Rolled Bacon</h5>
+					<p class="card-text product-tile-text">Rolled bacon arranged precisely.</p>
+					<p class="card-text product-tile-price">$16.89</p>
+				    <a href="/en-US/productDetail/models.DefaultText%406f?productId=32" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-2" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%4072?productId=33">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-original.webp"
+                        alt="picture of Cheese Varieties"
+                        class="card-img-top"
+                        id="overview-product-2">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Cheese Varieties</h5>
+					<p class="card-text product-tile-text">A symbol of French culinary. </p>
+					<p class="card-text product-tile-price">$9.99</p>
+				    <a href="/en-US/productDetail/models.DefaultText%4072?productId=33" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-3" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%4075?productId=34">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/mixed-olives/mixed-olives-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/mixed-olives/mixed-olives-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/mixed-olives/mixed-olives-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/mixed-olives/mixed-olives-original.webp"
+                        alt="picture of Mixed Olives"
+                        class="card-img-top"
+                        id="overview-product-3">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Mixed Olives</h5>
+					<p class="card-text product-tile-text">Mixed colored Olives in green, black, and brown.</p>
+					<p class="card-text product-tile-price">$16.75</p>
+				    <a href="/en-US/productDetail/models.DefaultText%4075?productId=34" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-4" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%4078?productId=35">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/finger-food/finger-food-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/finger-food/finger-food-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/finger-food/finger-food-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/finger-food/finger-food-original.webp"
+                        alt="picture of Finger Food"
+                        class="card-img-top"
+                        id="overview-product-4">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Finger Food</h5>
+					<p class="card-text product-tile-text">A finger food plate with a lot of variety.</p>
+					<p class="card-text product-tile-price">$13.39</p>
+				    <a href="/en-US/productDetail/models.DefaultText%4078?productId=35" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-5" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%407b?productId=36">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/rocket-salad-with-mozzarella/rocket-salad-with-mozzarella-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/rocket-salad-with-mozzarella/rocket-salad-with-mozzarella-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/rocket-salad-with-mozzarella/rocket-salad-with-mozzarella-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/rocket-salad-with-mozzarella/rocket-salad-with-mozzarella-original.webp"
+                        alt="picture of Rocket Salad with Mozzarella"
+                        class="card-img-top"
+                        id="overview-product-5">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Rocket Salad with Mozzarella</h5>
+					<p class="card-text product-tile-text">A great starter in Italian restaurants.</p>
+					<p class="card-text product-tile-price">$17.99</p>
+				    <a href="/en-US/productDetail/models.DefaultText%407b?productId=36" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-6" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%407e?productId=37">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/meatfoot/meatfoot-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/meatfoot/meatfoot-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/meatfoot/meatfoot-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/meatfoot/meatfoot-original.webp"
+                        alt="picture of Meatfoot"
+                        class="card-img-top"
+                        id="overview-product-6">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Meatfoot</h5>
+					<p class="card-text product-tile-text">A minced meat foot?</p>
+					<p class="card-text product-tile-price">$19.99</p>
+				    <a href="/en-US/productDetail/models.DefaultText%407e?productId=37" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+			<div id="product-7" class="card product-tile">
+                <a href="/en-US/productDetail/models.DefaultText%4081?productId=38">
+                    <img
+                        srcset="/assets/img/products/food/cold-cuts/peperoni-sandwich/peperoni-sandwich-small.webp 400w,
+                                /assets/img/products/food/cold-cuts/peperoni-sandwich/peperoni-sandwich-medium.webp 800w,
+                                /assets/img/products/food/cold-cuts/peperoni-sandwich/peperoni-sandwich-large.webp 2000w"
+                        sizes="262px"
+                        src="/assets/img/products/food/cold-cuts/peperoni-sandwich/peperoni-sandwich-original.webp"
+                        alt="picture of Peperoni Sandwich"
+                        class="card-img-top"
+                        id="overview-product-7">
+                </a>
+				<div class="card-body">
+					<h5 class="card-title">Peperoni Sandwich</h5>
+					<p class="card-text product-tile-text">Time for lunch!</p>
+					<p class="card-text product-tile-price">$17.99</p>
+				    <a href="/en-US/productDetail/models.DefaultText%4081?productId=38" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+	</div>
+
+
+<!-- Pagination -->
+
+</div>
+<nav aria-label="Product listing page navigation">
+    <ul id="pagination-bottom" class="pagination pagination-bottom">
+        <li class="page-item disabled">
+            <a id="pagfirst" class="page-link" aria-label="First" onclick="paginationFirst()">
+                <i aria-hidden="true" class="icon-first"></i>
+            </a>
+        </li>
+        <li class="page-item disabled">
+            <a id="pagprev" class="page-link" aria-label="Previous" onclick="paginationBack()">
+                <i aria-hidden="true" class="icon-backward2"></i>
+            </a>
+        </li>
+        <li class="page-item"><a class="page-link active" data-page="1" onclick="paginationNum(1)">1</a></li>
+        <li class="page-item"><a class="page-link" data-page="2" onclick="paginationNum(2)">2</a></li>
+        <li class="page-item">
+            <a id="pagnext" class="page-link" aria-label="Next" onclick="paginationForw()">
+                <i aria-hidden="true" class="icon-forward3"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a id="paglast" class="page-link" aria-label="Last" onclick="paginationLast()">
+                <i aria-hidden="true" class="icon-last"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+			</div>
+
+			<div id="js-top" class="go-to-top" style="display: none;">
+				<a onclick="toTopFunction()" id="js-gotop"><i class="icon-arrow-up2"></i></a>
+			</div>
+		</main>
+
+		<!-- footer -->
+
+<footer id="footer" class="footer">
+	<div class="container mb-3">
+		<div class="row row-pb-md">
+			<div id="footer-section-about" class="col">
+				<h4 class="footer-section-headline">About</h4>
+				<p class="footer-text-about footer-section-text">The Poster Demo Store is a small e-commerce demo application. It is meant for functional testing, test automation, and load and performance testing. It can also help you to learn programming better. This software is licensed under Apache License 2.0.</p>
+				<p>
+					<ul class="footer-social-icons">
+						<li>GitHub: <a href="https://github.com/Xceptance/posters-demo-store"><i class="icon-github"></i></a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-support" class="col">
+				<h4 class="footer-section-headline">Customer Care</h4>
+				<p>
+					<ul class="footer-support">
+						<li><a href="mailto:kontakt@xceptance.de">Contact</a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-information" class="col">
+				<h4 class="footer-section-headline">Information</h4>
+				<p>
+					<ul class="footer-info">
+						<li>This software is for demo and testing purposes only. Orders will not be fulfilled. Do not enter sensitive or personal data!</li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-contact" class="col">
+				<h4 class="footer-section-headline">Contact Information</h4>
+				<ul class="footer-contact">
+					<li class="footer-contact-company">Xceptance GmbH</li>
+					<li class="footer-contact-adress">Leutragraben 2-4<br>07743 Jena<br>Germany</li>
+					<li class="footer-contact-phone">Phone: <a href="tel:+49-3641-376300">+49-3641-376300</a></li>
+					<li class="footer-contact-e-mail">E-mail: <a href="mailto:kontakt@xceptance.de">kontakt@xceptance.de</a></li>
+					<li class="footer-contact-website">Website: <a href="https://www.xceptance.com">https://www.xceptance.com</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div id="footer-copyright" class="footer-copyright text-center">Copyright 2013-2024 Xceptance Software Technologies GmbH<br>All photos by René Schwietzke under CC-BY-4.0.</div>
+	<div id="footer-version-information" class="version-info text-center">The Poster Demo Store - Version 2.5.0</div>
+</footer>
+
+		<script src="/assets/js/poster.js"></script>
+		<script>
+			var ready = (callback) => {
+  					if (document.readyState != "loading") callback();
+  					else document.addEventListener("DOMContentLoaded", callback);
+				}
+		</script>
+
+		<!-- Bootstrap Bundle (v5.3.2 including popper)-->
+		<script src="/assets/js/bootstrap.bundle.js"></script>
+		<!-- Main -->
+		<script src="/assets/js/main.js"></script>
+	</body>
+
+	</html>

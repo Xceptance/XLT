@@ -1,0 +1,663 @@
+	<!DOCTYPE html>
+	<html lang="en-US">
+
+	<head>
+
+		<title>The Poster Demo Store - The Ultimate Online Shop</title>
+
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+
+		<!-- Icomoon Icon Fonts-->
+		<link rel="stylesheet" href="/assets/css/icomoon.css">
+
+		<!-- Bootstrap  -->
+		<link rel="stylesheet" href="/assets/css/bootstrap.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-grid.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-reboot.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-utilities.css">
+
+		<!-- Theme style  -->
+		<link rel="stylesheet" href="/assets/css/style_reworked.css">
+
+		<script type="text/javascript">
+			const CONTEXT_PATH = '';
+			const LOCALE = 'en-US';
+		</script>
+		<script src="/assets/js/posterMiniCart.js"></script>
+	</head>
+
+	<body>
+		<!-- header -->
+		<header>
+
+<div id="top-demo-disclaimer" class="demo-disclaimer container-fluid text-center">This is a demo application. Orders will not be fulfilled. Do not enter ANY personal and sensitive data!</div>
+
+<nav id="header-navigation-bar" class="header-navigation-bar navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container top-menu">
+    <a id="header-brand" class="navbar-brand" href="/en-US">
+      <img id="header-brand-logo" class="shop-logo" src="/assets/img/xceptanceLogo.png" title="Logo" alt="Logo">
+      The Poster Demo Store</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#header-navigation-elements" aria-controls="header-navigation-elements" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="header-navigation-elements" class="collapse navbar-collapse">
+      <ul id="header-categories" class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%401?categoryId=1" role="button" data-bs-auto-close="true" aria-expanded="false">
+            World of Nature
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%402?categoryId=1" title="models.DefaultText@2">Animals</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%403?categoryId=2" title="models.DefaultText@3">Flowers</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%404?categoryId=3" title="models.DefaultText@4">Trees</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%405?categoryId=2" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Dining
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%406?categoryId=4" title="models.DefaultText@6">Cold Cuts</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%407?categoryId=5" title="models.DefaultText@7">Main Dishes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%408?categoryId=6" title="models.DefaultText@8">Sweets</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%409?categoryId=3" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Transportation
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40a?categoryId=7" title="models.DefaultText@a">Air Travel</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40b?categoryId=8" title="models.DefaultText@b">Classic Cars</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40c?categoryId=9" title="models.DefaultText@c">Railways</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%40d?categoryId=4" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Panoramas
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40e?categoryId=10" title="models.DefaultText@e">Architecture</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40f?categoryId=11" title="models.DefaultText@f">Fireworks</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4010?categoryId=12" title="models.DefaultText@10">Landscapes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4011?categoryId=13" title="models.DefaultText@11">XXL Panoramas</a></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="header-actions me-0 ms-auto d-flex">
+        <form id="header-search-form" class="d-flex" role="search" action="/en-US/search" method="get">
+          <input id="header-search-text" name="searchText" class="form-control me-2" type="search" placeholder="Search" aria-label="Search" title="Search" value="">
+          <button id="header-search-button" class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+        </form>
+        <ul id="header-customer-menus" class="navbar-nav mb-2 mb-lg-0">
+          <li id="locale-switcher" class="nav-item dropdown">
+<a id="show-locale-menu" class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    en-US
+</a>
+
+<ul id="locale-menu" class="dropdown-menu">
+    <li><a id="loc-en-us" class="dropdown-item" href="/en-US">en-US</a></li>
+    <li><a id="loc-en-uk" class="dropdown-item" href="/en-UK">en-UK</a></li>
+    <li><a id="loc-de-de" class="dropdown-item" href="/de-DE">de-DE</a></li>
+</ul>
+
+          </li>
+          <li id="user" class=" nav-item dropdown">
+
+<!-- login -->
+<a id="show-user-menu" class="nav-link dropdown-toggle" href="#" title="Sign In" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <span class="icon-user2"></span>
+</a>
+<ul id="user-menu" class="dropdown-menu">
+<li class="header-user-menu-heading mb-2">Welcome</li>
+<li class="header-user-menu-content mb-2">
+  <a href="/en-US/registration" id="go-to-registration" class="btn btn-primary header-user-menu-button" title="Create Account">
+	<span class="icon-user-add-outline"></span>
+	<span>Create Account</span>
+  </a>
+</li>
+<li class="header-user-menu-content">
+  <a href="/en-US/login" id="go-to-login" class="btn btn-primary header-user-menu-button" title="Sign In">
+	<span class="icon-log-in"></span>
+	<span>Sign In</span>
+  </a>
+</li>
+</ul>
+
+          </li>
+
+          <li id="mini-cart" class="nav-item ">
+            <a id="header-cart-overview" class="dropdown-toggle header-cart-overview nav-link" href="#"  title="Cart" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="icon-shopping-cart"></span> &nbsp; 
+              <span id="count-wide-view" class="header-cart-product-count">0</span>
+            </a>
+            <ul id="mini-cart-menu" class="dropdown-menu" style="display: none;">
+              <li><div class="cart-mini cart-mini-wrap">
+	<div class="cart-mini-empty">Your cart is empty.</div>
+
+	<div class="cart-mini-header">
+		<div class="cart-mini-product-counter">
+			<span class="value font-bold">0</span>
+			
+			items in the cart 
+		</div>
+	</div>
+
+	<div class="cart-mini-element-list-wrap">
+		<span class="notifications-loader"></span>
+		<ul class="list-unstyled cart-mini-element-list">
+
+		</ul>
+	</div>
+
+	<div class="cart-mini-total">
+		<div class="cart-mini-suborder-total row">
+			<div class="col-sm-7 text-left labelText">Subtotal</div>
+			<div class="col-sm-5 text-right value">
+				<div class="suborder-price">$0.00</div>
+			</div>
+		</div>
+		<div class="link-button">
+			<a href="/en-US/cart"
+				class="btn btn-primary form-control go-to-cart">View Cart</a>
+		</div>
+	</div>
+
+</div></li>
+            </ul>
+
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+		</header>
+
+		<!-- main/content -->
+		<main> <!-- message: no java script -->
+			<noscript>
+				<div class="section">
+					<div class="container">
+						<div class="noscriptmsg card">
+							<p>JavaScript must be enabled in order for you to use the XLT Poster. However, it seems JavaScript is either disabled or not supported by your browser. Please enable JavaScript by changing your browser options and try again.</p>
+						</div>
+					</div>
+				</div>
+			</noscript>
+
+			<!-- messages -->
+			<div id="alert-placeholder">
+				
+			</div>
+
+			<!-- body -->
+			<div id="main">
+
+<div id="carousel-sale" class="carousel slide" data-bs-ride="true">
+	<div class="carousel-indicators">
+		<button type="button" data-bs-target="#carousel-sale" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+		<button type="button" data-bs-target="#carousel-sale" data-bs-slide-to="1" aria-label="Slide 2"></button>
+	</div>	
+	<div class="carousel-inner">
+	  	<div class="carousel-item active" data-bs-interval="5000">
+			<a class="carousel-content-text text-center d-block w-100" href="#">25% off (Almost) Everything! Use Code: Posters Sale</a>
+	  	</div>
+	  	<div class="carousel-item" data-bs-interval="5000">
+			<a class="carousel-content-text text-center d-block w-100" href="#">Our biggest sale yet, 50% off all Posters!</a>
+	  	</div>
+	</div>
+	<button class="carousel-control-prev" type="button" data-bs-target="#carousel-sale" data-bs-slide="prev">
+	  	<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  	<span class="visually-hidden">Previous</span>
+	</button>
+	<button class="carousel-control-next" type="button" data-bs-target="#carousel-sale" data-bs-slide="next">
+	  	<span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  	<span class="visually-hidden">Next</span>
+	</button>
+</div>
+
+<div id="carousel-product-display" class="carousel slide" data-bs-ride="true">
+	<div class="carousel-indicators">
+		<button type="button" data-bs-target="#carousel-product-display" data-bs-slide-to="0" class="carousel-btn active" aria-current="true" aria-label="Slide 1"></button>
+		<button type="button" data-bs-target="#carousel-product-display" data-bs-slide-to="1" class="carousel-btn" aria-label="Slide 2"></button>
+		<button type="button" data-bs-target="#carousel-product-display" data-bs-slide-to="2" class="carousel-btn" aria-label="Slide 3"></button>
+		<button type="button" data-bs-target="#carousel-product-display" data-bs-slide-to="3" class="carousel-btn" aria-label="Slide 4"></button>
+	</div>	
+	<div class="carousel-inner">
+		<div class="carousel-content-product carousel-item active" data-bs-interval="5000" style="background-image: url('/assets/img/products/xxl/xxl_1.jpg');">
+			<div class="row">
+				<h1>North Boston</h1>
+			</div>
+			<div class="row">
+				<div class="col">
+					<a href="/en-US/productDetail/models.DefaultText%4017a?productId=121" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+	  	</div>
+	  	<div class="carousel-content-product carousel-item" data-bs-interval="5000" style="background-image: url('/assets/img/products/xxl/xxl_2.jpg');">
+			<div class="row">
+				<h1>Boston Sunset</h1>
+			</div>
+			<div class="row">
+				<div class="col">
+					<a href="/en-US/productDetail/models.DefaultText%4017d?productId=122" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+	  	</div>
+	  	<div class="carousel-content-product carousel-item" data-bs-interval="5000" style="background-image: url('/assets/img/products/xxl/xxl_3.jpg');">
+			<div class="row">
+				<h1>Bryce Canyon National Park, Utah I</h1>
+			</div>
+			<div class="row">
+				<div class="col">
+					<a href="/en-US/productDetail/models.DefaultText%40180?productId=123" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+	  	</div>
+	  	<div class="carousel-content-product carousel-item" data-bs-interval="5000" style="background-image: url('/assets/img/products/xxl/xxl_4.jpg');">
+			<div class="row">
+				<h1>Bryce Canyon National Park, Utah II</h1>
+			</div>
+			<div class="row">
+				<div class="col">
+					<a href="/en-US/productDetail/models.DefaultText%40183?productId=124" class="btn btn-primary">Buy Here</a>
+				</div>
+			</div>
+	  	</div>
+	</div>
+	<button class="carousel-control-prev" type="button" data-bs-target="#carousel-product-display" data-bs-slide="prev">
+	  	<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  	<span class="visually-hidden">Previous</span>
+	</button>
+	<button class="carousel-control-next" type="button" data-bs-target="#carousel-product-display" data-bs-slide="next">
+	  	<span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  	<span class="visually-hidden">Next</span>
+	</button>
+</div>
+
+<div id="intro-text-homepage-banner" class="intro-text container-fluid text-center">
+	<h2 id="intro-text-homepage" class="display-3">Began with a simple idea "SHATATATATA!" - M. Scott</h2>
+</div>
+
+<div class="container text-center">
+	<div class="row category-display-case">
+		<div class="card category-tile">
+			<a href="/en-US/topCategory/models.DefaultText%401?categoryId=1">
+				<img
+					srcset="/assets/img/products/flora_and_fauna/animals/swedish-moose/swedish-moose-small.webp 400w,
+							/assets/img/products/flora_and_fauna/animals/swedish-moose/swedish-moose-medium.webp 800w,
+							/assets/img/products/flora_and_fauna/animals/swedish-moose/swedish-moose-large.webp 2000w"
+					sizes="296px"
+					src="/assets/img/products/flora_and_fauna/animals/swedish-moose/swedish-moose-original.webp"
+					alt="World of Nature category image"
+					class="category-tile-image"
+					id="category-picture-0">
+			</a>							
+			<div class="card-body">
+		  		<h2><a href="/en-US/topCategory/models.DefaultText%401?categoryId=1" class="category-tile-title">World of Nature</a></h2>
+			</div>
+		</div>
+		<div class="card category-tile">
+			<a href="/en-US/topCategory/models.DefaultText%405?categoryId=2">
+				<img
+					srcset="/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-small.webp 400w,
+							/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-medium.webp 800w,
+							/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-large.webp 2000w"
+					sizes="296px"
+					src="/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-original.webp"
+					alt="Dining category image"
+					class="category-tile-image"
+					id="category-picture-1">
+			</a>							
+			<div class="card-body">
+		  		<h2><a href="/en-US/topCategory/models.DefaultText%405?categoryId=2" class="category-tile-title">Dining</a></h2>
+			</div>
+		</div>
+		<div class="card category-tile">
+			<a href="/en-US/topCategory/models.DefaultText%409?categoryId=3">
+				<img
+					srcset="/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-small.webp 400w,
+							/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-medium.webp 800w,
+							/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-large.webp 2000w"
+					sizes="296px"
+					src="/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-original.webp"
+					alt="Transportation category image"
+					class="category-tile-image"
+					id="category-picture-2">
+			</a>							
+			<div class="card-body">
+		  		<h2><a href="/en-US/topCategory/models.DefaultText%409?categoryId=3" class="category-tile-title">Transportation</a></h2>
+			</div>
+		</div>
+		<div class="card category-tile">
+			<a href="/en-US/topCategory/models.DefaultText%40d?categoryId=4">
+				<img
+					srcset="/assets/img/products/panoramas/landscapes/niagara-falls-canada/niagara-falls-canada-small.webp 400w,
+							/assets/img/products/panoramas/landscapes/niagara-falls-canada/niagara-falls-canada-medium.webp 800w,
+							/assets/img/products/panoramas/landscapes/niagara-falls-canada/niagara-falls-canada-large.webp 2000w"
+					sizes="296px"
+					src="/assets/img/products/panoramas/landscapes/niagara-falls-canada/niagara-falls-canada-original.webp"
+					alt="Panoramas category image"
+					class="category-tile-image"
+					id="category-picture-3">
+			</a>							
+			<div class="card-body">
+		  		<h2><a href="/en-US/topCategory/models.DefaultText%40d?categoryId=4" class="category-tile-title">Panoramas</a></h2>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="product-display-heading container-fluid text-center">
+	<h2>Hot Products</h2>
+</div>
+
+<div class="container text-center">
+	<div class="row product-display-case">
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%4021?productId=6">
+				<img
+					srcset="/assets/img/products/flora_and_fauna/animals/blue-morpho-butterfly/blue-morpho-butterfly-small.webp 400w,
+							/assets/img/products/flora_and_fauna/animals/blue-morpho-butterfly/blue-morpho-butterfly-medium.webp 800w,
+							/assets/img/products/flora_and_fauna/animals/blue-morpho-butterfly/blue-morpho-butterfly-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/flora_and_fauna/animals/blue-morpho-butterfly/blue-morpho-butterfly-original.webp"
+					alt="picture of models.DefaultText@21"
+					class="card-img-top"
+					id="product-picture-6">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Blue Morpho Butterfly</h5>
+		  		<p class="card-text product-tile-text">A beautiful blue and black butterfly on a leaf.</p>
+				<p class="card-text product-tile-price">17.99</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%4021?productId=6" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%403c?productId=15">
+				<img
+					srcset="/assets/img/products/flora_and_fauna/flowers/snowdrop-anemone/snowdrop-anemone-small.webp 400w,
+							/assets/img/products/flora_and_fauna/flowers/snowdrop-anemone/snowdrop-anemone-medium.webp 800w,
+							/assets/img/products/flora_and_fauna/flowers/snowdrop-anemone/snowdrop-anemone-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/flora_and_fauna/flowers/snowdrop-anemone/snowdrop-anemone-original.webp"
+					alt="picture of models.DefaultText@3c"
+					class="card-img-top"
+					id="product-picture-15">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Snowdrop Anemone</h5>
+		  		<p class="card-text product-tile-text">A blossom in all its details.</p>
+				<p class="card-text product-tile-price">12.38</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%403c?productId=15" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%4072?productId=33">
+				<img
+					srcset="/assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-small.webp 400w,
+							/assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-medium.webp 800w,
+							/assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/food/cold-cuts/cheese-varieties/cheese-varieties-original.webp"
+					alt="picture of models.DefaultText@72"
+					class="card-img-top"
+					id="product-picture-33">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Cheese Varieties</h5>
+		  		<p class="card-text product-tile-text">A symbol of French culinary. </p>
+				<p class="card-text product-tile-price">9.99</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%4072?productId=33" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%4060?productId=27">
+				<img
+					srcset="/assets/img/products/flora_and_fauna/trees/fir-covered-with-snow/fir-covered-with-snow-small.webp 400w,
+							/assets/img/products/flora_and_fauna/trees/fir-covered-with-snow/fir-covered-with-snow-medium.webp 800w,
+							/assets/img/products/flora_and_fauna/trees/fir-covered-with-snow/fir-covered-with-snow-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/flora_and_fauna/trees/fir-covered-with-snow/fir-covered-with-snow-original.webp"
+					alt="picture of models.DefaultText@60"
+					class="card-img-top"
+					id="product-picture-27">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Fir Covered with Snow</h5>
+		  		<p class="card-text product-tile-text">A very small fir tilted to the side, covered with snow.</p>
+				<p class="card-text product-tile-price">17.99</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%4060?productId=27" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%4093?productId=44">
+				<img
+					srcset="/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-small.webp 400w,
+							/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-medium.webp 800w,
+							/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/food/main-dishes/stuffed-turkey/stuffed-turkey-original.webp"
+					alt="picture of models.DefaultText@93"
+					class="card-img-top"
+					id="product-picture-44">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Stuffed Turkey</h5>
+		  		<p class="card-text product-tile-text">The best way to celebrate Thanksgiving.</p>
+				<p class="card-text product-tile-price">23.5</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%4093?productId=44" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%40b1?productId=54">
+				<img
+					srcset="/assets/img/products/food/sweets/fruit-tart-with-cocoa/fruit-tart-with-cocoa-small.webp 400w,
+							/assets/img/products/food/sweets/fruit-tart-with-cocoa/fruit-tart-with-cocoa-medium.webp 800w,
+							/assets/img/products/food/sweets/fruit-tart-with-cocoa/fruit-tart-with-cocoa-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/food/sweets/fruit-tart-with-cocoa/fruit-tart-with-cocoa-original.webp"
+					alt="picture of models.DefaultText@b1"
+					class="card-img-top"
+					id="product-picture-54">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Fruit Tart with Cocoa</h5>
+		  		<p class="card-text product-tile-text">An aesthetic fruit tart with cocoa powder.</p>
+				<p class="card-text product-tile-price">17.99</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%40b1?productId=54" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%40d2?productId=65">
+				<img
+					srcset="/assets/img/products/means_of_transportation/air-travel/air-lingus-airbus-a320/air-lingus-airbus-a320-small.webp 400w,
+							/assets/img/products/means_of_transportation/air-travel/air-lingus-airbus-a320/air-lingus-airbus-a320-medium.webp 800w,
+							/assets/img/products/means_of_transportation/air-travel/air-lingus-airbus-a320/air-lingus-airbus-a320-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/means_of_transportation/air-travel/air-lingus-airbus-a320/air-lingus-airbus-a320-original.webp"
+					alt="picture of models.DefaultText@d2"
+					class="card-img-top"
+					id="product-picture-65">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Air Lingus Airbus A320</h5>
+		  		<p class="card-text product-tile-text">Hail to Saint Patrick!</p>
+				<p class="card-text product-tile-price">15.89</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%40d2?productId=65" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%40f3?productId=76">
+				<img
+					srcset="/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-small.webp 400w,
+							/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-medium.webp 800w,
+							/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/means_of_transportation/classic-cars/ifa-h6-green/ifa-h6-green-original.webp"
+					alt="picture of models.DefaultText@f3"
+					class="card-img-top"
+					id="product-picture-76">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">IFA H6 Green</h5>
+		  		<p class="card-text product-tile-text">A bright green truck from old times.</p>
+				<p class="card-text product-tile-price">12.63</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%40f3?productId=76" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%40102?productId=81">
+				<img
+					srcset="/assets/img/products/means_of_transportation/railways/third-avenue-railway-system/third-avenue-railway-system-small.webp 400w,
+							/assets/img/products/means_of_transportation/railways/third-avenue-railway-system/third-avenue-railway-system-medium.webp 800w,
+							/assets/img/products/means_of_transportation/railways/third-avenue-railway-system/third-avenue-railway-system-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/means_of_transportation/railways/third-avenue-railway-system/third-avenue-railway-system-original.webp"
+					alt="picture of models.DefaultText@102"
+					class="card-img-top"
+					id="product-picture-81">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Third Avenue Railway System</h5>
+		  		<p class="card-text product-tile-text">The old railway system of NYC.</p>
+				<p class="card-text product-tile-price">17.99</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%40102?productId=81" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%4011d?productId=90">
+				<img
+					srcset="/assets/img/products/means_of_transportation/railways/old-nyc-subway/old-nyc-subway-small.webp 400w,
+							/assets/img/products/means_of_transportation/railways/old-nyc-subway/old-nyc-subway-medium.webp 800w,
+							/assets/img/products/means_of_transportation/railways/old-nyc-subway/old-nyc-subway-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/means_of_transportation/railways/old-nyc-subway/old-nyc-subway-original.webp"
+					alt="picture of models.DefaultText@11d"
+					class="card-img-top"
+					id="product-picture-90">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Old NYC Subway</h5>
+		  		<p class="card-text product-tile-text">Nothing lasts forever.</p>
+				<p class="card-text product-tile-price">17.8</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%4011d?productId=90" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%40144?productId=103">
+				<img
+					srcset="/assets/img/products/panoramas/fireworks/new-years-fireworks-III/new-years-fireworks-III-small.webp 400w,
+							/assets/img/products/panoramas/fireworks/new-years-fireworks-III/new-years-fireworks-III-medium.webp 800w,
+							/assets/img/products/panoramas/fireworks/new-years-fireworks-III/new-years-fireworks-III-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/panoramas/fireworks/new-years-fireworks-III/new-years-fireworks-III-original.webp"
+					alt="picture of models.DefaultText@144"
+					class="card-img-top"
+					id="product-picture-103">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">New Years Fireworks III</h5>
+		  		<p class="card-text product-tile-text">A fantastic skycolor change!</p>
+				<p class="card-text product-tile-price">17.99</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%40144?productId=103" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+		<div class="card product-tile">	
+			<a href="/en-US/productDetail/models.DefaultText%40168?productId=115">
+				<img
+					srcset="/assets/img/products/panoramas/landscapes/linnaean-garden-and-museum-sweden/linnaean-garden-and-museum-sweden-small.webp 400w,
+							/assets/img/products/panoramas/landscapes/linnaean-garden-and-museum-sweden/linnaean-garden-and-museum-sweden-medium.webp 800w,
+							/assets/img/products/panoramas/landscapes/linnaean-garden-and-museum-sweden/linnaean-garden-and-museum-sweden-large.webp 2000w"
+					sizes="262px"
+					src="/assets/img/products/panoramas/landscapes/linnaean-garden-and-museum-sweden/linnaean-garden-and-museum-sweden-original.webp"
+					alt="picture of models.DefaultText@168"
+					class="card-img-top"
+					id="product-picture-115">
+			</a>
+			<div class="card-body">
+		  		<h5 class="card-title">Linnaean Garden and Museum Sweden</h5>
+		  		<p class="card-text product-tile-text">A perfect symmetry.</p>
+				<p class="card-text product-tile-price">12.25</p>
+		  		<a href="/en-US/productDetail/models.DefaultText%40168?productId=115" class="btn btn-primary product-tile-btn-buy">Buy Here</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="container text-center">
+	<a class="btn btn-primary btn-shop-all" href="#" role="button">Shop All Products</a>
+</div>
+
+			</div>
+
+			<div id="js-top" class="go-to-top" style="display: none;">
+				<a onclick="toTopFunction()" id="js-gotop"><i class="icon-arrow-up2"></i></a>
+			</div>
+		</main>
+
+		<!-- footer -->
+
+<footer id="footer" class="footer">
+	<div class="container mb-3">
+		<div class="row row-pb-md">
+			<div id="footer-section-about" class="col">
+				<h4 class="footer-section-headline">About</h4>
+				<p class="footer-text-about footer-section-text">The Poster Demo Store is a small e-commerce demo application. It is meant for functional testing, test automation, and load and performance testing. It can also help you to learn programming better. This software is licensed under Apache License 2.0.</p>
+				<p>
+					<ul class="footer-social-icons">
+						<li>GitHub: <a href="https://github.com/Xceptance/posters-demo-store"><i class="icon-github"></i></a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-support" class="col">
+				<h4 class="footer-section-headline">Customer Care</h4>
+				<p>
+					<ul class="footer-support">
+						<li><a href="mailto:kontakt@xceptance.de">Contact</a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-information" class="col">
+				<h4 class="footer-section-headline">Information</h4>
+				<p>
+					<ul class="footer-info">
+						<li>This software is for demo and testing purposes only. Orders will not be fulfilled. Do not enter sensitive or personal data!</li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-contact" class="col">
+				<h4 class="footer-section-headline">Contact Information</h4>
+				<ul class="footer-contact">
+					<li class="footer-contact-company">Xceptance GmbH</li>
+					<li class="footer-contact-adress">Leutragraben 2-4<br>07743 Jena<br>Germany</li>
+					<li class="footer-contact-phone">Phone: <a href="tel:+49-3641-376300">+49-3641-376300</a></li>
+					<li class="footer-contact-e-mail">E-mail: <a href="mailto:kontakt@xceptance.de">kontakt@xceptance.de</a></li>
+					<li class="footer-contact-website">Website: <a href="https://www.xceptance.com">https://www.xceptance.com</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div id="footer-copyright" class="footer-copyright text-center">Copyright 2013-2024 Xceptance Software Technologies GmbH<br>All photos by René Schwietzke under CC-BY-4.0.</div>
+	<div id="footer-version-information" class="version-info text-center">The Poster Demo Store - Version 2.5.0</div>
+</footer>
+
+		<script src="/assets/js/poster.js"></script>
+		<script>
+			var ready = (callback) => {
+  					if (document.readyState != "loading") callback();
+  					else document.addEventListener("DOMContentLoaded", callback);
+				}
+		</script>
+
+		<!-- Bootstrap Bundle (v5.3.2 including popper)-->
+		<script src="/assets/js/bootstrap.bundle.js"></script>
+		<!-- Main -->
+		<script src="/assets/js/main.js"></script>
+	</body>
+
+	</html>

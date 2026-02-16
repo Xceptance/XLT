@@ -1,0 +1,40 @@
+<#import "common/sections/head.ftl" as head>
+<#import "common/sections/header.ftl" as header>
+<#import "common/sections/footer.ftl" as footer>
+<#import "sections/events.ftl" as events>
+<#import "common/sections/javascript.ftl" as js>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <#assign projectNameNode = report.testreport.configuration.projectName>
+    <#assign projectNameText = (projectNameNode?has_content)?then(projectNameNode[0], "")>
+    <@head.head title="XLT Report - Events" projectName=projectNameText configuration=report.testreport.configuration />
+</head>
+<body id="loadtestreport">
+<div id="container">
+    <div id="content">
+        <@header.header productName=productName 
+                        productVersion=productVersion 
+                        productUrl=productUrl 
+                        projectName=projectNameText
+                        scorecardPresent=scorecardPresent!false />
+
+        <div id="data-content">
+            <#-- 
+                ************************************
+                * Event Summary
+                ************************************
+            -->
+            <@events.events />
+
+        </div> <#-- data-content -->
+
+        <@footer.footer productName=productName productVersion=productVersion productUrl=productUrl />
+    </div> <#-- content -->
+</div> <#-- end container -->    
+
+<@js.javascript />
+
+</body>
+</html>

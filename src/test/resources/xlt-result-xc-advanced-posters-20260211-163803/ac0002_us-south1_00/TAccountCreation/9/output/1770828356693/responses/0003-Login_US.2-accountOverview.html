@@ -1,0 +1,372 @@
+	<!DOCTYPE html>
+	<html lang="en-US">
+
+	<head>
+
+		<title>The Poster Demo Store - The Ultimate Online Shop</title>
+
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+
+		<!-- Icomoon Icon Fonts-->
+		<link rel="stylesheet" href="/assets/css/icomoon.css">
+
+		<!-- Bootstrap  -->
+		<link rel="stylesheet" href="/assets/css/bootstrap.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-grid.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-reboot.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-utilities.css">
+
+		<!-- Theme style  -->
+		<link rel="stylesheet" href="/assets/css/style_reworked.css">
+
+		<script type="text/javascript">
+			const CONTEXT_PATH = '';
+			const LOCALE = 'en-US';
+		</script>
+		<script src="/assets/js/posterMiniCart.js"></script>
+	</head>
+
+	<body>
+		<!-- header -->
+		<header>
+
+<div id="top-demo-disclaimer" class="demo-disclaimer container-fluid text-center">This is a demo application. Orders will not be fulfilled. Do not enter ANY personal and sensitive data!</div>
+
+<nav id="header-navigation-bar" class="header-navigation-bar navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container top-menu">
+    <a id="header-brand" class="navbar-brand" href="/en-US">
+      <img id="header-brand-logo" class="shop-logo" src="/assets/img/xceptanceLogo.png" title="Logo" alt="Logo">
+      The Poster Demo Store</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#header-navigation-elements" aria-controls="header-navigation-elements" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="header-navigation-elements" class="collapse navbar-collapse">
+      <ul id="header-categories" class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%401?categoryId=1" role="button" data-bs-auto-close="true" aria-expanded="false">
+            World of Nature
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%402?categoryId=1" title="models.DefaultText@2">Animals</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%403?categoryId=2" title="models.DefaultText@3">Flowers</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%404?categoryId=3" title="models.DefaultText@4">Trees</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%405?categoryId=2" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Dining
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%406?categoryId=4" title="models.DefaultText@6">Cold Cuts</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%407?categoryId=5" title="models.DefaultText@7">Main Dishes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%408?categoryId=6" title="models.DefaultText@8">Sweets</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%409?categoryId=3" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Transportation
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40a?categoryId=7" title="models.DefaultText@a">Air Travel</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40b?categoryId=8" title="models.DefaultText@b">Classic Cars</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40c?categoryId=9" title="models.DefaultText@c">Railways</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%40d?categoryId=4" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Panoramas
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40e?categoryId=10" title="models.DefaultText@e">Architecture</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40f?categoryId=11" title="models.DefaultText@f">Fireworks</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4010?categoryId=12" title="models.DefaultText@10">Landscapes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4011?categoryId=13" title="models.DefaultText@11">XXL Panoramas</a></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="header-actions me-0 ms-auto d-flex">
+        <form id="header-search-form" class="d-flex" role="search" action="/en-US/search" method="get">
+          <input id="header-search-text" name="searchText" class="form-control me-2" type="search" placeholder="Search" aria-label="Search" title="Search" value="">
+          <button id="header-search-button" class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+        </form>
+        <ul id="header-customer-menus" class="navbar-nav mb-2 mb-lg-0">
+          <li id="locale-switcher" class="nav-item dropdown">
+<a id="show-locale-menu" class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    en-US
+</a>
+
+<ul id="locale-menu" class="dropdown-menu">
+    <li><a id="loc-en-us" class="dropdown-item" href="/en-US">en-US</a></li>
+    <li><a id="loc-en-uk" class="dropdown-item" href="/en-UK">en-UK</a></li>
+    <li><a id="loc-de-de" class="dropdown-item" href="/de-DE">de-DE</a></li>
+</ul>
+
+          </li>
+          <li id="user" class=" nav-item dropdown">
+
+<!-- login -->
+<a id="show-user-menu" class="nav-link dropdown-toggle" href="#" title="" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <span class="icon-user2"></span>
+</a>
+<ul id="user-menu" class="dropdown-menu">
+<li class="header-user-menu-heading mb-2">Welcome: <span class="first-name">Daisie</span></li>
+<li class="header-user-menu-content mb-2">
+  <a href="/en-US/accountOverview" id="go-to-account-overview" class="btn btn-primary header-user-menu-button" title="My Account">
+	<span class="icon-info-large logged"></span>
+	<span>My Account</span>
+  </a>
+</li>
+<li class="header-user-menu-content">
+  <a href="/en-US/logout" id="go-to-logout" title="Logout" class="btn btn-primary header-user-menu-button">
+	<span class="icon-log-out"></span>
+	<span>Logout</span>
+  </a>
+</li>
+</ul>
+
+          </li>
+
+          <li id="mini-cart" class="nav-item ">
+            <a id="header-cart-overview" class="dropdown-toggle header-cart-overview nav-link" href="#"  title="Cart" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="icon-shopping-cart"></span> &nbsp; 
+              <span id="count-wide-view" class="header-cart-product-count">0</span>
+            </a>
+            <ul id="mini-cart-menu" class="dropdown-menu" style="display: none;">
+              <li><div class="cart-mini cart-mini-wrap">
+	<div class="cart-mini-empty">Your cart is empty.</div>
+
+	<div class="cart-mini-header">
+		<div class="cart-mini-product-counter">
+			<span class="value font-bold">0</span>
+			
+			items in the cart 
+		</div>
+	</div>
+
+	<div class="cart-mini-element-list-wrap">
+		<span class="notifications-loader"></span>
+		<ul class="list-unstyled cart-mini-element-list">
+
+		</ul>
+	</div>
+
+	<div class="cart-mini-total">
+		<div class="cart-mini-suborder-total row">
+			<div class="col-sm-7 text-left labelText">Subtotal</div>
+			<div class="col-sm-5 text-right value">
+				<div class="suborder-price">$0.00</div>
+			</div>
+		</div>
+		<div class="link-button">
+			<a href="/en-US/cart"
+				class="btn btn-primary form-control go-to-cart">View Cart</a>
+		</div>
+	</div>
+
+</div></li>
+            </ul>
+
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+		</header>
+
+		<!-- main/content -->
+		<main> <!-- message: no java script -->
+			<noscript>
+				<div class="section">
+					<div class="container">
+						<div class="noscriptmsg card">
+							<p>JavaScript must be enabled in order for you to use the XLT Poster. However, it seems JavaScript is either disabled or not supported by your browser. Please enable JavaScript by changing your browser options and try again.</p>
+						</div>
+					</div>
+				</div>
+			</noscript>
+
+			<!-- messages -->
+			<div id="alert-placeholder">
+				
+			</div>
+
+			<!-- body -->
+			<div id="main">
+
+        <div class="row row-pb-lg  justify-content-center">
+        </div>
+        <div class="container">
+            <div class="row justify-content-center">
+                <!-- Account Overview -->
+                <div class="col-lg-8">
+                    <div class="container">
+                        <div id="title-account-overview" class="header-container">
+                            <span class="h2">My Account</span>
+                        </div>
+                        <div class="row justify-content-center mt-4">
+                            <div class="col-lg-6">
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="card-title">Order History</h5>
+                                                <a class="acc-style" id="link-order-overview" href="/en-US/orderOverview">
+                                                    <button class="btn btn-primary btn-account">
+                                                        <i class="fas icon-history"></i> Order History
+                                                    </button>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>Have a look at your past orders.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Address Overview -->
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="card-title">My Addresses</h5>
+                                                <a id="link-address-overview" href="/en-US/addressOverview"
+                                                    class="btn btn-primary btn-account">
+                                                    <i class="fas icon-book"></i> My Addresses
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>Add, update, and delete your addresses.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <!-- Payment Information -->
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="card-title">Payment Settings</h5>
+                                                <a id="link-payment-overview" href="/en-US/paymentOverview"
+                                                    class="btn btn-primary btn-account">
+                                                    <i class="fas icon-credit-card"></i>
+                                                    Payment Settings
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>Add, update, and delete your payment info.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Settings -->
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="card-title">Personal Data</h5>
+                                                <a id="link-setting-overview" href="/en-US/settingOverview"
+                                                    class="btn btn-primary btn-account">
+                                                    <i class="fas icon-cog"></i> Personal Data
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>Change your account information.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+			</div>
+
+			<div id="js-top" class="go-to-top" style="display: none;">
+				<a onclick="toTopFunction()" id="js-gotop"><i class="icon-arrow-up2"></i></a>
+			</div>
+		</main>
+
+		<!-- footer -->
+
+<footer id="footer" class="footer">
+	<div class="container mb-3">
+		<div class="row row-pb-md">
+			<div id="footer-section-about" class="col">
+				<h4 class="footer-section-headline">About</h4>
+				<p class="footer-text-about footer-section-text">The Poster Demo Store is a small e-commerce demo application. It is meant for functional testing, test automation, and load and performance testing. It can also help you to learn programming better. This software is licensed under Apache License 2.0.</p>
+				<p>
+					<ul class="footer-social-icons">
+						<li>GitHub: <a href="https://github.com/Xceptance/posters-demo-store"><i class="icon-github"></i></a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-support" class="col">
+				<h4 class="footer-section-headline">Customer Care</h4>
+				<p>
+					<ul class="footer-support">
+						<li><a href="mailto:kontakt@xceptance.de">Contact</a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-information" class="col">
+				<h4 class="footer-section-headline">Information</h4>
+				<p>
+					<ul class="footer-info">
+						<li>This software is for demo and testing purposes only. Orders will not be fulfilled. Do not enter sensitive or personal data!</li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-contact" class="col">
+				<h4 class="footer-section-headline">Contact Information</h4>
+				<ul class="footer-contact">
+					<li class="footer-contact-company">Xceptance GmbH</li>
+					<li class="footer-contact-adress">Leutragraben 2-4<br>07743 Jena<br>Germany</li>
+					<li class="footer-contact-phone">Phone: <a href="tel:+49-3641-376300">+49-3641-376300</a></li>
+					<li class="footer-contact-e-mail">E-mail: <a href="mailto:kontakt@xceptance.de">kontakt@xceptance.de</a></li>
+					<li class="footer-contact-website">Website: <a href="https://www.xceptance.com">https://www.xceptance.com</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div id="footer-copyright" class="footer-copyright text-center">Copyright 2013-2024 Xceptance Software Technologies GmbH<br>All photos by René Schwietzke under CC-BY-4.0.</div>
+	<div id="footer-version-information" class="version-info text-center">The Poster Demo Store - Version 2.5.0</div>
+</footer>
+
+		<script src="/assets/js/poster.js"></script>
+		<script>
+			var ready = (callback) => {
+  					if (document.readyState != "loading") callback();
+  					else document.addEventListener("DOMContentLoaded", callback);
+				}
+		</script>
+			<script>
+				ready(() => { 
+					var alertPlaceholder = document.getElementById("alert-placeholder");
+					var alertWrapper = document.createElement('div');
+					alertWrapper.classList.add("alert");
+					alertWrapper.classList.add("alert-success");
+					alertWrapper.classList.add("alert-dismissable");
+					alertWrapper.innerHTML = [
+						'	<div>'+"Login successful. Have fun in our shop!"+'</div>',
+						'	<button type="button" class="btn-close" data-bs-dismiss="alert"></button>'
+						].join('')
+					alertPlaceholder.append(alertWrapper)
+				});
+			</script>
+
+		<!-- Bootstrap Bundle (v5.3.2 including popper)-->
+		<script src="/assets/js/bootstrap.bundle.js"></script>
+		<!-- Main -->
+		<script src="/assets/js/main.js"></script>
+	</body>
+
+	</html>

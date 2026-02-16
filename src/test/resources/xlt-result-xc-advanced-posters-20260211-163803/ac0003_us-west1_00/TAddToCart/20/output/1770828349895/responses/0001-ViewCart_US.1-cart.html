@@ -1,0 +1,441 @@
+	<!DOCTYPE html>
+	<html lang="en-US">
+
+	<head>
+
+		<title>The Poster Demo Store - The Ultimate Online Shop</title>
+
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+
+		<!-- Icomoon Icon Fonts-->
+		<link rel="stylesheet" href="/assets/css/icomoon.css">
+
+		<!-- Bootstrap  -->
+		<link rel="stylesheet" href="/assets/css/bootstrap.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-grid.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-reboot.css">
+		<link rel="stylesheet" href="/assets/css/bootstrap-utilities.css">
+
+		<!-- Theme style  -->
+		<link rel="stylesheet" href="/assets/css/style_reworked.css">
+
+		<script type="text/javascript">
+			const CONTEXT_PATH = '';
+			const LOCALE = 'en-US';
+		</script>
+		<script src="/assets/js/posterMiniCart.js"></script>
+	</head>
+
+	<body>
+		<!-- header -->
+		<header>
+
+<div id="top-demo-disclaimer" class="demo-disclaimer container-fluid text-center">This is a demo application. Orders will not be fulfilled. Do not enter ANY personal and sensitive data!</div>
+
+<nav id="header-navigation-bar" class="header-navigation-bar navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container top-menu">
+    <a id="header-brand" class="navbar-brand" href="/en-US">
+      <img id="header-brand-logo" class="shop-logo" src="/assets/img/xceptanceLogo.png" title="Logo" alt="Logo">
+      The Poster Demo Store</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#header-navigation-elements" aria-controls="header-navigation-elements" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="header-navigation-elements" class="collapse navbar-collapse">
+      <ul id="header-categories" class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%401?categoryId=1" role="button" data-bs-auto-close="true" aria-expanded="false">
+            World of Nature
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%402?categoryId=1" title="models.DefaultText@2">Animals</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%403?categoryId=2" title="models.DefaultText@3">Flowers</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%404?categoryId=3" title="models.DefaultText@4">Trees</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%405?categoryId=2" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Dining
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%406?categoryId=4" title="models.DefaultText@6">Cold Cuts</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%407?categoryId=5" title="models.DefaultText@7">Main Dishes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%408?categoryId=6" title="models.DefaultText@8">Sweets</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%409?categoryId=3" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Transportation
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40a?categoryId=7" title="models.DefaultText@a">Air Travel</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40b?categoryId=8" title="models.DefaultText@b">Classic Cars</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40c?categoryId=9" title="models.DefaultText@c">Railways</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/en-US/topCategory/models.DefaultText%40d?categoryId=4" role="button" data-bs-auto-close="true" aria-expanded="false">
+            Panoramas
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40e?categoryId=10" title="models.DefaultText@e">Architecture</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%40f?categoryId=11" title="models.DefaultText@f">Fireworks</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4010?categoryId=12" title="models.DefaultText@10">Landscapes</a></li>
+            <li><a class="dropdown-item" href="/en-US/category/models.DefaultText%4011?categoryId=13" title="models.DefaultText@11">XXL Panoramas</a></li>
+          </ul>
+        </li>
+      </ul>
+      <div class="header-actions me-0 ms-auto d-flex">
+        <form id="header-search-form" class="d-flex" role="search" action="/en-US/search" method="get">
+          <input id="header-search-text" name="searchText" class="form-control me-2" type="search" placeholder="Search" aria-label="Search" title="Search" value="">
+          <button id="header-search-button" class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+        </form>
+        <ul id="header-customer-menus" class="navbar-nav mb-2 mb-lg-0">
+          <li id="locale-switcher" class="nav-item dropdown">
+<a id="show-locale-menu" class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    en-US
+</a>
+
+<ul id="locale-menu" class="dropdown-menu">
+    <li><a id="loc-en-us" class="dropdown-item" href="/en-US">en-US</a></li>
+    <li><a id="loc-en-uk" class="dropdown-item" href="/en-UK">en-UK</a></li>
+    <li><a id="loc-de-de" class="dropdown-item" href="/de-DE">de-DE</a></li>
+</ul>
+
+          </li>
+          <li id="user" class=" nav-item dropdown">
+
+<!-- login -->
+<a id="show-user-menu" class="nav-link dropdown-toggle" href="#" title="Sign In" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <span class="icon-user2"></span>
+</a>
+<ul id="user-menu" class="dropdown-menu">
+<li class="header-user-menu-heading mb-2">Welcome</li>
+<li class="header-user-menu-content mb-2">
+  <a href="/en-US/registration" id="go-to-registration" class="btn btn-primary header-user-menu-button" title="Create Account">
+	<span class="icon-user-add-outline"></span>
+	<span>Create Account</span>
+  </a>
+</li>
+<li class="header-user-menu-content">
+  <a href="/en-US/login" id="go-to-login" class="btn btn-primary header-user-menu-button" title="Sign In">
+	<span class="icon-log-in"></span>
+	<span>Sign In</span>
+  </a>
+</li>
+</ul>
+
+          </li>
+          <li id="mini-cart" class="nav-item dropdown">
+            <a id="header-cart-overview" class="dropdown-toggle header-cart-overview nav-link" href="#"  title="Cart" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="icon-shopping-cart"></span> &nbsp; 
+              <span id="count-wide-view" class="header-cart-product-count">2</span>
+            </a>
+            <ul id="mini-cart-menu" class="dropdown-menu">
+              <li><div class="cart-mini cart-mini-wrap">
+	<div class="cart-mini-empty">Your cart is empty.</div>
+
+	<div class="cart-mini-header">
+		<div class="cart-mini-product-counter">
+			<span class="value font-bold">2</span>
+			
+			items in the cart 
+		</div>
+	</div>
+
+	<div class="cart-mini-element-list-wrap">
+		<span class="notifications-loader"></span>
+		<ul class="list-unstyled cart-mini-element-list">
+			<li
+				class="product-id-48-matte-16x12 mini-cart-item" data-prodId="48">
+				<ul class="cart-items list-unstyled">
+					<li class="prod-name">XXL Burger</li>
+					<li>Quantity: <span 
+						class="prod-count">1</span> (<span 
+						class="prod-style">matte</span>, <span class="prod-size"><span 
+						class="prod-width">16</span> x <span class = "prod-height">12</span> <span 
+						class = "unit-length">in</span></span>)
+					</li>
+					<li>
+						<div class="prod-price text-right">
+							<strong>$17.99</strong>
+						</div>
+					</li>
+				</ul>
+			</li> 			<li
+				class="product-id-77-matte-16x12 mini-cart-item" data-prodId="77">
+				<ul class="cart-items list-unstyled">
+					<li class="prod-name">IFA G5 Tank Truck</li>
+					<li>Quantity: <span 
+						class="prod-count">1</span> (<span 
+						class="prod-style">matte</span>, <span class="prod-size"><span 
+						class="prod-width">16</span> x <span class = "prod-height">12</span> <span 
+						class = "unit-length">in</span></span>)
+					</li>
+					<li>
+						<div class="prod-price text-right">
+							<strong>$15.45</strong>
+						</div>
+					</li>
+				</ul>
+			</li> 
+		</ul>
+	</div>
+
+	<div class="cart-mini-total">
+		<div class="cart-mini-suborder-total row">
+			<div class="col-sm-7 text-left labelText">Subtotal</div>
+			<div class="col-sm-5 text-right value">
+				<div class="suborder-price">$33.44</div>
+			</div>
+		</div>
+		<div class="link-button">
+			<a href="/en-US/cart"
+				class="btn btn-primary form-control go-to-cart">View Cart</a>
+		</div>
+	</div>
+
+</div></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+		</header>
+
+		<!-- main/content -->
+		<main> <!-- message: no java script -->
+			<noscript>
+				<div class="section">
+					<div class="container">
+						<div class="noscriptmsg card">
+							<p>JavaScript must be enabled in order for you to use the XLT Poster. However, it seems JavaScript is either disabled or not supported by your browser. Please enable JavaScript by changing your browser options and try again.</p>
+						</div>
+					</div>
+				</div>
+			</noscript>
+
+			<!-- messages -->
+			<div id="alert-placeholder">
+				
+			</div>
+
+			<!-- body -->
+			<div id="main">
+
+<div class="container">
+	<h2 id="cart-title">Cart</h2>
+	<div class="table-responsive">
+		<table id="cart-overview-table" class="table">
+			<thead>
+				<tr class="column-name">
+					<th scope="col">#</th>
+					<th scope="col">Product</th>
+					<th scope="col">Unit Price</th>
+					<th scope="col">Quantity</th>
+					<th scope="col">Total Price</th>
+					<th scope="col">Remove/Update</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr id="product-0" class="js-cart-product">
+					<th scope="row">1</th>
+					<td>
+						<div class="row js-cart-product-description">
+							<div class="col-12 col-md-6">
+								<a href="/en-US/productDetail/models.DefaultText%409f?productId=48">
+									<img
+										srcset="/assets/img/products/food/main-dishes/xxl-burger/xxl-burger-small.webp 400w,
+												/assets/img/products/food/main-dishes/xxl-burger/xxl-burger-medium.webp 800w,
+												/assets/img/products/food/main-dishes/xxl-burger/xxl-burger-large.webp 2000w"
+										sizes="25vw"
+										src="/assets/img/products/food/main-dishes/xxl-burger/xxl-burger-original.webp"
+										alt="image of models.DefaultText@9f"
+										class="img-thumbnail"
+										id="cart-overview-picture-154905">
+								</a>
+							</div>
+							<div class="col">
+								<div class="product-name"><h3>XXL Burger</h3></div>
+								<div>Style: <span class="product-style">matte</span></div>
+								<div>Size: <span class="product-size">16 x 12 in</span></div>
+							</div>
+						</div>
+					</td>
+					<td> <div class="product-unit-price">$17.99</div></td>
+					<td>
+						<input id="product-count-0" name="product-count-0"
+							class="form-control text-center product-count" title="Quantity" type="text"
+							value=1 size="4" maxlength="4">
+					</td>
+					<td><div class="product-total-unit-price">$17.99</div></td>
+					<td>
+						<button class="btn btn-update-product" name="btnUpdateProdCount0" title="Update" id="btn-update-prod-count-0" data-id="154905" 	data-index="0" onclick="updateProduct(154905, 0, document.getElementById('product-count-0').value)"><span class="icon-refresh-ccw"></span></button>
+						<button class="btn btn-remove-product" id="btn-remove-prod-count-0" title="Remove" data-id="154905" data-bs-toggle="modal" data-bs-target="#delete-product-modal"><span class="icon-cross"></span></button>
+					</td>
+				</tr>
+				<tr id="product-1" class="js-cart-product">
+					<th scope="row">2</th>
+					<td>
+						<div class="row js-cart-product-description">
+							<div class="col-12 col-md-6">
+								<a href="/en-US/productDetail/models.DefaultText%40f6?productId=77">
+									<img
+										srcset="/assets/img/products/means_of_transportation/classic-cars/ifa-g5-tank-truck/ifa-g5-tank-truck-small.webp 400w,
+												/assets/img/products/means_of_transportation/classic-cars/ifa-g5-tank-truck/ifa-g5-tank-truck-medium.webp 800w,
+												/assets/img/products/means_of_transportation/classic-cars/ifa-g5-tank-truck/ifa-g5-tank-truck-large.webp 2000w"
+										sizes="25vw"
+										src="/assets/img/products/means_of_transportation/classic-cars/ifa-g5-tank-truck/ifa-g5-tank-truck-original.webp"
+										alt="image of models.DefaultText@f6"
+										class="img-thumbnail"
+										id="cart-overview-picture-154829">
+								</a>
+							</div>
+							<div class="col">
+								<div class="product-name"><h3>IFA G5 Tank Truck</h3></div>
+								<div>Style: <span class="product-style">matte</span></div>
+								<div>Size: <span class="product-size">16 x 12 in</span></div>
+							</div>
+						</div>
+					</td>
+					<td> <div class="product-unit-price">$15.45</div></td>
+					<td>
+						<input id="product-count-1" name="product-count-1"
+							class="form-control text-center product-count" title="Quantity" type="text"
+							value=1 size="4" maxlength="4">
+					</td>
+					<td><div class="product-total-unit-price">$15.45</div></td>
+					<td>
+						<button class="btn btn-update-product" name="btnUpdateProdCount1" title="Update" id="btn-update-prod-count-1" data-id="154829" 	data-index="1" onclick="updateProduct(154829, 1, document.getElementById('product-count-1').value)"><span class="icon-refresh-ccw"></span></button>
+						<button class="btn btn-remove-product" id="btn-remove-prod-count-1" title="Remove" data-id="154829" data-bs-toggle="modal" data-bs-target="#delete-product-modal"><span class="icon-cross"></span></button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="price-summary-row">
+		<ol class="list-group list-group-flush">
+			<li class="list-group-item d-flex justify-content-between align-items-end">
+			  <div class="price-summary ms-auto me-2">
+				<div class="fw-bold">Summary</div>
+				<div class="row">
+					<div class="col price-summary-position">Subtotal:</div>
+					<div id="order-sub-total-value" class="col price-summary-value">$33.44</div>
+				</div>
+				<div class="row">
+					<div class="col price-summary-position">Shipping:</div>
+					<div class="col price-summary-value" id="price-shipping-value">$7.00</div>
+				</div>
+				<div class="row">
+					<div class="col price-summary-position">Tax (6%):</div>
+					<div id="order-sub-total-tax-value" class="col price-summary-value">$2.43</div>
+				</div>
+			  </div>
+			</li>
+			<li class="list-group-item d-flex justify-content-between align-items-end">
+			  <div class="price-summary ms-auto me-2">
+				<div class="row">
+					<div class="col fw-bold price-summary-position">Order Total:</div>
+					<div id="order-total" class="col fw-bold price-summary-value">$42.87</div>
+				</div>
+			  </div>
+			</li>
+		</ol>
+	</div>
+	<div class="d-flex justify-content-end mt-2">
+		<a id="btn-start-checkout" class="btn btn-primary me-0 ms-auto" href="/en-US/checkout">Proceed to Checkout</a>
+	</div>
+</div>
+
+
+<!-- Delete Product Modal -->
+<div id="delete-product-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Are you sure you want to remove this product?</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+			<div class="modal-body"></div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-end">
+                    <button id="button-close" type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal" title="Close">No</button>
+                    <button id="button-delete" name="buttonDelete" class="btn btn-danger" data-bs-dismiss="modal" title="Delete">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+			</div>
+
+			<div id="js-top" class="go-to-top" style="display: none;">
+				<a onclick="toTopFunction()" id="js-gotop"><i class="icon-arrow-up2"></i></a>
+			</div>
+		</main>
+
+		<!-- footer -->
+
+<footer id="footer" class="footer">
+	<div class="container mb-3">
+		<div class="row row-pb-md">
+			<div id="footer-section-about" class="col">
+				<h4 class="footer-section-headline">About</h4>
+				<p class="footer-text-about footer-section-text">The Poster Demo Store is a small e-commerce demo application. It is meant for functional testing, test automation, and load and performance testing. It can also help you to learn programming better. This software is licensed under Apache License 2.0.</p>
+				<p>
+					<ul class="footer-social-icons">
+						<li>GitHub: <a href="https://github.com/Xceptance/posters-demo-store"><i class="icon-github"></i></a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-support" class="col">
+				<h4 class="footer-section-headline">Customer Care</h4>
+				<p>
+					<ul class="footer-support">
+						<li><a href="mailto:kontakt@xceptance.de">Contact</a></li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-information" class="col">
+				<h4 class="footer-section-headline">Information</h4>
+				<p>
+					<ul class="footer-info">
+						<li>This software is for demo and testing purposes only. Orders will not be fulfilled. Do not enter sensitive or personal data!</li>
+					</ul>
+				</p>
+			</div>
+			<div id="footer-section-contact" class="col">
+				<h4 class="footer-section-headline">Contact Information</h4>
+				<ul class="footer-contact">
+					<li class="footer-contact-company">Xceptance GmbH</li>
+					<li class="footer-contact-adress">Leutragraben 2-4<br>07743 Jena<br>Germany</li>
+					<li class="footer-contact-phone">Phone: <a href="tel:+49-3641-376300">+49-3641-376300</a></li>
+					<li class="footer-contact-e-mail">E-mail: <a href="mailto:kontakt@xceptance.de">kontakt@xceptance.de</a></li>
+					<li class="footer-contact-website">Website: <a href="https://www.xceptance.com">https://www.xceptance.com</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div id="footer-copyright" class="footer-copyright text-center">Copyright 2013-2024 Xceptance Software Technologies GmbH<br>All photos by René Schwietzke under CC-BY-4.0.</div>
+	<div id="footer-version-information" class="version-info text-center">The Poster Demo Store - Version 2.5.0</div>
+</footer>
+
+		<script src="/assets/js/poster.js"></script>
+		<script>
+			var ready = (callback) => {
+  					if (document.readyState != "loading") callback();
+  					else document.addEventListener("DOMContentLoaded", callback);
+				}
+		</script>
+
+		<!-- Bootstrap Bundle (v5.3.2 including popper)-->
+		<script src="/assets/js/bootstrap.bundle.js"></script>
+		<!-- Main -->
+		<script src="/assets/js/main.js"></script>
+	</body>
+
+	</html>

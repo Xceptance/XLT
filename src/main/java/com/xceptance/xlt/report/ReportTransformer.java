@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerException;
 
 import com.xceptance.common.xml.XSLTUtils;
 import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.api.util.XltLogger;
 
 /**
  *
@@ -37,11 +38,34 @@ public class ReportTransformer
 
     private final Map<String, Object> parameters;
 
+    private ReportRenderer renderer;
+
     public ReportTransformer(final List<File> outputFiles, final List<File> styleSheetFiles, final Map<String, Object> parameters)
     {
         this.outputFiles = outputFiles;
         this.styleSheetFiles = styleSheetFiles;
         this.parameters = parameters;
+
+        // Default to XSLT for backward compatibility when created manually with file lists
+        try
+        {
+            this.renderer = ReportRendererFactory.createRenderer(ReportRendererFactory.ENGINE_XSLT, null);
+        }
+        catch (final Exception e)
+        {
+            XltLogger.reportLogger.error("Failed to create default XSLT renderer for ReportTransformer", e);
+        }
+    }
+
+    /**
+     * Sets the renderer to use. If not set, a default XSLT renderer is used.
+     *
+     * @param renderer
+     *            the renderer
+     */
+    public void setRenderer(final ReportRenderer renderer)
+    {
+        this.renderer = renderer;
     }
 
     /**
@@ -64,7 +88,14 @@ public class ReportTransformer
                 @Override
                 public void run()
                 {
-                    transformReport(inputXmlFile, outputFile, styleSheetFile);
+                    try
+                    {
+                        renderer.render(inputXmlFile, outputFile, styleSheetFile.getPath(), parameters);
+                    }
+                    catch (final Exception e)
+                    {
+                        XltLogger.reportLogger.error("Failed to render report file: " + outputFile, e);
+                    }
                 }
             });
         }

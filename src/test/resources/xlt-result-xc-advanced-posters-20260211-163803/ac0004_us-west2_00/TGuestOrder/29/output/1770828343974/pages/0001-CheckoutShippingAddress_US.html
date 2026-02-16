@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "null" "null">
+<html lang="en-US"><head><meta content="text/html; charset=utf-8" http-equiv="content-type">
+
+		<title>The Poster Demo Store - The Ultimate Online Shop</title>
+
+		<!--Let browser know website is optimized for mobile-->
+		<meta content="width=device-width, initial-scale=1" name="viewport">
+		<meta charset="utf-8">
+
+		<!-- Icomoon Icon Fonts-->
+		<link href="cache/729497869.css" rel="stylesheet">
+
+		<!-- Bootstrap  -->
+		<link href="cache/916336442.css" rel="stylesheet">
+		<link href="cache/3109978849.css" rel="stylesheet">
+		<link href="cache/2916764255.css" rel="stylesheet">
+		<link href="cache/1290718766.css" rel="stylesheet">
+
+		<!-- Theme style  -->
+		<link href="cache/1028654866.css" rel="stylesheet">
+
+		
+		
+	</head><body>
+		<!-- header -->
+		<header>
+<div class="demo-disclaimer container-fluid text-center" id="top-demo-disclaimer">This is a demo application. Orders will not be fulfilled. Do not enter ANY personal and sensitive data!</div>
+
+<nav class="header-navigation-bar navbar navbar-expand-lg bg-body-tertiary" id="header-navigation-bar">
+  <div class="container">
+    <a class="navbar-brand" href="/en-US" id="header-brand">
+      <img alt="Logo" class="shop-logo" id="header-brand-logo" src="cache/1752081857.png" title="Logo">
+      The Poster Demo Store
+    </a>
+    <div class="collapse navbar-collapse" id="header-navigation-elements">
+      <ul class="navbar-nav me-0 ms-auto mb-2 mb-lg-0" id="header-customer-menus">
+        <li class="nav-item dropdown">
+<a aria-expanded="false" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" href="#" id="show-locale-menu" role="button">
+    en-US
+</a>
+
+<ul class="dropdown-menu" id="locale-menu">
+    <li><a class="dropdown-item" href="/en-US" id="loc-en-us">en-US</a></li>
+    <li><a class="dropdown-item" href="/en-UK" id="loc-en-uk">en-UK</a></li>
+    <li><a class="dropdown-item" href="/de-DE" id="loc-de-de">de-DE</a></li>
+</ul>
+
+        </li>
+        <li class="nav-item dropdown">
+          <a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" id="show-user-menu" role="button" title="Sign In">
+            <span class="icon-user2"></span>
+          </a>
+          <ul class="dropdown-menu" id="user-menu">
+
+<!-- login -->
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" id="show-user-menu" role="button" title="Sign In">
+  <span class="icon-user2"></span>
+</a>
+<ul class="dropdown-menu" id="user-menu">
+<li class="header-user-menu-heading mb-2">Welcome</li>
+<li class="header-user-menu-content mb-2">
+  <a class="btn btn-primary header-user-menu-button" href="/en-US/registration" id="go-to-registration" title="Create Account">
+	<span class="icon-user-add-outline"></span>
+	<span>Create Account</span>
+  </a>
+</li>
+<li class="header-user-menu-content">
+  <a class="btn btn-primary header-user-menu-button" href="/en-US/login" id="go-to-login" title="Sign In">
+	<span class="icon-log-in"></span>
+	<span>Sign In</span>
+  </a>
+</li>
+</ul>
+
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+		</header>
+
+		<!-- main/content -->
+		<main> <!-- message: no java script -->
+			<noscript>
+				<div class="section">
+					<div class="container">
+						<div class="noscriptmsg card">
+							<p>JavaScript must be enabled in order for you to use the XLT Poster. However, it seems JavaScript is either disabled or not supported by your browser. Please enable JavaScript by changing your browser options and try again.</p>
+						</div>
+					</div>
+				</div>
+			</noscript>
+
+			<!-- messages -->
+			<div id="alert-placeholder">
+				
+			</div>
+
+			<!-- body -->
+			<div id="main">
+
+
+<div class="container mt-3">
+    <!-- Progress Indicator -->
+    <div class="d-flex justify-content-center mb-3" id="checkout-progress-indicator">
+        <div class="progress-indicator row justify-content-center col-md-8 progress-4">
+<div class="progress-column col text-center progress-step-1">
+    <p class="progress-bubble-container"><span class="progress-bubble">1</span></p>
+    <h6 class="progress-bubble-caption">Cart</h6>
+</div>
+<div class="progress-column col text-center progress-step-2">
+    <p class="progress-bubble-container"><span class="progress-bubble">2</span></p>
+    <h6 class="progress-bubble-caption">Shipping</h6>
+</div>
+<div class="progress-column col text-center progress-step-3">
+    <p class="progress-bubble-container"><span class="progress-bubble">3</span></p>
+    <h6 class="progress-bubble-caption">Billing</h6>
+</div>
+<div class="progress-column col text-center progress-step-4">
+    <p class="progress-bubble-container"><span class="progress-bubble">4</span></p>
+    <h6 class="progress-bubble-caption">Payment</h6>
+</div>
+<div class="progress-column col text-center progress-step-5">
+    <p class="progress-bubble-container"><span class="progress-bubble">5</span></p>
+    <h6 class="progress-bubble-caption">Summary</h6>
+</div>
+<div class="progress-column col text-center progress-step-6">
+    <p class="progress-bubble-container"><span class="progress-bubble">6</span></p>
+    <h6 class="progress-bubble-caption">Completed</h6>
+</div>        </div>
+    </div>
+	<!-- add new credit card -->
+    <div class="row  justify-content-center">
+        <div class="col-lg-6">
+            <form action="/en-US/paymentMethodCompleted" class="form-with-background" id="form-add-payment" method="post">
+                <h2 class="text-center" id="title-payment">Enter a Credit Card</h2>
+                <!-- include payment form -->
+
+
+
+<!-- credit card number -->
+<div class="col-md-12">
+	<div class="form-group">
+		<label for="creditcard-number">Card Number*</label>
+		<input class="form-control" data-error="Please enter a valid credit card number." id="creditcard-number" name="creditCardNumber" pattern="4[0-9]{12}(?:[0-9]{3})?" placeholder="Card Number" required="" size="16" title="Please enter a valid credit card number." type="text" value="">
+	</div>
+</div>
+
+<!-- name -->
+<div class="col-md-6">
+	<div class="form-group">
+		<label for="name">Cardholder&apos;s Name*</label>
+		<input class="form-control" data-error="Please enter a valid name." id="name" name="name" pattern="[ÄäÖöÜüßA-Za-z ]+" placeholder="Cardholder&apos;s Name" required="" title="Please enter a valid name." type="text" value="">
+	</div>	
+</div>
+
+<!-- select expiration date -->
+<div class="col-md-6">
+	<div class="form-group">
+	  <label for="expiration-date-month">Expiration Date*</label>
+	  <div class="row">
+		<div class="col-xs-6 col-sm-6 col-md-6">
+		  <select class="form-select" id="expiration-date-month" name="expirationDateMonth" title="Expiration Date">
+				  <option>01</option>
+				  <option selected="selected">02</option>
+				  <option>03</option>
+				  <option>04</option>
+				  <option>05</option>
+				  <option>06</option>
+				  <option>07</option>
+				  <option>08</option>
+				  <option>09</option>
+				  <option>10</option>
+				  <option>11</option>
+				  <option>12</option>
+		  </select>
+		</div>
+		<div class="col-xs-6 col-sm-6 col-md-6">
+		  <select class="form-select" id="expiration-date-year" name="expirationDateYear" title="Expiration Date">
+				  <option selected="selected">2026</option>
+				  <option>2027</option>
+				  <option>2028</option>
+				  <option>2029</option>
+				  <option>2030</option>
+				  <option>2031</option>
+				  <option>2032</option>
+				  <option>2033</option>
+				  <option>2034</option>
+				  <option>2035</option>
+				  <option>2036</option>
+		  </select>
+		</div>
+	  </div>
+	</div>
+</div>
+  
+                <hr>
+                <div class="d-flex">
+                    <div class="req-field me-auto">*Required Fields</div>
+                    <button class="ms-auto btn btn-primary" id="btn-add-payment" name="btnAddPayment" type="submit">Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+			</div>
+
+			<div class="go-to-top" id="js-top" style="display: none;">
+				<a id="js-gotop"><i class="icon-arrow-up2"></i></a>
+			</div>
+		</main>
+
+		<!-- footer -->
+
+<footer class="footer" id="footer">
+	<div class="container mb-3">
+		<div class="row row-pb-md">
+			<div class="col" id="footer-section-about">
+				<h4 class="footer-section-headline">About</h4>
+				<p class="footer-text-about footer-section-text">The Poster Demo Store is a small e-commerce demo application. It is meant for functional testing, test automation, and load and performance testing. It can also help you to learn programming better. This software is licensed under Apache License 2.0.</p>
+				<p>
+					</p><ul class="footer-social-icons">
+						<li>GitHub: <a href="https://github.com/Xceptance/posters-demo-store"><i class="icon-github"></i></a></li>
+					</ul>
+				<p></p>
+			</div>
+			<div class="col" id="footer-section-support">
+				<h4 class="footer-section-headline">Customer Care</h4>
+				<p>
+					</p><ul class="footer-support">
+						<li><a href="mailto:kontakt@xceptance.de">Contact</a></li>
+					</ul>
+				<p></p>
+			</div>
+			<div class="col" id="footer-section-information">
+				<h4 class="footer-section-headline">Information</h4>
+				<p>
+					</p><ul class="footer-info">
+						<li>This software is for demo and testing purposes only. Orders will not be fulfilled. Do not enter sensitive or personal data!</li>
+					</ul>
+				<p></p>
+			</div>
+			<div class="col" id="footer-section-contact">
+				<h4 class="footer-section-headline">Contact Information</h4>
+				<ul class="footer-contact">
+					<li class="footer-contact-company">Xceptance GmbH</li>
+					<li class="footer-contact-adress">Leutragraben 2-4<br>07743 Jena<br>Germany</li>
+					<li class="footer-contact-phone">Phone: <a href="tel:+49-3641-376300">+49-3641-376300</a></li>
+					<li class="footer-contact-e-mail">E-mail: <a href="mailto:kontakt@xceptance.de">kontakt@xceptance.de</a></li>
+					<li class="footer-contact-website">Website: <a href="https://www.xceptance.com">https://www.xceptance.com</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="footer-copyright text-center" id="footer-copyright">Copyright 2013-2024 Xceptance Software Technologies GmbH<br>All photos by René Schwietzke under CC-BY-4.0.</div>
+	<div class="version-info text-center" id="footer-version-information">The Poster Demo Store - Version 2.5.0</div>
+</footer>
+
+		
+		
+
+		<!-- Bootstrap Bundle (v5.3.2 including popper)-->
+		
+		<!-- Main -->
+		
+	
+</body></html>

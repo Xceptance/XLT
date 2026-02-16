@@ -218,6 +218,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX = ".outputFileName";
 
+    private static final String PROP_TRANSFORMATIONS_TEMPLATE_FILE_SUFFIX = ".templateFileName";
+
+    private static final String PROP_RENDERING_ENGINE = PROP_PREFIX + "renderingEngine";
+
     private static final String PROP_RESULTS_BASE_URI = PROP_PREFIX + "resultsBaseUri";
 
     private static final String PROP_GENERATE_ERROR_LINKS = PROP_PREFIX + "linkToResultBrowsers";
@@ -298,6 +302,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final boolean aggregateCustomData;
 
     private final List<String> styleSheetFileNames;
+
+    private final List<String> templateFileNames;
 
     private final File testReportsRootDirectory;
 
@@ -585,8 +591,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         // load the transformation configuration
         outputFileNames = new ArrayList<>();
         styleSheetFileNames = new ArrayList<>();
+        templateFileNames = new ArrayList<>();
 
-        readTransformations(outputFileNames, styleSheetFileNames);
+        readTransformations(outputFileNames, styleSheetFileNames, templateFileNames);
 
         // Apdex settings
         readApdexThresholds();
@@ -931,6 +938,26 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public List<String> getStyleSheetFileNames()
     {
         return styleSheetFileNames;
+    }
+
+    /**
+     * Returns the list of template file names.
+     *
+     * @return the template file names
+     */
+    public List<String> getTemplateFileNames()
+    {
+        return templateFileNames;
+    }
+
+    /**
+     * Returns the rendering engine to be used.
+     *
+     * @return the rendering engine
+     */
+    public String getRenderingEngine()
+    {
+        return getStringProperty(PROP_RENDERING_ENGINE, ReportRendererFactory.ENGINE_FREEMARKER);
     }
 
     /**
@@ -1603,7 +1630,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * @param styleSheetFileNames
      *            the list of style sheet file names
      */
-    private void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames)
+    private void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames,
+                                     final List<String> templateFileNames)
     {
         final Set<String> keys = getPropertyKeyFragment(PROP_TRANSFORMATIONS_PREFIX);
         for (final String key : keys)
@@ -1611,10 +1639,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String propertyPrefix = PROP_TRANSFORMATIONS_PREFIX + key;
 
             final File outputFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX);
-            final File styleSheetFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX);
+            final File styleSheetFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX, null);
+            final File templateFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_TEMPLATE_FILE_SUFFIX, null);
 
             outputFileNames.add(outputFile.getPath());
-            styleSheetFileNames.add(styleSheetFile.getPath());
+            styleSheetFileNames.add(styleSheetFile == null ? null : styleSheetFile.getPath());
+            templateFileNames.add(templateFile == null ? null : templateFile.getPath());
         }
     }
 

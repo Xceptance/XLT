@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
@@ -638,25 +639,8 @@ public class ReportGenerator
 
         // copy the report's static resources
         final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
-        FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), false);
-
-        // get the configured output and style sheet file names
-        final List<File> outputFiles = new ArrayList<File>();
-        final List<File> styleSheetFiles = new ArrayList<File>();
-
-        // create the files from the file names
-        final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
-        final List<String> outputFileNames = config.getOutputFileNames();
-
-        for (int i = 0; i < styleSheetFileNames.size(); i++)
-        {
-            final File outputFile = new File(outputDir, outputFileNames.get(i));
-            outputFiles.add(outputFile);
-
-            final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.LOAD_REPORT_XSL_PATH),
-                                                 styleSheetFileNames.get(i));
-            styleSheetFiles.add(styleSheetFile);
-        }
+        final IOFileFilter ftlFilter = FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".ftl"));
+        FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.and(FileFilterUtils.makeSVNAware(null), ftlFilter), false);
 
         // create some dynamic parameters
         final HashMap<String, Object> parameters = new HashMap<String, Object>();
@@ -665,8 +649,9 @@ public class ReportGenerator
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
         parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
 
-        // transform the report
-        final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+        // get the configured rendering engine
+        final String engine = config.getRenderingEngine();
+        final ReportRenderer renderer = ReportRendererFactory.createRenderer(engine, config);
 
         final long start = TimerUtils.get().getStartTime();
 
@@ -678,7 +663,7 @@ public class ReportGenerator
             TaskManager.getInstance().setMaximumThreadCount(1);
 
             TaskManager.getInstance().startProgress("Creating");
-            reportTransformer.run(inputXmlFile, outputDir);
+            renderer.render(inputXmlFile, outputDir, parameters);
 
         }
         finally
