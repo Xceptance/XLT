@@ -68,6 +68,7 @@ import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agent.AgentInfo;
 import com.xceptance.xlt.agentcontroller.ResultArchives.ArchiveToken;
 import com.xceptance.xlt.agentcontroller.TestUserStatus.State;
+import com.xceptance.xlt.agentcontroller.xtc.PeriodicHeartbeatSender;
 import com.xceptance.xlt.agentcontroller.xtc.RelayClient;
 import com.xceptance.xlt.agentcontroller.xtc.RestApiClient;
 import com.xceptance.xlt.common.XltConstants;
@@ -448,7 +449,9 @@ public class AgentControllerImpl implements AgentController
 
             // TODO: description needed? if so, make it configurable.
             xtcRestApi.registerPrivateAgent(agentId, agentName, "", hostName, "MEDIUM");
-            // TODO: add periodic ping?
+
+            // start periodic heartbeat
+            new PeriodicHeartbeatSender(xtcRestApi, 60_000L, agentId).start();
 
             // start relay client
             new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), hostName,
