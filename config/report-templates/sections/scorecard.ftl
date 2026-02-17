@@ -13,6 +13,13 @@
 <html lang="en">
 <#assign scorecard = report.scorecard>
 <#if !scorecard?has_content><#assign scorecard = report></#if>
+
+<#-- Extract project name: use parameter if provided, otherwise extract from XML -->
+<#if !projectName??>
+  <#assign projectNameNode = (report.testreport.configuration.projectName)![]>
+  <#assign projectName = (projectNameNode?size > 0)?then(projectNameNode[0]!"", "")>
+</#if>
+
 <head>
     <#if scorecard?has_content>
         <@head.head title="XLT Report - Scorecard" projectName=projectName configuration=scorecard["configuration"]/>
