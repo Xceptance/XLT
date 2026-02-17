@@ -34,7 +34,7 @@ public class ReportTransformer
 {
     private final List<File> outputFiles;
 
-    private final List<File> styleSheetFiles;
+    private final List<String> styleSheetFileNames;
 
     private final Map<String, Object> parameters;
 
@@ -43,7 +43,7 @@ public class ReportTransformer
     public ReportTransformer(final List<File> outputFiles, final List<File> styleSheetFiles, final Map<String, Object> parameters)
     {
         this.outputFiles = outputFiles;
-        this.styleSheetFiles = styleSheetFiles;
+        this.styleSheetFileNames = styleSheetFiles.stream().map(File::getPath).toList();
         this.parameters = parameters;
 
         // Default to XSLT for backward compatibility when created manually with file lists
@@ -54,6 +54,22 @@ public class ReportTransformer
         catch (final Exception e)
         {
             XltLogger.reportLogger.error("Failed to create default XSLT renderer for ReportTransformer", e);
+        }
+    }
+
+    public ReportTransformer(final RendererConfiguration config, final String renderingEngine, final Map<String, Object> parameters)
+    {
+        this.outputFiles = null;
+        this.styleSheetFileNames = config.getStyleSheetFileNames();
+        this.parameters = parameters;
+
+        try
+        {
+            this.renderer = ReportRendererFactory.createRenderer(renderingEngine, config);
+        }
+        catch (final Exception e)
+        {
+            XltLogger.reportLogger.error("Failed to create renderer for ReportTransformer: " + renderingEngine, e);
         }
     }
 
@@ -78,11 +94,34 @@ public class ReportTransformer
      */
     public void run(final File inputXmlFile, final File outputDir)
     {
-        for (int i = 0; i < outputFiles.size(); i++)
+        if (outputFiles != null)
         {
-            final File outputFile = outputFiles.get(i);
-            final File styleSheetFile = styleSheetFiles.get(i);
+            // Legacy/List-based mode
+            for (int i = 0; i < outputFiles.size(); i++)
+            {
+                final File outputFile = outputFiles.get(i);
+                final String styleSheetOrTemplate = styleSheetFileNames.get(i);
 
+                TaskManager.getInstance().addTask(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            renderer.render(inputXmlFile, outputFile, styleSheetOrTemplate, parameters);
+                        }
+                        catch (final Exception e)
+                        {
+                            XltLogger.reportLogger.error("Failed to render report file: " + outputFile, e);
+                        }
+                    }
+                });
+            }
+        }
+        else
+        {
+            // Configuration-based mode
             TaskManager.getInstance().addTask(new Runnable()
             {
                 @Override
@@ -90,11 +129,11 @@ public class ReportTransformer
                 {
                     try
                     {
-                        renderer.render(inputXmlFile, outputFile, styleSheetFile.getPath(), parameters);
+                        renderer.render(inputXmlFile, outputDir, parameters);
                     }
                     catch (final Exception e)
                     {
-                        XltLogger.reportLogger.error("Failed to render report file: " + outputFile, e);
+                        XltLogger.reportLogger.error("Failed to render report into directory: " + outputDir, e);
                     }
                 }
             });

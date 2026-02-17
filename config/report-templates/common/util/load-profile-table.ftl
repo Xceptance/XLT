@@ -61,7 +61,7 @@
                     <#-- Initial Delay -->
                     <#assign minID = -1, maxID = -1>
                     <#list testCases as tc>
-                        <#assign val = (tc.initialDelay?number)!0>
+                        <#assign val = toNumber(tc.initialDelay)>
                         <#if minID == -1 || val lt minID><#assign minID = val></#if>
                         <#if val gt maxID><#assign maxID = val></#if>
                     </#list>
@@ -70,7 +70,7 @@
                     <#-- Ramp-Up -->
                     <#assign minRU = -1, maxRU = -1>
                     <#list testCases as tc>
-                        <#assign val = (tc.rampUpPeriod?number)!0>
+                        <#assign val = toNumber(tc.rampUpPeriod)>
                         <#if minRU == -1 || val lt minRU><#assign minRU = val></#if>
                         <#if val gt maxRU><#assign maxRU = val></#if>
                     </#list>
@@ -79,7 +79,7 @@
                     <#-- Warm-Up -->
                     <#assign minWU = -1, maxWU = -1>
                     <#list testCases as tc>
-                        <#assign val = (tc.warmUpPeriod?number)!0>
+                        <#assign val = toNumber(tc.warmUpPeriod)>
                         <#if minWU == -1 || val lt minWU><#assign minWU = val></#if>
                         <#if val gt maxWU><#assign maxWU = val></#if>
                     </#list>
@@ -88,7 +88,7 @@
                     <#-- Measurement -->
                     <#assign minM = -1, maxM = -1>
                     <#list testCases as tc>
-                        <#assign val = (tc.measurementPeriod?number)!0>
+                        <#assign val = toNumber(tc.measurementPeriod)>
                         <#if minM == -1 || val lt minM><#assign minM = val></#if>
                         <#if val gt maxM><#assign maxM = val></#if>
                     </#list>
@@ -97,7 +97,7 @@
                     <#-- Shutdown -->
                     <#assign minS = -1, maxS = -1>
                     <#list testCases as tc>
-                        <#assign val = (tc.shutdownPeriod?number)!0>
+                        <#assign val = toNumber(tc.shutdownPeriod)>
                         <#if minS == -1 || val lt minS><#assign minS = val></#if>
                         <#if val gt maxS><#assign maxS = val></#if>
                     </#list>
@@ -106,7 +106,7 @@
                     <#-- Think Time -->
                     <#assign minTT = -1, maxTT = -1>
                     <#list testCases as tc>
-                        <#assign tt = (tc.actionThinkTime?has_content)?then(tc.actionThinkTime?number, 0), dev = (tc.actionThinkTimeDeviation?has_content)?then(tc.actionThinkTimeDeviation?number, 0)>
+                        <#assign tt = toNumber(tc.actionThinkTime), dev = toNumber(tc.actionThinkTimeDeviation)>
                         <#assign min = tt - dev, max = tt + dev>
                         <#if min lt 0><#assign min = 0></#if>
                         <#if minTT == -1 || min lt minTT><#assign minTT = min></#if>
@@ -117,13 +117,13 @@
             </tfoot>
             <tbody>
                 <#list testCases?sort_by("userName") as tc>
-                    <#assign numIterations = (tc.numberOfIterations?size > 0)?then(tc.numberOfIterations?number, 0)>
+                    <#assign numIterations = toNumber(tc.numberOfIterations)>
                     <#assign mode = (numIterations == 0)?then("duration", "iteration")>
                     <tr>
                         <td class="key text" title="${ensureString(tc.testCaseClassName)}">${tc.userName}</td>
                         <#assign complexLF = ensureString(tc.complexLoadFunction)>
                         <td class="value number"<#if (tc.arrivalRate?size == 0) && complexLF?has_content> title="${complexLF}"</#if>>${tc.numberOfUsers}</td>
-                        <#local loadP = (tc.numberOfUsersPercentage?has_content)?then(tc.numberOfUsersPercentage?number, "")>
+                        <#local loadP = toNumber(tc.numberOfUsersPercentage)>
                         <td class="value number load-meter" style="--loadp:${loadP}">${fmt.formatPercentageValue(tc.numberOfUsersPercentage)}</td>
                         <td class="value number">
                             <#if mode == "iteration">
@@ -146,43 +146,43 @@
                             <td class="value number">&ndash;</td>
                         </#if>
                         <td class="value number">
-                            <#if (tc.initialDelay?size > 0) && (tc.initialDelay?number gt 0)>
-                                ${fmt.formatMsecToH(tc.initialDelay?number * 1000)}
+                            <#if toNumber(tc.initialDelay) gt 0>
+                                ${fmt.formatMsecToH(toNumber(tc.initialDelay) * 1000)}
                             <#else>
                                 ${fmt.formatNumber("")}
                             </#if>
                         </td>
                         <td class="value number">
-                            <#if (tc.rampUpPeriod?size > 0) && (tc.rampUpPeriod?number gt 0)>
-                                ${fmt.formatMsecToH(tc.rampUpPeriod?number * 1000)}
+                            <#if toNumber(tc.rampUpPeriod) gt 0>
+                                ${fmt.formatMsecToH(toNumber(tc.rampUpPeriod) * 1000)}
                             <#else>
                                 ${fmt.formatNumber("")}
                             </#if>
                         </td>
                         <td class="value number">
-                            <#if (tc.warmUpPeriod?size > 0) && (tc.warmUpPeriod?number gt 0)>
-                                ${fmt.formatMsecToH(tc.warmUpPeriod?number * 1000)}
+                            <#if toNumber(tc.warmUpPeriod) gt 0>
+                                ${fmt.formatMsecToH(toNumber(tc.warmUpPeriod) * 1000)}
                             <#else>
                                 ${fmt.formatNumber("")}
                             </#if>
                         </td>
                         <td class="value number">
                             <#if (tc.measurementPeriod?size > 0)>
-                                ${fmt.formatMsecToH(tc.measurementPeriod?number * 1000)}
+                                ${fmt.formatMsecToH(toNumber(tc.measurementPeriod) * 1000)}
                             <#else>
                                 ${fmt.formatNumber("")}
                             </#if>
                         </td>
                         <td class="value number">
-                            <#if (tc.shutdownPeriod?size > 0) && (tc.shutdownPeriod?number gt 0)>
-                                ${fmt.formatMsecToH(tc.shutdownPeriod?number * 1000)}
+                            <#if toNumber(tc.shutdownPeriod) gt 0>
+                                ${fmt.formatMsecToH(toNumber(tc.shutdownPeriod) * 1000)}
                             <#else>
                                 ${fmt.formatNumber("")}
                             </#if>
                         </td>
                         <td class="value number">
-                            <#assign tt = (tc.actionThinkTime?size > 0)?then(tc.actionThinkTime?number, 0)>
-                            <#assign dev = (tc.actionThinkTimeDeviation?size > 0)?then(tc.actionThinkTimeDeviation?number, 0)>
+                            <#assign tt = toNumber(tc.actionThinkTime)>
+                            <#assign dev = toNumber(tc.actionThinkTimeDeviation)>
                             ${fmt.formatRange(tt - dev, tt + dev)}
                         </td>
                     </tr>
@@ -196,7 +196,7 @@
 </#macro>
 
 <#function parseRange val>
-    <#local sVal = ensureString(val)>
+    <#local sVal = ensureString(val)?trim>
     <#if sVal?contains("...")>
         <#return {"min": sVal?keep_before("...")?replace(",", "")?number, "max": sVal?keep_after("...")?replace(",", "")?number}>
     <#else>
@@ -214,4 +214,13 @@
         <#return val[0]?string>
     </#if>
     <#return val?string>
+</#function>
+
+<#function toNumber node>
+    <#local s = ensureString(node)?trim>
+    <#if s?has_content>
+        <#return s?number>
+    <#else>
+        <#return 0>
+    </#if>
 </#function>

@@ -16,7 +16,7 @@
 </xsl:template>
 <xsl:template name="description-general">
     <div class="description"> 
-    	<xsl:variable name="gid" select="concat('overview', generate-id(.))"/>  
+    	<xsl:variable name="gid" select="'overview'"/>  
         <p>
             The overview section shows some general information about both load tests. This enables you to compare settings, 
             runtime, and profiles. 
@@ -63,7 +63,7 @@
 </xsl:template>
 <xsl:template name="description-transaction-summary">
     <div class="description">   
-    	<xsl:variable name="gid" select="concat('transaction', generate-id(.))"/>
+    	<xsl:variable name="gid" select="'transaction'"/>
         <p>
             A transaction is a completed test case, and a test case consists of one or more actions. 
             <xsl:call-template name="show-n-hide">
@@ -89,7 +89,7 @@
 </xsl:template>
 <xsl:template name="description-action-summary">
     <div class="description">   
-    	<xsl:variable name="gid" select="concat('action', generate-id(.))"/>
+    	<xsl:variable name="gid" select="'action'"/>
         <p>
             An action is part of a test case and consists of a prevalidation, an execution, and a postvalidation.
             <xsl:call-template name="show-n-hide">
@@ -115,7 +115,7 @@
 </xsl:template>
 <xsl:template name="description-request-summary">
     <div class="description"> 
-    	<xsl:variable name="gid" select="concat('request', generate-id(.))"/>  
+    	<xsl:variable name="gid" select="'request'"/>  
         <p>
             The request section is the most important statistical section when testing web applications.
             <xsl:call-template name="show-n-hide">
@@ -174,7 +174,7 @@
 </xsl:template>
 <xsl:template name="description-web-vitals-summary">
     <div class="description">
-        <xsl:variable name="gid" select="concat('web-vitals', generate-id(.))"/>
+        <xsl:variable name="gid" select="'web-vitals'"/>
         <p>
             The Web Vitals section helps you evaluate how well your pages perform on aspects that are important for a great user experience.
             <xsl:call-template name="show-n-hide">

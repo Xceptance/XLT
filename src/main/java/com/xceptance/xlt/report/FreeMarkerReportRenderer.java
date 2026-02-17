@@ -45,13 +45,13 @@ import freemarker.template.TemplateExceptionHandler;
  */
 public class FreeMarkerReportRenderer implements ReportRenderer
 {
-    private final ReportGeneratorConfiguration config;
+    private final RendererConfiguration config;
 
     private final Configuration freemarkerConfig;
 
     private final ConcurrentLRUCache<File, NodeModel> xmlCache = new ConcurrentLRUCache<>(10);
 
-    public FreeMarkerReportRenderer(final ReportGeneratorConfiguration config)
+    public FreeMarkerReportRenderer(final RendererConfiguration config)
     {
         this.config = config;
 

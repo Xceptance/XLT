@@ -83,7 +83,7 @@ import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationR
  * The ReportGeneratorConfiguration is the central place where all configuration information for the report generator
  * can be retrieved from.
  */
-public class ReportGeneratorConfiguration extends AbstractConfiguration implements ReportProviderConfiguration
+public class ReportGeneratorConfiguration extends AbstractConfiguration implements ReportProviderConfiguration, RendererConfiguration
 {
     /**
      * The supported scales of the y-axis in run time charts.
@@ -861,10 +861,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return additionalMovingAverages;
     }
 
-    public List<String> getOutputFileNames()
-    {
-        return outputFileNames;
-    }
 
     /**
      * {@inheritDoc}
@@ -935,19 +931,40 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return aggregateCustomData;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<String> getStyleSheetFileNames()
     {
         return styleSheetFileNames;
     }
 
     /**
-     * Returns the list of template file names.
-     *
-     * @return the template file names
+     * {@inheritDoc}
      */
+    @Override
     public List<String> getTemplateFileNames()
     {
         return templateFileNames;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getOutputFileNames()
+    {
+        return outputFileNames;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public File getXsltStyleSheetRootDirectory()
+    {
+        return new File(getConfigDirectory(), XltConstants.LOAD_REPORT_XSL_PATH);
     }
 
     /**

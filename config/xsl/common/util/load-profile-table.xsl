@@ -263,18 +263,18 @@
 
                             <tr>
                                 <td class="key text">
-                                    <xsl:attribute name="title"><xsl:value-of select="testCaseClassName"/></xsl:attribute>
+                                    <xsl:attribute name="title"><xsl:value-of select="normalize-space(testCaseClassName)"/></xsl:attribute>
                                     <xsl:value-of select="userName"/>
                                 </td>
                                 <td class="value number">
                                     <xsl:if test="string-length(arrivalRate) = 0">
                                         <xsl:if test="complexLoadFunction">
-                                            <xsl:attribute name="title"><xsl:value-of select="complexLoadFunction"/></xsl:attribute>
+                                            <xsl:attribute name="title"><xsl:value-of select="normalize-space(complexLoadFunction)"/></xsl:attribute>
                                         </xsl:if>
                                     </xsl:if>
                                     <xsl:value-of select="numberOfUsers"/>
                                 </td>
-                                <td class="value number load-meter" style="--loadp:{numberOfUsersPercentage}">
+                                <td class="value number load-meter" style="--loadp:{normalize-space(numberOfUsersPercentage)}">
                                     <xsl:value-of select="format-number(numberOfUsersPercentage, '#,##0.00')" />
                                     <xsl:text>%</xsl:text>
                                 </td>
@@ -294,7 +294,7 @@
                                             <xsl:choose>
                                                 <xsl:when test="string-length(arrivalRate) != 0">
                                                     <xsl:if test="complexLoadFunction">
-                                                        <xsl:attribute name="title"><xsl:value-of select="complexLoadFunction"/></xsl:attribute>
+                                                        <xsl:attribute name="title"><xsl:value-of select="normalize-space(complexLoadFunction)"/></xsl:attribute>
                                                     </xsl:if>
                                                     <xsl:value-of select="arrivalRate"/>
                                                 </xsl:when>
@@ -310,7 +310,7 @@
                                 </td>
                                	<xsl:choose>
                                     <xsl:when test="string-length(arrivalRate) != 0">
-                                        <td class="value number load-meter" style="--loadp:{arrivalRatePercentage}">
+                                        <td class="value number load-meter" style="--loadp:{normalize-space(arrivalRatePercentage)}">
                                         <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
                                         <xsl:text>%</xsl:text>
                                         </td>

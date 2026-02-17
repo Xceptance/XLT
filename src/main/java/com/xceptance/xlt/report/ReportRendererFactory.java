@@ -42,7 +42,7 @@ public class ReportRendererFactory
      * @throws IllegalArgumentException
      *             if the engine name is unknown
      */
-    public static ReportRenderer createRenderer(final String engine, final ReportGeneratorConfiguration config)
+    public static ReportRenderer createRenderer(final String engine, final RendererConfiguration config)
     {
         return switch (engine.toLowerCase())
         {

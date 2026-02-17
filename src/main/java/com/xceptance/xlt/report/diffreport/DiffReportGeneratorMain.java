@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -133,26 +132,8 @@ public class DiffReportGeneratorMain
             parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
             parameters.put("projectName", ReportUtils.obtainProjectName(Arrays.asList(oldTestReport, newTestReport)));
 
-            // get the configured output and style sheet file names
-            final List<File> outputFiles = new ArrayList<File>();
-            final List<File> styleSheetFiles = new ArrayList<File>();
-
-            // create the files from the file names
-            final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
-            final List<String> outputFileNames = config.getOutputFileNames();
-
-            for (int i = 0; i < styleSheetFileNames.size(); i++)
-            {
-                final File outputFile = new File(outputDir, outputFileNames.get(i));
-                outputFiles.add(outputFile);
-
-                final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.DIFF_REPORT_XSL_PATH),
-                                                     styleSheetFileNames.get(i));
-                styleSheetFiles.add(styleSheetFile);
-            }
-
             // transform the report
-            final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+            final ReportTransformer reportTransformer = new ReportTransformer(config, config.getRenderingEngine(), parameters);
             reportTransformer.run(xmlFile, outputDir);
 
             // copy the report's static resources

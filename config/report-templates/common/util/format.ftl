@@ -1,11 +1,11 @@
 <#function ensureString val>
-    <#if val?is_string><#return val></#if>
+    <#if val?is_string><#return val?trim></#if>
     <#if val?is_number><#return val?c></#if>
     <#if val?is_sequence>
         <#if val?size == 0><#return ""></#if>
-        <#return val[0]?string>
+        <#return val[0]?string?trim>
     </#if>
-    <#return val?string>
+    <#return val?string?trim>
 </#function>
 
 <#function formatMsecToH n1>

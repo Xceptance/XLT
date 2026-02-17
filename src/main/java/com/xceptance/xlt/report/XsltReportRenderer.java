@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.common.xml.XSLTUtils;
 
 /**
@@ -30,9 +29,9 @@ import com.xceptance.common.xml.XSLTUtils;
  */
 public class XsltReportRenderer implements ReportRenderer
 {
-    private final ReportGeneratorConfiguration config;
+    private final RendererConfiguration config;
 
-    public XsltReportRenderer(final ReportGeneratorConfiguration config)
+    public XsltReportRenderer(final RendererConfiguration config)
     {
         this.config = config;
     }
@@ -52,8 +51,7 @@ public class XsltReportRenderer implements ReportRenderer
             if (styleSheetFileName != null)
             {
                 final File outputFile = new File(outputDir, outputFileNames.get(i));
-                final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.LOAD_REPORT_XSL_PATH),
-                                                     styleSheetFileName);
+                final File styleSheetFile = new File(config.getXsltStyleSheetRootDirectory(), styleSheetFileName);
 
                 XSLTUtils.transform(inputXmlFile, outputFile, styleSheetFile, parameters);
             }

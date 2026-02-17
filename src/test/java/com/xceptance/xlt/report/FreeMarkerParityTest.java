@@ -1,6 +1,7 @@
 package com.xceptance.xlt.report;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -276,6 +277,45 @@ public class FreeMarkerParityTest
     public void testWebVitalsParity() throws Exception
     {
         renderAndCompare("web-vitals.xsl", "web-vitals.ftl", "web-vitals.html");
+    }
+
+    @Test
+    public void testTrendParity() throws Exception
+    {
+        File trendXml = new File("src/test/resources/reports-xslt/xlt-result-xc-advanced-posters-20260216-trend/trendreport.xml");
+        Map<String, Object> params = new HashMap<>();
+        params.put("productName", "Xceptance LoadTest");
+        params.put("productVersion", "X.X.X");
+        params.put("productUrl", "http://www.xceptance-loadtest.com/");
+        params.put("projectName", "Posters");
+        
+        // Mock configuration object as it's expected by the template but not present in trendreport.xml
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("chartWidth", Collections.singletonList(""));
+        configMap.put("chartHeight", Collections.singletonList(""));
+        params.put("reportConfiguration", configMap);
+
+
+        renderAndCompare("../trendreport/index.xsl", "trendreport/index.ftl", "trend-index.html", params, config, trendXml);
+    }
+
+    @Test
+    public void testDiffParity() throws Exception
+    {
+        File diffXml = new File("src/test/resources/reports-xslt/xlt-result-xc-advanced-posters-20260216-152202-vs-xlt-result-xc-advanced-posters-20260216-170814/diffreport.xml");
+        Map<String, Object> params = new HashMap<>();
+        params.put("productName", "Xceptance LoadTest");
+        params.put("productVersion", "X.X.X");
+        params.put("productUrl", "http://www.xceptance-loadtest.com/");
+        params.put("projectName", "Posters");
+
+        // Mock configuration object as it's expected by the template but not present in diffreport.xml
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("chartWidth", Collections.singletonList(""));
+        configMap.put("chartHeight", Collections.singletonList(""));
+        params.put("reportConfiguration", configMap);
+
+        renderAndCompare("../diffreport/index.xsl", "diffreport/index.ftl", "diff-index.html", params, config, diffXml);
     }
 
     @Test

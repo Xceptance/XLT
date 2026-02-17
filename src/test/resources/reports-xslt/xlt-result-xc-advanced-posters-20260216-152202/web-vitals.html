@@ -1,0 +1,200 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="generator" content="XLT">
+      <title>XLT Report - Web Vitals</title>
+      <link href="css/default.css" type="text/css" rel="stylesheet">
+      <link href="css/print.css" type="text/css" rel="stylesheet" media="print"><script src="js/jquery-3.6.4.min.js"></script><script src="js/jquery.hoverIntent-1.10.2.min.js"></script><script src="js/jquery.scrollTo-2.1.3.min.js"></script><script src="js/tabs.js"></script><script src="js/table.js"></script><script src="js/crosshair.js"></script><script src="js/echarts-6.0.0.min.js"></script><link rel="icon" href="images/favicon.png" sizes="any">
+      <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+      <style type="text/css">
+            .chart-group .chart img, .chart-group .echart {
+                width: 900px;
+                height: 300px;
+            }
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
+                height: 450px;
+            }
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
+                height: 690px;
+            }
+        </style>
+   </head>
+   <body id="loadtestreport">
+      <div id="container">
+         <div id="content">
+            <nav><input class="hamburger-btn" type="checkbox" id="hamburger-btn"><label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label><ul class="nav-menu">
+                  <li><a href="index.html">Overview</a><ul>
+                        <li><a href="index.html#load-profile">Load Profile</a></li>
+                        <li><a href="index.html#comment">Test Comment</a></li>
+                        <li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#agents">Agent Summary</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+                        <li><a href="index.html#network">Network</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="transactions.html">Transactions</a></li>
+                  <li><a href="actions.html">Actions</a></li>
+                  <li><a href="requests.html">Requests</a><ul>
+                        <li><a href="slowest-requests.html">Slowest Requests</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="network.html">Network</a><ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#ip-addresses">IP Addresses</a></li>
+                        <li><a href="network.html#http-request-methods">HTTP Request Methods</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="page-load-timings.html">Page Load Timings</a></li>
+                  <li><a href="web-vitals.html">Web Vitals</a></li>
+                  <li><a href="custom-timers.html">Custom Timers</a></li>
+                  <li><a href="custom-values.html">Custom Data</a><ul>
+                        <li><a href="custom-values.html#custom-values-summary">Custom Values</a></li>
+                        <li><a href="custom-values.html#custom-data-logs-summary">Custom Data Logs</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="external.html">External Data</a></li>
+                  <li><a href="errors.html">Errors</a><ul>
+                        <li><a href="errors.html#request-errors">Request Errors</a></li>
+                        <li><a href="errors.html#transaction-error-overview">Transaction Error Overview</a></li>
+                        <li><a href="errors.html#transaction-error-details">Transaction Error Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="events.html">Events</a><ul>
+                        <li><a href="events.html#event-overview">Overview</a></li>
+                        <li><a href="events.html#event-details">Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="agents.html">Agents</a></li>
+                  <li><a href="configuration.html">Configuration</a><ul>
+                        <li><a href="configuration.html#load-profile">Load Profile</a></li>
+                        <li><a href="configuration.html#configuration">Load Test Settings</a></li>
+                        <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
+                     </ul>
+                  </li>
+               </ul>
+            </nav>
+            <header id="header">
+               <div class="brand"><img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo"></div>
+               <div class="title">
+                  <h1>Performance Test Report</h1>
+                  <div>
+                     <div class="ltinfo"><span class="key">Organization:</span><span class="value">xc</span></div>
+                     <div class="ltinfo"><span class="key">Project:</span><span class="value">advanced-posters</span></div>
+                     <div class="ltinfo"><span class="key">Load Test:</span><span class="value">#97</span></div>
+                     <div class="ltinfo"><span class="key">Result:</span><span class="value">–</span></div>
+                     <div class="ltinfo"><span class="key">Report:</span><span class="value">–</span></div>
+                  </div>
+               </div>
+            </header>
+            <div id="data-content">
+               <div class="section" id="web-vitals-summary">
+                  <h2>Web Vitals</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           The Web Vitals section helps you evaluate how well your pages perform on aspects that
+                           are important for a great user experience.
+                           <span id="more-web-vitalsd139e1-show" onclick="$('#more-web-vitalsd139e1').show();$('#more-web-vitalsd139e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-web-vitalsd139e1-hide" onclick="$('#more-web-vitalsd139e1').hide();$('#more-web-vitalsd139e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                        <div id="more-web-vitalsd139e1" class="more">
+                           <p><a href="https://web.dev/articles/vitals">Web Vitals</a> is
+                              					a Google initiative to provide unified guidance for web page
+                              					quality signals that are essential to delivering a great
+                              					user experience on the web. It aims to simplify the wide
+                              					variety of available performance-measuring tools, and help
+                              					site owners focus on the metrics that matter most, the Core
+                              					Web Vitals.</p>
+                           <h4>Core Web Vitals</h4>
+                           <p><a href="https://web.dev/articles/lcp">Largest
+                                 						Contentful Paint</a> · <i>Perceived Load
+                                 						Speed</i><br> LCP reports the render time of the
+                              					largest image or text block visible in the viewport,
+                              					relative to when the user first navigated to the page.</p>
+                           <p><a href="https://web.dev/articles/fid">First Input
+                                 						Delay</a> · <i>Interactivity</i><br> FID measures the
+                              					time from when a user first interacts with a page (that is,
+                              					when they click a link, tap on a button, or use a custom,
+                              					JavaScript-powered control) to the time when the browser is
+                              					actually able to begin processing event handlers in response
+                              					to that interaction.</p>
+                           <p><a href="https://web.dev/articles/cls">Cumulative
+                                 						Layout Shift</a> · <i>Visual Stability</i><br> CLS is a
+                              					measure of the largest burst of layout shift scores for
+                              					every unexpected layout shift that occurs during the
+                              					lifespan of a page.</p>
+                           <h4>Other Web Vitals</h4>
+                           <p><a href="https://web.dev/articles/fcp">First
+                                 						Contentful Paint</a> · <i>Perceived Load
+                                 						Speed</i><br> The FCP metric measures the time from
+                              					when the user first navigated to the page to when any part
+                              					of the page's content is rendered on the screen.</p>
+                           <p><a href="https://web.dev/articles/inp">Interaction to
+                                 						Next Paint</a> · <i>Interactivity</i><br> INP is a
+                              					metric that assesses a page's overall responsiveness to user
+                              					interactions by observing the latency of all click, tap, and
+                              					keyboard interactions that occur throughout the lifespan of
+                              					a user's visit to a page. The final INP value is the longest
+                              					interaction observed, ignoring outliers.</p>
+                           <p><a href="https://web.dev/articles/ttfb">Time to First
+                                 						Byte</a> · <i>Server Responsiveness</i><br> TTFB is a
+                              					metric that measures the time between the request for a
+                              					resource and when the first byte of a response begins to
+                              					arrive.</p>
+                           <h4>Scores</h4>
+                           <p>
+                              					The displayed score value for a Web Vital is the 75th
+                              					percentile (estimated) of all measurements in a given
+                              					action. In addition, the scores are rated using Web
+                              					Vital-specific thresholds and colorized accordingly
+                              					(<span class="web-vital-score-good">good</span>,
+                              					<span class="web-vital-score-improve">needs improvement</span>,
+                              					<span class="web-vital-score-poor">poor</span>).
+                              				</p>
+                        </div>
+                     </div>
+                     <table class="c-tab-content table-autosort:0">
+                        <thead>
+                           <tr>
+                              <th class="table-sortable:alphanumeric" id="sortByName">
+                                 Action Name
+                                 <br><input class="filter" placeholder="Enter filter substrings" title=""><button class="clear-input" type="clear" title="Click to clear">✕</button></th>
+                              <th class="table-sortable:numeric" id="sortByFCP">First Contentful Paint<br>(FCP)</th>
+                              <th class="table-sortable:numeric" id="sortByLCP">Largest Contentful Paint<br>(LCP)</th>
+                              <th class="table-sortable:numeric" id="sortByCLS">Cumulative Layout Shift<br>(CLS)</th>
+                              <th class="table-sortable:numeric" id="sortByFID">First Input Delay<br>(FID)</th>
+                              <th class="table-sortable:numeric" id="sortByINP">Interaction to Next Paint<br>(INP)</th>
+                              <th class="table-sortable:numeric" id="sortByTTFB">Time to First Byte<br>(TTFB)</th>
+                           </tr>
+                        </thead>
+                        <tfoot>
+                           <tr class="totals">
+                              <td class="key">Totals (no entries)</td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                           </tr>
+                           <tr class="totals filtered" style="display: none;"></tr>
+                        </tfoot>
+                        <tbody class="table-nosort">
+                           <tr>
+                              <td colspan="7" class="no-data">No data available</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               Copyright (c) 2005-2025 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br>
+               Created with
+               <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">9.2.2</span></a></footer>
+         </div>
+      </div><script type="text/javascript" src="js/xlt.js"></script></body>
+</html>

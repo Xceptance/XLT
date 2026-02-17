@@ -23,13 +23,11 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -897,26 +895,8 @@ public class TrendReportGeneratorMain
             parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
             parameters.put("projectName", ReportUtils.obtainProjectName(documents));
 
-            // get the configured output and style sheet file names
-            final List<File> outputFiles = new ArrayList<File>();
-            final List<File> styleSheetFiles = new ArrayList<File>();
-
-            // create the files from the file names
-            final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
-            final List<String> outputFileNames = config.getOutputFileNames();
-
-            for (int i = 0; i < styleSheetFileNames.size(); i++)
-            {
-                final File outputFile = new File(outputDir, outputFileNames.get(i));
-                outputFiles.add(outputFile);
-
-                final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.TREND_REPORT_XSL_PATH),
-                                                     styleSheetFileNames.get(i));
-                styleSheetFiles.add(styleSheetFile);
-            }
-
             // transform the report
-            final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+            final ReportTransformer reportTransformer = new ReportTransformer(config, config.getRenderingEngine(), parameters);
             reportTransformer.run(xmlFile, outputDir);
 
             // copy the report's static resources

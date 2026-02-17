@@ -1,7 +1,7 @@
 <#import "/sections/navigation.ftl" as nav>
 <#import "/common/util/properties.ftl" as props>
 
-<#macro header title="Performance Test Report" productName="" productVersion="" productUrl="" projectName="" scorecardPresent=false xtcOrganization="" xtcProject="" xtcLoadTestId="" xtcResultId="" xtcReportId="">
+<#macro header title="Performance Test Report" productName="" productVersion="" productUrl="" projectName="" scorecardPresent=false xtcOrganization="" xtcProject="" xtcLoadTestId="" xtcResultId="" xtcReportId="" navNamespace="">
     <#-- If XTC parameters are not provided, try to extract them from configuration -->
     <#local xtcOrg = xtcOrganization?has_content?then(xtcOrganization, props.getXtcOrganization())>
     <#local xtcProj = xtcProject?has_content?then(xtcProject, props.getXtcProject())>
@@ -11,7 +11,11 @@
 
     <#assign normProjName = projectName?string?trim>
 
-    <@nav.navigation scorecardPresent=scorecardPresent />
+    <#if navNamespace?has_content>
+        <@navNamespace.navigation scorecardPresent=scorecardPresent />
+    <#else>
+        <@nav.navigation scorecardPresent=scorecardPresent />
+    </#if>
 
     <header id="header">
         <div class="brand">
