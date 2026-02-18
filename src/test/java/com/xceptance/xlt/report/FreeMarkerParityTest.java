@@ -460,7 +460,8 @@ public class FreeMarkerParityTest
     private String normalize(String html)
     {
         if (html == null) return null;
-        String result = html.replaceAll("(?s)<!--.*?-->", "") // remove comments
+        String result = html.replaceAll("<meta\\s+name=\"renderer\"\\s+content=\"[^\"]*\"\\s*/?>", "") // remove renderer meta tag (intentionally different)
+                   .replaceAll("(?s)<!--.*?-->", "") // remove comments
                    .replaceAll("\\s+", "")        // remove all whitespace
                    .replaceAll("/>", ">")          // normalize self-closing tags (XHTML vs HTML5)
                    .replace("&#x2715;", "✕")      // normalize hex entity to char

@@ -73,7 +73,7 @@
         <#if (runtime > targetAverage)>
             <#local denom = targetTo - targetAverage>
             <#if denom == 0><#local denom = 1></#if>
-            <#local percent = ((runtime - targetAverage) * (100.0 / denom))?floor>
+            <#local percent = ((runtime - targetAverage) * (100.0 / denom) + 0.00001)?floor>
             <#if percent gte 100>
                 <#return classNames + " " + negativePrefix + "100 colorized">
             <#elseif percent lte 0>
@@ -84,7 +84,7 @@
         <#else>
             <#local denom = targetFrom - targetAverage>
             <#if denom == 0><#local denom = 1></#if>
-            <#local percent = ((runtime - targetAverage) * (100.0 / denom))?floor>
+            <#local percent = ((runtime - targetAverage) * (100.0 / denom) + 0.00001)?floor>
             <#if percent gte 100>
                 <#return classNames + " " + positivePrefix + "100 colorized">
             <#elseif percent lte 0>
