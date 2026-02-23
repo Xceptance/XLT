@@ -389,8 +389,8 @@
         showTableFooter($table, footerVisible);
 
         // now process any hidden tables (Requests page only) or all tables on the page for trend reports; don't process
-        // the initial table again
-        $('table:hidden,table.trend').not($table).each(function() {
+        // the initial table again; ignore cluetip tables
+        $('table:not(.cluetip-table):hidden,table.trend').not($table).each(function() {
             var $this = $(this);
             var $input = $this.find('input[data-filter-id="' + filterId + '"]');
             Table.filter($input[0], filter);
