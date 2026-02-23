@@ -1013,11 +1013,11 @@ table * {
         }
             table th.table-sorted-asc
             {
-                background-image: url('../images/caret-down-fill.svg');
+                background-image: url('../images/caret-up-fill.svg');
             }
             table th.table-sorted-desc
             {
-                background-image: url('../images/caret-up-fill.svg');
+                background-image: url('../images/caret-down-fill.svg');
             }
     table tfoot td.colgroup1
     {

@@ -520,7 +520,7 @@ var Table = (function(){
 					removeClass(cell,this.SortedDescendingClassName);
 					// If the computed colIndex of the cell equals the sorted colIndex, flag it as sorted
 					if (tdata.col==table.getActualCellIndex(cell) && (classValue(cell,table.SortableClassName))) {
-						addClass(cell,tdata.desc?this.SortedAscendingClassName:this.SortedDescendingClassName);
+						addClass(cell,tdata.desc?this.SortedDescendingClassName:this.SortedAscendingClassName);
 					}
 				}
 			}
