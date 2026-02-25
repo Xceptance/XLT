@@ -68,7 +68,7 @@ import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agent.AgentInfo;
 import com.xceptance.xlt.agentcontroller.ResultArchives.ArchiveToken;
 import com.xceptance.xlt.agentcontroller.TestUserStatus.State;
-import com.xceptance.xlt.agentcontroller.xtc.PeriodicHeartbeatSender;
+import com.xceptance.xlt.agentcontroller.xtc.PeriodicRegistrationRefresher;
 import com.xceptance.xlt.agentcontroller.xtc.RelayClient;
 import com.xceptance.xlt.agentcontroller.xtc.RestApiClient;
 import com.xceptance.xlt.common.XltConstants;
@@ -439,27 +439,29 @@ public class AgentControllerImpl implements AgentController
             final String agentName = agentControllerConfig.getPrivateAgentName();
             final String hostName = agentName + "." + agentId + ".xtc.internal";
 
-            // register with XTC
+            // create API client
             final RestApiClient xtcRestApi = new RestApiClient(// new
                                                                // URI("https://xtc-service.default.svc.cluster.local:8443/"),
                                                                agentControllerConfig.getXtcHost(), agentControllerConfig.getXtcPort(),
                                                                agentControllerConfig.getXtcClientId(),
-                                                               agentControllerConfig.getXtcClientSecret(),
-                                                               agentControllerConfig.getXtcOrg(), agentControllerConfig.getXtcProject());
+                                                               agentControllerConfig.getXtcClientSecret(), agentControllerConfig.getXtcOrg(),
+                                                               agentControllerConfig.getXtcProject());
 
-            // TODO: description needed? if so, make it configurable.
-            xtcRestApi.registerPrivateAgent(agentId, agentName, "", hostName, "MEDIUM");
 
-            // start periodic heartbeat
-            new PeriodicHeartbeatSender(xtcRestApi, 60_000L, agentId).start();
+            
+            // start periodic machine registration with XTC
+            final String type = "MEDIUM"; // agentControllerConfig.getPrivateAgentType();
+            new PeriodicRegistrationRefresher(xtcRestApi, agentId, agentName, hostName, type).start();
 
             // start relay client
-            new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), hostName,
-                            agentControllerConfig.getPort()).start();
+            new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),
+                            hostName).start();
         }
         catch (final Exception e)
         {
             log.error("Failed to start private agent mode", e);
+            
+            // TODO: exit here?
         }
     }
 

@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
 
+/**
+ * A client to the tunneling part of the XLT Relay server running at XTC.
+ */
 public class RelayClient
 {
     private static final Logger log = LoggerFactory.getLogger(RelayClient.class);
@@ -20,16 +23,16 @@ public class RelayClient
 
     private final int relayPort;
 
+    private final int agentControllerPort;
+
     private final String machineName;
 
-    private final int localAgentControllerPort;
-
-    public RelayClient(final String host, final int port, final String machineName, final int localAgentControllerPort)
+    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String machineName)
     {
-        relayHost = host;
-        relayPort = port;
+        this.relayHost = relayHost;
+        this.relayPort = relayPort;
+        this.agentControllerPort = agentControllerPort;
         this.machineName = machineName;
-        this.localAgentControllerPort = localAgentControllerPort;
     }
 
     public void start()
@@ -70,9 +73,9 @@ public class RelayClient
 
                 // connect to the local agent controller
                 log.debug("Connecting to local agent controller");
-                try (Socket acSocket = new Socket("localhost", localAgentControllerPort))
+                try (Socket acSocket = new Socket("localhost", agentControllerPort))
                 {
-                    log.debug("Connected to local agent controller: {}", acSocket);
+                    log.debug("Connected to agent controller: {}", acSocket);
 
                     // acSocket.setTcpNoDelay(false);
 
@@ -99,6 +102,7 @@ public class RelayClient
                 log.error("Failed to connect to tunnel server: {}", e.getMessage());
 
                 // in case of errors wait a little before trying to reconnect
+                // TODO
                 ThreadUtils.sleep(5000L);
             }
         }
@@ -116,14 +120,13 @@ public class RelayClient
 
             while ((bytesRead = in.read(buffer)) != -1)
             {
-                // log.debug("{}: {} bytes\n{}", direction, bytesRead, new String(buffer, 0, bytesRead));
                 log.debug("{}: {} bytes", direction, bytesRead);
 
                 out.write(buffer, 0, bytesRead);
                 out.flush();
             }
 
-            //
+            // indicate that we won't send any more data
             socket.shutdownOutput();
         }
         catch (final IOException e)

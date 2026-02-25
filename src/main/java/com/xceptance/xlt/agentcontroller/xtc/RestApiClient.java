@@ -1,10 +1,6 @@
 package com.xceptance.xlt.agentcontroller.xtc;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.net.InetAddress;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -60,9 +56,9 @@ public class RestApiClient
         """;
 
     private final String clientId;
-    
+
     private final String clientSecret;
-    
+
     private final OkHttpClient httpClient;
 
     private final HttpUrl privateAgentsUrl;
@@ -99,19 +95,12 @@ public class RestApiClient
         return httpClientBuilder.build();
     }
 
-    public void registerPrivateAgent(final String id, final String name, final String description, final String hostName, final String type)
+    public void registerPrivateAgent(final String id, final String name, final String description, final String hostName,
+                                     final String ipAddress, final String type, int cores, long memory, long disk)
         throws IOException
     {
         // build Authorization header
         final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEAGENT_REGISTER");
-
-        // collect registration data
-        final OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-
-        final String ipAddress = InetAddress.getLocalHost().getHostAddress();
-        final int cores = osBean.getAvailableProcessors();
-        final long memory = (osBean instanceof final com.sun.management.OperatingSystemMXBean sunBean) ? sunBean.getTotalMemorySize() : 0;
-        final long disk = new File("/").getTotalSpace();
 
         // build JSON request body
         final String json = String.format(REGISTER_REQUEST_BODY_TEMPLATE, id, name, description, ipAddress, hostName, type, cores, memory,
@@ -124,39 +113,48 @@ public class RestApiClient
         // execute request
         try (Response response = httpClient.newCall(request).execute())
         {
-            log.debug("Received JSON response: {}", response.body().string());
-
-            // check response
-            assertThat(response.code() == 200, "Unexpected status code: " + response.code());
-        }
-    }
-
-    public void sendHeartbeat(final String id) throws IOException
-    {
-        // build Authorization header
-        final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEAGENT_HEARTBEAT");
-
-        // build JSON request body
-        final RequestBody jsonBody = RequestBody.create("{}", JSON);
-
-        // build URL
-        final HttpUrl heartbeatUrl = privateAgentsUrl.newBuilder().addPathSegment(id).addPathSegment("heartbeat").build();
-
-        // build request
-        final Request request = new Request.Builder().url(heartbeatUrl).header("Authorization", authHeaderValue).put(jsonBody).build();
-
-        // execute request
-        try (Response response = httpClient.newCall(request).execute())
-        {
-            if (log.isWarnEnabled())
+            if (log.isDebugEnabled())
             {
-                log.warn("Received JSON response: {}", response.body().string());
+                log.debug("Received JSON response: {}", response.body().string());
+            }
+            else
+            {
+                System.err.printf("Received JSON response: %s\n", response.body().string());
             }
 
             // check response
             assertThat(response.code() == 200, "Unexpected status code: " + response.code());
         }
     }
+
+    // public void sendHeartbeat(final String id) throws IOException
+    // {
+    // // build Authorization header
+    // final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEAGENT_HEARTBEAT");
+    //
+    // // build JSON request body
+    // final RequestBody jsonBody = RequestBody.create("{}", JSON);
+    //
+    // // build URL
+    // final HttpUrl heartbeatUrl =
+    // privateAgentsUrl.newBuilder().addPathSegment(id).addPathSegment("heartbeat").build();
+    //
+    // // build request
+    // final Request request = new Request.Builder().url(heartbeatUrl).header("Authorization",
+    // authHeaderValue).put(jsonBody).build();
+    //
+    // // execute request
+    // try (Response response = httpClient.newCall(request).execute())
+    // {
+    // if (log.isDebugEnabled())
+    // {
+    // log.debug("Received JSON response: {}", response.body().string());
+    // }
+    //
+    // // check response
+    // assertThat(response.code() == 200, "Unexpected status code: " + response.code());
+    // }
+    // }
 
     private String getNewAccessToken(final String scope) throws IOException
     {
@@ -169,7 +167,7 @@ public class RestApiClient
         {
             final String responseBodyText = response.body().string();
 
-            log.warn("Received JSON response: {}", responseBodyText);
+            log.debug("Received JSON response: {}", responseBodyText);
 
             // check response
             assertThat(response.code() == 200, "Unexpected status code: " + response.code());
