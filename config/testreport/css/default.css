@@ -407,6 +407,11 @@ template {
     --web-vital-color-poor: rgb(200,120,120);
     
     --load-bar-color: #8aa4c1;
+
+    --markdown-code-background-color: #f0f0f0;
+    --markdown-pre-background-color: #f5f5f5;
+    --markdown-table-header-background-color: #f0f0f0;
+    --markdown-blockquote-color: #666;
 }
 
 /*
@@ -1425,13 +1430,13 @@ table * {
         margin: 0.2em 0;
     }
     .markdown code {
-        background-color: #f0f0f0;
+        background-color: var(--markdown-code-background-color);
         padding: 0.15em 0.4em;
         border-radius: 3px;
         font-size: 0.9em;
     }
     .markdown pre {
-        background-color: #f5f5f5;
+        background-color: var(--markdown-pre-background-color);
         border: 1px solid var(--main-border-color);
         border-radius: 4px;
         padding: 0.75em 1em;
@@ -1452,14 +1457,16 @@ table * {
         text-align: left;
     }
     .markdown th {
-        background-color: #f0f0f0;
+        background-color: var(--markdown-table-header-background-color);
         font-weight: bold;
+        padding: 0.5em 0.75em;
+        text-align: center;
     }
     .markdown blockquote {
         border-left: 3px solid var(--main-border-color);
         margin: 0.5em 0;
         padding: 0.25em 1em;
-        color: #666;
+        color: var(--markdown-blockquote-color);
     }
     .markdown hr {
         border: none;
