@@ -267,7 +267,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
         final String cleanedString = comment.strip();
 
-        if (cleanedString.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
+        if (cleanedString.length() >= MARKDOWN_PREFIX.length() && cleanedString.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
         {
             final String markdown = cleanedString.substring(MARKDOWN_PREFIX.length());
             final String html = MARKDOWN_RENDERER.render(MARKDOWN_PARSER.parse(markdown));

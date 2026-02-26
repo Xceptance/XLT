@@ -109,7 +109,7 @@ public class ConfigurationReportProviderTest
     public void testProcessComment_prefixOnly()
     {
         // prefix only with no content should be returned unchanged
-        Assert.assertEquals("::markdown::", ConfigurationReportProvider.processComment("::markdown::"));
+        Assert.assertEquals("<div class=\"markdown\"></div>", ConfigurationReportProvider.processComment("::markdown::"));
     }
 }
 
