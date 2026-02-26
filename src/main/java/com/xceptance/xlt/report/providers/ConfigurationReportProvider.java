@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,11 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
@@ -57,6 +63,24 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     private static final String MASK_PROPERTIES_PROP = XltConstants.XLT_PACKAGE_PATH + ".reportgenerator.maskPropertiesRegex";
 
     private static final String MASK_PROPERTIES_REGEX_DEFAULT = "(?i)password";
+
+    private static final String MARKDOWN_PREFIX = "::markdown::";
+
+    /** Flexmark parser with tables and autolink extensions. */
+    private static final Parser MARKDOWN_PARSER;
+
+    /** Flexmark HTML renderer. */
+    private static final HtmlRenderer MARKDOWN_RENDERER;
+
+    static
+    {
+        // we want to support tables and autolinks
+        final MutableDataSet options = new MutableDataSet();
+        options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), AutolinkExtension.create()));
+
+        MARKDOWN_PARSER = Parser.builder(options).build();
+        MARKDOWN_RENDERER = HtmlRenderer.builder(options).build();
+    }
 
     /**
      * {@inheritDoc}
@@ -111,7 +135,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
         for (final Map.Entry<String, String> entry : sortedLoadtestProps.entrySet())
         {
-            report.comments.add(entry.getValue());
+            report.comments.add(processComment(entry.getValue()));
         }
 
         // add project name
@@ -222,6 +246,35 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     public boolean wantsDataRecords()
     {
         return false;
+    }
+
+    /**
+     * Processes a comment string. If the comment starts with the marker
+     * {@value #MARKDOWN_PREFIX} (case-insensitive), the remainder is treated
+     * as Markdown and converted to HTML, wrapped in a div with class "markdown".
+     * Otherwise the raw string is returned unchanged.
+     *
+     * @param comment
+     *            the comment string to process
+     * @return the processed comment
+     */
+    static String processComment(final String comment)
+    {
+        if (comment == null)
+        {
+            return null;
+        }
+
+        final String cleanedString = comment.strip();
+
+        if (cleanedString.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
+        {
+            final String markdown = cleanedString.substring(MARKDOWN_PREFIX.length());
+            final String html = MARKDOWN_RENDERER.render(MARKDOWN_PARSER.parse(markdown));
+            return "<div class=\"markdown\">" + html + "</div>";
+        }
+        
+        return comment;
     }
 
     /**

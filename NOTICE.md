@@ -123,6 +123,12 @@ freemarker
   * Homepage: https://freemarker.apache.org/
   * More information in folder: doc/3rd-party-licenses/freemarker
 
+flexmark-java
+
+  * License: BSD 2-Clause License
+  * Homepage: https://github.com/vsch/flexmark-java
+  * More information in folder: doc/3rd-party-licenses/flexmark-java
+
 google-api-services-compute
 
   * License: Apache License 2.0
