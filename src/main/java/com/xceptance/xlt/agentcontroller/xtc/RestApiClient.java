@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ssl.EasyHostnameVerifier;
 import com.xceptance.common.util.ssl.EasyX509TrustManager;
+import com.xceptance.xlt.agentcontroller.AgentControllerConfiguration.PrivateAgentType;
 import com.xceptance.xlt.api.util.XltException;
 
 import okhttp3.ConnectionSpec;
@@ -27,6 +28,10 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+/**
+ * A client to the private agent part of the XTC REST API. Currently, only the registration of a private agent at XTC is
+ * supported.
+ */
 public class RestApiClient
 {
     private static final Logger log = LoggerFactory.getLogger(RestApiClient.class);
@@ -37,7 +42,7 @@ public class RestApiClient
 
     private static final SSLSocketFactory INSECURE_SSL_SOCKET_FACTORY = createInsecureSslSocketFactory();
 
-    private static final MediaType JSON = MediaType.get("application/json");
+    private static final MediaType MEDIA_TYPE_JSON = MediaType.get("application/json");
 
     private static final String REGISTER_REQUEST_BODY_TEMPLATE = """
         {
@@ -82,30 +87,20 @@ public class RestApiClient
         tokenUrl = baseUrl.newBuilder().addPathSegment("oauth").addPathSegment("token").build();
     }
 
-    private OkHttpClient createHttpClient()
-    {
-        final Builder httpClientBuilder = new OkHttpClient.Builder();
-
-        httpClientBuilder.connectionSpecs(List.of(new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).allEnabledTlsVersions()
-                                                                                                       .allEnabledCipherSuites().build()));
-
-        httpClientBuilder.sslSocketFactory(INSECURE_SSL_SOCKET_FACTORY, INSECURE_TRUST_MANAGER);
-        httpClientBuilder.hostnameVerifier(INSECURE_HOSTNAME_VERIFIER);
-
-        return httpClientBuilder.build();
-    }
-
+    /**
+     * Registers the current machine as a private agent machine at XTC using the passed details.
+     */
     public void registerPrivateAgent(final String id, final String name, final String description, final String hostName,
-                                     final String ipAddress, final String type, int cores, long memory, long disk)
+                                     final String ipAddress, final PrivateAgentType agentType, int cores, long memory, long disk)
         throws IOException
     {
         // build Authorization header
         final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEAGENT_REGISTER");
 
         // build JSON request body
-        final String json = String.format(REGISTER_REQUEST_BODY_TEMPLATE, id, name, description, ipAddress, hostName, type, cores, memory,
-                                          disk);
-        final RequestBody jsonBody = RequestBody.create(json, JSON);
+        final String json = String.format(REGISTER_REQUEST_BODY_TEMPLATE, id, name, description, ipAddress, hostName, agentType, cores,
+                                          memory, disk);
+        final RequestBody jsonBody = RequestBody.create(json, MEDIA_TYPE_JSON);
 
         // build request
         final Request request = new Request.Builder().url(privateAgentsUrl).header("Authorization", authHeaderValue).post(jsonBody).build();
@@ -119,6 +114,7 @@ public class RestApiClient
             }
             else
             {
+                // TODO
                 System.err.printf("Received JSON response: %s\n", response.body().string());
             }
 
@@ -156,6 +152,15 @@ public class RestApiClient
     // }
     // }
 
+    /**
+     * Requests a new access token for the given scope from XTC.
+     * 
+     * @param scope
+     *            the scope
+     * @return the token
+     * @throws IOException
+     *             if the API cannot be contacted
+     */
     private String getNewAccessToken(final String scope) throws IOException
     {
         final FormBody tokenRequestBody = new FormBody.Builder().add("client_id", clientId).add("client_secret", clientSecret)
@@ -180,12 +185,37 @@ public class RestApiClient
         }
     }
 
-    private static void assertThat(final boolean condition, final String message)
+    /**
+     * Checks if the passed validation result is false and throws an exception with the given message. This is a simple
+     * helper for validating things.
+     * 
+     * @param validationResult
+     * @param message
+     */
+    private static void assertThat(final boolean validationResult, final String message)
     {
-        if (!condition)
+        if (validationResult == false)
         {
             throw new XltException(message);
         }
+    }
+
+    /**
+     * Creates an OkHttp client
+     * 
+     * @return the client
+     */
+    private static OkHttpClient createHttpClient()
+    {
+        final Builder httpClientBuilder = new OkHttpClient.Builder();
+
+        httpClientBuilder.connectionSpecs(List.of(new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).allEnabledTlsVersions()
+                                                                                                       .allEnabledCipherSuites().build()));
+
+        httpClientBuilder.sslSocketFactory(INSECURE_SSL_SOCKET_FACTORY, INSECURE_TRUST_MANAGER);
+        httpClientBuilder.hostnameVerifier(INSECURE_HOSTNAME_VERIFIER);
+
+        return httpClientBuilder.build();
     }
 
     /**

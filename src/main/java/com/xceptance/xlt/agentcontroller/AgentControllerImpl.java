@@ -419,7 +419,7 @@ public class AgentControllerImpl implements AgentController
     }
 
     /**
-     * Start agent controller servlet.
+     * Starts all things needed for the agent controller to work as a private agent.
      *
      * @throws Exception
      *             if anything goes wrong
@@ -431,38 +431,25 @@ public class AgentControllerImpl implements AgentController
             return;
         }
 
-        try
-        {
-            // determine agent name
-            // TODO: decide on agent name format
-            final String agentId = UUID.randomUUID().toString();
-            final String agentName = agentControllerConfig.getPrivateAgentName();
-            final String hostName = agentName + "." + agentId + ".xtc.internal";
+        // determine agent name
+        // TODO: decide on agent name format
+        final String agentId = UUID.randomUUID().toString();
+        final String agentName = agentControllerConfig.getPrivateAgentName();
+        final String hostName = agentName + "." + agentId + ".xtc.internal";
 
-            // create API client
-            final RestApiClient xtcRestApi = new RestApiClient(// new
-                                                               // URI("https://xtc-service.default.svc.cluster.local:8443/"),
-                                                               agentControllerConfig.getXtcHost(), agentControllerConfig.getXtcPort(),
-                                                               agentControllerConfig.getXtcClientId(),
-                                                               agentControllerConfig.getXtcClientSecret(), agentControllerConfig.getXtcOrg(),
-                                                               agentControllerConfig.getXtcProject());
+        // create API client
+        final RestApiClient xtcRestApi = new RestApiClient(agentControllerConfig.getXtcHost(), agentControllerConfig.getXtcPort(),
+                                                           agentControllerConfig.getXtcClientId(),
+                                                           agentControllerConfig.getXtcClientSecret(), agentControllerConfig.getXtcOrg(),
+                                                           agentControllerConfig.getXtcProject());
 
+        // start periodic machine registration with XTC
+        new PeriodicRegistrationRefresher(xtcRestApi, agentId, agentName, agentControllerConfig.getPrivateAgentDescription(),
+                                          agentControllerConfig.getPrivateAgentType(), hostName).start();
 
-            
-            // start periodic machine registration with XTC
-            final String type = "MEDIUM"; // agentControllerConfig.getPrivateAgentType();
-            new PeriodicRegistrationRefresher(xtcRestApi, agentId, agentName, hostName, type).start();
-
-            // start relay client
-            new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),
-                            hostName).start();
-        }
-        catch (final Exception e)
-        {
-            log.error("Failed to start private agent mode", e);
-            
-            // TODO: exit here?
-        }
+        // start relay client
+        new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),
+                        hostName).start();
     }
 
     /**

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -57,7 +58,11 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_PRIVATE_AGENT_ENABLED = PROP_PRIVATE_AGENT_PREFIX + "enabled";
 
-    private static final String PROP_PRIVATE_AGENT_NAME = PROP_PRIVATE_AGENT_PREFIX + "agentName";
+    private static final String PROP_PRIVATE_AGENT_NAME = PROP_PRIVATE_AGENT_PREFIX + "name";
+
+    private static final String PROP_PRIVATE_AGENT_DESCRIPTION = PROP_PRIVATE_AGENT_PREFIX + "description";
+
+    private static final String PROP_PRIVATE_AGENT_TYPE = PROP_PRIVATE_AGENT_PREFIX + "type";
 
     private static final String PROP_PRIVATE_AGENT_XTC_PREFIX = PROP_PRIVATE_AGENT_PREFIX + "xtc.";
 
@@ -76,6 +81,10 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     private static final String PROP_PRIVATE_AGENT_XTC_ORG = PROP_PRIVATE_AGENT_XTC_PREFIX + "org";
 
     private static final String PROP_PRIVATE_AGENT_XTC_PROJECT = PROP_PRIVATE_AGENT_XTC_PREFIX + "project";
+
+    private static final Pattern PRIVATE_AGENT_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?$");
+
+    private static final String PRIVATE_AGENT_NAME_ERROR = "Invalid private agent name: '%s'. Valid names must be between 1–63 characters long, contain only alphanumeric characters or hyphens, and cannot start or end with a hyphen.";
 
     private final File agentBinDirectory;
 
@@ -106,6 +115,10 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     private final boolean privateAgentModeEnabled;
 
     private final String privateAgentName;
+
+    private final String privateAgentDescription;
+
+    private final PrivateAgentType privateAgentType;
 
     private String xtcHost;
 
@@ -204,7 +217,9 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
         // private agent configuration
         privateAgentModeEnabled = getBooleanProperty(PROP_PRIVATE_AGENT_ENABLED, false);
-        privateAgentName = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_NAME, MobyNamesGenerator.getRandomName());
+        privateAgentName = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_NAME, getRandomPrivateAgentName());
+        privateAgentDescription = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_DESCRIPTION, "");
+        privateAgentType = getEnumProperty(PrivateAgentType.class, PROP_PRIVATE_AGENT_TYPE, PrivateAgentType.MEDIUM);
         xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_HOST, "xtc.xceptance.com");
         xtcPort = getIntProperty(PROP_PRIVATE_AGENT_XTC_PORT, 443);
         xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_RELAY_HOST, "xtc.xceptance.com");
@@ -223,6 +238,22 @@ public class AgentControllerConfiguration extends AbstractConfiguration
             xtcClientSecret = null;
             xtcOrg = null;
             xtcProject = null;
+        }
+
+        validatePrivateAgentName(privateAgentName);
+    }
+
+    static String getRandomPrivateAgentName()
+    {
+        // get a random name, but fix it to use "-" as the separator instead of "_"
+        return MobyNamesGenerator.getRandomName().replace('_', '-');
+    }
+
+    static void validatePrivateAgentName(String privateAgentName)
+    {
+        if (!PRIVATE_AGENT_NAME_PATTERN.matcher(privateAgentName).matches())
+        {
+            throw new XltException(String.format(PRIVATE_AGENT_NAME_ERROR, privateAgentName));
         }
     }
 
@@ -382,6 +413,16 @@ public class AgentControllerConfiguration extends AbstractConfiguration
         return privateAgentName;
     }
 
+    public String getPrivateAgentDescription()
+    {
+        return privateAgentDescription;
+    }
+
+    public PrivateAgentType getPrivateAgentType()
+    {
+        return privateAgentType;
+    }
+
     public String getXtcHost()
     {
         return xtcHost;
@@ -420,5 +461,13 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     public String getXtcProject()
     {
         return xtcProject;
+    }
+
+    public enum PrivateAgentType
+    {
+        TINY,
+        SMALL,
+        MEDIUM,
+        LARGE
     }
 }

@@ -1,16 +1,19 @@
 package com.xceptance.xlt.agentcontroller.xtc;
 
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
+
+import jdk.net.ExtendedSocketOptions;
 
 /**
  * A client to the tunneling part of the XLT Relay server running at XTC.
@@ -18,6 +21,10 @@ import com.xceptance.common.lang.ThreadUtils;
 public class RelayClient
 {
     private static final Logger log = LoggerFactory.getLogger(RelayClient.class);
+
+    private static final int MAGIC_NUMBER = 0xe23b490f;
+
+    private static final long RECONNECT_WAITING_PERIOD = 5_000L;
 
     private final String relayHost;
 
@@ -37,7 +44,7 @@ public class RelayClient
 
     public void start()
     {
-        log.info("Starting relay client");
+        log.info("Starting XTC Relay client");
         Thread.ofVirtual().name(RelayClient.class.getSimpleName()).start(this::run);
     }
 
@@ -50,41 +57,43 @@ public class RelayClient
             try (Socket tunnelSocket = new Socket(relayHost, relayPort))
             {
                 log.debug("Connected to tunnel server: {}", tunnelSocket);
+                
+                // best effort to keep socket open (done at TCP level)
+                tunnelSocket.setKeepAlive(true);
+                tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPIDLE, 60); // seconds before first probe
+                tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPINTERVAL, 60); // seconds between probes
+                tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPCOUNT, 5); // max failed probes
 
-                // tunnelSocket.setTcpNoDelay(false);
-
+                // get the streams
                 final PushbackInputStream tunnelIn = new PushbackInputStream(tunnelSocket.getInputStream());
-                final OutputStream tunnelOut = tunnelSocket.getOutputStream();
+                final DataOutputStream tunnelOut = new DataOutputStream(tunnelSocket.getOutputStream());
 
-                // tell the tunnel server our machine details
-                // TODO: length check, allow utf-8, more infos, json?
-                tunnelOut.write(machineName.length());
-                tunnelOut.write(machineName.getBytes(StandardCharsets.US_ASCII));
+                // tell the tunnel server the magic number and our machine name
+                tunnelOut.writeInt(MAGIC_NUMBER);
+                tunnelOut.writeUTF(machineName);
 
                 // wait for the first byte to arrive before trying to connect to the AC
                 final int firstByte = tunnelIn.read();
                 if (firstByte == -1)
                 {
                     // tunnel connection was closed by the relay server -> reconnect
-                    continue;
+                    throw new EOFException();
                 }
 
                 tunnelIn.unread(firstByte);
 
                 // connect to the local agent controller
-                log.debug("Connecting to local agent controller");
+                log.debug("Connecting to agent controller");
                 try (Socket acSocket = new Socket("localhost", agentControllerPort))
                 {
                     log.debug("Connected to agent controller: {}", acSocket);
-
-                    // acSocket.setTcpNoDelay(false);
 
                     // start bidirectional data forwarding
                     final InputStream acIn = acSocket.getInputStream();
                     final OutputStream acOut = acSocket.getOutputStream();
 
-                    final Thread t = Thread.ofVirtual().start(() -> transfer(acIn, tunnelOut, "AC -> MC", tunnelSocket));
-                    transfer(tunnelIn, acOut, "MC -> AC", acSocket);
+                    final Thread t = Thread.ofVirtual().start(() -> transferData(acIn, tunnelOut, "AC -> MC", tunnelSocket));
+                    transferData(tunnelIn, acOut, "MC -> AC", acSocket);
 
                     //
                     t.join();
@@ -99,21 +108,21 @@ public class RelayClient
             }
             catch (final Exception e)
             {
-                log.error("Failed to connect to tunnel server: {}", e.getMessage());
+                log.error("Failed to connect to tunnel server: {}", e.toString());
 
                 // in case of errors wait a little before trying to reconnect
-                // TODO
-                ThreadUtils.sleep(5000L);
+                ThreadUtils.sleep(RECONNECT_WAITING_PERIOD);
             }
         }
     }
 
-    private void transfer(final InputStream in, final OutputStream out, final String direction, final Socket socket)
+    private void transferData(final InputStream in, final OutputStream out, final String direction, final Socket socket)
     {
         try
         {
             // send data
             // in.transferTo(out);
+            // out.flush();
 
             final byte[] buffer = new byte[8192];
             int bytesRead;
