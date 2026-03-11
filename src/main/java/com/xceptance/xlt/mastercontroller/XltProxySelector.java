@@ -24,6 +24,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,138 +37,58 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class XltProxySelector extends ProxySelector
 {
-    // A reference on the previous default
-    private final ProxySelector defsel;
-
     // The proxy address
     private final SocketAddress sa;
 
     // The proxy
     private final Proxy proxy;
 
-    // The hosts that pass by the proxy
-    private final Set<BypassHost> bypasses;
+    // The host patterns for which the proxy should be used
+    private final Set<Pattern> hostIncludePatterns;
+
+    // The host patterns for which the proxy should be bypassed
+    private final Set<Pattern> hostExcludePatterns;
 
     /**
-     * 
+     * Constructor.
+     *
+     * @param proxyHost
+     *            the proxy host
+     * @param proxyPort
+     *            the proxy port
+     * @param hostIncludes
+     *            the hostname patterns for which the proxy should be used (format: a series of regular expressions
+     *            delimited by space, comma or semicolon)
+     * @param hostExcludes
+     *            the hostname patterns for which the proxy should be bypassed (format: a series of regular expressions
+     *            delimited by space, comma or semicolon)
      */
-    class BypassHost
+    public XltProxySelector(final String proxyHost, final String proxyPort, final String hostIncludes, final String hostExcludes)
     {
-        /** has left hand wildcard */
-        private final boolean wcLeft;
-
-        /** has right hand wildcard */
-        private final boolean wcRight;
-
-        /** host part without wildcard */
-        private final String bypassHost;
-
-        /**
-         * @param bypass
-         *            bypass pattern. Might contain a wildcard (*) at start/end
-         */
-        public BypassHost(final String bypass)
-        {
-            if (StringUtils.isBlank(bypass) || bypass.matches("\\*+"))
-            {
-                throw new IllegalArgumentException("Bypass host must not be NULL or empty or consist of wildcard only.");
-            }
-
-            // Get the bypass host pattern, detect wildcards and extract plain host part.
-            String tmp = bypass.trim();
-
-            // Has pattern a left hand wildcard?
-            wcLeft = tmp.startsWith("*");
-            if (wcLeft)
-            {
-                tmp = tmp.substring(1);
-            }
-
-            // Has pattern a right hand wildcard?
-            wcRight = tmp.endsWith("*");
-            if (wcRight)
-            {
-                tmp = tmp.substring(0, tmp.length() - 1);
-            }
-
-            bypassHost = tmp;
-
-            // Check that there has anything left for identifying the host.
-            if (StringUtils.isBlank(bypassHost))
-            {
-                throw new IllegalArgumentException("Bypass host must not be NULL or empty or consist of wildcard only.");
-            }
-        }
-
-        /**
-         * Does the given host string match the bypass pattern?
-         * 
-         * @param host
-         *            host name to match against the bypass pattern
-         * @return <code>true</code> if the given host string matches the bypass pattern; <code>false</code> otherwise
-         */
-        public boolean matches(final String host)
-        {
-            // bypass has wildcard on both ends
-            if (wcLeft && wcRight)
-            {
-                return host.contains(bypassHost);
-            }
-            // bypass starts with wildcard
-            else if (wcLeft)
-            {
-                return host.endsWith(bypassHost);
-            }
-            // bypass ends with wildcard
-            else if (wcRight)
-            {
-                return host.startsWith(bypassHost);
-            }
-            // bypass matches completely
-            else
-            {
-                return host.equals(bypassHost);
-            }
-        }
-    }
-
-    public XltProxySelector(final ProxySelector def)
-    {
-        // Save the previous default
-        defsel = def;
-
-        // Get the proxy host.
-        final String host = System.getProperty("https.proxyHost");
-        if (StringUtils.isBlank(host))
+        // Assert proxy host is not blank.
+        if (StringUtils.isBlank(proxyHost))
         {
             throw new IllegalArgumentException("Proxy host must not be NULL or empty.");
         }
 
-        // Get the proxy port. If not set, fall back to port 80.
+        // Convert proxy port to int. If not set, fall back to port 80.
         final int port;
         try
         {
-            port = Integer.valueOf(System.getProperty("https.proxyPort", "80").trim());
+            port = StringUtils.isBlank(proxyPort) ? 80 : Integer.valueOf(proxyPort.trim());
         }
         catch (final NumberFormatException e)
         {
-            throw new IllegalArgumentException("Proxy port must be a number.");
+            throw new IllegalArgumentException("Proxy port must be a number, but was: " + proxyPort);
         }
 
         // Populate the set HTTPS proxy
-        sa = new InetSocketAddress(host, port);
+        sa = new InetSocketAddress(proxyHost.trim(), port);
         proxy = new Proxy(Proxy.Type.HTTP, sa);
-        bypasses = new HashSet<BypassHost>();
 
-        // Get the bypass hosts. If not set ... do nothing
-        final String bypassProp = System.getProperty("https.nonProxyHosts");
-        if (!StringUtils.isBlank(bypassProp))
-        {
-            for (final String bypass : bypassProp.split("\\|"))
-            {
-                bypasses.add(new BypassHost(bypass));
-            }
-        }
+        // Read the include and exclude patterns for target hostnames
+        hostIncludePatterns = readPatterns(hostIncludes, "Proxy hostname include string");
+        hostExcludePatterns = readPatterns(hostExcludes, "Proxy hostname exclude string");
     }
 
     // This is the method that the handlers will call.
@@ -182,38 +104,23 @@ public class XltProxySelector extends ProxySelector
             throw new IllegalArgumentException("URI can't be null.");
         }
 
-        // If it's a HTTPS URL, then we use our own list.
+        // If it's an HTTPS URL, then we use our own list.
         final String protocol = uri.getScheme();
         if ("https".equalsIgnoreCase(protocol))
         {
-            // Check if it is a bypass host.
-            final String host = uri.getHost();
-            for (final BypassHost bypass : bypasses)
+            // Check if proxy should be used or bypassed for this host.
+            if (useProxyForHost(uri.getHost()))
             {
-                if (bypass.matches(host))
-                {
-                    final ArrayList<Proxy> l = new ArrayList<Proxy>();
-                    l.add(Proxy.NO_PROXY);
-                    return l;
-                }
+                final ArrayList<Proxy> l = new ArrayList<>();
+                l.add(proxy);
+                return l;
             }
+        }
 
-            // No bypass, so we return our proxy.
-            final ArrayList<Proxy> l = new ArrayList<Proxy>();
-            l.add(proxy);
-            return l;
-        }
-        // Not HTTPS (could be HTTP or SOCKS or FTP) defer to the default selector.
-        else if (defsel != null)
-        {
-            return defsel.select(uri);
-        }
-        else
-        {
-            final ArrayList<Proxy> l = new ArrayList<Proxy>();
-            l.add(Proxy.NO_PROXY);
-            return l;
-        }
+        // Host is not HTTPS or proxy should be bypassed, so we don't return the proxy.
+        final ArrayList<Proxy> l = new ArrayList<>();
+        l.add(Proxy.NO_PROXY);
+        return l;
     }
 
     // Method called by the handlers when it failed to connect to one of the proxies returned by select().
@@ -228,19 +135,74 @@ public class XltProxySelector extends ProxySelector
         {
             throw new IllegalArgumentException("Arguments can't be null.");
         }
+    }
 
-        // Let's lookup for the proxy
-        if (this.sa.equals(sa))
+    /**
+     * Convert a given string of delimited hostname regex patterns into a set of compiled patterns.
+     *
+     * @param patternString
+     *            string containing no, one or multiple hostname regex patterns (delimited by space, comma or semicolon)
+     * @param patternName
+     *            name for the given pattern used in error messages
+     * @return a set containing all provided patterns in compiled form; returns an empty set if patternString is blank
+     */
+    private Set<Pattern> readPatterns(final String patternString, final String patternName)
+    {
+        final Set<Pattern> patterns = new HashSet<>();
+
+        if (StringUtils.isNotBlank(patternString))
         {
-            // It's one of ours.
-        }
-        else
-        {
-            // Not one of ours, let's delegate to the default.
-            if (defsel != null)
+            try
             {
-                defsel.connectFailed(uri, sa, ioe);
+                for (final String regex : StringUtils.split(patternString, " ,;"))
+                {
+                    patterns.add(Pattern.compile(regex));
+                }
+            }
+            catch (final PatternSyntaxException e)
+            {
+                throw new IllegalArgumentException(patternName + " contains invalid regex patterns: " + patternString, e);
             }
         }
+
+        return patterns;
+    }
+
+    /**
+     * Check if the proxy should be used or bypassed for the given host by evaluating the hostname include and exclude
+     * patterns.
+     *
+     * @param host
+     *            the hostname
+     * @return "true" if the proxy should be used for the given host, "false" if the proxy should be bypassed
+     */
+    private boolean useProxyForHost(final String host)
+    {
+        // bypass host if it matches any exclude pattern
+        for (final Pattern exclude : hostExcludePatterns)
+        {
+            if (exclude.matcher(host).find())
+            {
+                return false;
+            }
+        }
+
+        // if no include patterns are defined, we include everything
+        if (hostIncludePatterns.isEmpty())
+        {
+            return true;
+        }
+
+        // if include patterns are defined, the host must match at least one of them
+        for (final Pattern include : hostIncludePatterns)
+        {
+            if (include.matcher(host).find())
+            {
+                return true;
+            }
+        }
+
+        // if none of the include patterns matched, bypass the proxy
+        return false;
     }
 }
