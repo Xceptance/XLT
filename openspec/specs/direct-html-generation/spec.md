@@ -1,40 +1,53 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Direct HTML Generation
 
-The system SHALL generate HTML reports directly from the XML data using a Java-based template engine, bypassing the XSLT transformation step.
+The system SHALL generate HTML reports directly from the XML data using a Java-based template engine (FreeMarker), bypassing the XSLT transformation step. The rendering engine SHALL be selectable via configuration.
 
-#### Scenario: Generate Load Report
-
-- **WHEN** the report generator is invoked for a load report
-- **THEN** the system produces HTML output files
+#### Scenario: Generate Load Report with FreeMarker
+- **WHEN** the report generator is configured to use the FreeMarker engine
+- **AND** a load report is generated
+- **THEN** the system produces HTML output files using FreeMarker templates
 - **AND** the output is generated without invoking the XSLT processor
+
+#### Scenario: Generate Load Report with XSLT (Fallback)
+- **WHEN** the report generator is configured to use the XSLT engine
+- **AND** a load report is generated
+- **THEN** the system produces HTML output files using the existing XSLT pipeline
 
 ### Requirement: Support All Report Types
 
-The direct HTML generation capability SHALL support all standard XLT report types including Load Reports, Scorecards, Trend Reports, and Diff Reports.
+The direct HTML generation capability SHALL support all standard XLT report types including Load Reports, Scorecards, Trend Reports, and Diff Reports, using FreeMarker as the primary template engine.
 
-#### Scenario: Generate Scorecard
-
-- **WHEN** the report generator is invoked for a scorecard
-- **THEN** the system produces a scorecard HTML file
+#### Scenario: Generate Scorecard with FreeMarker
+- **WHEN** the report generator is configured to use FreeMarker
+- **AND** a scorecard is generated
+- **THEN** the system produces a scorecard HTML file using `.ftl` templates
 
 #### Scenario: Generate Trend Report
-
 - **WHEN** the report generator is invoked for a trend report
 - **THEN** the system produces a trend report HTML file
 
 #### Scenario: Generate Diff Report
-
 - **WHEN** the report generator is invoked for a diff report
 - **THEN** the system produces a diff report HTML file
 
 ### Requirement: Output Parity
 
-The direct HTML generation capability SHALL produce HTML output that is structurally and visually identical to the output produced by the XSLT pipeline for the same input data.
+The direct HTML generation capability SHALL produce HTML output that is functionally and visually equivalent to the output produced by the XSLT pipeline. Whitespace differences and non-functional metadata (like generation timestamps) SHALL be ignored during comparison.
 
-#### Scenario: Verify Output Matches XSLT
+#### Scenario: Verify Output Parity
+- **WHEN** a report is generated using both XSLT and FreeMarker modes for the same test data
+- **THEN** the resulting HTML files are identical in structure and content (ignoring whitespace)
+- **AND** automated tests verify this parity for all report types
 
-- **WHEN** a report is generated using both XSLT and Direct HTML modes for the same test data
-- **THEN** resulting HTML files are effectively identical in structure and content, whitespaces and paths can differ
-- **AND** any differences are limited to non-functional timestamps or generation metadata
+### Requirement: Configurable Rendering Engine
+The system SHALL allow selecting the rendering engine via a configuration property.
+
+#### Scenario: Select Rendering Engine
+- **WHEN** `com.xceptance.xlt.reportgenerator.renderingEngine` is set to `freemarker`
+- **THEN** FreeMarker is used for all transformations in the report run
+
+#### Scenario: Configure Individual Templates
+- **WHEN** a transformation is configured with `templateFileName`
+- **THEN** the specified FreeMarker template is used for that transformation
