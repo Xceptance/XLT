@@ -24,79 +24,85 @@
                     <#if results?has_content>
                         <tbody>
                             <#list results as groupRules>
-                                <#assign group = groupRules?parent>
-                                <#assign groupRefId = group["@ref-id"]?string>
-                                
-                                <#list groupRules.rule as groupRule>
-                                    <#assign ruleId = groupRule["@ref-id"]?string>
-                                    
-                                    <#list definitions as ruleDef>
-                                        <#if ruleDef.@id?string == ruleId>
-                                            <#if groupRule.checks.check?has_content>
-                                                <#assign numChecks = groupRule.checks.check?size>
-                                                <#assign stripeClass = (ruleDef_index % 2 == 0)?string("even", "odd")>
-
-                                                <#list groupRule.checks.check as check>
-                                                    <#-- Find check definition by index -->
-                                                    <#assign checkIndex = (check.@index[0]!"")?string>
-                                                    <#assign checkDef = "">
-                                                    <#list ruleDef.checks.check as c>
-                                                        <#if c.@index?string == checkIndex>
-                                                            <#assign checkDef = c>
-                                                            <#break>
-                                                        </#if>
-                                                    </#list>
-
-                                                    <#if checkDef?has_content>
-                                                        <#assign checkSelector = checkDef.selector>
-                                                        <#assign checkSelectorResolved = checkSelector>
-                                                        <#if checkSelector.@["ref-id"][0]?? && checkSelector.@["ref-id"]?has_content>
-                                                            <#assign refId = checkSelector.@["ref-id"][0]?string >
-                                                            <#if configuration.selectors.selector?has_content>
-                                                                <#list configuration.selectors.selector as s>
-                                                                    <#if s.@id?string == refId>
-                                                                        <#assign checkSelectorResolved = s.expression>
-                                                                        <#break>
-                                                                    </#if>
-                                                                </#list>
-                                                            </#if>
-                                                        </#if>
-                                                        
-                                                        <tr class="${stripeClass}">
-                                                            <#if check_index == 0>
-                                                                <@util.multi_row_cell numRows=numChecks class="key">
-                                                                    <@util.name_or_id node=ruleDef/>
-                                                                </@util.multi_row_cell>
-                                                            </#if>
-                                                            <td class="value number">
-                                                                ${check.@index?number + 1}
-                                                            </td>
-                                                            <td class="value">
-                                                                ${((checkDef.@enabled[0]!"") == "true")?string("true", "false")}
-                                                            </td>
-                                                            <td class="value">
-                                                                ${((checkDef.@displayValue[0]!"") == "true")?string("true", "false")}
-                                                            </td>
-                                                            <td class="value text">
-                                                                ${checkSelectorResolved[0]!""}
-                                                            </td>
-                                                            <td class="value text">
-                                                                ${checkDef.condition[0]!""}
-                                                            </td>
-                                                            <td class="value">
-                                                                ${check.value[0]!""}
-                                                            </td>
-                                                            <td class="value">
-                                                                ${check.result[0]!""}
-                                                            </td>
-                                                        </tr>
+                                <#if groupRules.rule?has_content>
+                                    <#list groupRules.rule as groupRule>
+                                        <#assign ruleId = groupRule["@ref-id"]?string>
+                                        
+                                        <#-- Find matching definition and its position for stripe class -->
+                                        <#assign ruleDef = "">
+                                        <#assign defIndex = 0>
+                                        <#list definitions as d>
+                                            <#if d.@id?string == ruleId>
+                                                <#assign ruleDef = d>
+                                                <#assign defIndex = d_index>
+                                                <#break>
+                                            </#if>
+                                        </#list>
+                                        
+                                        <#if ruleDef?has_content && groupRule.checks.check?has_content>
+                                            <#assign numChecks = groupRule.checks.check?size>
+                                            <#assign stripeClass = (defIndex % 2 == 0)?string("odd", "even")>
+                                            
+                                            <#list groupRule.checks.check as check>
+                                                <#-- Find check definition by index -->
+                                                <#assign checkIndex = check.@index?string>
+                                                <#assign checkDef = "">
+                                                <#list ruleDef.checks.check as c>
+                                                    <#if c.@index?string == checkIndex>
+                                                        <#assign checkDef = c>
+                                                        <#break>
                                                     </#if>
                                                 </#list>
-                                            </#if>
-                                            <#break>
+                                                
+                                                <#if checkDef?has_content>
+                                                    <#assign checkSelector = checkDef.selector>
+                                                    <#-- Resolve selector ref-id to expression from configuration -->
+                                                    <#assign checkSelectorResolved = checkSelector>
+                                                    <#if checkSelector["@ref-id"]?? && checkSelector["@ref-id"]?has_content>
+                                                        <#assign refId = checkSelector["@ref-id"]?string>
+                                                        <#if configuration.selectors.selector?has_content>
+                                                            <#list configuration.selectors.selector as s>
+                                                                <#if s.@id?string == refId>
+                                                                    <#assign checkSelectorResolved = s.expression>
+                                                                    <#break>
+                                                                </#if>
+                                                            </#list>
+                                                        </#if>
+                                                    </#if>
+                                                    
+                                                    <tr class="${stripeClass}">
+                                                        <#if check_index == 0>
+                                                            <@util.multi_row_cell numRows=numChecks class="key">
+                                                                <@util.name_or_id node=ruleDef/>
+                                                            </@util.multi_row_cell>
+                                                        </#if>
+                                                        <td class="value number">
+                                                            ${check.@index?number + 1}
+                                                        </td>
+                                                        <td class="value">
+                                                            ${((checkDef.@enabled[0]!"") == "true")?string("true", "false")}
+                                                        </td>
+                                                        <td class="value">
+                                                            ${((checkDef.@displayValue[0]!"") == "true")?string("true", "false")}
+                                                        </td>
+                                                        <td class="value text">
+                                                            ${checkSelectorResolved[0]!""}
+                                                        </td>
+                                                        <td class="value text">
+                                                            ${checkDef.condition[0]!""}
+                                                        </td>
+                                                        <td class="value">
+                                                            ${check.value[0]!""}
+                                                        </td>
+                                                        <td class="value">
+                                                            ${check.result[0]!""}
+                                                        </td>
+                                                    </tr>
+                                                </#if>
+                                            </#list>
                                         </#if>
                                     </#list>
-                                </#list>
+                                </#if>
                             </#list>
                         </tbody>
                     <#else>

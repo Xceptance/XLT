@@ -814,12 +814,12 @@ public class ReportGenerator
     }
 
     /**
-     * Transform the given scorecard XML file using the XSL stylesheet
-     * {@value XltConstants#SCORECARD_REPORT_XSL_FILENAME} that is expected to reside in report generator's
-     * configuration sub-directory {@value XltConstants#SCORECARD_REPORT_XSL_PATH}
+     * Transform the given scorecard XML file using the configured rendering engine.
+     * For XSLT, uses the stylesheet at {@value XltConstants#SCORECARD_REPORT_XSL_PATH}/{@value XltConstants#SCORECARD_REPORT_XSL_FILENAME}.
+     * For FreeMarker, uses the template 'sections/scorecard.ftl'.
      *
      * @param inputXmlFile
-     *            the scorecard XMLfile to transform
+     *            the scorecard XML file to transform
      * @throws Exception
      *             thrown when transformation failed for any reason
      */
@@ -828,8 +828,6 @@ public class ReportGenerator
         XltLogger.reportLogger.info(Console.horizontalBar());
         XltLogger.reportLogger.info(Console.startSection("Creating Scorecard..."));
 
-        final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_XSL_PATH),
-                                             XltConstants.SCORECARD_REPORT_XSL_FILENAME);
         final File outputFile = new File(outputDir, XltConstants.SCORECARD_REPORT_HTML_FILENAME);
 
         // determine the name of the project from configuration
@@ -859,27 +857,47 @@ public class ReportGenerator
         }
 
         // create some dynamic parameters
-        final Map<String, Object> parameters = Map.of("productName", ProductInformation.getProductInformation().getProductName(),
-                                                      "productVersion", ProductInformation.getProductInformation().getVersion(),
-                                                      "productUrl", ProductInformation.getProductInformation().getProductURL(),
-                                                      "projectName", projectName, "scorecardPresent", Boolean.TRUE, "xtcOrganization",
-                                                      organization, "xtcProject", project, "xtcLoadTestId", loadTestId, "xtcResultId",
-                                                      resultId, "xtcReportId", reportId);
+        final HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+        parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+        parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+        parameters.put("projectName", projectName);
+        parameters.put("scorecardPresent", Boolean.TRUE);
+        parameters.put("xtcOrganization", organization);
+        parameters.put("xtcProject", project);
+        parameters.put("xtcLoadTestId", loadTestId);
+        parameters.put("xtcResultId", resultId);
+        parameters.put("xtcReportId", reportId);
 
-        // transform the report
-        final ReportTransformer reportTransformer = new ReportTransformer(List.of(outputFile), List.of(styleSheetFile), parameters);
+        // get the configured rendering engine and determine the template/stylesheet to use
+        final String engine = config.getRenderingEngine();
+        final ReportRenderer renderer = ReportRendererFactory.createRenderer(engine, config);
+
+        final String templateOrStyleSheet;
+        if (ReportRendererFactory.ENGINE_FREEMARKER.equalsIgnoreCase(engine))
+        {
+            // resolve FTL path for scorecard
+            final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_FTL_PATH),
+                                                 XltConstants.SCORECARD_REPORT_FTL_FILENAME);
+            templateOrStyleSheet = styleSheetFile.getAbsolutePath();
+        }
+        else
+        {
+            // XSLT: use the full path to the scorecard stylesheet
+            final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_XSL_PATH),
+                                                 XltConstants.SCORECARD_REPORT_XSL_FILENAME);
+            templateOrStyleSheet = styleSheetFile.getAbsolutePath();
+        }
 
         final long start = TimerUtils.get().getStartTime();
 
         try
         {
-
             // ok, we want to avoid high memory usage
             TaskManager.getInstance().setMaximumThreadCount(1);
 
             TaskManager.getInstance().startProgress("Creating");
-            reportTransformer.run(inputXmlFile, outputDir);
-
+            renderer.render(inputXmlFile, outputFile, templateOrStyleSheet, parameters);
         }
         finally
         {

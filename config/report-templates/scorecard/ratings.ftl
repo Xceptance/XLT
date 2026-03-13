@@ -23,7 +23,7 @@
                             <#list elements as rating>
                                 <#assign ratingId = rating["@id"]?string>
                                 <#assign isEnabled = (rating.@enabled[0]!"") == "true">
-                                <#assign isActive = (ratingId == active?string && isEnabled)>
+                                <#assign isActive = (ratingId == (active[0]!"") && isEnabled)>
                                 <tr<#if !isActive> class="inactive"</#if>>
                                     <td class="key">
                                         <@util.name_or_id node=rating/>

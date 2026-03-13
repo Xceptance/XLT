@@ -50,7 +50,7 @@
                                     <#assign passedRulesIds = []>
                                     <#list groupRules.rule as r>
                                         <#if (r.result[0]!"") == "PASSED">
-                                            <#assign passedRulesIds = passedRulesIds + [r.@["ref-id"][0]?string]>
+                                            <#assign passedRulesIds = passedRulesIds + [(r.@["ref-id"][0]!"")?string]>
                                         </#if>
                                     </#list>
                                     <#assign passedRulesCount = passedRulesIds?size>

@@ -1,13 +1,13 @@
-<#import "../common/sections/header.ftl" as header>
-<#import "../common/sections/footer.ftl" as footer>
-<#import "../common/sections/head.ftl" as head>
-<#import "../common/sections/javascript.ftl" as javascript>
-<#import "navigation.ftl" as navigation>
-<#import "../scorecard/scorecard.ftl" as scorecard_details>
-<#import "../scorecard/ratings.ftl" as ratings>
-<#import "../scorecard/groups.ftl" as groups>
-<#import "../scorecard/rules.ftl" as rules>
-<#import "../scorecard/rule-checks.ftl" as rule_checks>
+<#import "/common/sections/header.ftl" as header>
+<#import "/common/sections/footer.ftl" as footer>
+<#import "/common/sections/head.ftl" as head>
+<#import "/common/sections/javascript.ftl" as javascript>
+<#import "/sections/navigation.ftl" as navigation>
+<#import "/scorecard/scorecard.ftl" as scorecard_details>
+<#import "/scorecard/ratings.ftl" as ratings>
+<#import "/scorecard/groups.ftl" as groups>
+<#import "/scorecard/rules.ftl" as rules>
+<#import "/scorecard/rule-checks.ftl" as rule_checks>
 
 <!DOCTYPE html>
 <html lang="en">
