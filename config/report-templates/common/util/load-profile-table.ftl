@@ -123,7 +123,7 @@
                         <td class="key text" title="${ensureString(tc.testCaseClassName)}">${tc.userName}</td>
                         <#assign complexLF = ensureString(tc.complexLoadFunction)>
                         <td class="value number"<#if (tc.arrivalRate?size == 0) && complexLF?has_content> title="${complexLF}"</#if>>${tc.numberOfUsers}</td>
-                        <#local loadP = toNumber(tc.numberOfUsersPercentage)>
+                        <#local loadP = ensureString(tc.numberOfUsersPercentage)?trim>
                         <td class="value number load-meter" style="--loadp:${loadP}">${fmt.formatPercentageValue(tc.numberOfUsersPercentage)}</td>
                         <td class="value number">
                             <#if mode == "iteration">

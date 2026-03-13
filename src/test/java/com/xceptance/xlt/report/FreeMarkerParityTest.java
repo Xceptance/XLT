@@ -328,35 +328,83 @@ public class FreeMarkerParityTest
         params.put("productVersion", "?.?.?");
         params.put("productUrl", "http://www.xceptance-loadtest.com/");
         
-        // Create a minimal scorecard.xml with necessary structure
+        // Create a comprehensive scorecard.xml covering all template paths.
+        // Includes: multiple ratings, groups with mode, rules with checks/selectors,
+        // outcome with result/message/points/checks.
         // Note: configuration must precede outcome for XSLT's preceding-sibling lookup
         String scorecardXml = "<scorecard>" +
                               "  <configuration>" +
                               "    <ratings>" +
-                              "      <rating id=\"r1\" description=\"Good\" failsTest=\"false\">" +
-                              "        <description>Good</description>" +
+                              "      <rating id=\"r1\" name=\"Excellent\" description=\"Good\" failsTest=\"false\" enabled=\"true\" value=\"90\">" +
+                              "        <description>Excellent performance</description>" +
+                              "      </rating>" +
+                              "      <rating id=\"r2\" name=\"Acceptable\" description=\"OK\" failsTest=\"false\" enabled=\"true\" value=\"50\">" +
+                              "        <description>Acceptable performance</description>" +
+                              "      </rating>" +
+                              "      <rating id=\"r3\" name=\"Poor\" description=\"Bad\" failsTest=\"true\" enabled=\"true\" value=\"0\">" +
+                              "        <description>Poor performance</description>" +
                               "      </rating>" +
                               "    </ratings>" +
+                              "    <selectors>" +
+                              "      <selector id=\"sel1\">" +
+                              "        <expression>testreport/summary/transactions/transaction[@name='TOrder']/mean</expression>" +
+                              "      </selector>" +
+                              "    </selectors>" +
                               "    <groups>" +
-                              "      <group id=\"g1\" name=\"Group 1\" description=\"Group 1 Description\" failsTest=\"false\" enabled=\"true\">" +
+                              "      <group id=\"g1\" name=\"Group 1\" description=\"Group 1 Description\" failsTest=\"false\" enabled=\"true\" mode=\"allPassed\">" +
                               "        <description>Group 1 Description</description>" +
                               "        <rules>" +
                               "          <rule ref-id=\"ru1\"/>" +
+                              "          <rule ref-id=\"ru2\"/>" +
                               "        </rules>" +
                               "      </group>" +
                               "    </groups>" +
                               "    <rules>" +
-                              "      <rule id=\"ru1\" name=\"Rule 1\" description=\"Rule 1 Description\" failsTest=\"true\" enabled=\"true\">" +
+                              "      <rule id=\"ru1\" name=\"Rule 1\" description=\"Rule 1 Description\" failsTest=\"true\" enabled=\"true\" negateResult=\"false\" points=\"50\">" +
                               "        <description>Rule 1 Description</description>" +
+                              "        <checks>" +
+                              "          <check index=\"0\" enabled=\"true\" displayValue=\"true\">" +
+                              "            <selector ref-id=\"sel1\"/>" +
+                              "            <condition>lessThan</condition>" +
+                              "          </check>" +
+                              "        </checks>" +
+                              "      </rule>" +
+                              "      <rule id=\"ru2\" name=\"Rule 2\" description=\"Rule 2 Description\" failsTest=\"false\" enabled=\"true\" negateResult=\"false\" points=\"50\">" +
+                              "        <description>Rule 2 Description</description>" +
+                              "        <checks>" +
+                              "          <check index=\"0\" enabled=\"true\" displayValue=\"false\">" +
+                              "            <selector>testreport/summary/transactions/transaction[@name='TOrder']/mean</selector>" +
+                              "            <condition>greaterThan</condition>" +
+                              "          </check>" +
+                              "        </checks>" +
                               "      </rule>" +
                               "    </rules>" +
                               "  </configuration>" +
-                              "  <outcome points=\"100\" totalPoints=\"100\" pointsPercentage=\"100\" rating=\"r1\" testFailed=\"false\">" +
+                              "  <outcome points=\"80\" totalPoints=\"100\" pointsPercentage=\"80\" testFailed=\"false\">" +
                               "    <groups>" +
-                              "      <group name=\"Group 1\" ref-id=\"g1\" description=\"Group desc\" enabled=\"true\" testFailed=\"false\">" +
+                              "      <group ref-id=\"g1\" points=\"80\" totalPoints=\"100\" testFailed=\"false\">" +
                               "        <rules>" +
-                              "          <rule ref-id=\"ru1\" testFailed=\"false\"/>" +
+                              "          <rule ref-id=\"ru1\" points=\"50\" testFailed=\"false\">" +
+                              "            <result>PASSED</result>" +
+                              "            <message>All checks passed</message>" +
+                              "            <checks>" +
+                              "              <check index=\"0\">" +
+                              "                <result>PASSED</result>" +
+                              "                <value>1500</value>" +
+                              "              </check>" +
+                              "            </checks>" +
+                              "          </rule>" +
+                              "          <rule ref-id=\"ru2\" points=\"30\" testFailed=\"false\">" +
+                              "            <result>PASSED</result>" +
+                              "            <checks>" +
+                              "              <check index=\"0\">" +
+                              "                <result>PASSED</result>" +
+                              "                <value>2500</value>" +
+                              "              </check>" +
+                              "            </checks>" +
+                              "          </rule>" +
                               "        </rules>" +
+                              "        <result>PASSED</result>" +
                               "      </group>" +
                               "    </groups>" +
                               "    <rating>r1</rating>" +
@@ -367,7 +415,7 @@ public class FreeMarkerParityTest
         FileUtils.writeStringToFile(scorecardFile, scorecardXml, "UTF-8");
 
         // The XSLT file is in xsl/scorecard/index.xsl, relative to xsl/loadreport it is ../scorecard/index.xsl
-        renderAndCompare("../scorecard/index.xsl", "sections/scorecard.ftl", "scorecard.html", params, config, scorecardFile);
+        renderAndCompare("../scorecard/index.xsl", "scorecard.ftl", "scorecard.html", params, config, scorecardFile);
     }
 
     private void renderAndCompare(String xslFile, String ftlFile, String outputFileName) throws Exception
@@ -470,6 +518,7 @@ public class FreeMarkerParityTest
                    .replace("&#8212;", "—")        // normalize em-dash entity to char
                    .replace("&quot;", "\"")        // normalize quote entity to char
                    .replace("&QUOT;", "\"")        // also handle upper case if present
+                   .replace("&#39;", "'")           // normalize apos entity to char (FreeMarker HTML escaping)
                    .replace("919.9999999999999px", "920px") // normalize floating point precision issue in XSLT output
                    .toLowerCase();
 
