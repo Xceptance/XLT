@@ -29,8 +29,8 @@
             <xsl:value-of select="$title" />
         </title>
 
-        <link href="css/default.css" type="text/css" rel="stylesheet"/>
-        <link href="css/print.css" type="text/css" rel="stylesheet" media="print"/>
+        <link href="css/default.css" rel="stylesheet"/>
+        <link href="css/print.css" rel="stylesheet" media="print"/>
 
         <script src="js/jquery-3.6.4.min.js"/>
         <script src="js/jquery.hoverIntent-1.10.2.min.js"/>
@@ -43,7 +43,7 @@
         <link rel="icon" href="images/favicon.png" sizes="any" />
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
         
-        <style type="text/css">
+        <style>
             .chart-group .chart img, .chart-group .echart {
                 width: <xsl:value-of select="/testreport/configuration/chartWidth" />px;
                 height: <xsl:value-of select="/testreport/configuration/chartHeight" />px;

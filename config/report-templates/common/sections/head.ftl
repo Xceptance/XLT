@@ -18,8 +18,8 @@
         ${title}
     </title>
 
-    <link href="css/default.css" type="text/css" rel="stylesheet">
-    <link href="css/print.css" type="text/css" rel="stylesheet" media="print">
+    <link href="css/default.css" rel="stylesheet">
+    <link href="css/print.css" rel="stylesheet" media="print">
 
     <script src="js/jquery-3.6.4.min.js"></script>
     <script src="js/jquery.hoverIntent-1.10.2.min.js"></script>
@@ -32,7 +32,7 @@
     <link rel="icon" href="images/favicon.png" sizes="any">
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     
-    <style type="text/css">
+    <style>
         <#assign chartWidth = configuration.chartWidth[0]!"">
         <#assign chartHeight = configuration.chartHeight[0]!"">
         .chart-group .chart img, .chart-group .echart {
