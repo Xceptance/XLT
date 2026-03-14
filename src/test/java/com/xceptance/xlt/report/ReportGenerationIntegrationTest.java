@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.common.XltConstants;
 
 /**
  * Comprehensive integration tests for the {@link ReportTestHarness} and {@link ReportResult}.
@@ -296,5 +297,6 @@ public class ReportGenerationIntegrationTest
                                                               .generateScorecard();
 
         Assert.assertTrue("scorecard XML must exist", scorecardResult.xmlFile().isFile());
+        scorecardResult.assertHtmlFileExists(XltConstants.SCORECARD_REPORT_HTML_FILENAME);
     }
 }

@@ -491,6 +491,9 @@ public class ReportTestHarness
     {
         ensureScorecardType();
 
+        // Ensure the report directory has all required config (report-templates, xsl, etc.)
+        ensureConfigInInputDir(primaryInputDir);
+
         XltEngine.get();
         XltExecutionContext.getCurrent().setTestSuiteHomeDir(primaryInputDir);
         XltExecutionContext.getCurrent().setTestSuiteConfigDir(new File(primaryInputDir, XltConstants.CONFIG_DIR_NAME));
