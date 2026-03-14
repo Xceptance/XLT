@@ -64,6 +64,7 @@
             <#if scorecardPresent>
                 <li><a href="scorecard.html">Scorecard</a></li>
             </#if>
+            <li><a href="report.log">Log</a></li>
         </ul>
     </nav>
 </#macro>

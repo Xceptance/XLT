@@ -15,7 +15,8 @@
 				<li><a href="web-vitals.html">Web Vitals</a></li>
 				<li><a href="custom-timers.html">Custom Timers</a></li>
 				<li><a href="custom-values.html">Custom Values</a></li>
-			</ul>
+			<li><a href="report.log">Log</a></li>
+		</ul>
 		</nav>
 		
 	</xsl:template>

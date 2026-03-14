@@ -246,10 +246,14 @@ public class ReportGenerator
                                final boolean fromTimeRel, final boolean toTimeRel)
         throws Exception
     {
+        ReportLogCapture logCapture = null;
         try
         {
             // clean/create output directory first
             ensureOutputDirAndClean(this.outputDir);
+
+            // start capturing log output to report.log
+            logCapture = ReportLogCapture.start(outputDir, config.getReportLoggingLevel());
 
             for (final Class<? extends ReportProvider> c : config.getReportProviderClasses())
             {
@@ -297,6 +301,11 @@ public class ReportGenerator
         finally
         {
             ConcurrentUsersTable.getInstance().clear();
+
+            if (logCapture != null)
+            {
+                logCapture.stop();
+            }
         }
     }
 
@@ -704,22 +713,31 @@ public class ReportGenerator
             targetDir.copyFrom(inputDir, Selectors.SELECT_ALL);
         }
 
-        final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
-
-        // evaluate test if desired
-        final File scorecardXml = evaluateReport(xmlReport);
-
-        // create the report's Scorecard HTML (if evaluation took place)
-        if (scorecardXml != null)
+        // start capturing log output to report.log
+        final ReportLogCapture logCapture = ReportLogCapture.start(outputDir, config.getReportLoggingLevel());
+        try
         {
-            transformScorecard(scorecardXml);
+            final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
+
+            // evaluate test if desired
+            final File scorecardXml = evaluateReport(xmlReport);
+
+            // create the report's Scorecard HTML (if evaluation took place)
+            if (scorecardXml != null)
+            {
+                transformScorecard(scorecardXml);
+            }
+
+            // output the path to the report either as file path (Win) or as clickable file URL
+            final File reportFile = new File(outputDir, "index.html");
+            final String reportPath = ReportUtils.toString(reportFile);
+
+            XltLogger.reportLogger.info("Report: {}", reportPath);
         }
-
-        // output the path to the report either as file path (Win) or as clickable file URL
-        final File reportFile = new File(outputDir, "index.html");
-        final String reportPath = ReportUtils.toString(reportFile);
-
-        XltLogger.reportLogger.info("Report: {}", reportPath);
+        finally
+        {
+            logCapture.stop();
+        }
     }
 
     /**

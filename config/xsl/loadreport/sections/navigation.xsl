@@ -67,6 +67,7 @@
         <xsl:if test="$scorecardPresent">
             <li><a href="scorecard.html">Scorecard</a></li>
         </xsl:if>
+            <li><a href="report.log">Log</a></li>
         </ul>
     </nav>
     </xsl:template>

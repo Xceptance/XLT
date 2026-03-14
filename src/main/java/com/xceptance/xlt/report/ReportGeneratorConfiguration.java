@@ -222,6 +222,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RENDERING_ENGINE = PROP_PREFIX + "renderingEngine";
 
+    private static final String PROP_REPORT_LOGGING_LEVEL = PROP_PREFIX + "reportLogging.level";
+
+    private static final String PROP_REPORT_LOGGING_MAX_SIZE = PROP_PREFIX + "reportLogging.maxSize";
+
     private static final String PROP_RESULTS_BASE_URI = PROP_PREFIX + "resultsBaseUri";
 
     private static final String PROP_GENERATE_ERROR_LINKS = PROP_PREFIX + "linkToResultBrowsers";
@@ -975,6 +979,26 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public String getRenderingEngine()
     {
         return getStringProperty(PROP_RENDERING_ENGINE, ReportRendererFactory.ENGINE_FREEMARKER);
+    }
+
+    /**
+     * Returns the minimum log level for the report log file.
+     *
+     * @return the log level string (e.g. "INFO", "DEBUG", "WARN", "ERROR"), defaults to "INFO"
+     */
+    public String getReportLoggingLevel()
+    {
+        return getStringProperty(PROP_REPORT_LOGGING_LEVEL, "INFO");
+    }
+
+    /**
+     * Returns the maximum size for the report log file (e.g. "1m", "5m", "500k").
+     *
+     * @return the max size string, defaults to "1m" (1 MB)
+     */
+    public String getReportLoggingMaxSize()
+    {
+        return getStringProperty(PROP_REPORT_LOGGING_MAX_SIZE, "1m");
     }
 
     /**
