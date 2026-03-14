@@ -876,10 +876,8 @@ public class ReportGenerator
         final String templateOrStyleSheet;
         if (ReportRendererFactory.ENGINE_FREEMARKER.equalsIgnoreCase(engine))
         {
-            // resolve FTL path for scorecard
-            final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_FTL_PATH),
-                                                 XltConstants.SCORECARD_REPORT_FTL_FILENAME);
-            templateOrStyleSheet = styleSheetFile.getAbsolutePath();
+            // FreeMarker templates are resolved relative to the configured template directory
+            templateOrStyleSheet = XltConstants.SCORECARD_REPORT_FTL_FILENAME;
         }
         else
         {
