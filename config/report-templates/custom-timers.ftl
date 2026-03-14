@@ -6,6 +6,7 @@
 
 <#import "/sections/custom-timers.ftl" as ct>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,3 +41,5 @@
 
 </body>
 </html>
+
+</#compress>

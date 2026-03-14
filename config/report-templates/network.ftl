@@ -11,6 +11,7 @@
 <#import "/sections/request-methods.ftl" as requestMethods>
 <#import "/sections/content-types.ftl" as contentTypes>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <#assign projectNameNode = report.testreport.configuration.projectName>
@@ -63,3 +64,5 @@
 
 </body>
 </html>
+
+</#compress>

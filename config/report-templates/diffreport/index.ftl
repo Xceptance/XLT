@@ -8,6 +8,7 @@
 <#import "sections/load-profile.ftl" as loadProfile>
 <#import "sections/general.ftl" as general>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,3 +66,5 @@
 
 </body>
 </html>
+
+</#compress>

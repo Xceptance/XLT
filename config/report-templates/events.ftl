@@ -4,6 +4,7 @@
 <#import "sections/events.ftl" as events>
 <#import "common/sections/javascript.ftl" as js>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,3 +39,5 @@
 
 </body>
 </html>
+
+</#compress>

@@ -5,6 +5,7 @@
 <#import "sections/descriptions.ftl" as descriptions>
 <#import "/common/sections/javascript.ftl" as js>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,3 +40,5 @@
 
 </body>
 </html>
+
+</#compress>

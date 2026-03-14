@@ -6,6 +6,7 @@
 <#-- Import sections -->
 <#import "/sections/page-load-timings.ftl" as plt>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <#assign projectNameNode = report.testreport.configuration.projectName>
@@ -53,3 +54,5 @@
 
 </body>
 </html>
+
+</#compress>

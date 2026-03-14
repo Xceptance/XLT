@@ -9,6 +9,7 @@
 <#-- Note: the trendreport XML root is available as 'report.trendreport' if using the standard ReportTransformer -->
 <#-- Actually, ReportTransformer passes the root element directly to the renderer. -->
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,3 +52,5 @@
 
 </body>
 </html>
+
+</#compress>

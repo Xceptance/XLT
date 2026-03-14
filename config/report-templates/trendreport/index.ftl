@@ -5,6 +5,7 @@
 <#import "navigation.ftl" as navigation>
 <#import "descriptions.ftl" as descriptions>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,3 +40,5 @@
 
 </body>
 </html>
+
+</#compress>

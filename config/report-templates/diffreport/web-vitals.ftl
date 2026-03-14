@@ -8,6 +8,7 @@
 <#import "../../common/util/create-totals-td.ftl" as createTotalsTd>
 <#import "../../common/util/filtered-footer-row.ftl" as filteredFooterRow>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -100,3 +101,5 @@
 
 </body>
 </html>
+
+</#compress>

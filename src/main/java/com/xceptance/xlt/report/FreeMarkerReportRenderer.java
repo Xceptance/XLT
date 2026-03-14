@@ -60,6 +60,7 @@ public class FreeMarkerReportRenderer implements ReportRenderer
         freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         freemarkerConfig.setLogTemplateExceptions(false);
         freemarkerConfig.setWrapUncheckedExceptions(true);
+        freemarkerConfig.setWhitespaceStripping(true);
         freemarkerConfig.setFallbackOnNullLoopVariable(false);
         freemarkerConfig.setOutputFormat(HTMLOutputFormat.INSTANCE);
 

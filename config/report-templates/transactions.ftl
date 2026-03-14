@@ -6,6 +6,7 @@
 <#-- Import sections -->
 <#import "/sections/transactions.ftl" as txn>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <#assign projectNameNode = report.testreport.configuration.projectName>
@@ -52,3 +53,5 @@
 
 </body>
 </html>
+
+</#compress>

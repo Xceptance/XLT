@@ -9,6 +9,7 @@
 <#import "/scorecard/rules.ftl" as rules>
 <#import "/scorecard/rule-checks.ftl" as rule_checks>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <#assign scorecard = report.scorecard>
@@ -72,3 +73,5 @@
 <@javascript.javascript/>
 </body>
 </html>
+
+</#compress>

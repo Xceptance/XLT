@@ -11,6 +11,7 @@
 <#import "/sections/summary.ftl" as s>
 <#import "/sections/network-summary.ftl" as ns>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <#assign projectNameNode = report.testreport.configuration.projectName>
@@ -62,3 +63,5 @@
 
 </body>
 </html>
+
+</#compress>

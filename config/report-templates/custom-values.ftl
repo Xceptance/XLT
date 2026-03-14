@@ -6,6 +6,7 @@
 
 <#import "/sections/custom-values.ftl" as cv>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,3 +41,5 @@
 
 </body>
 </html>
+
+</#compress>

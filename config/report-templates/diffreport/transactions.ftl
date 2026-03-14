@@ -6,6 +6,7 @@
 <#import "descriptions.ftl" as descriptions>
 <#import "util/timer-section.ftl" as timerSection>
 
+<#compress>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,3 +48,5 @@
 
 </body>
 </html>
+
+</#compress>
