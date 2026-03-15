@@ -5,8 +5,8 @@
 <#import "navigation.ftl" as navigation>
 <#import "descriptions.ftl" as descriptions>
 <#import "util/timer-cell.ftl" as timerCell>
-<#import "../../common/util/create-totals-td.ftl" as createTotalsTd>
-<#import "../../common/util/filtered-footer-row.ftl" as filteredFooterRow>
+<#import "../common/util/create-totals-td.ftl" as createTotalsTd>
+<#import "../common/util/filtered-footer-row.ftl" as filteredFooterRow>
 
 <#compress>
 <!DOCTYPE html>
@@ -32,8 +32,9 @@
                 <div class="content">
                     <@descriptions.description_web_vitals_summary />
                     
-                    <#local elements = report.testreport.webVitalsList?children>
-                    <#local count = elements?size>
+                    <#if (report.testreport.webVitalsList?size > 0)>
+                    <#assign elements = report.testreport.webVitalsList?children>
+                    <#assign count = elements?size>
 
                     <table class="c-tab-content table-autosort:0">
                         <thead>
@@ -54,7 +55,7 @@
                         </thead>
                         <tfoot>
                             <tr class="totals">
-                                <@createTotalsTd.render rowsInTable=count class="key" />
+                                <@createTotalsTd.create_totals_td rows_in_table=count class="key" />
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -62,11 +63,11 @@
                                 <td></td>
                                 <td></td>
                             </tr>
-                            <@filteredFooterRow.render />
+                            <@filteredFooterRow.filtered_footer_row />
                         </tfoot>
                         <#if (count > 0)>
                             <tbody>
-                                <#list elements?sort_by("name") as wv>
+                                <#list elements as wv>
                                     <tr>
                                         <td class="key">
                                             ${wv.name}
@@ -88,6 +89,9 @@
                             </tbody>
                         </#if>
                     </table>
+                    <#else>
+                    <p>No data available.</p>
+                    </#if>
                 </div>
             </div>
 
@@ -97,7 +101,7 @@
     </div> <!-- content -->
 </div> <!-- container -->    
 
-<@javascript.render />
+<@javascript.javascript />
 
 </body>
 </html>

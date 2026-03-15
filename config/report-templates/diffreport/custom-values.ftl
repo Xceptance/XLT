@@ -5,8 +5,8 @@
 <#import "navigation.ftl" as navigation>
 <#import "descriptions.ftl" as descriptions>
 <#import "util/timer-cell.ftl" as timerCell>
-<#import "../../common/util/create-totals-td.ftl" as createTotalsTd>
-<#import "../../common/util/filtered-footer-row.ftl" as filteredFooterRow>
+<#import "../common/util/create-totals-td.ftl" as createTotalsTd>
+<#import "../common/util/filtered-footer-row.ftl" as filteredFooterRow>
 
 <#compress>
 <!DOCTYPE html>
@@ -32,9 +32,9 @@
                 <div class="content">
                     <@descriptions.description_custom_values_summary />
                     
-                    <#local percentileCount = 0>
+                    <#assign percentileCount = 0>
                     <#if report.testreport.summary.requests.percentiles?has_content>
-                        <#local percentileCount = report.testreport.summary.requests.percentiles?children?size>
+                        <#assign percentileCount = report.testreport.summary.requests.percentiles?children?size>
                     </#if>
 
                     <table class="c-tab-content table-autosort:0">
@@ -70,11 +70,12 @@
                                 </#if>
                             </tr>
                         </thead>
-                        <#local elements = report.testreport.customValues?children>
-                        <#local count = elements?size>
+                        <#if (report.testreport.customValues?size > 0)>
+                        <#assign elements = report.testreport.customValues?children>
+                        <#assign count = elements?size>
                         <tfoot>
                             <tr class="totals">
-                                <@createTotalsTd.render rowsInTable=count class="key" />
+                                <@createTotalsTd.create_totals_td rows_in_table=count class="key" />
                                 <td class=""></td>
                                 <td class=""></td>
                                 <td class=""></td>
@@ -89,12 +90,12 @@
                                     </#list>
                                 </#if>
                             </tr>
-                            <@filteredFooterRow.render />
+                            <@filteredFooterRow.filtered_footer_row />
                         </tfoot>
                         
                         <#if (count > 0)>
                             <tbody>
-                                <#list elements?sort_by("name") as cv>
+                                <#list elements as cv>
                                     <tr>
                                         <td class="key colgroup1">
                                             <a <#if cv.description?has_content>title="${cv.description}"</#if>>
@@ -118,7 +119,7 @@
                                 </#list>
                             </tbody>
                         <#else>
-                            <#local columnCount = 9 + percentileCount>
+                            <#assign columnCount = 9 + percentileCount>
                             <tbody class="table-nosort">
                                 <tr>
                                     <td colspan="${columnCount}" class="no-data">No data available</td>
@@ -127,6 +128,9 @@
                         </#if>
                         
                     </table>
+                    <#else>
+                    <p>No data available.</p>
+                    </#if>
                 </div>
             </div>
 
@@ -136,7 +140,7 @@
     </div> <!-- content -->
 </div> <!-- container -->    
 
-<@javascript.render />
+<@javascript.javascript />
 
 </body>
 </html>

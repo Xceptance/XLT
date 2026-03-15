@@ -25,7 +25,7 @@
                     <#-- Find matching rating definition -->
                     <#assign ratingDefinition = "">
                     <#list configuration.ratings.rating as r>
-                        <#if r.@id == ratingId>
+                        <#if (r.@id[0]!"") == ratingId>
                             <#assign ratingDefinition = r>
                             <#break>
                         </#if>
@@ -51,7 +51,7 @@
                                     <#assign ruleFailed = false>
                                     <#list rootNode.groups.group as g>
                                         <#list g.rules.rule as gr>
-                                             <#if gr.@["ref-id"] == r.@id && (gr.@testFailed[0]!"false") == "true">
+                                             <#if (gr.@["ref-id"][0]!"") == (r.@id[0]!"") && (gr.@testFailed[0]!"false") == "true">
                                                  <#assign ruleFailed = true>
                                                  <#break>
                                              </#if>
@@ -69,7 +69,7 @@
                                 <#if (g.@failsTest[0]!"false") == "true" && (g.@enabled[0]!"true") == "true">
                                     <#assign groupFailed = false>
                                     <#list rootNode.groups.group as resG>
-                                        <#if resG.@["ref-id"] == g.@id && (resG.@testFailed[0]!"false") == "true">
+                                        <#if (resG.@["ref-id"][0]!"") == (g.@id[0]!"") && (resG.@testFailed[0]!"false") == "true">
                                             <#assign groupFailed = true>
                                             <#break>
                                         </#if>

@@ -30,11 +30,15 @@
                 <div class="content">
                     <@descriptions.description_page_load_timing_summary />
 
+                    <#if (report.testreport.pageLoadTimings?size > 0)>
                     <@timerSection.render 
                         elements=report.testreport.pageLoadTimings?children
                         summaryElement=report.testreport.summary.pageLoadTimings
                         tableRowHeader="Page Load Timing Name"
                         type="pageLoadTiming" />
+                    <#else>
+                    <p>No data available.</p>
+                    </#if>
                 </div>
             </div>
 
@@ -44,7 +48,7 @@
     </div> <!-- content -->
 </div> <!-- container -->    
 
-<@javascript.render />
+<@javascript.javascript />
 
 </body>
 </html>

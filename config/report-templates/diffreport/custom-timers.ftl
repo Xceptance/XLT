@@ -30,11 +30,15 @@
                 <div class="content">
                     <@descriptions.description_custom_timer_summary />
 
+                    <#if (report.testreport.customTimers?size > 0)>
                     <@timerSection.render 
                         elements=report.testreport.customTimers?children
                         summaryElement=report.testreport.summary.customTimers
                         tableRowHeader="Custom Timer Name"
                         type="custom" />
+                    <#else>
+                    <p>No data available.</p>
+                    </#if>
                 </div>
             </div>
 
@@ -44,7 +48,7 @@
     </div> <!-- content -->
 </div> <!-- container -->    
 
-<@javascript.render />
+<@javascript.javascript />
 
 </body>
 </html>

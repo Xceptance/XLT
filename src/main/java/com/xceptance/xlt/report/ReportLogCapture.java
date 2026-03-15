@@ -43,7 +43,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
  * }
  * </pre>
  */
-class ReportLogCapture
+public class ReportLogCapture
 {
     /** Name of the file appender added to the report logger. */
     private static final String APPENDER_NAME = "report-log-file";
@@ -97,13 +97,26 @@ class ReportLogCapture
             Level.FATAL, level, org.apache.logging.log4j.core.Filter.Result.ACCEPT,
             org.apache.logging.log4j.core.Filter.Result.DENY);
 
-        // Build the file appender targeting report.log in the output directory
+        // Write a header so the log file is never truly empty and explains itself.
+        // Written directly to the file (not via the logger) so it stays out of the console.
         final File logFile = new File(outputDir, REPORT_LOG_FILENAME);
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(
+                new java.io.FileWriter(logFile), true))
+        {
+            pw.println("Report generator output to enhance debugging, can be empty.");
+            pw.println("===================================================");
+        }
+        catch (final java.io.IOException ignore)
+        {
+            // best effort — if the file can't be written, the appender will fail too
+        }
+
+        // Build the file appender targeting report.log in the output directory (append to header)
         final FileAppender appender = FileAppender.newBuilder()
                                                   .setName(APPENDER_NAME)
                                                   .withFileName(logFile.getAbsolutePath())
                                                   .setLayout(layout)
-                                                  .withAppend(false)
+                                                  .withAppend(true)
                                                   .setFilter(filter)
                                                   .build();
         appender.start();

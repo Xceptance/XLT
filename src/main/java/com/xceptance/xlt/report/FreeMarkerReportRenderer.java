@@ -27,6 +27,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.xlt.api.util.XltLogger;
@@ -145,7 +147,31 @@ public class FreeMarkerReportRenderer implements ReportRenderer
         final DocumentBuilder builder = factory.newDocumentBuilder();
         final Document doc = builder.parse(file);
 
+        // Strip whitespace-only text nodes so ?children returns only elements
+        stripWhitespaceTextNodes(doc.getDocumentElement());
+
         return NodeModel.wrap(doc);
+    }
+
+    /**
+     * Recursively removes whitespace-only text nodes from the given DOM tree.
+     * This ensures FreeMarker's ?children returns only element nodes.
+     */
+    private void stripWhitespaceTextNodes(final Node node)
+    {
+        final NodeList children = node.getChildNodes();
+        for (int i = children.getLength() - 1; i >= 0; i--)
+        {
+            final Node child = children.item(i);
+            if (child.getNodeType() == Node.TEXT_NODE && child.getTextContent().trim().isEmpty())
+            {
+                node.removeChild(child);
+            }
+            else if (child.getNodeType() == Node.ELEMENT_NODE)
+            {
+                stripWhitespaceTextNodes(child);
+            }
+        }
     }
 
     /**

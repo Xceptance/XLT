@@ -58,7 +58,7 @@
 
 <#macro render_summary summaryElement type rowsInTable>
     <tr class="totals">
-        <@createTotalsTd.render rowsInTable=rowsInTable />
+        <@createTotalsTd.create_totals_td rows_in_table=rowsInTable />
         
         <@render_value_tds node=summaryElement type=type />
     </tr>

@@ -65,6 +65,8 @@ import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.api.util.XltLogger;
+import com.xceptance.xlt.report.ReportLogCapture;
 import com.xceptance.xlt.report.ReportTransformer;
 import com.xceptance.xlt.report.util.CategoryItemRenderer;
 import com.xceptance.xlt.report.util.ElementSpecification;
@@ -208,7 +210,7 @@ public class TrendReportGeneratorMain
     private void createErrorTrendChart(final String timerName, final CategoryDataset dataset, final File outputDir, final int chartWidth,
                                        final int chartHeight)
     {
-        System.out.printf("Creating errors trend chart for timer '%s' ...\n", timerName);
+        XltLogger.reportLogger.info("Creating errors trend chart for timer '{}' ...", timerName);
 
         // create and modify the basic chart
         final JFreeChart jfreeChart = createBasicTrendChart(timerName, "Errors", dataset);
@@ -344,7 +346,7 @@ public class TrendReportGeneratorMain
     private void createRunTimeTrendChart(final String timerName, final CategoryDataset dataset, final File outputDir, final int chartWidth,
                                          final int chartHeight)
     {
-        System.out.printf("Creating run time trend chart for timer '%s' ...\n", timerName);
+        XltLogger.reportLogger.info("Creating run time trend chart for timer '{}' ...", timerName);
 
         // create the basic chart, it is sufficient for us
         final JFreeChart jfreeChart = createBasicTrendChart(timerName, "Run Time [ms]", dataset);
@@ -370,7 +372,7 @@ public class TrendReportGeneratorMain
     private void createThroughputTrendChart(final String timerName, final CategoryDataset dataset, final File outputDir,
                                             final int chartWidth, final int chartHeight)
     {
-        System.out.printf("Creating throughput trend chart for timer '%s' ...\n", timerName);
+        XltLogger.reportLogger.info("Creating throughput trend chart for timer '{}' ...", timerName);
 
         // create and modify the basic chart
         final JFreeChart jfreeChart = createBasicTrendChart(timerName, "Throughput", dataset);
@@ -652,7 +654,7 @@ public class TrendReportGeneratorMain
      */
     private Document readTestReport(final File dir) throws ParserConfigurationException, SAXException, IOException
     {
-        System.out.println("Reading report from directory: " + dir);
+        XltLogger.reportLogger.info("Reading report from directory: {}", dir);
 
         final File file = new File(dir, XltConstants.LOAD_REPORT_XML_FILENAME);
 
@@ -848,69 +850,78 @@ public class TrendReportGeneratorMain
 
             FileUtils.forceMkdir(outputDir);
 
-            // create initial trend values
-            // either maintain the order of the reports as given on the command line or sort them by date
-            initialTrendValues = noSorting ? new LinkedHashSet<TrendValue>() : new TreeSet<TrendValue>();
-            createInitialTrendValues(remainingArgs);
-
-            // remember all necessary test report data to create a trend report
-            // tag name : timer name : trend values
-            // tag names are e.g. 'transaction', 'action', 'request', ...
-            // timer names are e.g. 'TBrowse', 'OpenHomepage', 'OpenHomepage [200]', ...
-            final Map<String, Map<String, Set<TrendValue>>> trendValuesByTimerNameByTagName = new HashMap<String, Map<String, Set<TrendValue>>>();
-
-            // remember absolute paths of all report directories to detect repetitions in user input
-            final HashSet<String> reportDirs = new HashSet<String>();
-            // remember test report names
-            final HashSet<String> reportNames = new HashSet<String>();
-            // remember the parsed documents
-            final LinkedList<Document> documents = new LinkedList<>();
-            // get each report one by one and add the data to the trendValuesByTimerNameByTagName map
-            for (String remainingArg : remainingArgs)
+            // start capturing log output to report.log
+            final ReportLogCapture logCapture = ReportLogCapture.start(outputDir, "INFO");
+            try
             {
-                // read the test report
-                final TestReportByName testReportByName = readTestReport(remainingArg, reportDirs, reportNames);
-                if (testReportByName != null)
+                // create initial trend values
+                // either maintain the order of the reports as given on the command line or sort them by date
+                initialTrendValues = noSorting ? new LinkedHashSet<TrendValue>() : new TreeSet<TrendValue>();
+                createInitialTrendValues(remainingArgs);
+
+                // remember all necessary test report data to create a trend report
+                // tag name : timer name : trend values
+                // tag names are e.g. 'transaction', 'action', 'request', ...
+                // timer names are e.g. 'TBrowse', 'OpenHomepage', 'OpenHomepage [200]', ...
+                final Map<String, Map<String, Set<TrendValue>>> trendValuesByTimerNameByTagName = new HashMap<String, Map<String, Set<TrendValue>>>();
+
+                // remember absolute paths of all report directories to detect repetitions in user input
+                final HashSet<String> reportDirs = new HashSet<String>();
+                // remember test report names
+                final HashSet<String> reportNames = new HashSet<String>();
+                // remember the parsed documents
+                final LinkedList<Document> documents = new LinkedList<>();
+                // get each report one by one and add the data to the trendValuesByTimerNameByTagName map
+                for (String remainingArg : remainingArgs)
                 {
-                    // get the test report data
-                    readDataFromTestReport(trendValuesByTimerNameByTagName, testReportByName);
-                    documents.add(testReportByName.getTestReport());
+                    // read the test report
+                    final TestReportByName testReportByName = readTestReport(remainingArg, reportDirs, reportNames);
+                    if (testReportByName != null)
+                    {
+                        // get the test report data
+                        readDataFromTestReport(trendValuesByTimerNameByTagName, testReportByName);
+                        documents.add(testReportByName.getTestReport());
+                    }
                 }
+
+                // create the trend report and the trend charts
+                XltLogger.reportLogger.info("Creating the XML trend report ...");
+                final Document trendReport = createTrendReport(outputDir, trendValuesByTimerNameByTagName);
+
+                // create the trend report XML file
+                final File xmlFile = new File(outputDir, XltConstants.TREND_REPORT_XML_FILENAME);
+                writeTrendReport(trendReport, xmlFile);
+
+                // create the trend report HTML file
+                XltLogger.reportLogger.info("Rendering the HTML trend report ...");
+
+                final HashMap<String, Object> parameters = new HashMap<String, Object>();
+                parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+                parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+                parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+                parameters.put("projectName", ReportUtils.obtainProjectName(documents));
+
+                // transform the report
+                final ReportTransformer reportTransformer = new ReportTransformer(config, config.getRenderingEngine(), parameters);
+                reportTransformer.run(xmlFile, outputDir);
+
+                // copy the report's static resources
+                final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
+                FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
+
+                // output the path to the report either as file path (Win) or as clickable file URL
+                final File reportFile = new File(outputDir, "index.html");
+                final String reportPath = ReportUtils.toString(reportFile);
+
+                // wait for any asynchronous task to complete
+                TaskManager.getInstance().waitForAllTasksToComplete();
+
+                XltLogger.reportLogger.info("Report: {}", reportPath);
             }
-
-            // create the trend report and the trend charts
-            System.out.println("Creating the XML trend report ...");
-            final Document trendReport = createTrendReport(outputDir, trendValuesByTimerNameByTagName);
-
-            // create the trend report XML file
-            final File xmlFile = new File(outputDir, XltConstants.TREND_REPORT_XML_FILENAME);
-            writeTrendReport(trendReport, xmlFile);
-
-            // create the trend report HTML file
-            System.out.println("Rendering the HTML trend report ...");
-
-            final HashMap<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put("productName", ProductInformation.getProductInformation().getProductName());
-            parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
-            parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
-            parameters.put("projectName", ReportUtils.obtainProjectName(documents));
-
-            // transform the report
-            final ReportTransformer reportTransformer = new ReportTransformer(config, config.getRenderingEngine(), parameters);
-            reportTransformer.run(xmlFile, outputDir);
-
-            // copy the report's static resources
-            final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
-            FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
-
-            // output the path to the report either as file path (Win) or as clickable file URL
-            final File reportFile = new File(outputDir, "index.html");
-            final String reportPath = ReportUtils.toString(reportFile);
-
-            // wait for any asynchronous task to complete
-            TaskManager.getInstance().waitForAllTasksToComplete();
-
-            System.out.println("\nReport: " + reportPath);
+            finally
+            {
+                logCapture.stop();
+            }
 
             System.exit(ProcessExitCodes.SUCCESS);
         }

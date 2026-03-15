@@ -44,7 +44,7 @@
     </div> <!-- content -->
 </div> <!-- container -->    
 
-<@javascript.render />
+<@javascript.javascript />
 
 </body>
 </html>

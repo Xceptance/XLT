@@ -10,11 +10,7 @@
     <table class="table-autosort:0">
         <thead>
             <tr>
-                <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
-                    <#local id = "sortByName">
-                    <#-- XSL uses generate-id(.) for unique IDs if needed, but here it's hardcoded to sortByName -->
-                    <#-- I'll keep it simple or use a name-based ID if necessary -->
-                    <xsl:attribute name="id">sortByName</xsl:attribute>
+                <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
                     ${tableRowHeader}
                     <br/>
                     <input class="filter" placeholder="Enter filter substrings" title=""/>
@@ -65,10 +61,10 @@
                 <#if summaryElement?has_content>
                     <@timerRow.render_summary summaryElement=summaryElement type=type rowsInTable=count />
                 </#if>
-                <@filteredFooterRow.render />
+                <@filteredFooterRow.filtered_footer_row />
             </tfoot>
             <tbody>
-                <#list elements?sort_by("name") as timerElement>
+                <#list elements as timerElement>
                     <@timerRow.render timerElement=timerElement type=type />
                 </#list>
             </tbody>
@@ -99,7 +95,7 @@
                         <td colspan="${percentileCount}" class="colgroup1"></td>
                     </#if>
                 </tr>
-                <@filteredFooterRow.render />
+                <@filteredFooterRow.filtered_footer_row />
             </tfoot>
             <tbody class="table-nosort">
                 <tr>

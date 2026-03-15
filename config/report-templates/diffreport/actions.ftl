@@ -30,11 +30,15 @@
                 <div class="content">
                     <@descriptions.description_action_summary />
 
+                    <#if (report.testreport.actions?size > 0)>
                     <@timerSection.render 
                         elements=report.testreport.actions?children
                         summaryElement=report.testreport.summary.actions
                         tableRowHeader="Action Name"
                         type="action" />
+                    <#else>
+                    <p>No data available.</p>
+                    </#if>
                 </div>
             </div>
 
@@ -44,7 +48,7 @@
     </div> <!-- content -->
 </div> <!-- container -->    
 
-<@javascript.render />
+<@javascript.javascript />
 
 </body>
 </html>

@@ -59,7 +59,7 @@
                         <tfoot>
                             <#if summaryElement?has_content>
                                 <tr class="totals">
-                                    <@createTotalsTd.render rowsInTable=count class="key colgroup1" />
+                                    <@createTotalsTd.create_totals_td rows_in_table=count class="key colgroup1" />
 
                                     <@timerCell.render node=summaryElement.bytesSent.totalCount format="#,##0" />
                                     <@timerCell.render node=summaryElement.bytesSent.countPerSecond format="#,##0" />                                                
@@ -80,10 +80,10 @@
                                     <@timerCell.render node=summaryElement.bytesReceived.max format="#,##0" />
                                 </tr>
                             </#if>
-                            <@filteredFooterRow.render />
+                            <@filteredFooterRow.filtered_footer_row />
                         </tfoot>
                         <tbody>
-                            <#list elements?sort_by("name") as timerElement>
+                            <#list elements as timerElement>
                                 <tr>
                                     <td class="key colgroup1 forcewordbreak">
                                         ${timerElement.name}
@@ -116,7 +116,7 @@
                                 <td colspan="8"></td>
                                 <td colspan="8" class="colgroup1"></td>
                             </tr>
-                            <@filteredFooterRow.render />
+                            <@filteredFooterRow.filtered_footer_row />
                         </tfoot>
                         <tbody class="table-nosort">
                             <tr>

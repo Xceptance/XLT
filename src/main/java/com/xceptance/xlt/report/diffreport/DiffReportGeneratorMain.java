@@ -50,6 +50,8 @@ import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.api.util.XltLogger;
+import com.xceptance.xlt.report.ReportLogCapture;
 import com.xceptance.xlt.report.ReportTransformer;
 import com.xceptance.xlt.report.util.ElementSpecification;
 import com.xceptance.xlt.report.util.ReportUtils;
@@ -114,40 +116,49 @@ public class DiffReportGeneratorMain
 
             FileUtils.forceMkdir(outputDir);
             final String outputDirPath = outputDir.getCanonicalPath();
-            System.out.println("Writing difference report to directory: " + outputDirPath);
+            XltLogger.reportLogger.info("Writing difference report to directory: {}", outputDirPath);
 
-            // create the difference report XML file
-            final Document diffReport = createDiffReport(oldTestReport, oldReportDir.getName(), newTestReport, newReportDir.getName(),
-                                                         config.getDiffElementSpecifications(), config.getCopyElementSpecifications());
+            // start capturing log output to report.log
+            final ReportLogCapture logCapture = ReportLogCapture.start(outputDir, "INFO");
+            try
+            {
+                // create the difference report XML file
+                final Document diffReport = createDiffReport(oldTestReport, oldReportDir.getName(), newTestReport, newReportDir.getName(),
+                                                             config.getDiffElementSpecifications(), config.getCopyElementSpecifications());
 
-            final File xmlFile = new File(outputDir, XltConstants.DIFF_REPORT_XML_FILENAME);
-            writeDiffReport(diffReport, xmlFile);
+                final File xmlFile = new File(outputDir, XltConstants.DIFF_REPORT_XML_FILENAME);
+                writeDiffReport(diffReport, xmlFile);
 
-            // create the difference report HTML file
-            System.out.println("Rendering the HTML difference report ...");
+                // create the difference report HTML file
+                XltLogger.reportLogger.info("Rendering the HTML difference report ...");
 
-            final HashMap<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put("productName", ProductInformation.getProductInformation().getProductName());
-            parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
-            parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
-            parameters.put("projectName", ReportUtils.obtainProjectName(Arrays.asList(oldTestReport, newTestReport)));
+                final HashMap<String, Object> parameters = new HashMap<String, Object>();
+                parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+                parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+                parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+                parameters.put("projectName", ReportUtils.obtainProjectName(Arrays.asList(oldTestReport, newTestReport)));
 
-            // transform the report
-            final ReportTransformer reportTransformer = new ReportTransformer(config, config.getRenderingEngine(), parameters);
-            reportTransformer.run(xmlFile, outputDir);
+                // transform the report
+                final ReportTransformer reportTransformer = new ReportTransformer(config, config.getRenderingEngine(), parameters);
+                reportTransformer.run(xmlFile, outputDir);
 
-            // copy the report's static resources
-            final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
-            FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
+                // copy the report's static resources
+                final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
+                FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
 
-            // output the path to the report either as file path (Win) or as clickable file URL
-            final File reportFile = new File(outputDir, "index.html");
-            final String reportPath = ReportUtils.toString(reportFile);
-            
-            // wait for any asynchronous task to complete
-            TaskManager.getInstance().waitForAllTasksToComplete();
+                // output the path to the report either as file path (Win) or as clickable file URL
+                final File reportFile = new File(outputDir, "index.html");
+                final String reportPath = ReportUtils.toString(reportFile);
 
-            System.out.println("\nReport: " + reportPath);
+                // wait for any asynchronous task to complete
+                TaskManager.getInstance().waitForAllTasksToComplete();
+
+                XltLogger.reportLogger.info("Report: {}", reportPath);
+            }
+            finally
+            {
+                logCapture.stop();
+            }
 
             System.exit(ProcessExitCodes.SUCCESS);
         }
@@ -287,7 +298,7 @@ public class DiffReportGeneratorMain
                                       final List<ElementSpecification> copyElementSpecs)
         throws ParserConfigurationException
     {
-        System.out.println("Creating the XML difference report ...");
+        XltLogger.reportLogger.info("Creating the XML difference report ...");
 
         final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         final Document diffReport = builder.getDOMImplementation().createDocument(null, "testreport", null);
@@ -472,7 +483,7 @@ public class DiffReportGeneratorMain
 
     private Document readTestReport(final File dir) throws ParserConfigurationException, SAXException, IOException
     {
-        System.out.println("Reading test report from directory: " + dir);
+        XltLogger.reportLogger.info("Reading test report from directory: {}", dir);
 
         final File file = new File(dir, XltConstants.LOAD_REPORT_XML_FILENAME);
         final DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
