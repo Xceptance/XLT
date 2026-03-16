@@ -39,7 +39,6 @@
                     xtcResultId=xtcResultId
                     xtcReportId=xtcReportId
                     scorecardPresent=scorecardPresent />
-
         <div id="data-content">
             <@external.external rootNode=report.testreport />
         </div> <!-- data-content -->
