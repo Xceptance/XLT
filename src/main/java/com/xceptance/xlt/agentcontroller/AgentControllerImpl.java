@@ -64,6 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.caucho.hessian.server.HessianServlet;
+import com.xceptance.common.util.ssl.EasySSLUtils;
 import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agent.AgentInfo;
 import com.xceptance.xlt.agentcontroller.ResultArchives.ArchiveToken;
@@ -449,7 +450,7 @@ public class AgentControllerImpl implements AgentController
 
         // start relay client
         new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),
-                        hostName).start();
+                        hostName, EasySSLUtils.EASY_SSL_SOCKET_FACTORY).start();
     }
 
     /**

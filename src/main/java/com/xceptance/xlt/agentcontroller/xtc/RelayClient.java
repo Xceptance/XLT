@@ -8,12 +8,13 @@ import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.net.Socket;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
-
-import jdk.net.ExtendedSocketOptions;
+import com.xceptance.xlt.agentcontroller.xtc.ws.StreamingWebSocketClient;
 
 /**
  * A client to the tunneling part of the XLT Relay server running at XTC.
@@ -34,12 +35,15 @@ public class RelayClient
 
     private final String machineName;
 
-    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String machineName)
+    private SSLSocketFactory sslSocketFactory;
+
+    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String machineName, SSLSocketFactory sslSocketFactory)
     {
         this.relayHost = relayHost;
         this.relayPort = relayPort;
         this.agentControllerPort = agentControllerPort;
         this.machineName = machineName;
+        this.sslSocketFactory = sslSocketFactory; 
     }
 
     public void start()
@@ -54,15 +58,16 @@ public class RelayClient
         {
             log.debug("Connecting to tunnel server");
 
-            try (Socket tunnelSocket = new Socket(relayHost, relayPort))
+            // try (Socket tunnelSocket = new Socket(relayHost, relayPort))
+            try (Socket tunnelSocket = new StreamingWebSocketClient(relayHost, relayPort, sslSocketFactory).asSocket())
             {
                 log.debug("Connected to tunnel server: {}", tunnelSocket);
-                
+
                 // best effort to keep socket open (done at TCP level)
-                tunnelSocket.setKeepAlive(true);
-                tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPIDLE, 60); // seconds before first probe
-                tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPINTERVAL, 60); // seconds between probes
-                tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPCOUNT, 5); // max failed probes
+                // tunnelSocket.setKeepAlive(true);
+                // tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPIDLE, 60); // seconds before first probe
+                // tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPINTERVAL, 60); // seconds between probes
+                // tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPCOUNT, 5); // max failed probes
 
                 // get the streams
                 final PushbackInputStream tunnelIn = new PushbackInputStream(tunnelSocket.getInputStream());
