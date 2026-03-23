@@ -112,45 +112,11 @@ public class RestApiClient
             {
                 log.debug("Received JSON response: {}", response.body().string());
             }
-            else
-            {
-                // TODO
-                System.err.printf("Received JSON response: %s\n", response.body().string());
-            }
 
             // check response
             assertThat(response.code() == 200, "Unexpected status code: " + response.code());
         }
     }
-
-    // public void sendHeartbeat(final String id) throws IOException
-    // {
-    // // build Authorization header
-    // final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEAGENT_HEARTBEAT");
-    //
-    // // build JSON request body
-    // final RequestBody jsonBody = RequestBody.create("{}", JSON);
-    //
-    // // build URL
-    // final HttpUrl heartbeatUrl =
-    // privateAgentsUrl.newBuilder().addPathSegment(id).addPathSegment("heartbeat").build();
-    //
-    // // build request
-    // final Request request = new Request.Builder().url(heartbeatUrl).header("Authorization",
-    // authHeaderValue).put(jsonBody).build();
-    //
-    // // execute request
-    // try (Response response = httpClient.newCall(request).execute())
-    // {
-    // if (log.isDebugEnabled())
-    // {
-    // log.debug("Received JSON response: {}", response.body().string());
-    // }
-    //
-    // // check response
-    // assertThat(response.code() == 200, "Unexpected status code: " + response.code());
-    // }
-    // }
 
     /**
      * Requests a new access token for the given scope from XTC.
@@ -190,7 +156,9 @@ public class RestApiClient
      * helper for validating things.
      * 
      * @param validationResult
+     *            a boolean indicating the validation result
      * @param message
+     *            the error message
      */
     private static void assertThat(final boolean validationResult, final String message)
     {
@@ -201,7 +169,7 @@ public class RestApiClient
     }
 
     /**
-     * Creates an OkHttp client
+     * Creates an OkHttp client that accepts invalid/self-signed certificates and ignores host name verification errors. 
      * 
      * @return the client
      */

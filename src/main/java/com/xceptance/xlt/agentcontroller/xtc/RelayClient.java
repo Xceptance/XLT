@@ -33,16 +33,16 @@ public class RelayClient
 
     private final int agentControllerPort;
 
-    private final String machineName;
+    private final String hostName;
 
     private SSLSocketFactory sslSocketFactory;
 
-    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String machineName, SSLSocketFactory sslSocketFactory)
+    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String hostName, SSLSocketFactory sslSocketFactory)
     {
         this.relayHost = relayHost;
         this.relayPort = relayPort;
         this.agentControllerPort = agentControllerPort;
-        this.machineName = machineName;
+        this.hostName = hostName;
         this.sslSocketFactory = sslSocketFactory; 
     }
 
@@ -63,19 +63,13 @@ public class RelayClient
             {
                 log.debug("Connected to tunnel server: {}", tunnelSocket);
 
-                // best effort to keep socket open (done at TCP level)
-                // tunnelSocket.setKeepAlive(true);
-                // tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPIDLE, 60); // seconds before first probe
-                // tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPINTERVAL, 60); // seconds between probes
-                // tunnelSocket.setOption(ExtendedSocketOptions.TCP_KEEPCOUNT, 5); // max failed probes
-
                 // get the streams
                 final PushbackInputStream tunnelIn = new PushbackInputStream(tunnelSocket.getInputStream());
                 final DataOutputStream tunnelOut = new DataOutputStream(tunnelSocket.getOutputStream());
 
-                // tell the tunnel server the magic number and our machine name
+                // tell the tunnel server the magic number and our host name
                 tunnelOut.writeInt(MAGIC_NUMBER);
-                tunnelOut.writeUTF(machineName);
+                tunnelOut.writeUTF(hostName);
 
                 // wait for the first byte to arrive before trying to connect to the AC
                 final int firstByte = tunnelIn.read();
@@ -106,7 +100,7 @@ public class RelayClient
                 }
                 catch (final Exception e)
                 {
-                    log.error("Failed to connect to local agent controller: {}", e.getMessage());
+                    log.error("Failed to connect to local agent controller: {}", e.toString());
                 }
 
                 log.debug("Connection to tunnel server ended: {}", tunnelSocket);

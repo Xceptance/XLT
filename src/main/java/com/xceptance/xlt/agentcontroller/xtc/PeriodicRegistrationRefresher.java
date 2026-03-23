@@ -46,7 +46,7 @@ public class PeriodicRegistrationRefresher
 
     public void start()
     {
-        log.info("Start periodic registration with XTC");
+        log.debug("Start periodic registration with XTC");
         Thread.ofVirtual().name(PeriodicRegistrationRefresher.class.getSimpleName()).start(this::run);
     }
 
