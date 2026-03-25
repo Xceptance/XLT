@@ -54,37 +54,37 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_TEMP_DIR = PROP_PREFIX + "tempdir";
 
-    private static final String PROP_PRIVATE_AGENT_PREFIX = PROP_PREFIX + "privateAgent.";
+    private static final String PROP_PRIVATE_MACHINE_PREFIX = PROP_PREFIX + "privateMachine.";
 
-    private static final String PROP_PRIVATE_AGENT_ENABLED = PROP_PRIVATE_AGENT_PREFIX + "enabled";
+    private static final String PROP_PRIVATE_MACHINE_ENABLED = PROP_PRIVATE_MACHINE_PREFIX + "enabled";
 
-    private static final String PROP_PRIVATE_AGENT_NAME = PROP_PRIVATE_AGENT_PREFIX + "name";
+    private static final String PROP_PRIVATE_MACHINE_NAME = PROP_PRIVATE_MACHINE_PREFIX + "name";
 
-    private static final String PROP_PRIVATE_AGENT_DESCRIPTION = PROP_PRIVATE_AGENT_PREFIX + "description";
+    private static final String PROP_PRIVATE_MACHINE_DESCRIPTION = PROP_PRIVATE_MACHINE_PREFIX + "description";
 
-    private static final String PROP_PRIVATE_AGENT_TYPE = PROP_PRIVATE_AGENT_PREFIX + "type";
+    private static final String PROP_PRIVATE_MACHINE_TYPE = PROP_PRIVATE_MACHINE_PREFIX + "type";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_PREFIX = PROP_PRIVATE_AGENT_PREFIX + "xtc.";
+    private static final String PROP_PRIVATE_MACHINE_XTC_PREFIX = PROP_PRIVATE_MACHINE_PREFIX + "xtc.";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_HOST = PROP_PRIVATE_AGENT_XTC_PREFIX + "host";
+    private static final String PROP_PRIVATE_MACHINE_XTC_HOST = PROP_PRIVATE_MACHINE_XTC_PREFIX + "host";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_PORT = PROP_PRIVATE_AGENT_XTC_PREFIX + "port";
+    private static final String PROP_PRIVATE_MACHINE_XTC_PORT = PROP_PRIVATE_MACHINE_XTC_PREFIX + "port";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_RELAY_HOST = PROP_PRIVATE_AGENT_XTC_PREFIX + "relayHost";
+    private static final String PROP_PRIVATE_MACHINE_XTC_RELAY_HOST = PROP_PRIVATE_MACHINE_XTC_PREFIX + "relayHost";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_RELAY_PORT = PROP_PRIVATE_AGENT_XTC_PREFIX + "relayPort";
+    private static final String PROP_PRIVATE_MACHINE_XTC_RELAY_PORT = PROP_PRIVATE_MACHINE_XTC_PREFIX + "relayPort";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_CLIENT_ID = PROP_PRIVATE_AGENT_XTC_PREFIX + "clientId";
+    private static final String PROP_PRIVATE_MACHINE_XTC_CLIENT_ID = PROP_PRIVATE_MACHINE_XTC_PREFIX + "clientId";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_CLIENT_SECRET = PROP_PRIVATE_AGENT_XTC_PREFIX + "clientSecret";
+    private static final String PROP_PRIVATE_MACHINE_XTC_CLIENT_SECRET = PROP_PRIVATE_MACHINE_XTC_PREFIX + "clientSecret";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_ORG = PROP_PRIVATE_AGENT_XTC_PREFIX + "org";
+    private static final String PROP_PRIVATE_MACHINE_XTC_ORG = PROP_PRIVATE_MACHINE_XTC_PREFIX + "org";
 
-    private static final String PROP_PRIVATE_AGENT_XTC_PROJECT = PROP_PRIVATE_AGENT_XTC_PREFIX + "project";
+    private static final String PROP_PRIVATE_MACHINE_XTC_PROJECT = PROP_PRIVATE_MACHINE_XTC_PREFIX + "project";
 
-    private static final Pattern PRIVATE_AGENT_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?$");
+    private static final Pattern PRIVATE_MACHINE_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?$");
 
-    private static final String PRIVATE_AGENT_NAME_ERROR = "Invalid private agent name: '%s'. Valid names must be between 1–63 characters long, contain only alphanumeric characters or hyphens, and cannot start or end with a hyphen.";
+    private static final String PRIVATE_MACHINE_NAME_ERROR = "Invalid private machine name: '%s'. Valid names must be between 1–63 characters long, contain only alphanumeric characters or hyphens, and cannot start or end with a hyphen.";
 
     private final File agentBinDirectory;
 
@@ -112,13 +112,13 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     private File tempDir;
 
-    private final boolean privateAgentModeEnabled;
+    private final boolean privateMachineModeEnabled;
 
-    private final String privateAgentName;
+    private final String privateMachineName;
 
-    private final String privateAgentDescription;
+    private final String privateMachineDescription;
 
-    private final PrivateAgentType privateAgentType;
+    private final PrivateMachineType privateMachineType;
 
     private String xtcHost;
 
@@ -215,22 +215,22 @@ public class AgentControllerConfiguration extends AbstractConfiguration
                 "<agentControllerHost>", "<agentNumber>", "<totalAgentCount>", "<acRemoteAddress>"
             };
 
-        // private agent configuration
-        privateAgentModeEnabled = getBooleanProperty(PROP_PRIVATE_AGENT_ENABLED, false);
-        privateAgentName = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_NAME, getRandomPrivateAgentName());
-        privateAgentDescription = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_DESCRIPTION, "");
-        privateAgentType = getEnumProperty(PrivateAgentType.class, PROP_PRIVATE_AGENT_TYPE, PrivateAgentType.MEDIUM);
-        xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_HOST, "xtc.xceptance.com");
-        xtcPort = getIntProperty(PROP_PRIVATE_AGENT_XTC_PORT, 443);
-        xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_RELAY_HOST, "xtc.xceptance.com");
-        xtcRelayPort = getIntProperty(PROP_PRIVATE_AGENT_XTC_RELAY_PORT, 8889); // TODO: decide on port
+        // private machine configuration
+        privateMachineModeEnabled = getBooleanProperty(PROP_PRIVATE_MACHINE_ENABLED, false);
+        privateMachineName = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_NAME, getRandomPrivateMachineName());
+        privateMachineDescription = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_DESCRIPTION, "");
+        privateMachineType = getEnumProperty(PrivateMachineType.class, PROP_PRIVATE_MACHINE_TYPE, PrivateMachineType.MEDIUM);
+        xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_HOST, "xtc.xceptance.com");
+        xtcPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_PORT, 443);
+        xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_HOST, "xlt-relay.xceptance.com");
+        xtcRelayPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_PORT, 443);
 
-        if (privateAgentModeEnabled)
+        if (privateMachineModeEnabled)
         {
-            xtcClientId = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_CLIENT_ID);
-            xtcClientSecret = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_CLIENT_SECRET);
-            xtcOrg = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_ORG);
-            xtcProject = getNonEmptyStringProperty(PROP_PRIVATE_AGENT_XTC_PROJECT);
+            xtcClientId = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_CLIENT_ID);
+            xtcClientSecret = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_CLIENT_SECRET);
+            xtcOrg = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_ORG);
+            xtcProject = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_PROJECT);
         }
         else
         {
@@ -240,20 +240,20 @@ public class AgentControllerConfiguration extends AbstractConfiguration
             xtcProject = null;
         }
 
-        validatePrivateAgentName(privateAgentName);
+        validatePrivateMachineName(privateMachineName);
     }
 
-    static String getRandomPrivateAgentName()
+    static String getRandomPrivateMachineName()
     {
         // get a random name, but fix it to use "-" as the separator instead of "_"
         return MobyNamesGenerator.getRandomName().replace('_', '-');
     }
 
-    static void validatePrivateAgentName(String privateAgentName)
+    static void validatePrivateMachineName(String privateMachineName)
     {
-        if (!PRIVATE_AGENT_NAME_PATTERN.matcher(privateAgentName).matches())
+        if (!PRIVATE_MACHINE_NAME_PATTERN.matcher(privateMachineName).matches())
         {
-            throw new XltException(String.format(PRIVATE_AGENT_NAME_ERROR, privateAgentName));
+            throw new XltException(String.format(PRIVATE_MACHINE_NAME_ERROR, privateMachineName));
         }
     }
 
@@ -403,24 +403,24 @@ public class AgentControllerConfiguration extends AbstractConfiguration
         return tempDir;
     }
 
-    public boolean isPrivateAgentModeEnabled()
+    public boolean isPrivateMachineModeEnabled()
     {
-        return privateAgentModeEnabled;
+        return privateMachineModeEnabled;
     }
 
-    public String getPrivateAgentName()
+    public String getPrivateMachineName()
     {
-        return privateAgentName;
+        return privateMachineName;
     }
 
-    public String getPrivateAgentDescription()
+    public String getPrivateMachineDescription()
     {
-        return privateAgentDescription;
+        return privateMachineDescription;
     }
 
-    public PrivateAgentType getPrivateAgentType()
+    public PrivateMachineType getPrivateMachineType()
     {
-        return privateAgentType;
+        return privateMachineType;
     }
 
     public String getXtcHost()
@@ -463,7 +463,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
         return xtcProject;
     }
 
-    public enum PrivateAgentType
+    public enum PrivateMachineType
     {
         TINY,
         SMALL,

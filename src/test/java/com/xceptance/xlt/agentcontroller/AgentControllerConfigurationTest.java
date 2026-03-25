@@ -19,9 +19,9 @@ public class AgentControllerConfigurationTest
             "a", "aA", "a-A", // letters
             "012345678901234567890123456789012345678901234567890123456789012", // exactly 63 chars
     })
-    public void validatePrivateAgentName_validName(String text)
+    public void validatePrivateMachineName_validName(String text)
     {
-        AgentControllerConfiguration.validatePrivateAgentName(text);
+        AgentControllerConfiguration.validatePrivateMachineName(text);
     }
 
     @Test
@@ -34,8 +34,8 @@ public class AgentControllerConfigurationTest
             "abc-", // ends with hyphen
             "a.b", // invalid char
     })
-    public void validatePrivateAgentName_invalidName(String text)
+    public void validatePrivateMachineName_invalidName(String text)
     {
-        Assert.assertThrows(XltException.class, () -> AgentControllerConfiguration.validatePrivateAgentName(text));
+        Assert.assertThrows(XltException.class, () -> AgentControllerConfiguration.validatePrivateMachineName(text));
     }
 }

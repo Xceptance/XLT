@@ -192,7 +192,7 @@ public class AgentControllerProxy extends AgentControllerImpl
      * {@inheritDoc}
      */
     @Override
-    protected void startPrivateAgentMode()
+    protected void startPrivateMachineMode()
     {
         // ignore
     }

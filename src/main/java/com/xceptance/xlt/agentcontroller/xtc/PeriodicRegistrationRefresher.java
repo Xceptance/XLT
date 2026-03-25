@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.lang.ThreadUtils;
-import com.xceptance.xlt.agentcontroller.AgentControllerConfiguration.PrivateAgentType;
+import com.xceptance.xlt.agentcontroller.AgentControllerConfiguration.PrivateMachineType;
 
 /**
- * A helper that periodically (re)registers the current machine as a private agent machine with XTC.
+ * A helper that periodically (re)registers the current machine as a private machine with XTC.
  */
 public class PeriodicRegistrationRefresher
 {
@@ -25,22 +25,22 @@ public class PeriodicRegistrationRefresher
 
     private String agentId;
 
-    private String agentName;
+    private String machineName;
 
-    private String agentDescription;
+    private String machineDescription;
 
-    private PrivateAgentType agentType;
+    private PrivateMachineType machineType;
 
     private String hostName;
 
-    public PeriodicRegistrationRefresher(RestApiClient xtcRestApi, String agentId, String agentName, String agentDescription,
-                                         PrivateAgentType privateAgentType, String hostName)
+    public PeriodicRegistrationRefresher(RestApiClient xtcRestApi, String machineId, String machineName, String machineDescription,
+                                         PrivateMachineType privateMachineType, String hostName)
     {
         this.xtcRestApi = xtcRestApi;
-        this.agentId = agentId;
-        this.agentName = agentName;
-        this.agentDescription = agentDescription;
-        this.agentType = privateAgentType;
+        this.agentId = machineId;
+        this.machineName = machineName;
+        this.machineDescription = machineDescription;
+        this.machineType = privateMachineType;
         this.hostName = hostName;
     }
 
@@ -68,12 +68,12 @@ public class PeriodicRegistrationRefresher
             {
                 try
                 {
-                    xtcRestApi.registerPrivateAgent(agentId, agentName, agentDescription, hostName, ipAddress, agentType, cores, memory,
-                                                    disk);
+                    xtcRestApi.registerPrivateMachine(agentId, machineName, machineDescription, hostName, ipAddress, machineType, cores,
+                                                      memory, disk);
                 }
                 catch (final Exception e)
                 {
-                    log.error("Failed to (re-)register private agent with XTC", e);
+                    log.error("Failed to (re-)register private machine with XTC", e);
                 }
 
                 ThreadUtils.sleep(REGISTRATION_INTERVAL);

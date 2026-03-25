@@ -251,7 +251,7 @@ public class AgentControllerImpl implements AgentController
 
         prepare();
         startServlet();
-        startPrivateAgentMode();
+        startPrivateMachineMode();
     }
 
     /**
@@ -420,23 +420,22 @@ public class AgentControllerImpl implements AgentController
     }
 
     /**
-     * Starts all things needed for the agent controller to work as a private agent.
+     * Starts all things needed for the agent controller to work in private machine mode.
      *
      * @throws Exception
      *             if anything goes wrong
      */
-    protected void startPrivateAgentMode() throws Exception
+    protected void startPrivateMachineMode() throws Exception
     {
-        if (!agentControllerConfig.isPrivateAgentModeEnabled())
+        if (!agentControllerConfig.isPrivateMachineModeEnabled())
         {
             return;
         }
 
-        // determine agent name
-        // TODO: decide on agent name format
-        final String agentId = UUID.randomUUID().toString();
-        final String agentName = agentControllerConfig.getPrivateAgentName();
-        final String hostName = agentName + "." + agentId + ".xtc.internal";
+        // determine machine name
+        final String machineName = agentControllerConfig.getPrivateMachineName();
+        final String machineId = UUID.randomUUID().toString();
+        final String hostName = machineName + "." + machineId + ".internal";
 
         // create API client
         final RestApiClient xtcRestApi = new RestApiClient(agentControllerConfig.getXtcHost(), agentControllerConfig.getXtcPort(),
@@ -445,8 +444,8 @@ public class AgentControllerImpl implements AgentController
                                                            agentControllerConfig.getXtcProject());
 
         // start periodic machine registration with XTC
-        new PeriodicRegistrationRefresher(xtcRestApi, agentId, agentName, agentControllerConfig.getPrivateAgentDescription(),
-                                          agentControllerConfig.getPrivateAgentType(), hostName).start();
+        new PeriodicRegistrationRefresher(xtcRestApi, machineId, machineName, agentControllerConfig.getPrivateMachineDescription(),
+                                          agentControllerConfig.getPrivateMachineType(), hostName).start();
 
         // start relay client
         new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ssl.EasyHostnameVerifier;
 import com.xceptance.common.util.ssl.EasyX509TrustManager;
-import com.xceptance.xlt.agentcontroller.AgentControllerConfiguration.PrivateAgentType;
+import com.xceptance.xlt.agentcontroller.AgentControllerConfiguration.PrivateMachineType;
 import com.xceptance.xlt.api.util.XltException;
 
 import okhttp3.ConnectionSpec;
@@ -29,8 +29,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * A client to the private agent part of the XTC REST API. Currently, only the registration of a private agent at XTC is
- * supported.
+ * A client to the private machine part of the XTC REST API. Currently, only the registration of a private machine at
+ * XTC is supported.
  */
 public class RestApiClient
 {
@@ -66,7 +66,7 @@ public class RestApiClient
 
     private final OkHttpClient httpClient;
 
-    private final HttpUrl privateAgentsUrl;
+    private final HttpUrl privateMachinesUrl;
 
     private final HttpUrl tokenUrl;
 
@@ -81,21 +81,21 @@ public class RestApiClient
         // build basic URLs
         final HttpUrl baseUrl = new HttpUrl.Builder().scheme("https").host(host).port(port).build();
 
-        privateAgentsUrl = baseUrl.newBuilder().addPathSegments("public/api/v2/orgs").addPathSegment(org).addPathSegment("projects")
-                                  .addPathSegment(project).addPathSegment("private-agents").build();
+        privateMachinesUrl = baseUrl.newBuilder().addPathSegments("public/api/v2/orgs").addPathSegment(org).addPathSegment("projects")
+                                    .addPathSegment(project).addPathSegment("private-machines").build();
 
         tokenUrl = baseUrl.newBuilder().addPathSegment("oauth").addPathSegment("token").build();
     }
 
     /**
-     * Registers the current machine as a private agent machine at XTC using the passed details.
+     * Registers the current machine as a private machine at XTC using the passed details.
      */
-    public void registerPrivateAgent(final String id, final String name, final String description, final String hostName,
-                                     final String ipAddress, final PrivateAgentType agentType, int cores, long memory, long disk)
+    public void registerPrivateMachine(final String id, final String name, final String description, final String hostName,
+                                       final String ipAddress, final PrivateMachineType agentType, int cores, long memory, long disk)
         throws IOException
     {
         // build Authorization header
-        final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEAGENT_REGISTER");
+        final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEMACHINE_REGISTER");
 
         // build JSON request body
         final String json = String.format(REGISTER_REQUEST_BODY_TEMPLATE, id, name, description, ipAddress, hostName, agentType, cores,
@@ -103,7 +103,8 @@ public class RestApiClient
         final RequestBody jsonBody = RequestBody.create(json, MEDIA_TYPE_JSON);
 
         // build request
-        final Request request = new Request.Builder().url(privateAgentsUrl).header("Authorization", authHeaderValue).post(jsonBody).build();
+        final Request request = new Request.Builder().url(privateMachinesUrl).header("Authorization", authHeaderValue).post(jsonBody)
+                                                     .build();
 
         // execute request
         try (Response response = httpClient.newCall(request).execute())
@@ -169,7 +170,7 @@ public class RestApiClient
     }
 
     /**
-     * Creates an OkHttp client that accepts invalid/self-signed certificates and ignores host name verification errors. 
+     * Creates an OkHttp client that accepts invalid/self-signed certificates and ignores host name verification errors.
      * 
      * @return the client
      */
