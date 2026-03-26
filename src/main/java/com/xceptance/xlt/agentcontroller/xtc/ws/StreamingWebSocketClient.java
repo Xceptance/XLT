@@ -72,6 +72,6 @@ public class StreamingWebSocketClient extends WebSocketClient
     @Override
     public void onError(final Exception ex)
     {
-        log.error("Websocket error", ex);
+        log.error("Websocket error: {}", ex.toString());
     }
 }

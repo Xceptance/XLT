@@ -23,25 +23,15 @@ public class PeriodicRegistrationRefresher
 
     private RestApiClient xtcRestApi;
 
-    private String agentId;
-
-    private String machineName;
-
-    private String machineDescription;
+    private String hostName;
 
     private PrivateMachineType machineType;
 
-    private String hostName;
-
-    public PeriodicRegistrationRefresher(RestApiClient xtcRestApi, String machineId, String machineName, String machineDescription,
-                                         PrivateMachineType privateMachineType, String hostName)
+    public PeriodicRegistrationRefresher(RestApiClient xtcRestApi, String hostName, PrivateMachineType privateMachineType)
     {
         this.xtcRestApi = xtcRestApi;
-        this.agentId = machineId;
-        this.machineName = machineName;
-        this.machineDescription = machineDescription;
-        this.machineType = privateMachineType;
         this.hostName = hostName;
+        this.machineType = privateMachineType;
     }
 
     public void start()
@@ -68,12 +58,11 @@ public class PeriodicRegistrationRefresher
             {
                 try
                 {
-                    xtcRestApi.registerPrivateMachine(agentId, machineName, machineDescription, hostName, ipAddress, machineType, cores,
-                                                      memory, disk);
+                    xtcRestApi.registerPrivateMachine(hostName, ipAddress, machineType, cores, memory, disk);
                 }
                 catch (final Exception e)
                 {
-                    log.error("Failed to (re-)register private machine with XTC", e);
+                    log.error("Failed to (re-)register private machine with XTC: {}", e.toString());
                 }
 
                 ThreadUtils.sleep(REGISTRATION_INTERVAL);

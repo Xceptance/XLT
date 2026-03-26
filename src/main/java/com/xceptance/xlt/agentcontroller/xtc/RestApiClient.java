@@ -46,11 +46,8 @@ public class RestApiClient
 
     private static final String REGISTER_REQUEST_BODY_TEMPLATE = """
         {
-            "id": "%s",
-            "name": "%s",
-            "description": "%s",
-            "ipAddress": "%s",
             "hostName": "%s",
+            "ipAddress": "%s",
             "type": "%s",
             "specs": {
                 "cores": %d,
@@ -90,16 +87,15 @@ public class RestApiClient
     /**
      * Registers the current machine as a private machine at XTC using the passed details.
      */
-    public void registerPrivateMachine(final String id, final String name, final String description, final String hostName,
-                                       final String ipAddress, final PrivateMachineType agentType, int cores, long memory, long disk)
+    public void registerPrivateMachine(final String hostName, final String ipAddress, final PrivateMachineType agentType, int cores,
+                                       long memory, long disk)
         throws IOException
     {
         // build Authorization header
         final String authHeaderValue = "Bearer " + getNewAccessToken("PRIVATEMACHINE_REGISTER");
 
         // build JSON request body
-        final String json = String.format(REGISTER_REQUEST_BODY_TEMPLATE, id, name, description, ipAddress, hostName, agentType, cores,
-                                          memory, disk);
+        final String json = String.format(REGISTER_REQUEST_BODY_TEMPLATE, hostName, ipAddress, agentType, cores, memory, disk);
         final RequestBody jsonBody = RequestBody.create(json, MEDIA_TYPE_JSON);
 
         // build request

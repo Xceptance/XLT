@@ -444,8 +444,7 @@ public class AgentControllerImpl implements AgentController
                                                            agentControllerConfig.getXtcProject());
 
         // start periodic machine registration with XTC
-        new PeriodicRegistrationRefresher(xtcRestApi, machineId, machineName, agentControllerConfig.getPrivateMachineDescription(),
-                                          agentControllerConfig.getPrivateMachineType(), hostName).start();
+        new PeriodicRegistrationRefresher(xtcRestApi, hostName, agentControllerConfig.getPrivateMachineType()).start();
 
         // start relay client
         new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),

@@ -60,8 +60,6 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_PRIVATE_MACHINE_NAME = PROP_PRIVATE_MACHINE_PREFIX + "name";
 
-    private static final String PROP_PRIVATE_MACHINE_DESCRIPTION = PROP_PRIVATE_MACHINE_PREFIX + "description";
-
     private static final String PROP_PRIVATE_MACHINE_TYPE = PROP_PRIVATE_MACHINE_PREFIX + "type";
 
     private static final String PROP_PRIVATE_MACHINE_XTC_PREFIX = PROP_PRIVATE_MACHINE_PREFIX + "xtc.";
@@ -115,8 +113,6 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     private final boolean privateMachineModeEnabled;
 
     private final String privateMachineName;
-
-    private final String privateMachineDescription;
 
     private final PrivateMachineType privateMachineType;
 
@@ -218,7 +214,6 @@ public class AgentControllerConfiguration extends AbstractConfiguration
         // private machine configuration
         privateMachineModeEnabled = getBooleanProperty(PROP_PRIVATE_MACHINE_ENABLED, false);
         privateMachineName = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_NAME, getRandomPrivateMachineName());
-        privateMachineDescription = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_DESCRIPTION, "");
         privateMachineType = getEnumProperty(PrivateMachineType.class, PROP_PRIVATE_MACHINE_TYPE, PrivateMachineType.MEDIUM);
         xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_HOST, "xtc.xceptance.com");
         xtcPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_PORT, 443);
@@ -411,11 +406,6 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     public String getPrivateMachineName()
     {
         return privateMachineName;
-    }
-
-    public String getPrivateMachineDescription()
-    {
-        return privateMachineDescription;
     }
 
     public PrivateMachineType getPrivateMachineType()
