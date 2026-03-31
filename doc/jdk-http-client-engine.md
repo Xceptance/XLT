@@ -274,4 +274,4 @@ For XLT-level logging, the standard SLF4J configuration applies. The JDK engine 
 
 | Version | Changes |
 |---|---|
-| XLT 8.x (current) | Initial release of the JDK HTTP client engine. Supports HTTP/1.1 and HTTP/2. |
+| XLT 10.x (current) | Initial release of the JDK HTTP client engine. Supports HTTP/1.1, HTTP/2, and HTTP/3 when used with JDK 26+. |
