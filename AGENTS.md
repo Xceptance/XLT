@@ -12,7 +12,7 @@ Welcome AI Agent! When contributing to the XLT codebase, please adhere to the fo
 ## Documentation & Comments
 
 - **Apache License Header**: Always include the standard Apache License header at the top of a file when creating new code (if it's our code).
-- **Method Javadocs**: Always properly comment methods using Javadoc, including comprehensive descriptions for `@param` and `@return` tags, unless the method is being overridden (e.g., has an `@Override` annotation).
+- **Method Javadocs**: Always properly comment methods using Javadoc, including comprehensive descriptions for `@param` and `@return` tags, unless the method is being overridden (e.g., has an `@Override` annotation or implements an interface or abstract method that has documentation).
 - **Inline Comments**: Always comment the code properly. It is better to provide too much information than too little. Do not be shy about extensively commenting code blocks that are not immediately self-explanatory or that contain complex logic.
 
 ## Coding Style
