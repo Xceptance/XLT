@@ -89,6 +89,7 @@ import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.htmlunit.apache.XltApacheHttpWebConnection;
+import com.xceptance.xlt.engine.htmlunit.jdk26.Jdk26WebConnection;
 import com.xceptance.xlt.engine.htmlunit.okhttp3.OkHttp3WebConnection;
 import com.xceptance.xlt.engine.socket.XltSockets;
 import com.xceptance.xlt.engine.util.CssUtils;
@@ -2083,6 +2084,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
                 underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled, collectTargetIpAddress);
+            }
+            else if ("jdk26".equals(client))
+            {
+                underlyingWebConnection = new Jdk26WebConnection(this, collectTargetIpAddress);
             }
             else
             {
