@@ -8,6 +8,7 @@ Welcome AI Agent! When contributing to the XLT codebase, please adhere to the fo
 - **Test-Driven Development (TDD)**: Prefer TDD style development whenever possible. If it is not possible or practical for a specific task, you must explicitly explain why before proceeding.
 - **Build Process**: A complete and full build of the project requires `ant`, not just Maven. Always consult the `README.md` file for specific build instructions and targets.
 - **Dependency Management**: When updating or adding new dependencies, you must accurately update both the `doc/3rd-party-licenses/` directory for the specific library/license and the root `NOTICE.md` file.
+- **Code Review**: When you code, always run a code review at the end from a different angle. If the review takes too long, ask for permission first, but always insist when a review is missing and ask the user if they want to skip.
 
 ## Documentation & Comments
 
