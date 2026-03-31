@@ -1,8 +1,5 @@
 # Agent Guidelines
 
-Welcome AI Agent! When contributing to the XLT codebase, please adhere to the following coding standards and instructions.
-
-
 ## Development Workflow
 
 - **Test-Driven Development (TDD)**: Prefer TDD style development whenever possible. If it is not possible or practical for a specific task, you must explicitly explain why before proceeding.
@@ -20,7 +17,7 @@ Welcome AI Agent! When contributing to the XLT codebase, please adhere to the fo
 
 - **Java 21 Features**: Prefer using modern Java 21 coding styles, features, and idioms unless using them demonstrably harms performance.
 
-- **Allman Indentation**: You must strictly use the Allman (BSD) style for all brace placements. Opening and closing braces (`{` and `}`) should always be placed on a new line, indented to the same level as the control statement that precedes them. Never place an opening curly brace on the same line as the statement.
+- **Allman Indentation**: You must strictly use the Allman (BSD) style for all brace placements. Opening and closing braces (`{` and `}`) must always be placed on their own new line. Never place an opening curly brace on the same line as the statement.
 
 ### Example
 
@@ -34,15 +31,6 @@ public void doSomething()
     }
     else
     {
-        fallback();
-    }
-}
-
-// Incorrect
-public void doSomething() {
-    if (condition) {
-        execute();
-    } else {
         fallback();
     }
 }
