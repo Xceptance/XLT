@@ -40,18 +40,39 @@ import com.xceptance.xlt.api.util.XltProperties;
 import util.lang.ClassFromByteArrayLoader;
 import util.xlt.properties.ReversibleChangePipeline;
 
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runner.RunWith;
+
 /**
  * Tests the implementation of the class {@link XltWebClientTest}. There are more tests in the testsuite-xlt project
  * cause they require a running web application that has the access controls been set.
  *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
+@RunWith(Parameterized.class)
 public class XltWebClientTest extends AbstractXLTTestCase
 {
+    @Parameter(0)
+    public String httpClientMode;
+
+    @Parameters(name = "Client Mode: {0}")
+    public static Object[][] data()
+    {
+        return new Object[][]
+            {
+                { "default" },
+                { "okhttp3" },
+                { "jdk" }
+            };
+    }
+
     @AfterClass
     public static void afterClass()
     {
         // clean-up
+        XltProperties.getInstance().removeProperty("com.xceptance.xlt.http.client");
         XltEngine.reset();
         SessionImpl.removeCurrent();
     }
@@ -69,6 +90,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.output2disk", "always");
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
+        props.setProperty("com.xceptance.xlt.http.client", httpClientMode);
     }
 
     /**

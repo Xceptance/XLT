@@ -143,6 +143,10 @@ public class DeleteRequestWithBodyTest
             "okhttp3|false|true",  //
             "okhttp3|true|false",  //
             "okhttp3|true|true",   //
+            "jdk|false|false",     //
+            "jdk|false|true",      //
+            "jdk|true|false",      //
+            "jdk|true|true",       //
     })
     public void delete(final String httpClientName, final boolean shouldHaveBody, final boolean useHttpRequest)
         throws IOException, URISyntaxException

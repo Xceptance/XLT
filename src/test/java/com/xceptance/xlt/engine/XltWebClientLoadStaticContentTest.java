@@ -34,8 +34,28 @@ import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.XltWebClientTest.URLCollector;
 
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runner.RunWith;
+
+@RunWith(Parameterized.class)
 public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
 {
+    @Parameter(0)
+    public String httpClientMode;
+
+    @Parameters(name = "Client Mode: {0}")
+    public static Object[][] data()
+    {
+        return new Object[][]
+            {
+                { "default" },
+                { "okhttp3" },
+                { "jdk" }
+            };
+    }
+
     // test URLs
     URL urlHtml;
 
@@ -68,6 +88,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
     public static void afterClass()
     {
         // clean-up
+        XltProperties.getInstance().removeProperty("com.xceptance.xlt.http.client");
         XltEngine.reset();
         SessionImpl.removeCurrent();
     }
@@ -84,6 +105,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "");
         props.setProperty("com.xceptance.xlt.css.download.images", "");
+        props.setProperty("com.xceptance.xlt.http.client", httpClientMode);
     }
 
     // ======================================================
