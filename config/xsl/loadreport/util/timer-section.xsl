@@ -8,7 +8,7 @@
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
         
-        <div class="charts">
+        <div class="charts overview">
             <xsl:for-each select="$summaryElement">
                 <!-- There is only one matching node. -->
                 <xsl:call-template name="timer-chart">
@@ -52,10 +52,17 @@
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByBandwidthName">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
                                         <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
-                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">Labels</th>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                                        <xsl:text>Labels</xsl:text>
+                                        <br/>
+                                        <form>
+                                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                        </form>
+                                    </th>
                                     <th colspan="8">Bytes Sent</th>
                                     <th colspan="8" class="colgroup1">Bytes Received</th>
                                 </tr>
@@ -274,10 +281,17 @@
                                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByNetworkName">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
                                         <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
-                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">Labels</th>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                                        <xsl:text>Labels</xsl:text>
+                                        <br/>
+                                        <form>
+                                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                        </form>
+                                    </th>
                                     <th colspan="3" >DNS Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Connect Time [ms]</th>
                                     <th colspan="3">Send Time [ms]</th>
