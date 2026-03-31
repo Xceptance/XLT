@@ -231,6 +231,12 @@ memoryfilesystem
   * Homepage: https://github.com/marschall/memoryfilesystem
   * More information in folder: doc/3rd-party-licenses/memoryfilesystem
 
+methanol
+
+  * License: MIT License
+  * Homepage: https://github.com/mizosoft/methanol
+  * More information in folder: doc/3rd-party-licenses/methanol
+
 neko-htmlunit
 
   * License: Apache License 2.0
