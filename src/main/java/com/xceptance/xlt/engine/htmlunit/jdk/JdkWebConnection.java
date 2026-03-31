@@ -79,9 +79,12 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
     private static final SSLContext INSECURE_SSL_CONTEXT;
     private static final SSLParameters INSECURE_SSL_PARAMETERS;
 
-    static {
-        try {
-            final TrustManager[] trustManagers = new TrustManager[] {
+    static
+    {
+        try
+        {
+            final TrustManager[] trustManagers = new TrustManager[]
+            {
                 new EasyX509TrustManager(null)
             };
             
@@ -92,7 +95,9 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
             
             INSECURE_SSL_PARAMETERS = new SSLParameters();
             INSECURE_SSL_PARAMETERS.setEndpointIdentificationAlgorithm("");
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+        }
+        catch (NoSuchAlgorithmException | KeyManagementException e)
+        {
             throw new RuntimeException("Failed to initialize insecure SSL context", e);
         }
     }
@@ -128,15 +133,21 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
     {
         if (this.httpClient == null)
         {
-            this.executor = Executors.newCachedThreadPool(new ThreadFactory() {
+            this.executor = Executors.newCachedThreadPool(new ThreadFactory()
+            {
                 private final AtomicInteger count = new AtomicInteger(0);
                 @Override
-                public Thread newThread(Runnable r) {
-                    Runnable wrapper = () -> {
+                public Thread newThread(Runnable r)
+                {
+                    Runnable wrapper = () ->
+                    {
                         IS_JDK_THREAD.set(true);
-                        try {
+                        try
+                        {
                             r.run();
-                        } finally {
+                        }
+                        finally
+                        {
                             IS_JDK_THREAD.remove();
                         }
                     };
@@ -158,14 +169,17 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
                 final InetSocketAddress proxyHostAddress = new InetSocketAddress(proxyHost, webRequest.getProxyPort());
                 final Proxy proxy = new Proxy(webRequest.isSocksProxy() ? Proxy.Type.SOCKS : Proxy.Type.HTTP, proxyHostAddress);
                 
-                builder.proxy(new ProxySelector() {
+                builder.proxy(new ProxySelector()
+                {
                     @Override
-                    public List<Proxy> select(URI uri) {
+                    public List<Proxy> select(URI uri)
+                    {
                         return Collections.singletonList(proxy);
                     }
                     
                     @Override
-                    public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                    public void connectFailed(URI uri, SocketAddress sa, IOException ioe)
+                    {
                         // no-op
                     }
                 });
@@ -175,20 +189,24 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
             final CredentialsProvider credentialsProvider = webClient.getCredentialsProvider();
             if (credentialsProvider != null)
             {
-                builder.authenticator(new Authenticator() {
+                builder.authenticator(new Authenticator()
+                {
                     @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
+                    protected PasswordAuthentication getPasswordAuthentication()
+                    {
                         // Default to ANY scope if precise matching fails, 
                         // matching XLT's legacy behavior where precise scheme mapping isn't always possible here.
                         AuthScope expectedScope = new AuthScope(
                                 getRequestingHost(), getRequestingPort(), getRequestingPrompt(), getRequestingScheme()
                         );
                         Credentials creds = credentialsProvider.getCredentials(expectedScope);
-                        if (creds == null) {
+                        if (creds == null)
+                        {
                             creds = credentialsProvider.getCredentials(AuthScope.ANY);
                         }
 
-                        if (creds != null && creds.getUserPrincipal() != null) {
+                        if (creds != null && creds.getUserPrincipal() != null)
+                        {
                             return new PasswordAuthentication(
                                     creds.getUserPrincipal().getName(), 
                                     creds.getPassword() != null ? creds.getPassword().toCharArray() : new char[0]
@@ -200,7 +218,8 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
             }
 
             // Ensure WebClient insecure SSL setting is respected
-            if (webClient.getOptions().isUseInsecureSSL()) {
+            if (webClient.getOptions().isUseInsecureSSL())
+            {
                 builder.sslContext(INSECURE_SSL_CONTEXT);
                 builder.sslParameters(INSECURE_SSL_PARAMETERS);
             }
@@ -251,9 +270,12 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
         }
 
         final byte[] bytes;
-        if (charset != null) {
+        if (charset != null)
+        {
             bytes = body.getBytes(charset);
-        } else {
+        }
+        else
+        {
             bytes = body.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
         }
 
@@ -287,15 +309,21 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
                 
                 if (filePair.getFile() != null) 
                 {
-                    try {
+                    try
+                    {
                         String filename = filePair.getFileName();
-                        if (filename == null) {
+                        if (filename == null)
+                        {
                             filename = filePair.getFile().getName();
                         }
-                        HttpRequest.BodyPublisher filePublisher = HttpRequest.BodyPublishers.ofInputStream(() -> {
-                            try {
+                        HttpRequest.BodyPublisher filePublisher = HttpRequest.BodyPublishers.ofInputStream(() ->
+                        {
+                            try
+                            {
                                 return Files.newInputStream(filePair.getFile().toPath());
-                            } catch (IOException e) {
+                            }
+                            catch (IOException e)
+                            {
                                 throw new UncheckedIOException(e);
                             }
                         });
@@ -333,25 +361,37 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
         return createRequest(uri, webRequest, publisher);
     }
 
+    /**
+     * Builds and returns a JDK HttpRequest based on the URI, the provided WebRequest parameters and headers, and the given body publisher.
+     *
+     * @param uri           the target URI to connect to
+     * @param webRequest    the HtmlUnit request template containing headers and configurations
+     * @param bodyPublisher the body publisher (payload) to transmit
+     * @return a fully populated HttpRequest ready for the JDK client
+     */
     private HttpRequest createRequest(final URI uri, final WebRequest webRequest, final HttpRequest.BodyPublisher bodyPublisher)
     {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri);
 
         builder.method(webRequest.getHttpMethod().name(), bodyPublisher);
 
-        webRequest.getAdditionalHeaders().forEach((name, value) -> {
+        webRequest.getAdditionalHeaders().forEach((name, value) ->
+        {
             // The JDK HttpClient restricts injecting structural headers manually
-            if (!"Host".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name) && !"Connection".equalsIgnoreCase(name)) {
+            if (!"Host".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name) && !"Connection".equalsIgnoreCase(name))
+            {
                 builder.header(name, value);
             }
         });
 
         // timeout
         int timeout = webRequest.getTimeout();
-        if (timeout < 0) {
+        if (timeout < 0)
+        {
             timeout = getWebClient().getOptions().getTimeout();
         }
-        if (timeout > 0) {
+        if (timeout > 0)
+        {
             builder.timeout(Duration.ofMillis(timeout));
         }
 
@@ -379,15 +419,18 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
         // Note: Payload upload metrics are heuristic approximations rather than literal socket
         // bytes written, as JDK HttpClient obscures native TLS socket frames.
         long approxRequestBytes = request.uri().toString().length() + 200L; // Headers + URI
-        if (request.bodyPublisher().isPresent()) {
+        if (request.bodyPublisher().isPresent())
+        {
             long contentLength = request.bodyPublisher().get().contentLength();
-            if (contentLength > 0) {
+            if (contentLength > 0)
+            {
                 approxRequestBytes += contentLength;
             }
         }
         
         long remaining = approxRequestBytes;
-        while (remaining > 0) {
+        while (remaining > 0)
+        {
             int chunk = (int) Math.min(remaining, Integer.MAX_VALUE);
             socketMonitor.wrote(chunk);
             remaining -= chunk;
@@ -395,14 +438,20 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
 
         // 3. Hook TTFB and Response parsing via a BodySubscriber wrapper
         HttpResponse.BodyHandler<InputStream> baseHandler = HttpResponse.BodyHandlers.ofInputStream();
-        HttpResponse.BodyHandler<InputStream> wrappedHandler = new HttpResponse.BodyHandler<InputStream>() {
+        HttpResponse.BodyHandler<InputStream> wrappedHandler = new HttpResponse.BodyHandler<InputStream>()
+        {
             @Override
-            public HttpResponse.BodySubscriber<InputStream> apply(HttpResponse.ResponseInfo responseInfo) {
+            public HttpResponse.BodySubscriber<InputStream> apply(HttpResponse.ResponseInfo responseInfo)
+            {
                 // When apply is called, response headers have just arrived. This is our TTFB!
                 int approxHeaderBytes = 256; // Base protocol overhead
-                for (Map.Entry<String, List<String>> entry : responseInfo.headers().map().entrySet()) {
+                for (Map.Entry<String, List<String>> entry : responseInfo.headers().map().entrySet())
+                {
                     approxHeaderBytes += entry.getKey().length();
-                    for (String val : entry.getValue()) approxHeaderBytes += val.length();
+                    for (String val : entry.getValue())
+                    {
+                        approxHeaderBytes += val.length();
+                    }
                 }
                 
                 // Record TTFB and header bytes
@@ -410,49 +459,62 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
 
                 final HttpResponse.BodySubscriber<InputStream> baseSubscriber = baseHandler.apply(responseInfo);
                 
-                return new HttpResponse.BodySubscriber<InputStream>() {
+                return new HttpResponse.BodySubscriber<InputStream>()
+                {
                     @Override
-                    public void onSubscribe(Flow.Subscription subscription) {
+                    public void onSubscribe(Flow.Subscription subscription)
+                    {
                         baseSubscriber.onSubscribe(subscription);
                     }
                     
                     @Override
-                    public void onNext(List<ByteBuffer> item) {
+                    public void onNext(List<ByteBuffer> item)
+                    {
                         int chunk = 0;
-                        for (ByteBuffer b : item) {
+                        for (ByteBuffer b : item)
+                        {
                             chunk += b.remaining();
                         }
-                        if (chunk > 0) {
+                        if (chunk > 0)
+                        {
                             socketMonitor.read(chunk);
                         }
                         baseSubscriber.onNext(item);
                     }
                     
                     @Override
-                    public void onError(Throwable throwable) {
+                    public void onError(Throwable throwable)
+                    {
                         baseSubscriber.onError(throwable);
                     }
                     
                     @Override
-                    public void onComplete() {
+                    public void onComplete()
+                    {
                         baseSubscriber.onComplete();
                     }
                     
                     @Override
-                    public CompletionStage<InputStream> getBody() {
+                    public CompletionStage<InputStream> getBody()
+                    {
                         return baseSubscriber.getBody();
                     }
                 };
             }
         };
 
-        try {
+        try
+        {
             IS_JDK_THREAD.set(true);
             return httpClient.send(request, wrappedHandler);
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e)
+        {
             Thread.currentThread().interrupt();
             throw new IOException("Request interrupted", e);
-        } finally {
+        }
+        finally
+        {
             IS_JDK_THREAD.remove();
         }
     }
@@ -468,8 +530,10 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
         {
             byte[] bytes = responseBody.readAllBytes();
             List<NameValuePair> headers = new ArrayList<>();
-            response.headers().map().forEach((name, values) -> {
-                for (String val : values) {
+            response.headers().map().forEach((name, values) ->
+            {
+                for (String val : values)
+                {
                     headers.add(new NameValuePair(name, val));
                 }
             });
@@ -478,7 +542,8 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
             final WebResponse webResponse = new WebResponse(webResponseData, webRequest, loadTime);
 
             String protocolVersion;
-            switch (response.version()) {
+            switch (response.version())
+            {
                 case HTTP_1_1:
                     protocolVersion = "http/1.1";
                     break;
@@ -498,12 +563,19 @@ public class JdkWebConnection extends AbstractWebConnection<HttpClient, HttpRequ
     /**
      * Attempts to map a standard HTTP status code back to a default reason phrase.
      * JDK 11's HttpClient does not natively return reason phrases.
+     *
+     * @param statusCode the HTTP status code (e.g. 200, 404)
+     * @return the English reason phrase (e.g. "OK", "Not Found") or an empty string if mapping fails
      */
-    private static String getReasonPhrase(int statusCode) {
-        try {
+    private static String getReasonPhrase(int statusCode)
+    {
+        try
+        {
             String reason = EnglishReasonPhraseCatalog.INSTANCE.getReason(statusCode, null);
             return reason != null ? reason : "";
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e)
+        {
             return "";
         }
     }

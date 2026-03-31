@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.xlt.engine.htmlunit.jdk;
 
 import java.io.IOException;
@@ -26,7 +41,6 @@ import com.xceptance.xlt.AbstractServerTestCase;
 
 public class JdkWebConnectionInsecureSslTest extends AbstractServerTestCase
 {
-    private JdkWebConnection connection;
     private Server server;
     private String baseUrl;
 
@@ -37,10 +51,14 @@ public class JdkWebConnectionInsecureSslTest extends AbstractServerTestCase
 
         // 1. SSL context
         URL keystoreUrl = JdkWebConnectionInsecureSslTest.class.getClassLoader().getResource("self-signed-cert.keystore");
-        if (keystoreUrl == null) {
+        if (keystoreUrl == null)
+        {
             // fallback, sometimes test-hu resources aren't on classpath of xlt tests
             java.io.File fallback = new java.io.File("src/test-hu/resources/self-signed-cert.keystore");
-            if (fallback.exists()) keystoreUrl = fallback.toURI().toURL();
+            if (fallback.exists())
+            {
+                keystoreUrl = fallback.toURI().toURL();
+            }
         }
         
         SslContextFactory.Server contextFactory = new SslContextFactory.Server();
@@ -105,10 +123,13 @@ public class JdkWebConnectionInsecureSslTest extends AbstractServerTestCase
             webClient.setWebConnection(new JdkWebConnection(webClient, false));
             webClient.getOptions().setUseInsecureSSL(false); // default
 
-            try {
+            try
+            {
                 webClient.getPage(baseUrl);
                 Assert.fail("Should have thrown SSLHandshakeException");
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 // Should fail due to untrusted cert. Might be wrapped depending on internal logic.
                 Assert.assertTrue(e.getMessage() != null || e.getCause() != null);
             }

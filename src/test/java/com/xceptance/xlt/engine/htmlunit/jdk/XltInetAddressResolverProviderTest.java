@@ -15,8 +15,6 @@
  */
 package com.xceptance.xlt.engine.htmlunit.jdk;
 
-import com.xceptance.xlt.engine.htmlunit.jdk.XltInetAddressResolverProvider;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -24,8 +22,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.xceptance.xlt.engine.RequestExecutionContext;
 
 public class XltInetAddressResolverProviderTest
 {
@@ -38,7 +34,8 @@ public class XltInetAddressResolverProviderTest
     }
 
     @After
-    public void tearDown() {
+    public void tearDown()
+    {
         JdkWebConnection.IS_JDK_THREAD.remove();
     }
 
@@ -53,15 +50,17 @@ public class XltInetAddressResolverProviderTest
     }
     
     @Test
-    @SuppressWarnings("deprecation")
     public void testDelegatesToProxyWhenJdkThread() throws UnknownHostException
     {
         JdkWebConnection.IS_JDK_THREAD.set(true);
         boolean threwException = false;
-        try {
+        try
+        {
             // "this-domain-does-not-exist.xceptance.test"
             InetAddress.getAllByName("this-domain-does-not-exist.xceptance.test");
-        } catch (UnknownHostException e) {
+        }
+        catch (UnknownHostException e)
+        {
             threwException = true;
         }
         Assert.assertTrue("Should have delegated to resolver and thrown UnknownHostException for invalid domain", threwException);
@@ -76,9 +75,12 @@ public class XltInetAddressResolverProviderTest
 
         
         // Should not throw NPE during XltDnsResolver creation - should either safely throw UnknownHost or fallback
-        try {
+        try
+        {
             InetAddress.getAllByName("localhost");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Assert.fail("Should handle null RequestExecutionContext gracefully without unexpected exceptions");
         }
     }
