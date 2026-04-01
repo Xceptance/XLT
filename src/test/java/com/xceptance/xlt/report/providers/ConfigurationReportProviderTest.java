@@ -55,4 +55,61 @@ public class ConfigurationReportProviderTest
             FileUtils.deleteDirectoryRelaxed(testDir.toFile());
         }
     }
+
+    // --- processComment tests ---
+
+    @Test
+    public void testProcessComment_plainString()
+    {
+        Assert.assertEquals("Hello World", ConfigurationReportProvider.processComment("Hello World"));
+    }
+
+    @Test
+    public void testProcessComment_rawHtml()
+    {
+        Assert.assertEquals("<b>Bold</b>", ConfigurationReportProvider.processComment("<b>Bold</b>"));
+    }
+
+    @Test
+    public void testProcessComment_markdown()
+    {
+        final String result = ConfigurationReportProvider.processComment("::markdown::**bold** text");
+        Assert.assertTrue("Should start with markdown div", result.startsWith("<div class=\"markdown\">"));
+        Assert.assertTrue("Should end with closing div", result.endsWith("</div>"));
+        Assert.assertTrue("Should contain <strong>", result.contains("<strong>bold</strong>"));
+    }
+
+    @Test
+    public void testProcessComment_caseInsensitive()
+    {
+        final String result = ConfigurationReportProvider.processComment("::Markdown::**bold** text");
+        Assert.assertTrue("Should start with markdown div", result.startsWith("<div class=\"markdown\">"));
+        Assert.assertTrue("Should contain <strong>", result.contains("<strong>bold</strong>"));
+
+        final String result2 = ConfigurationReportProvider.processComment("::MARKDOWN::**bold** text");
+        Assert.assertTrue("Upper case should also work", result2.startsWith("<div class=\"markdown\">"));
+    }
+
+    @Test
+    public void testProcessComment_markdownTable()
+    {
+        final String table = "::markdown::| A | B |\n|---|---|\n| 1 | 2 |";
+        final String result = ConfigurationReportProvider.processComment(table);
+        Assert.assertTrue("Should start with markdown div", result.startsWith("<div class=\"markdown\">"));
+        Assert.assertTrue("Should contain table element", result.contains("<table>"));
+    }
+
+    @Test
+    public void testProcessComment_null()
+    {
+        Assert.assertNull(ConfigurationReportProvider.processComment(null));
+    }
+
+    @Test
+    public void testProcessComment_prefixOnly()
+    {
+        // prefix only with no content should be returned unchanged
+        Assert.assertEquals("<div class=\"markdown\"></div>", ConfigurationReportProvider.processComment("::markdown::"));
+    }
 }
+

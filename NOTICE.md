@@ -117,6 +117,12 @@ dsiutils
   * Homepage: https://github.com/vigna/dsiutils
   * More information in folder: doc/3rd-party-licenses/dsiutils
 
+flexmark-java
+
+  * License: BSD 2-Clause License
+  * Homepage: https://github.com/vsch/flexmark-java
+  * More information in folder: doc/3rd-party-licenses/flexmark-java
+
 freemarker
 
   * License: Apache License 2.0
