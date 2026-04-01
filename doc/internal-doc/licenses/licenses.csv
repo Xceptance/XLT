@@ -14,6 +14,7 @@ datasketches-java,Apache License 2.0,https://datasketches.apache.org/,
 dec,MIT License,https://brotli.org/,
 dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
 dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,Not the full library has been used and modifications have been applied.
+flexmark-java,BSD 2-Clause License,https://github.com/vsch/flexmark-java,
 freemarker,Apache License 2.0,https://freemarker.apache.org/,
 google-api-services-compute,Apache License 2.0,https://developers.google.com/api-client-library/java/,
 hessian,Apache License 2.0,http://hessian.caucho.com/,which version exactly?
