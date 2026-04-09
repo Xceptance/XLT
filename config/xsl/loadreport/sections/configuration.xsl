@@ -10,10 +10,8 @@
             <div class="content">
                 <xsl:call-template name="description-configuration"/>
 
-                <h3>Load Test Configuration</h3>
-
                 <div class="data">
-                    <table class="table-autostripe table-stripeclass:odd">
+                    <table class="properties">
                         <thead>
                             <tr>
                                 <th>Property Name</th>
@@ -33,7 +31,7 @@
                                     <td class="key">
                                         <xsl:value-of select="@name"/>
                                     </td>
-                                    <td class="value text">
+                                    <td class="value text wrap">
                                         <xsl:value-of select="@value"/>
                                     </td>
                                 </tr>
@@ -41,11 +39,16 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+        <div class="section" id="jvm-configuration">
+            <xsl:call-template name="headline-jvm-configuration"/>
 
-                <h3>Custom Agent JVM Settings (jvmargs.cfg)</h3>
+            <div class="content">
+                <xsl:call-template name="description-jvm-configuration"/>
 
                 <div class="data">
-                    <table class="table-autostripe table-stripeclass:odd">
+                    <table class="">
                         <thead>
                             <tr>
                                 <th>Settings</th>
@@ -69,7 +72,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <tr>
-                                        <td class="value text">There are no custom settings.</td>
+                                        <td class="no-data">No data available</td>
                                     </tr>
                                 </xsl:otherwise>
                             </xsl:choose>

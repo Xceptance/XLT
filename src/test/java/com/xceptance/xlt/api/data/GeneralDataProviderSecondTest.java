@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.xceptance.xlt.api.data;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -52,7 +53,7 @@ public class GeneralDataProviderSecondTest
         }
     }
 
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = NoSuchFileException.class)
     public void testGetDataProvider() throws Exception
     {
         try (final MockedStatic<DataProvider> mock = Mockito.mockStatic(DataProvider.class))

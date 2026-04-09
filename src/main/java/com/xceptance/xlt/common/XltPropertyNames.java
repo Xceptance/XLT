@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,12 @@ public class XltPropertyNames
             public static final String TRANSACTION_ERROR_OVERVIEW_CHARTS_LIMIT = BASE + "transactionErrorOverviewChartsLimit";
 
             public static final String TRANSACTION_ERROR_DETAIL_CHARTS_LIMIT = BASE + "transactionErrorDetailChartsLimit";
+            
+            public static final String DIRECTORY_LIMIT_PER_ERROR = BASE + "directoryLimitPerError";
+            
+            public static final String DIRECTORY_REPLACEMENT_CHANCE = BASE + "directoryReplacementChance";
+            
+            public static final String STACKTRACES_LIMIT = BASE + "stackTracesLimit";
         }
     }
 }

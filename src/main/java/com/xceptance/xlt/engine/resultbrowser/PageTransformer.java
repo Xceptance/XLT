@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlStyle;
+import org.htmlunit.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -34,10 +38,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlStyle;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
@@ -122,7 +122,7 @@ final class PageTransformer
      */
     Document transform(final UrlMapping mapping)
     {
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         final Document document = htmlPage.getDocument();
 
@@ -149,7 +149,7 @@ final class PageTransformer
         }
         else
         {
-            // yes, remove any existing content-type meta tag
+            // yes, remove certain meta tags: auto-refresh (unwanted) and content-type (will be recreated below)
             final NodeList metaTags = head.getElementsByTagName("meta");
             for (int i = 0; i < metaTags.getLength(); i++)
             {
@@ -159,9 +159,13 @@ final class PageTransformer
                 for (int j = 0; j < attributes.getLength(); j++)
                 {
                     final Attr attribute = (Attr) attributes.item(j);
-                    if (attribute.getName().equalsIgnoreCase("http-equiv") && attribute.getValue().equalsIgnoreCase("content-type"))
+                    if (attribute.getName().equalsIgnoreCase("http-equiv"))
                     {
-                        metaTag.getParentNode().removeChild(metaTag);
+                        final String attributeValue = attribute.getValue();
+                        if (attributeValue.equalsIgnoreCase("content-type") || attributeValue.equalsIgnoreCase("refresh"))
+                        {
+                            metaTag.getParentNode().removeChild(metaTag);
+                        }
                     }
                 }
             }
@@ -174,7 +178,7 @@ final class PageTransformer
 
         head.insertBefore(meta, head.getFirstChild());
 
-        final long urlRewriteStart = TimerUtils.getTime();
+        final long urlRewriteStart = TimerUtils.get().getStartTime();
 
         // rewrite the URLs of images and CSS files to point to the
         // local cache
@@ -183,11 +187,10 @@ final class PageTransformer
         rewriteUrls(document, "link", "href", mapping);
         rewriteInlineCssUrls(document, mapping);
 
-        final long end = TimerUtils.getTime();
-
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Transformation took: " + (end - start) + "ms [URL-Rewriting: " + (end - urlRewriteStart) + "ms].");
+
+            LOGGER.debug("Transformation took: " + TimerUtils.get().getElapsedTime(start) + "ms [URL-Rewriting: " + TimerUtils.get().getElapsedTime(urlRewriteStart) + "ms].");
         }
 
         // we are done with the document
@@ -225,7 +228,7 @@ final class PageTransformer
                 final URL u = htmlPage.getFullyQualifiedUrl(attValue);
                 if (u != null)
                 {
-                    final String newUrl = mapping.map(UrlUtils.encodeUrl(u, false, charset));
+                    final String newUrl = mapping.map(UrlUtils.encodeUrl(u, charset));
 
                     if (newUrl != null)
                     {
@@ -308,7 +311,7 @@ final class PageTransformer
             final URL url = htmlPage.getFullyQualifiedUrl(urlString);
             if (url != null)
             {
-                final String newUrl = mapping.map(UrlUtils.encodeUrl(url, false, charset));
+                final String newUrl = mapping.map(UrlUtils.encodeUrl(url, charset));
 
                 if (newUrl != null)
                 {
@@ -332,7 +335,7 @@ final class PageTransformer
      */
     String transformLW(final UrlMapping mapping)
     {
-        final long start = TimerUtils.getTime();
+        final long start = TimerUtils.get().getStartTime();
 
         // parameter validation
         final String pageContent = lwPage.getContent();
@@ -366,7 +369,7 @@ final class PageTransformer
                 baseURL = u;
             }
         }
-        
+
         baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(baseURL);
 
         // get document charset
@@ -396,14 +399,14 @@ final class PageTransformer
         //
         final String urlPrefix = (outermostPage ? XltConstants.DUMP_CACHE_DIR + "/" : "");
 
-        final long urlRewriteStart = TimerUtils.getTime();
+        final long urlRewriteStart = TimerUtils.get().getStartTime();
 
         for (final String urlString : urlStrings)
         {
             final URL url = XltWebClient.makeUrlAbsolute(baseURL, urlString);
             if (url != null)
             {
-                final String crcString = mapping.map(UrlUtils.encodeUrl(url, false, charset));
+                final String crcString = mapping.map(UrlUtils.encodeUrl(url, charset));
 
                 if (crcString != null)
                 {
@@ -426,10 +429,9 @@ final class PageTransformer
             newContent = RegExUtils.replaceAll(newContent, pattern, "$1" + cacheUrlString + "\"");
         }
 
-        final long end = TimerUtils.getTime();
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Transformation took: " + (end - start) + "ms [URL-Rewriting: " + (end - urlRewriteStart) + "ms].");
+            LOGGER.debug("Transformation took: " + TimerUtils.get().getElapsedTime(start) + "ms [URL-Rewriting: " + TimerUtils.get().getElapsedTime(urlRewriteStart) + "ms].");
         }
 
         return newContent;

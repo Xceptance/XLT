@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,16 @@ public final class XltConstants
      * The extension of config files, such as jvmargs.cfg
      */
     public static final String CFG_FILE_EXTENSION = ".cfg";
+
+    /**
+     * The extension of XML files, such as log4j2.xml.
+     */
+    public static final String XML_FILE_EXTENSION = ".xml";
+
+    /**
+     * The extension of JSON files, such as my-config.json.
+     */
+    public static final String JSON_FILE_EXTENSION = ".json";
 
     /**
      * The name of the system property which holds the agent configuration directory.
@@ -171,6 +181,11 @@ public final class XltConstants
                                                                           .map(Pattern::compile).collect(Collectors.toList());
 
     /**
+     * The prefix of custom log files.
+     */
+    public static final String CUSTOM_LOG_PREFIX = "custom_log_";
+
+    /**
      * The option name of the <em>from</em> option on the command line.
      */
     public static final String COMMANDLINE_OPTION_FROM = "from";
@@ -221,9 +236,14 @@ public final class XltConstants
     public static final String DIRECTORY_DATE_FORMAT = COMMANDLINE_DATE_FORMAT;
 
     /**
-     * The name of the configuration directory
+     * The name of the configuration directory.
      */
     public static final String CONFIG_DIR_NAME = "config";
+
+    /**
+     * The default path of the data directory.
+     */
+    public static final String DEFAULT_DATA_DIR_PATH = XltConstants.CONFIG_DIR_NAME + "/data";
 
     /**
      * The directory name of the common resources (CSS, JS, Images) for all test reports.
@@ -234,6 +254,11 @@ public final class XltConstants
      * The date format used when parsing dates from test reports.
      */
     public static final String REPORT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";
+
+    /**
+     * New format without msec
+     */
+    public static final String REPORT_DATE_FORMAT_WO_MSEC = "yyyy-MM-dd HH:mm:ss z";
 
     /**
      * The name of the report directory. Can be overwritten.
@@ -309,9 +334,14 @@ public final class XltConstants
     public static final String REPORT_CHART_DIR = "charts";
 
     /**
+     * The maximum amount of additional moving averages that can be configured to appear in the "Averages" tabs.
+     */
+    public static final int REPORT_CHART_MAX_ADDITIONAL_AVERAGES = 5;
+
+    /**
      * Placeholder file name for reports
      */
-    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.png";
+    public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.webp";
 
     /**
      * The text on the placeholder chart image
@@ -435,4 +465,63 @@ public final class XltConstants
      * ramp-up.
      */
     public static final String LOAD_TEST_RAMP_UP_PERIOD = XLT_PACKAGE_PATH + ".loadtest.rampUp";
+
+    /**
+     * The name if we want to collect more request information
+     */
+    public static final String PROP_COLLECT_ADDITIONAL_REQUEST_DATA = XltConstants.XLT_PACKAGE_PATH +
+                                                                      ".results.data.request.collectAdditionalRequestInfo";
+
+    /**
+     * The name if we want to collect the used IP address.
+     */
+    public static final String PROP_COLLECT_USED_IP_ADDRESS = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.collectUsedIpAddress";
+
+    /**
+     * The name if we want to clean the user info
+     */
+    public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH +
+                                                                       ".results.data.request.removeUserInfoFromURL";
+
+    /**
+     * The name of the property for specifying the test suite's data directory.
+     */
+    public static final String PROP_DATA_DIRECTORY = XltConstants.XLT_PACKAGE_PATH + ".data.directory";
+
+    /*
+     * Scorecard configuration values
+     */
+
+    /**
+     * The property name for path to scorecard configuration file.
+     */
+    public static final String SCORECARD_CONFIG_FILE_PROPERTY = XLT_PACKAGE_PATH + ".scorecard.config";
+
+    /**
+     * The XML file name for scorecard.
+     */
+    public static final String SCORECARD_REPORT_XML_FILENAME = "scorecard.xml";
+
+    /**
+     * The path of the directory with all XSL files for scorecard rendering.
+     */
+    public static final String SCORECARD_REPORT_XSL_PATH = "xsl/scorecard";
+
+    /**
+     * The name of the XSL file for rendering the scorecard report page.
+     */
+    public static final String SCORECARD_REPORT_XSL_FILENAME = "index.xsl";
+
+    /**
+     * The name of the HTML output file for rendering the scorecard report page.
+     */
+    public static final String SCORECARD_REPORT_HTML_FILENAME = "scorecard.html";
+
+    /*
+     * Virtual threads
+     */
+
+    public static final String PROP_VIRTUAL_THREADS_ENABLED = XLT_PACKAGE_PATH + ".virtualThreads.enabled";
+
+    public static final boolean PROP_VIRTUAL_THREADS_ENABLED_DEFAULT = true;
 }

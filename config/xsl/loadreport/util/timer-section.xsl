@@ -7,6 +7,16 @@
         <xsl:param name="directory"/>
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
+        
+        <div class="charts overview">
+            <xsl:for-each select="$summaryElement">
+                <!-- There is only one matching node. -->
+                <xsl:call-template name="timer-chart">
+                    <xsl:with-param name="directory" select="$directory"/>
+                    <xsl:with-param name="type" select="$type"/>
+                </xsl:call-template>
+            </xsl:for-each>
+        </div>
 
         <xsl:choose>
             <xsl:when test="$type = 'request'">
@@ -36,35 +46,44 @@
 
                     <div id="Bandwidth" class="c-tab">
                         <h4 class="print">Bandwidth</h4>
-                        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                        <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByBandwidthName">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings"/>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    </th>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                                        <xsl:text>Labels</xsl:text>
+                                        <br/>
+                                        <form>
+                                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                        </form>
                                     </th>
                                     <th colspan="8">Bytes Sent</th>
                                     <th colspan="8" class="colgroup1">Bytes Received</th>
                                 </tr>
                                 <tr>
-                                    <th class="table-sortable:numeric">Total</th>
-                                    <th class="table-sortable:numeric">1/s</th>
-                                    <th class="table-sortable:numeric">1/min</th>
-                                    <th class="table-sortable:numeric">1/h</th>
-                                    <th class="table-sortable:numeric">1/d</th>
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentTotal">Total</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByBandwidthSentMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1">Total</th>
-                                    <th class="table-sortable:numeric colgroup1">1/s</th>
-                                    <th class="table-sortable:numeric colgroup1">1/min</th>
-                                    <th class="table-sortable:numeric colgroup1">1/h</th>
-                                    <th class="table-sortable:numeric colgroup1">1/d</th>
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedTotal">Total</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByBandwidthReceivedMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMax">Max.</th>
                                 </tr>
                             </thead>
                             <xsl:variable name="count" select="count($elements)"/>
@@ -77,6 +96,8 @@
                                                     <xsl:with-param name="rows-in-table" select="$count"/>
                                                     <xsl:with-param name="class" select="'key colgroup1'"/>
                                                 </xsl:call-template>
+
+                                                <td class="colgroup1"/>
 
                                                 <td class="value number">
                                                     <xsl:value-of select="format-number(bytesSent/totalCount, '#,##0')"></xsl:value-of>
@@ -154,6 +175,15 @@
                                                     </a>
                                                 </td>
 
+                                                <td class="colgroup1">
+                                                    <xsl:attribute name="data-cell-value">
+                                                        <xsl:value-of select="normalize-space(labels)"/>
+                                                    </xsl:attribute>
+                                                    <xsl:call-template name="timer-labels">
+                                                        <xsl:with-param name="labelString" select="labels"/>
+                                                    </xsl:call-template>
+                                                </td>
+
                                                 <td class="value number">
                                                     <xsl:value-of select="format-number(bytesSent/totalCount, '#,##0')"/>
                                                 </td>
@@ -211,6 +241,7 @@
                                     <tfoot>
                                         <tr>
                                             <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
 
                                             <td></td>
                                             <td></td>
@@ -234,7 +265,7 @@
                                     </tfoot>
                                     <tbody class="table-nosort">
                                         <tr>
-                                            <td colspan="17">There are no values to show in this table.</td>
+                                            <td colspan="17" class="no-data">No data available</td>
                                         </tr>
                                     </tbody>
                                 </xsl:otherwise>
@@ -244,15 +275,24 @@
 
                     <div id="NetworkTiming" class="c-tab">
                         <h4 class="print">Network Timing</h4>
-                        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+                        <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByNetworkName">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
-                                        <input class="filter" placeholder="Enter filter substrings"/>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
-                                    <th colspan="3">DNS Time [ms]</th>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                                        <xsl:text>Labels</xsl:text>
+                                        <br/>
+                                        <form>
+                                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                        </form>
+                                    </th>
+                                    <th colspan="3" >DNS Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Connect Time [ms]</th>
                                     <th colspan="3">Send Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Server Busy Time [ms]</th>
@@ -261,33 +301,33 @@
                                     <th colspan="3" title="Time To Last Bytes">Time to Last [ms]</th>
                                 </tr>
                                 <tr>
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByDNSMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByDNSMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByDNSMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByConnectTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByConnectTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByConnectTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortBySendTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortBySendTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortBySendTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByServerBusyTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByServerBusyTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByServerBusyTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByReceiveTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByReceiveTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByReceiveTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByTTFMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByTTFMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByTTFMax">Max.</th>
 
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByTTLMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByTTLMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByTTLMax">Max.</th>
                                 </tr>
                             </thead>
                             <xsl:variable name="count" select="count($elements)"/>
@@ -300,6 +340,8 @@
                                                     <xsl:with-param name="rows-in-table" select="$count"/>
                                                     <xsl:with-param name="class" select="'key colgroup1'"/>
                                                 </xsl:call-template>
+
+                                                <td class="colgroup1"/>
 
                                                 <td class="value number">
                                                     <xsl:value-of select="format-number(dnsTime/mean, '#,##0')"></xsl:value-of>
@@ -397,6 +439,15 @@
                                                     </a>
                                                 </td>
 
+                                                <td class="colgroup1">
+                                                    <xsl:attribute name="data-cell-value">
+                                                        <xsl:value-of select="normalize-space(labels)"/>
+                                                    </xsl:attribute>
+                                                    <xsl:call-template name="timer-labels">
+                                                        <xsl:with-param name="labelString" select="labels"/>
+                                                    </xsl:call-template>
+                                                </td>
+
                                                 <td class="value number">
                                                     <xsl:value-of select="format-number(dnsTime/mean, '#,##0')"/>
                                                 </td>
@@ -474,6 +525,7 @@
                                     <tfoot>
                                         <tr>
                                             <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
 
                                             <td></td>
                                             <td></td>
@@ -507,7 +559,7 @@
                                     </tfoot>
                                     <tbody class="table-nosort">
                                         <tr>
-                                            <td colspan="22">There are no values to show in this table.</td>
+                                            <td colspan="22" class="no-data">No data available</td>
                                         </tr>
                                     </tbody>
                                 </xsl:otherwise>
@@ -531,17 +583,6 @@
 
         <xsl:if test="count($elements) &gt; 0">
             <div>
-                <h3 class="no-print">Summary</h3>
-                <div class="charts">
-                    <xsl:for-each select="$summaryElement">
-                        <!-- There is only one matching node. -->
-                        <xsl:call-template name="timer-chart">
-                            <xsl:with-param name="directory" select="$directory"/>
-                            <xsl:with-param name="type" select="$type"/>
-                        </xsl:call-template>
-                    </xsl:for-each>
-                </div>
-
                 <h3 class="no-print">
                     <xsl:if test="$type = 'transaction'">
                         Individual Transactions

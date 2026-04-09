@@ -26,4 +26,4 @@ set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+IgnoreUnrecognizedVMOptions
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% --illegal-access=debug
 
 :: run Java
-java %JAVA_OPTIONS% com.xceptance.xlt.agentcontroller.Main %*
+java %JAVA_OPTIONS% com.xceptance.xlt.agentcontroller.AgentControllerMain %*

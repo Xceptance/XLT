@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @deprecated To be removed in XLT 8.0.0.
+ * @see AgentControllerStatus
+ * @see AgentStatusInfo
+ * @see ScenarioStatus
+ */
 public class AgentStatus implements Serializable
 {
     private static final long serialVersionUID = 1L;

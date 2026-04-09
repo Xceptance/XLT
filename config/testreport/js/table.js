@@ -367,6 +367,11 @@ var Table = (function(){
 	 * otherwise we want to be able to handle sorting on inputs and other types
 	 */
 	table.getCellValue = function(td,useInnerText) {
+	    // If "data-cell-value" is defined on a table cell, get that value instead of the text.
+	    // This can be used if the displayed value doesn't exactly match the actual value.
+		if (td.hasAttribute("data-cell-value")) {
+		    return td.getAttribute("data-cell-value");
+		}
 		if (useInnerText && def(td.innerText)) {
 			return td.innerText;
 		}
@@ -515,7 +520,7 @@ var Table = (function(){
 					removeClass(cell,this.SortedDescendingClassName);
 					// If the computed colIndex of the cell equals the sorted colIndex, flag it as sorted
 					if (tdata.col==table.getActualCellIndex(cell) && (classValue(cell,table.SortableClassName))) {
-						addClass(cell,tdata.desc?this.SortedAscendingClassName:this.SortedDescendingClassName);
+						addClass(cell,tdata.desc?this.SortedDescendingClassName:this.SortedAscendingClassName);
 					}
 				}
 			}
@@ -560,9 +565,13 @@ var Table = (function(){
 				var displayedCount=0;
 				var f=[removeClass,addClass];
 				if (cRow=rows[cRowIndex]){
+					// use DocumentFragment to avoid multiple rerendering of DOM-Tree
+					const fragment = new DocumentFragment();
+
 					do { 
-						tb.appendChild(cRow[1]); 
+						fragment.appendChild(cRow[1]);
 					} while (cRow=rows[++cRowIndex])
+					tb.appendChild(fragment);
 				}
 			}
 		}

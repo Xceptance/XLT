@@ -1,7 +1,7 @@
 XLT
 ===
 
-Copyright 2005-2021 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
+Copyright 2005-2025 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -93,6 +93,12 @@ commons-vfs2
   * Homepage: https://commons.apache.org/proper/commons-vfs/
   * More information in folder: doc/3rd-party-licenses/commons-vfs2
 
+datasketches-java
+
+  * License: Apache License 2.0
+  * Homepage: https://datasketches.apache.org/
+  * More information in folder: doc/3rd-party-licenses/datasketches-java
+
 dec
 
   * License: MIT License
@@ -104,6 +110,18 @@ dnsjava
   * License: BSD 2-Clause License
   * Homepage: https://github.com/dnsjava/dnsjava
   * More information in folder: doc/3rd-party-licenses/dnsjava
+
+dsiutils
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/vigna/dsiutils
+  * More information in folder: doc/3rd-party-licenses/dsiutils
+
+flexmark-java
+
+  * License: BSD 2-Clause License
+  * Homepage: https://github.com/vsch/flexmark-java
+  * More information in folder: doc/3rd-party-licenses/flexmark-java
 
 freemarker
 
@@ -177,12 +195,6 @@ jaxen
   * Homepage: https://github.com/jaxen-xpath/jaxen
   * More information in folder: doc/3rd-party-licenses/jaxen
 
-jcommon
-
-  * License: GNU Lesser General Public License 2.1
-  * Homepage: http://www.jfree.org/jcommon/
-  * More information in folder: doc/3rd-party-licenses/jcommon
-
 jetty-alpn-conscrypt-client
 
   * License: Apache License 2.0
@@ -219,6 +231,12 @@ log4j
   * Homepage: http://logging.apache.org/log4j/2.x/
   * More information in folder: doc/3rd-party-licenses/log4j
 
+memoryfilesystem
+
+  * License: MIT License
+  * Homepage: https://github.com/marschall/memoryfilesystem
+  * More information in folder: doc/3rd-party-licenses/memoryfilesystem
+
 neko-htmlunit
 
   * License: Apache License 2.0
@@ -230,6 +248,12 @@ okhttp
   * License: Apache License 2.0
   * Homepage: https://github.com/square/okhttp
   * More information in folder: doc/3rd-party-licenses/okhttp
+
+opentelemetry
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/open-telemetry
+  * More information in folder: doc/3rd-party-licenses/opentelemetry
 
 pegdown
 
@@ -243,6 +267,12 @@ progressbar
   * Homepage: https://github.com/ctongfei/progressbar
   * More information in folder: doc/3rd-party-licenses/progressbar
 
+saxon-he
+
+  * License: Mozilla Public License 2.0
+  * Homepage: https://www.saxonica.com/
+  * More information in folder: doc/3rd-party-licenses/saxon-he
+
 selenium-java
 
   * License: Apache License 2.0
@@ -254,6 +284,12 @@ slf4j-log4j12
   * License: MIT License
   * Homepage: http://www.slf4j.org/
   * More information in folder: doc/3rd-party-licenses/slf4j-log4j12
+
+sparsebitset
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/brettwooldridge/SparseBitSet
+  * More information in folder: doc/3rd-party-licenses/sparsebitset
 
 trove
 
@@ -273,23 +309,17 @@ webdav-servlet
   * Homepage: https://sourceforge.net/projects/webdav-servlet/
   * More information in folder: doc/3rd-party-licenses/webdav-servlet
 
+webp-imageio
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/darkxanter/webp-imageio
+  * More information in folder: doc/3rd-party-licenses/webp-imageio
+
 websocket-client
 
   * License: Apache License 2.0
   * Homepage: https://www.eclipse.org/jetty/
   * More information in folder: doc/3rd-party-licenses/websocket-client
-
-xalan
-
-  * License: Apache License 2.0
-  * Homepage: https://xml.apache.org/xalan-j/
-  * More information in folder: doc/3rd-party-licenses/xalan
-
-xerces
-
-  * License: Apache License 2.0
-  * Homepage: http://xerces.apache.org/xerces2-j/
-  * More information in folder: doc/3rd-party-licenses/xerces
 
 xstream
 
@@ -304,6 +334,18 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
+  
+crosshair
+
+  * License: MIT License
+  * Homepage: https://eschmann.dev/crosshair.js/
+  * More information in folder: doc/3rd-party-licenses/crosshair
+
+echarts
+
+  * License: Apache License 2.0
+  * Homepage: https://echarts.apache.org/en/index.html
+  * More information in folder: doc/3rd-party-licenses/echarts
 
 harPreview
 
@@ -365,12 +407,6 @@ jquery.splitter
   * Homepage: https://github.com/shunjikonishi/jquery-splitter
   * More information in folder: doc/3rd-party-licenses/jquery.splitter
 
-jquery.superfish
-
-  * License: MIT License
-  * Homepage: https://superfish.joelbirch.design/
-  * More information in folder: doc/3rd-party-licenses/jquery.superfish
-
 json-view
 
   * License: Internet Systems Consortium License
@@ -407,10 +443,17 @@ toc
   * Homepage: http://projects.jga.me/toc/
   * More information in folder: doc/3rd-party-licenses/toc
 
+web-vitals
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/GoogleChrome/web-vitals
+  * More information in folder: doc/3rd-party-licenses/web-vitals
+
 -------------------------------------------------------------------------------
 
-Roboto
+roboto
 
   * License: Apache License 2.0
   * Homepage: https://fonts.google.com/specimen/Roboto
   * More information in folder: doc/3rd-party-licenses/roboto
+

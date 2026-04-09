@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-    <!-- This file contains the description sections for the report as well as the headline for the section. The format is always 
-        <h2> as main headline, <h3> as description headline and some <p> or <ul> as text. The description can be split into an introduction 
+    <!-- This file contains the description sections for the report as well as the headline for the section. The format is always
+        <h2> as main headline, <h3> as description headline and some <p> or <ul> as text. The description can be split into an introduction
         and a more section. For more information, see a section that uses that. -->
 
     <!--- ## Description: Load Profile ## -->
@@ -32,6 +32,18 @@
                 Below you find basic characteristics of the load test: start time, end time, and total duration. The charts
                 depict the number of concurrent users, requests per second, the request runtime, and the number of errors per
                 second.
+            </p>
+        </div>
+    </xsl:template>
+
+    <!--- ## Description: Agent summary ## -->
+    <xsl:template name="headline-agent-summary">
+        <h2>Agent Summary</h2>
+    </xsl:template>
+    <xsl:template name="description-agent-summary">
+        <div class="description">
+            <p>
+                The Agent Summary shows you the CPU usage status of all your agent machines. This allows you to quickly see if there are any problems that may or may not have negatively affected the load test result.
             </p>
         </div>
     </xsl:template>
@@ -97,6 +109,18 @@
             </p>
         </div>
     </xsl:template>
+    
+    <!--- ## Description: IPs ## -->
+    <xsl:template name="headline-ips">
+        <h2>IP Addresses</h2>
+    </xsl:template>
+    <xsl:template name="description-ips">
+        <div class="description">
+            <p>
+                See below for a list of all IP addresses that have been used during the test.
+            </p>
+        </div>
+    </xsl:template>
 
     <!--- ## Description: HTTP Response Codes ## -->
     <xsl:template name="headline-http-response-codes">
@@ -117,6 +141,28 @@
                     It shows the HTTP response code, a short explanation of what it signifies, the number of its occurrences, and
                     its percentage in relation to the total number of response codes. 0 indicates the absence of HTTP responses
                     – an event that occurs when the connection times out or could not be established.
+                </p>
+            </div>
+        </div>
+    </xsl:template>
+    
+    <!--- ## Description: HTTP Request Methods ## -->
+    <xsl:template name="headline-http-request-methods">
+        <h2>HTTP Request Methods</h2>
+    </xsl:template>
+    <xsl:template name="description-http-request-methods">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('httprequest', generate-id(.))"/>
+            <p>
+                See below for a list of all HTTP request methods that have been used during the test.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+                <p>
+                    It shows the HTTP request method, the number of its occurrences, and its percentage in 
+                    relation to the total number of requests.
                 </p>
             </div>
         </div>
@@ -402,6 +448,117 @@
 
                 <xsl:call-template name="charts-explained"/>
                 <xsl:call-template name="numbers-projected"/>
+                
+                <p>**) Numbers are estimated using <a href="https://en.wikipedia.org/wiki/HyperLogLog">HyperLogLog</a> and can be off by up to 0.5%, but only for distinct counts larger than 100,000. A difference of up to 2%
+                can occur for distinct counts larger than 1,000,000.</p>
+            </div>
+        </div>
+    </xsl:template>
+
+    <!--- ## Description: Slowest Requests Summary ## -->
+    <xsl:template name="headline-slowest-requests-summary">
+        <h2>Slowest Requests</h2>
+    </xsl:template>
+    <xsl:template name="description-slowest-requests-summary">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('slowest-requests', generate-id(.))"/>
+            <xsl:variable name="config" select="/testreport/configuration/reportGeneratorConfiguration"/>
+            <xsl:variable name="minRuntime" select="$config/slowestRequestsMinRuntime"/>
+            <xsl:variable name="maxRuntime" select="$config/slowestRequestsMaxRuntime"/>
+            <xsl:variable name="requestsPerBucket" select="$config/slowestRequestsPerBucket"/>
+            <xsl:variable name="totalRequests" select="$config/slowestRequestsTotal"/>
+            <p>
+                This section lists the requests with the slowest runtime recorded during the test run.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+                <h3>Overview</h3>
+                <p>
+                    The table lists the requests with the slowest overall runtime matching the following criteria (as configured
+                    in the reportgenerator.properties):
+                    <ul>
+                        <li>Request runtime must be between <xsl:value-of select="format-number($minRuntime, '#,##0')"/> ms and
+                            <xsl:value-of select="format-number($maxRuntime, '#,##0')"/> ms to be listed.</li>
+                        <li>A maximum of <xsl:value-of select="format-number($requestsPerBucket, '#,##0')"/> requests per
+                            request name are listed.</li>
+                        <li>A total maximum of <xsl:value-of select="format-number($totalRequests, '#,##0')"/> requests are listed.</li>
+                    </ul>
+                </p>
+                <p>
+                    Each row in the table displays the data for one individual request. The request names are derived from
+                    the action names and may have been modified using request filter and transformation rules. When hovering
+                    over the request name, a pop-up will show further request information if available (e.g. the URL, HTTP method,
+                    or form data).
+                </p>
+
+                <h3>Baseline</h3>
+                <p>
+                    The Baseline columns show the mean and p95 runtimes across all requests with the respective name to allow
+                    easy comparison with the runtime of the respective slow requests. These are the same mean and p95 values
+                    displayed in the Requests section.
+                </p>
+
+                <h3>Bandwidth</h3>
+                <p>
+                    The Bandwidth columns show the incoming and outgoing bandwidth per request. XLT measures on socket level. Thus,
+                    actual incoming and outgoing data is recorded. XLT does not analyze or modify that data when taking the
+                    measurements.
+                </p>
+                <p>
+                    The Bytes Sent column comprises all data sent out of the application including overhead such as HTTP(S)
+                    headers and SSL protocol data. The Bytes Received column includes all received data and the connected
+                    overhead. As the data is measured right above the socket level and before it gets decoded by the
+                    application, any compressed traffic is measured as seen by the network layer. The data size you see is not
+                    the expanded data as seen by the DOM parser.
+                </p>
+
+                <h3>Network Timing</h3>
+                <p>
+                    The Network Timing columns display all low-level network timing data that has been measured on socket level.
+                    The following measurement points are shown:
+                </p>
+                <ul>
+                    <li>
+                        Connect Time: Time needed to establish a connection to the other system. Note that when you use
+                        keep-alive semantics during testing, the connect time will mainly be 0 except for the first request of a
+                        transaction.
+                    </li>
+                    <li>
+                        Send Time: Time needed to send the request to the other system. Depending on the payload and the network
+                        speed, this data often amounts to zero or very small values.
+                    </li>
+                    <li>
+                        Server Busy Time: Time spent waiting from sending the last bytes to receiving the first bytes.
+                    </li>
+                    <li>
+                        Receive Time: Time spent receiving data from the first to the last bytes received.
+                    </li>
+                    <li>
+                        Time to First Bytes: Total time from the connection start until the first bytes are received. Includes
+                        Connect, Send, Server Busy, and Receive Time.
+                    </li>
+                    <li>
+                        Time to Last Bytes: Total time from the connection start until the last bytes are received. This is the
+                        time needed to connect, send, and receive data. Often it is called network runtime. In contrast, the
+                        request runtime includes the network runtime and the application time needed to process header and
+                        protocol information and transfer the data from socket level to the application level.
+                    </li>
+                </ul>
+
+                <h3>Request Details</h3>
+                <p>
+                    The Request Details columns show the HTTP response code and the start date and time of the request.
+                </p>
+
+                <h3>IP Addresses</h3>
+                <p>
+                    The IP Addresses columns show the IP address used to perform the request, as well as all IP addresses
+                    reported by the DNS (if the information is available). If more than one address was reported, hover
+                    over the field to see a list of all the IP addresses.
+                </p>
+
             </div>
         </div>
     </xsl:template>
@@ -464,6 +621,94 @@
         </div>
     </xsl:template>
 
+    <!--- ## Description: Web Vitals Summary ## -->
+    <xsl:template name="headline-web-vitals-summary">
+        <h2>Web Vitals</h2>
+    </xsl:template>
+    <xsl:template name="description-web-vitals-summary">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('web-vitals', generate-id(.))"/>
+            <p>
+                The Web Vitals section helps you evaluate how well your pages perform on aspects that are important for a great user experience.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+				<p>
+					<a href="https://web.dev/articles/vitals">Web Vitals</a> is
+					a Google initiative to provide unified guidance for web page
+					quality signals that are essential to delivering a great
+					user experience on the web. It aims to simplify the wide
+					variety of available performance-measuring tools, and help
+					site owners focus on the metrics that matter most, the Core
+					Web Vitals.</p>
+
+				<h4>Core Web Vitals</h4>
+
+				<p>
+					<a href="https://web.dev/articles/lcp">Largest
+						Contentful Paint</a> · <i>Perceived Load
+						Speed</i><br/> LCP reports the render time of the
+					largest image or text block visible in the viewport,
+					relative to when the user first navigated to the page.</p>
+
+				<p>
+					<a href="https://web.dev/articles/fid">First Input
+						Delay</a> · <i>Interactivity</i><br/> FID measures the
+					time from when a user first interacts with a page (that is,
+					when they click a link, tap on a button, or use a custom,
+					JavaScript-powered control) to the time when the browser is
+					actually able to begin processing event handlers in response
+					to that interaction.</p>
+
+				<p>
+					<a href="https://web.dev/articles/cls">Cumulative
+						Layout Shift</a> · <i>Visual Stability</i><br/> CLS is a
+					measure of the largest burst of layout shift scores for
+					every unexpected layout shift that occurs during the
+					lifespan of a page.</p>
+
+				<h4>Other Web Vitals</h4>
+
+				<p>
+					<a href="https://web.dev/articles/fcp">First
+						Contentful Paint</a> · <i>Perceived Load
+						Speed</i><br/> The FCP metric measures the time from
+					when the user first navigated to the page to when any part
+					of the page's content is rendered on the screen.</p>
+
+				<p>
+					<a href="https://web.dev/articles/inp">Interaction to
+						Next Paint</a> · <i>Interactivity</i><br/> INP is a
+					metric that assesses a page's overall responsiveness to user
+					interactions by observing the latency of all click, tap, and
+					keyboard interactions that occur throughout the lifespan of
+					a user's visit to a page. The final INP value is the longest
+					interaction observed, ignoring outliers.</p>
+
+				<p>
+					<a href="https://web.dev/articles/ttfb">Time to First
+						Byte</a> · <i>Server Responsiveness</i><br/> TTFB is a
+					metric that measures the time between the request for a
+					resource and when the first byte of a response begins to
+					arrive.</p>
+
+				<h4>Scores</h4>
+
+				<p>
+					The displayed score value for a Web Vital is the 75th
+					percentile (estimated) of all measurements in a given
+					action. In addition, the scores are rated using Web
+					Vital-specific thresholds and colorized accordingly
+					(<span class="web-vital-score-good">good</span>,
+					<span class="web-vital-score-improve">needs improvement</span>,
+					<span class="web-vital-score-poor">poor</span>).
+				</p>
+			</div>
+        </div>
+    </xsl:template>
+
     <!--- ## Description: Custom Timer Summary ## -->
     <xsl:template name="headline-custom-timer-summary">
         <h2>Custom Timers</h2>
@@ -488,6 +733,18 @@
                 The custom values include all values that have been recorded by your custom samplers.
             </p>
             <xsl:call-template name="numbers-projected"/>
+        </div>
+    </xsl:template>
+    
+    <!--- ## Description: Custom Data Logs Summary ## -->
+    <xsl:template name="headline-custom-data-logs-summary">
+        <h2>Custom Data Logs</h2>
+    </xsl:template>
+    <xsl:template name="description-custom-data-logs-summary">
+        <div class="description">
+            <p>
+                The custom data logs contain custom data collected by test scripts.
+            </p>
         </div>
     </xsl:template>
 
@@ -556,7 +813,8 @@
             <xsl:variable name="gid" select="concat('events', generate-id(.))"/>
             <p>
                 The tables below show all events that occurred during the load test. Events are used to indicate that the test
-                has encountered a situation that is not an error but too important to ignore or to write to the log only.
+                has encountered a situation that is not an error but too important to ignore or to write to the log only. Events can
+                also be used to report certain conditions during the load test.
                 <xsl:call-template name="show-n-hide">
                     <xsl:with-param name="gid" select="$gid"/>
                 </xsl:call-template>
@@ -575,6 +833,12 @@
                     The Overview section below lists all events and their respective count in general. The Details section
                     beneath lists and counts all events grouped by test case name, event name, and the particular event message
                     (URLs, for example).
+                </p>
+                <p>
+                    In case of too many events, the XLT report will limit the number of collected data points and report dropped counts
+                    instead. You can use the reportgenerator.properties to control these limits. If the report displays "XLT::Dropped events due to bad naming",
+                    you might have used the name of an event to communicate dynamic data and XLT limited the data collection to avoid
+                    memory problems. You can raise the limit, in case you have a higher number of legit event names.
                 </p>
             </div>
         </div>
@@ -606,13 +870,25 @@
 
     <!--- ## Description: Configuration ## -->
     <xsl:template name="headline-configuration">
-        <h2>Settings</h2>
+        <h2>Load Test Settings</h2>
     </xsl:template>
     <xsl:template name="description-configuration">
         <div class="description">
             <p>
                 See the table below for details on the test configuration used to run this test. It helps to make the test
                 reproducible and preserves the test settings for later test evaluation.
+            </p>
+        </div>
+    </xsl:template>
+    
+    <!--- ## Description: JVM Configuration ## -->
+    <xsl:template name="headline-jvm-configuration">
+        <h2>Agent JVM Settings</h2>
+    </xsl:template>
+    <xsl:template name="description-jvm-configuration">
+        <div class="description">
+            <p>
+                This section lists custom JVM settings for the agents as specified in the <code>jvmargs.cfg</code> file of the test suite.
             </p>
         </div>
     </xsl:template>
@@ -632,7 +908,7 @@
 
     <!-- ## Description: Shared text about project numbers ## -->
     <xsl:template name="numbers-projected">
-        <p>*) numbers may be projected</p>
+        <p>*) Numbers may be projected</p>
     </xsl:template>
 
     <!-- The show and hide part -->

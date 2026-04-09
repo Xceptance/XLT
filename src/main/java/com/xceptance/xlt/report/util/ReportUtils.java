@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -337,5 +337,25 @@ public final class ReportUtils
             }
         }
         return StringUtils.defaultString(projectName);
+    }
+
+    /**
+     * Calculates the percentage given by count/total, as a {@link BigDecimal} (rounding it to have at most
+     * {@value #DEFAULT_DECIMAL_PLACES} decimal places). Returns 0 if total is 0.
+     * 
+     * @param count
+     * @param total
+     * @return
+     */
+    public static BigDecimal calculatePercentage(int count, int total)
+    {
+        if (total == 0)
+        {
+            return new BigDecimal(0);
+        }
+        else
+        {
+            return convertToBigDecimal((double) count * 100 / total);
+        }
     }
 }

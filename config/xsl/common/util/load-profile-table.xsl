@@ -163,19 +163,25 @@
     <xsl:template name="load-profile-table">
         <xsl:param name="rootNode"/>
 
-        <table class="table-autostripe table-stripeclass:odd">
+        <table class="">
             <thead>
                 <tr>
-                    <th>Transaction Name</th>
-                    <th>Users</th>
-                    <th>Iterations</th>
-                    <th>Arrival Rate [1/h]</th>
-                    <th>Initial Delay</th>
-                    <th>Ramp-Up Period</th>
-                    <th>Warm-Up Period</th>
-                    <th>Measurement Period</th>
-                    <th>Shutdown Period</th>
-                    <th title="Thinking time between actions">Think Time [ms]</th>
+                    <th rowspan="2">Transaction Name</th>
+                    <th colspan="2" >Users</th>
+                    <th rowspan="2">Iterations</th>
+                    <th colspan="2">Arrival Rate</th>
+                    <th rowspan="2">Initial Delay</th>
+                    <th rowspan="2">Ramp-Up</th>
+                    <th rowspan="2">Warm-Up</th>
+                    <th rowspan="2">Measurement</th>
+                    <th rowspan="2">Shutdown</th>
+                    <th rowspan="2" title="Thinking time between actions">Think Time [ms]</th>
+                </tr>
+                <tr>
+                    <th>Total</th>
+                    <th>Share</th>
+                    <th>1/h</th>
+                    <th>Share</th>
                 </tr>
             </thead>
             <xsl:variable name="count" select="count($rootNode/testCase)"/>
@@ -186,11 +192,14 @@
                             <xsl:call-template name="create-totals-td">
                                 <xsl:with-param name="rows-in-table" select="$count" />
                             </xsl:call-template>
-                            
+
                             <td class="value number">
                                 <xsl:call-template name="sum-of-ranges">
                                     <xsl:with-param name="seq" select="$rootNode/testCase/numberOfUsers"/>
                                 </xsl:call-template>
+                            </td>
+                            <td class="value number">
+                                <xsl:text>100.00%</xsl:text>
                             </td>
                             <td class="value number">
                                 <xsl:call-template name="sum-of-ranges">
@@ -201,6 +210,9 @@
                                 <xsl:call-template name="sum-of-ranges">
                                     <xsl:with-param name="seq" select="$rootNode/testCase/arrivalRate"/>
                                 </xsl:call-template>
+                            </td>
+                            <td class="value number">
+                                <xsl:text>100.00%</xsl:text>
                             </td>
                             <td class="value number">
                                 <xsl:call-template name="time-range">
@@ -250,7 +262,7 @@
                             </xsl:variable>
 
                             <tr>
-                                <td class="value text">
+                                <td class="key text">
                                     <xsl:attribute name="title"><xsl:value-of select="testCaseClassName"/></xsl:attribute>
                                     <xsl:value-of select="userName"/>
                                 </td>
@@ -261,6 +273,10 @@
                                         </xsl:if>
                                     </xsl:if>
                                     <xsl:value-of select="numberOfUsers"/>
+                                </td>
+                                <td class="value number load-meter" style="--loadp:{numberOfUsersPercentage}">
+                                    <xsl:value-of select="format-number(numberOfUsersPercentage, '#,##0.00')" />
+                                    <xsl:text>%</xsl:text>
                                 </td>
                                 <td class="value number">
                                     <xsl:choose>
@@ -292,6 +308,20 @@
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
+                               	<xsl:choose>
+                                    <xsl:when test="string-length(arrivalRate) != 0">
+                                        <td class="value number load-meter" style="--loadp:{arrivalRatePercentage}">
+                                        <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
+                                        <xsl:text>%</xsl:text>
+                                        </td>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <td class="value number">
+                                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                        </td>
+                                    </xsl:otherwise> 
+                                </xsl:choose>                                
+                                
                                 <td class="value number">
                                     <xsl:choose>
                                         <xsl:when test="initialDelay > 0">
@@ -367,11 +397,13 @@
                             <td></td>
                             <td></td>
                             <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tfoot>
                     <tbody>
                         <tr>
-                            <td class="value text" colspan="9">There is no load profile defined?!?</td>
+                            <td class="no-data" colspan="12">No data available</td>
                         </tr>
                     </tbody>
                 </xsl:otherwise>

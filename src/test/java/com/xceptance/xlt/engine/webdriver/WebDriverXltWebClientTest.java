@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,20 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.protocol.about.Handler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.protocol.about.Handler;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.HtmlPageUtils;
@@ -87,7 +87,7 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
 
     /**
      * Tests the implementation of
-     * {@link WebDriverXltWebClient#getPage(com.gargoylesoftware.htmlunit.WebWindow, com.gargoylesoftware.htmlunit.WebRequest)}
+     * {@link WebDriverXltWebClient#getPage(WebWindow, WebRequest)}
      * using 'about:blank' as request URL.
      */
     @Test
@@ -115,14 +115,12 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
     public void testGetPage() throws FailingHttpStatusCodeException, IOException
     {
         final MockWebConnection webConnection = new MockWebConnection();
-        final URL url = new URL("http://www.example.com");
+        final URL url = new URL("http://www.example.com/");
         webConnection.setResponse(url, "<html><body><p>Dummy Text</p></body></html>", "text/html");
         client.setWebConnection(webConnection);
 
-        final WebRequest settings = Mockito.mock(WebRequest.class);
-        Mockito.doReturn(url).when(settings).getUrl();
-        Mockito.doReturn(StandardCharsets.UTF_8).when(settings).getCharset();
-        Mockito.doReturn(HttpMethod.GET).when(settings).getHttpMethod();
+        final WebRequest settings = new WebRequest(url);
+        settings.setCharset(StandardCharsets.UTF_8);
 
         final HtmlPage page = client.getPage(client.getCurrentWindow(), settings);
 
@@ -131,5 +129,4 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
         final HtmlElement e = HtmlPageUtils.findSingleHtmlElementByXPath(page, "//p");
         Assert.assertEquals("Dummy Text", e.asNormalizedText());
     }
-
 }

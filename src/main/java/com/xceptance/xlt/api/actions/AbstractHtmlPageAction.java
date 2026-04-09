@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,24 @@
  */
 package com.xceptance.xlt.api.actions;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.SgmlPage;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.html.SubmittableElement;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.SgmlPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.SubmittableElement;
+import org.htmlunit.util.NameValuePair;
+
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.engine.NetworkData;
 import com.xceptance.xlt.api.engine.NetworkDataManager;
@@ -539,33 +538,19 @@ public abstract class AbstractHtmlPageAction extends AbstractWebAction
      */
     protected void loadPageByFormSubmit(final HtmlForm form, final SubmittableElement element, final long waitingTime) throws Exception
     {
-        // Note that HtmlForm.submit() is not public any longer.
-        // htmlPage = waitForPageIsComplete(form.submit(element), waitingTime);
+        form.submit(element);
 
-        // HACK: Use reflection to call the method anyway.
-        final Method submitMethod = HtmlForm.class.getDeclaredMethod("submit", SubmittableElement.class);
-        submitMethod.setAccessible(true);
-
-        try
+        final WebClient wc = getWebClient();
+        if (wc.isJavaScriptEnabled())
         {
-            submitMethod.invoke(form, element);
-            final WebWindow w = getWebClient().getCurrentWindow();
-            // note, that processing postponed actions should normally play no role when javascript
-            // is disabled, but HtmlUnit doesn't really care about that so this code should work well
-            // for both cases: javascript on and javascript off
             getWebClient().getJavaScriptEngine().processPostponedActions();
-
-            htmlPage = waitForPageIsComplete(w.getEnclosedPage(), waitingTime);
         }
-        catch (final InvocationTargetException te)
+        else
         {
-            final Throwable cause = te.getCause();
-            if (cause instanceof Exception)
-            {
-                throw (Exception) cause;
-            }
-            throw new XltException("Failed to submit form", cause);
+            wc.loadDownloadedResponses();
         }
+
+        htmlPage = waitForPageIsComplete(wc.getCurrentWindow().getEnclosedPage(), waitingTime);
     }
 
     /**

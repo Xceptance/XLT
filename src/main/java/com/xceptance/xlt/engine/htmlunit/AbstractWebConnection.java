@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.xceptance.xlt.engine.htmlunit;
-
-import static com.gargoylesoftware.htmlunit.BrowserVersionFeatures.URL_AUTH_CREDENTIALS;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,18 +31,19 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebRequest.HttpHint;
+import org.htmlunit.WebResponse;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.UrlUtils;
 
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebRequest.HttpHint;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
@@ -78,7 +77,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
     /**
      * Returns the owning {@link WebClient} instance.
-     * 
+     *
      * @return the web client
      */
     protected WebClient getWebClient()
@@ -101,9 +100,9 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
             final O request = makeRequest(webRequest);
 
-            final long startTime = TimerUtils.getTime();
+            final long startTime = TimerUtils.get().getStartTime();
             final I response = executeRequest(httpClient, request);
-            final long loadTime = TimerUtils.getTime() - startTime;
+            final long loadTime = TimerUtils.get().getElapsedTime(startTime);
 
             return makeWebResponse(response, webRequest, loadTime);
         }
@@ -154,7 +153,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
         // URLs; because of this we allow some Unicode chars in URLs. However, at this point we're
         // handing things over the HttpClient, and HttpClient will blow up if we leave these Unicode
         // chars in the URL.
-        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), false, charset);
+        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), charset);
         URI uri = url.toURI();
 
         // build the request
@@ -166,7 +165,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
             if (!webRequest.getRequestParameters().isEmpty())
             {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(pairs);
+                final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(pairs);
 
                 final String query = URLEncodedUtils.format(httpClientPairs, charset);
                 uri = UrlUtils.toURI(url, query);
@@ -181,7 +180,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
                 if (webRequest.getRequestBody() == null)
                 {
                     final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                    final List<org.apache.http.NameValuePair> httpClientPairs = NameValuePair.toHttpClient(pairs);
+                    final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(pairs);
                     final String body = URLEncodedUtils.format(httpClientPairs, charset);
 
                     if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader))
@@ -246,7 +245,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
         // if the used url contains credentials, we have to add this
         final Credentials requestUrlCredentials = webRequest.getUrlCredentials();
-        if (null != requestUrlCredentials && webClient.getBrowserVersion().hasFeature(URL_AUTH_CREDENTIALS))
+        if (null != requestUrlCredentials)
         {
             final URL requestUrl = webRequest.getUrl();
             final AuthScope authScope = new AuthScope(requestUrl.getHost(), requestUrl.getPort());
@@ -297,7 +296,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
     /**
      * Adds some standard headers to the web request.
-     * 
+     *
      * @param webRequest
      *            the web request
      */

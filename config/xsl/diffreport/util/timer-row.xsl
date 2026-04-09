@@ -3,6 +3,15 @@
 
     <xsl:template name="timer-row-value-tds">
         <xsl:param name="type"/>
+        
+        <xsl:if test="$type = 'request'">
+			<!-- distinct -->
+			<xsl:call-template name="timer-cell">
+	            <xsl:with-param name="node" select="urls/total"/>
+	            <xsl:with-param name="isInverse" select="true()"/>
+	            <xsl:with-param name="format" select="'#,##0'"/>
+	        </xsl:call-template>
+		</xsl:if>
 
         <!-- count -->
         <xsl:call-template name="timer-cell">
@@ -32,13 +41,6 @@
             <xsl:with-param name="format" select="'#,##0'"/>
         </xsl:call-template>
 
-        <!-- count per day -->
-        <xsl:call-template name="timer-cell">
-            <xsl:with-param name="node" select="countPerDay"/>
-            <xsl:with-param name="isInverse" select="true()"/>
-            <xsl:with-param name="format" select="'#,##0'"/>
-        </xsl:call-template>
-
         <!-- errors -->
         <xsl:call-template name="timer-cell">
             <xsl:with-param name="node" select="errors"/>
@@ -52,12 +54,6 @@
                 <xsl:with-param name="format" select="'#,##0'"/>
             </xsl:call-template>
         </xsl:if>
-
-        <!-- median -->
-        <xsl:call-template name="timer-cell">
-            <xsl:with-param name="node" select="median"/>
-            <xsl:with-param name="format" select="'#,##0'"/>
-        </xsl:call-template>
 
         <!-- mean -->
         <xsl:call-template name="timer-cell">
@@ -82,6 +78,14 @@
             <xsl:with-param name="node" select="deviation"/>
             <xsl:with-param name="format" select="'#,##0'"/>
         </xsl:call-template>
+        
+        <!-- Pxx values -->
+        <xsl:for-each select="percentiles/*">
+		    <xsl:call-template name="timer-cell">
+	            <xsl:with-param name="node" select="current()"/>
+	            <xsl:with-param name="format" select="'#,##0'"/>
+	        </xsl:call-template>
+	    </xsl:for-each>
     </xsl:template>
     
     <xsl:template name="timer-row">

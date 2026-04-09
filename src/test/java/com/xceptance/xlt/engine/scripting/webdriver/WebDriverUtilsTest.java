@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,35 @@
  */
 package com.xceptance.xlt.engine.scripting.webdriver;
 
+import org.htmlunit.MockWebConnection;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 
-import com.gargoylesoftware.htmlunit.MockWebConnection;
+import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.webdriver.XltDriver;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Tests the implementation of {@link WebDriverUtils}.
  */
 public class WebDriverUtilsTest
 {
-
+    @After
+    public void resetXltEngine()
+    {
+        XltEngine.reset(); // also initializes XLT properties again 
+    }
+    
     private WebDriver getWebDriver(final boolean jsEnabled)
     {
-        final XltDriver driver = new XltDriver(jsEnabled);
+        final XltProperties props = XltProperties.getInstance();
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", String.valueOf(jsEnabled));
+        props.setProperty("com.xceptance.xlt.javaScriptEnabled", String.valueOf(jsEnabled));
+        
+        final XltDriver driver = new XltDriver();
         final MockWebConnection conn = new MockWebConnection();
         conn.setDefaultResponse("<h1>Hello</h1><p>... World!</p>");
         driver.getWebClient().setWebConnection(conn);
@@ -99,6 +111,5 @@ public class WebDriverUtilsTest
             Assert.assertTrue(t.getMessage().startsWith("Failed to evaluate JavaScript"));
             throw t;
         }
-
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,6 +179,15 @@ class InstrumentedSocketImpl extends SocketImpl
         {
             throw new RuntimeException("Failed to initialize class", ex);
         }
+    }
+
+    /**
+     * Initializes this class for instrumentation.
+     */
+    public static void initialize()
+    {
+        // Calling this method the first time implicitly triggers the static initializer block above to be executed
+        // once. Apart from that, there is nothing more to do here.
     }
 
     /**

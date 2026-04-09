@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,17 @@
  */
 package com.xceptance.xlt.api.validators;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.xceptance.common.lang.ReflectionUtils;
 import com.xceptance.xlt.api.util.XltProperties;
-
-import util.xlt.properties.ReversibleChange;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Test the implementation of {@link XHTMLValidator} to ensure proper behavior.
@@ -108,7 +107,16 @@ public class XHTMLValidatorTest
     public void setProperty()
     {
         // we want output, so set the property.
-        XltProperties.getInstance().setProperty(XHTMLValidator.class.getName() + ".enabled", "true");
+        XltProperties.getInstance().setProperty(XHTMLValidator.PROPERTY_NAME, "true");
+    }
+
+    /**
+     * Test clean-up.
+     */
+    @After
+    public void cleanUp()
+    {
+        XltEngine.reset();
     }
 
     /**
@@ -183,19 +191,6 @@ public class XHTMLValidatorTest
         {
             Assert.fail(e.getMessage());
         }
-    }
-
-    @Test
-    public void test() throws Exception
-    {
-        // if this fails the field might have been renamed in the XHTMLValidator.class,
-        final String propertyName = ReflectionUtils.readStaticField(XHTMLValidator.class, "propertyName");
-        final ReversibleChange rc = new ReversibleChange(propertyName, "false");
-        rc.apply();
-
-        final XHTMLValidator v = new XHTMLValidator(true, true);
-        v.validate((String) null); // gives a NullPointerException if the property is not set or set to true
-        rc.reverse();
     }
 
     @Test

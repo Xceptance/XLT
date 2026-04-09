@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,14 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 
 import com.xceptance.common.util.AbstractConfiguration;
+import com.xceptance.xlt.agentcontroller.AgentControllerProxy;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
 /**
  * The MasterControllerConfiguration is the central place where all configuration information of the master controller
  * can be retrieved from.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class MasterControllerConfiguration extends AbstractConfiguration
@@ -69,8 +70,6 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_UI_STATUS_PREFIX = PROP_PREFIX + "ui.status.";
 
-    private static final String PROP_UI_STATUS_SHOW_DETAILED = PROP_UI_STATUS_PREFIX + "detailedList";
-
     private static final String PROP_UI_STATUS_UPDATE_INTERVAL = PROP_UI_STATUS_PREFIX + "updateInterval";
 
     private static final String PROP_IGNORE_UNREACHABLE_AGENT_CONTROLLERS = PROP_PREFIX + "ignoreUnreachableAgentControllers";
@@ -82,6 +81,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private static final String PROP_HTTPS_PROXY_HOST = PROP_HTTPS_PROXY + ".host";
 
     private static final String PROP_HTTPS_PROXY_PORT = PROP_HTTPS_PROXY + ".port";
+
+    private static final String PROP_HTTPS_PROXY_USE_HOSTS = PROP_HTTPS_PROXY + ".useForHosts";
 
     private static final String PROP_HTTPS_PROXY_BYPASS_HOSTS = PROP_HTTPS_PROXY + ".bypassForHosts";
 
@@ -102,7 +103,11 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private static final String PROP_PASSWORD = PROP_PREFIX + "password";
 
     private static final String PROP_COMPRESSED_TIMER_FILES = PROP_PREFIX + "compressedTimerFiles";
-    
+
+    private static final String PROP_DOWNLOAD_CHUNK_SIZE = PROP_PREFIX + "download.chunkSize";
+
+    private static final String PROP_DOWNLOAD_MAX_RETRIES = PROP_PREFIX + "download.maxRetries";
+
     private final List<AgentControllerConnectionInfo> agentControllerConnectionInfos;
 
     private File agentFilesDirectory;
@@ -110,8 +115,6 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private final File configDirectory;
 
     private final File homeDirectory;
-
-    private final boolean showDetailedStatusList;
 
     private final int statusListUpdateInterval;
 
@@ -128,6 +131,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private final String httpsProxyHost;
 
     private final String httpsProxyPort;
+
+    private final String httpsProxyUseHosts;
 
     private final String httpsProxyBypassHosts;
 
@@ -156,10 +161,14 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private final boolean isEmbedded;
 
     private final boolean compressedTimerFiles;
-    
+
+    private final long downloadChunkSize;
+
+    private final int downloadMaxRetries;
+
     /**
      * Creates a new MasterControllerConfiguration object.
-     * 
+     *
      * @param commandLineProperties
      *            the properties specified on the command line
      * @param isEmbeddedMode
@@ -168,7 +177,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
      *             if an I/O error occurs
      */
     public MasterControllerConfiguration(final File overridePropertyFile, final Properties commandLineProperties,
-                                         final boolean isEmbeddedMode) throws IOException
+                                         final boolean isEmbeddedMode)
+        throws IOException
     {
         isEmbedded = isEmbeddedMode;
         homeDirectory = XltExecutionContext.getCurrent().getXltHomeDir();
@@ -254,10 +264,10 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         isHttpsProxyEnabled = getBooleanProperty(PROP_HTTPS_PROXY_ENABLED, false);
         httpsProxyHost = getStringProperty(PROP_HTTPS_PROXY_HOST, "");
         httpsProxyPort = getStringProperty(PROP_HTTPS_PROXY_PORT, "");
+        httpsProxyUseHosts = getStringProperty(PROP_HTTPS_PROXY_USE_HOSTS, "");
         httpsProxyBypassHosts = getStringProperty(PROP_HTTPS_PROXY_BYPASS_HOSTS, "");
 
         // other settings
-        showDetailedStatusList = getBooleanProperty(PROP_UI_STATUS_SHOW_DETAILED, false);
         statusListUpdateInterval = getIntProperty(PROP_UI_STATUS_UPDATE_INTERVAL, 5);
 
         isAgentControllerConnectionRelaxed = getBooleanProperty(PROP_IGNORE_UNREACHABLE_AGENT_CONTROLLERS, false);
@@ -272,14 +282,18 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         // user name/password
         userName = XltConstants.USER_NAME;
         password = getStringProperty(PROP_PASSWORD, null);
-        
-        // do we want to keep the timer files compressed for efficency
+
+        // do we want to keep the timer files compressed for efficiency
         compressedTimerFiles = getBooleanProperty(PROP_COMPRESSED_TIMER_FILES, true);
+
+        // download options
+        downloadChunkSize = Math.max(1000, getLongProperty(PROP_DOWNLOAD_CHUNK_SIZE, AgentControllerProxy.DEFAULT_DOWNLOAD_CHUNK_SIZE));
+        downloadMaxRetries = Math.max(0, getIntProperty(PROP_DOWNLOAD_MAX_RETRIES, AgentControllerProxy.DEFAULT_DOWNLOAD_MAX_RETRIES));
     }
 
     /**
      * Returns the list of all configured agent controllers.
-     * 
+     *
      * @return the agent controllers
      */
     public List<AgentControllerConnectionInfo> getAgentControllerConnectionInfos()
@@ -289,7 +303,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the directory where the agent files are located.
-     * 
+     *
      * @return the agent files directory
      */
     public File getAgentFilesDirectory()
@@ -299,7 +313,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the directory where the master controller's configuration is located.
-     * 
+     *
      * @return the config directory
      */
     public File getConfigDirectory()
@@ -309,7 +323,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the master controller's home directory.
-     * 
+     *
      * @return the home directory
      */
     public File getHomeDirectory()
@@ -319,7 +333,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the master controller's temp directory.
-     * 
+     *
      * @return the temp directory
      */
     public File getTempDirectory()
@@ -329,7 +343,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the root directory of all test reports.
-     * 
+     *
      * @return the test reports directory
      */
     public File getTestReportsRootDirectory()
@@ -339,7 +353,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the root directory of all test result files.
-     * 
+     *
      * @return the test results directory
      */
     public File getTestResultsRootDirectory()
@@ -349,12 +363,12 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Reads and returns the list of all configured agent controllers.
-     * 
+     *
      * @return the list of agent controllers
      */
     private List<AgentControllerConnectionInfo> readAgentControllerConnectionInfos()
     {
-        final List<AgentControllerConnectionInfo> infos = new ArrayList<AgentControllerConnectionInfo>();
+        final List<AgentControllerConnectionInfo> infos = new ArrayList<>();
 
         defaultAgentCount = getIntProperty(PROP_AGENT_CONTROLLER_DEFAULT_AGENTS, defaultAgentCount);
         defaultWeight = getIntProperty(PROP_AGENT_CONTROLLER_DEFAULT_WEIGHT, defaultWeight);
@@ -362,7 +376,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         final boolean defaultCP = getBooleanProperty(PROP_AGENT_CONTROLLER_DEFAULT_CP, false);
 
         final Set<String> agentControllerNames = getPropertyKeyFragment(PROP_AGENT_CONTROLLERS_PREFIX);
-        final HashMap<String, String> urlToNameMap = new HashMap<String, String>(agentControllerNames.size());
+        final HashMap<String, String> urlToNameMap = new HashMap<>(agentControllerNames.size());
         for (final String name : agentControllerNames)
         {
             // skip "default" agent controller settings
@@ -421,19 +435,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     }
 
     /**
-     * Returns whether to display detailed status information for each simulated test user, or whether status
-     * information will be aggregated into one line per user type.
-     * 
-     * @return whether to show detailed information
-     */
-    public boolean getShowDetailedStatusList()
-    {
-        return showDetailedStatusList;
-    }
-
-    /**
      * Returns the number of seconds to wait before the status list is updated again.
-     * 
+     *
      * @return the update interval
      */
     public int getStatusListUpdateInterval()
@@ -444,7 +447,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     /**
      * In case of initial connection problems with a agent controller the load of the test is distributed to the
      * remaining agent controllers if the connection is relaxed.
-     * 
+     *
      * @return <code>true</code> if the agent controller connection is relaxed; <code>false</code> otherwise
      */
     public boolean isAgentControllerConnectionRelaxed()
@@ -454,7 +457,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Tells to use a proxy or not.
-     * 
+     *
      * @return <code>true</code> if using a proxy is enabled explicitly; <code>false</code> otherwise
      */
     public boolean isHttpsProxyEnabled()
@@ -464,7 +467,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the https proxy host.
-     * 
+     *
      * @return https proxy host
      */
     public String getHttpsProxyHost()
@@ -474,7 +477,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the https proxy port.
-     * 
+     *
      * @return https proxy port
      */
     public String getHttpsProxyPort()
@@ -483,8 +486,18 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     }
 
     /**
+     * Returns the hosts that use the proxy connection.
+     *
+     * @return hosts that use the proxy connection
+     */
+    public String getHttpsProxyUseHosts()
+    {
+        return httpsProxyUseHosts;
+    }
+
+    /**
      * Returns the hosts to bypass the proxy connection.
-     * 
+     *
      * @return hosts to bypass the proxy connection
      */
     public String getHttpsProxyBypassHosts()
@@ -494,7 +507,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the default agent count.
-     * 
+     *
      * @return default agent count
      */
     public int getDefaultAgentCount()
@@ -504,7 +517,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the default agent controller weight.
-     * 
+     *
      * @return default agent controller weight
      */
     public int getDefaultWeight()
@@ -514,7 +527,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the number of maximum parallel agent controller communication limit
-     * 
+     *
      * @return the number of maximum parallel agent controller communication limit
      */
     public int getParallelCommunicationLimit()
@@ -524,7 +537,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the number of maximum parallel uploads
-     * 
+     *
      * @return the number of maximum parallel uploads
      */
     public int getParallelUploadLimit()
@@ -534,7 +547,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the number of maximum parallel downloads
-     * 
+     *
      * @return the number of maximum parallel downloads
      */
     public int getParallelDownloadLimit()
@@ -544,7 +557,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the configured agent-controller connection timeout.
-     * 
+     *
      * @return agent-controller connection timeout
      */
     public int getAgentControllerConnectTimeout()
@@ -554,7 +567,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the configured agent-controller read timeout.
-     * 
+     *
      * @return agent-controller read timeout
      */
     public int getAgentControllerReadTimeout()
@@ -564,7 +577,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the configured agent controller initial response timeout.
-     * 
+     *
      * @return agent controller initial response timeout
      */
     public int getAgentControllerInitialResponseTimeout()
@@ -574,7 +587,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the configured user name.
-     * 
+     *
      * @return the user name
      */
     public String getUserName()
@@ -584,7 +597,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the configured password.
-     * 
+     *
      * @return the password
      */
     public String getPassword()
@@ -594,7 +607,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the result output directory override as specified on command line.
-     * 
+     *
      * @return result output directory override
      */
     public File getResultOutputDirectory()
@@ -605,7 +618,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     /**
      * Sets the result output directory override. If the given directory name denotes a relative file then it will be
      * rooted at the test results root directory.
-     * 
+     *
      * @param outputDirectory
      *            the result output directory name to use as override
      */
@@ -638,14 +651,34 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     {
         return isEmbedded;
     }
-    
+
     /**
      * How shall we handle timer files after the download
-     * 
+     *
      * @return true, keep them compressed, false, classic expanded storage
      */
     public boolean isCompressedTimerFiles()
     {
         return compressedTimerFiles;
+    }
+
+    /**
+     * Returns the size of a file chunk when downloading a result archive from an agent controller.
+     *
+     * @return the chunk size (in bytes)
+     */
+    public long getDownloadChunkSize()
+    {
+        return downloadChunkSize;
+    }
+
+    /**
+     * Returns the maximum number of retries in case downloading a result file (chunk) failed because of an I/O error.
+     *
+     * @return the maximum number of retries
+     */
+    public int getDownloadMaxRetries()
+    {
+        return downloadMaxRetries;
     }
 }

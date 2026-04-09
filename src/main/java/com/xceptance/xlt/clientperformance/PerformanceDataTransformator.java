@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.util.NameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.engine.GlobalClockImpl;
-import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.api.engine.WebVitalData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public final class PerformanceDataTransformator
 {
@@ -110,6 +111,21 @@ public final class PerformanceDataTransformator
                     LOG.debug("Entry without timings data: " + timingData);
                 }
             }
+
+            // get additional timing data from json
+            final JSONArray webVitals = timingData.optJSONArray("webVitals");
+            if (webVitals != null)
+            {
+                performanceData.getWebVitalsList().addAll(getWebVitalsDataList(webVitals));
+            }
+            else
+            {
+                if (LOG.isDebugEnabled())
+                {
+                    LOG.debug("Entry without web-vitals data: " + timingData);
+                }
+            }
+
             dataList.add(performanceData);
         }
         return dataList;
@@ -213,7 +229,7 @@ public final class PerformanceDataTransformator
 
     /**
      * Returns a textual representation of the given request raw body parts.
-     * 
+     *
      * @param optJSONArray
      *            the raw request body parts (may be {@code null}
      * @return textual representation of the given raw request body
@@ -274,7 +290,7 @@ public final class PerformanceDataTransformator
 
         requestData.setName(request.getString("requestId"));
         requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(request.getString("url")));
-        requestData.setHttpMethod(performanceRequest.getHttpMethod());
+        requestData.setHttpMethod(XltCharBuffer.valueOf(performanceRequest.getHttpMethod()));
 
         requestData.setContentType(cleanContentType(request.optString("contentType")));
         final int statusCode = request.optInt("statusCode", 0);
@@ -285,7 +301,7 @@ public final class PerformanceDataTransformator
         requestData.setBytesSent(request.optInt("requestSize", 0));
 
         requestData.setTime(!request.isNull("startTime") ? request.optLong("startTime", 0) + timeDiff : 0);
-        requestData.setRunTime(request.optLong("duration", 0));
+        requestData.setRunTime(request.optInt("duration", 0));
         requestData.setConnectTime(request.optInt("connectTime", 0));
         requestData.setSendTime(request.optInt("sendTime", 0));
         requestData.setTimeToFirstBytes(request.optInt("firstBytesTime", 0));
@@ -295,10 +311,10 @@ public final class PerformanceDataTransformator
         requestData.setDnsTime(request.optInt("dnsTime", 0));
 
         // set additional data only if we need to
-        if (SessionImpl.COLLECT_ADDITIONAL_REQUEST_DATA)
+        if (XltPropertiesImpl.getInstance().collectAdditonalRequestData())
         {
-            requestData.setFormData(performanceRequest.getFormData());
-            requestData.setFormDataEncoding(performanceRequest.getFormDataEncoding());
+            requestData.setFormData(XltCharBuffer.valueOf(performanceRequest.getFormData()));
+            requestData.setFormDataEncoding(XltCharBuffer.valueOf(performanceRequest.getFormDataEncoding()));
         }
     }
 
@@ -330,7 +346,7 @@ public final class PerformanceDataTransformator
             if (timingEntry != null)
             {
                 final long startTime = timingEntry.optLong("startTime", 0);
-                final long runTime = timingEntry.optLong("duration", 0);
+                final int runTime = timingEntry.optInt("duration", 0);
 
                 // only process valid records
                 if (startTime > 0 && runTime > 0)
@@ -349,6 +365,41 @@ public final class PerformanceDataTransformator
             }
         }
         return customDataList;
+    }
+
+    private List<WebVitalData> getWebVitalsDataList(final JSONArray webVitalsArray)
+    {
+        final List<WebVitalData> webVitalsDataList = new ArrayList<>();
+
+        for (final Object object : webVitalsArray)
+        {
+            if (object instanceof JSONObject)
+            {
+                final JSONObject webVital = (JSONObject) object;
+
+                final String name = webVital.optString("name", null);
+                final long time = webVital.optLong("time", 0);
+                final Double value = webVital.optDoubleObject("value", null);
+
+                // only process valid records
+                if (name != null && time > 0 && value != null)
+                {
+                    final WebVitalData webVitalData = new WebVitalData();
+                    webVitalData.setName(name);
+                    webVitalData.setTime(time);
+                    webVitalData.setValue(value.doubleValue());
+
+                    // add to list
+                    webVitalsDataList.add(webVitalData);
+                }
+                else
+                {
+                    LOG.debug("Web-vitals entry is incomplete and will be skipped");
+                }
+            }
+        }
+
+        return webVitalsDataList;
     }
 
     private static List<NameValuePair> getNameValuePairs(JSONObject postParameters)
@@ -397,7 +448,7 @@ public final class PerformanceDataTransformator
         return list;
     }
 
-    private final long timeDiff = ((GlobalClockImpl) GlobalClock.getInstance()).getReferenceTimeDifference();
+    private final long timeDiff = GlobalClock.offset();
 
     /**
      * Default constructor. Declared private to prevent external instantiation.

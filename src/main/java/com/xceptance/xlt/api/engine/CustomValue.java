@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 /**
  * The {@link CustomValue} can store a single 'double' value.
- * 
+ *
  * @author Matthias Ullrich (Xceptance Software Technologies GmbH)
  */
 public class CustomValue extends AbstractData
@@ -27,7 +29,7 @@ public class CustomValue extends AbstractData
     /**
      * The type code ("V").
      */
-    private static final String TYPE_CODE = "V";
+    private static final char TYPE_CODE = 'V';
 
     /**
      * The value.
@@ -37,7 +39,7 @@ public class CustomValue extends AbstractData
     /**
      * Creates a new {@link CustomValue} object and gives it the specified name. Furthermore, the start time attribute
      * is set to the current time.
-     * 
+     *
      * @param name
      *            the statistics name
      */
@@ -54,9 +56,10 @@ public class CustomValue extends AbstractData
         super(TYPE_CODE);
     }
 
+
     /**
      * Sets the value.
-     * 
+     *
      * @param value
      *            the value
      */
@@ -67,7 +70,7 @@ public class CustomValue extends AbstractData
 
     /**
      * Returns the value.
-     * 
+     *
      * @return the value
      */
     public double getValue()
@@ -79,9 +82,9 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> toList()
     {
-        final List<String> values = super.addValues();
+        final List<String> values = super.toList();
         values.add(Double.toString(value));
         return values;
     }
@@ -90,18 +93,8 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoCSVElements()
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
-        return 4;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void parseValues(final String[] values)
-    {
-        super.parseValues(values);
-        value = Double.parseDouble(values[3]);
+        value = Double.parseDouble(values.get(3).toString());
     }
 }

@@ -5,6 +5,8 @@
         requestContent = null,
         requestText = null,
         actionContent = null,
+        actionContentImage = null,
+        actionImage = null,
         errorContent = null,
         postRequestParam = null,
         requestBodySmall = null,
@@ -19,8 +21,10 @@
         },
         menu = null,
         menuIcon = null,
+        menuClose = null,
         transactionContent = null,
-        valueLog = null;
+        valueLog = null,
+        zoomLevel = 100;
 
     // function aliases
     const getElementById = id => document.getElementById(id),
@@ -76,14 +80,14 @@
 
     function setText(element, text) {
         if (element) {
-            element.innerText = text;
+            element.innerText = text || "";
         }
     }
 
     /**
      * Returns the index of the elment in list
-     * @param {Array} list 
-     * @param {HTMLElement} element 
+     * @param {Array} list
+     * @param {HTMLElement} element
      * @returns Index of element in list, if not found then -1
      */
     function getIndexOfElementInList(list, element) {
@@ -127,15 +131,21 @@
         requestContent = getElementById("requestcontent");
         requestText = getElementById("requesttext");
         actionContent = getElementById("actioncontent");
+        actionContentImage = getElementById("actioncontent_image");
+        actionImage = getElementById("actionimage");
         errorContent = getElementById("errorcontent");
         postRequestParam = getElementById("postrequestparameters");
         requestBodySmall = getElementById("requestBodySmall");
+
+        requestBodyJsonViewer = getElementById("requestBodyJson");
+        responseBodyJsonViewer = getElementById("responseBodyJson");
 
         transactionContent = getElementById("transactionContent");
         valueLog = getElementById("valueLog");
 
         menu = getElementById("menu");
         menuIcon = getElementById("menu-icon");
+        menuClose = getElementById("menu-close");
 
         extras.highlight = !!window.hljs;
         extras.beautify.js = !!window.js_beautify;
@@ -160,6 +170,8 @@
             if (!response.ok) {
                 forEachElement(transaction.querySelectorAll(".har"), hide);
             }
+        }).catch((error) => {
+            forEachElement(transaction.querySelectorAll(".har"), hide);
         });
 
         initEvents();
@@ -206,6 +218,11 @@
                 }
                 setText(requestText, s);
             });
+
+        	const actionimgSwitch = getElementById("actionimgSwitch");
+        	actionimgSwitch.addEventListener("click", function () {
+                zoomImage(actionimgSwitch);
+            });
         }
 
         const selectResponseContent = getElementById("selectResponseContent");
@@ -219,6 +236,7 @@
 
         // menu button
         menuIcon.addEventListener("click", showMenu);
+        menuClose.addEventListener("click", showMenu);
         document.addEventListener("click", function (e) {
             const x = e.target;
             if (filterElements(getParents(x), parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
@@ -248,24 +266,29 @@
 
         // transaction page
         transaction.addEventListener("click", showTransaction);
-
-        // JSON viewer
-        queryFirst("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
-        queryFirst("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
-        queryFirst("#jsonViewerActions .search").addEventListener("keyup", search);
-        queryFirst("#jsonViewerActions .ignoreCase").addEventListener("click", search);
-        queryFirst("#jsonViewerActions .filter").addEventListener("click", search);
-        queryFirst("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
-        queryFirst("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
     }
 
-    function search() {
-        const searchPhrase = queryFirst("#jsonViewerActions .search").value;
-        const ignoreCase = !!queryFirst("#jsonViewerActions .ignoreCase").checked;
-        const filter = !!queryFirst("#jsonViewerActions .filter").checked;
+    function zoomImage(element) {
 
-        jsonView.search(searchPhrase, ignoreCase, filter);
-    }
+		if (element.id == "actionimgSwitch")
+		{
+			if (element.classList.contains('fit'))
+			{
+				element.classList.remove('fit');
+				element.classList.add('full');
+				element.title = "Click to enlarge to 100%";
+				actionImage.style = "width: 100%;"
+			}
+			else if (element.classList.contains('full'))
+			{
+				element.classList.remove('full');
+				element.classList.add('fit');
+				element.title = "Click to fit image to screen width";
+				actionImage.style = "size: 100%;"
+				zoomLevel = 100;
+			}
+		}
+	}
 
     function toggleContent(element) {
         // show the given content pane and hide the others
@@ -306,8 +329,18 @@
             const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
-                actionContent.setAttribute("src", actionFile);
-                toggleContent(actionContent);
+				if (actionFile.indexOf(".png") > -1)
+				{
+					// put page screenshots in div
+					actionImage.setAttribute("src", actionFile);
+                	toggleContent(actionContentImage);
+				}
+				else
+				{
+					// put html pages in iframe
+                	actionContent.setAttribute("src", actionFile);
+                	toggleContent(actionContent);
+                }
             }
             else {
                 toggleContent(errorContent);
@@ -318,6 +351,14 @@
             forEachElement(actionlist.querySelectorAll(".current"), (el) => el.classList.remove("current"));
             element.classList.add("current");
         }
+    }
+
+    function showHideMenu() {
+        // show/hide the menu
+        document.getElementById("leftSideMenu").classList.toggle("expanded");
+        document.getElementById("content").classList.toggle("expanded");
+        // switch the menu toggle
+        document.getElementById("mExpander").classList.toggle("expanded");
     }
 
     function expandCollapseAction(element) {
@@ -396,7 +437,7 @@
         if (responseCode >= 400 || responseCode == 0) {
             return "httpError";
         }
-        if (responseCode == 301 || responseCode == 302) {
+        if (responseCode == 301 || responseCode == 302 || responseCode == 303 || responseCode == 307 || responseCode == 308) {
             return "httpRedirect";
         }
         if (mimeType.indexOf("image/") == 0) {
@@ -504,6 +545,12 @@
         }
     }
 
+    function isJsonContent(contentType) {
+        //  e.g. "application/json" or "application/<...>+json" or "application/json;charset=utf-8"
+        contentType = (contentType || "").split(";")[0].trim();
+        return /^application\/(.+\+)?json$/.test(contentType);
+    }
+
     function showRequest(element) {
         // get action parent element
         const action = filterElements(getParents(element), parent => parent.classList.contains("action"))[0];
@@ -514,11 +561,11 @@
             forEachElement(actionlist.querySelectorAll(".active"), (el) => el.classList.remove("active"));
             element.classList.add("active");
 
-            hide(getElementById("errorMessage"))
+            hide(getElementById("loadErrorContent"));
 
-            queryFirst("#jsonViewerActions .search").value = "";
-
-            setText(getElementById("jsonViewerContent"), "");
+            // clear JSON viewers
+            requestBodyJsonViewer.clear();
+            responseBodyJsonViewer.clear();
 
             // retrieve the request data
             const requestData = dataStore.fetchData(element);
@@ -537,7 +584,7 @@
 
                 forEachElement(queryAll("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.setAttribute('disabled', ''));
 
-                // check if we have no response or it was empty
+                // check if we have no response
                 if (requestData._noContent) {
                     setText(requestText);
                     show(requestText);
@@ -568,9 +615,9 @@
                             requestText.classList.add(...(lang ? [`language-${lang}`, lang] : ['text']));
                             show(requestText);
 
-                            // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
-                            if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
-                                jsonView.format(data, '#jsonViewerContent');
+                            // feed the response body json viewer if the mime type indicates json-ish content
+                            if (isJsonContent(requestData.mimeType)) {
+                                responseBodyJsonViewer.load(data);
                             }
                         }).catch(() => {
                             hide(requestText);
@@ -579,7 +626,7 @@
 
                             errorMessageFileName.setAttribute('disabled', '');
                             setText(errorMessageFileName, requestData.fileName);
-                            show(getElementById("errorMessage"));
+                            show(getElementById("loadErrorContent"));
                         });
                 }
             }
@@ -612,11 +659,11 @@
             if (bodyRaw.length > 0) {
                 // request body
                 setText(requestBodySmall.querySelector("textarea"), bodyRaw);
-                hide(requestBodySmall);
+                show(requestBodySmall);
                 hide(postRequestParam);
             }
             else {
-                // POST parameters  
+                // POST parameters
                 const isPost = requestData.requestMethod === "POST";
 
                 isPost ? show(postRequestParam) : hide(postRequestParam);
@@ -626,6 +673,13 @@
 
             // update the request content tab
             setText(getElementById("requestbody"), requestData.requestBodyRaw || '');
+
+            // feed the request body json viewer if the content type indicates json-ish content
+            const requestContentTypeHeader = requestData.requestHeaders.find(e => e.name_.toLowerCase() === "content-type");
+            const requestContentType = requestContentTypeHeader ? requestContentTypeHeader.value_ : "";
+            if (isJsonContent(requestContentType)) {
+                requestBodyJsonViewer.load(requestData.requestBodyRaw);
+            }
 
             // update the response information tab
             setText(getElementById("protocol"), requestData.protocol);
@@ -695,23 +749,7 @@
         function checkHasNoContent(rqData) {
             rqData = rqData || {};
 
-            const headers = rqData.responseHeaders || [],
-                respCode = rqData.responseCode || 0;
-
-            // check for redirect (response file is empty and will cause an error when trying to be read in)
-            // and zero content length response header as well
-            if (/30[0-8]|20[45]/.test(respCode) || !rqData.fileName) {
-                return true;
-            }
-
-            for (let i = 0, l = headers.length, h; i < l; i++) {
-                h = headers[i];
-                if (h.name_ === "Content-Length") {
-                    return h.value_ === "0";
-                }
-            }
-
-            return false;
+            return !rqData.fileName;
         }
 
         function decodeQueryParam(param) {
@@ -894,10 +932,23 @@
             hide(menu);
         }
         else {
+
             menu.style.position = "absolute";
-            menu.style.top = `${menuIcon.offsetTop}px`;
-            menu.style.left = `${menuIcon.offsetLeft + 17}px`;
             menu.style.zIndex = "200001";
+            var mm = window.matchMedia("(max-width: 599px), (max-height: 400px) ")
+			if (mm.matches)
+			{
+				//mobile: use full screen for menu overlay
+				menu.style.top = `0px`;
+            	menu.style.left = `0px`;
+			}
+			else
+			{
+				//desktop: pop up menu next to icon
+				menu.style.top = `${menuIcon.offsetTop}px`;
+            	menu.style.left = `${menuIcon.offsetLeft + 17}px`;
+			}
+
 
             show(menu);
         }
@@ -1002,11 +1053,58 @@
                 activateTab(this);
             }));
 
-            Split(['#leftSideMenu', '#content'], {
-                sizes: [15, 85],
-                minSize: [300, 600],
-                gutterSize: 2
-            })
+			function splitContent(mm) {
+				if (mm.matches) { // If media query matches / is large screen
+			    	Split(['#leftSideMenu', '#content'], {
+			        	sizes: [15, 85],
+			            minSize: [300, 600],
+			            gutterSize: 3
+			        });
+				}
+				else { //on small screens/mobile: revert changes made by Split
+					document.getElementById("leftSideMenu").removeAttribute("style");
+					document.getElementById("content").removeAttribute("style");
+					var gutter = document.getElementsByClassName('gutter-horizontal');
+					while(gutter[0]) {
+    					gutter[0].parentNode.removeChild(gutter[0]);
+					}
+
+					if (document.getElementById("mExpander") === null)
+					{
+						const mExpander = document.createElement("span");
+	        			mExpander.classList.add("expander");
+	        			mExpander.classList.add("expanded");
+	        			mExpander.id = "mExpander";
+	        			mExpander.title = "Single-click to show/hide menu.";
+	        			mExpander.textContent = "☰";
+	        			document.getElementById("header").insertBefore(mExpander, document.getElementById("header").firstChild);
+
+				        // setup click to show/hide requests
+				        mExpander.addEventListener(
+				        	"click",
+				            function () {
+				                showHideMenu();
+				            }
+				        );
+
+				        // content click also shows/hides menu
+				        /*content.addEventListener(
+				        	"click",
+				            function () {
+				                showHideMenu();
+				            }
+						);*/
+			        }
+				}
+			}
+			// Create a MediaQueryList object
+			var mm = window.matchMedia("(min-width: 600px)")
+			// Call listener function at run time
+			splitContent(mm);
+			// Attach listener function on state changes
+			mm.addEventListener("change", function() {
+				splitContent(mm);
+			});
 
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));

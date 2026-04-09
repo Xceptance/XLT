@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,17 @@
  */
 package com.xceptance.xlt.api.validators;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Tests the implementation of {@link StandardValidator}.
@@ -29,7 +34,33 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  */
 public class StandardValidatorTest
 {
-    private final StandardValidator validator = StandardValidator.getInstance();
+    private StandardValidator validator;
+
+    /**
+     * Test fixture setup.
+     * 
+     * @throws Exception
+     *             thrown when setup failed.
+     */
+    @Before
+    public void intro() throws Exception
+    {
+        // enable sub validators
+        XltProperties.getInstance().setProperty(ContentLengthValidator.PROPERTY_NAME, "true");
+        XltProperties.getInstance().setProperty(HtmlEndTagValidator.PROPERTY_NAME, "true");
+        XltProperties.getInstance().setProperty(XHTMLValidator.PROPERTY_NAME, "true");
+
+        validator = StandardValidator.getInstance();
+    }
+
+    /**
+     * Test clean-up.
+     */
+    @After
+    public void cleanUp()
+    {
+        XltEngine.reset();
+    }
 
     /**
      * Well formed XHTML.

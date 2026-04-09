@@ -24,15 +24,35 @@
         <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
         <xsl:variable name="intervalCount" select="count(/testreport/testReportConfig/runtimeIntervals/interval)"/>
 
-        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+        <table class="c-tab-content table-autosort:0">
             <thead>
                 <tr>
-                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
-                        <input class="filter" placeholder="Enter filter substrings"/>
+                        <form>
+                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                        </form>
                     </th>
-                    <th colspan="4">Count</th>
+                    <xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+                        <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                            <xsl:text>Labels</xsl:text>
+                            <br/>
+                            <form>
+                                <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                            </form>
+                        </th>
+                    </xsl:if>
+                    <xsl:choose>
+                        <xsl:when test="$type = 'request'">
+                            <th colspan="5">Count</th>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <th colspan="4">Count</th>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <th colspan="2" class="colgroup1">Errors</th>
                     <xsl:if test="$type = 'transaction'">
                         <th class="colgroup1">Events</th>
@@ -42,28 +62,43 @@
                         <th colspan="{$percentileCount}" class="colgroup1">Runtime Percentiles [ms]</th>
                     </xsl:if>
                     <xsl:if test="$type = 'action'">
-                        <th rowspan="2" class="table-sortable:alphanumeric">Apdex</th>
+                        <th rowspan="2" class="table-sortable:alphanumeric" id="sortByApdex">Apdex</th>
                     </xsl:if>
                     <xsl:if test="$type = 'request' and $intervalCount &gt; 0">
                         <th colspan="{count($runtimeIntervalsNode/interval)}">Runtime Segmentation [ms]</th>
                     </xsl:if>
                 </tr>
                 <tr>
-                    <th class="table-sortable:numeric">Total</th>
-                    <th class="table-sortable:numeric">1/s</th>
-                    <th class="table-sortable:numeric">1/h*</th>
-                    <th class="table-sortable:numeric">1/d*</th>
-                    <th class="table-sortable:numeric colgroup1">Total</th>
-                    <th class="table-sortable:numeric colgroup1">%</th>
+                    <th class="table-sortable:numeric" id="sortByCountTotal">Total</th>
+
+                    <xsl:choose>
+                        <xsl:when test="$type = 'request'">
+                            <th class="table-sortable:numeric" id="sortByCountDistinct">Distinct**</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerMinute">1/min</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerMinute">1/min</th>
+                            <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                        </xsl:otherwise>
+                    </xsl:choose>
+
+                    <th class="table-sortable:numeric colgroup1" id="sortByErrorsTotal">Total</th>
+                    <th class="table-sortable:numeric colgroup1" id="sortByErrorsPercentage">%</th>
                     <xsl:if test="$type = 'transaction'">
-                        <th class="table-sortable:numeric colgroup1">Total</th>
+                        <th class="table-sortable:numeric colgroup1" id="sortByEventsTotal">Total</th>
                     </xsl:if>
-                    <th class="table-sortable:numeric" title="The arithmetic mean of the data series.">Mean</th>
-                    <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
-                    <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>
-                    <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
+                    <th class="table-sortable:numeric" title="The arithmetic mean of the data series." id="sortByRuntimeMean">Mean</th>
+                    <th class="table-sortable:numeric" title="The smallest value of the data series." id="sortByRuntimeMin">Min.</th>
+                    <th class="table-sortable:numeric" title="The largest value of the data series." id="sortByRuntimeMax">Max.</th>
+                    <th class="table-sortable:numeric" title="The standard deviation of all data within this data series." id="sortByRuntimeDev">Dev.</th>
                     <xsl:for-each select="/testreport/testReportConfig/runtimePercentiles/string">
                         <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
+                            <xsl:attribute name="id">
+                              <xsl:value-of select="concat('sortByPercentile', current())" />
+                            </xsl:attribute>
                             <xsl:text>P</xsl:text>
                             <xsl:value-of select="current()"/>
                         </th>
@@ -74,6 +109,9 @@
                                 <xsl:for-each select="$runtimeIntervalsNode/interval">
                                     <th class="table-sortable:numeric"
                                         title="A data segment and the percentage of data from the time series that is located within.">
+                                        <xsl:attribute name="id">
+                                            <xsl:value-of select="concat(concat(concat('sortBySegmentFrom', @from), 'To'), @to)" />
+                                        </xsl:attribute>
                                         <xsl:choose>
                                             <xsl:when test="position() &lt; count($runtimeIntervalsNode/interval)">
                                                 <xsl:text disable-output-escaping="yes">&amp;le;</xsl:text>
@@ -120,13 +158,13 @@
                     <xsl:variable name="columnCount">
                         <xsl:choose>
                             <xsl:when test="$type = 'request'">
-                                <xsl:value-of select="11 + $percentileCount + count($runtimeIntervalsNode/interval)"/>
+                                <xsl:value-of select="13 + $percentileCount + count($runtimeIntervalsNode/interval)"/>
                             </xsl:when>
                             <xsl:when test="$type = 'transaction'">
-                                <xsl:value-of select="12 + $percentileCount"/>
+                                <xsl:value-of select="13 + $percentileCount"/>
                             </xsl:when>
                             <xsl:when test="$type = 'action'">
-                                <xsl:value-of select="12 + $percentileCount"/>
+                                <xsl:value-of select="13 + $percentileCount"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="11 + $percentileCount"/>
@@ -143,8 +181,8 @@
                     </tfoot>
                     <tbody class="table-nosort">
                         <tr>
-                            <td colspan="{$columnCount}">
-                                There are no values to show in this table.
+                            <td class="no-data" colspan="{$columnCount}">
+                                No data available
                             </td>
                         </tr>
                     </tbody>

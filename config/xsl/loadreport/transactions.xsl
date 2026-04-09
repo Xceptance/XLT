@@ -19,6 +19,7 @@
 <xsl:include href="../common/util/create-totals-td.xsl" />
 <xsl:include href="../common/util/filtered-footer-row.xsl" />
 
+<xsl:include href="util/timer-labels.xsl" />
 <xsl:include href="util/timer-row.xsl" />
 <xsl:include href="util/timer-summary-row.xsl" />
 <xsl:include href="util/timer-chart.xsl" />
@@ -36,10 +37,15 @@
 
 <xsl:include href="../common/sections/javascript.xsl" />
 
+<xsl:param name="productName" />
+<xsl:param name="productVersion" />
+<xsl:param name="productUrl" />
+<xsl:param name="projectName" />
+<xsl:param name="scorecardPresent" />
+
 <xsl:template match="/testreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
-<html lang="en">    
+<html lang="en">
 <head>
     <xsl:call-template name="head">
         <xsl:with-param name="title" select="'XLT Report - Transactions'" />
@@ -49,7 +55,9 @@
 <body id="loadtestreport">
 <div id="container">
     <div id="content">
-        <xsl:call-template name="header" />
+        <xsl:call-template name="header">
+            <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
+        </xsl:call-template>
 
         <div id="data-content">
 
@@ -62,7 +70,11 @@
 
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+    	</xsl:call-template>
     </div> <!-- data-content -->
 </div> <!-- end container -->    
 

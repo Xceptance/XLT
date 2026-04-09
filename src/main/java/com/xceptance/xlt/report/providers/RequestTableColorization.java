@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,18 @@ public class RequestTableColorization
     public List<ColorizationRule> colorizationRules;
 
     @XStreamOmitField
-    private String pattern;
+    private String namePattern;
 
-    public RequestTableColorization(final String groupName, final String pattern, final List<ColorizationRule> colorizationRules)
+    @XStreamOmitField
+    private String labelPattern;
+
+    public RequestTableColorization(final String groupName, final String namePattern, final String labelPattern,
+                                    final List<ColorizationRule> colorizationRules)
     {
         this.groupName = groupName;
         this.colorizationRules = colorizationRules;
-        this.pattern = pattern;
+        this.namePattern = namePattern;
+        this.labelPattern = labelPattern;
     }
 
     public String getGroupName()
@@ -45,9 +50,14 @@ public class RequestTableColorization
         return groupName;
     }
 
-    public String getPattern()
+    public String getNamePattern()
     {
-        return pattern;
+        return namePattern;
+    }
+
+    public String getLabelPattern()
+    {
+        return labelPattern;
     }
 
     public List<ColorizationRule> getColorizationRules()

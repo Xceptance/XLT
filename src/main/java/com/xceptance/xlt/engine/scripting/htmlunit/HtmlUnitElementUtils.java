@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,28 @@
  */
 package com.xceptance.xlt.engine.scripting.htmlunit;
 
-import net.sourceforge.htmlunit.corejs.javascript.Context;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
-
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.DisabledElement;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.DomText;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlOptionGroup;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPreformattedText;
-import com.gargoylesoftware.htmlunit.javascript.host.ClientRect;
-import com.gargoylesoftware.htmlunit.javascript.host.Element;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleAttributes.Definition;
-import com.gargoylesoftware.htmlunit.javascript.host.dom.Document;
-import com.gargoylesoftware.htmlunit.javascript.host.event.MouseEvent;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.css.StyleAttributes.Definition;
+import org.htmlunit.html.DisabledElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.DomText;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlOptionGroup;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPreformattedText;
+import org.htmlunit.javascript.host.ClientRect;
+import org.htmlunit.javascript.host.Element;
+import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.dom.Document;
+import org.htmlunit.javascript.host.event.MouseEvent;
+import org.htmlunit.javascript.host.html.HTMLElement;
 
 /**
  * Some utilities for HtmlUnit's HTML elements.
@@ -54,7 +52,8 @@ public final class HtmlUnitElementUtils
         {
             // From the HTML spec (http://www.w3.org/TR/html401/sgml/dtd.html#block)
             // <!ENTITY % block
-            // "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT | BLOCKQUOTE | FORM | HR | TABLE | FIELDSET | ADDRESS">
+            // "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT | BLOCKQUOTE | FORM | HR | TABLE |
+            // FIELDSET | ADDRESS">
             // <!ENTITY % heading "H1|H2|H3|H4|H5|H6">
             // <!ENTITY % list "UL | OL">
             // <!ENTITY % preformatted "PRE">
@@ -629,11 +628,13 @@ public final class HtmlUnitElementUtils
      *            offset relative to X coordinate of given element
      * @param yOffset
      *            offset relative to Y coordinate of given element
+     * @param detail
+     *            the detail field (usually the number of clicks)
      * @return resulting page
      */
     public static HtmlPage fireMouseEvent(final DomElement element, final String eventType, final boolean isCtrlPressed,
                                           final boolean isShiftPressed, final boolean isAltPressed, final int button, final int xOffset,
-                                          final int yOffset)
+                                          final int yOffset, final int detail)
     {
         HtmlPage page = (HtmlPage) element.getPage();
         if (element instanceof DisabledElement && ((DisabledElement) element).isDisabled())
@@ -641,7 +642,7 @@ public final class HtmlUnitElementUtils
             return page;
         }
 
-        final MouseEvent event = new MouseEvent(element, eventType, isShiftPressed, isCtrlPressed, isAltPressed, button);
+        final MouseEvent event = new MouseEvent(element, eventType, isShiftPressed, isCtrlPressed, isAltPressed, button, detail);
         if (xOffset > -1 || yOffset > -1)
         {
             final int[] position = getPosition(element);
@@ -670,47 +671,19 @@ public final class HtmlUnitElementUtils
      *            the target element
      * @param eventType
      *            the type of the mouse event (mousemove etc.)
-     * @param isCtrlPressed
-     *            is CTRL key pressed
-     * @param isShiftPressed
-     *            is SHIFT key pressed
-     * @param isAltPressed
-     *            is ALT key pressed
-     * @param xOffset
-     *            offset relative to X coordinate of given element
-     * @param yOffset
-     *            offset relative to Y coordinate of given element
-     * @return resulting page
-     */
-    public static HtmlPage fireMouseEvent(final DomElement element, final String eventType, final int xOffset, final int yOffset)
-    {
-        return fireMouseEvent(element, eventType, false, false, false, MouseEvent.BUTTON_LEFT, xOffset, yOffset);
-    }
-
-    /**
-     * Fires a mouse event of the given type at the given target element.
-     * 
-     * @param element
-     *            the target element
-     * @param eventType
-     *            the type of the mouse event (mousemove etc.)
-     * @param isCtrlPressed
-     *            is CTRL key pressed
-     * @param isShiftPressed
-     *            is SHIFT key pressed
-     * @param isAltPressed
-     *            is ALT key pressed
      * @param xOffset
      *            offset relative to X coordinate of given element
      * @param yOffset
      *            offset relative to Y coordinate of given element
      * @param mouseButton
      *            the mouse button to use
+     * @param detail
+     *            the detail field (usually the number of clicks)
      * @return resulting page
      */
     public static HtmlPage fireMouseEvent(final DomElement element, final String eventType, final int xOffset, final int yOffset,
-                                          final int mouseButton)
+                                          final int mouseButton, final int detail)
     {
-        return fireMouseEvent(element, eventType, false, false, false, mouseButton, xOffset, yOffset);
+        return fireMouseEvent(element, eventType, false, false, false, mouseButton, xOffset, yOffset, detail);
     }
 }

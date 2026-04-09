@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.ByteOrderMark;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebResponseData;
+import org.htmlunit.util.NameValuePair;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebResponseData;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.common.net.HttpHeaderConstants;
 import com.xceptance.common.util.ParameterCheckUtils;
 
@@ -81,7 +81,7 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
          * {@inheritDoc}
          */
         @Override
-        public InputStream getInputStreamWithBomIfApplicable(ByteOrderMark[] bomHeaders) throws IOException
+        public InputStream getInputStreamWithBomIfApplicable(final ByteOrderMark... bomHeaders) throws IOException
         {
             return getInputStream();
         }

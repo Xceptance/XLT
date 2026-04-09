@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.util.NameValuePair;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
@@ -103,7 +103,7 @@ class RequestDataMgr
         // create the transaction info
         final TransactionInfo transactionInfo = new TransactionInfo();
         transactionInfo.user = Session.getCurrent().getUserName();
-        transactionInfo.date = GlobalClock.getInstance().getTime();
+        transactionInfo.date = GlobalClock.millis();
         transactionInfo.actions.addAll(actions);
 
         // store the session's value log (as NameValuePairs so we can reuse some code in the result browser)
@@ -137,7 +137,7 @@ class RequestDataMgr
     /**
      * Adds the given action info to the list of actions and populates it with the passed action and file name and any
      * pending request.
-     * 
+     *
      * @param actionInfo
      *            the action info to add
      * @param actionName
@@ -199,7 +199,7 @@ class RequestDataMgr
 
         final RequestInfo requestInfo = new RequestInfo();
 
-        requestInfo.name = getFileName(webRequest.getUrl());
+        requestInfo.name = getRequestName(webRequest.getUrl());
         requestInfo.url = webRequest.getUrl().toString();
         requestInfo.requestMethod = httpMethod.name();
         requestInfo.requestParameters.addAll(webRequest.getRequestParameters());
@@ -247,15 +247,18 @@ class RequestDataMgr
     }
 
     /**
-     * Derives the simple file name from the passed URL. Usually, this will be the last part of the URL's path. For
-     * example, from the URL "http://localhost/foo/bar/baz/bum.jpg" the file name "bum.jpg" would be derived. If the
-     * last part is a directory as in "http://localhost/foo/bar/baz/", the result would be "baz/".
+     * Derives the request name from the passed URL. The name will be the last segment of the URL's path plus the query
+     * string.
+     * <p>
+     * For example, from the URL "http://localhost/foo/bar/baz/bum.jpg" the request name "bum.jpg" would be derived. If
+     * the last part is a directory as in "http://localhost/foo/bar/baz/", the result would be "baz/". If there is a
+     * query string, it will be appended.
      *
      * @param url
      *            the input URL
-     * @return the file name
+     * @return the request name
      */
-    private String getFileName(final URL url)
+    private String getRequestName(final URL url)
     {
         // get the path only, i.e. no host, no query string, no reference
         String path = url.getPath();
@@ -270,6 +273,13 @@ class RequestDataMgr
         if (i >= 0)
         {
             path = path.substring(i + 1);
+        }
+
+        // append query string if any
+        String query = url.getQuery();
+        if (query != null)
+        {
+            path = path + "?" + query;
         }
 
         return path;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,13 +33,24 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
+import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.util.PropertiesConfigurationException;
+import com.xceptance.xlt.util.PropertiesIOException;
+import com.xceptance.xlt.util.PropertyFileNotFoundException;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -53,6 +65,25 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
     private static final String MASK_PROPERTIES_REGEX_DEFAULT = "(?i)password";
 
+    private static final String MARKDOWN_PREFIX = "::markdown::";
+
+    /** Flexmark parser with tables and autolink extensions. */
+    private static final Parser MARKDOWN_PARSER;
+
+    /** Flexmark HTML renderer. */
+    private static final HtmlRenderer MARKDOWN_RENDERER;
+
+    static
+    {
+        // we want to support tables and autolinks
+        final MutableDataSet options = new MutableDataSet();
+        options.set(Parser.EXTENSIONS,
+                    Arrays.asList(TablesExtension.create(), AutolinkExtension.create(), StrikethroughExtension.create()));
+
+        MARKDOWN_PARSER = Parser.builder(options).build();
+        MARKDOWN_RENDERER = HtmlRenderer.builder(options).build();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -64,18 +95,19 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         final File reportDirectory = getConfiguration().getReportDirectory();
         final File configDir = new File(reportDirectory, XltConstants.CONFIG_DIR_NAME);
 
-        final XltProperties props;
+        final XltPropertiesImpl props;
         try
         {
 
             final FileSystemManager fsMgr = VFS.getManager();
             props = new XltPropertiesImpl(fsMgr.resolveFile(reportDirectory.getAbsolutePath()),
-                                          fsMgr.resolveFile(configDir.getAbsolutePath()), true);
+                                          fsMgr.resolveFile(configDir.getAbsolutePath()), false, true);
 
         }
-        catch (FileSystemException fse)
+        catch (PropertyFileNotFoundException | PropertiesIOException | PropertiesConfigurationException | FileSystemException e)
         {
             System.err.println();
+
             return report;
         }
 
@@ -84,11 +116,14 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         // add the masked plain properties
         report.properties.putAll(mask(props.getProperties()));
 
+        // add relevant report generator settings
+        report.reportGeneratorConfiguration = new ReportGeneratorConfigurationReport((ReportGeneratorConfiguration) getConfiguration());
+
         // add product information for later output
         report.version = ProductInformation.getProductInformation();
 
         // get test comment specified via property
-        final TreeMap<String, String> sortedLoadtestProps = new TreeMap<String, String>();
+        final TreeMap<String, String> sortedLoadtestProps = new TreeMap<>();
         final Map<String, String> loadtestProps = props.getPropertiesForKey(LOADTEST_PROP);
         for (final Entry<String, String> entry : loadtestProps.entrySet())
         {
@@ -102,7 +137,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
         for (final Map.Entry<String, String> entry : sortedLoadtestProps.entrySet())
         {
-            report.comments.add(entry.getValue());
+            report.comments.add(processComment(entry.getValue()));
         }
 
         // add project name
@@ -112,7 +147,11 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         // add the load profile
         try
         {
-            report.loadProfile = new TestLoadProfileConfiguration(props.getProperties()).getLoadTestConfiguration();
+            for (final TestCaseLoadProfileConfiguration tclpc : new TestLoadProfileConfiguration(props).getLoadTestConfiguration())
+            {
+                report.loadProfile.add(new LoadProfileConfigurationReport(tclpc));
+            }
+            calculatePercentages(report.loadProfile);
         }
         catch (final Exception e)
         {
@@ -129,10 +168,55 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             System.err.println("Failed to get custom JVM arguments. Cause: " + ioe.getMessage());
         }
 
+        report.chartHeight = getConfiguration().getChartHeight();
+        report.chartWidth = getConfiguration().getChartWidth();
+
         return report;
     }
 
-    private Map<? extends Object, ? extends Object> mask(Properties properties)
+    private void calculatePercentages(final List<LoadProfileConfigurationReport> loadProfile)
+    {
+        // iterate through report.loadProfile --> calculate totals of (max) users and (max) arrivalrate
+        int arrivalRateTotal = 0;
+        int userCountTotal = 0;
+        for (final LoadProfileConfigurationReport loadProfileConfig : loadProfile)
+        {
+            arrivalRateTotal += getMaxFromLoadFunction(loadProfileConfig.arrivalRate);
+            userCountTotal += getMaxFromLoadFunction(loadProfileConfig.numberOfUsers);
+
+        }
+        // iterate through report.loadProfile again and add percentages calculated from totals
+        for (final LoadProfileConfigurationReport loadProfileConfig : loadProfile)
+        {
+            loadProfileConfig.arrivalRatePercentage = (loadProfileConfig.arrivalRate == null ? null
+                                                                                             : ReportUtils.calculatePercentage(getMaxFromLoadFunction(loadProfileConfig.arrivalRate),
+                                                                                                                               arrivalRateTotal));
+            loadProfileConfig.numberOfUsersPercentage = (ReportUtils.calculatePercentage(getMaxFromLoadFunction(loadProfileConfig.numberOfUsers),
+                                                                                         userCountTotal));
+        }
+        return;
+    }
+
+    private int getMaxFromLoadFunction(final int[][] loadFunction)
+    {
+        if (loadFunction == null)
+        {
+            return 0;
+        }
+        // see LoadFunctionXStreamConverter
+        int maximum = 0;
+        for (final int[] array : loadFunction)
+        {
+            final int users = array[1];
+            if (users > maximum)
+            {
+                maximum = users;
+            }
+        }
+        return maximum;
+    }
+
+    private Map<? extends Object, ? extends Object> mask(final Properties properties)
     {
         final String MASK_PROPERTIES_REGEX = getConfiguration().getProperties().getProperty(MASK_PROPERTIES_PROP,
                                                                                             MASK_PROPERTIES_REGEX_DEFAULT);
@@ -140,9 +224,8 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         final boolean isMaskSet = StringUtils.isNoneBlank(MASK_PROPERTIES_REGEX);
         for (final Entry<Object, Object> entry : properties.entrySet())
         {
-            final String propName = (String)entry.getKey();
-            if (propName.startsWith(XltConstants.SECRET_PREFIX) ||
-                isMaskSet && RegExUtils.isMatching((String) propName, MASK_PROPERTIES_REGEX))
+            final String propName = (String) entry.getKey();
+            if (propName.startsWith(XltConstants.SECRET_PREFIX) || isMaskSet && RegExUtils.isMatching(propName, MASK_PROPERTIES_REGEX))
             {
                 properties.replace(propName, XltConstants.MASK_PROPERTIES_HIDETEXT);
             }
@@ -161,6 +244,44 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     }
 
     /**
+     * Tell the system that there is no need to call processDataRecord
+     */
+    @Override
+    public boolean wantsDataRecords()
+    {
+        return false;
+    }
+
+    /**
+     * Processes a comment string. If the comment starts with the marker {@value #MARKDOWN_PREFIX} (case-insensitive),
+     * the remainder is treated as Markdown and converted to HTML, wrapped in a div with class "markdown". Otherwise the
+     * raw string is returned unchanged.
+     *
+     * @param comment
+     *            the comment string to process
+     * @return the processed comment
+     */
+    static String processComment(final String comment)
+    {
+        if (comment == null)
+        {
+            return null;
+        }
+
+        final String cleanedString = comment.strip();
+
+        if (cleanedString.length() >= MARKDOWN_PREFIX.length() &&
+            cleanedString.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
+        {
+            final String markdown = cleanedString.substring(MARKDOWN_PREFIX.length());
+            final String html = MARKDOWN_RENDERER.render(MARKDOWN_PARSER.parse(markdown));
+            return "<div class=\"markdown\">" + html + "</div>";
+        }
+
+        return comment;
+    }
+
+    /**
      * Returns the custom JVM arguments stored in the file "jvmargs.cfg". If no such file can be found, the returned
      * list is empty.
      *
@@ -172,7 +293,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
      */
     private List<String> getCustomJvmArgs(final File file) throws IOException
     {
-        final ArrayList<String> jvmArgs = new ArrayList<String>();
+        final ArrayList<String> jvmArgs = new ArrayList<>();
 
         if (file.isFile())
         {

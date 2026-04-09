@@ -19,13 +19,15 @@
             </xsl:if>
         </xsl:variable>
 
-        <table class="c-tab-content table-autosort:0 table-autostripe table-stripeclass:odd">
+        <table class="trend c-tab-content table-autosort:0">
             <thead>
                 <tr>
                     <th class="table-sortable:alphanumeric" rowspan="2">
+                        <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Name</xsl:attribute>
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
-                        <input class="filter" placeholder="Enter filter substrings"/>
+                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                     </th>
 
                     <!-- write the data for the first report as base column -->
@@ -39,9 +41,11 @@
 									</xsl:attribute>
                                     <xsl:choose>
                                         <xsl:when test="$mode = 'absolute'">
+                                            <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Baseline</xsl:attribute>
                                             <xsl:call-template name="table-headline-absolute-base"/>
                                         </xsl:when>
                                         <xsl:otherwise>
+                                            <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Baseline</xsl:attribute>
                                             <xsl:call-template name="table-headline-relative-base"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
@@ -69,6 +73,7 @@
                             <xsl:if test="position() > 1">
                                 <th class="cluetip">
                                     <xsl:attribute name="data-rel">#ReportInfo-<xsl:value-of select="generate-id(.)"/></xsl:attribute>
+                                    <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Run<xsl:value-of select="position()"/> </xsl:attribute>
                                     <xsl:if test="$showValues">
                                         <xsl:attribute name="class">
 											<xsl:text>table-sortable:numeric cluetip</xsl:text>
@@ -140,8 +145,8 @@
                     </tfoot>
                     <tbody class="table-nosort">
                         <tr>
-                            <td colspan="2">
-                                There are no values to show in this table.
+                            <td class="no-data" colspan="2">
+                                No data available
                             </td>
                         </tr>
                     </tbody>

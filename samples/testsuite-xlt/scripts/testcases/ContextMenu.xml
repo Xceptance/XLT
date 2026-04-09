@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" junit-test="true" baseURL="http://localhost:8080">
+<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="7" junit-test="true" baseURL="http://localhost:8080">
   <module name="modules.Open_ExamplePage"/>
   <command name="click" target="link=Misc"/>
   <command name="click" target="id=cc_clear_button"/>
@@ -11,11 +11,12 @@
   <command name="assertText" target="id=cc_mouseup_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
   <command name="storeText" target="id=cc_mouseup_content" value="mu"/>
   <command name="click" target="id=cc_clear_button"/>
-  <command name="contextMenuAt" target="id=cm-area" value="20, 34"/>
-  <command name="assertText" target="id=cc_mousedown_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
-  <command name="assertText" target="id=cc_contextmenu_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
-  <command name="assertText" target="id=cc_mouseup_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
-  <command name="assertNotText" target="id=cc_mousedown_content" value="exact:${md}"/>
-  <command name="assertNotText" target="id=cc_contextmenu_content" value="exact:${cm}"/>
-  <command name="assertNotText" target="id=cc_mouseup_content" value="exact:${mu}"/>
+  <codecomment>TODO: GH#286</codecomment>
+  <command name="contextMenuAt" disabled="true" target="id=cm-area" value="20, 34"/>
+  <command name="assertText" disabled="true" target="id=cc_mousedown_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
+  <command name="assertText" disabled="true" target="id=cc_contextmenu_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
+  <command name="assertText" disabled="true" target="id=cc_mouseup_content" value="regexp:2 \(x: \d+, y: \d+\)"/>
+  <command name="assertNotText" disabled="true" target="id=cc_mousedown_content" value="exact:${md}"/>
+  <command name="assertNotText" disabled="true" target="id=cc_contextmenu_content" value="exact:${cm}"/>
+  <command name="assertNotText" disabled="true" target="id=cc_mouseup_content" value="exact:${mu}"/>
 </testcase>

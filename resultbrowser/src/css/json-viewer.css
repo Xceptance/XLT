@@ -1,0 +1,39 @@
+json-viewer {
+    display: block;
+}
+
+json-viewer .tree {
+    font-size: 14px;
+    background-color: #fff;
+    color: #808080;
+    height: 100%;
+    overflow: auto;
+    padding: 10px;
+}
+
+json-viewer .actions {
+    font-size: 13px;
+    background-color: #f8f8f8;
+    border-top: 1px groove gray;
+    padding: 10px;
+}
+
+json-viewer .actions button {
+    padding: 0px 4px;
+    height: 26px;
+}
+
+json-viewer .actions input[type="text"] {
+    padding: 0px 4px;
+    height: 26px;
+    box-sizing: border-box;
+}
+
+json-viewer .actions .separator {
+    display: inline-block;
+    height: 20px;
+    border-left: 1px groove gray;
+    margin: 0px 8px;
+    vertical-align: middle;
+}
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,23 +35,23 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
-import com.gargoylesoftware.htmlunit.HttpHeader;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebClientOptions;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebResponseData;
-import com.gargoylesoftware.htmlunit.util.KeyDataPair;
-import com.gargoylesoftware.htmlunit.util.MimeType;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebClientOptions;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebResponseData;
+import org.htmlunit.util.KeyDataPair;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
+
 import com.xceptance.common.util.ssl.EasyHostnameVerifier;
 import com.xceptance.common.util.ssl.EasyX509TrustManager;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.dns.XltDnsResolver;
 import com.xceptance.xlt.engine.htmlunit.AbstractWebConnection;
 
-import okhttp3.Authenticator;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.Headers;
@@ -83,7 +83,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
 
     private static final SSLSocketFactory INSECURE_SSL_SOCKET_FACTORY = createInsecureSslSocketFactory();
 
-    private final AuthenticationCache authenticationCache;
+    private final AuthenticatorImpl authenticator;
 
     private final ConnectionPool connectionPool;
 
@@ -92,18 +92,27 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
     private final List<Protocol> protocols;
 
     /**
+     * Whether to collect the target IP address that was used to make the request.
+     */
+    private boolean collectTargetIpAddress;
+
+    /**
      * Constructor.
      *
      * @param webClient
      *            the owning web client
      * @param http2Enabled
      *            whether or not HTTP/2 is enabled at all
+     * @param collectTargetIpAddress
+     *            whether to collect the target IP address that was used to make the request
      */
-    public OkHttp3WebConnection(final WebClient webClient, final boolean http2Enabled)
+    public OkHttp3WebConnection(final WebClient webClient, final boolean http2Enabled, final boolean collectTargetIpAddress)
     {
         super(webClient);
 
-        authenticationCache = new AuthenticationCache();
+        this.collectTargetIpAddress = collectTargetIpAddress;
+
+        authenticator = new AuthenticatorImpl(webClient.getCredentialsProvider());
         connectionPool = new ConnectionPool(6, 60, TimeUnit.SECONDS);
         dns = new DnsImpl(new XltDnsResolver());
         protocols = http2Enabled ? HTTP_2_AND_1_1 : HTTP_1_1_ONLY;
@@ -116,7 +125,6 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
     protected OkHttpClient createHttpClient(final WebClient webClient, final WebRequest webRequest) throws Exception
     {
         final WebClientOptions webClientOptions = webClient.getOptions();
-        final Authenticator authenticator = new AuthenticatorImpl(webClient.getCredentialsProvider());
 
         final Builder httpClientBuilder = new OkHttpClient.Builder();
 
@@ -168,8 +176,13 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         }
 
         // interceptors
-        httpClientBuilder.addNetworkInterceptor(new AuthorizationHeaderInterceptor(authenticationCache));
+        httpClientBuilder.addNetworkInterceptor(new AuthorizationHeaderInterceptor(authenticator));
         httpClientBuilder.addNetworkInterceptor(new RetrieveFinalRequestHeadersInterceptor(webRequest));
+
+        if (collectTargetIpAddress)
+        {
+            httpClientBuilder.addNetworkInterceptor(new RetrieveUsedTargetIpAddressInterceptor());
+        }
 
         // finally create the HTTP client
         return httpClientBuilder.build();
@@ -215,12 +228,12 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         {
             // interpret string body as binary/ISO_8859_1 content and create a binary request body
             final byte[] bytes = body.getBytes(StandardCharsets.ISO_8859_1);
-            requestBody = RequestBody.create(mediaType, bytes);
+            requestBody = RequestBody.create(bytes, mediaType);
         }
         else
         {
             // create a regular text request body
-            requestBody = RequestBody.create(mediaType, body);
+            requestBody = RequestBody.create(body, mediaType);
         }
 
         return createRequest(uri, webRequest, requestBody);
@@ -293,15 +306,15 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         // add form data part in the right way (depending on what was given as input)
         if (data != null)
         {
-            builder.addFormDataPart(name, filename, RequestBody.create(mediaType, data));
+            builder.addFormDataPart(name, filename, RequestBody.create(data, mediaType));
         }
         else if (file != null)
         {
-            builder.addFormDataPart(name, filename, RequestBody.create(mediaType, file));
+            builder.addFormDataPart(name, filename, RequestBody.create(file, mediaType));
         }
         else
         {
-            builder.addFormDataPart(name, filename, RequestBody.create(mediaType, new byte[0]));
+            builder.addFormDataPart(name, filename, RequestBody.create(new byte[0], mediaType));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,6 +239,9 @@ public class AgentImpl implements Agent
             // if the agent process monitor is not dead yet, kill the agent process
             if (monitor.isAlive())
             {
+                // terminate all descendant processes first
+                process.descendants().forEach(ProcessHandle::destroyForcibly);
+                // now terminate the agent process itself
                 process.destroyForcibly();
             }
         }

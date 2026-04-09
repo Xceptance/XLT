@@ -22,7 +22,9 @@
 
 <xsl:include href="sections/network.xsl" />
 <xsl:include href="sections/hosts.xsl" />
+<xsl:include href="sections/ips.xsl" />
 <xsl:include href="sections/response-codes.xsl" />
+<xsl:include href="sections/request-methods.xsl" />
 <xsl:include href="sections/content-types.xsl" />
 
 <xsl:include href="util/network-table.xsl" />
@@ -34,10 +36,15 @@
 
 <xsl:include href="../common/sections/javascript.xsl" />
 
+<xsl:param name="productName" />
+<xsl:param name="productVersion" />
+<xsl:param name="productUrl" />
+<xsl:param name="projectName" />
+<xsl:param name="scorecardPresent" />
+
 <xsl:template match="/testreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
-<html lang="en">    
+<html lang="en">
 <head>
     <xsl:call-template name="head">
         <xsl:with-param name="title" select="'XLT Report - Network'" />
@@ -47,7 +54,9 @@
 <body id="loadtestreport">
 <div id="container">
     <div id="content">
-        <xsl:call-template name="header" />
+        <xsl:call-template name="header">
+            <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
+        </xsl:call-template>
 
         <div id="data-content">
         	<!--
@@ -68,7 +77,27 @@
                 <xsl:with-param name="rootNode" select="hosts" />
                 <xsl:with-param name="totalHits" select="general/hits" />
             </xsl:call-template>
+            
+            <!--
+                ************************************
+                * IPs
+                ************************************
+            -->
+            <xsl:call-template name="ips">
+                <xsl:with-param name="rootNode" select="ips" />
+                <xsl:with-param name="totalHits" select="general/hits" />
+            </xsl:call-template>
 
+            <!--
+                ************************************
+                * HTTP Request Methods
+                ************************************
+            -->
+            <xsl:call-template name="request-methods">
+                <xsl:with-param name="rootNode" select="requestMethods" />
+                <xsl:with-param name="totalHits" select="general/hits" />
+            </xsl:call-template>
+            
             <!--
                 ************************************
                 * Response Codes
@@ -91,7 +120,11 @@
 
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+    	</xsl:call-template>
     </div> <!-- data-content -->
 </div> <!-- end container -->    
 

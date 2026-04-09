@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.xceptance.xlt.report.providers;
+
+import java.math.BigDecimal;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -74,7 +76,22 @@ public class RequestReport extends TimerReport
     public int[] countPerInterval;
 
     /**
+     * The percentage of timer values per configured runtime interval.
+     */
+    public BigDecimal[] percentagePerInterval;
+
+    /**
      * A list of the top URLs.
      */
     public UrlData urls;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTypeCode()
+    {
+        return TimerReportType.REQUEST.getTypeCode();
+    }
+
 }

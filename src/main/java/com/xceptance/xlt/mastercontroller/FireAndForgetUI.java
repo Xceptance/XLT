@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,7 +267,7 @@ public class FireAndForgetUI extends BasicConsoleUI
         try
         {
             ThreadUtils.sleep(3000);
-            masterController.startAgentStatusList();
+            masterController.startAgentControllerStatusUpdates();
 
             while (masterController.isAnyAgentRunning_SAFE())
             {
@@ -277,7 +277,7 @@ public class FireAndForgetUI extends BasicConsoleUI
 
             printAgentStatusList();
 
-            masterController.stopAgentStatusList();
+            masterController.stopAgentControllerStatusUpdates();
         }
         catch (final Exception ex)
         {

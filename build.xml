@@ -29,21 +29,25 @@
 
     <property name="settings.file" value="/home/hudson/.ant/settings.xml" />
 
-    <scriptdef name="substring" language="javascript">
+    <macrodef name="prefix">
         <attribute name="text" />
-        <attribute name="start" />
-        <attribute name="end" />
+        <attribute name="length" />
         <attribute name="property" />
-        <![CDATA[
-           var text = attributes.get("text");
-           var start = attributes.get("start");
-           var end = Math.min(attributes.get("end") || text.length(), text.length());
-           project.setProperty(attributes.get("property"), text.substring(start, end));
-         ]]>
-    </scriptdef>
+
+        <sequential>
+            <loadresource property="@{property}">
+                <string value="@{text}" />
+                <filterchain>
+                    <tokenfilter>
+                        <replaceregex pattern="^(.{@{length}}).*" replace="\1" />
+                    </tokenfilter>
+                </filterchain>
+            </loadresource>
+        </sequential>
+    </macrodef>
 
     <target name="init.mvn" unless="init.mvn.run">
-        <path id="maven-resolver-ant-tasks.classpath" path="${lib-build.dir}/maven-resolver-ant-tasks-1.2.0-uber.jar" />
+        <path id="maven-resolver-ant-tasks.classpath" path="${lib-build.dir}/maven-resolver-ant-tasks-1.4.0-uber.jar" />
         <typedef resource="org/apache/maven/resolver/ant/antlib.xml" uri="antlib:org.apache.maven.resolver.ant" classpathref="maven-resolver-ant-tasks.classpath" />
 
         <dependset>
@@ -63,6 +67,16 @@
         <property name="jar.name" value="${project.name}-${version}.jar" />
         <property name="sourcejar.name" value="${project.name}-${version}-sources.jar" />
 
+        <!-- Determine version number -->
+        <loadresource property="version.number">
+            <propertyresource name="version" />
+            <filterchain>
+                <tokenfilter>
+                  <replaceregex pattern="^(\d+([.]\d+)*).*" replace="\1" flags="gi" />
+                </tokenfilter>
+            </filterchain>
+        </loadresource>
+
         <!-- Name for the generated API documentation file without the file extension -->
         <property name="api.doc.file.name" value="${project.name}-${version}-javadoc" />
 
@@ -74,8 +88,8 @@
         <resolver:dependencies id="depsFromPom" pomRef="xlt.pom" />
 
         <resolver:resolve dependenciesref="depsFromPom" remotereposref="resolver.repositories">
-            <files refid="deps.fileset" scopes="compile" />
-            <files refid="provided.fileset" scopes="compile,provided" />
+            <files refid="deps.fileset" scopes="compile,runtime" />
+            <files refid="provided.fileset" scopes="provided" />
         </resolver:resolve>
 
         <condition property="need.copy.deps">
@@ -106,8 +120,6 @@
                 <include name="*.jar" />
             </fileset>
         </path>
-
-        <taskdef resource="net/sf/antcontrib/antlib.xml" description="Task definitions for AntContrib." classpathref="classpath" />
 
         <property name="init.run" value="true" />
 
@@ -166,7 +178,7 @@
 
         <mkdir dir="${classes.dir}" />
 
-        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
+        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="21" target="21">
             <classpath refid="classpath" />
 
             <!-- Shorten the default list of modules to avoid issues (for example, jdk.jsobject clashes with HtmlUnit). -->
@@ -187,8 +199,6 @@
         <antcall target="build.timerrecorder.xpi" inheritrefs="true" />
         <antcall target="build.timerrecorder.crx" inheritrefs="true" />
         <antcall target="build.resultbrowser" inheritrefs="true" />
-
-        <antcall target="download.ec2.instance-info" />
     </target>
 
 
@@ -213,7 +223,7 @@
             <isset property="env.GIT_COMMIT" />
         </condition>
 
-        <substring text="${revision}" end="10" start="0" property="rev.head" />
+        <prefix text="${revision}" length="10" property="rev.head" />
 
         <manifest file="${manifest.file}" mode="update">
             <attribute name="Implementation-Version" value="${version}" />
@@ -261,16 +271,12 @@
                 <file name="${api.doc.file.name}.zip" />
             </srcfilelist>
             <srcfileset dir="${basedir}">
-                <include name="agent" />
                 <include name="bin/**" />
                 <include name="config/**" />
                 <include name="doc/3rd-party-licenses/**" />
-                <include name="log" />
-                <include name="reports" />
-                <include name="results" />
-                <include name="samples/**" />
-                <exclude name="**/samples/testsuite-performance/**/*" />
-                <exclude name="**/samples/testsuite-xlt/**/*" />
+                <include name="etc/**" />
+                <include name="LICENSE" />
+                <include name="NOTICE.md" />
             </srcfileset>
             <srcfileset dir="${lib.dir}" includes="**/*.jar" />
             <srcfileset dir="${build.dir}" includes="downloads/**/*" />
@@ -312,8 +318,6 @@
             <fileset file="${build.dir}/${jar.name}" />
         </copy>
 
-        <propertyregex property="xlt.jenkins.plugin.version" regexp="xlt-jenkins-plugin-([\d\.]+(\-.+)?)\.hpi$" select="\1" input="${xlt-jenkins.hpi.url}" />
-
         <zip zipfile="${build.doc.dir}/${api.doc.file.name}.zip">
             <zipfileset dir="${build.doc.dir}">
                 <include name="apidoc/**" />
@@ -329,41 +333,21 @@
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}" filemode="754">
                 <include name="bin/**/*.sh" />
             </zipfileset>
-
-            <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
-                <include name="samples/**" />
-                <exclude name="samples/app-server/bin/*.sh" />
-                <exclude name="**/samples/testsuite-performance/**" />
-                <exclude name="**/samples/testsuite-xlt/**" />
-                <exclude name="**/samples/app-server/webapps/performance/**" />
-                <exclude name="**/samples/app-server/webapps/testpages/**" />
-                <exclude name="**/.settings/**" />
-                <exclude name="**/.gitkeep" />
-            </zipfileset>
-            <zipfileset dir="${basedir}" prefix="${bin.dist.name}" filemode="754">
-                <include name="samples/app-server/bin/*.sh" />
-            </zipfileset>
-
             <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
                 <include name="agent" />
                 <include name="config/**" />
                 <include name="doc/3rd-party-licenses/**" />
+                <include name="etc/**" />
                 <include name="log" />
                 <include name="reports" />
                 <include name="results" />
                 <include name="LICENSE" />
                 <include name="NOTICE.md" />
-                <exclude name="**/.settings/**" />
             </zipfileset>
             <zipfileset dir="${build.dir}" prefix="${bin.dist.name}">
-                <include name="doc/${api.doc.file.name}.zip" />
                 <include name="lib/**" />
             </zipfileset>
-            <zipfileset dir="${basedir}" prefix="${bin.dist.name}">
-                <include name="etc/**" />
-            </zipfileset>
             <zipfileset dir="target/downloads" includes="xlt-jenkins-plugin-*.hpi" fullpath="${bin.dist.name}/tools/xlt-jenkins-plugin-${jenkins-plugin.version}/xlt-jenkins-plugin.hpi" />
-            <zipfileset dir="target/downloads" includes="demo-poster-store-*.war" fullpath="${bin.dist.name}/samples/app-server/webapps/posters.war" />
         </zip>
 
         <checksum file="${dist.dir}/${bin.dist.name}.zip" algorithm="SHA-256" fileext=".sha256" />
@@ -420,26 +404,6 @@
         </copy>
     </target>
 
-    <!-- Downloads the EC2 on-demand instance information as JS file from AWS. -->
-    <target name="download.ec2.instance-info" description="Downloads the EC2 on-demand instance information from AWS.">
-        <property file="${basedir}/config/ec2_admin.properties" />
-        <script language="javascript">
-            <![CDATA[
-          project.setProperty('instance.info.url', 'https://a0.awsstatic.com/pricing/1/ec2/linux-od.min.js?callback=callback&_=' + new Date().getTime());
-        ]]>
-        </script>
-        <get src="${instance.info.url}" dest="${classes.dir}/com/xceptance/xlt/ec2/linux-od.min.js" usetimestamp="yes" />
-        <loadfile property="instance.info.json" srcfile="${classes.dir}/com/xceptance/xlt/ec2/linux-od.min.js" encoding="UTF-8">
-            <filterchain>
-                <stripjavacomments />
-                <linecontainsregexp>
-                    <regexp pattern="callback\(\{vers:[\d.]+,config:\{.+?,regions:\[.+\]\}\}\);" />
-                </linecontainsregexp>
-            </filterchain>
-        </loadfile>
-        <fail unless="instance.info.json" message="Downloaded EC2 instance information seems to be defect." />
-    </target>
-
     <!--
         ==================================
         = The section for all the tests. =
@@ -471,13 +435,13 @@
     -->
 
     <target name="sigsetup">
-        <antcall target="sig">
+        <antcall target="sig" inheritrefs="true">
             <param name="sigaction" value="setup" />
         </antcall>
     </target>
 
     <target name="sigtest">
-        <antcall target="sig">
+        <antcall target="sig" inheritrefs="true">
             <param name="sigaction" value="apicheck" />
         </antcall>
     </target>
@@ -529,6 +493,7 @@
         <ant antfile="${timerrecorder.build.file}" target="timerrecorder.build" inheritall="false" inheritrefs="false">
             <propertyset>
                 <propertyref name="version" />
+                <propertyref name="version.number" />
             </propertyset>
         </ant>
     </target>
@@ -538,6 +503,7 @@
             <propertyset>
                 <propertyref name="build.release" />
                 <propertyref name="version" />
+                <propertyref name="version.number" />
             </propertyset>
         </ant>
     </target>
@@ -549,8 +515,7 @@
     -->
 
     <target name="build.resultbrowser" depends="init">
-        <ant antfile="${resultbrowser.build.file}" target="resultbrowser.build" inheritall="false" inheritrefs="false">
-        </ant>
+        <ant antfile="${resultbrowser.build.file}" target="resultbrowser.build" inheritall="false" inheritrefs="false" />
     </target>
 
 </project>

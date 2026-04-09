@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,18 @@ package com.xceptance.xlt.api.actions;
 
 import java.net.URL;
 
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
+import org.junit.After;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.api.util.XltException;
+import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Test the implementation of {@link AbstractHtmlPageAction}.
@@ -34,6 +37,12 @@ import com.xceptance.xlt.api.util.XltException;
  */
 public class AbstractHtmlPageActionTest extends AbstractXLTTestCase
 {
+    @After
+    public void resetXltEngine()
+    {
+        XltEngine.reset(); // also initializes XLT properties again 
+    }
+
     @Test
     public void testLoadPage() throws Throwable
     {
@@ -260,6 +269,10 @@ public class AbstractHtmlPageActionTest extends AbstractXLTTestCase
     @Test
     public void testLoadPageByTypeKeys() throws Throwable
     {
+        // typing requires JS support
+        final XltProperties props = XltProperties.getInstance();
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+
         final URL test1 = new URL("http://localhost/test1");
         final URL test2 = new URL("http://localhost/test2?name=Bob");
 

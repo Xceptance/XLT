@@ -1,5 +1,5 @@
 # XLT
-XLT is an extensive load and performance test tool developed and maintained by Xceptance. If you need more information, here is the current [website](https://www.xceptance.com/xlt/) and the current [documentation portal](https://xltdoc.xceptance.com/). There is also a [forum](https://ask.xceptance.de/) available to discuss load testing and test automation with XLT.
+XLT is an extensive load and performance test tool developed and maintained by Xceptance. If you need more information, here is the current [website](https://www.xceptance.com/xlt/) and the current [documentation portal](https://docs.xceptance.com/).
 
 The documentation was fully rewritten in 2020 and it is continuously updated. We appreciate your feedback. You can also directly contribute on GitHub at https://github.com/Xceptance/xlt-documentation. If you need any information from the legacy documentation, you can still find it at https://lab.xceptance.de/releases/xlt/5.7.1/index.html
 
@@ -12,7 +12,7 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
 
 ## Required Tools
 
-* Latest JDK 11
+* Latest JDK 21
 * Latest [Apache Ant](https://ant.apache.org/)
 * Chrome or Chromium browser (to package the timer-recorder extension for Chrome/Chromium)
 * Node.js in version 16.15.1 (to bundle the resultbrowser)
@@ -20,6 +20,18 @@ The XLT build process is based on the **Apache Ant** build tool. The build works
     * Only if you want to run the XLT unit tests:
         * [chromedriver](https://chromedriver.chromium.org/)
         * [geckodriver](https://github.com/mozilla/geckodriver)
+
+## IDE Import
+
+Follow your IDE's instructions for importing an existing Maven project.
+
+Once the project import is complete, a module package conflict may be reported. In this case, go to your IDE's build path settings and remove the `jdk.jsobject` module from the module dependencies.
+
+Example - Eclipse IDE
+* Right-click on imported project and select `Build Path` > `Configure Build Path...`
+* In right hand view select tab `Module Dependencies`
+* In `All Modules` list lookup `jdk.sobject`
+* Mark and remove it
 
 ## Build Steps
 
@@ -46,5 +58,11 @@ When you build XLT by yourself, the following limitations apply.
 * Some unit tests are known to fail on Windows.
 * You will need to adjust the path to Chrome/Chromium in `build.properties` according to your system.
 
-# Jobs
-Do you like the code and architectur of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).
+## Building on Linux
+
+* Depending on the distribution you use, you might need to adjust the path to your Chrome/Chromium executable in `build.properties` on Linux as well.
+
+# XLT as a Service - XTC
+If you are looking for a hosted version of XLT with all the bells and whistles, look no further. Xceptance offers [XTC - The Xceptance Test Center](https://xceptance.com/xtc/), a fully hosted, multi-project, infinitely scalable version of XLT in the cloud. [Contact](https://www.xceptance.com/en/contact/) us for more details.
+
+[![image](https://github.com/Xceptance/XLT/assets/1793856/7a8efb7b-caef-4aaf-9321-cdcaba673d8a)](https://xceptance.com/xtc/)

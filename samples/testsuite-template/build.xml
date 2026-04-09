@@ -43,7 +43,7 @@
     -->
     <target name="compile">
         <mkdir dir="${test.classes.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" source="11" target="11">
+        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" source="21" target="21">
             <classpath refid="test.suite.class.path" />
         </javac>
         <copy todir="${test.classes.dir}">

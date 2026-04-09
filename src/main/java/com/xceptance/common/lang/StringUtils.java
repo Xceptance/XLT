@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package com.xceptance.common.lang;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -32,12 +32,6 @@ import com.xceptance.common.util.RegExUtils;
  */
 public final class StringUtils
 {
-    /**
-     * Cache for unifying strings.
-     */
-    private static final Map<String, WeakReference<String>> CACHE = Collections.synchronizedMap(new WeakHashMap<String, WeakReference<String>>(
-                                                                                                                                               1001));
-
     /**
      * Returns the CRC32 checksum of the given string as string representation.
      * 
@@ -57,34 +51,8 @@ public final class StringUtils
     }
 
     /**
-     * Alternative to {@link String#intern()}, which keeps the permgen space consumption low.
-     * 
-     * @param str
-     *            the String to intern
-     * @return the intern instance
-     */
-    public static String internString(final String str)
-    {
-        String result = null;
-
-        final WeakReference<String> ref = CACHE.get(str);
-        if (ref != null)
-        {
-            result = ref.get();
-        }
-        if (result == null)
-        {
-            // fill cache
-            CACHE.put(str, new WeakReference<String>(str));
-            result = str;
-        }
-
-        return result;
-    }
-
-    /**
-     * Replaces the first substring of this string that matches the given <a
-     * href="../util/regex/Pattern.html#sum">regular expression</a> with the given replacement. This is a replacement
+     * Replaces the first substring of this string that matches the given
+     * <a href="../util/regex/Pattern.html#sum">regular expression</a> with the given replacement. This is a replacement
      * method, that speeds up the processing due to internal caching of the compiled regular expression.
      * 
      * @param str
@@ -181,6 +149,34 @@ public final class StringUtils
     public static String[] split(final String str, final String regex)
     {
         return split(str, regex, 0);
+    }
+
+    /**
+     * Join the given elements into a String separated by the given delimiter. The given limit determines how many
+     * elements from the collection will be joined. The given suffix will be added to the resulting String if there are
+     * more elements than the limit states.
+     *
+     * @param delimiter
+     *            the delimiting char sequence
+     * @param elements
+     *            the elements to join
+     * @param limit
+     *            the max number of elements that will be joined
+     * @param suffix
+     *            the suffix to add to the resulting String if the limit was exceeded
+     * @return the resulting String
+     */
+    public static String join(final CharSequence delimiter, final List<? extends CharSequence> elements, final int limit,
+                              final CharSequence suffix)
+    {
+        if (elements.size() > limit)
+        {
+            return String.join(delimiter, elements.subList(0, limit)) + suffix;
+        }
+        else
+        {
+            return String.join(delimiter, elements);
+        }
     }
 
     /**

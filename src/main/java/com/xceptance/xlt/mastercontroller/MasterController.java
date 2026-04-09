@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,42 +15,37 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.PropertiesConfiguration.JupIOFactory;
-import org.apache.commons.configuration2.io.FileHandler;
+import com.xceptance.xlt.util.PropertyFileHandler;
+import com.xceptance.xlt.util.TestCaseMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
@@ -58,7 +53,6 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.agentcontroller.AgentController;
-import com.xceptance.xlt.agentcontroller.AgentStatus;
 import com.xceptance.xlt.agentcontroller.TestResultAmount;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
@@ -152,23 +146,11 @@ public class MasterController
 
     private final boolean isEmbedded;
 
-    private final ThreadPoolExecutor commonExecutor;
-
-    private final ThreadPoolExecutor defaultCommunicationExecutor;
+    private final ThreadPoolExecutor defaultExecutor;
 
     private final ThreadPoolExecutor uploadExecutor;
 
     private final ThreadPoolExecutor downloadExecutor;
-
-    /**
-     * The agent controller's statuses. The key is the agent controller's name.
-     */
-    private final Map<String, AgentControllerStatus> statuses = new ConcurrentHashMap<String, AgentControllerStatus>();
-
-    /**
-     * Running status querying jobs will not proceed if this boolean is set to <code>false</code>.
-     */
-    private final AtomicBoolean isStatusRequesting = new AtomicBoolean(false);
 
     /**
      * The root directory where new directories with test results are to be stored in.
@@ -191,8 +173,14 @@ public class MasterController
     private boolean compressedTimerFiles = false;
 
     /**
+     * The status update facility that periodically queries the status of all agent controllers while a load test is
+     * running.
+     */
+    private final AgentControllerStatusUpdater agentControllerStatusUpdater;
+
+    /**
      * Creates a new MasterController object.
-     * 
+     *
      * @param agentControllerMap
      *            the list of agent controllers
      * @param config
@@ -221,11 +209,9 @@ public class MasterController
         final int parallelUploadLimit = config.getParallelUploadLimit();
         final int parallelDownloadLimit = config.getParallelDownloadLimit();
 
-        commonExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("MC-pool");
-        defaultCommunicationExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-communication-default-pool",
-                                                                                 parallelCommunicationLimit);
-        uploadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-communication-upload-pool", parallelUploadLimit);
-        downloadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-communication-download-pool", parallelDownloadLimit);
+        defaultExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-default-pool-", parallelCommunicationLimit);
+        uploadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-upload-pool-", parallelUploadLimit);
+        downloadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-download-pool-", parallelDownloadLimit);
 
         testResultsRootDirectory = config.getTestResultsRootDirectory();
         resultOutputDirectory = config.getResultOutputDirectory();
@@ -234,11 +220,13 @@ public class MasterController
         compressedTimerFiles = config.isCompressedTimerFiles();
 
         checkTestPropertiesFileName();
+
+        agentControllerStatusUpdater = new AgentControllerStatusUpdater(defaultExecutor);
     }
 
     /**
      * Checks if the passed test properties file name is valid.
-     * 
+     *
      * @throws IllegalArgumentException
      *             thrown if file path is absolute, does not exist, cannot be read or does not reside in test suite's
      *             configuration directory.
@@ -270,7 +258,7 @@ public class MasterController
         {
             valid = FileUtils.directoryContains(agentConfDir, testPropFile);
         }
-        catch (IOException ioe)
+        catch (final IOException ioe)
         {
         }
 
@@ -284,7 +272,7 @@ public class MasterController
 
     /**
      * Downloads the test results from all configured agent controllers at once.
-     * 
+     *
      * @param testResultAmount
      *            the amount of test result data to download
      * @return true if the operation was successful for ALL known agent controllers; false otherwise
@@ -300,11 +288,11 @@ public class MasterController
         // If the test is still running we will tag the directory as "intermediate results"
         if (!stoppedByUser && isAnyAgentRunning_SAFE())
         {
-            String intermediateResultsPath = currentTestResultsDir.getPath() + "-intermediate";
+            final String intermediateResultsPath = currentTestResultsDir.getPath() + "-intermediate";
             currentTestResultsDir = new File(intermediateResultsPath);
         }
 
-        final ArrayList<AgentController> agentControllers = new ArrayList<AgentController>(agentControllerMap.values());
+        final ArrayList<AgentController> agentControllers = new ArrayList<>(agentControllerMap.values());
         final int agentControllerSize = agentControllers.size();
 
         // Progress count
@@ -336,7 +324,7 @@ public class MasterController
 
     /**
      * Generates the test report from the test results downloaded last.
-     * 
+     *
      * @param reportCreationType
      *            report creation type
      * @return true if the operation was successful; false otherwise
@@ -395,18 +383,18 @@ public class MasterController
 
     /**
      * Ping the agent controllers.
-     * 
+     *
      * @return the ping results keyed by agent controller name
      */
     public Map<String, PingResult> pingAgentControllers()
     {
-        final Map<String, PingResult> pingResults = Collections.synchronizedMap(new TreeMap<String, PingResult>());
+        final Map<String, PingResult> pingResults = Collections.synchronizedMap(new TreeMap<>());
 
         // ping agent controllers
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
         for (final AgentController agentcontroller : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -415,11 +403,9 @@ public class MasterController
 
                     try
                     {
-                        TimerUtils.setUseHighPrecisionTimer(true);
-
-                        final long pingStartTime = TimerUtils.getTime();
+                        final long pingStartTime = TimerUtils.getHighPrecisionTimer().getStartTime();
                         agentcontroller.ping();
-                        final long pingTime = TimerUtils.getTime() - pingStartTime;
+                        final long pingTime = TimerUtils.getHighPrecisionTimer().getElapsedTime(pingStartTime);
 
                         pingResult = new PingResult(pingTime);
                     }
@@ -450,17 +436,17 @@ public class MasterController
 
     /**
      * Print the current agent controller information.
-     * 
+     *
      * @return <code>true</code> if there are agent controller information, <code>false</code> otherwise
      */
     public AgentControllersInformation getAgentControllerInformation()
     {
-        return new AgentControllersInformation(agentControllerMap.values(), defaultCommunicationExecutor);
+        return new AgentControllersInformation(agentControllerMap.values(), defaultExecutor);
     }
 
     /**
      * Returns the names of the test cases, which are active in the current load profile.
-     * 
+     *
      * @return the test case names
      */
     public Set<String> getActiveTestCaseNames()
@@ -473,157 +459,15 @@ public class MasterController
         return currentLoadProfile.getActiveTestCaseNames();
     }
 
-    /**
-     * Start querying agent status list from agent controllers.
-     */
-    public void startAgentStatusList()
-    {
-        // inform user
-        userInterface.receivingAgentStatus();
-        // initialize global requesting status
-        isStatusRequesting.set(true);
-        // initialize single agent controller's requesting status
-        final HashMap<String, AtomicBoolean> acRequestingStatus = getNewAgentControllerRequestingStatusMap();
-
-        commonExecutor.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                // as long as requesting is desired
-                while (isStatusRequesting.get())
-                {
-                    // request status from all agent controllers
-                    for (final AgentController agentController : agentControllerMap.values())
-                    {
-                        // query agent controller if it's not still requesting only
-                        final AtomicBoolean isStillRequesting = acRequestingStatus.get(agentController.getName());
-                        if (!isStillRequesting.get())
-                        {
-                            // set requesting
-                            isStillRequesting.set(true);
-                            defaultCommunicationExecutor.execute(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    // check whether the executor signaled this worker thread to quit
-                                    if (Thread.currentThread().isInterrupted())
-                                    {
-                                        // yes, quit here
-                                        return;
-                                    }
-
-                                    AgentControllerStatus agentControllerStatus;
-
-                                    // query AC status
-                                    try
-                                    {
-                                        LOG.debug("Getting agent status from " + agentController);
-                                        final Set<AgentStatus> agentStatuses = agentController.getAgentStatus();
-                                        agentControllerStatus = new AgentControllerStatus(agentStatuses);
-                                        statuses.put(agentController.getName(), agentControllerStatus);
-                                    }
-                                    catch (final Exception e)
-                                    {
-                                        LOG.error("Failed getting agent status from " + agentController, e);
-                                        agentControllerStatus = statuses.get(agentController.getName());
-                                        if (agentControllerStatus == null)
-                                        {
-                                            statuses.put(agentController.getName(), new AgentControllerStatus(e));
-                                            agentControllerStatus = statuses.get(agentController.getName());
-                                        }
-                                        agentControllerStatus.setException(e);
-                                    }
-
-                                    // reset AC requesting status
-                                    isStillRequesting.set(false);
-                                }
-                            });
-                        }
-                    }
-
-                    // no, wait some time
-                    try
-                    {
-                        Thread.sleep(userInterface.getStatusListUpdateInterval() * 1000);
-                    }
-                    catch (final InterruptedException e)
-                    {
-                        // the executor signaled this worker thread to quit
-                        return;
-                    }
-                }
-            }
-        });
-    }
-
     public TestLoadProfileConfiguration getCurrentLoadProfile()
     {
         return currentLoadProfile;
     }
 
-    private HashMap<String, AtomicBoolean> getNewAgentControllerRequestingStatusMap()
-    {
-        final HashMap<String, AtomicBoolean> acRequestingStatus = new HashMap<String, AtomicBoolean>();
-        for (final AgentController agentController : agentControllerMap.values())
-        {
-            acRequestingStatus.put(agentController.getName(), new AtomicBoolean(false));
-        }
-        return acRequestingStatus;
-    }
-
-    /**
-     * Stop querying agent status list from agent controllers.
-     */
-    public void stopAgentStatusList()
-    {
-        isStatusRequesting.set(false);
-    }
-
-    /**
-     * Returns the status objects of each known agent controller. If there are problems while communicating with an
-     * agent controller, the respective agent statuses will not be included in the list.
-     * 
-     * @return the status list
-     */
-    public Set<AgentStatus> getAgentStatusList()
-    {
-        final Queue<AgentStatus> allAgentStatuses = new ConcurrentLinkedQueue<AgentStatus>();
-
-        final FailedAgentControllerCollection failedAgentcontrollers = new FailedAgentControllerCollection();
-
-        userInterface.receivingAgentStatus();
-
-        for (final AgentController agentController : agentControllerMap.values())
-        {
-            final AgentControllerStatus agentControllerStatus = statuses.get(agentController.getName());
-
-            final Exception e = agentControllerStatus.getException();
-            if (e != null)
-            {
-                failedAgentcontrollers.add(agentController, e);
-            }
-
-            final Set<AgentStatus> agentStatuses = agentControllerStatus.getAgentStatuses();
-            if (agentStatuses != null)
-            {
-                for (final AgentStatus stat : agentStatuses)
-                {
-                    allAgentStatuses.add(stat);
-                }
-            }
-        }
-
-        userInterface.agentStatusReceived(failedAgentcontrollers);
-
-        return new HashSet<AgentStatus>(allAgentStatuses);
-    }
-
     /**
      * Creates a test deployment for the given load profile. If parameter testCaseName is non-null, the load profile is
      * modified such that only the given test is included in the load profile.
-     * 
+     *
      * @param loadProfile
      *            the load profile
      * @param testCaseName
@@ -646,7 +490,7 @@ public class MasterController
     /**
      * Creates a sub directory, named after the current date and time as well as the current test case, in the given
      * directory.
-     * 
+     *
      * @param testResultsRootDir
      *            the root directory
      * @param testCaseName
@@ -668,7 +512,7 @@ public class MasterController
 
     /**
      * Returns the current user interface.
-     * 
+     *
      * @return the user interface
      */
     public MasterControllerUI getUserInterface()
@@ -678,7 +522,7 @@ public class MasterController
 
     /**
      * Checks if the agent controllers do respond.
-     * 
+     *
      * @throws AgentControllerException
      *             if one of the following reasons
      *             <ul>
@@ -719,16 +563,16 @@ public class MasterController
     /**
      * Call {@link AgentController#hasRunningAgent()} concurrently for every agent controller. Nevertheless this method
      * is blocking until all agent controllers have sent a response or timed out.
-     * 
+     *
      * @return query futures; call {@link Future#get()} to receive the running state
      */
-    private Map<AgentController, Future<Boolean>> getAgentRunningState()
+    public Map<AgentController, Future<Boolean>> getAgentRunningState()
     {
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
-        final Map<AgentController, Future<Boolean>> agentFutures = new HashMap<AgentController, Future<Boolean>>();
+        final Map<AgentController, Future<Boolean>> agentFutures = new HashMap<>();
         for (final AgentController agentcontroller : agentControllerMap.values())
         {
-            agentFutures.put(agentcontroller, defaultCommunicationExecutor.submit(new Callable<Boolean>()
+            agentFutures.put(agentcontroller, defaultExecutor.submit(new Callable<Boolean>()
             {
                 @Override
                 public Boolean call() throws Exception
@@ -761,7 +605,7 @@ public class MasterController
 
     /**
      * Checks whether there is at least one responding agent controller with a running agent.
-     * 
+     *
      * @return <code>true</code> if all agent controllers are responsive and there is at least 1 running agent;
      *         <code>false</code> otherwise
      * @throws AgentControllerException
@@ -800,7 +644,7 @@ public class MasterController
 
     /**
      * Checks whether there is at least one responding agent controller with a running agent.
-     * 
+     *
      * @return <code>true</code> if there is a running agent; <code>false</code> otherwise
      */
     public boolean isAnyAgentRunning_SAFE()
@@ -827,7 +671,7 @@ public class MasterController
 
     /**
      * Checks whether the test suite has been uploaded to all agents.
-     * 
+     *
      * @return true if all agents are in sync; false otherwise
      */
     public boolean areAgentsInSync()
@@ -837,7 +681,7 @@ public class MasterController
 
     /**
      * Sets the new user interface.
-     * 
+     *
      * @param userInterface
      *            the user interface
      */
@@ -848,7 +692,7 @@ public class MasterController
 
     /**
      * Starts the agents on all agent controllers at once.
-     * 
+     *
      * @param testCaseName
      *            the name of the test case to start the agents for, or <code>null</code> if all active test cases
      *            should be started
@@ -867,6 +711,14 @@ public class MasterController
             // read load test profile if not already done so before during upload
             final File workDir = setUpWorkDir(FILE_FILTER);
             currentLoadProfile = getTestProfile(workDir);
+
+            final TestCaseMapper testCaseMapper = new TestCaseMapper(currentLoadProfile);
+            if (!testCaseMapper.getUnmappedTestCaseNames().isEmpty())
+            {
+                final Map<String, String> testCaseClassMappings = testCaseMapper.scanForTestCaseClassMappings(workDir);
+                overwriteTestCaseClassMappings(workDir, testCaseClassMappings, FILE_FILTER);
+                currentLoadProfile.setTestCaseClassMappings(testCaseClassMappings);
+            }
         }
 
         resetAgentStatuses();
@@ -882,7 +734,7 @@ public class MasterController
         final ProgressBar progress = startNewProgressBar(agentControllerSize);
         for (final AgentController agentController : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -941,7 +793,7 @@ public class MasterController
 
     /**
      * Stops the agents on all agent controllers at once.
-     * 
+     *
      * @return true if the operation was successful for ALL known agent controllers; false otherwise
      * @throws AgentControllerException
      *             if one of the following reasons
@@ -958,7 +810,7 @@ public class MasterController
         final ProgressBar progress = startNewProgressBar(agentControllerSize);
         for (final AgentController agentController : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -1006,7 +858,7 @@ public class MasterController
 
     /**
      * Updates the agent files on all configured agent controllers at once.
-     * 
+     *
      * @return true if the operation was successful for ALL known agent controllers; false otherwise
      * @throws AgentControllerException
      *             if one of the following reasons
@@ -1036,13 +888,25 @@ public class MasterController
          * Optionally copy and manipulate the test suite.
          */
         LOG.info("Read target test suite");
-        final File workDir = setUpWorkDir(FILE_FILTER);
+        File workDir = setUpWorkDir(FILE_FILTER);
         progressPrepare.increaseCount();
 
         /*
          * Read the configuration files and build load profile.
          */
         currentLoadProfile = getTestProfile(workDir);
+
+        /*
+         * Auto-map test cases to test classes if no mapping was configured.
+         */
+        final TestCaseMapper testCaseMapper = new TestCaseMapper(currentLoadProfile);
+        if (!testCaseMapper.getUnmappedTestCaseNames().isEmpty())
+        {
+            final Map<String, String> autoMappings = testCaseMapper.scanForTestCaseClassMappings(workDir);
+            workDir = overwriteTestCaseClassMappings(workDir, autoMappings, FILE_FILTER);
+            currentLoadProfile.setTestCaseClassMappings(autoMappings);
+        }
+
         progressPrepare.increaseCount();
 
         if (currentLoadProfile.getActiveTestCaseNames().size() <= 0)
@@ -1093,7 +957,7 @@ public class MasterController
 
     /**
      * Set up the working directory.
-     * 
+     *
      * @param fileFilter
      *            file filter for testsuite
      */
@@ -1107,37 +971,93 @@ public class MasterController
         }
         else
         {
-            try
-            {
-                // create a new sub directory in the temp directory
-                workDir = File.createTempFile("xlt-", "", tempDirectory);
-                org.apache.commons.io.FileUtils.forceDelete(workDir);
-                org.apache.commons.io.FileUtils.forceMkdir(workDir);
+            workDir = copyAgentDirectoryToTemp(fileFilter);
 
-                // copy the test suite
-                org.apache.commons.io.FileUtils.copyDirectory(agentFilesDirectory, workDir, fileFilter);
-
-                // enter the test properties file into project.properties
-                final File projectPropertiesFile = new File(new File(workDir, "config"), "project.properties");
-                final PropertiesConfiguration config = new PropertiesConfiguration();
-                config.setIOFactory(new JupIOFactory()); // for better compatibility with java.util.Properties (GH#144)
-                final FileHandler fileHandler = new FileHandler(config);
-
-                fileHandler.load(projectPropertiesFile);
-                config.setProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, propertiesFileName);
-                fileHandler.save(projectPropertiesFile);
-            }
-            catch (final Exception e)
-            {
-                throw new RuntimeException("Failed to make a copy of the agent files", e);
-            }
+            // enter the test properties file into project.properties
+            final File projectPropertiesFile = new File(new File(workDir, XltConstants.CONFIG_DIR_NAME),
+                                                        XltConstants.PROJECT_PROPERTY_FILENAME);
+            final PropertyFileHandler propertyFileHandler = new PropertyFileHandler(projectPropertiesFile);
+            propertyFileHandler.setProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, propertiesFileName);
         }
         return workDir;
     }
 
     /**
+     * Make a temp copy of the agent files directory if necessary and write the given test case and class mappings to
+     * the "project.properties".
+     *
+     * @param currentWorkDir
+     *            the current working directory
+     * @param testCaseClassMappings
+     *            the test case and class mappings to set in the properties
+     * @param fileFilter
+     *            file filter for testsuite
+     * @return the resulting working directory
+     */
+    private File overwriteTestCaseClassMappings(final File currentWorkDir, final Map<String, String> testCaseClassMappings,
+                                                final FileFilter fileFilter)
+    {
+        // If we didn't make a temp copy of the agent directory yet, we do so now
+        final File workDir;
+        if (currentWorkDir == agentFilesDirectory)
+        {
+            workDir = copyAgentDirectoryToTemp(fileFilter);
+        }
+        else
+        {
+            workDir = currentWorkDir;
+        }
+
+        final Map<String, String> propertyMappings = new HashMap<>();
+        for (final String testCaseName : testCaseClassMappings.keySet())
+        {
+            final String propertyName = TestLoadProfileConfiguration.PROP_PREFIX_LOAD_TESTS + testCaseName +
+                                        TestLoadProfileConfiguration.PROP_SUFFIX_CLASS;
+            propertyMappings.put(propertyName, testCaseClassMappings.get(testCaseName));
+        }
+
+        // Append mappings at the end of the project.properties
+        final File projectPropertiesFile = new File(new File(workDir, XltConstants.CONFIG_DIR_NAME),
+                                                    XltConstants.PROJECT_PROPERTY_FILENAME);
+        final PropertyFileHandler propertyFileHandler = new PropertyFileHandler(projectPropertiesFile);
+        propertyFileHandler.appendProperties(propertyMappings,
+                                             "Inserted by XLT: Automatically derived Java class names for tests that have no explicit name/class mapping.");
+
+        return workDir;
+    }
+
+    /**
+     * Copy contents of agent files directory to new temp directory.
+     *
+     * @param fileFilter
+     *            file filter for testsuite
+     * @return the resulting temp directory
+     */
+    private File copyAgentDirectoryToTemp(final FileFilter fileFilter)
+    {
+        final File workDir;
+
+        try
+        {
+            // create a new sub directory in the temp directory
+            workDir = File.createTempFile("xlt-", "", tempDirectory);
+            org.apache.commons.io.FileUtils.forceDelete(workDir);
+            org.apache.commons.io.FileUtils.forceMkdir(workDir);
+
+            // copy the test suite
+            org.apache.commons.io.FileUtils.copyDirectory(agentFilesDirectory, workDir, fileFilter);
+        }
+        catch (final Exception e)
+        {
+            throw new RuntimeException("Failed to make a copy of the agent files", e);
+        }
+
+        return workDir;
+    }
+
+    /**
      * Get the test profile.
-     * 
+     *
      * @param agentTemplateDir
      *            agent template directory
      */
@@ -1149,7 +1069,9 @@ public class MasterController
         try
         {
             // read the load profile from the configuration
-            testConfig = new TestLoadProfileConfiguration(agentTemplateDir, agentTemplateConfigDir);
+            final XltPropertiesImpl properties = TestLoadProfileConfiguration.readProperties(agentTemplateDir, agentTemplateConfigDir);
+            testConfig = new TestLoadProfileConfiguration(properties);
+
             postProcessLoadProfile(testConfig);
         }
         catch (final Throwable ex)
@@ -1175,7 +1097,7 @@ public class MasterController
 
     /**
      * Returns a detailed message for the given throwable object.
-     * 
+     *
      * @param throwable
      *            the throwable object
      * @return detailed message of given throwable object
@@ -1201,7 +1123,7 @@ public class MasterController
 
     /**
      * Sets the test comment.
-     * 
+     *
      * @param comment
      *            the test comment
      */
@@ -1225,7 +1147,7 @@ public class MasterController
 
     /**
      * Returns the test comment.
-     * 
+     *
      * @return test comment
      */
     public String getTestComment()
@@ -1243,50 +1165,35 @@ public class MasterController
             return;
         }
 
-        final File testPropFile = getTestPropertyFile(currentTestResultsDir);
-
-        List<?> lines = null;
+        final FileObject testPropFile = getTestPropertyFile(currentTestResultsDir);
         try
         {
             if (testPropFile != null && testPropFile.exists())
             {
-                lines = org.apache.commons.io.FileUtils.readLines(testPropFile, StandardCharsets.ISO_8859_1);
+                try (final BufferedWriter w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                {
+                    w.newLine();
+                    w.write("# Command line comment (AUTOMATICALLY INSERTED)\n");
+                    w.write("com.xceptance.xlt.loadtests.comment.commandLine = " + getTestComment());
+                }
             }
         }
-        catch (final Exception ex)
+        catch (final Exception e)
         {
-            LOG.error("Failed to read content of file '" + testPropFile.getAbsolutePath() + "'.", ex);
-        }
-
-        if (lines == null)
-        {
-            return;
-        }
-
-        final ArrayList<String> outLines = new ArrayList<String>();
-        for (final Object o : lines)
-        {
-            final String s = (String) o;
-            outLines.add(s);
-        }
-
-        outLines.add(XltConstants.EMPTYSTRING);
-        outLines.add("# Command line comment (AUTOMATICALLY INSERTED)");
-        outLines.add("com.xceptance.xlt.loadtests.comment.commandLine = " + getTestComment());
-
-        try
-        {
-            org.apache.commons.io.FileUtils.writeLines(testPropFile, outLines);
-        }
-        catch (final Exception ex)
-        {
-            LOG.error("Failed to write content to file '" + testPropFile.getAbsolutePath() + "'.", ex);
+            if (testPropFile != null)
+            {
+                LOG.error("Unable to write comment from CLI to '" + testPropFile.getPublicURIString() + "'.", e);
+            }
+            else
+            {
+                LOG.error("Unable to write comment from CLI. File information missing", e);
+            }
         }
     }
 
     /**
      * Returns the value of the test comment property <tt>com.xceptance.xlt.loadtests.comment</tt>.
-     * 
+     *
      * @return value of test comment property
      */
     public String getTestCommentPropertyValue()
@@ -1296,27 +1203,27 @@ public class MasterController
             final FileSystemManager fsMgr = VFS.getManager();
             final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(currentTestResultsDir.getAbsolutePath()),
                                                               fsMgr.resolveFile(getConfigDir(currentTestResultsDir).getAbsolutePath()),
-                                                              true);
+                                                              false, true);
 
-            final String testCommentPropValue = props.getProperty("com.xceptance.xlt.loadtests.comment");
+            final String testCommentPropValue = props.getProperties().getProperty("com.xceptance.xlt.loadtests.comment");
 
             return testCommentPropValue;
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
-            LOG.error("Failed to read/parse test configuration from '" + currentTestResultsDir + "'");
+            LOG.error("Failed to read/parse test configuration from '" + currentTestResultsDir + "'", e);
             return null;
         }
     }
 
     /**
      * Returns the file containing the test-specific properties.
-     * 
+     *
      * @param testResultsDir
      *            test result directory
      * @return test-specific properties file
      */
-    public static File getTestPropertyFile(final File testResultsDir)
+    public static FileObject getTestPropertyFile(final File testResultsDir)
     {
         try
         {
@@ -1324,14 +1231,11 @@ public class MasterController
 
             final File confDir = getConfigDir(testResultsDir);
 
-            final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
-                                                              fsMgr.resolveFile(confDir.getAbsolutePath()), true);
-
-            final String testPropFileName = props.getProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, "test.properties");
-
-            return new File(confDir, testPropFileName);
+            final XltPropertiesImpl props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
+                                                                  fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
+            return props.getTestPropertyFile(true);
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
             LOG.error("Failed to read/parse test configuration from '" + testResultsDir + "'");
             return null;
@@ -1340,23 +1244,19 @@ public class MasterController
 
     public void shutdown()
     {
-        defaultCommunicationExecutor.shutdownNow();
+        defaultExecutor.shutdownNow();
         uploadExecutor.shutdownNow();
         downloadExecutor.shutdownNow();
     }
 
     public void init()
     {
-        // initialize agent controller statuses
-        for (final AgentController agentController : agentControllerMap.values())
-        {
-            statuses.put(agentController.getName(), new AgentControllerStatus((Exception) null));
-        }
+        agentControllerStatusUpdater.clearAgentControllerStatusMap();
     }
 
     /**
      * Creates a new progress bar and sets the default indentation.
-     * 
+     *
      * @param total
      *            expected total progress count
      */
@@ -1371,7 +1271,7 @@ public class MasterController
 
     /**
      * Reset status of agent controllers (agents)
-     * 
+     *
      * @throws AgentControllerException
      *             if one of the following reasons
      *             <ul>
@@ -1385,24 +1285,20 @@ public class MasterController
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
         for (final AgentController agentController : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    Exception ex = null;
-
                     try
                     {
                         agentController.resetAgentsStatus();
                     }
                     catch (final Exception e)
                     {
-                        ex = e;
                         failedAgentControllers.add(agentController, e);
                     }
 
-                    statuses.put(agentController.getName(), new AgentControllerStatus(ex));
                     latch.countDown();
                 }
             });
@@ -1417,12 +1313,14 @@ public class MasterController
             LOG.error("Waiting for resetting agent status to complete has failed");
         }
 
+        agentControllerStatusUpdater.clearAgentControllerStatusMap();
+
         checkSuccess(failedAgentControllers, true);
     }
 
     /**
      * Check if communication with an agent controller failed and react.
-     * 
+     *
      * @param failedAgentControllers
      * @param keepLivingAgentControllersOnly
      *            if <code>true</code> all unreachable agent controllers get removed from the list of (available) agent
@@ -1484,12 +1382,11 @@ public class MasterController
         {
             return inputDir;
         }
-
     }
 
     /**
      * Post-processes the given load profile.
-     * 
+     *
      * @param loadProfile
      *            the load profile
      */
@@ -1533,5 +1430,54 @@ public class MasterController
                 throw new IllegalArgumentException("There is at least one load/performance test configured but no agent controller capable to run load/performance tests could be found.");
             }
         }
+    }
+
+    /**
+     * Starts querying the status from all agent controllers.
+     */
+    public void startAgentControllerStatusUpdates()
+    {
+        final long interval = userInterface.getStatusListUpdateInterval() * 1000L;
+
+        agentControllerStatusUpdater.start(agentControllerMap.values(), interval);
+    }
+
+    /**
+     * Stops querying the status from all agent controllers.
+     */
+    public void stopAgentControllerStatusUpdates()
+    {
+        agentControllerStatusUpdater.stop();
+    }
+
+    /**
+     * Returns the status of each known agent controller.
+     *
+     * @return the status list
+     */
+    public List<AgentControllerStatusInfo> getAgentControllerStatusList()
+    {
+        final FailedAgentControllerCollection failedAgentcontrollers = new FailedAgentControllerCollection();
+
+        userInterface.receivingAgentStatus();
+
+        final Map<String, AgentControllerStatusInfo> agentControllerStatusMap = agentControllerStatusUpdater.getAgentControllerStatusMap();
+
+        for (final AgentController agentController : agentControllerMap.values())
+        {
+            final AgentControllerStatusInfo agentControllerStatus = agentControllerStatusMap.get(agentController.getName());
+            if (agentControllerStatus != null)
+            {
+                final Exception e = agentControllerStatus.getException();
+                if (e != null)
+                {
+                    failedAgentcontrollers.add(agentController, e);
+                }
+            }
+        }
+
+        userInterface.agentStatusReceived(failedAgentcontrollers);
+
+        return new ArrayList<>(agentControllerStatusMap.values());
     }
 }

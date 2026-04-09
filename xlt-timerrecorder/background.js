@@ -220,6 +220,21 @@ function getRequestEntry(tabId, requestId, url) {
   return TabRequestsMap[tabId][requestId][url];
 }
 
+/**
+ * Returns the last completed request in a series of requests with the same request ID.
+ * Such a series of requests is created by a redirect chain.
+ *
+ * @return the direct parent request entry, or undefined if not found
+ */
+function getParentRequestEntry(tabId, requestId) {
+  const requestMap = TabRequestsMap[tabId];
+  const urlMap = requestMap && requestMap[requestId] || {};
+  const entries = Object.values(urlMap);
+  const reversedEntries = Array.from(entries).reverse();
+
+  return reversedEntries.find(function(e) { return e.statusCode !== null });
+}
+
 function removeRequestEntry(tabId) {
   const entry = TabRequestsMap[tabId];
   if (entry) {
@@ -346,6 +361,21 @@ browser.webRequest.onSendHeaders.addListener(function(details) {
       request.type = details.type;
       request.header = details.requestHeaders || null;
       request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders) + getStatusLineSize(details.statusLine);
+
+      // GH#263: fix method of redirected requests
+      const parentRequest = getParentRequestEntry(details.tabId, details.requestId);
+      if (parentRequest) {
+        if (parentRequest.statusCode === 301 || parentRequest.statusCode === 302 || parentRequest.statusCode === 303) {
+          // assume method GET in response to redirects with status code 301/302
+          // (as browsers do) and 303 (as demanded by the spec)
+          request.method = "GET";
+        }
+        else if (parentRequest.statusCode === 307 || parentRequest.statusCode === 308) {
+          // record method of direct parent request in response to redirects with
+          // status code 307/308 (as demanded by the spec)
+          request.method = parentRequest.method;
+        }
+      }
     }
   });
 }, {
@@ -360,7 +390,7 @@ browser.webRequest.onHeadersReceived.addListener(function(details) {
     if (!browser.runtime.lastError) {
       const request = getRequestEntry(details.tabId, details.requestId, details.url);
 
-      request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.statusCode = details.statusCode;
       request.statusLine = details.statusLine;
@@ -383,7 +413,7 @@ browser.webRequest.onBeforeRedirect.addListener(function(details) {
       request.responseStart = details.timeStamp;
       request.responseEnd = details.timeStamp;
 
-      request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.statusCode = details.statusCode;
@@ -407,7 +437,7 @@ browser.webRequest.onResponseStarted.addListener(function(details) {
       const request = getRequestEntry(details.tabId, details.requestId, details.url);
       request.responseStart = details.timeStamp;
 
-      request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.statusCode = details.statusCode;
@@ -430,7 +460,7 @@ browser.webRequest.onCompleted.addListener(function(details) {
       const request = getRequestEntry(details.tabId, details.requestId, details.url);
       request.responseEnd = details.timeStamp;
 
-      request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.statusCode = details.statusCode;
@@ -457,7 +487,7 @@ browser.webRequest.onErrorOccurred.addListener(function(details) {
       request.error = true;
       request.finished = true;
       request.aborted = details.error === "net::ERR_ABORTED";
-      request.method = details.method;
+      request.method = request.method || details.method;
       request.type = details.type;
       request.fromCache = details.fromCache;
       request.responseSize = getResponseSize(details);

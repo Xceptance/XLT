@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,22 @@
 package com.xceptance.xlt.engine;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.Cache;
+import org.htmlunit.WebClient;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.debug.DebuggableScript;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gargoylesoftware.htmlunit.Cache;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.HtmlUnitContextFactory;
-import com.gargoylesoftware.htmlunit.javascript.JavaScriptEngine;
-import com.gargoylesoftware.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.Session;
-
-import net.sourceforge.htmlunit.corejs.javascript.Function;
-import net.sourceforge.htmlunit.corejs.javascript.NativeFunction;
-import net.sourceforge.htmlunit.corejs.javascript.Script;
-import net.sourceforge.htmlunit.corejs.javascript.Scriptable;
-import net.sourceforge.htmlunit.corejs.javascript.debug.DebuggableScript;
 
 /**
  * The {@link XltJavaScriptEngine} class is a specialization of HtmlUnit's {@link JavaScriptEngine}, which allows for
@@ -104,7 +103,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final long runTimeInNS = System.nanoTime() - start;
 
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -125,7 +124,8 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Script compile(final HtmlPage htmlPage, final String sourceCode, final String sourceName, final int startLine)
+    public Script compile(final HtmlPage owningPage, final Scriptable scope, final String sourceCode, final String sourceName,
+                          final int startLine)
     {
         Script script;
 
@@ -139,7 +139,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final String sourceFileName = getSourceFileName(sourceName, sourceCode);
 
-                script = compileScript(htmlPage, sourceCode, sourceName, startLine, sourceFileName);
+                script = compileScript(owningPage, scope, sourceCode, sourceName, startLine, sourceFileName);
 
                 // script can be null
                 if (script != null)
@@ -156,7 +156,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
         {
             // someone messed around with our XltCache so we have to compile the script each time
             final String sourceFileName = getSourceFileName(sourceName, sourceCode);
-            script = compileScript(htmlPage, sourceCode, sourceName, startLine, sourceFileName);
+            script = compileScript(owningPage, scope, sourceCode, sourceName, startLine, sourceFileName);
         }
 
         return script;
@@ -166,7 +166,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Object execute(final HtmlPage htmlPage, final Script script)
+    public Object execute(final HtmlPage htmlPage, final Scriptable scope, final Script script)
     {
         final Object result;
 
@@ -178,13 +178,13 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
 
             try
             {
-                result = super.execute(htmlPage, script);
+                result = super.execute(htmlPage, scope, script);
             }
             finally
             {
                 final long runTimeInNS = System.nanoTime() - start;
 
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -195,7 +195,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
         }
         else
         {
-            result = super.execute(htmlPage, script);
+            result = super.execute(htmlPage, scope, script);
         }
 
         return result;
@@ -222,11 +222,12 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * @param startLine
      *            the line at which the script source starts
      * @param sourceFileName
+     * @param sourceFileName
      *            the source file name to use for logging
      * @return the generated script
      */
-    private Script compileScript(final HtmlPage htmlPage, final String sourceCode, final String sourceName, final int startLine,
-                                 final String sourceFileName)
+    private Script compileScript(final HtmlPage owningPage, final Scriptable scope, final String sourceCode, final String sourceName,
+                                 final int startLine, String sourceFileName)
     {
         final Script script;
 
@@ -237,7 +238,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
 
             try
             {
-                script = super.compile(htmlPage, sourceCode, sourceName, startLine);
+                script = super.compile(owningPage, scope, sourceCode, sourceName, startLine);
             }
             catch (final RuntimeException e)
             {
@@ -249,7 +250,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
                 final long runTimeInNS = System.nanoTime() - start;
 
                 customData.setName("Compiling " + sourceFileName);
-                customData.setRunTime(runTimeInNS / 1000000L);
+                customData.setRunTime((int) (runTimeInNS / 1000000L));
                 Session.getCurrent().getDataManager().logDataRecord(customData);
 
                 if (LOG.isDebugEnabled())
@@ -260,7 +261,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
         }
         else
         {
-            script = super.compile(htmlPage, sourceCode, sourceName, startLine);
+            script = super.compile(owningPage, scope, sourceCode, sourceName, startLine);
         }
 
         return script;

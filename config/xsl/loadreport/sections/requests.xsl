@@ -6,7 +6,11 @@
         <div class="section" id="request-summary">
             <xsl:call-template name="headline-request-summary"/>
 
-            <div class="content">
+            <div id="progressmeter">
+                <p>Loading...</p>
+                <div class="loader"></div>
+            </div>
+            <div class="content hidden">
                 <xsl:call-template name="description-request-summary"/>
 
                 <xsl:call-template name="timer-section">

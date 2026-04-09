@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.xceptance.xlt.agentcontroller;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.common.lang.ThreadUtils;
 import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agent.AgentInfo;
 import com.xceptance.xlt.util.FileReplicationIndex;
@@ -158,6 +161,7 @@ public class AgentManagerImpl implements AgentManager, AgentListener
         unexpectedAgentExitCode.set(0);
         agent = new AgentImpl(getAgentInfo().getAgentID(), getCommandLine(), getAgentInfo().getResultsDirectory(), loadProfile, this,
                               getAgentInfo().getAgentDirectory());
+        verifyAgentRunning();
     }
 
     /**
@@ -478,5 +482,54 @@ public class AgentManagerImpl implements AgentManager, AgentListener
         {
             commandLine[4] = String.valueOf(agentNumber);
         }
+    }
+
+    /**
+     * Verifies that the agent started successfully and is still running (reports status).
+     * 
+     * @throws Exception
+     *             thrown in case agent did not start properly
+     */
+    protected void verifyAgentRunning() throws Exception
+    {
+        final Duration timeout = Duration.ofMillis(5000L);
+        final AgentStatus status = waitForAgentStatus(timeout);
+        if (status != null)
+        {
+            final int exitCode = status.getErrorExitCode();
+            if (exitCode > 0)
+            {
+                throw new Exception("Agent process terminated right after start with exit code '" + exitCode + "'");
+            }
+        }
+        else if (!isAgentRunning())
+        {
+            throw new Exception("Agent process is not running and did not report any status within " + timeout.getSeconds() + " seconds");
+        }
+    }
+
+    /**
+     * Waits at most the given time for incoming agent status.
+     * 
+     * @param maxWaitingTime
+     *            the maximum time to wait
+     * @return the agent status (may be {@code null} in case no agent status is available within the given time)
+     */
+    private AgentStatus waitForAgentStatus(final Duration maxWaitingTime)
+    {
+        AgentStatus status;
+
+        final Instant deadline = Instant.now().plus(maxWaitingTime);
+        while ((status = getAgentStatus()) == null)
+        {
+            if (Instant.now().isAfter(deadline))
+            {
+                break;
+            }
+
+            ThreadUtils.sleep(250L);
+        }
+
+        return status;
     }
 }

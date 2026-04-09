@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebWindow;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlHead;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.UrlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.gargoylesoftware.htmlunit.BrowserVersionFeatures;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlHead;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.xlt.engine.XltWebClient;
 import com.xceptance.xlt.engine.util.URLCleaner;
 
@@ -64,11 +63,6 @@ class PageDOMClone
     private final URL baseURL;
 
     /**
-     * Flag which indicates whether we have to fix URLs with missing slashes.
-     */
-    private final boolean handleMissingSlashes;
-
-    /**
      * Creates a new DOM clone for the given HTML page and DOM document.
      *
      * @param htmlPage
@@ -79,7 +73,6 @@ class PageDOMClone
     public PageDOMClone(final HtmlPage htmlPage, final Document document)
     {
         doc = document;
-        handleMissingSlashes = htmlPage.hasFeature(BrowserVersionFeatures.URL_MISSING_SLASHES);
         frames = new HashMap<Element, PageDOMClone>();
         response = htmlPage.getWebResponse();
         baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(determineBaseURL(htmlPage));
@@ -136,12 +129,9 @@ class PageDOMClone
     public URL getFullyQualifiedUrl(String relativeUrl)
     {
         // to handle http: and http:/ in FF (Bug 1714767)
-        if (handleMissingSlashes)
+        while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://"))
         {
-            while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://"))
-            {
-                relativeUrl = "http:/" + relativeUrl.substring(5);
-            }
+            relativeUrl = "http:/" + relativeUrl.substring(5);
         }
 
         return XltWebClient.makeUrlAbsolute(baseURL, relativeUrl);

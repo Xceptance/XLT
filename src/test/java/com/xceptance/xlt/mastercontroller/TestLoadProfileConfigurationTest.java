@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.xlt.api.util.XltException;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 public class TestLoadProfileConfigurationTest
 {
@@ -36,7 +39,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(LOADTESTS, "");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertTrue(loadProfile.getLoadTestConfiguration().isEmpty());
     }
 
@@ -46,17 +49,27 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.remove(LOADTESTS);
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertTrue(loadProfile.getLoadTestConfiguration().isEmpty());
     }
 
-    @Test(expected = XltException.class)
+    @Test()
     public void testNoTestClassDefined()
     {
         final Properties properties = getDefaultProperties();
         properties.remove(DEFAULT + "class");
 
-        new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
+        Assert.assertEquals(null, loadProfile.getLoadTestConfiguration().get(0).getTestCaseClassName());
+    }
+
+    @Test(expected = XltException.class)
+    public void testEmptyTestClassDefined()
+    {
+        final Properties properties = getDefaultProperties();
+        properties.put(DEFAULT + "class", "");
+
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = XltException.class)
@@ -65,7 +78,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.remove(DEFAULT + "users");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = XltException.class)
@@ -74,7 +87,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.remove(DEFAULT + "measurementPeriod");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -83,7 +96,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "rampUpSteadyPeriod", "30");
         properties.put(DEFAULT + "rampUpPeriod", "20");
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = RuntimeException.class)
@@ -91,7 +104,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "iterations", "");
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = RuntimeException.class)
@@ -99,7 +112,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "shutdownPeriod", "");
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -107,7 +120,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "arrivalRate", "");
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test
@@ -116,13 +129,13 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "arrivalRate", "3600");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         // arrival rate should be used
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 3600
-                    }
+                {
+                    0, 3600
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -133,25 +146,25 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "users", "5/10, 20/15");
         properties.put(DEFAULT + "arrivalRate", "3600");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testComplexUserCountUnsortedOrder()
     {
         final Properties properties = getDefaultProperties();
-        properties.put(DEFAULT + "users",  "1h/1, 5s/15");
+        properties.put(DEFAULT + "users", "1h/1, 5s/15");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testComplexArrivalRateUnsortedOrder()
     {
         final Properties properties = getDefaultProperties();
-        properties.put(DEFAULT + "arrivalRate",  "1h/3600, 5s/2000");
+        properties.put(DEFAULT + "arrivalRate", "1h/3600, 5s/2000");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = XltException.class)
@@ -161,7 +174,7 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "iterations", "20");
         properties.put(DEFAULT + "arrivalRate", "3600");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test
@@ -169,13 +182,13 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "rampUpPeriod", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         // the ramp-up period should be applied to the user count
         Assert.assertTrue(loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers() != new int[][]
             {
-                    {
-                        0, 50
-                    }
+                {
+                    0, 50
+                }
             });
     }
 
@@ -185,15 +198,15 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "users", "0/50, 20/30");
         properties.put(DEFAULT + "rampUpPeriod", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 50
-                    },
-                    {
-                        20, 30
-                    }
+                {
+                    0, 50
+                },
+                {
+                    20, 30
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
     }
 
@@ -203,19 +216,19 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "arrivalRate", "3600");
         properties.put(DEFAULT + "rampUpPeriod", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 50
-                    }
+                {
+                    0, 50
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
         // the ramp-up period should be applied to the arrival rate
         Assert.assertTrue(loadProfile.getLoadTestConfiguration().get(0).getArrivalRate() != new int[][]
             {
-                    {
-                        0, 3600
-                    }
+                {
+                    0, 3600
+                }
             });
     }
 
@@ -225,21 +238,21 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "arrivalRate", "0/360, 20/3600");
         properties.put(DEFAULT + "rampUpPeriod", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 50
-                    }
+                {
+                    0, 50
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 360
-                    },
-                    {
-                        20, 3600
-                    }
+                {
+                    0, 360
+                },
+                {
+                    20, 3600
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -248,7 +261,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(PREFIX_LOADTESTS + "test.class", "anotherTest");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals("anotherTest", loadProfile.getLoadTestConfiguration().get(0).getTestCaseClassName());
     }
 
@@ -258,7 +271,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.remove(DEFAULT + "class");
         properties.put(PREFIX_LOADTESTS + "test.class", "anotherTest");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals("anotherTest", loadProfile.getLoadTestConfiguration().get(0).getTestCaseClassName());
     }
 
@@ -266,7 +279,7 @@ public class TestLoadProfileConfigurationTest
     public void testGetStringPropertyDefaultValue()
     {
         final Properties properties = getDefaultProperties();
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals("test", loadProfile.getLoadTestConfiguration().get(0).getTestCaseClassName());
     }
 
@@ -276,7 +289,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "iterations", "20");
         properties.put(PREFIX_LOADTESTS + "test.iterations", "30");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(30, loadProfile.getLoadTestConfiguration().get(0).getNumberOfIterations());
     }
 
@@ -285,7 +298,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(PREFIX_LOADTESTS + "test.iterations", "30");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(30, loadProfile.getLoadTestConfiguration().get(0).getNumberOfIterations());
     }
 
@@ -294,7 +307,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "iterations", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(20, loadProfile.getLoadTestConfiguration().get(0).getNumberOfIterations());
     }
 
@@ -302,7 +315,7 @@ public class TestLoadProfileConfigurationTest
     public void testGetIntPropertyNoDefaultAndNoSpecificValue()
     {
         final Properties properties = getDefaultProperties();
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(0, loadProfile.getLoadTestConfiguration().get(0).getNumberOfIterations());
     }
 
@@ -312,7 +325,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "warmUpPeriod", "20");
         properties.put(PREFIX_LOADTESTS + "test.warmUpPeriod", "30");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(30, loadProfile.getLoadTestConfiguration().get(0).getWarmUpPeriod());
     }
 
@@ -321,7 +334,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(PREFIX_LOADTESTS + "test.warmUpPeriod", "30");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(30, loadProfile.getLoadTestConfiguration().get(0).getWarmUpPeriod());
     }
 
@@ -330,7 +343,7 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "warmUpPeriod", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(20, loadProfile.getLoadTestConfiguration().get(0).getWarmUpPeriod());
     }
 
@@ -338,7 +351,7 @@ public class TestLoadProfileConfigurationTest
     public void testGetTimePeriodPropertyNoDefaultAndNoSpecificValue()
     {
         final Properties properties = getDefaultProperties();
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(0, loadProfile.getLoadTestConfiguration().get(0).getWarmUpPeriod());
     }
 
@@ -348,15 +361,15 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "arrivalRate", "0/360,20/3600");
         properties.put(PREFIX_LOADTESTS + "test.arrivalRate", "0/720,20/7200");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 720
-                    },
-                    {
-                        20, 7200
-                    }
+                {
+                    0, 720
+                },
+                {
+                    20, 7200
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -365,15 +378,15 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(PREFIX_LOADTESTS + "test.arrivalRate", "0/720,20/7200");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 720
-                    },
-                    {
-                        20, 7200
-                    }
+                {
+                    0, 720
+                },
+                {
+                    20, 7200
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -382,15 +395,15 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "arrivalRate", "0/360,20/3600");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 360
-                    },
-                    {
-                        20, 3600
-                    }
+                {
+                    0, 360
+                },
+                {
+                    20, 3600
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -398,7 +411,7 @@ public class TestLoadProfileConfigurationTest
     public void testGetLoadFunctionNoDefaultAndNoSpecificValue()
     {
         final Properties properties = getDefaultProperties();
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertNull(loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -408,7 +421,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "rampUpPeriod", "10");
         properties.put(DEFAULT + "rampUpInitialValue", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(20, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers()[0][1]);
     }
 
@@ -418,7 +431,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "rampUpPeriod", "10");
         properties.put(PREFIX_LOADTESTS + "test.rampUpInitialValue", "20");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(20, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers()[0][1]);
     }
 
@@ -429,7 +442,7 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "rampUpPeriod", "10");
         properties.put(PREFIX_LOADTESTS + "test.rampUpInitialValue", "10");
         properties.put(DEFAULT + "rampUpInitialValue", "30");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(10, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers()[0][1]);
     }
 
@@ -437,7 +450,7 @@ public class TestLoadProfileConfigurationTest
     public void testNonSpecifiedValues()
     {
         final Properties properties = getDefaultProperties();
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertEquals(0, loadProfile.getLoadTestConfiguration().get(0).getWarmUpPeriod());
         Assert.assertEquals(-1, loadProfile.getLoadTestConfiguration().get(0).getRampUpPeriod());
         Assert.assertNull(loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
@@ -452,7 +465,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "duration", "20");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = XltException.class)
@@ -461,7 +474,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(PREFIX_LOADTESTS + "test.duration", "20");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = XltException.class)
@@ -470,7 +483,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "rampUpInitialUsers", "20");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test(expected = XltException.class)
@@ -479,7 +492,7 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(PREFIX_LOADTESTS + "test.rampUpInitialUsers", "20");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test
@@ -487,12 +500,12 @@ public class TestLoadProfileConfigurationTest
     {
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "loadFactor", "2.0");
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 100
-                    }
+                {
+                    0, 100
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
     }
 
@@ -502,15 +515,15 @@ public class TestLoadProfileConfigurationTest
         final Properties properties = getDefaultProperties();
         properties.put(DEFAULT + "loadFactor", "0/1.0 20/2.0");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 50
-                    },
-                    {
-                        20, 100
-                    }
+                {
+                    0, 50
+                },
+                {
+                    20, 100
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
     }
 
@@ -521,15 +534,15 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "users", "0/50, 20/30");
         properties.put(DEFAULT + "loadFactor", "2.0");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 100
-                    },
-                    {
-                        20, 60
-                    }
+                {
+                    0, 100
+                },
+                {
+                    20, 60
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
     }
 
@@ -540,7 +553,7 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "users", "0/50, 20/30");
         properties.put(DEFAULT + "loadFactor", "0/1.0 20/2.0");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
     }
 
     @Test
@@ -550,18 +563,18 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "arrivalRate", "3600");
         properties.put(DEFAULT + "loadFactor", "2.0");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 100
-                    }
+                {
+                    0, 100
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 7200
-                    }
+                {
+                    0, 7200
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -572,24 +585,24 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "arrivalRate", "3600");
         properties.put(DEFAULT + "loadFactor", "0/1.0 20/2.0");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 50
-                    },
-                    {
-                        20, 100
-                    }
+                {
+                    0, 50
+                },
+                {
+                    20, 100
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 3600
-                    },
-                    {
-                        20, 7200
-                    }
+                {
+                    0, 3600
+                },
+                {
+                    20, 7200
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -600,21 +613,21 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "arrivalRate", "0/360, 20/3600");
         properties.put(DEFAULT + "loadFactor", "2.0");
 
-        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(properties);
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 100
-                    }
+                {
+                    0, 100
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getNumberOfUsers());
         Assert.assertArrayEquals(new int[][]
             {
-                    {
-                        0, 720
-                    },
-                    {
-                        20, 7200
-                    }
+                {
+                    0, 720
+                },
+                {
+                    20, 7200
+                }
             }, loadProfile.getLoadTestConfiguration().get(0).getArrivalRate());
     }
 
@@ -625,7 +638,32 @@ public class TestLoadProfileConfigurationTest
         properties.put(DEFAULT + "arrivalRate", "0/360, 20/3600");
         properties.put(DEFAULT + "loadFactor", "0/1.0 20/2.0");
 
-        new TestLoadProfileConfiguration(properties);
+        new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
+    }
+
+    @Test
+    public void testSetTestCaseClassMappings()
+    {
+        final Properties properties = getDefaultProperties();
+        properties.put(LOADTESTS, "test1 test2 test3");
+        properties.put(PREFIX_LOADTESTS + "test2.class", "anotherTest");
+
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
+        Assert.assertEquals("test",
+                            loadProfile.getTestLoadProfileConfiguration("test1").getLoadTestConfiguration().get(0).getTestCaseClassName());
+        Assert.assertEquals("anotherTest",
+                            loadProfile.getTestLoadProfileConfiguration("test2").getLoadTestConfiguration().get(0).getTestCaseClassName());
+        Assert.assertEquals("test",
+                            loadProfile.getTestLoadProfileConfiguration("test3").getLoadTestConfiguration().get(0).getTestCaseClassName());
+
+        loadProfile.setTestCaseClassMappings(Map.of("test1", "anotherTest1", "test2", "anotherTest2"));
+
+        Assert.assertEquals("anotherTest1",
+                            loadProfile.getTestLoadProfileConfiguration("test1").getLoadTestConfiguration().get(0).getTestCaseClassName());
+        Assert.assertEquals("anotherTest2",
+                            loadProfile.getTestLoadProfileConfiguration("test2").getLoadTestConfiguration().get(0).getTestCaseClassName());
+        Assert.assertEquals("test",
+                            loadProfile.getTestLoadProfileConfiguration("test3").getLoadTestConfiguration().get(0).getTestCaseClassName());
     }
 
     /*

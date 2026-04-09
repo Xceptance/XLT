@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.xceptance.common.net.HttpHeaderConstants;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
+import com.xceptance.xlt.api.util.XltProperties;
 
 /**
  * Validates the downloaded content length with the announced size from the HTTP header.
@@ -34,6 +35,11 @@ import com.xceptance.xlt.api.htmlunit.LightWeightPage;
  */
 public class ContentLengthValidator
 {
+    /**
+     * Property name that controls the validator.
+     */
+    static final String PROPERTY_NAME = ContentLengthValidator.class.getName() + ".enabled";
+    
     /**
      * Validates the specified HTML page.
      * 
@@ -118,7 +124,44 @@ public class ContentLengthValidator
     {
         // return new instance instead of singleton instance because there is no
         // object state at all
-        return new ContentLengthValidator();
+        final boolean enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, false);
+        return enabled ? ContentLengthValidator_Singleton.instance : ContentLengthValidator_Singleton.noopInstance;
+    }
+    
+    /**
+     * Singleton implementation of {@link HtmlEndTagValidator}.
+     */
+    private static class ContentLengthValidator_Singleton
+    {
+        /**
+         * Singleton instance.
+         */
+        private static final ContentLengthValidator instance;
+        private static final ContentLengthValidator noopInstance;
+
+        // static initializer (synchronized by class loader)
+        static
+        {
+            instance = new ContentLengthValidator();
+            noopInstance = new DisabledContentLengthValidator();
+        }
     }
 
+    /**
+     * NoOp implementation of the parent class.
+     */
+    private static final class DisabledContentLengthValidator extends ContentLengthValidator
+    {
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final HtmlPage page)
+        {
+        };
+        
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final LightWeightPage page)
+        {
+        };
+    }
 }

@@ -9,13 +9,27 @@
 }
 
 /* Hide the navigation bar. */
-#navigation {
+nav {
 	display: none;
 }
 
 /* No navigation bar, no need for a header margin. */
-#header {
+#header, #header.sticky {
 	margin: 0px;
+	position: relative;
+}
+
+#header .brand {
+	margin-right: 20px;
+}
+
+#header .title {
+	margin: 5px;	
+}
+/* non-sticky table headers for print */
+table > thead {
+    position: relative;
+    top:0px;
 }
 
 /* Use the full width of the page. */

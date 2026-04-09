@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,22 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebResponse;
+import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.MockWebConnection;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.XltMockWebConnection;
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
 import com.xceptance.xlt.api.util.ResponseProcessor;
 import com.xceptance.xlt.api.util.XltProperties;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 import util.lang.ClassFromByteArrayLoader;
 import util.xlt.properties.ReversibleChangePipeline;
@@ -42,7 +43,7 @@ import util.xlt.properties.ReversibleChangePipeline;
 /**
  * Tests the implementation of the class {@link XltWebClientTest}. There are more tests in the testsuite-xlt project
  * cause they require a running web application that has the access controls been set.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class XltWebClientTest extends AbstractXLTTestCase
@@ -51,13 +52,13 @@ public class XltWebClientTest extends AbstractXLTTestCase
     public static void afterClass()
     {
         // clean-up
-        XltPropertiesImpl.reset();
+        XltEngine.reset();
         SessionImpl.removeCurrent();
     }
 
     /**
      * Test setup. Primarily used for setting required properties.
-     * 
+     *
      * @throws Throwable
      */
     @Before
@@ -72,7 +73,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
 
     /**
      * Tests the handling of default ports.
-     * 
+     *
      * @throws Throwable
      *             thrown on test failure
      */
@@ -172,8 +173,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
         checkBrowserVersion("CH", BrowserVersion.CHROME);
         checkBrowserVersion("EDGE", BrowserVersion.EDGE);
         checkBrowserVersion("FF", BrowserVersion.FIREFOX);
-        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_78);
-        checkBrowserVersion("IE", BrowserVersion.INTERNET_EXPLORER);
+        checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_ESR);
         checkBrowserVersion("", BrowserVersion.FIREFOX);
         checkBrowserVersion("XYZ", BrowserVersion.FIREFOX);
     }
@@ -204,15 +204,44 @@ public class XltWebClientTest extends AbstractXLTTestCase
         }
     }
 
+    @Test
+    public void testReset()
+    {
+        try (final XltWebClient webClient = new XltWebClient(BrowserVersion.BEST_SUPPORTED, true))
+        {
+            // prevalidation
+            final WebConnection webConnection = webClient.getWebConnection();
+            final AbstractJavaScriptEngine<?> javaScriptEngine = webClient.getJavaScriptEngine();
+
+            Assert.assertEquals("Unexpected WebConnection class", XltHttpWebConnection.class, webConnection.getClass());
+            Assert.assertEquals("Unexpected JavaScriptEngine class", XltJavaScriptEngine.class, javaScriptEngine.getClass());
+
+            // reset
+            webClient.reset();
+
+            // validate that web connection and javascript engine are still XLT classes, but different objects
+            final WebConnection newWebConnection = webClient.getWebConnection();
+            final AbstractJavaScriptEngine<?> newJavaScriptEngine = webClient.getJavaScriptEngine();
+
+            Assert.assertEquals("Unexpected WebConnection class", XltHttpWebConnection.class, newWebConnection.getClass());
+            Assert.assertEquals("Unexpected JavaScriptEngine class", XltJavaScriptEngine.class, newJavaScriptEngine.getClass());
+
+            Assert.assertNotEquals("WebConnection is the same as before", webConnection, newWebConnection);
+            Assert.assertNotEquals("JavaScriptEngine is the same as before", javaScriptEngine, newJavaScriptEngine);
+        }
+    }
+
     /**
      * Response processor which simple stores the request URLs.
      */
     static class URLCollector implements ResponseProcessor
     {
         /**
-         * Collected URLs.
+         * Collected URLs. This has to be a synchronized set because some of the processing runs in another thread and
+         * hence we might experiencene false sharing otherwise, mainly because a response processor is not designed to
+         * be a data collector
          */
-        private final Set<URL> urls = new HashSet<URL>();
+        private final Set<URL> urls = Collections.synchronizedSet(new HashSet<URL>());
 
         /**
          * {@inheritDoc}
@@ -227,7 +256,7 @@ public class XltWebClientTest extends AbstractXLTTestCase
 
         /**
          * Returns the collected URLs.
-         * 
+         *
          * @return collected URLs
          */
         public Set<URL> getUrls()

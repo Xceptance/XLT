@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <xsl:output method="html" 
-            indent="no" 
+            indent="yes" 
             omit-xml-declaration="yes"
             encoding="UTF-8"
              />
@@ -43,7 +43,6 @@
 
 <xsl:template match="trendreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
 <html lang="en">
 <head>
     <xsl:call-template name="head">
@@ -73,7 +72,11 @@
 
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+    	</xsl:call-template>
     </div> <!-- data-content -->
 </div> <!-- end container -->    
 

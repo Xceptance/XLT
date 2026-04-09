@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.data.time.TimeSeries;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.report.external.config.ChartConfig;
 import com.xceptance.xlt.report.external.config.SeriesConfig;
@@ -42,7 +43,7 @@ import com.xceptance.xlt.report.util.TimeSeriesConfiguration.Style;
 
 /**
  * Parse values and convert to report. Meta data are taken from configuration file.
- * 
+ *
  * @author Matthias Ullrich (Xceptance Software Technologies GmbH)
  */
 public class CustomReportProvider extends AbstractDataConverter
@@ -112,7 +113,7 @@ public class CustomReportProvider extends AbstractDataConverter
             {
                 String message = String.format("Table '%s' specifies the unknown table type '%s'. Only '%s' and '%s' are supported types.",
                                                tableConfig.getTitle(), tableType, TableType.minmaxavg, TableType.plain);
-                XltLogger.runTimeLogger.error(message);
+                XltLogger.reportLogger.error(message);
             }
 
             // transpose and publish the table if needed
@@ -155,7 +156,7 @@ public class CustomReportProvider extends AbstractDataConverter
     /**
      * Creates a min-max-avg table from the passed value sets. The value sets contain the min/max/mean values, which
      * will populate the respective columns in the table:
-     * 
+     *
      * <pre>
      *             | Value Name 1 | Value Name 2 | ... | Value Name n
      * ---------------------------------------------------------------
@@ -163,7 +164,7 @@ public class CustomReportProvider extends AbstractDataConverter
      *  Minimum    |     Min 1    |     Min 2    | ... |     Min n
      *  Maximum    |     Max 1    |     Max 2    | ... |     Max n
      * </pre>
-     * 
+     *
      * @param tableTitle
      *            the table title
      * @param valueConfigs
@@ -229,7 +230,7 @@ public class CustomReportProvider extends AbstractDataConverter
     /**
      * Creates a plain data table from the passed list of value sets. Each value set in the list will be transformed
      * into exactly one table row as outlined below:
-     * 
+     *
      * <pre>
      *  Value Name 1 | Value Name 2 | ... | Value Name n
      * --------------------------------------------------
@@ -238,7 +239,7 @@ public class CustomReportProvider extends AbstractDataConverter
      *       ...     |      ...     | ... |      ...
      *    Value 1.m  |   Value 2.m  | ... |   Value n.m
      * </pre>
-     * 
+     *
      * @param tableTitle
      *            the table title
      * @param valueConfigs
@@ -310,7 +311,7 @@ public class CustomReportProvider extends AbstractDataConverter
 
     /**
      * Transposes the given table, meaning that rows and columns will be inverted.
-     * 
+     *
      * @param table
      *            the table
      * @return the transposed table
@@ -410,9 +411,9 @@ public class CustomReportProvider extends AbstractDataConverter
             }
             catch (final Exception e)
             {
-                if (XltLogger.runTimeLogger.isInfoEnabled())
+                if (XltLogger.reportLogger.isInfoEnabled())
                 {
-                    XltLogger.runTimeLogger.info("Color '" + color + "' is not valid.");
+                    XltLogger.reportLogger.info("Color '" + color + "' is not valid.");
                 }
             }
         }
@@ -441,16 +442,16 @@ public class CustomReportProvider extends AbstractDataConverter
                 {
                     try
                     {
-                        final int percentage = Integer.parseInt(seriesConfig.getAverage());
-                        final TimeSeries avgTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(timeSeries, percentage);
+                        final MovingAverageConfiguration averageConfig = MovingAverageConfiguration.createPercentageConfig(Integer.parseInt(seriesConfig.getAverage()));
+                        final TimeSeries avgTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(timeSeries, averageConfig);
                         final Color avgColor = getColor(seriesConfig.getAverageColor());
                         final TimeSeriesConfiguration avgTsConfig = new TimeSeriesConfiguration(avgTimeSeries, avgColor, Style.LINE);
                         axisCollections.get(seriesConfig.getAxis() - 1).add(avgTsConfig);
                     }
                     catch (final NumberFormatException e)
                     {
-                        XltLogger.runTimeLogger.warn("Skip moving average for series " + valueName + ". Can not parse average '" +
-                                                     seriesConfig.getAverage() + "' to integer value");
+                        XltLogger.reportLogger.warn("Skip moving average for series " + valueName + ". Can not parse average '" +
+                                                    seriesConfig.getAverage() + "' to integer value");
                     }
                 }
 
@@ -458,9 +459,9 @@ public class CustomReportProvider extends AbstractDataConverter
             }
             else
             {
-                if (XltLogger.runTimeLogger.isInfoEnabled())
+                if (XltLogger.reportLogger.isInfoEnabled())
                 {
-                    XltLogger.runTimeLogger.info("no data for series " + valueName);
+                    XltLogger.reportLogger.info("no data for series " + valueName);
                 }
             }
         }

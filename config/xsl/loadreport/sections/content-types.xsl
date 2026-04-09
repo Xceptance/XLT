@@ -12,12 +12,12 @@
                 <xsl:call-template name="description-content-types"/>
 
                 <div class="data">
-                    <table class="table-autosort:0 table-autostripe table-stripeclass:odd">
+                    <table class="table-autosort:0">
                         <thead>
                             <tr>
-                                <th class="table-sortable:alphanumeric">Content Type</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Percentage</th>
+                                <th class="table-sortable:alphanumeric" id="sortByContentType">Content Type</th>
+                                <th class="table-sortable:numeric" id="sortByContentTypeCount">Count</th>
+                                <th class="table-sortable:numeric" id="sortByContentTypePercentage">Percentage</th>
                             </tr>
                         </thead>
                         <xsl:variable name="count" select="count($rootNode/contentType)"/>
@@ -28,7 +28,7 @@
                                         <xsl:call-template name="create-totals-td">
                                             <xsl:with-param name="rows-in-table" select="$count" />
                                         </xsl:call-template>
-                                        
+
                                         <td class="value number">
                                             <xsl:value-of select="format-number($totalHits, '#,##0')"/>
                                         </td>
@@ -64,7 +64,7 @@
                                 </tfoot>
                                 <tbody>
                                     <tr>
-                                        <td class="value text" colspan="3">There are no values to show in this table.</td>
+                                        <td class="no-data" colspan="3">No data available</td>
                                     </tr>
                                 </tbody>
                             </xsl:otherwise>

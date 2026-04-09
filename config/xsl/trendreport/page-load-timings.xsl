@@ -41,11 +41,10 @@
 
 <xsl:template match="trendreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Trend Report - Custom Timers'" />
+        <xsl:with-param name="title" select="'XLT Performance Trend Report - Page Load Timings'" />
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
@@ -66,7 +65,11 @@
 
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+    	</xsl:call-template>
     </div> <!-- data-content -->
 </div> <!-- end container -->
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.awt.geom.Rectangle2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,6 +36,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.JFreeChart;
@@ -53,7 +61,7 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.Range;
-import org.jfree.data.time.MovingAverage;
+import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -65,8 +73,9 @@ import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.keypoint.PngEncoder;
+import com.luciad.imageio.webp.WebPWriteParam;
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
@@ -85,7 +94,10 @@ public final class JFreeChartUtils
         /**
          * blue, ...
          */
-        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN);
+        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_1, COLOR_MOVING_AVERAGE_ADDITIONAL_2,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_3, COLOR_MOVING_AVERAGE_ADDITIONAL_4,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_5);
 
         /**
          * blue, gray, magenta, green, red
@@ -214,14 +226,39 @@ public final class JFreeChartUtils
     public static final Color COLOR_MEAN = new Color(0xCD3333);
 
     /**
-     * The color of a median line in the charts (dark turquoise).
+     * The color of a median line in the charts (dark gray).
      */
-    public static final Color COLOR_MEDIAN = new Color(0x62C0E0);
+    public static final Color COLOR_MEDIAN = Color.DARK_GRAY;
 
     /**
      * The color of a moving average line in the charts (dark blue).
      */
     public static final Color COLOR_MOVING_AVERAGE = new Color(0x1C1CBF);
+
+    /**
+     * The color of an additional moving average line in the charts (light green).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_1 = new Color(0xB2DF8B);
+
+    /**
+     * The color of an additional moving average line in the charts (light orange).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_2 = new Color(0xFDBF6D);
+
+    /**
+     * The color of an additional moving average line in the charts (light purple).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_3 = new Color(0xCAB2D7);
+
+    /**
+     * The color of an additional moving average line in the charts (light blue).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_4 = new Color(0xA6CDE3);
+
+    /**
+     * The color of an additional moving average line in the charts (light pink).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_5 = new Color(0xF6A9A9);
 
     /**
      * The default chart theme.
@@ -264,9 +301,10 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * The compression level to use when creating PNG images (default: 6).
+     * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest
+     * compression (default: 0.0).
      */
-    private static int pngCompressionLevel = 6;
+    private static float webpCompressionFactor = 0.0f;
 
     /**
      * The replacement value for negative/0 values when making a series fit for logarithmic axes.
@@ -339,7 +377,8 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Creates an average chart with the moving average, the median, and the mean, but not the actual values.
+     * Creates an average chart with the moving average, the median, the mean, and (optional) additional moving
+     * averages, but not the actual values.
      *
      * @param seriesName
      *            the name of the series
@@ -359,13 +398,16 @@ public final class JFreeChartUtils
      *            chart start time
      * @param endTime
      *            chart end time
+     * @param additionalAverageValueSeriesList
+     *            list of additional average value series to add to the chart
      */
     public static JFreeChart createAverageLineChart(final String seriesName, final String chartTitle, final String yAxisTitle,
                                                     final TimeSeries valueSeries, final TimeSeries averageValueSeries, final double median,
-                                                    final double mean, final long startTime, final long endTime)
+                                                    final double mean, final long startTime, final long endTime,
+                                                    final List<TimeSeries> additionalAverageValueSeriesList)
     {
-        final TimeSeries medianSeries = new TimeSeries(seriesName + " (Median)");
-        final TimeSeries meanSeries = new TimeSeries(seriesName + " (Mean)");
+        final TimeSeries medianSeries = new TimeSeries(seriesName + " Median");
+        final TimeSeries meanSeries = new TimeSeries(seriesName + " Mean");
 
         final TimeSeriesCollection seriesCollection = new TimeSeriesCollection();
         seriesCollection.addSeries(averageValueSeries);
@@ -384,6 +426,18 @@ public final class JFreeChartUtils
 
             meanSeries.add(firstItem.getPeriod(), mean);
             meanSeries.add(lastItem.getPeriod(), mean);
+        }
+
+        // add additional averages if there are any
+        if (additionalAverageValueSeriesList != null)
+        {
+            // don't add more than the allowed maximum of additional averages
+            final int maxAdditionalAveragesCount = Math.min(additionalAverageValueSeriesList.size(),
+                                                            XltConstants.REPORT_CHART_MAX_ADDITIONAL_AVERAGES);
+            for (int i = 0; i < maxAdditionalAveragesCount; i++)
+            {
+                seriesCollection.addSeries(additionalAverageValueSeriesList.get(i));
+            }
         }
 
         // create and customize the chart
@@ -587,7 +641,7 @@ public final class JFreeChartUtils
      * @param endTime
      *            chart end time
      * @return the chart
-     * @see {@link JFreeChartUtils#addLinePlotToCombinedPlotChart(JFreeChart, String, TimeSeriesCollection)}
+     * @see {@link JFreeChartUtils#addLinePlotToCombinedPlotChart(JFreeChart, String, XYDataset)}
      */
     public static JFreeChart createCombinedPlotChart(final String chartTitle, final long startTime, final long endTime)
     {
@@ -657,15 +711,15 @@ public final class JFreeChartUtils
      *            the end time of the x-axis
      * @param includeMovingAverage
      *            whether or not an additional moving average time series should be included
-     * @param percentage
-     *            the percentaged amount of values for building the moving average
+     * @param movingAverageConfig
+     *            the configuration for building the moving average
      * @return the chart
      */
     public static JFreeChart createLineChart(final String chartTitle, final String rangeAxisTitle, final TimeSeries series,
                                              final long startTime, final long endTime, final boolean includeMovingAverage,
-                                             final int percentage)
+                                             final MovingAverageConfiguration movingAverageConfig)
     {
-        return createLineChart(chartTitle, rangeAxisTitle, series, startTime, endTime, includeMovingAverage, percentage, true);
+        return createLineChart(chartTitle, rangeAxisTitle, series, startTime, endTime, includeMovingAverage, movingAverageConfig, true);
     }
 
     /**
@@ -683,19 +737,20 @@ public final class JFreeChartUtils
      *            the end time of the x-axis
      * @param includeMovingAverage
      *            whether or not an additional moving average time series should be included
-     * @param percentage
-     *            the percentaged amount of values for building the moving average
+     * @param movingAverageConfig
+     *            the configuration for building the moving average
      * @param showDots
      *            whether to additionally visualize the values as dots
      * @return the chart
      */
     public static JFreeChart createLineChart(final String chartTitle, final String rangeAxisTitle, final TimeSeries series,
                                              final long startTime, final long endTime, final boolean includeMovingAverage,
-                                             final int percentage, final boolean showDots)
+                                             final MovingAverageConfiguration movingAverageConfig, final boolean showDots)
     {
-        final TimeSeries movingAverageSeries = includeMovingAverage ? createMovingAverageTimeSeries(series, percentage) : null;
+        final TimeSeries movingAverageSeries = includeMovingAverage ? createMovingAverageTimeSeries(series, movingAverageConfig) : null;
 
-        return createLineChart(chartTitle, rangeAxisTitle, series, movingAverageSeries, startTime, endTime, showDots, ChartScale.LINEAR, -1);
+        return createLineChart(chartTitle, rangeAxisTitle, series, movingAverageSeries, startTime, endTime, showDots, ChartScale.LINEAR,
+                               -1);
     }
 
     /**
@@ -706,7 +761,7 @@ public final class JFreeChartUtils
      *            the chart title
      * @param rangeAxisTitle
      *            the name of the y-axis
-     * @param series
+     * @param timeSeries
      *            the time series to show
      * @param movingAverageTimeSeries
      *            the moving average time series
@@ -765,7 +820,7 @@ public final class JFreeChartUtils
 
         // response time axis
         final NumberAxis rangeAxis = chartScale == ChartScale.LOGARITHMIC ? new LogarithmicAxis(rangeAxisTitle)
-                                                                         : new NumberAxis(rangeAxisTitle);
+                                                                          : new NumberAxis(rangeAxisTitle);
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
         // response time plot
@@ -920,20 +975,117 @@ public final class JFreeChartUtils
      *
      * @param series
      *            the source series
-     * @param percentage
-     *            the percentaged amount of values for building the moving average
-     * @return the time series
+     * @param movingAverageConfig
+     *            the moving average configuration defining how the average should be calculated
+     * @return the "moving average" time series
      */
-    public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final int percentage)
+    public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final MovingAverageConfiguration movingAverageConfig)
     {
-        // take the last X percent of the values
-        final int samples = Math.max(2, series.getItemCount() * percentage / 100);
+        final String resultSeriesName = series.getKey() + " Average (" + movingAverageConfig.getName() + ")";
 
-        // derive the name from the source series
-        final String avgSeriesName = series.getKey() + " (Moving Average)";
+        return switch (movingAverageConfig.getType())
+        {
+            case PERCENTAGE -> createMovingAverageTimeSeriesPercentage(series, movingAverageConfig.getValue(), resultSeriesName);
+            case TIME -> createMovingAverageTimeSeriesTime(series, movingAverageConfig.getValue(), resultSeriesName);
+        };
+    }
 
-        // return MovingAverage.createMovingAverage(series, avgSeriesName, samples, samples);
-        return MovingAverage.createPointMovingAverage(series, avgSeriesName, samples);
+    /**
+     * Creates a "moving average" time series from the given time series by averaging over a given percentage of data
+     * points.
+     * 
+     * @param series
+     *            the source series
+     * @param percentage
+     *            the percentage of data points for building the moving average
+     * @param resultSeriesName
+     *            the name of the result series
+     * @return the "moving average" time series
+     */
+    private static TimeSeries createMovingAverageTimeSeriesPercentage(final TimeSeries series, final int percentage,
+                                                                      final String resultSeriesName)
+    {
+        final TimeSeries result = new TimeSeries(resultSeriesName);
+
+        if (!series.isEmpty())
+        {
+            // Convert percentage into absolute number of data points. Make sure percentage stays between 1% and 100%,
+            // and the resulting number of samples is at least 1.
+            final int samples = Math.max(1, series.getItemCount() * Math.clamp(percentage, 1, 100) / 100);
+
+            // We use a custom implementation instead of the existing JFree method here, because the JFree version
+            // doesn't insert points in the beginning of the average series when the number of previous points from
+            // the source series is lower than the sample window size.
+            double sum = 0.0;
+            for (int i = 0; i < series.getItemCount(); i++)
+            {
+                sum += series.getValue(i).doubleValue();
+
+                if (i < samples)
+                {
+                    // Add the average over all points so far to the result series
+                    result.add(series.getTimePeriod(i), sum / (i + 1));
+                }
+                else
+                {
+                    // Remove the value that is outside the sample window from the sum and calculate the average
+                    sum -= series.getValue(i - samples).doubleValue();
+                    result.add(series.getTimePeriod(i), sum / samples);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Creates a "moving average" time series from the given time series by averaging over a given time interval.
+     *
+     * @param series
+     *            the source series
+     * @param seconds
+     *            the time interval in seconds for building the moving average
+     * @param resultSeriesName
+     *            the name of the result series
+     * @return the "moving average" time series
+     */
+    private static TimeSeries createMovingAverageTimeSeriesTime(final TimeSeries series, final int seconds, final String resultSeriesName)
+    {
+        final TimeSeries result = new TimeSeries(resultSeriesName);
+
+        if (!series.isEmpty())
+        {
+            // Get time interval size in milliseconds. Make sure resulting interval is at least 1 second long. Intervals
+            // longer than the total series time don't need to be handled as they don't affect the calculations.
+            final long intervalSizeInMilliseconds = Math.max(1, seconds) * 1000L;
+
+            // Calculate averages using two pointer method. The start pointer will be increased along the way to mark
+            // the first data point still within the current averaging time interval.
+            int startPointer = 0;
+            double sum = 0.0;
+
+            for (int i = 0; i < series.getItemCount(); i++)
+            {
+                // Add current value to the sum
+                sum += series.getValue(i).doubleValue();
+
+                // Determine start time of the averaging time interval for the current point
+                final RegularTimePeriod period = series.getTimePeriod(i);
+                final long intervalStartTime = period.getFirstMillisecond() - intervalSizeInMilliseconds;
+
+                // Remove all values outside the interval from the sum and increase the start pointer accordingly
+                while (series.getTimePeriod(startPointer).getFirstMillisecond() <= intervalStartTime)
+                {
+                    sum -= series.getValue(startPointer).doubleValue();
+                    startPointer++;
+                }
+
+                // Add the average for the current point to the result series
+                result.add(period, sum / (i - startPointer + 1));
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -945,7 +1097,7 @@ public final class JFreeChartUtils
      */
     public static NumberAxis createNumberAxis(String axisTitle)
     {
-        if (StringUtils.isBlank(axisTitle))
+        if (axisTitle == null)
         {
             axisTitle = DEFAULT_VALUE_AXIS_TITLE;
         }
@@ -958,7 +1110,7 @@ public final class JFreeChartUtils
 
     /**
      * Creates a placeholder chart and stores it to the specified directory. Actually the placeholder chart is an empty
-     * PNG file with the same dimensions as the regular charts.
+     * WebP file with the same dimensions as the regular charts.
      *
      * @param outputDir
      *            the directory to which to save the chart
@@ -967,34 +1119,26 @@ public final class JFreeChartUtils
     {
         final File outputFile = new File(outputDir, XltConstants.REPORT_CHART_PLACEHOLDER_FILENAME);
 
-        try
-        {
-            // create the image with the correct dimensions
-            final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // create the image with the correct dimensions
+        final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
-            // set white background
-            final Graphics2D graphics = bufferedImage.createGraphics();
-            graphics.setBackground((Color) DEFAULT_CHART_THEME.getChartBackgroundPaint());
-            graphics.clearRect(0, 0, width, height);
+        // set white background
+        final Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.setBackground((Color) DEFAULT_CHART_THEME.getChartBackgroundPaint());
+        graphics.clearRect(0, 0, width, height);
 
-            // draw some info text
-            final Font font = new Font("SansSerif", Font.BOLD, 32);
-            graphics.setFont(font);
-            final FontMetrics fontMetrics = graphics.getFontMetrics();
-            final int stringWidth = fontMetrics.stringWidth(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE);
-            final int stringHeight = fontMetrics.getAscent();
-            graphics.setPaint(new Color(0xcccccc));
-            graphics.drawString(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE, (width - stringWidth) / 2, height / 2 + stringHeight / 4);
-            graphics.dispose();
+        // draw some info text
+        final Font font = new Font("SansSerif", Font.BOLD, 32);
+        graphics.setFont(font);
+        final FontMetrics fontMetrics = graphics.getFontMetrics();
+        final int stringWidth = fontMetrics.stringWidth(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE);
+        final int stringHeight = fontMetrics.getAscent();
+        graphics.setPaint(new Color(0xcccccc));
+        graphics.drawString(XltConstants.REPORT_CHART_PLACEHOLDER_MESSAGE, (width - stringWidth) / 2, height / 2 + stringHeight / 4);
+        graphics.dispose();
 
-            // finally save the chart
-            final byte[] bytes = new PngEncoder(bufferedImage, false, 0, pngCompressionLevel).pngEncode();
-            org.apache.commons.io.FileUtils.writeByteArrayToFile(outputFile, bytes);
-        }
-        catch (final IOException e)
-        {
-            log.error("Failed to save placeholder chart to file: " + outputFile, e);
-        }
+        // finally save the image
+        saveImage(bufferedImage, outputFile);
     }
 
     /**
@@ -1138,7 +1282,29 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Saves the given chart in the PNG format to a given file.
+     * Saves the given chart in the WebP format to a file with the passed name in the specified directory.
+     *
+     * @param chart
+     *            the chart
+     * @param name
+     *            the file name (excluding the .webp extension)
+     * @param outputDir
+     *            the target directory
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     */
+    public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
+                                 final int chartHeight)
+    {
+        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".webp");
+
+        saveChart(chart, outputFile, chartWidth, chartHeight);
+    }
+
+    /**
+     * Saves the given chart in the WebP format to a given file.
      *
      * @param chart
      *            the chart
@@ -1154,56 +1320,71 @@ public final class JFreeChartUtils
         // first of all apply the XLT chart theme to the chart
         DEFAULT_CHART_THEME.apply(chart);
 
+        // brand chart
+        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
+        final Graphics2D g2d = bufferedImage.createGraphics();
+
+        // prepare watermark settings
+        g2d.setFont(DEFAULT_CHART_THEME.getSmallFont());
+        g2d.setColor(WATERMARK_COLOR);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        // insert watermark
+        final FontMetrics fontMetrics = g2d.getFontMetrics();
+        final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
+        final int x = chartWidth - (1 + 8 + textWidth);
+        final int y = 1 + 8 + fontMetrics.getAscent();
+        g2d.drawString(WATERMARK_TEXT, x, y);
+        g2d.dispose();
+
+        // finally save the image
+        saveImage(bufferedImage, outputFile);
+    }
+
+    /**
+     * Saves the given buffered image in the WebP format to a given file.
+     *
+     * @param bufferedImage
+     *            the buffered image
+     * @param outputFile
+     *            the target file
+     */
+    private static void saveImage(final BufferedImage bufferedImage, final File outputFile)
+    {
+        // Encode image as webp using default settings and save it as webp file
+        final ImageWriter writer = ImageIO.getImageWritersByMIMEType("image/webp").next();
+
+        // Set parameters for lossless webp files
+        final WebPWriteParam writeParam = new WebPWriteParam(writer.getLocale());
+
+        // Notify encoder to consider WebPWriteParams
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+        // Set lossless compression
+        writeParam.setCompressionType(writeParam.getCompressionTypes()[WebPWriteParam.LOSSLESS_COMPRESSION]);
+
+        // Set quality of images
+        writeParam.setCompressionQuality(webpCompressionFactor);
+
         try
         {
-            // brand chart
-            final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
-            final Graphics2D g2d = bufferedImage.createGraphics();
+            // create parent directories if they don't exist
+            Files.createDirectories(Paths.get(outputFile.getParent()));
 
-            // prepare watermark settings
-            g2d.setFont(DEFAULT_CHART_THEME.getSmallFont());
-            g2d.setColor(WATERMARK_COLOR);
-            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-            // insert watermark
-            final FontMetrics fontMetrics = g2d.getFontMetrics();
-            final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
-            final int x = chartWidth - (1 + 8 + textWidth);
-            final int y = 1 + 8 + fontMetrics.getAscent();
-            g2d.drawString(WATERMARK_TEXT, x, y);
-            g2d.dispose();
-
-            // save image
-            final PngEncoder encoder = new PngEncoder(bufferedImage, true, 0, pngCompressionLevel);
-            final byte[] imageData = encoder.pngEncode();
-            org.apache.commons.io.FileUtils.writeByteArrayToFile(outputFile, imageData);
+            // save the image
+            try (final FileImageOutputStream fios = new FileImageOutputStream(outputFile))
+            {
+                writer.setOutput(fios);
+                writer.write(null, new IIOImage(bufferedImage, null, null), writeParam);
+            }
         }
         catch (final IOException e)
         {
             log.error("Failed to save chart to file: " + outputFile, e);
         }
-    }
 
-    /**
-     * Saves the given chart in the PNG format to a file with the passed name in the specified directory.
-     *
-     * @param chart
-     *            the chart
-     * @param name
-     *            the file name (excluding the .png extension)
-     * @param outputDir
-     *            the target directory
-     * @param chartWidth
-     *            the chart width
-     * @param chartHeight
-     *            the chart height
-     */
-    public static void saveChart(final JFreeChart chart, final String name, final File outputDir, final int chartWidth,
-                                 final int chartHeight)
-    {
-        final File outputFile = new File(outputDir, FileUtils.convertIllegalCharsInFileName(name) + ".png");
-
-        saveChart(chart, outputFile, chartWidth, chartHeight);
+        // clean up
+        writer.dispose();
     }
 
     /**
@@ -1213,8 +1394,8 @@ public final class JFreeChartUtils
      *            the chart to modify
      * @param rangeAxisTitle
      *            the name of the y-axis
-     * @param seriesCollection
-     *            the time series collection to show
+     * @param seriesConfigurations
+     *            the time series configurations to show
      */
     public static void setAxisTimeSeriesCollection(final JFreeChart chart, final int axisIndex, final String rangeAxisTitle,
                                                    final List<TimeSeriesConfiguration> seriesConfigurations)
@@ -1272,8 +1453,8 @@ public final class JFreeChartUtils
 
             // define color
             final ColorSet colorSet = axisIndex < 1 ? ColorSet.A : ColorSet.B;
-            final Color color = seriesConfig.getColor() != null ? seriesConfig.getColor() : colorSet.get((index + colorSet.size()) %
-                                                                                                         colorSet.size());
+            final Color color = seriesConfig.getColor() != null ? seriesConfig.getColor()
+                                                                : colorSet.get((index + colorSet.size()) % colorSet.size());
 
             // update renderer (color)
             renderer.setSeriesPaint(index, color);
@@ -1294,7 +1475,7 @@ public final class JFreeChartUtils
      * series will be {@link DoubleMinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
      * properties of a {@link DoubleMinMaxValue} will still be available.
      *
-     * @param minMaxValueSet
+     * @param valueSet
      *            the source min-max value set
      * @param timeSeriesName
      *            the name of the time series
@@ -1328,8 +1509,8 @@ public final class JFreeChartUtils
 
     /**
      * Creates a new time series with the given name from the passed min-max value set. The data items in the time
-     * series will be {@link MinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
-     * properties of a {@link MinMaxValue} will still be available.
+     * series will be {@link IntMinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
+     * properties of a {@link IntMinMaxValue} will still be available.
      *
      * @param minMaxValueSet
      *            the source min-max value set
@@ -1337,25 +1518,25 @@ public final class JFreeChartUtils
      *            the name of the time series
      * @return the time series
      */
-    public static TimeSeries toMinMaxTimeSeries(final MinMaxValueSet minMaxValueSet, final String timeSeriesName)
+    public static TimeSeries toMinMaxTimeSeries(final IntMinMaxValueSet minMaxValueSet, final String timeSeriesName)
     {
         final TimeSeries timeSeries = new TimeSeries(timeSeriesName);
 
         if (minMaxValueSet.getValueCount() > 0)
         {
-            final MinMaxValue[] values = minMaxValueSet.getValues();
+            final IntMinMaxValue[] values = minMaxValueSet.getValues();
             long time = minMaxValueSet.getMinimumTime();
             final int scale = minMaxValueSet.getScale();
 
             for (int i = 0; i < values.length; i++)
             {
-                final MinMaxValue value = values[i];
+                final IntMinMaxValue value = values[i];
 
                 if (value != null)
                 {
                     final Second second = getSecond(time);
 
-                    timeSeries.add(new MinMaxTimeSeriesDataItem(second, value));
+                    timeSeries.add(new IntMinMaxTimeSeriesDataItem(second, value));
                 }
 
                 time = time + scale * 1000;
@@ -1376,19 +1557,19 @@ public final class JFreeChartUtils
      *            the name of the time series
      * @return the time series
      */
-    public static TimeSeries toStandardTimeSeries(final MinMaxValueSet minMaxValueSet, final String timeSeriesName)
+    public static TimeSeries toStandardTimeSeries(final IntMinMaxValueSet minMaxValueSet, final String timeSeriesName)
     {
         final TimeSeries timeSeries = new TimeSeries(timeSeriesName);
 
         if (minMaxValueSet.getValueCount() > 0)
         {
-            final MinMaxValue[] values = minMaxValueSet.getValues();
+            final IntMinMaxValue[] values = minMaxValueSet.getValues();
             long time = minMaxValueSet.getMinimumTime();
             final int scale = minMaxValueSet.getScale();
 
             for (int i = 0; i < values.length; i++)
             {
-                final MinMaxValue value = values[i];
+                final IntMinMaxValue value = values[i];
 
                 if (value != null)
                 {
@@ -1474,6 +1655,35 @@ public final class JFreeChartUtils
     }
 
     /**
+     * Sets the compression factor (0 -> fastest compression, 1 -> highest compression) to use when creating Webp
+     * images.
+     *
+     * @param factor
+     *            the compression factor (0 -> fastest compression, 1 -> highest compression)
+     */
+    public static void setWebpCompressionFactor(final float factor)
+    {
+        if (0 <= factor && factor <= 1)
+        {
+            webpCompressionFactor = factor;
+        }
+        else
+        {
+            throw new IllegalArgumentException("The Webp compression factor must be between 0...1");
+        }
+    }
+
+    /**
+     * Returns the compression factor to use when creating Webp images.
+     *
+     * @return the compression factor (0 -> fastest compression, 1 -> highest compression)
+     */
+    public static float getWebpCompressionFactor()
+    {
+        return webpCompressionFactor;
+    }
+
+    /**
      * Fixes the given interval series such that negative or 0 values are replaced with a very small positive number so
      * the interval series can be used together with logarithmic axes.
      *
@@ -1506,34 +1716,6 @@ public final class JFreeChartUtils
                 intervalSeries.add(x, dataItem.getXLowValue(), dataItem.getXHighValue(), y, yLow, yHigh);
             }
         }
-    }
-
-    /**
-     * Sets the compression level to use when creating PNG images.
-     *
-     * @param level
-     *            the compression level
-     */
-    public static void setPngCompressionLevel(final int level)
-    {
-        if (0 <= level && level <= 9)
-        {
-            pngCompressionLevel = level;
-        }
-        else
-        {
-            throw new IllegalArgumentException("The PNG compression level must be between 0...9");
-        }
-    }
-
-    /**
-     * Returns the compression level to use when creating PNG images.
-     *
-     * @return the compression level
-     */
-    public static int getPngCompressionLevel()
-    {
-        return pngCompressionLevel;
     }
 
     /**

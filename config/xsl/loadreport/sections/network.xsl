@@ -19,19 +19,19 @@
                 <div class="charts">
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/RequestsPerSecond.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/RequestsPerSecond.webp</xsl:attribute>
                             <xsl:attribute name="alt">Requests</xsl:attribute>
                         </img>
                     </div>
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/SentBytesPerSecond.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/SentBytesPerSecond.webp</xsl:attribute>
                             <xsl:attribute name="alt">Sent Bytes</xsl:attribute>
                         </img>
                     </div>
                     <div class="chart">
                         <img>
-                            <xsl:attribute name="src">charts/ReceivedBytesPerSecond.png</xsl:attribute>
+                            <xsl:attribute name="src">charts/ReceivedBytesPerSecond.webp</xsl:attribute>
                             <xsl:attribute name="alt">Received Bytes</xsl:attribute>
                         </img>
                     </div>

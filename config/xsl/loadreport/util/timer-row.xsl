@@ -27,22 +27,12 @@
 				<xsl:if test="count(urls) &gt; 0">
 					<div id="url-listing-{$gid}" class="cluetip-data">
 						<h4>
-							<xsl:value-of select="urls/total" />
-							<xsl:text> unique URL(s)</xsl:text>
+							<xsl:value-of select="format-number(urls/total, '#,##0')" />
+							<xsl:text> distinct URL(s)**</xsl:text>
 						</h4>
 						<ul class="urls">
 							<xsl:for-each select="urls/list/string">
-								<xsl:variable name="oddoreven">
-									<xsl:choose>
-										<xsl:when test="position() mod 2 = 0">
-											<xsl:text>even</xsl:text>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:text>odd</xsl:text>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:variable>
-								<li class="{$oddoreven}">
+								<li>
 									<a href="{.}" target="_blank">
 										<xsl:value-of select="." />
 									</a>
@@ -53,24 +43,43 @@
 				</xsl:if>
 			</td>
 
+			<!-- labels -->
+			<xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+				<td class="text colgroup1">
+					<xsl:attribute name="data-cell-value">
+						<xsl:value-of select="normalize-space(labels)"/>
+					</xsl:attribute>
+					<xsl:call-template name="timer-labels">
+						<xsl:with-param name="labelString" select="labels"/>
+					</xsl:call-template>
+				</td>
+			</xsl:if>
+
 			<!-- count -->
 			<td class="value number">
 				<xsl:value-of select="format-number(count, '#,##0')" />
 			</td>
 
+			<xsl:if test="$type = 'request'">
+				<!-- distinct -->
+				<td class="value number">
+					<xsl:value-of select="format-number(urls/total, '#,##0')" />
+				</td>
+			</xsl:if>
+
 			<!-- count per sec -->
 			<td class="value number">
 				<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
+			</td>
+			
+			<!-- count per min -->
+			<td class="value number">
+				<xsl:value-of select="format-number(countPerMinute, '#,##0.0')" />
 			</td>
 
 			<!-- count per hour -->
 			<td class="value number">
 				<xsl:value-of select="format-number(countPerHour, '#,##0')" />
-			</td>
-
-			<!-- count per day -->
-			<td class="value number">
-				<xsl:value-of select="format-number(countPerDay, '#,##0')" />
 			</td>
 
 			<!-- errors -->
@@ -80,19 +89,11 @@
 				</xsl:if>
 				<xsl:value-of select="format-number(errors, '#,##0')" />
 			</td>
-
-			<!-- % errors -->
-			<xsl:variable name="error-percentage">
-				<xsl:call-template name="percentage">
-					<xsl:with-param name="n1" select="count" />
-					<xsl:with-param name="n2" select="errors" />
-				</xsl:call-template>
-			</xsl:variable>
 			<td class="value number colgroup1">
 				<xsl:if test="errors &gt; 0">
 					<xsl:attribute name="class">value number colgroup1 error</xsl:attribute>
 				</xsl:if>
-				<xsl:value-of select="format-number($error-percentage, '#,##0.00')" />
+				<xsl:value-of select="format-number(errorPercentage, '#,##0.00')" />
 				<xsl:text>%</xsl:text>
 			</td>
 
@@ -216,15 +217,11 @@
 					<xsl:variable name="count" select="count(../int)" />
 					<xsl:variable name="id"
 						select="/testreport/testReportConfig/runtimeIntervals/interval[$position]/@to" />
+					<xsl:variable name="percentage"
+						select="../../percentagePerInterval/big-decimal[$position]" />
 					<xsl:variable name="classNames" select="string('value number')" />
 
 					<td class="{$classNames}">
-						<xsl:variable name="percentage">
-							<xsl:call-template name="percentage">
-								<xsl:with-param name="n1" select="../../count" />
-								<xsl:with-param name="n2" select="current()" />
-							</xsl:call-template>
-						</xsl:variable>
 
 						<xsl:if test="$colorizationConfig">
 							<xsl:call-template name="colorize">

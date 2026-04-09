@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import com.xceptance.xlt.api.webdriver.XltChromeDriver;
 import com.xceptance.xlt.engine.clientperformance.util.HttpRequestHandlerConfiguration;
 import com.xceptance.xlt.engine.clientperformance.util.HttpServer;
 import com.xceptance.xlt.engine.metrics.Metrics;
-import com.xceptance.xlt.engine.metrics.Metrics.LazySingletonHolder;
+import com.xceptance.xlt.engine.metrics.MetricsReporter;
 
 /**
  * Checks the client-performance measurements of native browsers or XltDriver for plausibility.
@@ -54,10 +54,10 @@ public class ClientPerformanceTest
     @BeforeClass
     public static void beforeClass() throws IOException, ClassNotFoundException, InterruptedException
     {
-        // install our special Metrics sub class to get access to the measurements
+        // install our own metrics reporter to get access to the measurements
         metrics = new TestMetrics();
-        // HACK: replace the Metrics instance
-        ReflectionUtils.writeStaticField(LazySingletonHolder.class, "metrics", metrics);
+        // HACK: replace the metrics reporters list of the Metrics' singleton
+        ReflectionUtils.writeInstanceField(Metrics.getInstance(), "_reporters", List.of(metrics));
 
         // start our test HTTP server
         httpServer = new HttpServer(HttpRequestHandlerConfiguration.HTTP_PORT, -1);
@@ -201,14 +201,14 @@ public class ClientPerformanceTest
     /**
      * A sub class of {@link Metrics} that stores data for later evaluation.
      */
-    private static class TestMetrics extends Metrics
+    private static class TestMetrics implements MetricsReporter
     {
         List<Data> dataRecords = new ArrayList<>();
 
         boolean failed = false;
 
         @Override
-        public void updateMetrics(final Data data)
+        public void reportMetrics(final Data data)
         {
             dataRecords.add(data);
         }
@@ -223,7 +223,7 @@ public class ClientPerformanceTest
                 {
                     final RequestData reqData = (RequestData) data;
 
-                    final String url = reqData.getUrl();
+                    final String url = reqData.getUrl().toString();
                     if (url.startsWith("http://localhost") && !url.endsWith("favicon.ico"))
                     {
                         if (requestsToIgnore == 0)
@@ -246,11 +246,11 @@ public class ClientPerformanceTest
 
         private void checkRequest(RequestData data)
         {
-            System.err.println(data.toCSV());
+            System.err.println(data.toList());
 
             // extract expected values from the request's URL
             HttpRequestHandlerConfiguration config = new HttpRequestHandlerConfiguration();
-            config.parseUrl(data.getUrl());
+            config.parseUrl(data.getUrl().toString());
 
             int expectedConnectTime = 0;
             int expectedSendTime = 0;

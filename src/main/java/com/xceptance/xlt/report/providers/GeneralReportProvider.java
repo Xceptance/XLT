@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.JFreeChartUtils.ColorSet;
-import com.xceptance.xlt.report.util.MinMaxValueSet;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -59,11 +59,9 @@ public class GeneralReportProvider extends AbstractReportProvider
 
     private final ValueSet totalTransactionsValueSet = new ValueSet();
 
-    private MinMaxValueSet requestRunTimeValueSet;
+    private IntMinMaxValueSet requestRunTimeValueSet;
 
     private int minMaxValueSetSize;
-
-    private SlowestRequestsTracker slowestRequestsTracker;
 
     /**
      * {@inheritDoc}
@@ -93,7 +91,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                 @Override
                 public void run()
                 {
-                    final MinMaxValueSet bytesReceived = bytesReceivedValueSet.toMinMaxValueSet(minMaxValueSetSize);
+                    final IntMinMaxValueSet bytesReceived = bytesReceivedValueSet.toMinMaxValueSet(minMaxValueSetSize);
                     createChart(JFreeChartUtils.toMinMaxTimeSeries(bytesReceived, "Received Bytes/s"), true, "Received Bytes Per Second",
                                 "Bytes", "ReceivedBytesPerSecond", chartsDir);
                 }
@@ -104,7 +102,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                 @Override
                 public void run()
                 {
-                    final MinMaxValueSet bytesSent = bytesSentValueSet.toMinMaxValueSet(minMaxValueSetSize);
+                    final IntMinMaxValueSet bytesSent = bytesSentValueSet.toMinMaxValueSet(minMaxValueSetSize);
                     createChart(JFreeChartUtils.toMinMaxTimeSeries(bytesSent, "Sent Bytes/s"), true, "Sent Bytes Per Second", "Bytes",
                                 "SentBytesPerSecond", chartsDir);
                 }
@@ -115,7 +113,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                 @Override
                 public void run()
                 {
-                    final MinMaxValueSet requests = requestsValueSet.toMinMaxValueSet(minMaxValueSetSize);
+                    final IntMinMaxValueSet requests = requestsValueSet.toMinMaxValueSet(minMaxValueSetSize);
                     createChart(JFreeChartUtils.toMinMaxTimeSeries(requests, "Requests/s"), true, "Requests Per Second", "Requests",
                                 "RequestsPerSecond", chartsDir);
                 }
@@ -127,7 +125,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                 public void run()
                 {
                     final ValueSet concurrentUsersValueSet = ConcurrentUsersTable.getInstance().getConcurrentUsersValueSet();
-                    final MinMaxValueSet concurrentUsers = concurrentUsersValueSet.toMinMaxValueSet(minMaxValueSetSize);
+                    final IntMinMaxValueSet concurrentUsers = concurrentUsersValueSet.toMinMaxValueSet(minMaxValueSetSize);
                     createChart(JFreeChartUtils.toMinMaxTimeSeries(concurrentUsers, "Concurrent Users"), true, "Concurrent Users", "Users",
                                 "ConcurrentUsers", chartsDir);
                 }
@@ -148,7 +146,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                 @Override
                 public void run()
                 {
-                    final MinMaxValueSet failedTransactions = failedTransactionsValueSet.toMinMaxValueSet(minMaxValueSetSize);
+                    final IntMinMaxValueSet failedTransactions = failedTransactionsValueSet.toMinMaxValueSet(minMaxValueSetSize);
                     final TimeSeries failedTransactionsTimeSeries = JFreeChartUtils.toStandardTimeSeries(failedTransactions,
                                                                                                          "Transaction Errors/s");
 
@@ -156,7 +154,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                                                                                                    totalTransactionsValueSet,
                                                                                                    minMaxValueSetSize, "Error Rate");
                     final TimeSeries errorRateAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(errorRateTimeSeries,
-                                                                                                                getConfiguration().getMovingAveragePercentage());
+                                                                                                                getConfiguration().getCommonMovingAverageConfig());
 
                     createErrorsChart(failedTransactionsTimeSeries, errorRateAverageTimeSeries, "Transaction Errors", "TransactionErrors",
                                       chartsDir);
@@ -177,11 +175,6 @@ public class GeneralReportProvider extends AbstractReportProvider
         report.bytesSent = totalBytesSent;
         report.bytesReceived = totalBytesReceived;
 
-        if (slowestRequestsTracker != null)
-        {
-            report.slowestRequests = slowestRequestsTracker.getSlowestRequests();
-        }
-
         return report;
     }
 
@@ -196,7 +189,7 @@ public class GeneralReportProvider extends AbstractReportProvider
             final RequestData reqData = (RequestData) data;
             final long time = reqData.getTime();
             final long endTime = reqData.getEndTime();
-            final long runTime = reqData.getRunTime();
+            final int runTime = reqData.getRunTime();
             final long sendCompletedAt = time + reqData.getConnectTime() + reqData.getSendTime();
 
             totalBytesSent += reqData.getBytesSent();
@@ -207,12 +200,7 @@ public class GeneralReportProvider extends AbstractReportProvider
             totalRequests++;
             requestsValueSet.addOrUpdateValue(endTime, 1);
 
-            requestRunTimeValueSet.addOrUpdateValue(endTime, (int) runTime);
-
-            if (slowestRequestsTracker != null)
-            {
-                slowestRequestsTracker.update(reqData);
-            }
+            requestRunTimeValueSet.addOrUpdateValue(endTime, runTime);
         }
         else if (data instanceof TransactionData)
         {
@@ -259,7 +247,7 @@ public class GeneralReportProvider extends AbstractReportProvider
 
         final JFreeChart chart = JFreeChartUtils.createLineChart(title, yAxisTitle, timeSeries, config.getChartStartTime(),
                                                                  config.getChartEndTime(), showMovingAverage,
-                                                                 config.getMovingAveragePercentage());
+                                                                 config.getCommonMovingAverageConfig());
 
         JFreeChartUtils.saveChart(chart, fileName, outputDir, config.getChartWidth(), config.getChartHeight());
 
@@ -268,7 +256,7 @@ public class GeneralReportProvider extends AbstractReportProvider
 
     /**
      * Creates a chart showing both the number of transaction errors in a second and the corresponding error rate.
-     * 
+     *
      * @param errorCountTimeSeries
      *            the error count values
      * @param errorRateTimeSeries
@@ -326,12 +314,6 @@ public class GeneralReportProvider extends AbstractReportProvider
 
         // setup run time value set
         minMaxValueSetSize = getConfiguration().getChartWidth();
-        requestRunTimeValueSet = new MinMaxValueSet(minMaxValueSetSize);
-
-        // for now: track slowest requests only if the magic property is set
-        if (config.getProperties().getProperty("monitoring.trackSlowestRequests") != null)
-        {
-            slowestRequestsTracker = new SlowestRequestsTracker(10);
-        }
+        requestRunTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
     }
 }

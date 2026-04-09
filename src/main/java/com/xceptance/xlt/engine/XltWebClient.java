@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  */
 package com.xceptance.xlt.engine;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,45 +35,47 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.htmlunit.AjaxController;
+import org.htmlunit.AlertHandler;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.BrowserVersion.BrowserVersionBuilder;
+import org.htmlunit.DefaultCredentialsProvider;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.NicelyResynchronizingAjaxController;
+import org.htmlunit.Page;
+import org.htmlunit.ProxyConfig;
+import org.htmlunit.ScriptException;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConnection;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebWindow;
+import org.htmlunit.css.CssStyleSheet;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
+import org.htmlunit.cssparser.dom.CSSImportRuleImpl;
+import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
+import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
+import org.htmlunit.cssparser.parser.selector.Selector;
+import org.htmlunit.cssparser.parser.selector.SelectorList;
+import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.FrameWindow;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.xpath.XPathHelper;
+import org.htmlunit.javascript.background.JavaScriptJobManager;
+import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.css.CSSRule;
+import org.htmlunit.javascript.host.css.CSSRuleList;
+import org.htmlunit.javascript.host.css.CSSStyleSheet;
+import org.htmlunit.javascript.host.css.StyleSheetList;
+import org.htmlunit.javascript.host.html.HTMLDocument;
+import org.htmlunit.util.UrlUtils;
 
-import com.gargoylesoftware.css.dom.AbstractCSSRuleImpl;
-import com.gargoylesoftware.css.dom.CSSImportRuleImpl;
-import com.gargoylesoftware.css.dom.CSSMediaRuleImpl;
-import com.gargoylesoftware.css.dom.CSSStyleRuleImpl;
-import com.gargoylesoftware.css.parser.selector.Selector;
-import com.gargoylesoftware.css.parser.selector.SelectorList;
-import com.gargoylesoftware.htmlunit.AjaxController;
-import com.gargoylesoftware.htmlunit.AlertHandler;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.BrowserVersion.BrowserVersionBuilder;
-import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.ProxyConfig;
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebWindow;
-import com.gargoylesoftware.htmlunit.html.DomAttr;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.FrameWindow;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.xpath.XPathHelper;
-import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
-import com.gargoylesoftware.htmlunit.javascript.host.Window;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSRule;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSRuleList;
-import com.gargoylesoftware.htmlunit.javascript.host.css.CSSStyleSheet;
-import com.gargoylesoftware.htmlunit.javascript.host.css.StyleSheetList;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLDocument;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
@@ -80,8 +84,10 @@ import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.SessionShutdownListener;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.ResponseProcessor;
+import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.htmlunit.apache.XltApacheHttpWebConnection;
 import com.xceptance.xlt.engine.htmlunit.okhttp3.OkHttp3WebConnection;
 import com.xceptance.xlt.engine.socket.XltSockets;
@@ -89,6 +95,7 @@ import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.JSBeautifingResponseProcessor;
 import com.xceptance.xlt.engine.util.LWPageUtilities;
 import com.xceptance.xlt.engine.util.TimerUtils;
+import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * The {@link XltWebClient} class is an enhanced version of the HTMLUnit {@link WebClient} class. It hooks into the
@@ -126,9 +133,14 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     private static final XltCache globalCache;
 
     /**
+     * The global cache for key and trust stores. The cache is shared among all {@link XltWebClient} instances.
+     */
+    private static final ConcurrentHashMap<String, KeyStore> storeCache;
+
+    /**
      * Holds the URLs and responses of static resources that have been loaded so far for a page.
      */
-    private final ConcurrentHashMap<String, WebResponse> pageLocalCache = new ConcurrentHashMap<String, WebResponse>();
+    private final ConcurrentHashMap<String, WebResponse> pageLocalCache = new ConcurrentHashMap<>();
 
     /**
      * Enabled flag for static content loading.
@@ -164,7 +176,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The list of response processors.
      */
-    private final List<ResponseProcessor> responseProcessors = new ArrayList<ResponseProcessor>();
+    private final List<ResponseProcessor> responseProcessors = new ArrayList<>();
 
     /**
      * JS Beautifying response processor (separate instance field since its (omni)presence is configuration-dependent).
@@ -179,7 +191,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * Mapping of base URLs to relative CSS resource URLs.
      */
-    private final ConcurrentHashMap<String, Collection<String>> cssResourceUrlCache = new ConcurrentHashMap<String, Collection<String>>();
+    private final ConcurrentHashMap<String, Collection<String>> cssResourceUrlCache = new ConcurrentHashMap<>();
 
     /**
      * The maximum number of download threads.
@@ -189,7 +201,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The JavaScript debugger
      */
-    private final XltDebugger xltDebugger;
+    private XltDebugger xltDebugger;
 
     // Initialize globally valid things.
     // This code assures, that we only do it once and reuse it all the time.
@@ -222,6 +234,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         cssCacheSize = Math.max(cssCacheSize, ConcurrentLRUCache.MIN_SIZE);
 
         globalCache = new XltCache(jsCacheSize, cssCacheSize);
+        storeCache = new ConcurrentHashMap<>();
 
         // configure the XPath engine to use
         final String xpathEngine = props.getProperty("com.xceptance.xlt.xpath.engine", "jaxen");
@@ -239,13 +252,27 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
      * configuration.
-     * 
+     *
      * @param browserVersion
      *            the browser version to use (may be <code>null</code>)
      */
     public XltWebClient(final BrowserVersion browserVersion)
     {
-        super(copyAndModifyBrowserVersion(browserVersion));
+        this(browserVersion, XltProperties.getInstance().getProperty("com.xceptance.xlt.javaScriptEngineEnabled", false));
+    }
+
+    /**
+     * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
+     * configuration.
+     *
+     * @param browserVersion
+     *            the browser version to use (may be <code>null</code>)
+     * @param javaScriptEngineEnabled
+     *            whether the JavaScript engine is to be started at all
+     */
+    public XltWebClient(final BrowserVersion browserVersion, final boolean javaScriptEngineEnabled)
+    {
+        super(copyAndModifyBrowserVersion(browserVersion), javaScriptEngineEnabled, null, 0);
 
         Session.getCurrent().addShutdownListener(this);
 
@@ -262,7 +289,11 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.staticContent.downloadThreads' is set to an invalid value. Will use 1 instead.");
             threadCount = 1;
         }
-        requestQueue = new RequestQueue(this, threadCount);
+
+        final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED,
+                                                            XltConstants.PROP_VIRTUAL_THREADS_ENABLED_DEFAULT);
+
+        requestQueue = new RequestQueue(this, threadCount, useVirtualThreads);
 
         /*
          * Configure the super class.
@@ -287,32 +318,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         cssMode = CssMode.getMode(props.getProperty("com.xceptance.xlt.css.download.images"));
 
-        // setup JavaScript engine
-        int optimizationLevel = props.getProperty("com.xceptance.xlt.js.compiler.optimizationLevel", -1);
-        if (optimizationLevel < -1 || optimizationLevel > 9)
-        {
-            XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.js.compiler.optimizationLevel' is set to an invalid value. Will use -1 instead.");
-            optimizationLevel = -1;
-        }
-
-        final boolean takeMeasurements = props.getProperty("com.xceptance.xlt.js.takeMeasurements", false);
-
-        setJavaScriptEngine(new XltJavaScriptEngine(this, optimizationLevel, takeMeasurements));
+        // JavaScript
         getOptions().setJavaScriptEnabled(props.getProperty("com.xceptance.xlt.javaScriptEnabled", false));
         getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
-
-        // setup JavaScript debugger
-        xltDebugger = new XltDebugger(this);
-        if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
-        {
-            setJavaScriptDebuggerEnabled(true);
-
-            // create JS beautifying response processor only when needed
-            if (props.getProperty("com.xceptance.xlt.js.debugger.beautifyDownloadedJavaScript", true))
-            {
-                jsBeautifier = new JSBeautifingResponseProcessor();
-            }
-        }
+        configureJavaScriptEngine(props);
 
         // default user authentication
         final String userName = props.getProperty("com.xceptance.xlt.auth.userName");
@@ -320,7 +329,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         {
             final String password = props.getProperty("com.xceptance.xlt.auth.password", "");
 
-            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password);
+            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password.toCharArray());
 
             if (XltLogger.runTimeLogger.isInfoEnabled())
             {
@@ -351,12 +360,12 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
             // proxy authentication
             final String proxyUserName = props.getProperty("com.xceptance.xlt.proxy.userName");
-            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password");
+            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password", "");
 
             if (proxyUserName != null && proxyUserName.length() > 0)
             {
-                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword, proxyHost, proxyPort,
-                                                                                       null);
+                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword.toCharArray(),
+                                                                                       proxyHost, proxyPort, null);
 
                 if (XltLogger.runTimeLogger.isInfoEnabled())
                 {
@@ -381,7 +390,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setUseInsecureSSL(props.getProperty("com.xceptance.xlt.ssl.easyMode", false));
 
         // the SSL protocol (family) to use when in easy mode
-        String easyModeProtocol = StringUtils.defaultIfBlank(props.getProperty("com.xceptance.xlt.ssl.easyModeProtocol"), "TLS");
+        final String easyModeProtocol = StringUtils.defaultIfBlank(props.getProperty("com.xceptance.xlt.ssl.easyModeProtocol"), "TLS");
         getOptions().setSSLInsecureProtocol(easyModeProtocol.trim());
 
         // the SSL handshake protocols to enable at an SSL socket
@@ -415,31 +424,30 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setHistorySizeLimit(historySizeLimit);
 
         // set web connection
-        final WebConnection underlyingWebConnection;
-        if (props.getProperty("com.xceptance.xlt.http.offline", false))
-        {
-            // we are in offline mode and return fixed responses
-            underlyingWebConnection = new XltOfflineWebConnection();
-        }
-        else
-        {
-            final String client = props.getProperty("com.xceptance.xlt.http.client");
-            if ("okhttp3".equals(client))
-            {
-                final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
-                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled);
-            }
-            else
-            {
-                // the default connection
-                underlyingWebConnection = new XltApacheHttpWebConnection(this);
-            }
-        }
+        configureWebConnection(props);
 
-        XltLogger.runTimeLogger.debug("Using web connection class: " + underlyingWebConnection.getClass().getName());
+        // load key/trust material for client/server authentication
+        configureKeyStore(props);
+        configureTrustStore(props);
+    }
 
-        final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
-        setWebConnection(connection);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reset()
+    {
+        super.reset();
+
+        final XltProperties props = XltProperties.getInstance();
+
+        // create a new instance of "our" JavaScript engine if needed
+        configureJavaScriptEngine(props);
+
+        // create a new instance of "our" web connection
+        configureWebConnection(props);
+
+        pageLocalCache.clear();
     }
 
     /**
@@ -636,7 +644,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void loadNewStaticContent(final HtmlPage htmlPage)
     {
-        if (loadStaticContent)
+        if (loadStaticContent && isJavaScriptEngineEnabled())
         {
             final URL referrerURL = htmlPage.getWebResponse().getWebRequest().getUrl();
             URL baseURL = referrerURL;
@@ -659,7 +667,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 final RequestStack requestStack = RequestStack.getCurrent();
                 requestStack.setTimerName(getTimerName());
 
-                final Set<String> urlStrings = new TreeSet<String>();
+                final Set<String> urlStrings = new TreeSet<>();
                 // No need to select img elements too -> they are automatically downloaded (#1379)
                 // Scripts can be skipped as well -> automatically downloaded as needed
                 elements = htmlPage.getByXPath("//input[@type='image']");
@@ -719,7 +727,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             }
 
             // use of copy of the frame list to minimize the chance of ConcurrentModificationException's (#1676)
-            final List<FrameWindow> frames = new ArrayList<FrameWindow>(htmlPage.getFrames());
+            final List<FrameWindow> frames = new ArrayList<>(htmlPage.getFrames());
             for (final WebWindow frame : frames)
             {
                 final Page framePage = frame.getEnclosedPage();
@@ -744,7 +752,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private void loadStaticContent(final WebResponse response)
     {
-        final boolean haveJS = getOptions().isJavaScriptEnabled();
+        final boolean haveJS = isJavaScriptEnabled();
         final boolean haveCss = getOptions().isCssEnabled();
 
         // Exit early
@@ -763,15 +771,15 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         // use a sorted set to hold the links -> this way each resource will be
         // loaded only once and in the same order
-        final Set<String> urlStrings = new TreeSet<String>();
+        final Set<String> urlStrings = new TreeSet<>();
 
         final boolean isCssModeAlways = CssMode.ALWAYS.equals(getCssMode());
 
         // JS resources
         if (loadStaticContent || haveJS)
         {
-            // remove comments (don't remove conditional comments if IE)
-            final String commentPattern = getBrowserVersion().isIE() ? "(?sm)<!--[^\\[].*?-->" : "(?sm)<!--.*?-->";
+            // remove comments
+            final String commentPattern = "(?sm)<!--.*?-->";
             page = RegExUtils.replaceAll(page, commentPattern, "");
 
             // remove scripts (in-line scripts might contain resource URLs in the code)
@@ -847,7 +855,6 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 urlStrings.addAll(CssUtils.getUrlStrings(inlineCss));
                 urlStrings.addAll(CssUtils.getUrlStrings(StringUtils.join(LWPageUtilities.getAllInlineCssStatements(page), ' ')));
             }
-
         }
 
         // image resources (not referenced by CSS)
@@ -1015,7 +1022,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     @Override
     public void download(final WebWindow requestingWindow, final String target, final WebRequest request, final boolean checkHash,
-                         final boolean forceLoad, final boolean forceAttachment, final String description)
+                         final boolean forceLoad, final String forceAttachmentWithFilename, final String description)
     {
         if (requestingWindow.getTopWindow() == requestingWindow)
         {
@@ -1034,7 +1041,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         request.setDocumentRequest();
 
-        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachment, description);
+        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachmentWithFilename, description);
     }
 
     /**
@@ -1050,7 +1057,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     {
         // use a hash map to avoid URL duplicates since given collection of URL strings may also contain absolute URL
         // strings
-        final HashMap<String, URL> resolvedURLs = new HashMap<String, URL>(urlStrings.size());
+        final HashMap<String, URL> resolvedURLs = new HashMap<>(urlStrings.size());
         for (final String urlString : urlStrings)
         {
             final URL absoluteURL = makeUrlAbsolute(baseURL, urlString);
@@ -1074,7 +1081,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<String> getAllowedLinkURIs(final String pageContent)
     {
-        final List<String> links = new ArrayList<String>();
+        final List<String> links = new ArrayList<>();
         final String relAttRegex = loadStaticContent ? LINKTYPE_WHITELIST_PATTERN : "(?i)stylesheet";
         for (final String attributeList : LWPageUtilities.getAllLinkAttributes(pageContent))
         {
@@ -1229,7 +1236,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void waitForBackgroundThreads(final Page page, final long maximumWaitingTime)
     {
-        if (getOptions().isJavaScriptEnabled())
+        if (isJavaScriptEnabled())
         {
             if (maximumWaitingTime >= 0)
             {
@@ -1239,22 +1246,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                                                                 maximumWaitingTime));
                 }
 
-                final long end = TimerUtils.getTime() + maximumWaitingTime;
-
                 // first determine all web windows - note that this is *not safe* if
                 // more web windows are added later by background JavaScript
                 final List<WebWindow> webWindows = getAllWebWindows(page);
 
                 // now wait for each web window's threads
+                final long start = TimerUtils.get().getStartTime();
                 for (final WebWindow webWindow : webWindows)
                 {
                     final JavaScriptJobManager jobManager = webWindow.getJobManager();
                     if (jobManager != null)
                     {
-                        // wait for at most the remaining time for running jobs to
-                        // complete
+                        // wait for at most the remaining time for running jobs to complete
                         final int remainingJobs;
-                        final long remainingWaitingTime = end - TimerUtils.getTime();
+                        final long remainingWaitingTime = maximumWaitingTime - TimerUtils.get().getElapsedTime(start);
                         if (remainingWaitingTime > 0)
                         {
                             if (XltLogger.runTimeLogger.isDebugEnabled())
@@ -1426,8 +1431,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         evalCss(body, cssRulesWithUrls, browserVersion, cssText);
 
         // create absolute URLs
-        final Collection<URL> urls = new ArrayList<URL>();
-        final Set<String> alreadyLoadedUrls = new HashSet<String>(pageLocalCache.keySet());
+        final Collection<URL> urls = new ArrayList<>();
+        final Set<String> alreadyLoadedUrls = new HashSet<>(pageLocalCache.keySet());
         final List<URL> pageBaseURLs = Arrays.asList(baseURL);
 
         for (final String urlString : CssUtils.getUrlStrings(cssText.toString()))
@@ -1465,7 +1470,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<URL> getCssBaseUrls(final String urlString)
     {
-        final List<URL> urls = new ArrayList<URL>();
+        final List<URL> urls = new ArrayList<>();
         for (final Map.Entry<String, Collection<String>> entry : cssResourceUrlCache.entrySet())
         {
             if (entry.getValue().contains(urlString))
@@ -1523,7 +1528,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // check whether the selector matches the element
                 final Selector selector = selectors.get(j);
-                final boolean selected = CSSStyleSheet.selects(browserVersion, selector, element, null, false);
+                final boolean selected = CssStyleSheet.selects(browserVersion, selector, element, null, false, false);
                 if (selected)
                 {
                     // the rule applied to this element -> remember the rule's style definition
@@ -1558,17 +1563,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<CSSStyleRuleImpl> getCssRulesWithUrls(final HtmlPage page)
     {
-        final List<CSSStyleRuleImpl> cssRules = new ArrayList<CSSStyleRuleImpl>();
+        final List<CSSStyleRuleImpl> cssRules = new ArrayList<>();
 
-        final Window window = ((Window) page.getEnclosingWindow().getScriptableObject());
-        final HTMLDocument document = ((HTMLDocument) window.getDocument());
-
-        // check all style sheets
-        final StyleSheetList sheets = document.getStyleSheets();
-        for (int i = 0; i < sheets.getLength(); i++)
+        if (isJavaScriptEnabled())
         {
-            final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
-            addCssStyleRulesWithUrls(sheet, cssRules);
+            final Window window = ((Window) page.getEnclosingWindow().getScriptableObject());
+            final HTMLDocument document = ((HTMLDocument) window.getDocument());
+
+            // check all style sheets
+            final StyleSheetList sheets = document.getStyleSheets();
+            for (int i = 0; i < sheets.getLength(); i++)
+            {
+                final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
+                addCssStyleRulesWithUrls(sheet, cssRules);
+            }
         }
 
         return cssRules;
@@ -1585,7 +1593,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     private void addCssStyleRulesWithUrls(final CSSStyleSheet sheet, final List<CSSStyleRuleImpl> cssRules)
     {
         // only active sheets (with no or "screen" media type) are of interest
-        if (sheet.isActive())
+        if (sheet.getCssStyleSheet().isActive())
         {
             // check all CSS rules
             final CSSRuleList rules = sheet.getCssRules();
@@ -1639,11 +1647,9 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             final String mediaText = importRule.getMedia().getMediaText();
             if (StringUtils.isBlank(mediaText) || RegExUtils.isMatching(mediaText, LINK_MEDIA_WHITELIST_PATTERN))
             {
-                // construct absolute URL string
-                final String urlString = UrlUtils.resolveUrl(sheet.getUri(), importRule.getHref());
-
                 // load imported style sheet
-                final CSSStyleSheet importedSheet = CSSStyleSheet.loadStylesheet(sheet.getOwnerNode(), null, urlString);
+                final CssStyleSheet imported = sheet.getCssStyleSheet().getImportedStyleSheet(importRule);
+                final CSSStyleSheet importedSheet = new CSSStyleSheet(sheet.getOwnerNode(), sheet.getWindow(), imported);
 
                 // recurse into imported style sheet if there is one
                 if (importedSheet != null)
@@ -1663,7 +1669,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // get the embedded CSS rules and process them recursively
                 final List<AbstractCSSRuleImpl> rules = mediaRule.getCssRules().getRules();
-                for (AbstractCSSRuleImpl r : rules)
+                for (final AbstractCSSRuleImpl r : rules)
                 {
                     addCssStyleRulesWithUrls(sheet, r, cssStyleRules);
                 }
@@ -1692,7 +1698,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<WebWindow> getAllWebWindows(final Page page)
     {
-        final List<WebWindow> webWindows = new ArrayList<WebWindow>();
+        final List<WebWindow> webWindows = new ArrayList<>();
 
         if (page != null)
         {
@@ -1756,6 +1762,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void setJavaScriptDebuggerEnabled(final boolean enabled)
     {
+        if (xltDebugger == null)
+        {
+            xltDebugger = new XltDebugger(this);
+        }
         xltDebugger.setEnabled(enabled);
     }
 
@@ -1766,7 +1776,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public boolean isJavaScriptDebuggerEnabled()
     {
-        return xltDebugger.isEnabled();
+        return xltDebugger == null ? false : xltDebugger.isEnabled();
     }
 
     private static URL normalizeUrl(final URL url) throws MalformedURLException
@@ -1856,7 +1866,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * Returns a copy of the given browser version, the copy modified according to the configuration. If the passed
      * browser version is <code>null</code>, the browser version to be copied will be determined from the configuration
      * as well.
-     * 
+     *
      * @param browserVersion
      *            the base browser version (maybe <code>null</code>)
      * @return the modified browser version
@@ -1898,11 +1908,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final BrowserVersion browserVersion;
         final String browserType = XltProperties.getInstance().getProperty("com.xceptance.xlt.browser", "FF").toUpperCase();
 
-        if (browserType.equals("IE"))
-        {
-            browserVersion = BrowserVersion.INTERNET_EXPLORER;
-        }
-        else if (browserType.equals("CH"))
+        if (browserType.equals("CH"))
         {
             browserVersion = BrowserVersion.CHROME;
         }
@@ -1912,7 +1918,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         }
         else if (browserType.equals("FF_ESR"))
         {
-            browserVersion = BrowserVersion.FIREFOX_78;
+            browserVersion = BrowserVersion.FIREFOX_ESR;
         }
         else
         {
@@ -1925,20 +1931,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
     enum CssMode
     {
-     /**
-      * Always download images references in CSS files.
-      */
-     ALWAYS,
+        /**
+         * Always download images references in CSS files.
+         */
+        ALWAYS,
 
-     /**
-      * Resolve and download image references on demand.
-      */
-     ONDEMAND,
+        /**
+         * Resolve and download image references on demand.
+         */
+        ONDEMAND,
 
-     /**
-      * Never resolve or download any image reference.
-      */
-     NEVER;
+        /**
+         * Never resolve or download any image reference.
+         */
+        NEVER;
 
         /**
          * Returns the CSSMode instance for the given mode string.
@@ -1969,25 +1975,25 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
     enum AjaxMode
     {
-     /**
-      * Perform AJAX calls always asynchronously.
-      */
-     ASYNC,
+        /**
+         * Perform AJAX calls always asynchronously.
+         */
+        ASYNC,
 
-     /**
-      * Perform AJAX calls always synchronously.
-      */
-     SYNC,
+        /**
+         * Perform AJAX calls always synchronously.
+         */
+        SYNC,
 
-     /**
-      * Perform AJAX calls as intended by programmer.
-      */
-     NORMAL,
+        /**
+         * Perform AJAX calls as intended by programmer.
+         */
+        NORMAL,
 
-     /**
-      * Re-synchronize asynchronous AJAX calls calling from the main thread.
-      */
-     RESYNC;
+        /**
+         * Re-synchronize asynchronous AJAX calls calling from the main thread.
+         */
+        RESYNC;
 
         /**
          * Returns the AjaxMode instance for the given mode string.
@@ -2016,6 +2022,174 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 }
             }
             return mode;
+        }
+    }
+
+    /**
+     * Sets up the JavaScript engine to be used by this web client.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void configureJavaScriptEngine(final XltProperties props)
+    {
+        if (isJavaScriptEngineEnabled())
+        {
+            // setup JavaScript engine
+            int optimizationLevel = props.getProperty("com.xceptance.xlt.js.compiler.optimizationLevel", -1);
+            if (optimizationLevel < -1 || optimizationLevel > 9)
+            {
+                XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.js.compiler.optimizationLevel' is set to an invalid value. Will use -1 instead.");
+                optimizationLevel = -1;
+            }
+
+            final boolean takeMeasurements = props.getProperty("com.xceptance.xlt.js.takeMeasurements", false);
+
+            setJavaScriptEngine(new XltJavaScriptEngine(this, optimizationLevel, takeMeasurements));
+
+            // setup JavaScript debugger
+            if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
+            {
+                setJavaScriptDebuggerEnabled(true);
+
+                // create JS beautifying response processor only when needed
+                if (props.getProperty("com.xceptance.xlt.js.debugger.beautifyDownloadedJavaScript", true))
+                {
+                    jsBeautifier = new JSBeautifingResponseProcessor();
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets up the web connection to be used by this web client.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void configureWebConnection(final XltProperties props)
+    {
+        final WebConnection underlyingWebConnection;
+        if (props.getProperty("com.xceptance.xlt.http.offline", false))
+        {
+            // we are in offline mode and return fixed responses
+            underlyingWebConnection = new XltOfflineWebConnection();
+        }
+        else
+        {
+            final String client = props.getProperty("com.xceptance.xlt.http.client");
+            final boolean collectTargetIpAddress = ((XltPropertiesImpl) props).collectUsedIpAddress();
+            if ("okhttp3".equals(client))
+            {
+                final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
+                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled, collectTargetIpAddress);
+            }
+            else
+            {
+                // the default connection
+                underlyingWebConnection = new XltApacheHttpWebConnection(this, collectTargetIpAddress);
+            }
+        }
+
+        XltLogger.runTimeLogger.debug("Using web connection class: " + underlyingWebConnection.getClass().getName());
+
+        final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
+        setWebConnection(connection);
+    }
+
+    /**
+     * Sets up the key store with the client key to be used by this web client. The store is read from a file specified
+     * in the test suite configuration.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void configureKeyStore(final XltProperties props)
+    {
+        final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.keyStore.file");
+        if (StringUtils.isNotBlank(storeFilePath))
+        {
+            final String storePassword = props.getProperty("com.xceptance.xlt.tls.keyStore.password");
+            final char[] storePasswordChars = getPasswordChars(storePassword);
+
+            final KeyStore store = getStore(storeFilePath, storePasswordChars);
+            getOptions().setSSLClientCertificateKeyStore(store, storePasswordChars);
+        }
+    }
+
+    /**
+     * Sets up the trust store with the server certificate to be used by this web client. The store is read from a file
+     * specified in the test suite configuration.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void configureTrustStore(final XltProperties props)
+    {
+        final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.trustStore.file");
+        if (StringUtils.isNotBlank(storeFilePath))
+        {
+            final String storePassword = props.getProperty("com.xceptance.xlt.tls.trustStore.password");
+            final char[] storePasswordChars = getPasswordChars(storePassword);
+
+            final KeyStore store = getStore(storeFilePath, storePasswordChars);
+            getOptions().setSSLTrustStore(store);
+        }
+    }
+
+    /**
+     * Returns the given password string as a char array.
+     *
+     * @param password
+     *            the password
+     * @return the password as char array (will be empty if the password was <code>null)</code>
+     */
+    private static char[] getPasswordChars(final String password)
+    {
+        return password == null ? ArrayUtils.EMPTY_CHAR_ARRAY : password.toCharArray();
+    }
+
+    /**
+     * Returns the key/trust store for the given file path from the internal store cache. If the store has not been
+     * loaded so far, it will be loaded and put in the cache.
+     *
+     * @param storeFilePath
+     *            the path to the store file, relative to the test suite root directory
+     * @param storePassword
+     *            the store password
+     * @return the store
+     */
+    private static KeyStore getStore(final String storeFilePath, final char[] storePassword)
+    {
+        XltLogger.runTimeLogger.debug("Getting store for path '{}'", storeFilePath);
+
+        return storeCache.computeIfAbsent(storeFilePath, path -> loadStore(path, storePassword));
+    }
+
+    /**
+     * Loads a key/trust store from the given path and opens it with the provided password.
+     *
+     * @param storeFilePath
+     *            the path to the store file, relative to the test suite root directory
+     * @param storePassword
+     *            the store password
+     * @return the loaded store
+     * @throws XltException
+     *             if anything went wrong
+     */
+    private static KeyStore loadStore(final String storeFilePath, final char[] storePassword)
+    {
+        try
+        {
+            XltLogger.runTimeLogger.debug("Loading store from '{}'", storeFilePath);
+
+            final File storeFile = new File(storeFilePath);
+
+            return KeyStore.getInstance(storeFile, storePassword);
+        }
+        catch (final Exception e)
+        {
+            throw new XltException("Failed to read key/trust store from: " + storeFilePath, e);
         }
     }
 }

@@ -13,7 +13,7 @@
 
                     <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
 
-                    <table class="table-autostripe table-stripeclass:odd">
+                    <table class="">
                         <thead>
                             <tr>
                                 <th rowspan="2">Summary</th>

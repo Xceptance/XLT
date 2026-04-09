@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2022 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.RegExUtils;
+import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
@@ -37,7 +38,7 @@ import com.xceptance.xlt.common.XltConstants;
  * <p style="color:green">
  * Note that {@link TransactionData} objects have a "T" as their type code.
  * </p>
- * 
+ *
  * @see ActionData
  * @see RequestData
  * @see CustomData
@@ -49,7 +50,7 @@ public class TransactionData extends TimerData
     /**
      * The type code ("T").
      */
-    private static final String TYPE_CODE = "T";
+    private static final char TYPE_CODE = 'T';
 
     /**
      * The last part of the path to the directory where dumped pages can be found. Kept separate to make as much use of
@@ -81,13 +82,13 @@ public class TransactionData extends TimerData
      */
     public TransactionData()
     {
-        this(null);
+        super(TYPE_CODE);
     }
 
     /**
      * Creates a new TransactionData object and gives it the specified name. Furthermore, the time attribute is set to
      * the current time.
-     * 
+     *
      * @param name
      *            the transaction name
      */
@@ -98,7 +99,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the name of the directory where the result browser for this transaction is stored.
-     * 
+     *
      * @return the directory name
      */
     public String getDirectoryName()
@@ -108,7 +109,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the name of the directory where the result browser for this transaction is stored.
-     * 
+     *
      * @param directoryName
      *            the directory name
      */
@@ -119,7 +120,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the number (or index, [0..N]) of the test user that produced this transaction data.
-     * 
+     *
      * @return the test user number as a string
      */
     public String getTestUserNumber()
@@ -129,7 +130,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the number (or index, [0..N]) of the test user that produced this transaction data.
-     * 
+     *
      * @param testUserNumber
      *            the test user number as a string
      */
@@ -141,7 +142,7 @@ public class TransactionData extends TimerData
     /**
      * Returns the name of the action that caused the transaction to fail. Will be empty if the transaction was
      * successful or the transaction failed outside of an action.
-     * 
+     *
      * @return the action name
      */
     public String getFailedActionName()
@@ -151,7 +152,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the name of the action that caused the transaction to fail.
-     * 
+     *
      * @param actionName
      *            the action name
      */
@@ -164,7 +165,7 @@ public class TransactionData extends TimerData
      * Returns the path to the directory where dumped pages can be found if this transaction failed. The path is meant
      * to be relative to the results directory of the respective load test. Typically, it looks like
      * "ac1/TAuthor/1/output/1216803080255".
-     * 
+     *
      * @return the dump directory path, or <code>null</code> if this transaction did not fail or no directory
      *         information was available
      */
@@ -180,7 +181,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the message of the throwable that caused this transaction to fail.
-     * 
+     *
      * @return the message (may be null)
      */
     public String getFailureMessage()
@@ -200,7 +201,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the stack trace of the throwable that caused this transaction to fail.
-     * 
+     *
      * @return the trace (may be null)
      */
     public String getFailureStackTrace()
@@ -210,7 +211,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the stack trace of the throwable that caused this transaction to fail.
-     * 
+     *
      * @param trace
      *            the trace
      */
@@ -221,7 +222,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the stack trace attribute retrieved from the given throwable.
-     * 
+     *
      * @param throwable
      *            the throwable
      */
@@ -241,9 +242,9 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> toList()
     {
-        final List<String> fields = super.addValues();
+        final List<String> fields = super.toList();
 
         // process and add the stack trace
         String t = stackTrace;
@@ -273,21 +274,13 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoCSVElements()
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
-        return 6;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void parseValues(final String[] values)
-    {
-        super.parseValues(values);
+        super.setRemainingValues(values);
 
         // process the stack trace
-        stackTrace = values[5].trim();
+        // TODO performance
+        stackTrace = values.get(5).toString().trim();
         if (stackTrace.length() == 0)
         {
             stackTrace = null;
@@ -295,21 +288,22 @@ public class TransactionData extends TimerData
         else
         {
             // undo any "quoted" character
+            // TODO performance
             stackTrace = stackTrace.replace("\\", "\n");
         }
 
         // be defensive so a report can be generated also for older results
-        final int length = values.length;
+        final int length = values.size();
         if (length > 6)
         {
-            setFailedActionName(values[6]);
+            setFailedActionName(values.get(6).toString());
         }
 
         // test user number and directory name (since XLT 4.13.2)
         if (length > 7)
         {
-            setTestUserNumber(values[7]);
-            setDirectoryName(values[8]);
+            setTestUserNumber(values.get(7).toString());
+            setDirectoryName(values.get(8).toString());
         }
         else
         {

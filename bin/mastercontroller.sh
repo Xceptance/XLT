@@ -34,7 +34,7 @@ JAVA_OPTIONS="$JAVA_OPTIONS -XX:+IgnoreUnrecognizedVMOptions"
 #JAVA_OPTIONS="$JAVA_OPTIONS --illegal-access=debug"
 
 # run Java
-CMD="java $JAVA_OPTIONS com.xceptance.xlt.mastercontroller.Main"
+CMD="java $JAVA_OPTIONS com.xceptance.xlt.mastercontroller.MasterControllerMain"
 ARGS=""
 I=1
 while [ $I -le $# ]; do
