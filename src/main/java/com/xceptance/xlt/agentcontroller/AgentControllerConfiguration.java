@@ -217,7 +217,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
         privateMachineType = getEnumProperty(PrivateMachineType.class, PROP_PRIVATE_MACHINE_TYPE, PrivateMachineType.MEDIUM);
         xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_HOST, "xtc.xceptance.com");
         xtcPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_PORT, 443);
-        xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_HOST, "xlt-relay.xceptance.com");
+        xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_HOST, "xtc-xlt-relay.xceptance.com");
         xtcRelayPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_PORT, 443);
 
         if (privateMachineModeEnabled)
