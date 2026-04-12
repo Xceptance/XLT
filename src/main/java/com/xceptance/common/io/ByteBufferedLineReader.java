@@ -117,19 +117,29 @@ public final class ByteBufferedLineReader implements Closeable
                 final byte b = buffer[i];
                 if (b == '\n' || b == '\r')
                 {
-                    final int lineLen = i - start;
-                    result = append(buffer, start, lineLen, result, resultLength, lineLen);
-                    resultLength += lineLen;
-
                     if (b == '\r')
                     {
                         skipLF = true;
                     }
 
                     bufferPos = i + 1;
+
+                    // Fast path: if no data was accumulated from previous buffer fills,
+                    // we can return a direct slice from the buffer — avoids the append()
+                    // intermediate array and saves one allocation per line.
+                    if (result == null)
+                    {
+                        return Arrays.copyOfRange(buffer, start, i);
+                    }
+
+                    // Slow path: line spans multiple buffer fills — append remainder
+                    final int lineLen = i - start;
+                    result = append(buffer, start, lineLen, result, resultLength, lineLen);
+                    resultLength += lineLen;
                     return Arrays.copyOf(result, resultLength);
                 }
             }
+
 
             // no terminator found — save what we have and refill
             final int len = bufferLength - start;

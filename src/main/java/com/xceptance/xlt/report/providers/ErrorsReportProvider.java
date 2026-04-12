@@ -38,9 +38,9 @@ import org.jfree.data.time.TimeSeriesCollection;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.api.engine.ActionData;
-import com.xceptance.xlt.api.engine.Data;
+
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.api.engine.TimerData;
+
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
@@ -411,180 +411,186 @@ public class ErrorsReportProvider extends AbstractReportProvider
     @Override
     public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
+        // Process each typed list directly — no instanceof needed since the container
+        // already separates data by concrete type.
+
         final java.util.ArrayList<TransactionData> transactions = dataContainer.getTransactions();
         int size = transactions.size();
         for (int i = 0; i < size; i++)
         {
-            processDataRecord(transactions.get(i));
+            processTransaction(transactions.get(i));
         }
 
         final java.util.ArrayList<ActionData> actions = dataContainer.getActions();
         size = actions.size();
         for (int i = 0; i < size; i++)
         {
-            processDataRecord(actions.get(i));
+            processAction(actions.get(i));
         }
 
         final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
         size = requests.size();
         for (int i = 0; i < size; i++)
         {
-            processDataRecord(requests.get(i));
+            processRequest(requests.get(i));
         }
     }
 
-    protected void processDataRecord(final Data stat)
+    /**
+     * Processes a single transaction record for error tracking. Handles stack trace
+     * aggregation, error counting, directory hint collection, and time series updates.
+     *
+     * @param txnStats
+     *            the transaction data record
+     */
+    private void processTransaction(final TransactionData txnStats)
     {
-        // process error messages/stack traces
-        if (stat instanceof TransactionData)
+        // process error messages/stack traces for failed transactions
+        final String trace = txnStats.getFailureStackTrace();
+        if (trace != null)
         {
-            final TransactionData txnStats = (TransactionData) stat;
-            final String trace = txnStats.getFailureStackTrace();
-            if (trace != null)
+            // qualify the trace with the test case/action name in case of equal stack traces (#1092)
+            final String testCaseName = txnStats.getName();
+            final String failedActionName = txnStats.getFailedActionName();
+            final String key = testCaseName + "|" + failedActionName + "|" + trace;
+
+            // lookup/create the error entry for this trace
+            ErrorValues errorValues = errorReports.get(key);
+            if (errorValues == null)
             {
-                // qualify the trace with the test case/action name in case of equal stack traces (#1092)
-                final String testCaseName = txnStats.getName();
-                final String failedActionName = txnStats.getFailedActionName();
-                final String key = testCaseName + "|" + failedActionName + "|" + trace;
-
-                // lookup/create the error entry for this trace
-                ErrorValues errorValues = errorReports.get(key);
-                if (errorValues == null)
-                {
-                    final ErrorReport errorReport = new ErrorReport();
-                    errorReport.message = txnStats.getFailureMessage();
-                    errorReport.testCaseName = testCaseName;
-                    errorReport.actionName = failedActionName;
-                    errorReport.detailChartID = 0;
+                final ErrorReport errorReport = new ErrorReport();
+                errorReport.message = txnStats.getFailureMessage();
+                errorReport.testCaseName = testCaseName;
+                errorReport.actionName = failedActionName;
+                errorReport.detailChartID = 0;
                     
-                    if (errorReports.size() < stackTracesLimit) //only save stacktraces up to limit
-                    {
-                        errorReport.trace = trace;
-                    }
-                    else
-                    {
-                        errorReport.trace = "n/a";
-                    }
-
-                    errorValues = new ErrorValues(errorReport);
-                    errorReports.put(key, errorValues);
+                if (errorReports.size() < stackTracesLimit) //only save stacktraces up to limit
+                {
+                    errorReport.trace = trace;
+                }
+                else
+                {
+                    errorReport.trace = "n/a";
                 }
 
-                final ErrorReport errorReport = errorValues.getErrorReport();
+                errorValues = new ErrorValues(errorReport);
+                errorReports.put(key, errorValues);
+            }
 
-                // update errors per second for the error details
-                if (getConfiguration().createErrorDetailsCharts())
+            final ErrorReport errorReport = errorValues.getErrorReport();
+
+            // update errors per second for the error details
+            if (getConfiguration().createErrorDetailsCharts())
+            {
+                errorValues.getValues().addOrUpdateValue(txnStats.getEndTime(), 1);
+            }
+
+            // update errors per second for the transaction error overview
+            if (getConfiguration().createTransactionErrorOverviewCharts())
+            {
+                final int id = getTransactionErrorOverviewChartID(errorReport.message);
+                TransactionErrorOverviewValues overviewErrorValues = transactionErrorOverviewValues.get(id);
+                if (overviewErrorValues == null)
                 {
-                    errorValues.getValues().addOrUpdateValue(txnStats.getEndTime(), 1);
+                    overviewErrorValues = new TransactionErrorOverviewValues(errorReport.message, id);
+                    transactionErrorOverviewValues.put(id, overviewErrorValues);
                 }
+                overviewErrorValues.getValues().addOrUpdateValue(txnStats.getEndTime(), 1);
+            }
 
-                // update errors per second for the transaction error overview
-                if (getConfiguration().createTransactionErrorOverviewCharts())
+            // update the error entry
+            errorReport.count++;
+
+            if (dumpMode != DumpMode.NEVER)
+            {
+                // add directory hints (up to the limit)
+                final String directoryHint = txnStats.getDumpDirectoryPath();
+                if (directoryHint != null)
                 {
-                    final int id = getTransactionErrorOverviewChartID(errorReport.message);
-                    TransactionErrorOverviewValues overviewErrorValues = transactionErrorOverviewValues.get(id);
-                    if (overviewErrorValues == null)
+                    // check if we should add/replace a result browser directory hint
+                    final boolean safeToAdd = errorReport.directoryHints.size() < directoryLimitPerError;
+                    if (safeToAdd || random.nextDoubleFast() <= directoryReplacementChance)
                     {
-                        overviewErrorValues = new TransactionErrorOverviewValues(errorReport.message, id);
-                        transactionErrorOverviewValues.put(id, overviewErrorValues);
-                    }
-                    overviewErrorValues.getValues().addOrUpdateValue(txnStats.getEndTime(), 1);
-                }
+                        // either limit not reached yet or replacement chance
+                        final String indexFilePath = directoryHint + "/index.html";
 
-                // update the error entry
-                errorReport.count++;
-
-                if (dumpMode != DumpMode.NEVER)
-                {
-                    // add directory hints (up to the limit)
-                    final String directoryHint = txnStats.getDumpDirectoryPath();
-                    if (directoryHint != null)
-                    {
-                        // check if we should add/replace a result browser directory hint
-                        final boolean safeToAdd = errorReport.directoryHints.size() < directoryLimitPerError;
-                        if (safeToAdd || random.nextDoubleFast() <= directoryReplacementChance)
+                        try
                         {
-                            // either limit not reached yet or replacement chance
-                            final String indexFilePath = directoryHint + "/index.html";
-
-                            try
+                            // check if such a directory exists and contains an index.html file
+                            if (VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists())
                             {
-                                // check if such a directory exists and contains an index.html file
-                                if (VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists())
+                                // now decide what to do with it
+                                if (safeToAdd)
                                 {
-                                    // now decide what to do with it
-                                    if (safeToAdd)
-                                    {
-                                        // add the directory
-                                        errorReport.directoryHints.add(directoryHint);
-                                    }
-                                    else
-                                    {
-                                        // randomly replace one of the existing hints with the new hint
-                                        errorReport.directoryHints.set(random.nextInt(directoryLimitPerError), directoryHint);
-                                    }
+                                    // add the directory
+                                    errorReport.directoryHints.add(directoryHint);
+                                }
+                                else
+                                {
+                                    // randomly replace one of the existing hints with the new hint
+                                    errorReport.directoryHints.set(random.nextInt(directoryLimitPerError), directoryHint);
                                 }
                             }
-                            catch (final FileSystemException e)
-                            {
-                                XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", indexFilePath,
-                                                            resultsDirectory.getName().getPath());
-                            }
+                        }
+                        catch (final FileSystemException e)
+                        {
+                            XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", indexFilePath,
+                                                        resultsDirectory.getName().getPath());
                         }
                     }
                 }
             }
         }
 
-        // count errors/events
-        if (stat instanceof TimerData)
+        // count transaction errors in the time series
+        if (txnStats.hasFailed())
         {
-            final TimerData timerData = (TimerData) stat;
+            transactionErrorsPerSecondValueSet.addOrUpdateValue(txnStats.getEndTime(), 1);
+        }
+    }
 
-            if (timerData.hasFailed())
+    /**
+     * Processes a single action record for error counting.
+     *
+     * @param actionData
+     *            the action data record
+     */
+    private void processAction(final ActionData actionData)
+    {
+        if (actionData.hasFailed())
+        {
+            actionErrorsPerSecondValueSet.addOrUpdateValue(actionData.getEndTime(), 1);
+        }
+    }
+
+    /**
+     * Processes a single request record for error counting and response code tracking.
+     *
+     * @param requestData
+     *            the request data record
+     */
+    private void processRequest(final RequestData requestData)
+    {
+        // count request errors in the time series
+        if (requestData.hasFailed())
+        {
+            requestErrorsPerSecondValueSet.addOrUpdateValue(requestData.getEndTime(), 1);
+        }
+
+        // collect the request errors by response code
+        if (getConfiguration().createRequestErrorOverviewCharts())
+        {
+            final int code = requestData.getResponseCode();
+            if (code == 0 || code >= 500)
             {
-                final ValueSet errorsPerSecondValueSet;
-
-                if (timerData instanceof TransactionData)
+                final String responseCode = String.valueOf(code);
+                ValueSet valueSet = requestErrorOverviewValues.get(responseCode);
+                if (valueSet == null)
                 {
-                    errorsPerSecondValueSet = transactionErrorsPerSecondValueSet;
+                    valueSet = new ValueSet();
+                    requestErrorOverviewValues.put(responseCode, valueSet);
                 }
-                else if (timerData instanceof ActionData)
-                {
-                    errorsPerSecondValueSet = actionErrorsPerSecondValueSet;
-                }
-                else if (timerData instanceof RequestData)
-                {
-                    errorsPerSecondValueSet = requestErrorsPerSecondValueSet;
-                }
-                else
-                {
-                    errorsPerSecondValueSet = null;
-                }
-
-                if (errorsPerSecondValueSet != null)
-                {
-                    // we expect the timer to be failed around the same time as it has finished
-                    errorsPerSecondValueSet.addOrUpdateValue(timerData.getEndTime(), 1);
-                }
-            }
-
-            // collect the request errors
-            if (getConfiguration().createRequestErrorOverviewCharts() && timerData instanceof RequestData)
-            {
-                final RequestData requestData = (RequestData) timerData;
-                final int code = requestData.getResponseCode();
-                if (code == 0 || code >= 500)
-                {
-                    final String responseCode = String.valueOf(code);
-                    ValueSet valueSet = requestErrorOverviewValues.get(responseCode);
-                    if (valueSet == null)
-                    {
-                        valueSet = new ValueSet();
-                        requestErrorOverviewValues.put(responseCode, valueSet);
-                    }
-                    valueSet.addOrUpdateValue(requestData.getEndTime(), 1);
-                }
+                valueSet.addOrUpdateValue(requestData.getEndTime(), 1);
             }
         }
     }

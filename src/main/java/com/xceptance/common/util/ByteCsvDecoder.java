@@ -268,12 +268,9 @@ public final class ByteCsvDecoder
     }
 
     /**
-     * Converts a range of bytes to an {@link XltCharBuffer}. For ASCII data (the common
-     * case in XLT timer files), this is a simple widening cast from byte to char.
-     */
-    /**
      * Converts a range of bytes to an {@link XltCharBuffer}, deferring to quote unescaping
-     * if the field was marked as having escapes.
+     * if the field was marked as having escapes. For ASCII data (the common case in XLT
+     * timer files), the fast path is a simple widening cast from byte to char.
      */
     public static final XltCharBuffer bytesToXltCharBuffer(final byte[] data, final int offset, final int length, final boolean hasEscapes)
     {

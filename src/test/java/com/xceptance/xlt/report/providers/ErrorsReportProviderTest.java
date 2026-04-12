@@ -419,7 +419,15 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
             final com.xceptance.xlt.api.report.PostProcessedDataContainer container = new com.xceptance.xlt.api.report.PostProcessedDataContainer(timerData.size());
             for (TimerData eachData : timerData)
             {
-                container.add(eachData);
+                // Route into the correct typed list — mirrors DataParserThread's switch logic
+                if (eachData instanceof TransactionData)
+                {
+                    container.addTransaction((TransactionData) eachData);
+                }
+                else if (eachData instanceof RequestData)
+                {
+                    container.addRequest((RequestData) eachData);
+                }
             }
             reportProvider.processAll(container);
             ErrorsReport reportData = (ErrorsReport) reportProvider.createReportFragment();

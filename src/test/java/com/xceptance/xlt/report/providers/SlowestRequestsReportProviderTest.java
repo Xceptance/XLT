@@ -746,7 +746,7 @@ public class SlowestRequestsReportProviderTest
     private static void processRequestData(final RequestData data)
     {
         final com.xceptance.xlt.api.report.PostProcessedDataContainer container = new com.xceptance.xlt.api.report.PostProcessedDataContainer(10);
-        container.add(data);
+        container.addRequest(data);
         reportProvider.processAll(container);
     }
 }

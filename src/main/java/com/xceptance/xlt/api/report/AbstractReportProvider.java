@@ -15,11 +15,9 @@
  */
 package com.xceptance.xlt.api.report;
 
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
-import com.xceptance.xlt.api.engine.Data;
-import com.xceptance.xlt.api.engine.TransactionData;
+
+
 
 /**
  * The {@link AbstractReportProvider} class provides common functionality of a typical report provider.

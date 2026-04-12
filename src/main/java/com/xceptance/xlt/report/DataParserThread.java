@@ -25,16 +25,20 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 
 import com.xceptance.common.util.ByteCsvDecoder;
-import com.xceptance.common.util.CsvLineDecoder;
+
 import com.xceptance.xlt.api.engine.ActionData;
+import com.xceptance.xlt.api.engine.CustomData;
+import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.engine.WebVitalData;
+import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.common.util.CsvByteRow;
-import com.xceptance.xlt.api.util.SimpleArrayList;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
 
@@ -150,10 +154,8 @@ class DataParserThread implements Runnable
                 final long _fromTime = fromTime;
                 final long _toTime = toTime;
 
-                final boolean useByteLines = chunk.hasByteLines();
-                final List<byte[]> byteLines = useByteLines ? chunk.getByteLines() : null;
-                final List<XltCharBuffer> charLines = useByteLines ? null : chunk.getLines();
-                final int size = useByteLines ? byteLines.size() : charLines.size();
+                final List<byte[]> byteLines = chunk.getByteLines();
+                final int size = byteLines.size();
 
                 // parse the chunk of lines and preprocess the results
 
@@ -163,24 +165,14 @@ class DataParserThread implements Runnable
                 {
                     Data data = null;
 
-                    // We retain a char path buffer for fallback if byteLines aren't used
-                    final SimpleArrayList<XltCharBuffer> charBufferList = useByteLines ? null : new SimpleArrayList<>(50);
-
                     try
                     {
-                        if (useByteLines)
-                        {
-                            final byte[] rawLine = byteLines.get(i);
-                            ByteCsvDecoder.parse(byteRow, rawLine);
+                        final byte[] rawLine = byteLines.get(i);
+                        ByteCsvDecoder.parse(byteRow, rawLine);
                             
-                            // get us the minimal data aka type and time
-                            data = dataRecordFactory.createStatistics(byteRow.charAt(0, 0));
-                            data.setBaseValues(byteRow);
-                        }
-                        else
-                        {
-                            throw new UnsupportedOperationException("CharLines parsing has been removed for zero-allocation strategy");
-                        }
+                        // get us the minimal data aka type and time
+                        data = dataRecordFactory.createStatistics(byteRow.charAt(0, 0));
+                        data.setBaseValues(byteRow);
 
                         // see if we have to keep it
                         final long time = data.getTime();
@@ -191,20 +183,11 @@ class DataParserThread implements Runnable
                         }
 
                         // finish parsing
-                        if (useByteLines)
-                        {
-                            data.setRemainingValues(byteRow);
-                        }
-                        else
-                        {
-                            throw new UnsupportedOperationException("CharLines parsing has been removed for zero-allocation strategy");
-                        }
+                        data.setRemainingValues(byteRow);
                     }
                     catch (final Exception ex)
                     {
-                        final String lineContent = useByteLines 
-                                                   ? new String(byteLines.get(i), java.nio.charset.StandardCharsets.UTF_8) 
-                                                   : charLines.get(i).toString();
+                        final String lineContent = new String(byteLines.get(i), java.nio.charset.StandardCharsets.UTF_8);
                         final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
                                                          file, ex, lineContent);
                         LOG.error(msg, ex);
@@ -216,26 +199,165 @@ class DataParserThread implements Runnable
                     data.setAgentName(agentName);
                     data.setTransactionName(testCaseName);
                     
-                    // let's see if this data requires post processing aka filtering/merging
-                    data = applyDataAdjustments(data, userNumber, collectActionNames, chunk, adjustTimerName);
-
-                    // if this is request, filter it aka apply merge rules
-                    if (data instanceof RequestData)
+                    final char typeCode = byteRow.charAt(0, 0);
+                    final long time = data.getTime();
+                    
+                    switch (typeCode)
                     {
-                        final RequestData result = requestProcessing.postprocess((RequestData) data);
-                        if (result != null)
-                        {
-                            postProcessedData.add(result);
-                        }
+                        case 'T':
+                            if (data instanceof TransactionData)
+                            {
+                                final TransactionData td = (TransactionData) data;
+                                td.setTestUserNumber(userNumber);
+                                td.getName().hashCode();
+                                postProcessedData.addTransaction(td);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'A':
+                            if (data instanceof ActionData)
+                            {
+                                final ActionData ad = (ActionData) data;
+                                if (collectActionNames)
+                                {
+                                    chunk.getActionNames().put(time, ad.getName());
+                                }
+                                ad.getName().hashCode();
+                                postProcessedData.addAction(ad);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'R':
+                            if (data instanceof RequestData)
+                            {
+                                final RequestData rd = (RequestData) data;
+                                if (adjustTimerName)
+                                {
+                                    final Entry<Long, String> entry = chunk.getActionNames().floorEntry(time);
+                                    final String actionName = (entry != null) ? entry.getValue() : "UnknownAction";
+                                    final Matcher m = WD_TIMER_NAME_PATTERN.matcher(rd.getName());
+                                    rd.setName(m.replaceFirst(actionName));
+                                }
+                                final RequestData result = requestProcessing.postprocess(rd);
+                                if (result != null)
+                                {
+                                    postProcessedData.addRequest(result);
+                                }
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'E':
+                            if (data instanceof EventData)
+                            {
+                                final EventData ed = (EventData) data;
+                                ed.getName().hashCode();
+                                postProcessedData.addEvent(ed);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'P':
+                            if (data instanceof PageLoadTimingData)
+                            {
+                                final PageLoadTimingData pd = (PageLoadTimingData) data;
+                                if (adjustTimerName)
+                                {
+                                    final Entry<Long, String> entry = chunk.getActionNames().floorEntry(time);
+                                    final String actionName = (entry != null) ? entry.getValue() : "UnknownAction";
+                                    final Matcher m = WD_TIMER_NAME_PATTERN.matcher(pd.getName());
+                                    pd.setName(m.replaceFirst(actionName));
+                                }
+                                pd.getName().hashCode();
+                                postProcessedData.addPageLoadTiming(pd);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'W':
+                            if (data instanceof WebVitalData)
+                            {
+                                final WebVitalData wd = (WebVitalData) data;
+                                wd.getName().hashCode();
+                                postProcessedData.addWebVital(wd);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'V':
+                            if (data instanceof CustomValue)
+                            {
+                                final CustomValue cv = (CustomValue) data;
+                                cv.getName().hashCode();
+                                postProcessedData.addCustomValue(cv);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'C':
+                            if (data instanceof CustomData)
+                            {
+                                final CustomData cd = (CustomData) data;
+                                cd.getName().hashCode();
+                                postProcessedData.addCustomTimer(cd);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        case 'J':
+                            if (data instanceof JvmResourceUsageData)
+                            {
+                                final JvmResourceUsageData jd = (JvmResourceUsageData) data;
+                                jd.getName().hashCode();
+                                postProcessedData.addJvmResourceUsage(jd);
+                            }
+                            else
+                            {
+                                data.getName().hashCode();
+                                postProcessedData.addOtherData(data);
+                            }
+                            break;
+                        default:
+                            data.getName().hashCode();
+                            if (data instanceof TransactionData) { postProcessedData.addTransaction((TransactionData) data); }
+                            else if (data instanceof ActionData) { postProcessedData.addAction((ActionData) data); }
+                            else if (data instanceof RequestData) { postProcessedData.addRequest((RequestData) data); }
+                            else if (data instanceof EventData) { postProcessedData.addEvent((EventData) data); }
+                            else if (data instanceof PageLoadTimingData) { postProcessedData.addPageLoadTiming((PageLoadTimingData) data); }
+                            else if (data instanceof WebVitalData) { postProcessedData.addWebVital((WebVitalData) data); }
+                            else if (data instanceof CustomValue) { postProcessedData.addCustomValue((CustomValue) data); }
+                            else if (data instanceof CustomData) { postProcessedData.addCustomTimer((CustomData) data); }
+                            else if (data instanceof JvmResourceUsageData) { postProcessedData.addJvmResourceUsage((JvmResourceUsageData) data); }
+                            else { postProcessedData.addOtherData(data); }
+                            break;
                     }
-                    else
-                    {
-                        // get us a hashcode for later while the cache is warm
-                        // for RequestData, we did that already
-                        data.getName().hashCode();
-                        postProcessedData.add(data);
-                    }
-
+                    
                     lineNumber++;
                 }
 
@@ -248,34 +370,5 @@ class DataParserThread implements Runnable
                 break;
             }
         }
-    }
-
-    private Data applyDataAdjustments(final Data data, 
-                                      final String userNumber,
-                                      final boolean collectActionNames, final DataChunk lineChunk, 
-                                      final boolean adjustTimerName)
-    {
-        // set special fields / special handling
-        if (data instanceof TransactionData)
-        {
-            final TransactionData td = (TransactionData) data;
-            td.setTestUserNumber(userNumber);
-        }
-        else if (collectActionNames && data instanceof ActionData)
-        {
-            // store the action name/time for later use
-            lineChunk.getActionNames().put(data.getTime(), data.getName());
-        }
-        else if (adjustTimerName && (data instanceof RequestData || data instanceof PageLoadTimingData))
-        {
-            // rename web driver requests/custom timers using the previously stored action names
-            final Entry<Long, String> entry = lineChunk.getActionNames().floorEntry(data.getTime());
-            final String actionName = (entry != null) ? entry.getValue() : "UnknownAction";
-
-            final Matcher m = WD_TIMER_NAME_PATTERN.matcher(data.getName());
-            data.setName(m.replaceFirst(actionName));
-        }
-
-        return data;
     }
 }

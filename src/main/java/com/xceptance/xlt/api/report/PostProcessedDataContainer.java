@@ -1,7 +1,21 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.xlt.api.report;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.CustomData;
@@ -14,8 +28,19 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.agent.JvmResourceUsageData;
 
+/**
+ * A strongly-typed container for post-processed data records, organized by concrete data type.
+ * <p>
+ * Each typed {@code add*()} method inserts a record into the appropriate backing list and
+ * updates the container's time boundaries (min/max). This design eliminates the need for
+ * {@code instanceof} checks during downstream processing — providers simply iterate the
+ * typed list they care about.
+ * <p>
+ * The container is designed to be reused across chunks: call {@link #clear()} between uses.
+ */
 public class PostProcessedDataContainer
 {
+
     private final ArrayList<TransactionData> transactions;
     private final ArrayList<ActionData> actions;
     private final ArrayList<RequestData> requests;
@@ -25,7 +50,7 @@ public class PostProcessedDataContainer
     private final ArrayList<CustomValue> customValues;
     private final ArrayList<CustomData> customTimers;
     private final ArrayList<JvmResourceUsageData> jvmResourceUsage;
-    private final ArrayList<Data> customData;
+    private final ArrayList<Data> otherData;
 
     /**
      * Creation time of last data record.
@@ -50,14 +75,14 @@ public class PostProcessedDataContainer
         this.customValues = new ArrayList<>(initialCapacity);
         this.customTimers = new ArrayList<>(initialCapacity);
         this.jvmResourceUsage = new ArrayList<>(initialCapacity);
-        this.customData = new ArrayList<>(initialCapacity);
+        this.otherData = new ArrayList<>(initialCapacity);
     }
 
     public boolean isEmpty()
     {
         return transactions.isEmpty() && actions.isEmpty() && requests.isEmpty() && events.isEmpty() 
             && pageLoadTimings.isEmpty() && webVitals.isEmpty() && customValues.isEmpty() 
-            && customTimers.isEmpty() && jvmResourceUsage.isEmpty() && customData.isEmpty();
+            && customTimers.isEmpty() && jvmResourceUsage.isEmpty() && otherData.isEmpty();
     }
 
     public void clear()
@@ -71,63 +96,35 @@ public class PostProcessedDataContainer
         customValues.clear();
         customTimers.clear();
         jvmResourceUsage.clear();
-        customData.clear();
+        otherData.clear();
 
         maximumTime = 0;
         minimumTime = Long.MAX_VALUE;
     }
 
-    public void add(final Data d)
+    /**
+     * Updates the time boundaries (min/max) for this container. Called internally by
+     * the typed add methods to track the overall time range of data in the container.
+     *
+     * @param time
+     *            the timestamp of the data record being added
+     */
+    private void updateTime(final long time)
     {
-        switch (d.getTypeCode())
-        {
-            case 'T':
-                if (d instanceof TransactionData) { transactions.add((TransactionData) d); } else { customData.add(d); }
-                break;
-            case 'A':
-                if (d instanceof ActionData) { actions.add((ActionData) d); } else { customData.add(d); }
-                break;
-            case 'R':
-                if (d instanceof RequestData) { requests.add((RequestData) d); } else { customData.add(d); }
-                break;
-            case 'E':
-                if (d instanceof EventData) { events.add((EventData) d); } else { customData.add(d); }
-                break;
-            case 'P':
-                if (d instanceof PageLoadTimingData) { pageLoadTimings.add((PageLoadTimingData) d); } else { customData.add(d); }
-                break;
-            case 'W':
-                if (d instanceof WebVitalData) { webVitals.add((WebVitalData) d); } else { customData.add(d); }
-                break;
-            case 'V':
-                if (d instanceof CustomValue) { customValues.add((CustomValue) d); } else { customData.add(d); }
-                break;
-            case 'C':
-                if (d instanceof CustomData) { customTimers.add((CustomData) d); } else { customData.add(d); }
-                break;
-            case 'J':
-                if (d instanceof JvmResourceUsageData) { jvmResourceUsage.add((JvmResourceUsageData) d); } else { customData.add(d); }
-                break;
-            default:
-                if (d instanceof TransactionData) { transactions.add((TransactionData) d); }
-                else if (d instanceof ActionData) { actions.add((ActionData) d); }
-                else if (d instanceof RequestData) { requests.add((RequestData) d); }
-                else if (d instanceof EventData) { events.add((EventData) d); }
-                else if (d instanceof PageLoadTimingData) { pageLoadTimings.add((PageLoadTimingData) d); }
-                else if (d instanceof WebVitalData) { webVitals.add((WebVitalData) d); }
-                else if (d instanceof CustomValue) { customValues.add((CustomValue) d); }
-                else if (d instanceof CustomData) { customTimers.add((CustomData) d); }
-                else if (d instanceof JvmResourceUsageData) { jvmResourceUsage.add((JvmResourceUsageData) d); }
-                else { customData.add(d); }
-                break;
-        }
-
-        // maintain statistics
-        final long time = d.getTime();
-
         minimumTime = Math.min(minimumTime, time);
         maximumTime = Math.max(maximumTime, time);
     }
+
+    public void addTransaction(final TransactionData d) { transactions.add(d); updateTime(d.getTime()); }
+    public void addAction(final ActionData d) { actions.add(d); updateTime(d.getTime()); }
+    public void addRequest(final RequestData d) { requests.add(d); updateTime(d.getTime()); }
+    public void addEvent(final EventData d) { events.add(d); updateTime(d.getTime()); }
+    public void addPageLoadTiming(final PageLoadTimingData d) { pageLoadTimings.add(d); updateTime(d.getTime()); }
+    public void addWebVital(final WebVitalData d) { webVitals.add(d); updateTime(d.getTime()); }
+    public void addCustomValue(final CustomValue d) { customValues.add(d); updateTime(d.getTime()); }
+    public void addCustomTimer(final CustomData d) { customTimers.add(d); updateTime(d.getTime()); }
+    public void addJvmResourceUsage(final JvmResourceUsageData d) { jvmResourceUsage.add(d); updateTime(d.getTime()); }
+    public void addOtherData(final Data d) { otherData.add(d); updateTime(d.getTime()); }
 
     public ArrayList<TransactionData> getTransactions()
     {
@@ -174,9 +171,9 @@ public class PostProcessedDataContainer
         return jvmResourceUsage;
     }
 
-    public ArrayList<Data> getCustomData()
+    public ArrayList<Data> getOtherData()
     {
-        return customData;
+        return otherData;
     }
 
     /**

@@ -40,7 +40,7 @@ public class Dispatcher
     /**
      * The maximum number of lines in a chunk.
      */
-    public static final int DEFAULT_QUEUE_CHUNK_SIZE = 200;
+    public static final int DEFAULT_QUEUE_CHUNK_SIZE = 20000;
 
     /**
      * How many chunks do we deliver until waiting

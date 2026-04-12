@@ -18,7 +18,7 @@ package com.xceptance.xlt.report.providers;
 import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.CustomData;
-import com.xceptance.xlt.api.engine.Data;
+
 import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
@@ -122,39 +122,6 @@ public class SummaryReportProvider extends AbstractReportProvider
         size = customData.size();
         for (int i = 0; i < size; i++) {
             agentDataProcessor.processDataRecord(customData.get(i));
-        }
-    }
-
-    protected void processDataRecord(final Data data)
-    {
-        if (data instanceof RequestData)
-        {
-            requestDataProcessor.processDataRecord(data);
-        }
-        else if (data instanceof ActionData)
-        {
-            actionDataProcessor.processDataRecord(data);
-        }
-        else if (data instanceof TransactionData)
-        {
-            transactionDataProcessor.processDataRecord(data);
-            agentDataProcessor.incrementTransactionCounters(((TransactionData) data).hasFailed());
-        }
-        else if (data instanceof EventData)
-        {
-            transactionDataProcessor.processDataRecord(data);
-        }
-        else if (data instanceof PageLoadTimingData)
-        {
-            pageLoadDataProcessor.processDataRecord(data);
-        }
-        else if (data instanceof CustomData)
-        {
-            customTimerDataProcessor.processDataRecord(data);
-        }
-        else if (data instanceof JvmResourceUsageData)
-        {
-            agentDataProcessor.processDataRecord(data);
         }
     }
 }

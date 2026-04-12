@@ -104,7 +104,6 @@ public abstract class AbstractData implements Data
         {
             // read and check the values
             name = row.getString(1);
-            name.hashCode(); // create it when it is still hot in the cache
 
             time = row.getLong(2);
 
