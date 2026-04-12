@@ -185,4 +185,72 @@ public final class ByteBufferedLineReader implements Closeable
         System.arraycopy(src, srcOffset, dest, destLength, length);
         return dest;
     }
+
+    /**
+     * Reads a single line exactly into a zero-allocation leased buffer without runtime heap assignments natively.
+     * 
+     * @return the written byte length or -1.
+     */
+    public final int readInto(final byte[] dest, final int destOffset) throws IOException
+    {
+        if (eof)
+        {
+            return -1;
+        }
+
+        int start = bufferPos;
+        int currentDestOffset = destOffset;
+
+        for (;;)
+        {
+            if (bufferPos >= bufferLength)
+            {
+                if (start < bufferPos && bufferPos > 0)
+                {
+                    final int len = bufferPos - start;
+                    System.arraycopy(buffer, start, dest, currentDestOffset, len);
+                    currentDestOffset += len;
+                }
+
+                final int read = fill();
+                start = 0;
+
+                if (read == -1)
+                {
+                    eof = true;
+                    final int bytesWritten = currentDestOffset - destOffset;
+                    return (bytesWritten == 0) ? -1 : bytesWritten;
+                }
+            }
+
+            if (skipLF && buffer[bufferPos] == '\n')
+            {
+                start = ++bufferPos;
+            }
+            skipLF = false;
+
+            for (int i = bufferPos; i < bufferLength; i++)
+            {
+                final byte b = buffer[i];
+                if (b == '\n' || b == '\r')
+                {
+                    if (b == '\r') skipLF = true;
+
+                    bufferPos = i + 1;
+                    final int lineLen = i - start;
+                    System.arraycopy(buffer, start, dest, currentDestOffset, lineLen);
+                    return (currentDestOffset + lineLen) - destOffset;
+                }
+            }
+
+            final int len = bufferLength - start;
+            if (len > 0)
+            {
+                System.arraycopy(buffer, start, dest, currentDestOffset, len);
+                currentDestOffset += len;
+            }
+            bufferPos = bufferLength;
+            start = bufferLength;
+        }
+    }
 }
