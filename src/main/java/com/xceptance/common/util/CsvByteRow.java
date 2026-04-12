@@ -109,6 +109,9 @@ public final class CsvByteRow
                 }
             }
 
+            // HotSpot JVM Escape Analysis intrinsic: this instantiation inherently guarantees zero
+            // heap allocation overhead when JFR is inactive. The Just-In-Time (JIT) compiler natively targets
+            // the `.isEnabled()` block and aggressively eliminates the `new` allocation entirely from the execution tree.
             final CacheLookupEvent event = new CacheLookupEvent();
             if (event.isEnabled())
             {
