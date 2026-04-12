@@ -54,6 +54,18 @@ public final class CsvByteRow
      */
     public static final class ByteStringCache
     {
+        @jdk.jfr.Name("com.xceptance.xlt.ByteStringCacheLookup")
+        @jdk.jfr.Label("Byte String Cache Lookup")
+        @jdk.jfr.Category({"XLT", "Parser", "Cache"})
+        public static class CacheLookupEvent extends jdk.jfr.Event
+        {
+            @jdk.jfr.Label("Hit")
+            public boolean hit;
+
+            @jdk.jfr.Label("Length")
+            public int length;
+        }
+
         private static final int MASK = 1023; // 1024 slots
         private final String[] values = new String[1024];
         private final byte[][] keys = new byte[1024][];
@@ -74,6 +86,8 @@ public final class CsvByteRow
             final byte[] keyData = keys[ptr];
 
             // evaluate hit
+            boolean isHit = false;
+
             if (val != null && keyData != null && keyData.length == length)
             {
                 boolean match = true;
@@ -87,8 +101,21 @@ public final class CsvByteRow
                 }
                 if (match)
                 {
-                    return val;
+                    isHit = true;
                 }
+            }
+
+            final CacheLookupEvent event = new CacheLookupEvent();
+            if (event.isEnabled())
+            {
+                event.hit = isHit;
+                event.length = length;
+                event.commit();
+            }
+
+            if (isHit)
+            {
+                return val;
             }
 
             // miss (or collision) -> overwrite
