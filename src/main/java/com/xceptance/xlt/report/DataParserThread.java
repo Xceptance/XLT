@@ -37,9 +37,7 @@ import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
-import com.zaxxer.sparsebits.SparseBitSet;
 
-import it.unimi.dsi.util.FastRandom;
 
 /**
  * Parses lines to data records and performs any data record preprocessing that can 
@@ -123,15 +121,7 @@ class DataParserThread implements Runnable
     @Override
     public void run()
     {
-        final double SAMPLELIMIT = 1 / ((double) config.dataSampleFactor);
-        final int SAMPLEFACTOR = config.dataSampleFactor;
 
-        // some fix random sequence that is fast and always the same, this might change in the future
-        final FastRandom random = new FastRandom(98765111L);
-
-        // ensure that we are not killing everything
-        final SparseBitSet allTimeIndex = new SparseBitSet();
-        final SparseBitSet actionTimeIndex = new SparseBitSet();
 
         // single reused flyweight zero-copy row
         final CsvByteRow byteRow = new CsvByteRow();
@@ -140,8 +130,11 @@ class DataParserThread implements Runnable
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
                                                                           config.getRemoveIndexesFromRequestNames());
 
+        final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(10000);
+
         while (true)
         {
+            postProcessedData.clear();
             try
             {
                 // get a chunk of lines
@@ -163,7 +156,6 @@ class DataParserThread implements Runnable
                 final int size = useByteLines ? byteLines.size() : charLines.size();
 
                 // parse the chunk of lines and preprocess the results
-                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(size);
 
                 int lineNumber = chunk.getBaseLineNumber();
 
@@ -196,32 +188,6 @@ class DataParserThread implements Runnable
                         {
                             // nope
                             continue;
-                        }
-
-                        // see if we are sampling data values
-                        if (SAMPLEFACTOR > 1)
-                        {
-                            // never drop Transactions
-                            if (!(data instanceof TransactionData))
-                            {
-                                final SparseBitSet timeIndex = data instanceof ActionData ? actionTimeIndex : allTimeIndex;
-
-                                // see if we have data at this second already
-                                final int sec = (int) (data.getTime() * 0.001);
-                                if (timeIndex.get(sec))
-                                {
-                                    // ok, we already have something... see if we want to drop it
-                                    if (random.nextDoubleFast() > SAMPLELIMIT)
-                                    {
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    // mark that this second has a value
-                                    timeIndex.set(sec);
-                                }
-                            }
                         }
 
                         // finish parsing

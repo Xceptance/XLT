@@ -60,47 +60,66 @@ public class PostProcessedDataContainer
             && customTimers.isEmpty() && jvmResourceUsage.isEmpty() && customData.isEmpty();
     }
 
+    public void clear()
+    {
+        transactions.clear();
+        actions.clear();
+        requests.clear();
+        events.clear();
+        pageLoadTimings.clear();
+        webVitals.clear();
+        customValues.clear();
+        customTimers.clear();
+        jvmResourceUsage.clear();
+        customData.clear();
+
+        maximumTime = 0;
+        minimumTime = Long.MAX_VALUE;
+    }
+
     public void add(final Data d)
     {
-        if (d instanceof TransactionData)
+        switch (d.getTypeCode())
         {
-            transactions.add((TransactionData) d);
-        }
-        else if (d instanceof ActionData)
-        {
-            actions.add((ActionData) d);
-        }
-        else if (d instanceof RequestData)
-        {
-            requests.add((RequestData) d);
-        }
-        else if (d instanceof EventData)
-        {
-            events.add((EventData) d);
-        }
-        else if (d instanceof PageLoadTimingData)
-        {
-            pageLoadTimings.add((PageLoadTimingData) d);
-        }
-        else if (d instanceof WebVitalData)
-        {
-            webVitals.add((WebVitalData) d);
-        }
-        else if (d instanceof CustomValue)
-        {
-            customValues.add((CustomValue) d);
-        }
-        else if (d instanceof CustomData)
-        {
-            customTimers.add((CustomData) d);
-        }
-        else if (d instanceof JvmResourceUsageData)
-        {
-            jvmResourceUsage.add((JvmResourceUsageData) d);
-        }
-        else
-        {
-            customData.add(d);
+            case 'T':
+                if (d instanceof TransactionData) { transactions.add((TransactionData) d); } else { customData.add(d); }
+                break;
+            case 'A':
+                if (d instanceof ActionData) { actions.add((ActionData) d); } else { customData.add(d); }
+                break;
+            case 'R':
+                if (d instanceof RequestData) { requests.add((RequestData) d); } else { customData.add(d); }
+                break;
+            case 'E':
+                if (d instanceof EventData) { events.add((EventData) d); } else { customData.add(d); }
+                break;
+            case 'P':
+                if (d instanceof PageLoadTimingData) { pageLoadTimings.add((PageLoadTimingData) d); } else { customData.add(d); }
+                break;
+            case 'W':
+                if (d instanceof WebVitalData) { webVitals.add((WebVitalData) d); } else { customData.add(d); }
+                break;
+            case 'V':
+                if (d instanceof CustomValue) { customValues.add((CustomValue) d); } else { customData.add(d); }
+                break;
+            case 'C':
+                if (d instanceof CustomData) { customTimers.add((CustomData) d); } else { customData.add(d); }
+                break;
+            case 'J':
+                if (d instanceof JvmResourceUsageData) { jvmResourceUsage.add((JvmResourceUsageData) d); } else { customData.add(d); }
+                break;
+            default:
+                if (d instanceof TransactionData) { transactions.add((TransactionData) d); }
+                else if (d instanceof ActionData) { actions.add((ActionData) d); }
+                else if (d instanceof RequestData) { requests.add((RequestData) d); }
+                else if (d instanceof EventData) { events.add((EventData) d); }
+                else if (d instanceof PageLoadTimingData) { pageLoadTimings.add((PageLoadTimingData) d); }
+                else if (d instanceof WebVitalData) { webVitals.add((WebVitalData) d); }
+                else if (d instanceof CustomValue) { customValues.add((CustomValue) d); }
+                else if (d instanceof CustomData) { customTimers.add((CustomData) d); }
+                else if (d instanceof JvmResourceUsageData) { jvmResourceUsage.add((JvmResourceUsageData) d); }
+                else { customData.add(d); }
+                break;
         }
 
         // maintain statistics
