@@ -69,10 +69,14 @@ public final class CsvByteRow
         private static final int MASK = 1023; // 1024 slots
         private final String[] values = new String[1024];
         private final byte[][] keys = new byte[1024][];
+        private final int[] lengths = new int[1024];
 
         public final String get(final byte[] data, final int offset, final int length, final boolean quoted)
         {
-            if (length == 0) return "";
+            if (length == 0)
+            {
+                return "";
+            }
             
             int h = 0;
             // Unroll slightly or just fast hash
@@ -88,7 +92,7 @@ public final class CsvByteRow
             // evaluate hit
             boolean isHit = false;
 
-            if (val != null && keyData != null && keyData.length == length)
+            if (val != null && keyData != null && lengths[ptr] == length)
             {
                 boolean match = true;
                 for (int i = 0; i < length; i++)
@@ -119,9 +123,20 @@ public final class CsvByteRow
             }
 
             // miss (or collision) -> overwrite
+            byte[] keyBuffer = keys[ptr];
+            if (keyBuffer == null || keyBuffer.length < length)
+            {
+                // Allocate with headroom to minimize reallocation if later strings are longer
+                keyBuffer = new byte[Math.max(64, length)];
+                keys[ptr] = keyBuffer;
+            }
+            
+            System.arraycopy(data, offset, keyBuffer, 0, length);
+            lengths[ptr] = length;
+
             final String newVal = ByteCsvDecoder.bytesToString(data, offset, length, quoted);
             values[ptr] = newVal;
-            keys[ptr] = Arrays.copyOfRange(data, offset, offset + length); // Only allocate array for cache eviction
+            
             return newVal;
         }
     }

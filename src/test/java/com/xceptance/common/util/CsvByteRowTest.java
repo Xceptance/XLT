@@ -91,7 +91,10 @@ public class CsvByteRowTest
                     break;
                 }
             }
-            if (s1 != null) break;
+            if (s1 != null)
+            {
+                break;
+            }
         }
         
         final byte[] d1 = s1.getBytes(StandardCharsets.UTF_8);
@@ -110,19 +113,68 @@ public class CsvByteRowTest
         assertEquals(s1, r3);
         assertNotSame("s1 should have been evicted and recreated", r1, r3);
     }
+    @Test
+    public void testByteStringCache_CollisionEviction_DifferentLengths()
+    {
+        final ByteStringCache cache = new ByteStringCache();
+        
+        // Find a collision between a short string and a LONG string.
+        String shortStr = null;
+        String longStr = null;
+        
+        for (int i = 0; i < 5000; i++)
+        {
+            String cand1 = "A" + i;
+            int hash1 = getCacheSlot(cand1);
+            
+            for (int j = i + 1; j < 5000; j++)
+            {
+                // Create a string that exceeds the Math.max(64, length) safety buffer if cand1 is short
+                String cand2 = "VeryLongStringThatForcesAReallocationWhenItCollidesWithAShortString_" + j;
+                if (getCacheSlot(cand2) == hash1)
+                {
+                    shortStr = cand1;
+                    longStr = cand2;
+                    break;
+                }
+            }
+            if (shortStr != null)
+            {
+                break;
+            }
+        }
+        
+        final byte[] dShort = shortStr.getBytes(StandardCharsets.UTF_8);
+        final byte[] dLong = longStr.getBytes(StandardCharsets.UTF_8);
+
+        // Put short in cache (allocates keyBuffer of size 64)
+        final String r1 = cache.get(dShort, 0, dShort.length, false);
+        assertEquals(shortStr, r1);
+        
+        // Put long in cache (must resize keyBuffer to > 64)
+        final String r2 = cache.get(dLong, 0, dLong.length, false);
+        assertEquals(longStr, r2);
+        
+        // Put short in cache again (reuses larger buffer, only overrides prefix)
+        final String r3 = cache.get(dShort, 0, dShort.length, false);
+        assertEquals(shortStr, r3);
+    }
     
     private int getCacheSlot(String s)
     {
         byte[] b = s.getBytes(StandardCharsets.UTF_8);
         int h = 0;
-        for (int i = 0; i < b.length; i++) h = 31 * h + b[i];
+        for (int i = 0; i < b.length; i++)
+        {
+            h = 31 * h + b[i];
+        }
         return (h ^ (h >>> 16)) & 1023;
     }
 
     @Test
     public void testByteStringCache_EmptyString()
     {
-                final ByteStringCache cache = new ByteStringCache();
+        final ByteStringCache cache = new ByteStringCache();
         assertEquals("", cache.get(new byte[0], 0, 0, false));
     }
 }
