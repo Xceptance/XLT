@@ -118,22 +118,10 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
         // nothing to do here
-    }
-
-    /**
-     * Tell the system that there is no need to call processDataRecord
-     */
-    @Override
-    public boolean wantsDataRecords()
-    {
-        return false;
     }        
     
     private void findLogsAggregated (FileObject results)

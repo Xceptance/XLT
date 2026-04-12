@@ -77,11 +77,55 @@ public class SummaryReportProvider extends AbstractReportProvider
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        int size = requests.size();
+        for (int i = 0; i < size; i++) {
+            requestDataProcessor.processDataRecord(requests.get(i));
+        }
+
+        final java.util.ArrayList<ActionData> actions = dataContainer.getActions();
+        size = actions.size();
+        for (int i = 0; i < size; i++) {
+            actionDataProcessor.processDataRecord(actions.get(i));
+        }
+
+        final java.util.ArrayList<TransactionData> transactions = dataContainer.getTransactions();
+        size = transactions.size();
+        for (int i = 0; i < size; i++) {
+            final TransactionData t = transactions.get(i);
+            transactionDataProcessor.processDataRecord(t);
+            agentDataProcessor.incrementTransactionCounters(t.hasFailed());
+        }
+
+        final java.util.ArrayList<EventData> events = dataContainer.getEvents();
+        size = events.size();
+        for (int i = 0; i < size; i++) {
+            transactionDataProcessor.processDataRecord(events.get(i));
+        }
+
+        final java.util.ArrayList<PageLoadTimingData> timings = dataContainer.getPageLoadTimings();
+        size = timings.size();
+        for (int i = 0; i < size; i++) {
+            pageLoadDataProcessor.processDataRecord(timings.get(i));
+        }
+
+        final java.util.ArrayList<CustomData> customTimers = dataContainer.getCustomTimers();
+        size = customTimers.size();
+        for (int i = 0; i < size; i++) {
+            customTimerDataProcessor.processDataRecord(customTimers.get(i));
+        }
+
+        final java.util.ArrayList<com.xceptance.xlt.agent.JvmResourceUsageData> customData = dataContainer.getJvmResourceUsage();
+        size = customData.size();
+        for (int i = 0; i < size; i++) {
+            agentDataProcessor.processDataRecord(customData.get(i));
+        }
+    }
+
+    protected void processDataRecord(final Data data)
     {
         if (data instanceof RequestData)
         {

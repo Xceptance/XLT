@@ -178,15 +178,14 @@ public class GeneralReportProvider extends AbstractReportProvider
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof RequestData)
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        int size = requests.size();
+        for (int i = 0; i < size; i++)
         {
-            final RequestData reqData = (RequestData) data;
+            final RequestData reqData = requests.get(i);
             final long time = reqData.getTime();
             final long endTime = reqData.getEndTime();
             final int runTime = reqData.getRunTime();
@@ -202,9 +201,12 @@ public class GeneralReportProvider extends AbstractReportProvider
 
             requestRunTimeValueSet.addOrUpdateValue(endTime, runTime);
         }
-        else if (data instanceof TransactionData)
+
+        final java.util.ArrayList<TransactionData> transactions = dataContainer.getTransactions();
+        size = transactions.size();
+        for (int i = 0; i < size; i++)
         {
-            final TransactionData txnData = (TransactionData) data;
+            final TransactionData txnData = transactions.get(i);
             final long time = txnData.getTime();
             final long endTime = txnData.getEndTime();
 

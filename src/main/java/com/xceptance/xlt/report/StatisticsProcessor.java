@@ -17,8 +17,9 @@ package com.xceptance.xlt.report;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,131 +27,152 @@ import org.apache.commons.logging.LogFactory;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.report.ReportProvider;
 
-/**
- * Processes parsed data records. Processing means passing a data record to all configured report providers. Since data
- * processing is not thread-safe (yet), there will be only one statistics processor.
- */
 class StatisticsProcessor
 {
-    /**
-     * Class logger.
-     */
     private static final Log LOG = LogFactory.getLog(StatisticsProcessor.class);
 
-    /**
-     * The update lock
-     */
     private final ReentrantLock updateLock = new ReentrantLock();
 
-    /**
-     * Creation time of last data record.
-     */
     private long maximumTime = 0;
-
-    /**
-     * Creation time of first data record.
-     */
     private long minimumTime = Long.MAX_VALUE;
 
-    /**
-     * The configured report providers. An array for less overhead.
-     */
-    private final List<ReportProvider> reportProviders;
+    private final List<ProviderActor> actors;
 
-    /**
-     * Constructor.
-     *
-     * @param reportProviders
-     *            the configured report providers
-     */
     public StatisticsProcessor(final List<ReportProvider> reportProviders)
     {
-        // filter the list and take only the provider that really need runtime parsed data
-        this.reportProviders = reportProviders.stream().filter(p -> p.wantsDataRecords()).collect(Collectors.toList());
+        this.actors = new ArrayList<>(reportProviders.size());
+        for (final ReportProvider p : reportProviders)
+        {
+            this.actors.add(new ProviderActor(p));
+        }
     }
 
-    /**
-     * Returns the maximum time.
-     *
-     * @return maximum time
-     */
-    public synchronized long getMaximumTime()
+    public long getMaximumTime()
     {
-        return maximumTime;
+        updateLock.lock();
+        try
+        {
+            return maximumTime;
+        }
+        finally
+        {
+            updateLock.unlock();
+        }
     }
 
-    /**
-     * Returns the minimum time.
-     *
-     * @return minimum time
-     */
-    public synchronized long getMinimumTime()
+    public long getMinimumTime()
     {
-        return (minimumTime == Long.MAX_VALUE) ? 0 : minimumTime;
+        updateLock.lock();
+        try
+        {
+            return (minimumTime == Long.MAX_VALUE) ? 0 : minimumTime;
+        }
+        finally
+        {
+            updateLock.unlock();
+        }
     }
 
-    /**
-     * Takes the post-processed data and puts it into the statistics machinery to capture the final data points.
-     *
-     * @param data
-     *            a chunk of post-processed data for final statistics gathering
-     */
     public void process(final PostProcessedDataContainer dataContainer)
     {
-        // it might be empty after filtered
-        if (dataContainer.data.size() == 0)
+        if (dataContainer.isEmpty())
         {
             return;
         }
 
-        // get your own list
-        final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
+        final CountDownLatch latch = new CountDownLatch(actors.size());
+        final ChunkMessage msg = new ChunkMessage(dataContainer, latch);
 
-        // run as long as we have not all data put into the report providers
-        while (providerList.isEmpty() == false)
+        for (final ProviderActor actor : actors)
         {
-            ReportProvider provider = null;
-
-            for (int i = 0; i < providerList.size(); i++)
-            {
-                final boolean wasLocked = providerList.get(i).lock();
-                if (wasLocked)
-                {
-                    provider = providerList.remove(i);
-                    break;
-                }
-            }
-
-            if (provider == null)
-            {
-                // nothing found, try again
-                continue;
-            }
-
-            // we have one, we can process the data
             try
             {
-                provider.processAll(dataContainer);
+                actor.put(msg);
             }
-            catch (final Throwable t)
+            catch (final InterruptedException e)
             {
-                LOG.error("Failed to process data record, discarding full chunk", t);
-            }
-            finally
-            {
-                provider.unlock();
-
-                // be fair to others and give them a chance
-                Thread.yield();
+                Thread.currentThread().interrupt();
+                return;
             }
         }
 
-        // get the max and min
+        try
+        {
+            latch.await();
+        }
+        catch (final InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+            return;
+        }
+
         updateLock.lock();
+        try
         {
             minimumTime = Math.min(minimumTime, dataContainer.getMinimumTime());
             maximumTime = Math.max(maximumTime, dataContainer.getMaximumTime());
         }
-        updateLock.unlock();
+        finally
+        {
+            updateLock.unlock();
+        }
+    }
+
+    private static class ChunkMessage
+    {
+        final PostProcessedDataContainer dataContainer;
+        final CountDownLatch latch;
+
+        ChunkMessage(final PostProcessedDataContainer dataContainer, final CountDownLatch latch)
+        {
+            this.dataContainer = dataContainer;
+            this.latch = latch;
+        }
+    }
+
+    private static class ProviderActor
+    {
+        private final ReportProvider provider;
+        private final ArrayBlockingQueue<ChunkMessage> queue;
+
+        ProviderActor(final ReportProvider provider)
+        {
+            this.provider = provider;
+            this.queue = new ArrayBlockingQueue<>(10);
+            Thread.ofVirtual().name("ReportProviderActor-" + provider.getClass().getSimpleName())
+                  .start(this::runLoop);
+        }
+
+        private void runLoop()
+        {
+            try
+            {
+                while (true)
+                {
+                    final ChunkMessage msg = queue.take();
+                    try
+                    {
+                        provider.processAll(msg.dataContainer);
+                    }
+                    catch (final Throwable t)
+                    {
+                        LOG.error("Failed to process data record in " + provider.getClass().getSimpleName(), t);
+                    }
+                    finally
+                    {
+                        msg.latch.countDown();
+                    }
+                }
+            }
+            catch (final InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        void put(final ChunkMessage msg) throws InterruptedException
+        {
+            queue.put(msg);
+        }
     }
 }

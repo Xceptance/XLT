@@ -23,9 +23,8 @@ JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.home=\"$XLT_HOME\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$XLT_CONFIG_DIR/reportgenerator.properties\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true"
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
-#JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:FlightRecorderOptions=stackdepth=1024"
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=profile"
 #JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+PrintCompilation -XX:+PrintInlining"
-#JAVA_OPTIONS="$JAVA_OPTIONS -XX:MaxInlineSize=128 -XX:FreqInlineSize=1024"
 
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 

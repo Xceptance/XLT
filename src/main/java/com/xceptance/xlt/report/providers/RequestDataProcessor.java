@@ -485,7 +485,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         final UrlData urlData = new UrlData();
 
         urlData.total = totalUrlCount;
-        urlData.list = urls.keys().stream().map(XltCharBuffer::toString).collect(Collectors.toList());
+        urlData.list = urls.keys().stream().map(XltCharBuffer::toString).sorted().collect(Collectors.toList());
 
         return urlData;
     }

@@ -54,6 +54,11 @@ public class DataChunk
 
     private final List<XltCharBuffer> lines;
 
+    /**
+     * Alternative byte-level lines for the byte CSV pipeline.
+     */
+    private final List<byte[]> byteLines;
+
     private final String testCaseName;
 
     private final String userNumber;
@@ -63,6 +68,23 @@ public class DataChunk
                      final ConcurrentSkipListMap<Long, String> actionNames)
     {
         this.lines = lines;
+        this.byteLines = null;
+        this.baseLineNumber = baseLineNumber;
+        this.file = file;
+        this.agentName = agentName;
+        this.testCaseName = testCaseName;
+        this.userNumber = userNumber;
+        this.collectActionNames = collectActionNames;
+        this.adjustTimerNames = adjustTimerNames;
+        this.actionNames = actionNames;
+    }
+
+    public DataChunk(final List<byte[]> byteLines, final int unused, final int baseLineNumber, final FileObject file, final String agentName,
+                     final String testCaseName, final String userNumber, final boolean collectActionNames, final boolean adjustTimerNames,
+                     final ConcurrentSkipListMap<Long, String> actionNames)
+    {
+        this.lines = null;
+        this.byteLines = byteLines;
         this.baseLineNumber = baseLineNumber;
         this.file = file;
         this.agentName = agentName;
@@ -116,5 +138,15 @@ public class DataChunk
     public String getUserNumber()
     {
         return userNumber;
+    }
+
+    public List<byte[]> getByteLines()
+    {
+        return byteLines;
+    }
+
+    public boolean hasByteLines()
+    {
+        return byteLines != null;
     }
 }

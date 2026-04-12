@@ -68,11 +68,8 @@ public class TestReportConfigurationReportProvider extends AbstractReportProvide
         return configReport;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
         // nothing to do here
     }

@@ -33,10 +33,7 @@ public abstract class AbstractReportProvider implements ReportProvider
      */
     private ReportProviderConfiguration configuration;
 
-    /**
-     * locking for proper multi-threading and memory consistency
-     */
-    private final ReentrantLock lock = new ReentrantLock(true);
+
 
     /**
      * Returns the report provider's configuration. Use the configuration object to get access to general as well as
@@ -62,57 +59,8 @@ public abstract class AbstractReportProvider implements ReportProvider
      * {@inheritDoc}
      */
     @Override
-    public boolean lock()
-    {
-        return lock.tryLock();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void unlock()
-    {
-        lock.unlock();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void processAll(final PostProcessedDataContainer dataContainer)
     {
-        final List<Data> data = dataContainer.data;
-        int size = data.size();
-        int sampleFactor = dataContainer.sampleFactor;
-        int droppedLines = dataContainer.droppedLines;
-
-        for (int p = 0; p < size; p = p + 1)
-        {
-            final Data d = data.get(p);
-            processDataRecord(d);
-        }
-
-        // ok, we have to smuggle in additional data to compensate to the sampling loss
-        if (droppedLines > 0)
-        {
-            for (int i = 0; i < size; i++)
-            {
-                final Data d = data.get(i);
-
-                if (!(d instanceof TransactionData))
-                {
-                    for (int y = 1; y < sampleFactor; y++)
-                    {
-                        processDataRecord(d);
-                    }
-                    droppedLines--;
-
-                    if (droppedLines == 0)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
+        // Override in concrete implementations
     }
 }

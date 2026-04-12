@@ -102,47 +102,47 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof RequestData)
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        final int size = requests.size();
+        for (int i = 0; i < size; i++)
         {
-            final long runtime = ((RequestData) data).getRunTime();
+            final RequestData reqData = requests.get(i);
+            final long runtime = reqData.getRunTime();
 
             // only process requests that are within the runtime thresholds
             if (runtime >= minRuntime && runtime <= maxRuntime)
             {
-                final String bucketName = data.getName();
+                final String bucketName = reqData.getName();
 
                 // get entry for this bucket or create a new one
-                TreeSet<SlowRequestReport> requests = slowestRequestsByBucket.get(bucketName);
-                if (requests == null)
+                TreeSet<SlowRequestReport> bucketRequests = slowestRequestsByBucket.get(bucketName);
+                if (bucketRequests == null)
                 {
-                    requests = new TreeSet<>(SlowRequestReport.BUCKET_COMPARATOR);
-                    slowestRequestsByBucket.put(bucketName, requests);
+                    bucketRequests = new TreeSet<>(SlowRequestReport.BUCKET_COMPARATOR);
+                    slowestRequestsByBucket.put(bucketName, bucketRequests);
                 }
 
-                if (requests.size() < requestsPerBucket)
+                if (bucketRequests.size() < requestsPerBucket)
                 {
                     // if bucket limit isn't reached, add any request; request set is sorted automatically
-                    requests.add(new SlowRequestReport((RequestData) data, processingOrder));
+                    bucketRequests.add(new SlowRequestReport(reqData, processingOrder));
                     processingOrder++;
                 }
                 else
                 {
                     // if bucket is full, only add requests that are slower than the fastest stored request; requests
                     // with the exact same runtime as the fastest stored request are skipped
-                    if (runtime > requests.last().runtime)
+                    if (runtime > bucketRequests.last().runtime)
                     {
                         // add the request; the request set is sorted automatically
-                        requests.add(new SlowRequestReport((RequestData) data, processingOrder));
+                        bucketRequests.add(new SlowRequestReport(reqData, processingOrder));
                         processingOrder++;
 
                         // remove request that is the last after sorting to stay within bucket limit
-                        requests.remove(requests.last());
+                        bucketRequests.remove(bucketRequests.last());
                     }
                 }
             }

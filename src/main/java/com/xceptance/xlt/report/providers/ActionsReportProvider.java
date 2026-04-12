@@ -43,15 +43,14 @@ public class ActionsReportProvider extends BasicTimerReportProvider<ActionDataPr
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof ActionData)
+        final java.util.ArrayList<ActionData> actionData = dataContainer.getActions();
+        final int size = actionData.size();
+        for (int i = 0; i < size; i++)
         {
-            super.processDataRecord(data);
+            super.processDataRecord(actionData.get(i));
         }
     }
 }

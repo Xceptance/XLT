@@ -43,25 +43,17 @@ public class ContentTypesReportProvider extends AbstractReportProvider
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data stat)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (stat instanceof RequestData)
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        final int size = requests.size();
+        for (int i = 0; i < size; i++)
         {
-            final RequestData reqStats = (RequestData) stat;
+            final RequestData reqStats = requests.get(i);
 
             final XltCharBuffer contentType = reqStats.getContentType();
             
-            // the content type is never null, it might be just "" and if this is " " or similar
-            // we don't care and keep the speed, (none is set where it is produced)
-//            if (contentType.length() == 0)
-//            {
-//                contentType = "(none)";
-//            }
-
             ContentTypeReport contentTypeReport = contentTypeReports.get(contentType);
             if (contentTypeReport == null)
             {

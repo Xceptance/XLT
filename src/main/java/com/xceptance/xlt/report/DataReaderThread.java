@@ -28,7 +28,7 @@ import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xceptance.common.io.XltBufferedLineReader;
+import com.xceptance.common.io.ByteBufferedLineReader;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
@@ -200,49 +200,37 @@ class DataReaderThread implements Runnable
         final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
         final int chunkSize = dispatcher.chunkSize;
 
-        // VFS has no performance impact, so we keep that for the moment
-        try (final XltBufferedLineReader reader = new XltBufferedLineReader(new InputStreamReader(isCompressed ? new GZIPInputStream(file.getContent()
-                                                                                                                                         .getInputStream(),
-                                                                                                                                     1024 * 16)
-                                                                                                               : file.getContent()
-                                                                                                                     .getInputStream(),
-                                                                                                  XltConstants.UTF8_ENCODING)))
+        // Use byte-level reading to avoid InputStreamReader charset decoding overhead
+        try (final ByteBufferedLineReader reader = new ByteBufferedLineReader(
+                 isCompressed ? new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16)
+                              : file.getContent().getInputStream()))
         {
-            List<XltCharBuffer> lines = new SimpleArrayList<>(chunkSize);
-            int baseLineNumber = 1;  // let line numbering start at 1
+            List<byte[]> lines = new java.util.ArrayList<>(chunkSize);
+            int baseLineNumber = 1;
             int linesRead = 0;
 
-            // read the file line-by-line
-            XltCharBuffer line;
+            byte[] line;
             while ((line = reader.readLine()) != null)
             {
                 linesRead++;
                 lines.add(line);
 
-                // have we filled the chunk?
                 if (linesRead == chunkSize)
                 {
-                    // the chunk is full -> deliver it
-                    final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
+                    final DataChunk lineChunk = new DataChunk(lines, 0, baseLineNumber, file, agentName, testCaseName, userNumber,
                                                               collectActionNames, adjustTimerName, actionNames);
-
-                    // deliver to dispatcher, this might block
                     dispatcher.addReadData(lineChunk);
 
-                    // start a new chunk
-                    lines = new SimpleArrayList<>(chunkSize);
+                    lines = new java.util.ArrayList<>(chunkSize);
                     baseLineNumber += linesRead;
-
                     totalLineCounter.addAndGet(linesRead);
-
                     linesRead = 0;
                 }
             }
 
-            // deliver any remaining lines
             if (linesRead > 0)
             {
-                final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
+                final DataChunk lineChunk = new DataChunk(lines, 0, baseLineNumber, file, agentName, testCaseName, userNumber,
                                                           collectActionNames, adjustTimerName, actionNames);
                 dispatcher.addReadData(lineChunk);
                 totalLineCounter.addAndGet(linesRead);

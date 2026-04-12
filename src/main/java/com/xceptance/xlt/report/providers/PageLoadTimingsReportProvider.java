@@ -41,15 +41,14 @@ public class PageLoadTimingsReportProvider extends BasicTimerReportProvider<Page
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof PageLoadTimingData)
+        final java.util.ArrayList<PageLoadTimingData> timings = dataContainer.getPageLoadTimings();
+        final int size = timings.size();
+        for (int i = 0; i < size; i++)
         {
-            super.processDataRecord(data);
+            super.processDataRecord(timings.get(i));
         }
     }
 }

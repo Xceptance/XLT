@@ -34,14 +34,15 @@ public class WebVitalsReportProvider extends AbstractDataProcessorBasedReportPro
         super(WebVitalsDataProcessor.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof WebVitalData)
+        final java.util.ArrayList<WebVitalData> webVitals = dataContainer.getWebVitals();
+        final int size = webVitals.size();
+        for (int i = 0; i < size; i++)
         {
+            final WebVitalData data = webVitals.get(i);
+            
             // All web vital data records for a certain action are processed by the same data processor, hence we need
             // to extract the action name from the full name, e.g. "Foo Action [CLS]" -> "Foo Action".
             final String name = StringUtils.substringBeforeLast(data.getName(), " ");

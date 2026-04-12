@@ -79,19 +79,8 @@ import com.xceptance.xlt.api.engine.Data;
 public interface ReportProvider extends ReportCreator
 {
     /**
-     * Processes the passed data record to gather information needed for the test report. Typically, only some internal
-     * statistics will be updated.
-     *
-     * @param data
-     *            the data record to process
-     */
-    public void processDataRecord(Data data);
-
-    /**
      * Processes all data records in the passed container to gather information needed for the test report. Typically,
      * only some internal statistics will be updated.
-     * <p>
-     * This method should call {@link #processDataRecord(Data)} for each data record in the container.
      *
      * @param dataContainer
      *            the data records to process
@@ -106,28 +95,4 @@ public interface ReportProvider extends ReportCreator
      *            the report provider configuration
      */
     public void setConfiguration(ReportProviderConfiguration config);
-
-    /**
-     * Announce that we want to actually see data for processDataRecord because it might happen that we have some report
-     * providers which are using other data
-     *
-     * @return true if it needs data false otherwise
-     */
-    public default boolean wantsDataRecords()
-    {
-        return true;
-    }
-
-    /**
-     * Tries to lock this provider for data record processing.
-     *
-     * @return <code>true</code> if the lock could be acquired, <code>false</code> if this provider is already locked by
-     *         another thread
-     */
-    public boolean lock();
-
-    /**
-     * Unlocks this provider after data record processing has finished.
-     */
-    public void unlock();
 }

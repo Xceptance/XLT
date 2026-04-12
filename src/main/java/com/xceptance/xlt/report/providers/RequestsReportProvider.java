@@ -125,15 +125,14 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof RequestData)
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        final int size = requests.size();
+        for (int i = 0; i < size; i++)
         {
-            super.processDataRecord(data);
+            super.processDataRecord(requests.get(i));
         }
     }
 }

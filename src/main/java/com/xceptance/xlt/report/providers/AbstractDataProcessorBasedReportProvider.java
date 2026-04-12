@@ -52,11 +52,7 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
         this.implClass = c;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void processDataRecord(final Data stat)
+    protected void processDataRecord(final Data stat)
     {
         final T processor = getProcessor(stat.getName());
         processor.processDataRecord(stat);

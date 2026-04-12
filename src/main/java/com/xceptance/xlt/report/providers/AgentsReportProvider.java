@@ -50,38 +50,28 @@ public class AgentsReportProvider extends AbstractDataProcessorBasedReportProvid
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        /*
-         * An agent processor bundles all data gathered for a certain agent, now also certain transaction data. When
-         * looking up the responsible agent processor for a Data object, we can no longer use the full agent name (e.g.
-         * 'Agent-ac0001_us-east1_00-34.138.16.104-8500') as this information is available for JvmResourceUsageData
-         * objects only. Instead, we now use the agent ID (e.g. 'ac0001_us-east1'), as all types of Data objects carry
-         * this information. This approach is different from other report providers that are based on
-         * AbstractDataProcessorBasedReportProvider.
-         */
-
-        if (data instanceof JvmResourceUsageData)
+        final java.util.ArrayList<JvmResourceUsageData> customData = dataContainer.getJvmResourceUsage();
+        int size = customData.size();
+        for (int i = 0; i < size; i++)
         {
+            final JvmResourceUsageData data = customData.get(i);
+            
             final AgentDataProcessor processor = getProcessor(data.getAgentName());
             processor.processDataRecord(data);
 
-            /*
-             * If we use the agent ID to reference the agent processor, the agent would be named as such in the report
-             * as well. Since we want the full agent name in the report, we have to "fix" the initial name by setting
-             * the full name later on.
-             */
             processor.setName(data.getName());
         }
-        else if (data instanceof TransactionData)
-        {
-            final TransactionData transactionData = (TransactionData) data;
 
-            final AgentDataProcessor processor = getProcessor(data.getAgentName());
+        final java.util.ArrayList<TransactionData> transactions = dataContainer.getTransactions();
+        size = transactions.size();
+        for (int i = 0; i < size; i++)
+        {
+            final TransactionData transactionData = transactions.get(i);
+
+            final AgentDataProcessor processor = getProcessor(transactionData.getAgentName());
             processor.incrementTransactionCounters(transactionData.hasFailed());
         }
     }

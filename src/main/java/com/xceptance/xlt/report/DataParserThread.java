@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 
+import com.xceptance.common.util.ByteCsvDecoder;
 import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
@@ -145,8 +146,6 @@ class DataParserThread implements Runnable
                 // get a chunk of lines
                 final DataChunk chunk = dispatcher.retrieveReadData();
 
-                final List<XltCharBuffer> lines = chunk.getLines();
-
                 final String agentName = chunk.getAgentName();
                 final String testCaseName = chunk.getTestCaseName();
                 final String userNumber = chunk.getUserNumber();
@@ -157,14 +156,15 @@ class DataParserThread implements Runnable
                 final long _fromTime = fromTime;
                 final long _toTime = toTime;
 
-                int droppedLines = 0;
+                final boolean useByteLines = chunk.hasByteLines();
+                final List<byte[]> byteLines = useByteLines ? chunk.getByteLines() : null;
+                final List<XltCharBuffer> charLines = useByteLines ? null : chunk.getLines();
+                final int size = useByteLines ? byteLines.size() : charLines.size();
 
                 // parse the chunk of lines and preprocess the results
-                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(lines.size(), SAMPLEFACTOR);
+                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(size);
 
                 int lineNumber = chunk.getBaseLineNumber();
-
-                final int size = lines.size();
 
                 for (int i = 0; i < size; i++)
                 {
@@ -172,15 +172,21 @@ class DataParserThread implements Runnable
 
                     try
                     {
-                        // parse the data record for minimal data
-                        final XltCharBuffer line = lines.get(i);
-
-                        // we want to reuse that array because it is just temp transport and at the end, we will always
-                        // allocate it freshly and might also either allocate too much or have to grow it
+                        // parse the CSV fields — byte path or char path
                         csvParseResultBuffer.clear();
 
-                        // parse, the buffer is modified!
-                        CsvLineDecoder.parse(csvParseResultBuffer, line);
+                        XltCharBuffer line;
+                        if (useByteLines)
+                        {
+                            final byte[] rawLine = byteLines.get(i);
+                            ByteCsvDecoder.parse(csvParseResultBuffer, rawLine);
+                            line = XltCharBuffer.valueOf(new String(rawLine, java.nio.charset.StandardCharsets.UTF_8));
+                        }
+                        else
+                        {
+                            line = charLines.get(i);
+                            CsvLineDecoder.parse(csvParseResultBuffer, line);
+                        }
 
                         // get us the minimal data aka type and time
                         data = dataRecordFactory.createStatistics(line);
@@ -209,7 +215,6 @@ class DataParserThread implements Runnable
                                     // ok, we already have something... see if we want to drop it
                                     if (random.nextDoubleFast() > SAMPLELIMIT)
                                     {
-                                        droppedLines++;
                                         continue;
                                     }
                                 }
@@ -226,8 +231,11 @@ class DataParserThread implements Runnable
                     }
                     catch (final Exception ex)
                     {
-                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber,
-                                                         file, ex, lines.get(i).toString());
+                        final String lineContent = useByteLines 
+                                                   ? new String(byteLines.get(i), java.nio.charset.StandardCharsets.UTF_8) 
+                                                   : charLines.get(i).toString();
+                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
+                                                         file, ex, lineContent);
                         LOG.error(msg, ex);
 
                         continue;
@@ -261,7 +269,7 @@ class DataParserThread implements Runnable
                 }
 
                 // deliver the chunk of parsed data records
-                postProcessedData.droppedLines = droppedLines;
+
                 dispatcher.addPostprocessedData(postProcessedData);
             }
             catch (final InterruptedException e)

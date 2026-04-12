@@ -45,20 +45,23 @@ public class TransactionsReportProvider extends BasicTimerReportProvider<Transac
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof TransactionData)
+        final java.util.ArrayList<TransactionData> transactions = dataContainer.getTransactions();
+        int size = transactions.size();
+        for (int i = 0; i < size; i++)
         {
-            super.processDataRecord(data);
+            super.processDataRecord(transactions.get(i));
         }
-        else if (data instanceof EventData)
+
+        final java.util.ArrayList<EventData> events = dataContainer.getEvents();
+        size = events.size();
+        for (int i = 0; i < size; i++)
         {
-            final TransactionDataProcessor processor = getProcessor(((EventData) data).getTestCaseName());
-            processor.processDataRecord(data);
+            final EventData event = events.get(i);
+            final TransactionDataProcessor processor = getProcessor(event.getTestCaseName());
+            processor.processDataRecord(event);
         }
     }
 }

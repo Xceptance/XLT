@@ -31,15 +31,14 @@ public class CustomValuesReportProvider extends AbstractDataProcessorBasedReport
         super(CustomValueProcessor.class);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof CustomValue)
+        final java.util.ArrayList<CustomValue> customValues = dataContainer.getCustomValues();
+        final int size = customValues.size();
+        for (int i = 0; i < size; i++)
         {
-            super.processDataRecord(data);
+            super.processDataRecord(customValues.get(i));
         }
     }
 

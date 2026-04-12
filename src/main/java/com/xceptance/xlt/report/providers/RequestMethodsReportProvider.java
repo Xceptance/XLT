@@ -51,15 +51,14 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof RequestData)
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        final int size = requests.size();
+        for (int i = 0; i < size; i++)
         {
-            final RequestData reqData = (RequestData) data;
+            final RequestData reqData = requests.get(i);
 
             XltCharBuffer method = reqData.getHttpMethod();
             if (method == null || method.length() == 0)

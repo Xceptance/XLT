@@ -44,15 +44,14 @@ public class CustomTimersReportProvider extends BasicTimerReportProvider<CustomD
         return report;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (data instanceof CustomData)
+        final java.util.ArrayList<CustomData> customTimers = dataContainer.getCustomTimers();
+        final int size = customTimers.size();
+        for (int i = 0; i < size; i++)
         {
-            super.processDataRecord(data);
+            super.processDataRecord(customTimers.get(i));
         }
     }
 }

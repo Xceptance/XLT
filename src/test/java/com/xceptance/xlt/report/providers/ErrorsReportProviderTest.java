@@ -416,10 +416,12 @@ public class ErrorsReportProviderTest extends AbstractXLTTestCase
         public static ErrorsReport runReportGeneration(ErrorsReportProvider reportProvider, List<TimerData> timerData)
             throws InterruptedException
         {
+            final com.xceptance.xlt.api.report.PostProcessedDataContainer container = new com.xceptance.xlt.api.report.PostProcessedDataContainer(timerData.size());
             for (TimerData eachData : timerData)
             {
-                reportProvider.processDataRecord(eachData);
+                container.add(eachData);
             }
+            reportProvider.processAll(container);
             ErrorsReport reportData = (ErrorsReport) reportProvider.createReportFragment();
 
             TaskManager.getInstance().waitForAllTasksToComplete();

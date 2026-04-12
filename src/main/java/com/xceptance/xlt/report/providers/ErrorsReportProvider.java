@@ -408,11 +408,32 @@ public class ErrorsReportProvider extends AbstractReportProvider
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data stat)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final java.util.ArrayList<TransactionData> transactions = dataContainer.getTransactions();
+        int size = transactions.size();
+        for (int i = 0; i < size; i++)
+        {
+            processDataRecord(transactions.get(i));
+        }
+
+        final java.util.ArrayList<ActionData> actions = dataContainer.getActions();
+        size = actions.size();
+        for (int i = 0; i < size; i++)
+        {
+            processDataRecord(actions.get(i));
+        }
+
+        final java.util.ArrayList<RequestData> requests = dataContainer.getRequests();
+        size = requests.size();
+        for (int i = 0; i < size; i++)
+        {
+            processDataRecord(requests.get(i));
+        }
+    }
+
+    protected void processDataRecord(final Data stat)
     {
         // process error messages/stack traces
         if (stat instanceof TransactionData)

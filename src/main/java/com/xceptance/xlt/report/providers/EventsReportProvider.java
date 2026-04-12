@@ -96,76 +96,71 @@ public class EventsReportProvider extends AbstractReportProvider
         this.eventLimitPerTestCase = ((ReportGeneratorConfiguration) config).getEventLimitPerTestCase();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        if (!(data instanceof EventData))
+        final java.util.ArrayList<EventData> events = dataContainer.getEvents();
+        final int size = events.size();
+        for (int i = 0; i < size; i++)
         {
-            // leave early, we don't want that data
-            return;
-        }
+            final EventData eventData = events.get(i);
 
-        // remember the event on the timeline
-        eventsPerSecondValueSet.addOrUpdateValue(data.getTime(), 1);
+            // remember the event on the timeline
+            eventsPerSecondValueSet.addOrUpdateValue(eventData.getTime(), 1);
 
-        // in case we don't want to count anything in detail
-        if (eventLimitPerTestCase <= 0)
-        {
-            // count that we dropped it
-            eventsDropped++;
-
-            return;
-        }
-
-        final EventData eventData = (EventData) data;
-
-        final String testCaseName = groupEventsByTestCase ? eventData.getTestCaseName() : IGNORE_TESTCASE;
-
-        // find the info by test case name
-        Map<String, EventReport> stat = this.testCaseToEventMap.get(testCaseName);
-
-        // unknown?
-        if (stat == null)
-        {
-            // store test case -> event name -> counter and info
-            final EventReport eventReport = new EventReport(testCaseName, eventData.getName());
-            eventReport.addMessage(eventData.getMessage(), messageLimit);
-
-            stat = new HashMap<>();
-            stat.put(eventData.getName(), eventReport);
-
-            this.testCaseToEventMap.put(testCaseName, stat);
-        }
-        else
-        {
-            // get the event by name from the test case data
-            EventReport eventReport = stat.get(eventData.getName());
-            if (eventReport == null)
+            // in case we don't want to count anything in detail
+            if (eventLimitPerTestCase <= 0)
             {
-                // it is unknown, do we want to add it aka do we have room?
-                if (stat.size() >= eventLimitPerTestCase)
-                {
-                    // ok, nothing new to add, just record that we dropped something
-                    // we don't count dropped events by test case (yet)
-                    eventsDropped++;
-                }
-                else
-                {
-                    // new event name
-                    eventReport = new EventReport(testCaseName, eventData.getName());
-                    eventReport.addMessage(eventData.getMessage(), messageLimit);
+                // count that we dropped it
+                eventsDropped++;
+                continue;
+            }
 
-                    // store
-                    stat.put(eventData.getName(), eventReport);
-                }
+            final String testCaseName = groupEventsByTestCase ? eventData.getTestCaseName() : IGNORE_TESTCASE;
+
+            // find the info by test case name
+            Map<String, EventReport> stat = this.testCaseToEventMap.get(testCaseName);
+
+            // unknown?
+            if (stat == null)
+            {
+                // store test case -> event name -> counter and info
+                final EventReport eventReport = new EventReport(testCaseName, eventData.getName());
+                eventReport.addMessage(eventData.getMessage(), messageLimit);
+
+                stat = new HashMap<>();
+                stat.put(eventData.getName(), eventReport);
+
+                this.testCaseToEventMap.put(testCaseName, stat);
             }
             else
             {
-                // record data, let the method decide based on the limit if this is stored or just counted as dropped
-                eventReport.addMessage(eventData.getMessage(), messageLimit);
+                // get the event by name from the test case data
+                EventReport eventReport = stat.get(eventData.getName());
+                if (eventReport == null)
+                {
+                    // it is unknown, do we want to add it aka do we have room?
+                    if (stat.size() >= eventLimitPerTestCase)
+                    {
+                        // ok, nothing new to add, just record that we dropped something
+                        // we don't count dropped events by test case (yet)
+                        eventsDropped++;
+                    }
+                    else
+                    {
+                        // new event name
+                        eventReport = new EventReport(testCaseName, eventData.getName());
+                        eventReport.addMessage(eventData.getMessage(), messageLimit);
+
+                        // store
+                        stat.put(eventData.getName(), eventReport);
+                    }
+                }
+                else
+                {
+                    // record data, let the method decide based on the limit if this is stored or just counted as dropped
+                    eventReport.addMessage(eventData.getMessage(), messageLimit);
+                }
             }
         }
     }

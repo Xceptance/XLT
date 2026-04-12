@@ -26,9 +26,9 @@ public class DummyReportProvider extends AbstractReportProvider
     private int count;
 
     @Override
-    public void processDataRecord(final Data data)
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
     {
-        // do something to avoid optimization
+        // just pretend we do something
         count++;
     }
 
