@@ -15,6 +15,7 @@
  */
 package com.xceptance.common.util;
 
+import java.util.Arrays;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -46,6 +47,60 @@ public final class CsvByteRow
         quoted = new boolean[INITIAL_CAPACITY];
         fieldCount = 0;
     }
+
+    /**
+     * Primitive zero-allocation cache to prevent generating JVM object wrappers on every string resolve.
+     * Uses direct-mapping to overwrite on hash collisions, keeping logic branching ultra-lean.
+     */
+    public static final class ByteStringCache
+    {
+        private static final int MASK = 1023; // 1024 slots
+        private final String[] values = new String[1024];
+        private final byte[][] keys = new byte[1024][];
+
+        public final String get(final byte[] data, final int offset, final int length, final boolean quoted)
+        {
+            if (length == 0) return "";
+            
+            int h = 0;
+            // Unroll slightly or just fast hash
+            for (int i = 0; i < length; i++)
+            {
+                h = 31 * h + data[offset + i];
+            }
+            final int ptr = (h ^ (h >>> 16)) & MASK;
+
+            final String val = values[ptr];
+            final byte[] keyData = keys[ptr];
+
+            // evaluate hit
+            if (val != null && keyData != null && keyData.length == length)
+            {
+                boolean match = true;
+                for (int i = 0; i < length; i++)
+                {
+                    if (keyData[i] != data[offset + i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match)
+                {
+                    return val;
+                }
+            }
+
+            // miss (or collision) -> overwrite
+            final String newVal = ByteCsvDecoder.bytesToString(data, offset, length, quoted);
+            values[ptr] = newVal;
+            keys[ptr] = Arrays.copyOfRange(data, offset, offset + length); // Only allocate array for cache eviction
+            return newVal;
+        }
+    }
+
+    // An instance-local string intern cache used by the executing parser thread
+    private ByteStringCache stringCache;
 
     /**
      * Prepares the row for a new line of data.
@@ -134,17 +189,7 @@ public final class CsvByteRow
         {
             return false;
         }
-        
-        final int len = lengths[index];
-        final int off = offsets[index];
-
-        // "true" is 4 bytes, anything else is false
-        if (len == 4)
-        {
-            return data[off] == 't' && data[off + 1] == 'r' && 
-                   data[off + 2] == 'u' && data[off + 3] == 'e';
-        }
-        return false;
+        return ByteCsvDecoder.parseBoolean(data, offsets[index], lengths[index]);
     }
 
     /**
@@ -168,8 +213,16 @@ public final class CsvByteRow
     }
 
     /**
+     * Sets an optional deduplication cache to reduce String allocations.
+     */
+    public void setStringCache(final ByteStringCache stringCache)
+    {
+        this.stringCache = stringCache;
+    }
+
+    /**
      * Returns the field as a complete String.
-     * Resolves quote escaping on the fly if needed.
+     * Resolves quote escaping on the fly if needed, and uses an LRU cache if attached.
      */
     public final String getString(final int index)
     {
@@ -178,9 +231,14 @@ public final class CsvByteRow
             return "";
         }
         
-        // This leverages the ByteCsvDecoder helper which is about to be adapted
-        // to handle the actual unescaping if a string is quoted.
-        return ByteCsvDecoder.bytesToString(data, offsets[index], lengths[index], quoted[index]);
+        if (stringCache != null)
+        {
+            return stringCache.get(data, offsets[index], lengths[index], quoted[index]);
+        }
+        else
+        {
+            return ByteCsvDecoder.bytesToString(data, offsets[index], lengths[index], quoted[index]);
+        }
     }
 
     /**

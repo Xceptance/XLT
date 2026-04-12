@@ -349,6 +349,31 @@ public final class ByteCsvDecoder
             throw new NumberFormatException("Empty input");
         }
 
+        final int digit = data[offset];
+        if (digit < '0' || digit > '9')
+        {
+            return parseLongSlow(data, offset, length);
+        }
+
+        long value = digit - 48;
+
+        for (int i = 1; i < length; i++)
+        {
+            final int d = data[offset + i];
+            if (d < '0' || d > '9')
+            {
+                throw new NumberFormatException("Invalid digit at position " + (offset + i));
+            }
+
+            value = ((value << 3) + (value << 1));
+            value += (d - 48);
+        }
+
+        return value;
+    }
+
+    private static final long parseLongSlow(final byte[] data, final int offset, final int length)
+    {
         int pos = offset;
         final int end = offset + length;
         boolean negative = false;
@@ -376,7 +401,7 @@ public final class ByteCsvDecoder
             {
                 throw new NumberFormatException("Invalid digit at position " + pos);
             }
-            value = value * 10 + digit;
+            value = ((value << 3) + (value << 1)) + digit;
             pos++;
         }
 
@@ -400,5 +425,33 @@ public final class ByteCsvDecoder
     public static final int parseInt(final byte[] data, final int offset, final int length)
     {
         return (int) parseLong(data, offset, length);
+    }
+
+    /**
+     * Parses chars and evaluates if this is a boolean. Anything that is not true or TRUE
+     * or similar to True will evaluate to false. This is optimized for speed.
+     * 
+     * @param data the byte array
+     * @param offset start position
+     * @param length number of bytes
+     * @return true when bytes match case-insensitive, false in any other case
+     */
+    public static final boolean parseBoolean(final byte[] data, final int offset, final int length)
+    {
+        if (length != 4)
+        {
+            return false;
+        }
+
+        final byte t = data[offset];
+        final byte r = data[offset + 1];
+        final byte u = data[offset + 2];
+        final byte e = data[offset + 3];
+
+        // fastpath
+        final boolean b1 = (t == 't' & r == 'r' & u == 'u' & e == 'e');
+
+        // slowpath
+        return b1 ? true : ((t == 't' || t == 'T') && (r == 'r' || r == 'R') && (u == 'u' || u == 'U') && (e == 'e' || e == 'E'));
     }
 }

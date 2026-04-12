@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
-
 import com.xceptance.common.util.ByteCsvDecoder;
 
 import com.xceptance.xlt.api.engine.ActionData;
@@ -129,6 +128,7 @@ class DataParserThread implements Runnable
 
         // single reused flyweight zero-copy row
         final CsvByteRow byteRow = new CsvByteRow();
+        byteRow.setStringCache(new CsvByteRow.ByteStringCache());
 
         // our request processing, this is move away from here to test it better
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
