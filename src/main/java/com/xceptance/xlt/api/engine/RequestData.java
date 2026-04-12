@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.StringHasher;
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.util.UrlHostParser;
 
@@ -837,110 +838,110 @@ public class RequestData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    public void setRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final CsvByteRow row)
     {
-        super.setRemainingValues(values);
+        super.setRemainingValues(row);
 
-        setBytesSent(ParseNumbers.parseInt(values.get(5)));
-        setBytesReceived(ParseNumbers.parseInt(values.get(6)));
-        setResponseCode(values.get(7));
+        setBytesSent(row.getInt(5));
+        setBytesReceived(row.getInt(6));
+        setResponseCode(row.getCharBuffer(7));
 
-        if (values.size() > 23)
+        if (row.length() > 23)
         {
-            setUrl(values.get(8));
-            setContentType(values.get(9));
+            setUrl(row.getCharBuffer(8));
+            setContentType(row.getCharBuffer(9));
 
-            setConnectTime(ParseNumbers.parseInt(values.get(10)));
-            setSendTime(ParseNumbers.parseInt(values.get(11)));
-            setServerBusyTime(ParseNumbers.parseInt(values.get(12)));
-            setReceiveTime(ParseNumbers.parseInt(values.get(13)));
-            setTimeToFirstBytes(ParseNumbers.parseInt(values.get(14)));
-            setTimeToLastBytes(ParseNumbers.parseInt(values.get(15)));
+            setConnectTime(row.getInt(10));
+            setSendTime(row.getInt(11));
+            setServerBusyTime(row.getInt(12));
+            setReceiveTime(row.getInt(13));
+            setTimeToFirstBytes(row.getInt(14));
+            setTimeToLastBytes(row.getInt(15));
 
-            setRequestId(values.get(16));
+            setRequestId(row.getCharBuffer(16));
 
             // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
-            setHttpMethod(values.get(17));
-            setFormDataEncoding(values.get(18));
-            setFormData(values.get(19));
+            setHttpMethod(row.getCharBuffer(17));
+            setFormDataEncoding(row.getCharBuffer(18));
+            setFormData(row.getCharBuffer(19));
 
             // XLT 4.7.0
-            setDnsTime(ParseNumbers.parseInt(values.get(20)));
+            setDnsTime(row.getInt(20));
 
             // XLT 4.12.0
-            ipAddresses = values.get(21).toString();
-            setResponseId(values.get(22));
+            ipAddresses = row.getString(21);
+            setResponseId(row.getCharBuffer(22));
 
             // XLT 7.0.0
-            setUsedIpAddress(values.get(23));
+            setUsedIpAddress(row.getCharBuffer(23));
         }
         else
         {
             // do legacy parsing which is a bit slower
-            parseLegacyValues(values);
+            parseLegacyValues(row);
         }
     }
 
     /**
      * Deal with legacy data of older version
      *
-     * @param values
+     * @param row
      *            parsed data
      */
-    private void parseLegacyValues(final List<XltCharBuffer> values)
+    private void parseLegacyValues(final CsvByteRow row)
     {
         // be defensive so older reports can be re-generated
-        final int length = values.size();
+        final int length = row.length();
         if (length > 8)
         {
-            setUrl(values.get(8));
+            setUrl(row.getCharBuffer(8));
         }
 
         if (length > 9)
         {
-            setContentType(values.get(9));
+            setContentType(row.getCharBuffer(9));
         }
 
         if (length > 10)
         {
-            setConnectTime(ParseNumbers.parseInt(values.get(10)));
-            setSendTime(ParseNumbers.parseInt(values.get(11)));
-            setServerBusyTime(ParseNumbers.parseInt(values.get(12)));
-            setReceiveTime(ParseNumbers.parseInt(values.get(13)));
-            setTimeToFirstBytes(ParseNumbers.parseInt(values.get(14)));
-            setTimeToLastBytes(ParseNumbers.parseInt(values.get(15)));
+            setConnectTime(row.getInt(10));
+            setSendTime(row.getInt(11));
+            setServerBusyTime(row.getInt(12));
+            setReceiveTime(row.getInt(13));
+            setTimeToFirstBytes(row.getInt(14));
+            setTimeToLastBytes(row.getInt(15));
         }
 
         if (length > 16)
         {
-            setRequestId(values.get(16));
+            setRequestId(row.getCharBuffer(16));
         }
 
         // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
         if (length > 17)
         {
-            setHttpMethod(values.get(17));
-            setFormDataEncoding(values.get(18));
-            setFormData(values.get(19));
+            setHttpMethod(row.getCharBuffer(17));
+            setFormDataEncoding(row.getCharBuffer(18));
+            setFormData(row.getCharBuffer(19));
         }
 
         // XLT 4.7.0
         if (length > 20)
         {
-            setDnsTime(ParseNumbers.parseInt(values.get(20)));
+            setDnsTime(row.getInt(20));
         }
 
         // XLT 4.12.0
         if (length > 21)
         {
-            ipAddresses = values.get(21).toString();
-            setResponseId(values.get(22));
+            ipAddresses = row.getString(21);
+            setResponseId(row.getCharBuffer(22));
         }
 
         // XLT 7.0.0
         if (length > 23)
         {
-            setUsedIpAddress(values.get(23));
+            setUsedIpAddress(row.getCharBuffer(23));
         }
     }
 }

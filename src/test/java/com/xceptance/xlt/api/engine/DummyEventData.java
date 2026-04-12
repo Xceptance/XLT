@@ -46,10 +46,10 @@ public class DummyEventData extends EventData
     {
         final DummyEventData returnValue = new DummyEventData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setAllValues(CsvByteRowTestHelper.toByteRow(XltCharBufferUtil.toList(new String[]
             {
                 "E", "eventName", "3000", "1", "true", stackTrace
-            }));
+            })));
         returnValue.setAgentName("007");
         return returnValue;
     }

@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -55,9 +57,9 @@ public class AbstractDataTest
         }
 
         @Override
-        public void setRemainingValues(List<XltCharBuffer> values)
+        public void setRemainingValues(com.xceptance.common.util.CsvByteRow values)
         {
-            myData = values.get(3);
+            myData = values.getCharBuffer(3);
         }
 
         @Override
@@ -127,7 +129,7 @@ public class AbstractDataTest
 
         try
         {
-            d.setBaseValues(data);
+            d.setBaseValues(CsvByteRowTestHelper.toByteRow(data));
             fail("No exception raised");
         }
         catch (IllegalArgumentException e)
@@ -146,7 +148,7 @@ public class AbstractDataTest
 
         try
         {
-            d.setBaseValues(data);
+            d.setBaseValues(CsvByteRowTestHelper.toByteRow(data));
             fail("No exception raised");
         }
         catch (IllegalArgumentException e)
@@ -164,8 +166,8 @@ public class AbstractDataTest
 
         var d = new TestData(TYPECODE);
 
-        d.setBaseValues(data);
-        d.setRemainingValues(data);
+        d.setBaseValues(CsvByteRowTestHelper.toByteRow(data));
+        d.setRemainingValues(CsvByteRowTestHelper.toByteRow(data));
     }
 
     // initial value parsing
@@ -175,7 +177,7 @@ public class AbstractDataTest
         var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
-        d.setBaseValues(data);
+        d.setBaseValues(CsvByteRowTestHelper.toByteRow(data));
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
@@ -190,8 +192,8 @@ public class AbstractDataTest
         var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
-        d.setBaseValues(data);
-        d.setRemainingValues(data);
+        d.setBaseValues(CsvByteRowTestHelper.toByteRow(data));
+        d.setRemainingValues(CsvByteRowTestHelper.toByteRow(data));
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());

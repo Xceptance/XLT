@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import java.util.List;
 
 import org.junit.Assert;
@@ -44,7 +46,7 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", stackTrace
             });
-        td.setRemainingValues(values);
+        td.setRemainingValues(CsvByteRowTestHelper.toByteRow(values));
 
         final String directoryName = ReflectionUtils.readField(TransactionData.class, td, "directoryName");
 
@@ -58,7 +60,7 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", ""
             });
-        td.setRemainingValues(values2);
+        td.setRemainingValues(CsvByteRowTestHelper.toByteRow(values2));
 
         Assert.assertEquals("Wrong stack trace", null, td.getFailureStackTrace());
 
@@ -66,6 +68,6 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", "neitherMatchingNorEmptySTackTrace"
             });
-        td.setRemainingValues(values3);
+        td.setRemainingValues(CsvByteRowTestHelper.toByteRow(values3));
     }
 }

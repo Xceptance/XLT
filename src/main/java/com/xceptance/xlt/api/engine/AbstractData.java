@@ -18,7 +18,7 @@ package com.xceptance.xlt.api.engine;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -84,29 +84,29 @@ public abstract class AbstractData implements Data
     /**
      * Recreates the full object state at once. Mainly for testing.
      *
-     * @param values
-     *            the string list to recreate the object state from
+     * @param row
+     *            the byte row to recreate the object state from
      */
-    public final void setAllValues(final List<XltCharBuffer> values)
+    public final void setAllValues(final CsvByteRow row)
     {
-        setBaseValues(values);
-        setRemainingValues(values);
+        setBaseValues(row);
+        setRemainingValues(row);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setBaseValues(final List<XltCharBuffer> values)
+    public void setBaseValues(final CsvByteRow row)
     {
         // check the type code
-        if (values.get(0).charAt(0) == typeCode)
+        if (row.charAt(0, 0) == typeCode)
         {
             // read and check the values
-            name = values.get(1).toString();
+            name = row.getString(1);
             name.hashCode(); // create it when it is still hot in the cache
 
-            time = ParseNumbers.parseLong(values.get(2));
+            time = row.getLong(2);
 
             if (time <= 0)
             {
@@ -115,7 +115,7 @@ public abstract class AbstractData implements Data
         }
         else
         {
-            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values.get(0) +
+            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + row.charAt(0, 0) +
                                                "' does not match the expected type code '" + typeCode + "'.");
         }
     }

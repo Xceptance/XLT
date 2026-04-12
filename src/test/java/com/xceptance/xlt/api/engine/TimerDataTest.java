@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -135,8 +137,8 @@ public class TimerDataTest extends AbstractDataTest
         var list = XltCharBufferUtil.toList(String.valueOf(TYPECODE), "Name", "1654632508330", "666", "true");
 
         var d = new TestData(TYPECODE);
-        d.setBaseValues(list); // inherited
-        d.setRemainingValues(list);
+        d.setBaseValues(CsvByteRowTestHelper.toByteRow(list)); // inherited
+        d.setRemainingValues(CsvByteRowTestHelper.toByteRow(list));
 
         assertEquals(TYPECODE, d.getTypeCode());
         assertEquals("Name", d.getName());
@@ -155,7 +157,7 @@ public class TimerDataTest extends AbstractDataTest
 
         try
         {
-            d.setAllValues(list);
+            d.setAllValues(CsvByteRowTestHelper.toByteRow(list));
             fail();
         }
         catch (IllegalArgumentException e)

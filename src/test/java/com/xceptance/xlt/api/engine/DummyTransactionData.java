@@ -46,10 +46,10 @@ public class DummyTransactionData extends TransactionData
     {
         final DummyTransactionData returnValue = new DummyTransactionData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setAllValues(CsvByteRowTestHelper.toByteRow(XltCharBufferUtil.toList(new String[]
             {
                 "T", "transactionName", "5000", "1", "true", stackTrace
-            }));
+            })));
         returnValue.setAgentName("007");
         return returnValue;
     }

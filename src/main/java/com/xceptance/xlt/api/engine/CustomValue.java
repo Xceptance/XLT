@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -93,8 +94,8 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public void setRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final CsvByteRow row)
     {
-        value = Double.parseDouble(values.get(3).toString());
+        value = Double.parseDouble(row.getString(3));
     }
 }

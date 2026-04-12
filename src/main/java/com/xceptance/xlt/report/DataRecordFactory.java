@@ -98,9 +98,22 @@ public class DataRecordFactory
      */
     public Data createStatistics(final XltCharBuffer src) throws Exception
     {
+        return createStatistics(src.charAt(0));
+    }
+
+    /**
+     * Creates a data record object for the given type code character. 
+     * 
+     * @param typeCode
+     *            the type code character (e.g., 'T', 'R', 'C')
+     * @return a data record object matching the type code
+     * @throws Exception
+     */
+    public Data createStatistics(final char typeCode) throws Exception
+    {
         // TODO: The following may throw NullPointerException or ArrayIndexOutOfBoundsException in case of unknown type
         // codes.
-        final Constructor<? extends Data> c = constructors[src.charAt(0) - offset];
+        final Constructor<? extends Data> c = constructors[typeCode - offset];
         final Data data = c.newInstance();
 
         return data;

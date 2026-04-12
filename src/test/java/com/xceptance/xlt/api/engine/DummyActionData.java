@@ -46,10 +46,10 @@ public class DummyActionData extends ActionData
     {
         final DummyActionData returnValue = new DummyActionData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setAllValues(CsvByteRowTestHelper.toByteRow(XltCharBufferUtil.toList(new String[]
             {
                 "A", "actionName", "1000", "1", "true", stackTrace
-            }));
+            })));
         returnValue.setAgentName("007");
         return returnValue;
     }

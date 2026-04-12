@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -830,8 +832,8 @@ public class RequestDataTest extends TimerDataTest
         List<XltCharBuffer> elements = CsvLineDecoder.parse(csv);
 
         RequestData instance = new RequestData();
-        instance.setBaseValues(elements);
-        instance.setRemainingValues(elements);
+        instance.setBaseValues(CsvByteRowTestHelper.toByteRow(elements));
+        instance.setRemainingValues(CsvByteRowTestHelper.toByteRow(elements));
 
         return instance;
     }

@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.lang.ThrowableUtils;
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
@@ -274,13 +275,13 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    public void setRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final CsvByteRow row)
     {
-        super.setRemainingValues(values);
+        super.setRemainingValues(row);
 
         // process the stack trace
         // TODO performance
-        stackTrace = values.get(5).toString().trim();
+        stackTrace = row.getString(5).trim();
         if (stackTrace.length() == 0)
         {
             stackTrace = null;
@@ -293,17 +294,17 @@ public class TransactionData extends TimerData
         }
 
         // be defensive so a report can be generated also for older results
-        final int length = values.size();
+        final int length = row.length();
         if (length > 6)
         {
-            setFailedActionName(values.get(6).toString());
+            setFailedActionName(row.getString(6));
         }
 
         // test user number and directory name (since XLT 4.13.2)
         if (length > 7)
         {
-            setTestUserNumber(values.get(7).toString());
-            setDirectoryName(values.get(8).toString());
+            setTestUserNumber(row.getString(7));
+            setDirectoryName(row.getString(8));
         }
         else
         {

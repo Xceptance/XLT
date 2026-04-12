@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -86,7 +88,7 @@ public class EventDataTest extends AbstractDataTest
 
         var e = new EventData();
 
-        e.setBaseValues(data);
+        e.setBaseValues(CsvByteRowTestHelper.toByteRow(data));
         assertEquals('E', e.getTypeCode());
         assertEquals("Test42", e.getName());
         assertEquals(1602817628282L, e.getTime());
@@ -96,7 +98,7 @@ public class EventDataTest extends AbstractDataTest
         assertNull(e.getTestCaseName());
 
         // ok, now what is really important
-        e.setRemainingValues(data);
+        e.setRemainingValues(CsvByteRowTestHelper.toByteRow(data));
         assertEquals("A message", e.getMessage());
         assertEquals("TCName", e.getTestCaseName());
     }

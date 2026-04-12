@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.engine.clientperformance;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -66,8 +68,8 @@ public class PerformanceDataTransformatorTest
             final ClientPerformanceRequest r = new ClientPerformanceRequest();
             var list = CsvLineDecoder.parse("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
 
-            r.getRequestData().setBaseValues(list);
-            r.getRequestData().setRemainingValues(list);
+            r.getRequestData().setBaseValues(CsvByteRowTestHelper.toByteRow(list));
+            r.getRequestData().setRemainingValues(CsvByteRowTestHelper.toByteRow(list));
             r.getRequestData().setTime(0);
             r.setHttpMethod("GET");
             if (new XltPropertiesImpl().collectAdditonalRequestData())

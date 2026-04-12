@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -62,25 +63,25 @@ public interface Data
      * with the same list of values. Splitting the process of recreating the full object state into two methods is
      * purely for performance reasons as the second step is not always needed.
      *
-     * @param values
-     *            the string list to recreate the object state from
-     * @see #setRemainingValues(List)
+     * @param row
+     *            the parsed byte row to recreate the object state from
+     * @see #setRemainingValues(CsvByteRow)
      * @see #toList()
      */
-    public void setBaseValues(final List<XltCharBuffer> values);
+    public void setBaseValues(final CsvByteRow row);
 
     /**
-     * Called by XLT during report creation to recreate the remaining object state from the passed string list. The base
-     * values have already been initialized by calling {@link #setBaseValues(List)} with the same list of values.
+     * Called by XLT during report creation to recreate the remaining object state from the passed row. The base
+     * values have already been initialized by calling {@link #setBaseValues(CsvByteRow)} with the same row.
      * Splitting the process of recreating the full object state into two methods is purely for performance reasons as
      * the second step is not always needed.
      *
-     * @param values
-     *            the string list to recreate the object state from
-     * @see #setBaseValues(List)
+     * @param row
+     *            the parsed byte row to recreate the object state from
+     * @see #setBaseValues(CsvByteRow)
      * @see #toList()
      */
-    public void setRemainingValues(final List<XltCharBuffer> values);
+    public void setRemainingValues(final CsvByteRow row);
 
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.

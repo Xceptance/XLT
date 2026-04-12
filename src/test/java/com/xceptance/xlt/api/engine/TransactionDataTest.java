@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.api.engine;
 
+import com.xceptance.xlt.api.engine.CsvByteRowTestHelper;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -168,8 +170,8 @@ public class TransactionDataTest extends TimerDataTest
 
         // read in CSV representation and parse it
         var list = XltCharBufferUtil.toList(elements);
-        instance.setBaseValues(list);
-        instance.setRemainingValues(list);
+        instance.setBaseValues(CsvByteRowTestHelper.toByteRow(list));
+        instance.setRemainingValues(CsvByteRowTestHelper.toByteRow(list));
         instance.setAgentName(agentName);
 
         // validate
@@ -196,8 +198,8 @@ public class TransactionDataTest extends TimerDataTest
 
         // read in CSV representation and parse it
         var list = XltCharBufferUtil.toList(elements);
-        instance.setBaseValues(list);
-        instance.setRemainingValues(list);
+        instance.setBaseValues(CsvByteRowTestHelper.toByteRow(list));
+        instance.setRemainingValues(CsvByteRowTestHelper.toByteRow(list));
         instance.setAgentName(agentName);
 
         // validate

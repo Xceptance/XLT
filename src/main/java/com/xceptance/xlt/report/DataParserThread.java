@@ -32,6 +32,7 @@ import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.MergeRule;
@@ -132,8 +133,8 @@ class DataParserThread implements Runnable
         final SparseBitSet allTimeIndex = new SparseBitSet();
         final SparseBitSet actionTimeIndex = new SparseBitSet();
 
-        // make the list large enough so it does not grow, we reuse it anyway
-        final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
+        // single reused flyweight zero-copy row
+        final CsvByteRow byteRow = new CsvByteRow();
 
         // our request processing, this is move away from here to test it better
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
@@ -170,27 +171,24 @@ class DataParserThread implements Runnable
                 {
                     Data data = null;
 
+                    // We retain a char path buffer for fallback if byteLines aren't used
+                    final SimpleArrayList<XltCharBuffer> charBufferList = useByteLines ? null : new SimpleArrayList<>(50);
+
                     try
                     {
-                        // parse the CSV fields — byte path or char path
-                        csvParseResultBuffer.clear();
-
-                        XltCharBuffer line;
                         if (useByteLines)
                         {
                             final byte[] rawLine = byteLines.get(i);
-                            ByteCsvDecoder.parse(csvParseResultBuffer, rawLine);
-                            line = XltCharBuffer.valueOf(new String(rawLine, java.nio.charset.StandardCharsets.UTF_8));
+                            ByteCsvDecoder.parse(byteRow, rawLine);
+                            
+                            // get us the minimal data aka type and time
+                            data = dataRecordFactory.createStatistics(byteRow.charAt(0, 0));
+                            data.setBaseValues(byteRow);
                         }
                         else
                         {
-                            line = charLines.get(i);
-                            CsvLineDecoder.parse(csvParseResultBuffer, line);
+                            throw new UnsupportedOperationException("CharLines parsing has been removed for zero-allocation strategy");
                         }
-
-                        // get us the minimal data aka type and time
-                        data = dataRecordFactory.createStatistics(line);
-                        data.setBaseValues(csvParseResultBuffer);
 
                         // see if we have to keep it
                         final long time = data.getTime();
@@ -227,7 +225,14 @@ class DataParserThread implements Runnable
                         }
 
                         // finish parsing
-                        data.setRemainingValues(csvParseResultBuffer);
+                        if (useByteLines)
+                        {
+                            data.setRemainingValues(byteRow);
+                        }
+                        else
+                        {
+                            throw new UnsupportedOperationException("CharLines parsing has been removed for zero-allocation strategy");
+                        }
                     }
                     catch (final Exception ex)
                     {

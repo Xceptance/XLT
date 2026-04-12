@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
+import com.xceptance.common.util.CsvByteRow;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -140,7 +141,7 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public void setRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final CsvByteRow row)
     {
         // we don't need to call super, because our two step
         // init process took care of setting the base values
@@ -149,7 +150,7 @@ public class EventData extends AbstractData
         // time - 2
 
         // read and check the values
-        testCaseName = values.get(3).toString();
-        message = values.get(4).toString();
+        testCaseName = row.getString(3);
+        message = row.getString(4);
     }
 }
