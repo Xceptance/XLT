@@ -15,7 +15,6 @@
  */
 package com.xceptance.common.util;
 
-import java.util.Arrays;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -54,18 +53,6 @@ public final class CsvByteRow
      */
     public static final class ByteStringCache
     {
-        @jdk.jfr.Name("com.xceptance.xlt.ByteStringCacheLookup")
-        @jdk.jfr.Label("Byte String Cache Lookup")
-        @jdk.jfr.Category({"XLT", "Parser", "Cache"})
-        public static class CacheLookupEvent extends jdk.jfr.Event
-        {
-            @jdk.jfr.Label("Hit")
-            public boolean hit;
-
-            @jdk.jfr.Label("Length")
-            public int length;
-        }
-
         private static final int MASK = 1023; // 1024 slots
         private final String[] values = new String[1024];
         private final byte[][] keys = new byte[1024][];
@@ -107,17 +94,6 @@ public final class CsvByteRow
                 {
                     isHit = true;
                 }
-            }
-
-            // HotSpot JVM Escape Analysis intrinsic: this instantiation inherently guarantees zero
-            // heap allocation overhead when JFR is inactive. The Just-In-Time (JIT) compiler natively targets
-            // the `.isEnabled()` block and aggressively eliminates the `new` allocation entirely from the execution tree.
-            final CacheLookupEvent event = new CacheLookupEvent();
-            if (event.isEnabled())
-            {
-                event.hit = isHit;
-                event.length = length;
-                event.commit();
             }
 
             if (isHit)
