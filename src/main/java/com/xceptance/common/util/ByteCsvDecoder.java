@@ -15,7 +15,6 @@
  */
 package com.xceptance.common.util;
 
-import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
