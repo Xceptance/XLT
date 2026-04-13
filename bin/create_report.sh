@@ -18,13 +18,13 @@ CLASSPATH="$XLT_HOME"/target/classes:"$XLT_HOME"/lib/*
 # setup other Java options
 JAVA_OPTIONS=
 JAVA_OPTIONS="$JAVA_OPTIONS -Xmx4g"
-JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UseStringDeduplicationi"
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UseStringDeduplication"
 JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.home=\"$XLT_HOME\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$XLT_CONFIG_DIR/reportgenerator.properties\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true"
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 #JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=custom-full-xlt.jfc"
-#JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=jdk.CPUTimeSample#enabled=true,filename=profile.jfr,dumponexit=true,settings=custom-full-xlt.jfc"
+#JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=jdk.CPUTimeSample#enabled=true,filename=xlt10-custom.jfr,dumponexit=true,settings=custom.jfc"
 #JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+PrintCompilation -XX:+PrintInlining"
 
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
