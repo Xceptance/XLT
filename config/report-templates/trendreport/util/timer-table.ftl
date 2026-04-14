@@ -14,8 +14,10 @@
                 <th class="table-sortable:alphanumeric" rowspan="2" id="sortBy${valueName}${mode}Name">
                     ${tableRowHeader}
                     <br/>
-                    <input class="filter" placeholder="Enter filter substrings" title=""/>
-                    <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                    <form>
+                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                    </form>
                 </th>
 
                 <#-- write the data for the first report as base column -->

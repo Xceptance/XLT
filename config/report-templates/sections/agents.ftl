@@ -23,7 +23,7 @@
                             <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
                                 Agent Name
                                 <br/>
-                                <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
                                 <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                             </th>
                             <th colspan="3">Transactions</th>

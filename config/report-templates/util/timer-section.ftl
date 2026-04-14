@@ -22,7 +22,7 @@
 </#function>
 
 <#macro timer_section elements summaryElement tableRowHeader directory type>
-        <div class="charts">
+        <div class="charts overview">
             <#list summaryElement as se>
                 <@tc.timer_chart element=se directory=directory type=type gid="summary" />
             </#list>
@@ -56,10 +56,19 @@
                                 <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByBandwidthName">
                                     ${tableRowHeader}
                                     <br/>
-                                    <input class="filter" placeholder="Enter filter substrings" title=""/>
-                                    <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    <form>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    </form>
                                 </th>
-                                <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">Labels</th>
+                                <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                                    Labels
+                                    <br/>
+                                    <form>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    </form>
+                                </th>
                                 <th colspan="8">Bytes Sent</th>
                                 <th colspan="8" class="colgroup1">Bytes Received</th>
                             </tr>
@@ -174,10 +183,19 @@
                                 <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByNetworkName">
                                     ${tableRowHeader}
                                     <br/>
-                                    <input class="filter" placeholder="Enter filter substrings" title=""/>
-                                    <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    <form>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    </form>
                                 </th>
-                                <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">Labels</th>
+                                <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                                    Labels
+                                    <br/>
+                                    <form>
+                                        <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    </form>
+                                </th>
                                 <th colspan="3">DNS Time [ms]</th>
                                 <th colspan="3" class="colgroup1">Connect Time [ms]</th>
                                 <th colspan="3">Send Time [ms]</th>

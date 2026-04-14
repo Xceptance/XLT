@@ -11,9 +11,16 @@
         <table class="c-tab-content table-autosort:0">
             <thead>
                 <tr>
-                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">${tableRowHeader}<br/><form><input class="filter" placeholder="Enter filter substrings" title=""/><button class="clear-input" type="clear" title="Click to clear">&#x2715;</button></form></th>
+                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">${tableRowHeader}<br/><form><input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/><button class="clear-input" type="clear" title="Click to clear">&#x2715;</button></form></th>
                     <#if type == "transaction" || type == "action" || type == "request">
-                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">Labels</th>
+                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                        Labels
+                        <br/>
+                        <form>
+                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                        </form>
+                    </th>
                     </#if>
                     <#if type == "request">
                     <th colspan="5">Count</th>
