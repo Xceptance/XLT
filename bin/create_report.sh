@@ -25,7 +25,7 @@ JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true"
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 #JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=custom-full-xlt.jfc"
 #JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=jdk.CPUTimeSample#enabled=true,filename=xlt10-custom.jfr,dumponexit=true,settings=custom.jfc"
-#JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+PrintCompilation -XX:+PrintInlining"
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -agentpath:libasyncProfiler.so=start,event=alloc,file=async-alloc.html,flamegraph"
 
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 

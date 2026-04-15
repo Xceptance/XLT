@@ -42,7 +42,7 @@ public final class ByteBufferedLineReader implements Closeable
     private boolean skipLF = false;
     private boolean eof = false;
 
-    private static final int DEFAULT_BUFFER_SIZE = 2 * 8192;
+    private static final int DEFAULT_BUFFER_SIZE = 31 * 1024;
 
     public ByteBufferedLineReader(final InputStream in)
     {
