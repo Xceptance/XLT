@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.report;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -202,7 +203,7 @@ class DataReaderThread implements Runnable
 
         // Use byte-level reading to avoid InputStreamReader charset decoding overhead
         try (final ByteBufferedLineReader reader = new ByteBufferedLineReader(
-                 isCompressed ? new GZIPInputStream(file.getContent().getInputStream(), 1024 * 31)
+                 isCompressed ? new GZIPInputStream(new BufferedInputStream(file.getContent().getInputStream()), 1024 * 31)
                               : file.getContent().getInputStream()))
         {
             List<byte[]> lines = new java.util.ArrayList<>(chunkSize);

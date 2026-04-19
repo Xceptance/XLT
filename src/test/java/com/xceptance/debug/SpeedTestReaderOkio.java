@@ -16,25 +16,43 @@
 package com.xceptance.debug;
 
 import java.io.File;
-import java.io.RandomAccessFile;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.xceptance.common.util.concurrent.DaemonThreadFactory;
-import com.xceptance.xlt.engine.util.TimerUtils;
+import java.util.List;
+import java.util.concurrent.ThreadFactory;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import okio.Okio;
+import okio.Source;
+import okio.BufferedSource;
+import okio.GzipSource;
 
 /**
- * Standalone speed test for reading XLT result directories using pure JDK RandomAccessFile
- * for uncompressed files without any abstract IO wrappers.
+ * Standalone speed test for reading XLT result directories using Okio,
+ * leaving Apache Commons VFS and ByteBufferedLineReader out of the loop completely to evaluate
+ * Okio throughput bounds.
+ *
+ * Model used: Gemini 3.1 Pro (High)
  */
-public class SpeedTestReaderRaf
+public class SpeedTestReaderOkio
 {
     private static final AtomicLong totalLinesCounter = new AtomicLong();
     private static final AtomicLong totalBytesCounter = new AtomicLong();
     private static final AtomicLong totalFilesCounter = new AtomicLong();
     private static long startTime;
+
+    private static final List<Pattern> TIMER_FILENAME_PATTERNS = Stream.of("^timers\\.csv$", "^timers\\.csv\\.gz$",
+                                                                          "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                                                                          "^timers\\.csv\\.[0-9]{4}-[0-9]{2}-[0-9]{2}\\.gz$")
+                                                                      .map(Pattern::compile).collect(Collectors.toList());
+    private static final List<Pattern> CPT_TIMER_FILENAME_PATTERNS = Stream.of("^timer-wd-.+\\.csv$", "^timer-wd-.+\\.csv\\.gz$")
+                                                                          .map(Pattern::compile).collect(Collectors.toList());
 
     public static void main(final String[] args) throws Exception
     {
@@ -56,9 +74,20 @@ public class SpeedTestReaderRaf
         System.out.println("Processing " + inputDir);
         System.out.printf("Using %d threads%n", threadCount);
 
-        startTime = TimerUtils.get().getStartTime();
+        startTime = System.currentTimeMillis();
 
-        final ExecutorService executor = Executors.newFixedThreadPool(threadCount, new DaemonThreadFactory(i -> "DataReader-" + i, Thread.MAX_PRIORITY));
+        final ExecutorService executor = Executors.newFixedThreadPool(threadCount, new ThreadFactory()
+        {
+            private final java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger();
+            @Override
+            public Thread newThread(Runnable r)
+            {
+                final Thread t = new Thread(r, "DataReader-" + count.getAndIncrement());
+                t.setDaemon(true);
+                t.setPriority(Thread.MAX_PRIORITY);
+                return t;
+            }
+        });
 
         // Mimic DataProcessor's agent -> testcase -> user directory traversal
         final File[] agentDirs = inputDir.listFiles();
@@ -96,7 +125,7 @@ public class SpeedTestReaderRaf
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.HOURS);
 
-        final long duration = TimerUtils.get().getElapsedTime(startTime);
+        final long duration = System.currentTimeMillis() - startTime;
         final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) Math.max(1, duration)) * 1000L);
         final long mbPerSecond = Math.round((totalBytesCounter.get() / (double) Math.max(1, duration)) * 1000L / (1024 * 1024));
 
@@ -121,11 +150,12 @@ public class SpeedTestReaderRaf
                 {
                     if (file.isFile() && file.canRead())
                     {
-                        final String fileName = file.getName().toLowerCase();
+                        final String fileName = file.getName();
                         
-                        // We are strictly looking for uncompressed timer .csv files here
-                        if ((fileName.startsWith("timers.csv") || fileName.startsWith("cpt_timers.csv")) 
-                            && fileName.endsWith(".csv"))
+                        final boolean isTimerFile = TIMER_FILENAME_PATTERNS.stream().anyMatch(r -> r.asPredicate().test(fileName));
+                        final boolean isCptTimerFile = CPT_TIMER_FILENAME_PATTERNS.stream().anyMatch(r -> r.asPredicate().test(fileName));
+                        
+                        if (isTimerFile || isCptTimerFile)
                         {
                             processFile(file);
                         }
@@ -144,21 +174,24 @@ public class SpeedTestReaderRaf
     {
         try
         {
+            final boolean isCompressed = file.getName().toLowerCase().endsWith(".gz");
+
             long lines = 0;
             long bytes = 0;
 
-            // Direct JVM RandomAccessFile for sequential uncompressed chunk reads
-            try (final RandomAccessFile raf = new RandomAccessFile(file, "r"))
+            final byte[] buffer = new byte[16384];
+
+            try (final Source fileSource = Okio.source(file);
+                 final Source decodeSource = isCompressed ? new GzipSource(fileSource) : fileSource;
+                 final BufferedSource source = Okio.buffer(decodeSource);
+                 final InputStream reader = source.inputStream())
             {
-                final byte[] buffer = new byte[16384];
-                int length;
-                
-                while ((length = raf.read(buffer)) != -1)
+                int count;
+
+                while ((count = reader.read(buffer)) != -1)
                 {
-                    bytes += length;
-                    
-                    // Natively sweep the byte array for Unix newlines just to mimic processing
-                    for (int i = 0; i < length; i++)
+                    bytes += count;
+                    for (int i = 0; i < count; i++)
                     {
                         if (buffer[i] == '\n')
                         {
@@ -174,7 +207,7 @@ public class SpeedTestReaderRaf
 
             if (currentFiles % 500 == 0)
             {
-                final long duration = Math.max(1, TimerUtils.get().getElapsedTime(startTime));
+                final long duration = Math.max(1, System.currentTimeMillis() - startTime);
                 final long currentMbPerSec = Math.round((totalBytes / (double) duration) * 1000L / (1024 * 1024));
                 final long currentLinesPerSec = Math.round((totalLines / (double) duration) * 1000L);
                 System.out.printf("Progress: %,d files, %,d lines, %,d MB (%,d MB/s, %,d lines/s)...%n", 

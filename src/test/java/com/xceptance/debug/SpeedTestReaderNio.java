@@ -132,8 +132,9 @@ public class SpeedTestReaderNio
             {
                 final long duration = Math.max(1, TimerUtils.get().getElapsedTime(startTime));
                 final long currentMbPerSec = Math.round((totalBytes / (double) duration) * 1000L / (1024 * 1024));
-                System.out.printf("Progress: %,d files, %,d lines, %,d MB (%,d MB/s)...%n", 
-                                  currentFiles, totalLines, totalBytes / (1024 * 1024), currentMbPerSec);
+                final long currentLinesPerSec = Math.round((totalLines / (double) duration) * 1000L);
+                System.out.printf("Progress: %,d files, %,d lines, %,d MB (%,d MB/s, %,d lines/s)...%n", 
+                                  currentFiles, totalLines, totalBytes / (1024 * 1024), currentMbPerSec, currentLinesPerSec);
             }
         }
         catch (final Exception e)
