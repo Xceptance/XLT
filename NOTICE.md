@@ -183,6 +183,12 @@ httpmime
   * Homepage: https://hc.apache.org/
   * More information in folder: doc/3rd-party-licenses/httpmime
 
+java-websocket
+
+  * License: MIT License
+  * Homepage: https://github.com/TooTallNate/Java-WebSocket
+  * More information in folder: doc/3rd-party-licenses/java-websocket
+
 jaxb
 
   * License: Common Development and Distribution License 1.1
@@ -236,6 +242,12 @@ memoryfilesystem
   * License: MIT License
   * Homepage: https://github.com/marschall/memoryfilesystem
   * More information in folder: doc/3rd-party-licenses/memoryfilesystem
+
+moby-names-generator
+
+  * License: MIT License
+  * Homepage: https://github.com/schnatterer/moby-names-generator-java
+  * More information in folder: doc/3rd-party-licenses/moby-names-generator
 
 neko-htmlunit
 
@@ -334,7 +346,7 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
-  
+
 crosshair
 
   * License: MIT License
