@@ -1,20 +1,12 @@
 package com.xceptance.xlt.agentcontroller.xtc;
 
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xceptance.common.util.ssl.EasyHostnameVerifier;
-import com.xceptance.common.util.ssl.EasyX509TrustManager;
 import com.xceptance.xlt.agentcontroller.AgentControllerConfiguration.PrivateMachineType;
 import com.xceptance.xlt.api.util.XltException;
 
@@ -35,12 +27,6 @@ import okhttp3.Response;
 public class RestApiClient
 {
     private static final Logger log = LoggerFactory.getLogger(RestApiClient.class);
-
-    private static final EasyHostnameVerifier INSECURE_HOSTNAME_VERIFIER = new EasyHostnameVerifier();
-
-    private static final EasyX509TrustManager INSECURE_TRUST_MANAGER = new EasyX509TrustManager(null);
-
-    private static final SSLSocketFactory INSECURE_SSL_SOCKET_FACTORY = createInsecureSslSocketFactory();
 
     private static final MediaType MEDIA_TYPE_JSON = MediaType.get("application/json");
 
@@ -87,8 +73,8 @@ public class RestApiClient
     /**
      * Registers the current machine as a private machine at XTC using the passed details.
      */
-    public void registerPrivateMachine(final String hostName, final String ipAddress, final PrivateMachineType agentType, int cores,
-                                       long memory, long disk)
+    public void registerPrivateMachine(final String hostName, final String ipAddress, final PrivateMachineType agentType, final int cores,
+                                       final long memory, final long disk)
         throws IOException
     {
         // build Authorization header
@@ -117,7 +103,7 @@ public class RestApiClient
 
     /**
      * Requests a new access token for the given scope from XTC.
-     * 
+     *
      * @param scope
      *            the scope
      * @return the token
@@ -151,7 +137,7 @@ public class RestApiClient
     /**
      * Checks if the passed validation result is false and throws an exception with the given message. This is a simple
      * helper for validating things.
-     * 
+     *
      * @param validationResult
      *            a boolean indicating the validation result
      * @param message
@@ -166,8 +152,8 @@ public class RestApiClient
     }
 
     /**
-     * Creates an OkHttp client that accepts invalid/self-signed certificates and ignores host name verification errors.
-     * 
+     * Creates the underlying OkHttp client.
+     *
      * @return the client
      */
     private static OkHttpClient createHttpClient()
@@ -177,34 +163,40 @@ public class RestApiClient
         httpClientBuilder.connectionSpecs(List.of(new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).allEnabledTlsVersions()
                                                                                                        .allEnabledCipherSuites().build()));
 
-        httpClientBuilder.sslSocketFactory(INSECURE_SSL_SOCKET_FACTORY, INSECURE_TRUST_MANAGER);
-        httpClientBuilder.hostnameVerifier(INSECURE_HOSTNAME_VERIFIER);
+        // setUpHttpClientForDevMode(httpClientBuilder);
 
         return httpClientBuilder.build();
     }
 
-    /**
-     * Creates an SSL socket factory with a trust manager that accepts invalid/self-signed certificates.
-     *
-     * @return the socket factory
-     */
-    private static SSLSocketFactory createInsecureSslSocketFactory()
-    {
-        try
-        {
-            final TrustManager[] trustManagers = new TrustManager[]
-                {
-                    INSECURE_TRUST_MANAGER
-                };
-
-            final SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustManagers, null);
-
-            return sslContext.getSocketFactory();
-        }
-        catch (NoSuchAlgorithmException | KeyManagementException e)
-        {
-            throw new XltException("Failed to create insecure SSL socket factory", e);
-        }
-    }
+//    /**
+//     * Adds any customization needed for local development to the passed builder.
+//     */
+//    private static void setUpHttpClientForDevMode(final Builder httpClientBuilder)
+//    {
+//        // create the needed components to accept invalid/self-signed certificates and ignore host name verification errors
+//        final EasyHostnameVerifier insecureHostNameVerifier = new EasyHostnameVerifier();
+//        final EasyX509TrustManager insecureTrustManager = new EasyX509TrustManager(null);
+//
+//        final SSLSocketFactory insecureSslSocketFactory;
+//        try
+//        {
+//            final TrustManager[] trustManagers = new TrustManager[]
+//                {
+//                    insecureTrustManager
+//                };
+//
+//            final SSLContext sslContext = SSLContext.getInstance("TLS");
+//            sslContext.init(null, trustManagers, null);
+//
+//            insecureSslSocketFactory = sslContext.getSocketFactory();
+//        }
+//        catch (final NoSuchAlgorithmException | KeyManagementException e)
+//        {
+//            throw new XltException("Failed to create insecure SSL socket factory", e);
+//        }
+//
+//        // now modify the builder
+//        httpClientBuilder.sslSocketFactory(insecureSslSocketFactory, insecureTrustManager);
+//        httpClientBuilder.hostnameVerifier(insecureHostNameVerifier);
+//    }
 }

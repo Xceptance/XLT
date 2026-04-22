@@ -20,9 +20,9 @@ public class StreamingWebSocketClient extends WebSocketClient
 {
     private static final Logger log = LoggerFactory.getLogger(StreamingWebSocketClient.class);
 
-    private StreamingWebSocket socket;
+    private final StreamingWebSocket socket;
 
-    public StreamingWebSocketClient(String host, int port, SSLSocketFactory sslSocketFactory)
+    public StreamingWebSocketClient(final String host, final int port, final SSLSocketFactory sslSocketFactory)
         throws URISyntaxException, IOException, InterruptedException
     {
         super(new URI("wss://" + host + ":" + port + "/"));

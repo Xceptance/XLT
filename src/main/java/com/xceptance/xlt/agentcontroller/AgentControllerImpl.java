@@ -337,7 +337,6 @@ public class AgentControllerImpl implements AgentController
         final HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfiguration);
 
         final ServerConnector sslConnector = new ServerConnector(server, sslConnectionFactory, httpConnectionFactory);
-        // final ServerConnector sslConnector = new ServerConnector(server);
         sslConnector.setHost(agentControllerConfig.getHostName());
         sslConnector.setPort(agentControllerConfig.getPort());
         server.addConnector(sslConnector);

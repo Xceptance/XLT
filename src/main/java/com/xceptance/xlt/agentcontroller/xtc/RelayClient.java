@@ -35,15 +35,16 @@ public class RelayClient
 
     private final String hostName;
 
-    private SSLSocketFactory sslSocketFactory;
+    private final SSLSocketFactory sslSocketFactory;
 
-    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String hostName, SSLSocketFactory sslSocketFactory)
+    public RelayClient(final String relayHost, final int relayPort, final int agentControllerPort, final String hostName,
+                       final SSLSocketFactory sslSocketFactory)
     {
         this.relayHost = relayHost;
         this.relayPort = relayPort;
         this.agentControllerPort = agentControllerPort;
         this.hostName = hostName;
-        this.sslSocketFactory = sslSocketFactory; 
+        this.sslSocketFactory = sslSocketFactory;
     }
 
     public void start()
@@ -94,7 +95,7 @@ public class RelayClient
                     final Thread t = Thread.ofVirtual().start(() -> transferData(acIn, tunnelOut, "AC -> MC", tunnelSocket));
                     transferData(tunnelIn, acOut, "MC -> AC", acSocket);
 
-                    //
+                    // wait for bidirectional data forwarding to end
                     t.join();
                     log.debug("Connection to local agent controller ended: {}", acSocket);
                 }
@@ -120,19 +121,10 @@ public class RelayClient
         try
         {
             // send data
-            // in.transferTo(out);
-            // out.flush();
-
-            final byte[] buffer = new byte[8192];
-            int bytesRead;
-
-            while ((bytesRead = in.read(buffer)) != -1)
-            {
-                log.debug("{}: {} bytes", direction, bytesRead);
-
-                out.write(buffer, 0, bytesRead);
-                out.flush();
-            }
+            in.transferTo(out);
+            out.flush();
+            // debug version of the above
+            // transferTo(in, out, direction);
 
             // indicate that we won't send any more data
             socket.shutdownOutput();
@@ -146,5 +138,33 @@ public class RelayClient
         {
             log.debug("{}: connection closed", direction);
         }
+    }
+
+    /**
+     * Transfers data similar to {@link InputStream#transferTo(OutputStream)}, but with debug output.
+     * <p>
+     * Please don't remove!
+     * 
+     * @param in
+     * @param out
+     * @param direction
+     * @throws IOException
+     */
+    @SuppressWarnings("unused")
+    private static void transferTo(final InputStream in, final OutputStream out, final String direction) throws IOException
+    {
+        final byte[] buffer = new byte[8192];
+        int bytesRead;
+
+        while ((bytesRead = in.read(buffer)) != -1)
+        {
+            log.debug("{}: {} bytes", direction, bytesRead);
+
+            out.write(buffer, 0, bytesRead);
+            out.flush();
+        }
+
+        log.debug("{}: Data forwarding done", direction);
+        log.debug("-------------------------------------------");
     }
 }

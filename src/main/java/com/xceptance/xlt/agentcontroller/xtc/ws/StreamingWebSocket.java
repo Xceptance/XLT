@@ -32,7 +32,7 @@ public class StreamingWebSocket
 
     private boolean outputShutDown;
 
-    StreamingWebSocket(StreamingWebSocketClient streamingWebSocketClient) throws IOException
+    StreamingWebSocket(final StreamingWebSocketClient streamingWebSocketClient) throws IOException
     {
         this.streamingWebSocketClient = streamingWebSocketClient;
 
@@ -41,6 +41,7 @@ public class StreamingWebSocket
         out = new WebSocketOutputStream(streamingWebSocketClient);
     }
 
+    @Override
     public void close() throws IOException
     {
         try
@@ -53,20 +54,24 @@ public class StreamingWebSocket
         }
     }
 
+    @Override
     public InputStream getInputStream()
     {
         return in;
     }
 
+    @Override
     public OutputStream getOutputStream()
     {
         return out;
     }
 
+    @Override
     public void shutdownInput()
     {
     }
 
+    @Override
     public void shutdownOutput()
     {
         if (!outputShutDown)

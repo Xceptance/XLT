@@ -116,13 +116,13 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     private final PrivateMachineType privateMachineType;
 
-    private String xtcHost;
+    private final String xtcHost;
 
-    private int xtcPort;
+    private final int xtcPort;
 
-    private String xtcRelayHost;
+    private final String xtcRelayHost;
 
-    private int xtcRelayPort;
+    private final int xtcRelayPort;
 
     private final String xtcClientId;
 
@@ -134,7 +134,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Creates a new AgentControllerConfiguration object.
-     * 
+     *
      * @param commandLineProperties
      *            the properties specified on the command line
      * @throws IOException
@@ -244,7 +244,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
         return MobyNamesGenerator.getRandomName().replace('_', '-');
     }
 
-    static void validatePrivateMachineName(String privateMachineName)
+    static void validatePrivateMachineName(final String privateMachineName)
     {
         if (!PRIVATE_MACHINE_NAME_PATTERN.matcher(privateMachineName).matches())
         {
@@ -254,7 +254,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent's "bin" directory.
-     * 
+     *
      * @return the bin directory
      */
     public File getAgentBinDirectory()
@@ -264,7 +264,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the command file used to start the agent.
-     * 
+     *
      * @return the command file
      */
     public String[] getAgentCommandLine()
@@ -274,7 +274,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the root directory where all agents are installed to.
-     * 
+     *
      * @return the agents directory
      */
     public File getAgentsDirectory()
@@ -284,7 +284,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's configuration directory.
-     * 
+     *
      * @return the config directory
      */
     public File getConfigDirectory()
@@ -294,7 +294,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's home directory.
-     * 
+     *
      * @return the home directory
      */
     public File getHomeDirectory()
@@ -305,7 +305,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the agent controller's host address, the local network interface to which the agent controller will be
      * bound.
-     * 
+     *
      * @return the host address, or <code>null</code> in case the agent controller is to be bound to all available local
      *         interfaces
      */
@@ -317,7 +317,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the agent controller's host name, the local network interface to which the agent controller will be
      * bound.
-     * 
+     *
      * @return the host name, or <code>null</code> in case the agent controller is to be bound to all available local
      *         interfaces
      */
@@ -328,7 +328,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller key's password.
-     * 
+     *
      * @return the key store password
      */
     public String getKeyPassword()
@@ -338,7 +338,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's key store file.
-     * 
+     *
      * @return the key store file
      */
     public File getKeyStoreFile()
@@ -348,7 +348,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's key store password.
-     * 
+     *
      * @return the key store password
      */
     public String getKeyStorePassword()
@@ -359,7 +359,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the user name that must be provided by the master controller to be allowed to communicate with this agent
      * controller.
-     * 
+     *
      * @return the user name
      */
     public String getUserName()
@@ -370,7 +370,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the password that must be provided by the master controller to be allowed to communicate with this agent
      * controller.
-     * 
+     *
      * @return the password
      */
     public String getPassword()
@@ -380,7 +380,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's port.
-     * 
+     *
      * @return the port
      */
     public int getPort()
@@ -390,7 +390,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's temp directory.
-     * 
+     *
      * @return the temp directory
      */
     public File getTempDir()

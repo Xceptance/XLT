@@ -21,17 +21,17 @@ public class PeriodicRegistrationRefresher
 
     private static final long REGISTRATION_INTERVAL = 60_000L;
 
-    private RestApiClient xtcRestApi;
+    private final RestApiClient xtcRestApi;
 
-    private String hostName;
+    private final String hostName;
 
-    private PrivateMachineType machineType;
+    private final PrivateMachineType machineType;
 
-    public PeriodicRegistrationRefresher(RestApiClient xtcRestApi, String hostName, PrivateMachineType privateMachineType)
+    public PeriodicRegistrationRefresher(final RestApiClient xtcRestApi, final String hostName, final PrivateMachineType privateMachineType)
     {
         this.xtcRestApi = xtcRestApi;
         this.hostName = hostName;
-        this.machineType = privateMachineType;
+        machineType = privateMachineType;
     }
 
     public void start()
@@ -68,7 +68,7 @@ public class PeriodicRegistrationRefresher
                 ThreadUtils.sleep(REGISTRATION_INTERVAL);
             }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             log.error("Failed to collect registration data", e);
         }
