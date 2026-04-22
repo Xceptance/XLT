@@ -68,6 +68,10 @@ public class EasyHessianURLConnectionFactory implements HessianConnectionFactory
             }
         }
 
+        // Force the connection to not use keep-alive. This way, intermediaries (such as a our XLT Relay) get a clean
+        // signal when a request has been sent completely.
+        conn.setRequestProperty("Connection", "close");
+
         return new HessianURLConnection(url, conn);
     }
 
