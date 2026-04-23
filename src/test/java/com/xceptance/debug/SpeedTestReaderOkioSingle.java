@@ -45,7 +45,7 @@ public class SpeedTestReaderOkioSingle
              final BufferedSource source = Okio.buffer(decodeSource);
              final InputStream reader = source.inputStream())
         {
-            final byte[] buffer = new byte[65536]; // 64k buffer
+            final byte[] buffer = new byte[165536]; // 64k buffer
             int length;
             
             while ((length = reader.read(buffer)) != -1)

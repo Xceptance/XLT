@@ -145,7 +145,8 @@ public class SpeedTestReader
             long lines = 0;
             long bytes = 0;
 
-            try (final InputStream fileIs = new BufferedInputStream(file.getContent().getInputStream());
+            try (final org.apache.commons.vfs2.FileContent content = file.getContent();
+                 final InputStream fileIs = new BufferedInputStream(content.getInputStream());
                  final InputStream decodeIs = getDecoderStream(fileIs, isGzip, isZstd, isLz4);
                  final ByteBufferedLineReader reader = new ByteBufferedLineReader(decodeIs))
             {
