@@ -651,6 +651,12 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
+        <!-- Groovy for property expression evaluation -->
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>5.0.4</version>
+        </dependency>
 
         <!-- ================= -->
         <!-- Test dependencies -->
