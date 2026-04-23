@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>10.0.0-beta-1</version>
+    <version>10.0.0-beta-2</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -55,6 +55,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <asm.version>9.7.1</asm.version>
+        <flexmark.version>0.64.8</flexmark.version>
         <htmlunit.version>4.10.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
@@ -394,6 +395,11 @@
             <version>4.0.66</version>
         </dependency>
         <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+        <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
             <version>2.0.0</version>
@@ -449,6 +455,11 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>info.schnatterer.moby-names-generator</groupId>
+            <artifactId>moby-names-generator</artifactId>
+            <version>20.10.0-r0</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -536,17 +547,38 @@
             <artifactId>parboiled-java</artifactId>
             <version>1.4.1</version>
         </dependency>
+        <!-- flexmark-java for Markdown-to-HTML conversion (report comments) -->
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-ext-autolink</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-ext-gfm-strikethrough</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-ext-tables</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
         <!-- WebSocket-Server needed for running client-performance tests with Chrome and FF -->
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly-server</artifactId>
             <version>1.21</version>
         </dependency>
-        <!-- https://github.com/aggregateknowledge/java-hll -->
+        <!-- https://github.com/apache/datasketches-java -->
         <dependency>
-            <groupId>net.agkn</groupId>
-            <artifactId>hll</artifactId>
-            <version>1.6.0</version>
+            <groupId>org.apache.datasketches</groupId>
+            <artifactId>datasketches-java</artifactId>
+            <version>7.0.1</version>
         </dependency>
         <!-- Java EE libs -->
         <dependency>

@@ -28,4 +28,13 @@ public class TransactionReport extends TimerReport
      * The number of events.
      */
     public int events;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTypeCode()
+    {
+        return TimerReportType.TRANSACTION.getTypeCode();
+    }
 }

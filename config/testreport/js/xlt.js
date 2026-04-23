@@ -347,17 +347,13 @@
 
     function filter (input) {
         var $input       = $(input),
-            table        = $input.parents("table:not(.cluetip-table)"), // get the target/foreground table
+            $table       = $input.parents("table:not(.cluetip-table)"), // get the target/foreground table
             filterPhrase = $input.val();
+            filterId     = $input.attr('data-filter-id');
 
-        var filterFunc = function(value) { return doFilter(value, filterPhrase) };
-
-        // actually perform filtering a table by a filter phrase
-        var filterTable = function(table) {
-            table.find("input.filter").each(function() {
-                Table.filter(this, { 'filter': filterFunc });
-            });
-        };
+        var filter = {};
+        filter.filter = function(value) { return doFilter(value, filterPhrase) };
+        filter.col = $input.attr('data-col-index'); // input should provide the index of the column to filter
 
         // shows/hides the footer row of a table
         var showTableFooter = function(table, footerVisible) {
@@ -383,29 +379,34 @@
 
         var footerVisible;
 
-        // let the table filter the rows
-        filterTable(table);
+        // let the table filter the rows; the filter logic stores all previously applied filters (e.g. filters for other
+        // columns), so we only need to provide the input field that got updated here
+        Table.filter(input, filter);
 
         // show the table footer only if no body rows have been filtered out
-        footerVisible = table.find('> tbody > tr:hidden').length == 0;
+        footerVisible = $table.find('> tbody > tr:hidden').length == 0;
 
-        showTableFooter(table, footerVisible);
+        showTableFooter($table, footerVisible);
 
-        // now process any hidden table (Requests page only)
-        $('table:hidden').each(function() {
+        // now process any hidden tables (Requests page only) or all tables on the page for trend reports; don't process
+        // the initial table again; ignore cluetip tables
+        $('table:not(.cluetip-table):hidden,table.trend').not($table).each(function() {
             var $this = $(this);
-            filterTable($this);
+            var $input = $this.find('input[data-filter-id="' + filterId + '"]');
+            Table.filter($input[0], filter);
             showTableFooter($this, footerVisible);
             // set the current filter phrase as the filter input's value
-            $this.find('input.filter').val(filterPhrase);
+            $input.val(filterPhrase);
         });
 
         // now filter the charts
         $('.charts:not(.overview) .chart-group.no-print').each(function() {
-            var value = this.getAttribute('data-name');
-            var visible = filterFunc(value);
-
-            $(this).toggle(visible);
+            var chartId = this.getAttribute('id');
+            // find the table row for the current chart; the chart is only visible if the matching table row is visible
+            var $row = $table.find('tr a[href="#' + chartId + '"]');
+            if($row.length > 0){
+                $(this).toggle($row.is(':visible'));
+            }
         });
     }
 
@@ -513,6 +514,7 @@
                    event.stopPropagation();
                    $input.val("");
                    throttleFilter(input);
+                   updateFilterHash(input);
                });
            });
         })();
@@ -987,9 +989,9 @@
                 newHashObj.sort = oldHashObj.sort;
             }
 
-            // hashes might contain a filter
-            if(oldHashObj.filter != undefined && newHashObj.filter == undefined){
-                newHashObj.filter = oldHashObj.filter;
+            // hashes might contain filters
+            if(oldHashObj.filters.length > 0 && newHashObj.filters.length == 0){
+                newHashObj.filters = oldHashObj.filters;
             }
 
             // sometimes sorting must be triggered from the update hash function. For example, when a user directly changes the sorting option (navbar) in the url
@@ -1012,9 +1014,11 @@
         }
     }
 
-    // splits the given hash - automatically tries to detect the current format. the returned hash object might contain a "navigation", "sort" and "filter" option
+    // splits the given hash - automatically tries to detect the current format. the returned hash object might contain a "navigation" and "sort" option, as well
+    // as multiple "filter" options
     function splitHash(hash){
         var hashObj = {};
+        hashObj.filters = [];
 
         if(hash !== ""){
             // hash format: http://...#abc
@@ -1033,7 +1037,11 @@
                         hashObj.sort = param;
                     }
                     else if(param.startsWith('filter')){
-                        hashObj.filter = param;
+                        // filter params have the format "filterByX=value"
+                        var filterId = param.split('=')[0];
+                        // order filters based on their column index, so the order in the hash is consistent
+                        var index = $('input[data-filter-id="' + filterId + '"]').attr('data-col-index');
+                        hashObj.filters[index] = param;
                     }
                     else{
                         hashObj.navigation = '#' + param;
@@ -1059,8 +1067,13 @@
             newHash.push(updatedHashObj.sort);
         }
 
-        if(updatedHashObj.filter != undefined){
-            newHash.push(updatedHashObj.filter);
+        if(updatedHashObj.filters != undefined){
+            for(var i = 0; i < updatedHashObj.filters.length; i++){
+                // the "filters" array might contain undefined values if not all filters are set; we ignore those here
+                if(updatedHashObj.filters[i]){
+                    newHash.push(updatedHashObj.filters[i]);
+                }
+            }
         }
 
         // check if we have a hash to process
@@ -1081,13 +1094,13 @@
 
     // eventlistener that fires if a sortable table row gets clicked
     function updateHashAfterSort(sortingEvent){
-        if(sortingEvent.target.classList.contains('table-sortable') && sortingEvent.target.id != undefined){
-            var sortingRule = sortingEvent.target.classList.contains('table-sorted-asc') ? 'asc' : 'desc';
+        if(sortingEvent.currentTarget.classList.contains('table-sortable') && sortingEvent.currentTarget.id != undefined){
+            var sortingRule = sortingEvent.currentTarget.classList.contains('table-sorted-asc') ? 'asc' : 'desc';
             // Get the current hash (if one exists)
             var hashObj = splitHash(window.location.hash);
 
             // update the sorting option of the hash
-            hashObj.sort = sortingEvent.target.id + '=' + sortingRule;
+            hashObj.sort = sortingEvent.currentTarget.id + '=' + sortingRule;
 
             // After sorting we update the hash manually, so we disable executing the next event
             ignoreNextHashChange = true;
@@ -1140,12 +1153,21 @@
 
     // method that gets triggered when the user enters some input to apply a filter
     function updateHashAfterFilter(filterEvent){
-        var filter = filterEvent.target.value;
-        var encodedFilter = encodeURIComponent(filterEvent.target.value);
+        updateFilterHash(filterEvent.target);
+    }
+
+    // updates the current hash with information from the given filter input
+    function updateFilterHash(filterInput){
+        var filter = filterInput.value;
+        var encodedFilter = encodeURIComponent(filter);
         // console.log('filter change:' + filter + ' to ' + encodedFilter);
 
+        var filterId = filterInput.getAttribute('data-filter-id');
+        var index = filterInput.getAttribute('data-col-index');
+
         var newHashObj = splitHash(window.location.hash);
-        newHashObj.filter = 'filter=' + encodedFilter;
+
+        newHashObj.filters[index] = filterId + '=' + encodedFilter;
 
         updateHash(newHashObj);
     }
@@ -1164,20 +1186,23 @@
             sort(sortingElem, sortingRule);
         }
 
-        // check for existing filter to apply
-        if(hashObj.filter != undefined){
-            // Apply initial filter
-            var filterParam = hashObj.filter.split('=');
-            var encodedFilter = filterParam[1];
+        // check for existing filters to apply
+        for(var i = 0; i < hashObj.filters.length; i++){
+            // skip undefined values in the "filters" array
+            if(hashObj.filters[i]){
+                // Apply initial filters
+                var filterParam = hashObj.filters[i].split('=');
+                var encodedFilter = filterParam[1];
 
-            if(encodedFilter.length > 0){
-                var decodedFilter = decodeURIComponent(encodedFilter);
-                // console.log('filter value: ' + decodedFilter);
-                var filterInputFields = document.querySelectorAll('input.filter');
-                for(var i = 0; i < filterInputFields.length; i++){
-                    var filterField = filterInputFields[i];
-                    filterField.value = decodedFilter;
-                    filter(filterField);
+                if(encodedFilter.length > 0){
+                    var decodedFilter = decodeURIComponent(encodedFilter);
+                    // console.log('filter value: ' + decodedFilter);
+
+                    // apply filter to the first visible matching filter input field; the filter logic will propagate
+                    // the filter value to all other matching input fields automatically
+                    var filterInputField = $('input:visible[data-filter-id="' + filterParam[0] + '"]')[0];
+                    filterInputField.value = decodedFilter;
+                    filter(filterInputField);
                 }
             }
         }

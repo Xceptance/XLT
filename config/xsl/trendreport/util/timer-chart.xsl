@@ -13,13 +13,14 @@
         <xsl:variable name="gid" select="generate-id(.)"/>
 
         <a>
-            <xsl:attribute name="id">timerchart-<xsl:value-of select="$gid"/></xsl:attribute>
+            <xsl:attribute name="id"><xsl:value-of select="normalize-space(name)"/></xsl:attribute>
             <xsl:comment>
                 This is a placeholder for the anchor.
             </xsl:comment>
         </a>
 
-        <div id="{$gid}" class="chart-group tabs c-tabs no-print" data-name="{name}">
+        <div class="chart-group tabs c-tabs no-print" data-name="{normalize-space(name)}">
+            <xsl:attribute name="id">timerchart-<xsl:value-of select="$gid"/></xsl:attribute>
             <ul class="c-tabs-nav">
                 <li class="c-tabs-nav-link c-is-active">
                     <a href="#RunTime-{$gid}">Run Times</a>

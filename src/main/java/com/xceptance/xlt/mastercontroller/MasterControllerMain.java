@@ -106,8 +106,7 @@ public class MasterControllerMain
         final boolean commandsMode = commandLine.hasOption(OPTION_COMMANDS);
 
         // restrict relaxed connections to 'auto' or commands mode
-        final boolean isAgentControllerConnectionRelaxed = config.isAgentControllerConnectionRelaxed() &&
-                                                           (autoMode || commandsMode);
+        final boolean isAgentControllerConnectionRelaxed = config.isAgentControllerConnectionRelaxed() && (autoMode || commandsMode);
 
         // restrict results override to non-sequential 'auto' mode or commands mode
         if ((autoMode && !sequentialMode || commandsMode) && commandLine.hasOption(OPTION_RESULT_OVERRIDE))
@@ -177,11 +176,8 @@ public class MasterControllerMain
     {
         if (config.isHttpsProxyEnabled())
         {
-            System.setProperty("https.proxyHost", config.getHttpsProxyHost());
-            System.setProperty("https.proxyPort", config.getHttpsProxyPort());
-            System.setProperty("https.nonProxyHosts", config.getHttpsProxyBypassHosts());
-
-            final XltProxySelector proxySel = new XltProxySelector(ProxySelector.getDefault());
+            final XltProxySelector proxySel = new XltProxySelector(config.getHttpsProxyHost(), config.getHttpsProxyPort(),
+                                                                   config.getHttpsProxyUseHosts(), config.getHttpsProxyBypassHosts());
             ProxySelector.setDefault(proxySel);
         }
     }
@@ -637,9 +633,9 @@ public class MasterControllerMain
 
     private static enum ResultDataTypes
     {
-     logs,
-     resultbrowsers,
-     measurements;
+        logs,
+        resultbrowsers,
+        measurements;
 
         public static String[] validate(final String valueString)
         {

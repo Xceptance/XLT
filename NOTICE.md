@@ -93,6 +93,12 @@ commons-vfs2
   * Homepage: https://commons.apache.org/proper/commons-vfs/
   * More information in folder: doc/3rd-party-licenses/commons-vfs2
 
+datasketches-java
+
+  * License: Apache License 2.0
+  * Homepage: https://datasketches.apache.org/
+  * More information in folder: doc/3rd-party-licenses/datasketches-java
+
 dec
 
   * License: MIT License
@@ -109,8 +115,13 @@ dsiutils
 
   * License: Apache License 2.0
   * Homepage: https://github.com/vigna/dsiutils
-  * Not the full library has been used and modifications have been applied.
   * More information in folder: doc/3rd-party-licenses/dsiutils
+
+flexmark-java
+
+  * License: BSD 2-Clause License
+  * Homepage: https://github.com/vsch/flexmark-java
+  * More information in folder: doc/3rd-party-licenses/flexmark-java
 
 freemarker
 
@@ -172,6 +183,12 @@ httpmime
   * Homepage: https://hc.apache.org/
   * More information in folder: doc/3rd-party-licenses/httpmime
 
+java-websocket
+
+  * License: MIT License
+  * Homepage: https://github.com/TooTallNate/Java-WebSocket
+  * More information in folder: doc/3rd-party-licenses/java-websocket
+
 jaxb
 
   * License: Common Development and Distribution License 1.1
@@ -225,6 +242,12 @@ memoryfilesystem
   * License: MIT License
   * Homepage: https://github.com/marschall/memoryfilesystem
   * More information in folder: doc/3rd-party-licenses/memoryfilesystem
+
+moby-names-generator
+
+  * License: MIT License
+  * Homepage: https://github.com/schnatterer/moby-names-generator-java
+  * More information in folder: doc/3rd-party-licenses/moby-names-generator
 
 neko-htmlunit
 
@@ -323,13 +346,15 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
-  
+
 crosshair
+
   * License: MIT License
   * Homepage: https://eschmann.dev/crosshair.js/
   * More information in folder: doc/3rd-party-licenses/crosshair
 
 echarts
+
   * License: Apache License 2.0
   * Homepage: https://echarts.apache.org/en/index.html
   * More information in folder: doc/3rd-party-licenses/echarts

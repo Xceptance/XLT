@@ -11,6 +11,11 @@
                 <xsl:with-param name="class" select="'key colgroup1'"/>
             </xsl:call-template>
 
+            <!-- labels -->
+            <xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+                <td class="colgroup1"/>
+            </xsl:if>
+
             <!-- count -->
             <td class="value number">
                 <xsl:value-of select="format-number(count, '#,##0')"/>

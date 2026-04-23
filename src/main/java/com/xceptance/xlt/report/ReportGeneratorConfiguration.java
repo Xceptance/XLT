@@ -50,6 +50,8 @@ import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMethod;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
+import com.xceptance.xlt.report.labelingrules.InvalidLabelingRuleException;
+import com.xceptance.xlt.report.labelingrules.LabelingRule;
 import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
@@ -149,13 +151,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RUNTIME_INTERVAL_BOUNDARIES = PROP_PREFIX + "runtimeIntervalBoundaries";
 
-    private static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
+    static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
 
-    private static final String PROP_REQUESTS_TABLE_COLORIZE_DEFAULT = "default";
+    static final String PROP_REQUESTS_TABLE_COLORIZE_DEFAULT = "default";
 
-    private static final String PROP_SUFFIX_MATCHING = "matching";
+    static final String PROP_SUFFIX_MATCHING = "matching";
 
-    private static final String PROP_SUFFIX_MEAN = "mean";
+    static final String PROP_SUFFIX_MATCHING_NAME = "matching.name";
+
+    static final String PROP_SUFFIX_MATCHING_LABEL = "matching.label";
+
+    static final String PROP_SUFFIX_MEAN = "mean";
 
     private static final String PROP_SUFFIX_MIN = "min";
 
@@ -192,6 +198,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_RESULTS_ROOT_DIR = PROP_PREFIX + "results";
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
+
+    static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
 
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
@@ -247,6 +255,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     static final String ERROR_AVERAGE_TYPE_INVALID = "Moving average type '%s' configured in property '%s' is invalid. Valid types are: " +
                                                      MovingAverageType.getNames() + ".";
+
+    static final String ERROR_COLORIZATION_PATTERN_MISSING = "At least one of the following properties must be defined for colorization group '%s':\n" +
+                                                             "%s\n%s\n%s (Deprecated. Equivalent to 'matching.name')";
 
     static final String ERROR_INVALID_PROPERTY_VALUE_FORMAT = "Failed to read property '%s' because value format is invalid.";
 
@@ -582,24 +593,35 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Checks the given string for leading zero digits.
+     * Get an ordered set of the index numbers for rules with the given rule prefix.
      *
-     * @param s
-     *            the string to be checked
+     * @param rulePrefix
+     *            the rule prefix
+     * @return an ordered set of the rule index numbers
      */
-    private void checkForLeadingZeros(final String s)
+    private TreeSet<Integer> getRuleNumbers(final String rulePrefix)
     {
-        if (s.length() > 1 && s.startsWith("0"))
+        final TreeSet<Integer> ruleNumbers = new TreeSet<>();
+        final Set<String> ruleNumberStrings = getPropertyKeyFragment(rulePrefix);
+        for (final String s : ruleNumberStrings)
         {
-            final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in request merge rule indices.\nPlease check your configuration and fix the following properties:");
-            for (final String prop : getPropertyKeysWithPrefix(PROP_REQUEST_MERGE_RULES_PREFIX + s + "."))
+            // check for leading zero digits
+            if (s.length() > 1 && s.startsWith("0"))
             {
-                sb.append("\n\t").append(prop);
-            }
-            sb.append("\n");
+                final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in merge or labeling rule indices.\nPlease check your configuration and fix the following properties:");
+                for (final String prop : getPropertyKeysWithPrefix(rulePrefix + s + "."))
+                {
+                    sb.append("\n\t").append(prop);
+                }
+                sb.append("\n");
 
-            throw new XltException(sb.toString());
+                throw new XltException(sb.toString());
+            }
+
+            ruleNumbers.add(Integer.parseInt(s));
         }
+
+        return ruleNumbers;
     }
 
     /**
@@ -1258,31 +1280,55 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 final String propertyGroup = PROP_REQUESTS_TABLE_COLORIZE + "." + eachGroupName;
 
-                final String matchingPattern;
-                final String propertyMatching = propertyGroup + "." + PROP_SUFFIX_MATCHING;
+                String namePattern;
+                String labelPattern;
+
+                final String namePatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING_NAME;
+                final String labelPatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING_LABEL;
+                final String deprecatedNamePatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING;
+
+                boolean useDeprecatedNameProperty = false;
+
                 if (PROP_REQUESTS_TABLE_COLORIZE_DEFAULT.equals(eachGroupName))
                 {
-                    matchingPattern = ".*";
+                    // set match-all patterns for the "default" group
+                    namePattern = ".*";
+                    labelPattern = ".*";
                 }
                 else
                 {
-                    matchingPattern = getStringProperty(propertyMatching);
+                    // get name and label patterns
+                    namePattern = getStringProperty(namePatternProperty, "");
+                    labelPattern = getStringProperty(labelPatternProperty, "");
 
-                    if (StringUtils.isBlank(matchingPattern))
+                    // if name pattern is blank, check the deprecated property name as a fallback
+                    if (StringUtils.isBlank(namePattern))
                     {
-                        throw new XltException(propertyMatching + " has no value. The value must be a regular expression");
+                        useDeprecatedNameProperty = true;
+                        namePattern = getStringProperty(deprecatedNamePatternProperty, "");
+                    }
+
+                    // validate that at least one pattern was provided
+                    if (StringUtils.isBlank(namePattern) && StringUtils.isBlank(labelPattern))
+                    {
+                        throw new XltException(String.format(ERROR_COLORIZATION_PATTERN_MISSING, eachGroupName, namePatternProperty,
+                                                             labelPatternProperty, deprecatedNamePatternProperty));
+                    }
+
+                    // if we have at least one pattern, all blank patterns are updated to match everything
+                    if (StringUtils.isBlank(namePattern))
+                    {
+                        namePattern = ".*";
+                    }
+                    if (StringUtils.isBlank(labelPattern))
+                    {
+                        labelPattern = ".*";
                     }
                 }
 
-                // just to break early in case the pattern is invalid
-                try
-                {
-                    compileRegEx(matchingPattern, propertyMatching);
-                }
-                catch (XltException e)
-                {
-                    throw new XltException(e.getMessage());
-                }
+                // just to break early in case the patterns are invalid
+                compileRegEx(namePattern, useDeprecatedNameProperty ? deprecatedNamePatternProperty : namePatternProperty);
+                compileRegEx(labelPattern, labelPatternProperty);
 
                 final List<RequestTableColorization.ColorizationRule> colorizationRules = new ArrayList<>();
                 colorizationRules.add(readColorizationRule(propertyGroup, PROP_SUFFIX_MEAN, PROP_SUFFIX_MEAN, false));
@@ -1291,7 +1337,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                 colorizationRules.addAll(readPercentileColorizationRules(propertyGroup, percentileIntervals));
                 colorizationRules.addAll(readSegmentationColorizationRules(propertyGroup, segmentationIntervals));
 
-                colorizationConfigs.add(new RequestTableColorization(eachGroupName, matchingPattern, colorizationRules));
+                colorizationConfigs.add(new RequestTableColorization(eachGroupName, namePattern, labelPattern, colorizationRules));
             }
 
             return colorizationConfigs;
@@ -1607,16 +1653,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         final List<MergeRule> requestProcessingRules = new ArrayList<>();
 
-        final Set<Integer> requestMergerNumbers = new TreeSet<>();
-        final Set<String> requestMergerNumberStrings = getPropertyKeyFragment(PROP_REQUEST_MERGE_RULES_PREFIX);
-        for (final String s : requestMergerNumberStrings)
-        {
-            checkForLeadingZeros(s);
-            requestMergerNumbers.add(Integer.parseInt(s));
-        }
-
         boolean invalidRulePresent = false;
-        for (final int i : requestMergerNumbers)
+        for (final int i : getRuleNumbers(PROP_REQUEST_MERGE_RULES_PREFIX))
         {
             final String basePropertyName = PROP_REQUEST_MERGE_RULES_PREFIX + i;
 
@@ -1696,6 +1734,58 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         }
 
         return requestProcessingRules;
+    }
+
+    /**
+     * Reads the configured labeling rules and returns a new instance.
+     *
+     * @return the list of labeling rules
+     */
+    public List<LabelingRule> getLabelingRules()
+    {
+        final List<LabelingRule> labelingRules = new ArrayList<>();
+
+        boolean invalidRulePresent = false;
+        for (final int i : getRuleNumbers(PROP_LABELING_RULES_PREFIX))
+        {
+            final String basePropertyName = PROP_LABELING_RULES_PREFIX + i;
+
+            // general stuff
+            final String newLabels = getStringProperty(basePropertyName + ".newLabels", "");
+            final String typeString = getStringProperty(basePropertyName + ".types", "");
+            final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
+
+            // include patterns
+            final String namePattern = getStringProperty(basePropertyName + ".namePattern", "");
+            final String labelPattern = getStringProperty(basePropertyName + ".labelPattern", "");
+
+            // exclude patterns
+            final String nameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
+            final String labelExcludePattern = getStringProperty(basePropertyName + ".labelPattern.exclude", "");
+
+            // create and validate the rules
+            try
+            {
+                final LabelingRule rule = new LabelingRule(newLabels, typeString, namePattern, labelPattern, stopOnMatch,
+                                                           nameExcludePattern, labelExcludePattern);
+                labelingRules.add(rule);
+            }
+            catch (final InvalidLabelingRuleException e)
+            {
+                // Log it and continue with next rule.
+                final String errMsg = "Labeling rule '" + basePropertyName + "' is invalid. " + e.getMessage();
+                System.err.println(errMsg);
+                // remember that we encountered an invalid labeling rule
+                invalidRulePresent = true;
+            }
+        }
+
+        if (invalidRulePresent)
+        {
+            throw new XltException("Please check your configuration. At least one labeling rule is invalid and needs to be fixed.");
+        }
+
+        return labelingRules;
     }
 
     /**

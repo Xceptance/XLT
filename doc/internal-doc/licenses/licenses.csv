@@ -10,9 +10,11 @@ commons-math3,Apache License 2.0,https://commons.apache.org/proper/commons-math/
 commons-net,Apache License 2.0,https://commons.apache.org/proper/commons-net/,
 commons-text,Apache License 2.0,https://commons.apache.org/proper/commons-text/,
 commons-vfs2,Apache License 2.0,https://commons.apache.org/proper/commons-vfs/,
+datasketches-java,Apache License 2.0,https://datasketches.apache.org/,
 dec,MIT License,https://brotli.org/,
 dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
 dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,Not the full library has been used and modifications have been applied.
+flexmark-java,BSD 2-Clause License,https://github.com/vsch/flexmark-java,
 freemarker,Apache License 2.0,https://freemarker.apache.org/,
 google-api-services-compute,Apache License 2.0,https://developers.google.com/api-client-library/java/,
 hessian,Apache License 2.0,http://hessian.caucho.com/,which version exactly?
@@ -23,6 +25,7 @@ htmlunit-driver,Apache License 2.0,https://github.com/SeleniumHQ/htmlunit-driver
 http2-http-client-transport,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: AL 2.0 + EPL 1.0
 httpclient,Apache License 2.0,https://hc.apache.org/,
 httpmime,Apache License 2.0,https://hc.apache.org/,
+java-websocket,MIT License,https://github.com/TooTallNate/Java-WebSocket, 
 jaxb,Common Development and Distribution License 1.1,https://javaee.github.io/jaxb-v2/,dual-licensed: CDDL 1.1 + GPL 2
 jaxen,BSD 3-Clause License,https://github.com/jaxen-xpath/jaxen,???
 jetty-alpn-conscrypt-client,Apache License 2.0,https://www.eclipse.org/jetty/,dual-licensed: AL 2.0 + EPL 1.0
@@ -32,6 +35,7 @@ json,MIT-Style License,https://github.com/stleary/JSON-java,
 junit,Eclipse Public License 1.0,https://junit.org/junit4/,
 log4j,Apache License 2.0,http://logging.apache.org/log4j/2.x/,
 memoryfilesystem,MIT License,https://github.com/marschall/memoryfilesystem,
+moby-names-generator,MIT License,https://github.com/schnatterer/moby-names-generator-java,
 neko-htmlunit,Apache License 2.0,https://github.com/HtmlUnit/htmlunit-neko,
 okhttp,Apache License 2.0,https://github.com/square/okhttp,
 opentelemetry,Apache License 2.0,https://github.com/open-telemetry,

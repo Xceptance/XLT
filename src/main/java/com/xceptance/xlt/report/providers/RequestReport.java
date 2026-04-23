@@ -74,15 +74,24 @@ public class RequestReport extends TimerReport
      * The number of timer values per configured runtime interval.
      */
     public int[] countPerInterval;
-    
+
     /**
      * The percentage of timer values per configured runtime interval.
      */
-    public BigDecimal[] percentagePerInterval; 
+    public BigDecimal[] percentagePerInterval;
+
     /**
      * A list of the top URLs.
      */
     public UrlData urls;
 
-    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTypeCode()
+    {
+        return TimerReportType.REQUEST.getTypeCode();
+    }
+
 }

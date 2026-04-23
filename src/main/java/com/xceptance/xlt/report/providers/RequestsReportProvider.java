@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.providers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
         return report;
     }
 
-    private void processTableColorizations(final List<TimerReport> requests, final ReportGeneratorConfiguration reportGeneratorConfig)
+    static void processTableColorizations(final List<TimerReport> requests, final ReportGeneratorConfiguration reportGeneratorConfig)
     {
         final String defaultGroupName = reportGeneratorConfig.getRequestTableColorizationDefaultGroupName();
         final List<RequestTableColorization> colorizationConfigs = new ArrayList<>(reportGeneratorConfig.getRequestTableColorizations());
@@ -85,7 +86,8 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
                 }
                 else
                 {
-                    if (RegExUtils.isMatching(eachRequest.name, eachColorizationConfig.getPattern()))
+                    if (RegExUtils.isMatching(eachRequest.name, eachColorizationConfig.getNamePattern()) &&
+                        RegExUtils.isMatching(Optional.ofNullable(eachRequest.labels).orElse(""), eachColorizationConfig.getLabelPattern()))
                     {
                         if (resolvedColorizationConfig != null)
                         {
@@ -104,14 +106,13 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
             {
                 if (resolvedColorizationConfig == null && defaultColorizationConfig != null)
                 {
-                    if (RegExUtils.isMatching(eachRequest.name, defaultColorizationConfig.getPattern()))
-                    {
-                        resolvedColorizationConfig = defaultColorizationConfig;
-                    }
+                    // no group matches the request, but a "default" group is defined
+                    eachRequest.colorizationGroupName = defaultColorizationConfig.getGroupName();
                 }
 
                 if (resolvedColorizationConfig != null)
                 {
+                    // exactly one group matches the request
                     eachRequest.colorizationGroupName = resolvedColorizationConfig.getGroupName();
                 }
             }

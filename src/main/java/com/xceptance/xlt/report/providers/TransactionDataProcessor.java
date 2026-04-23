@@ -34,6 +34,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.JFreeChartUtils.ColorSet;
@@ -68,6 +69,8 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
      */
     private int numberOfEvents = 0;
 
+    private final LabelingRuleProcessor labelingRuleProcessor;
+
     /**
      * Constructor.
      *
@@ -86,6 +89,9 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
         // set capping parameters
         final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
         setChartCappingInfo(config.getTransactionChartCappingInfo());
+
+        // labeling rules
+        labelingRuleProcessor = new LabelingRuleProcessor(config.getLabelingRules());
     }
 
     /**
@@ -134,6 +140,9 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
         // create the standard timer report
         final TransactionReport transactionReport = (TransactionReport) super.createTimerReport(generateHistogram);
         transactionReport.events = numberOfEvents;
+
+        // apply labeling rules
+        labelingRuleProcessor.process(transactionReport);
 
         return transactionReport;
     }

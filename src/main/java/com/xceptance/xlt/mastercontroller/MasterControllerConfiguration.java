@@ -82,6 +82,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_HTTPS_PROXY_PORT = PROP_HTTPS_PROXY + ".port";
 
+    private static final String PROP_HTTPS_PROXY_USE_HOSTS = PROP_HTTPS_PROXY + ".useForHosts";
+
     private static final String PROP_HTTPS_PROXY_BYPASS_HOSTS = PROP_HTTPS_PROXY + ".bypassForHosts";
 
     private static final String PROP_TEMP_DIR = PROP_PREFIX + "tempdir";
@@ -129,6 +131,8 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private final String httpsProxyHost;
 
     private final String httpsProxyPort;
+
+    private final String httpsProxyUseHosts;
 
     private final String httpsProxyBypassHosts;
 
@@ -260,6 +264,7 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         isHttpsProxyEnabled = getBooleanProperty(PROP_HTTPS_PROXY_ENABLED, false);
         httpsProxyHost = getStringProperty(PROP_HTTPS_PROXY_HOST, "");
         httpsProxyPort = getStringProperty(PROP_HTTPS_PROXY_PORT, "");
+        httpsProxyUseHosts = getStringProperty(PROP_HTTPS_PROXY_USE_HOSTS, "");
         httpsProxyBypassHosts = getStringProperty(PROP_HTTPS_PROXY_BYPASS_HOSTS, "");
 
         // other settings
@@ -478,6 +483,16 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     public String getHttpsProxyPort()
     {
         return httpsProxyPort;
+    }
+
+    /**
+     * Returns the hosts that use the proxy connection.
+     *
+     * @return hosts that use the proxy connection
+     */
+    public String getHttpsProxyUseHosts()
+    {
+        return httpsProxyUseHosts;
     }
 
     /**
