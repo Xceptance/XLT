@@ -84,7 +84,7 @@ public class Scorecard
         private Integer totalPoints;
 
         @XStreamAsAttribute
-        private boolean testFailed;
+        private Boolean testFailed;
 
         private List<Group> groups;
 
@@ -159,12 +159,12 @@ public class Scorecard
 
         public boolean isTestFailed()
         {
-            return testFailed;
+            return testFailed != null ? testFailed : false;
         }
 
         void setTestFailed(final boolean testFailed)
         {
-            this.testFailed = testFailed;
+            this.testFailed = testFailed ? Boolean.TRUE : null;
         }
 
         public Integer getTotalPoints()
@@ -349,7 +349,7 @@ public class Scorecard
         private Status status = Status.SKIPPED;
 
         @XStreamAsAttribute
-        private boolean testFailed;
+        private Boolean testFailed;
 
         Group(final GroupDefinition definition)
         {
@@ -419,7 +419,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = true;
+            this.testFailed = Boolean.TRUE;
         }
 
         public boolean isEnabled()
@@ -460,7 +460,7 @@ public class Scorecard
         private final String id;
 
         @XStreamAsAttribute
-        private boolean testFailed;
+        private Boolean testFailed;
 
         Rule(final RuleDefinition definition, final boolean groupEnabled)
         {
@@ -537,7 +537,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = true;
+            this.testFailed = Boolean.TRUE;
         }
 
         @XStreamAlias("check")
@@ -556,6 +556,8 @@ public class Scorecard
             private String errorMessage;
 
             private String value;
+            
+            private String rawValue;
 
             Check(final RuleDefinition.Check definition, final boolean ruleEnabled)
             {
@@ -603,6 +605,16 @@ public class Scorecard
             void setValue(final String value)
             {
                 this.value = value;
+            }
+
+            public String getRawValue()
+            {
+                return rawValue;
+            }
+
+            void setRawValue(final String rawValue)
+            {
+                this.rawValue = rawValue;
             }
 
             public boolean isEnabled()

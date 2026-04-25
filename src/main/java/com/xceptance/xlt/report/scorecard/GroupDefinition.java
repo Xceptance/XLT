@@ -52,10 +52,10 @@ public class GroupDefinition
     private final List<String> ruleIds;
 
     @XStreamAsAttribute
-    private boolean enabled;
+    private Boolean enabled;
 
     @XStreamAsAttribute
-    private boolean failsTest;
+    private Boolean failsTest;
 
     @XStreamAsAttribute
     private TestFailTrigger failsOn;
@@ -77,12 +77,12 @@ public class GroupDefinition
 
     public boolean isEnabled()
     {
-        return enabled;
+        return enabled == null ? true : enabled;
     }
 
     public void setEnabled(boolean enabled)
     {
-        this.enabled = enabled;
+        this.enabled = enabled ? null : Boolean.FALSE;
     }
 
     public Mode getMode()
@@ -137,12 +137,12 @@ public class GroupDefinition
 
     public boolean isFailsTest()
     {
-        return failsTest;
+        return failsTest != null ? failsTest : false;
     }
 
     public void setFailsTest(boolean failsTest)
     {
-        this.failsTest = failsTest;
+        this.failsTest = failsTest ? Boolean.TRUE : null;
     }
 
     public TestFailTrigger getFailsOn()

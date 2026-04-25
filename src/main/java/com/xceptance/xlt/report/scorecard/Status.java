@@ -16,27 +16,15 @@
 package com.xceptance.xlt.report.scorecard;
 
 import com.thoughtworks.xstream.annotations.XStreamConverter;
-import com.thoughtworks.xstream.converters.enums.EnumToStringConverter;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
 
-@XStreamConverter(EnumToStringConverter.class)
+@XStreamConverter(Status.StatusConverter.class)
 public enum Status
 {
     SKIPPED,
     PASSED,
-    FAILED("NOTPASSED"),
+    FAILED,
     ERROR;
-
-    private final String displayValue;
-
-    private Status(final String value)
-    {
-        this.displayValue = value;
-    }
-
-    private Status()
-    {
-        this(null);
-    }
 
     public boolean isPassed()
     {
@@ -58,12 +46,6 @@ public enum Status
         return Status.SKIPPED == this;
     }
 
-    @Override
-    public String toString()
-    {
-        return displayValue == null ? name() : displayValue;
-    }
-
     /**
      * Returns the negated status of this status (PASSED &rarr; FAILED; FAILED &rarr; PASSED; SKIPPED and ERROR stay as is).
      * 
@@ -82,4 +64,28 @@ public enum Status
         return this;
     }
 
+    public static class StatusConverter implements SingleValueConverter
+    {
+        @Override
+        public boolean canConvert(@SuppressWarnings("rawtypes") Class type)
+        {
+            return type == Status.class;
+        }
+
+        @Override
+        public String toString(Object obj)
+        {
+            return ((Status) obj).name();
+        }
+
+        @Override
+        public Object fromString(String str)
+        {
+            if ("NOTPASSED".equalsIgnoreCase(str))
+            {
+                return Status.FAILED;
+            }
+            return Status.valueOf(str.toUpperCase());
+        }
+    }
 }

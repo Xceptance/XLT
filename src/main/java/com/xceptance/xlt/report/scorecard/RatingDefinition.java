@@ -38,13 +38,13 @@ public class RatingDefinition
     private final double value;
 
     @XStreamAsAttribute
-    private final boolean enabled;
+    private final Boolean enabled;
 
     @XStreamAsAttribute
-    private final boolean failsTest;
+    private final Boolean failsTest;
 
     @XStreamAsAttribute
-    private final boolean active;
+    private final Boolean active;
 
     public RatingDefinition(final String id, final String name, final String description, final double value, final boolean enabled,
                             final boolean failsTest, final boolean active)
@@ -53,9 +53,9 @@ public class RatingDefinition
         this.name = name;
         this.value = value;
         this.description = description;
-        this.enabled = enabled;
-        this.failsTest = failsTest;
-        this.active = active;
+        this.enabled = enabled ? null : Boolean.FALSE;
+        this.failsTest = failsTest ? Boolean.TRUE : null;
+        this.active = active ? Boolean.TRUE : null;
     }
 
     public String getId()
@@ -80,12 +80,12 @@ public class RatingDefinition
 
     public boolean isEnabled()
     {
-        return enabled;
+        return enabled == null ? true : enabled;
     }
 
     public boolean isFailsTest()
     {
-        return failsTest;
+        return failsTest != null ? failsTest : false;
     }
 
     /**
@@ -95,7 +95,7 @@ public class RatingDefinition
      */
     public boolean isActive()
     {
-        return active;
+        return active != null ? active : false;
     }
 
     static RatingDefinition fromJSON(final JSONObject jsonObject) throws ValidationException

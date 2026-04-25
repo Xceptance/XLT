@@ -305,6 +305,7 @@ public class GroovyEvaluator extends AbstractEvaluator
             if (check.getDefinition().isDisplayValue())
             {
                 check.setValue(formatValue(check.getDefinition().getManualValue(), check.getDefinition().getFormatter()));
+                check.setRawValue(check.getDefinition().getManualValue());
             }
             return;
         }
@@ -365,6 +366,7 @@ public class GroovyEvaluator extends AbstractEvaluator
         if (check.getDefinition().isDisplayValue())
         {
             check.setValue(formatValue(value, check.getDefinition().getFormatter()));
+            check.setRawValue(value);
         }
     }
 

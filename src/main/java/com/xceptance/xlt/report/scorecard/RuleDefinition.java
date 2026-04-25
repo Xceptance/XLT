@@ -42,18 +42,18 @@ public class RuleDefinition
     private final String name;
 
     @XStreamAsAttribute
-    private boolean enabled = true;
+    private Boolean enabled;
 
     private String description;
 
     @XStreamAsAttribute
-    private boolean failsTest;
+    private Boolean failsTest;
 
     @XStreamAsAttribute
     private TestFailTrigger failsOn;
 
     @XStreamAsAttribute
-    private boolean negateResult;
+    private Boolean negateResult;
 
     private final Check[] checks;
 
@@ -73,12 +73,12 @@ public class RuleDefinition
 
     public boolean isEnabled()
     {
-        return enabled;
+        return enabled == null ? true : enabled;
     }
 
     public void setEnabled(final boolean enabled)
     {
-        this.enabled = enabled;
+        this.enabled = enabled ? null : Boolean.FALSE;
     }
 
     public String getDescription()
@@ -93,12 +93,12 @@ public class RuleDefinition
 
     public boolean isFailsTest()
     {
-        return failsTest;
+        return failsTest != null ? failsTest : false;
     }
 
     public void setFailsTest(final boolean failsTest)
     {
-        this.failsTest = failsTest;
+        this.failsTest = failsTest ? Boolean.TRUE : null;
     }
 
     public TestFailTrigger getFailsOn()
@@ -113,12 +113,12 @@ public class RuleDefinition
 
     public boolean isNegateResult()
     {
-        return negateResult;
+        return negateResult != null ? negateResult : false;
     }
 
     public void setNegateResult(boolean negateResult)
     {
-        this.negateResult = negateResult;
+        this.negateResult = negateResult ? Boolean.TRUE : null;
     }
 
     public int getPoints()
@@ -181,10 +181,10 @@ public class RuleDefinition
         private final String condition;
 
         @XStreamAsAttribute
-        private final boolean enabled;
+        private final Boolean enabled;
 
         @XStreamAsAttribute
-        private final boolean displayValue;
+        private final Boolean displayValue;
 
         @XStreamAsAttribute
         private final String formatter;
@@ -216,8 +216,8 @@ public class RuleDefinition
             this.selectorId = selectorId;
             this.selector = selector;
             this.condition = manualStatus == null ? Objects.requireNonNull(condition, "Rule check condition must not be null") : condition;
-            this.enabled = enabled;
-            this.displayValue = displayValue;
+            this.enabled = enabled ? null : Boolean.FALSE;
+            this.displayValue = displayValue ? null : Boolean.FALSE;
             this.formatter = formatter;
             this.manualStatus = manualStatus;
             this.manualValue = manualValue;
@@ -231,12 +231,12 @@ public class RuleDefinition
 
         public boolean isEnabled()
         {
-            return enabled;
+            return enabled == null ? true : enabled;
         }
 
         public boolean isDisplayValue()
         {
-            return displayValue;
+            return displayValue == null ? true : displayValue;
         }
 
         public String getSelector()
