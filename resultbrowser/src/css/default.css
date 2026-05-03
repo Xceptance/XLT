@@ -424,6 +424,11 @@ table.key-value-table td.value .csep {
     color: #7D28C0;
 }
 
+.contentTypeCached {
+    color: #888888;
+    font-style: italic;
+}
+
 .httpError {
     color: red;
 }
