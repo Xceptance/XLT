@@ -181,6 +181,11 @@ public class RequestData extends TimerData
     private XltCharBuffer usedIpAddress;
 
     /**
+     * Indicates if this request was served from the browser cache.
+     */
+    private boolean cached;
+
+    /**
      * Creates a new RequestData object.
      */
     public RequestData()
@@ -779,12 +784,32 @@ public class RequestData extends TimerData
     /**
      * Sets the target IP address of the system under test that was used when making the request.
      *
-     * @param ipAddress
+     * @param usedIpAddress
      *            the used IP address
      */
-    public void setUsedIpAddress(final XltCharBuffer ipAddress)
+    public void setUsedIpAddress(final XltCharBuffer usedIpAddress)
     {
-        this.usedIpAddress = ipAddress;
+        this.usedIpAddress = usedIpAddress;
+    }
+
+    /**
+     * Returns whether the request was served from cache.
+     * 
+     * @return true if from cache, false otherwise
+     */
+    public boolean isCached()
+    {
+        return this.cached;
+    }
+
+    /**
+     * Sets whether the request was served from cache.
+     * 
+     * @param cached true if from cache, false otherwise
+     */
+    public void setCached(final boolean cached)
+    {
+        this.cached = cached;
     }
 
     /**
@@ -830,6 +855,8 @@ public class RequestData extends TimerData
 
         fields.add(XltCharBuffer.emptyWhenNull(usedIpAddress).toString());
 
+        fields.add(Boolean.toString(cached));
+
         return fields;
     }
 
@@ -873,6 +900,12 @@ public class RequestData extends TimerData
 
             // XLT 7.0.0
             setUsedIpAddress(values.get(23));
+
+            // XLT 10.0.0
+            if (values.size() > 24)
+            {
+                setCached(com.xceptance.common.lang.ParseBoolean.parse(values.get(24)));
+            }
         }
         else
         {

@@ -27,6 +27,8 @@ import org.junit.Test;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.CachedExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.CachedPattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypeExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContinueOnMatchAtId;
@@ -449,11 +451,13 @@ public class MergeRuleProcessorTest extends MergeRuleTestBase
                                              new AgentNameExcludePattern(""), 
                                              new TransactionNameExcludePattern(""), 
                                              new HttpMethodExcludePattern(""), 
+                                             new CachedPattern(""),
+                                             new CachedExcludePattern(""),
                                              new ContinueOnMatchAtId(100), 
                                              new ContinueOnNoMatchAtId(100),         
                                              new DropOnMatch(false),
                                              new UrlText(""),
-                                             new UrlTextExclude("")) 
+                                             new UrlTextExclude(""))
         {
             @Override
             public int process(RequestData data) 
