@@ -163,15 +163,25 @@ public final class XltExecutionContext
      */
     private String getXltPropertyValue(String systemPropertyName, String environmentPropertyName, String defaultValue)
     {
-        String propertyValue = System.getProperty(XltConstants.XLT_PACKAGE_PATH + "." + systemPropertyName);
+        String propertyValue = getSystemProperty(XltConstants.XLT_PACKAGE_PATH + "." + systemPropertyName);
         if (StringUtils.isBlank(propertyValue))
         {
-            propertyValue = System.getenv(environmentPropertyName);
+            propertyValue = getEnvironmentVariable(environmentPropertyName);
             if (StringUtils.isBlank(propertyValue))
             {
                 propertyValue = defaultValue;
             }
         }
         return propertyValue;
+    }
+
+    String getSystemProperty(String propertyName)
+    {
+        return System.getProperty(propertyName);
+    }
+
+    String getEnvironmentVariable(String variableName)
+    {
+        return System.getenv(variableName);
     }
 }

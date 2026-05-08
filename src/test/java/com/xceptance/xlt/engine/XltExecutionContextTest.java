@@ -19,7 +19,7 @@
 package com.xceptance.xlt.engine;
 
 import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.*;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -27,49 +27,10 @@ import java.nio.file.Path;
 
 import org.apache.commons.vfs2.FileObject;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mockito;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {
-        XltExecutionContext.class, System.class
-    })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class XltExecutionContextTest
 {
-    private static class TestObjectCreationException extends Exception
-    {
-        private static final long serialVersionUID = 1L;
-
-        public TestObjectCreationException(Throwable cause)
-        {
-            super("Failed to create the test object", cause);
-        }
-    }
-
-    /**
-     * Get a new instance of {@link XltExecutionContext} by calling the private default constructor. For testing we need
-     * a fresh test object for each test but {@link XltExecutionContext#getCurrent()} returns a singleton instance which
-     * we can not use. This method will call the default constructor.
-     * 
-     * @return a new instance of {@link XltExecutionContext}
-     * @throws TestObjectCreationException
-     */
-    private static XltExecutionContext createNewTestObject() throws TestObjectCreationException
-    {
-        try
-        {
-            return constructor(XltExecutionContext.class).newInstance();
-        }
-        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-        {
-            throw new TestObjectCreationException(e);
-        }
-    }
-
     private static void assertSamePath(File file1, File file2)
     {
         Path normalizedPath1 = toNormalizedPath(file1);
@@ -90,10 +51,10 @@ public class XltExecutionContextTest
      * @throws TestObjectCreationException
      */
     @Test
-    public final void testGetTestSuiteHomeDir_default() throws TestObjectCreationException
+    public final void testGetTestSuiteHomeDir_default()
     {
         // GIVEN: a fresh default XltExecutionContext
-        XltExecutionContext newContext = createNewTestObject();
+        XltExecutionContext newContext = XltExecutionContext.getCurrent();
 
         // WHEN: getting the test suite home directory
         File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
@@ -108,7 +69,7 @@ public class XltExecutionContextTest
      * @throws TestObjectCreationException
      */
     @Test
-    public final void testGetTestSuiteHomeDir_propertyDefined() throws TestObjectCreationException
+    public final void testGetTestSuiteHomeDir_propertyDefined()
     {
         // TEST_PARAMETER:
         final String systemPropertyValue = "/foo";
@@ -117,8 +78,14 @@ public class XltExecutionContextTest
         mockStatic(System.class);
         when(System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
 
+        
+        
         // GIVEN: a fresh default XltExecutionContext
         XltExecutionContext newContext = createNewTestObject();
+        
+        newContext = Mockito.spy(XltExecutionContext.getCurrent());
+        Mockito.when(() -> newContext.getSys()).then
+        
 
         // WHEN: getting the test suite home directory
         File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
@@ -133,7 +100,7 @@ public class XltExecutionContextTest
      * @throws TestObjectCreationException
      */
     @Test
-    public final void testGetTestSuiteHomeDir_environmentDefined() throws TestObjectCreationException
+    public final void testGetTestSuiteHomeDir_environmentDefined()
     {
         // TEST_PARAMETER:
         final String environmentVariableValue = "/bar";
@@ -158,7 +125,7 @@ public class XltExecutionContextTest
      * @throws TestObjectCreationException
      */
     @Test
-    public final void testGetTestSuiteHomeDir_propertyAndEnvironmentDefined() throws TestObjectCreationException
+    public final void testGetTestSuiteHomeDir_propertyAndEnvironmentDefined()
     {
         // TEST_PARAMETER:
         final String systemPropertyValue = "/foo";
@@ -185,7 +152,7 @@ public class XltExecutionContextTest
      * @throws TestObjectCreationException
      */
     @Test
-    public final void testGetTestSuiteConfigDir_default() throws TestObjectCreationException
+    public final void testGetTestSuiteConfigDir_default()
     {
         // GIVEN: a fresh default XltExecutionContext
         XltExecutionContext newContext = createNewTestObject();

@@ -45,13 +45,18 @@ public final class ThreadUtils
         {
             try
             {
-                Thread.sleep(millis);
+                doSleep(millis);
             }
             catch (final InterruptedException ex)
             {
                 // ignore
             }
         }
+    }
+
+    static void doSleep(long millis) throws InterruptedException
+    {
+        Thread.sleep(millis);
     }
 
     /**
