@@ -26,7 +26,7 @@ import com.xceptance.xlt.AbstractXLTTestCase;
 
 /**
  * Test the implementation of {@link PropertiesUtils}.
- * 
+ *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
 public class PropertiesUtilsTest extends AbstractXLTTestCase
@@ -139,8 +139,8 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
     }
 
     /**
-     * Tests the implementation of {@link PropertiesUtils#loadProperties(File)} by passing a valid file and valid properties
-     * as parameters.
+     * Tests the implementation of {@link PropertiesUtils#loadProperties(File)} by passing a valid file and valid
+     * properties as parameters.
      */
     @Test
     public void testLoadProperties_ValidFileValidProperties() throws Exception
@@ -193,15 +193,15 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
         final java.util.Map<String, Object> ctx = new java.util.concurrent.ConcurrentHashMap<>();
 
         // Store value in context
-        String result1 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] = 42; 'stored' }", props, ctx);
+        final String result1 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] = 42; 'stored' }", props, ctx);
         Assert.assertEquals("stored", result1);
 
         // Retrieve value from context
-        String result2 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] }", props, ctx);
+        final String result2 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] }", props, ctx);
         Assert.assertEquals("42", result2);
 
         // Calculate based on stored context
-        String result3 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] * 2 }", props, ctx);
+        final String result3 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] * 2 }", props, ctx);
         Assert.assertEquals("84", result3);
     }
 
@@ -215,7 +215,7 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
 
         final java.util.Map<String, Object> ctx = new java.util.concurrent.ConcurrentHashMap<>();
 
-        String script = """
+        final String script = """
             #{
                 def total = props['totalUsers'] as int
                 ctx['base'] = total
@@ -223,13 +223,13 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
                 'configured'
             }""";
 
-        String result = PropertiesUtils.substituteVariables(script, props, ctx);
+        final String result = PropertiesUtils.substituteVariables(script, props, ctx);
         Assert.assertEquals("configured", result);
         Assert.assertEquals(100, ctx.get("base"));
         Assert.assertEquals(40, ctx.get("browse"));
 
         // Now use the stored values
-        String users = PropertiesUtils.substituteVariables("#{ ctx['base'] - ctx['browse'] }", props, ctx);
+        final String users = PropertiesUtils.substituteVariables("#{ ctx['base'] - ctx['browse'] }", props, ctx);
         Assert.assertEquals("60", users);
     }
 
@@ -253,7 +253,7 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
     {
         props.setProperty("count", "5");
 
-        String result = PropertiesUtils.substituteVariables("Users: #{ props['count'] as int * 10 }", props);
+        final String result = PropertiesUtils.substituteVariables("Users: #{ props['count'] as int * 10 }", props);
         Assert.assertEquals("Users: 50", result);
     }
 

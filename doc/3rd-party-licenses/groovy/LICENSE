@@ -200,3 +200,63 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+------------------------------------------------------------------------
+
+Asciidoc License
+
+This product uses the style.css from asciidoctor.org within
+documentation. The file is available under the MIT License.
+For details, see licenses/asciidoc-style-license.txt.
+
+------------------------------------------------------------------------
+
+JLine3 License
+
+The following source files within this product:
+
+    org/apache/groovy/groovysh/jline/GroovyEngine.java
+    org/apache/groovy/groovysh/jline/ObjectInspector.groovy
+    org/apache/groovy/groovysh/jline/Utils.groovy
+    org/apache/groovy/groovysh/jline/JrtJavaBasePackages.java
+    org/apache/groovy/groovysh/jline/PackageHelper.java
+
+were derived from similarly named files in the JLine3 source repository which
+have a BSD-style license. Details can be found in: licenses/jline3-license.txt
+
+This product bundles several JLine3 jars (optional dependency used with groovysh),
+which are available under a BSD License.  For details, see licenses/jline3-license.txt.
+
+------------------------------------------------------------------------
+
+JQuery License
+
+The following file is used within documentation:
+
+    src/spec/assets/css/jquery-2.1.1.min.js
+
+This file is made available under the following MIT license:
+licenses/jquery-js-license.txt
+
+------------------------------------------------------------------------
+
+JSR223 License
+
+The following classes within this product:
+
+    org.codehaus.groovy.jsr223.GroovyCompiledScript
+    org.codehaus.groovy.jsr223.GroovyScriptEngineFactory
+    org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
+
+were derived from reference implementation files developed by Sun in
+collaboration with the Groovy community. The reference implementation
+has a BSD-style license. Details can be found in: licenses/jsr223-license.txt
+
+------------------------------------------------------------------------
+
+normalize.css License
+
+The stylesheet.css file (originally normalize.css) is used by the
+groovydoc and docgenerator components for groovy-jdk/gapi documentation.
+It is made available under a MIT License:
+licenses/normalize-stylesheet-license.txt

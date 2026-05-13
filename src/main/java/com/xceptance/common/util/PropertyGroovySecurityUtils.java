@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.xceptance.common.util;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -50,7 +49,7 @@ import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
  * </p>
  *
  * @author Xceptance Software Technologies GmbH
- * @since 8.0.0
+ * @since 10.0.0
  */
 public class PropertyGroovySecurityUtils
 {
@@ -59,19 +58,35 @@ public class PropertyGroovySecurityUtils
      * <p>
      * This list is checked by the custom {@link SecureASTCustomizer.ExpressionChecker} against every
      * {@link ConstructorCallExpression} found in the AST. Note that {@code setDisallowedReceiversClasses} only covers
-     * <em>method calls</em> on an existing receiver; it does not intercept {@code new Foo(...)} constructor expressions,
-     * so both mechanisms are needed.
+     * <em>method calls</em> on an existing receiver; it does not intercept {@code new Foo(...)} constructor
+     * expressions, so both mechanisms are needed.
      * </p>
      */
-    private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = Arrays.asList(
-        "java.io.",
-        "java.nio.",
-        "java.net.",
-        "java.lang.Runtime",
-        "java.lang.ProcessBuilder",
-        "java.lang.Thread",
-        "java.lang.ClassLoader"
-    );
+    private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = List.of("java.io.", "java.nio.", "java.net.", "java.lang.Runtime",
+                                                                             "java.lang.ProcessBuilder", "java.lang.Thread",
+                                                                             "java.lang.ClassLoader");
+
+    /**
+     * The list of packages star-imports are allowed for.
+     */
+    private static final List<String> ALLOWED_STAR_IMPORT_PACKAGES = List.of("java.util", "java.math", "java.text");
+
+    /**
+     * The list of dangerous classes for which method calls are blocked if the class is the explicit receiver (e.g.
+     * Runtime.getRuntime().exec(...), System.exit(...)).
+     */
+    @SuppressWarnings("rawtypes")
+    private static final List<Class> DISALLOWED_RECEIVERS_CLASSES = List.of(
+                                                                            // System and runtime
+                                                                            System.class, Runtime.class, ProcessBuilder.class, Thread.class,
+                                                                            ClassLoader.class,
+                                                                            // File I/O
+                                                                            java.io.File.class, java.io.FileReader.class,
+                                                                            java.io.FileWriter.class, java.io.FileInputStream.class,
+                                                                            java.io.FileOutputStream.class, java.io.RandomAccessFile.class,
+                                                                            // Network
+                                                                            java.net.URL.class, java.net.URI.class, java.net.Socket.class,
+                                                                            java.net.ServerSocket.class, java.net.HttpURLConnection.class);
 
     /**
      * Private constructor to prevent instantiation.
@@ -89,14 +104,14 @@ public class PropertyGroovySecurityUtils
      * Two complementary mechanisms are used:
      * <ol>
      * <li><b>Constructor check</b> — a custom {@link SecureASTCustomizer.ExpressionChecker} rejects
-     *     {@code new dangerous.Type(...)} expressions for packages listed in {@link #BLOCKED_CONSTRUCTOR_PREFIXES}.</li>
-     * <li><b>Receiver check</b> — {@code setDisallowedReceiversClasses} rejects method calls where a dangerous class
-     *     is the explicit receiver (e.g. {@code Runtime.getRuntime().exec(...)}).</li>
+     * {@code new dangerous.Type(...)} expressions for packages listed in {@link #BLOCKED_CONSTRUCTOR_PREFIXES}.</li>
+     * <li><b>Receiver check</b> — {@code setDisallowedReceiversClasses} rejects method calls where a dangerous class is
+     * the explicit receiver (e.g. {@code Runtime.getRuntime().exec(...)}).</li>
      * </ol>
      * {@code setIndirectImportCheckEnabled} is intentionally left at its default ({@code false}). When enabled it
-     * inspects every method-call receiver's static type and rejects anything not on the imports whitelist —
-     * including {@code java.lang.Object}, which is the compile-time type of all Groovy binding variables
-     * ({@code props}, {@code ctx}, etc.), causing false positives for legitimate property access.
+     * inspects every method-call receiver's static type and rejects anything not on the imports whitelist — including
+     * {@code java.lang.Object}, which is the compile-time type of all Groovy binding variables ({@code props},
+     * {@code ctx}, etc.), causing false positives for legitimate property access.
      * </p>
      *
      * @return configured SecureASTCustomizer
@@ -109,16 +124,14 @@ public class PropertyGroovySecurityUtils
         secure.setClosuresAllowed(true);
 
         // Allow star-imports from safe packages only
-        final List<String> allowedStarImports = Arrays.asList("java.util", "java.math", "java.text");
-        secure.setAllowedStarImports(allowedStarImports);
+        secure.setAllowedStarImports(ALLOWED_STAR_IMPORT_PACKAGES);
 
         // Block constructor calls to dangerous types (e.g. new java.io.File(...), new java.net.URL(...)).
         // setDisallowedReceiversClasses does NOT cover ConstructorCallExpression, so we need a separate check.
-        secure.addExpressionCheckers(expr ->
-        {
+        secure.addExpressionCheckers(expr -> {
             if (expr instanceof ConstructorCallExpression)
             {
-                final String typeName = ((ConstructorCallExpression) expr).getType().getName();
+                final String typeName = expr.getType().getName();
                 for (final String prefix : BLOCKED_CONSTRUCTOR_PREFIXES)
                 {
                     if (typeName.startsWith(prefix))
@@ -132,17 +145,7 @@ public class PropertyGroovySecurityUtils
 
         // Block method calls where a dangerous class is the explicit receiver
         // (e.g. Runtime.getRuntime().exec(...), System.exit(...))
-        secure.setDisallowedReceiversClasses(Arrays.asList(
-                                                           // System and runtime
-                                                           System.class, Runtime.class, ProcessBuilder.class, Thread.class,
-                                                           ClassLoader.class,
-                                                           // File I/O
-                                                           java.io.File.class, java.io.FileReader.class, java.io.FileWriter.class,
-                                                           java.io.FileInputStream.class, java.io.FileOutputStream.class,
-                                                           java.io.RandomAccessFile.class,
-                                                           // Network
-                                                           java.net.URL.class, java.net.URI.class, java.net.Socket.class,
-                                                           java.net.ServerSocket.class, java.net.HttpURLConnection.class));
+        secure.setDisallowedReceiversClasses(DISALLOWED_RECEIVERS_CLASSES);
 
         return secure;
     }

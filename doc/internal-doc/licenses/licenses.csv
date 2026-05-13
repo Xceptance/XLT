@@ -15,6 +15,7 @@ dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
 dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,Not the full library has been used and modifications have been applied.
 freemarker,Apache License 2.0,https://freemarker.apache.org/,
 google-api-services-compute,Apache License 2.0,https://developers.google.com/api-client-library/java/,
+groovy,Apache License 2.0,https://github.com/apache/groovy,
 hessian,Apache License 2.0,http://hessian.caucho.com/,which version exactly?
 htmlunit,Apache License 2.0,http://htmlunit.sourceforge.net/,
 htmlunit-core-js,Mozilla Public License 2.0,https://github.com/HtmlUnit/htmlunit-core-js,

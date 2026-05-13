@@ -59,10 +59,10 @@ public final class PropertiesUtils
      * Loads the properties from the given file and returns them as a Properties object.
      *
      * @param file
-     *                 the properties file
+     *            the properties file
      * @return the resulting Properties object
      * @throws IOException
-     *                         if an I/O error occurs
+     *             if an I/O error occurs
      */
     public static Properties loadProperties(final File file) throws IOException
     {
@@ -75,11 +75,11 @@ public final class PropertiesUtils
      * Loads the properties from the given file and puts them into the specified Properties object.
      *
      * @param file
-     *                  the properties file
+     *            the properties file
      * @param props
-     *                  the properties object to load the properties into
+     *            the properties object to load the properties into
      * @throws IOException
-     *                         if an I/O error occurs
+     *             if an I/O error occurs
      */
     public static void loadProperties(final File file, final Properties props) throws IOException
     {
@@ -93,10 +93,10 @@ public final class PropertiesUtils
      * Loads the properties from the given file and returns them as a Properties object.
      *
      * @param file
-     *                 the properties file
+     *            the properties file
      * @return the resulting Properties object
      * @throws IOException
-     *                         if an I/O error occurs
+     *             if an I/O error occurs
      */
     public static Properties loadProperties(final FileObject file) throws IOException
     {
@@ -111,11 +111,11 @@ public final class PropertiesUtils
      * Loads the properties from the given file and puts them into the specified Properties object.
      *
      * @param file
-     *                  the properties file
+     *            the properties file
      * @param props
-     *                  the properties object to load the properties into
+     *            the properties object to load the properties into
      * @throws IOException
-     *                         if an I/O error occurs
+     *             if an I/O error occurs
      */
     public static void loadProperties(final FileObject file, final Properties props) throws IOException
     {
@@ -123,7 +123,7 @@ public final class PropertiesUtils
         {
             ParameterCheckUtils.isReadableFile(file, "file");
         }
-        catch (IllegalArgumentException e)
+        catch (final IllegalArgumentException e)
         {
             throw new FileNotFoundException(file.toString());
         }
@@ -136,44 +136,25 @@ public final class PropertiesUtils
     }
 
     /**
-     * Perform variable substitution in string <code>value</code> from the values of keys found in the system properties.
+     * Performs variable substitution in string <code>value</code> from the values of keys found in the system
+     * properties, with support for Groovy expressions.
      * <p>
-     * The variable substitution delimiters are <b>${</b> and <b>}</b>.
-     * <p>
-     * For example, if the System properties contains "key=value", then the call
-     *
-     * <pre>
-     * String s = OptionConverter.substituteVars(&quot;Value of key is ${key}.&quot;);
-     * </pre>
-     *
-     * will set the variable <code>s</code> to "Value of key is value.".
-     * <p>
-     * If no value could be found for the specified key, then the <code>props</code> parameter is searched, if the value
-     * could not be found there, then substitution defaults to the empty string.
-     * <p>
-     * For example, if system properties contains no value for the key "inexistentKey", then the call
-     *
-     * <pre>
-     * String s = OptionConverter.subsVars(&quot;Value of nonexistentKey is [${nonexistentKey}]&quot;);
-     * </pre>
-     *
-     * will set <code>s</code> to "Value of nonexistentKey is []"
-     * <p>
-     * Additionally, Groovy expressions in the format <b>#{...}</b> are evaluated after variable substitution. Multi-line
-     * scripts are supported.
-     * </p>
-     * <p>
-     * An {@link java.lang.IllegalArgumentException} is thrown if <code>value</code> contains a start delimiter "${" which
-     * is not balanced by a stop delimiter "}".
+     * Variable substitution uses <b>${...}</b> syntax. Groovy expressions use <b>#{...}</b> syntax and are evaluated
+     * after variable substitution. Groovy scripts can access:
+     * <ul>
+     * <li><code>props</code> - read-only access to property values</li>
+     * <li><code>ctx</code> - a local Map for storing data during script evaluation</li>
+     * </ul>
      * </p>
      *
      * @param value
-     *                       the string on which variable substitution is performed
+     *            the string on which variable substitution is performed
      * @param properties
-     *                       properties object to be used for variable lookup
-     * @return argument string where variable have been substituted
+     *            properties object to be used for variable lookup
+     * @return argument string where variables and Groovy expressions have been substituted
      * @throws IllegalArgumentException
-     *                                      if <code>value</code> is malformed
+     *             if <code>value</code> is malformed or Groovy evaluation fails
+     * @since 10.0.0
      */
     public static String substituteVariables(final String value, final Properties properties) throws IllegalArgumentException
     {
@@ -181,11 +162,11 @@ public final class PropertiesUtils
     }
 
     /**
-     * Perform variable substitution in string <code>value</code> from the values of keys found in the system properties,
-     * with support for Groovy expressions and shared context.
+     * Performs variable substitution in string <code>value</code> from the values of keys found in the system
+     * properties, with support for Groovy expressions and shared context.
      * <p>
-     * Variable substitution uses <b>${...}</b> syntax. Groovy expressions use <b>#{...}</b> syntax and are evaluated after
-     * variable substitution. Groovy scripts can access:
+     * Variable substitution uses <b>${...}</b> syntax. Groovy expressions use <b>#{...}</b> syntax and are evaluated
+     * after variable substitution. Groovy scripts can access:
      * <ul>
      * <li><code>props</code> - read-only access to property values</li>
      * <li><code>ctx</code> - shared Map for storing data between script evaluations</li>
@@ -193,15 +174,15 @@ public final class PropertiesUtils
      * </p>
      *
      * @param value
-     *                       the string on which variable substitution is performed
+     *            the string on which variable substitution is performed
      * @param properties
-     *                       properties object to be used for variable lookup
+     *            properties object to be used for variable lookup
      * @param ctx
-     *                       shared context map for Groovy scripts (may be null, in which case an empty map is used)
+     *            shared context map for Groovy scripts (may be null, in which case an empty map is used)
      * @return argument string where variables and Groovy expressions have been substituted
      * @throws IllegalArgumentException
-     *                                      if <code>value</code> is malformed or Groovy evaluation fails
-     * @since 8.0.0
+     *             if <code>value</code> is malformed or Groovy evaluation fails
+     * @since 10.0.0
      */
     public static String substituteVariables(final String value, final Properties properties, final Map<String, Object> ctx)
         throws IllegalArgumentException
@@ -219,13 +200,13 @@ public final class PropertiesUtils
         String result = value;
         if (properties.size() > 0)
         {
-            result = resolveVariables(value, properties, new HashSet<String>());
+            result = resolveVariables(value, properties, new HashSet<>());
         }
 
         // Step 2: Evaluate #{...} Groovy expressions
         if (result.contains("#{"))
         {
-            final Map<String, Object> contextMap = ctx != null ? ctx : new java.util.concurrent.ConcurrentHashMap<>();
+            final Map<String, Object> contextMap = ctx != null ? ctx : new HashMap<>();
             result = GroovyPropertyEvaluator.evaluateGroovyExpressions(result, properties, contextMap);
         }
 
@@ -233,14 +214,15 @@ public final class PropertiesUtils
     }
 
     /**
-     * Resolves the given value as variable reference using the given properties object and set of already known variables.
+     * Resolves the given value as variable reference using the given properties object and set of already known
+     * variables.
      *
      * @param value
-     *                      variable reference to be resolved
+     *            variable reference to be resolved
      * @param props
-     *                      properties object to be used to resolve the variable reference
+     *            properties object to be used to resolve the variable reference
      * @param variables
-     *                      set of already known variables in current lookup path
+     *            set of already known variables in current lookup path
      * @return resolved variable reference
      */
     private static String resolveVariables(final String value, final Properties props, final Set<String> variables)
@@ -281,7 +263,7 @@ public final class PropertiesUtils
             if (substitution != null)
             {
                 // recursively replace any variable in the substitution string
-                substitution = resolveVariables(substitution, props, new HashSet<String>(variables));
+                substitution = resolveVariables(substitution, props, new HashSet<>(variables));
 
                 // replace variable reference with its substitution value
                 result = RegExUtils.replaceAll(result, RegExUtils.escape(DELIMITER_START + key + DELIMITER_STOP),
@@ -293,20 +275,21 @@ public final class PropertiesUtils
     }
 
     /**
-     * Returns all properties for this domain key, strips the key from the property name, e.g. ClassName.Testproperty=ABC
-     * --> TestProperty=ABC Attention: Properties without a domain (e.g. foobar=test) or domain only properties are invalid
-     * and will be ignored. A property has to have at least this form: domain.propertyname=value
+     * Returns all properties for this domain key, strips the key from the property name, e.g.
+     * ClassName.Testproperty=ABC --> TestProperty=ABC Attention: Properties without a domain (e.g. foobar=test) or
+     * domain only properties are invalid and will be ignored. A property has to have at least this form:
+     * domain.propertyname=value
      *
      * @param domainKey
-     *                       domain for the properties
+     *            domain for the properties
      * @param properties
-     *                       the properties from which to return the matching entries
+     *            the properties from which to return the matching entries
      * @return map with all key value pairs of properties
      */
     public static Map<String, String> getPropertiesForKey(final String domainKey, final Properties properties)
     {
         // initialize map
-        final Map<String, String> result = new HashMap<String, String>();
+        final Map<String, String> result = new HashMap<>();
 
         // maybe we are finished yet
         if (domainKey == null || domainKey.isEmpty())

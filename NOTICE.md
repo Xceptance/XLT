@@ -124,6 +124,12 @@ google-api-services-compute
   * Homepage: https://developers.google.com/api-client-library/java/
   * More information in folder: doc/3rd-party-licenses/google-api-services-compute
 
+groovy
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/apache/groovy
+  * More information in folder: doc/3rd-party-licenses/groovy
+
 hessian
 
   * License: Apache License 2.0
@@ -323,13 +329,15 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
-  
+
 crosshair
+
   * License: MIT License
   * Homepage: https://eschmann.dev/crosshair.js/
   * More information in folder: doc/3rd-party-licenses/crosshair
 
 echarts
+
   * License: Apache License 2.0
   * Homepage: https://echarts.apache.org/en/index.html
   * More information in folder: doc/3rd-party-licenses/echarts

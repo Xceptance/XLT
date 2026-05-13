@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ import groovy.lang.Script;
  * </ul>
  * </p>
  * Example usage in properties:
- * 
+ *
  * <pre>
  * totalUsers = 100
  * browse.users = #{ (props['totalUsers'] as int) * 0.4 }
- * 
+ *
  * # Multi-line with context sharing
  * setup = #{
  *     ctx['base'] = props['totalUsers'] as int
@@ -55,12 +55,12 @@ import groovy.lang.Script;
  * </pre>
  *
  * @author Xceptance Software Technologies GmbH
- * @since 8.0.0
+ * @since 10.0.0
  */
 public class GroovyPropertyEvaluator
 {
     /**
-     * Pattern to match Groovy expressions in the format #{...} Uses DOTALL flag to support multi-line scripts.
+     * Pattern to match Groovy expressions in the format {@code #{...}}. Uses DOTALL flag to support multi-line scripts.
      */
     private static final Pattern GROOVY_PATTERN = Pattern.compile("#\\{(.+?)\\}", Pattern.DOTALL);
 
@@ -91,19 +91,19 @@ public class GroovyPropertyEvaluator
     /**
      * Evaluates any Groovy expressions in the given value string.
      * <p>
-     * Groovy expressions are marked with {@code #{...}} syntax and can span multiple lines. The result of each expression
-     * replaces the entire {@code #{...}} block.
+     * Groovy expressions are marked with {@code #{...}} syntax and can span multiple lines. The result of each
+     * expression replaces the entire {@code #{...}} block.
      * </p>
      *
      * @param value
-     *                  the string potentially containing Groovy expressions
+     *            the string potentially containing Groovy expressions
      * @param props
-     *                  properties available to scripts via 'props' binding (read-only)
+     *            properties available to scripts via 'props' binding (read-only)
      * @param ctx
-     *                  shared context map available to scripts via 'ctx' binding
+     *            shared context map available to scripts via 'ctx' binding
      * @return the value with all Groovy expressions evaluated and replaced
      * @throws IllegalArgumentException
-     *                                      if a Groovy expression cannot be evaluated
+     *             if a Groovy expression cannot be evaluated
      */
     public static String evaluateGroovyExpressions(final String value, final Properties props, final Map<String, Object> ctx)
     {
@@ -130,14 +130,14 @@ public class GroovyPropertyEvaluator
      * Evaluates a single Groovy script expression.
      *
      * @param script
-     *                   the Groovy script to evaluate
+     *            the Groovy script to evaluate
      * @param props
-     *                   properties available via 'props' binding
+     *            properties available via 'props' binding
      * @param ctx
-     *                   shared context map available via 'ctx' binding
+     *            shared context map available via 'ctx' binding
      * @return the string representation of the script result
      * @throws IllegalArgumentException
-     *                                      if the script cannot be evaluated
+     *             if the script cannot be evaluated
      */
     private static String evaluateSingleExpression(final String script, final Properties props, final Map<String, Object> ctx)
     {
@@ -149,23 +149,17 @@ public class GroovyPropertyEvaluator
             binding.setVariable("ctx", ctx);
 
             // Get or compile the script
-            Script compiledScript = SCRIPT_CACHE.get(script);
-            if (compiledScript == null)
-            {
+            final Script compiledScript = SCRIPT_CACHE.computeIfAbsent(script, s -> {
                 synchronized (SHELL)
                 {
-                    compiledScript = SHELL.parse(script);
-                    SCRIPT_CACHE.put(script, compiledScript);
+                    return SHELL.parse(s);
                 }
-            }
+            });
+
+            // Clone the script for thread safety
+            final Script scriptInstance = compiledScript.getClass().getDeclaredConstructor().newInstance();
 
             // Execute with current bindings
-            final Script scriptInstance;
-            synchronized (compiledScript)
-            {
-                // Clone the script for thread safety
-                scriptInstance = compiledScript.getClass().getDeclaredConstructor().newInstance();
-            }
             scriptInstance.setBinding(binding);
 
             final Object result = scriptInstance.run();
@@ -200,11 +194,12 @@ public class GroovyPropertyEvaluator
 
         /**
          * Get a property value by key.
-         * 
+         *
          * @param key
-         *                the property key
+         *            the property key
          * @return the property value or null
          */
+        @SuppressWarnings("unused")
         public String getAt(final String key)
         {
             return props.getProperty(key);
@@ -212,11 +207,12 @@ public class GroovyPropertyEvaluator
 
         /**
          * Get a property value by key (alternative method name).
-         * 
+         *
          * @param key
-         *                the property key
+         *            the property key
          * @return the property value or null
          */
+        @SuppressWarnings("unused")
         public String getProperty(final String key)
         {
             return props.getProperty(key);
@@ -224,13 +220,14 @@ public class GroovyPropertyEvaluator
 
         /**
          * Get a property value with default.
-         * 
+         *
          * @param key
-         *                         the property key
+         *            the property key
          * @param defaultValue
-         *                         the default value if key not found
+         *            the default value if key not found
          * @return the property value or default
          */
+        @SuppressWarnings("unused")
         public String getProperty(final String key, final String defaultValue)
         {
             return props.getProperty(key, defaultValue);
@@ -238,11 +235,12 @@ public class GroovyPropertyEvaluator
 
         /**
          * Check if a property exists.
-         * 
+         *
          * @param key
-         *                the property key
+         *            the property key
          * @return true if the property exists
          */
+        @SuppressWarnings("unused")
         public boolean containsKey(final String key)
         {
             return props.containsKey(key);
