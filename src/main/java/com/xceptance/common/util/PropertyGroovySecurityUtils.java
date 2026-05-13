@@ -18,6 +18,7 @@ package com.xceptance.common.util;
 import java.util.Arrays;
 import java.util.List;
 
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 
 /**
@@ -54,6 +55,25 @@ import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 public class PropertyGroovySecurityUtils
 {
     /**
+     * Type-name prefixes whose construction is blocked in scripts.
+     * <p>
+     * This list is checked by the custom {@link SecureASTCustomizer.ExpressionChecker} against every
+     * {@link ConstructorCallExpression} found in the AST. Note that {@code setDisallowedReceiversClasses} only covers
+     * <em>method calls</em> on an existing receiver; it does not intercept {@code new Foo(...)} constructor expressions,
+     * so both mechanisms are needed.
+     * </p>
+     */
+    private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = Arrays.asList(
+        "java.io.",
+        "java.nio.",
+        "java.net.",
+        "java.lang.Runtime",
+        "java.lang.ProcessBuilder",
+        "java.lang.Thread",
+        "java.lang.ClassLoader"
+    );
+
+    /**
      * Private constructor to prevent instantiation.
      */
     private PropertyGroovySecurityUtils()
@@ -65,6 +85,19 @@ public class PropertyGroovySecurityUtils
      * <p>
      * Allows safe imports for mathematical and collection operations while blocking dangerous classes and operations.
      * </p>
+     * <p>
+     * Two complementary mechanisms are used:
+     * <ol>
+     * <li><b>Constructor check</b> — a custom {@link SecureASTCustomizer.ExpressionChecker} rejects
+     *     {@code new dangerous.Type(...)} expressions for packages listed in {@link #BLOCKED_CONSTRUCTOR_PREFIXES}.</li>
+     * <li><b>Receiver check</b> — {@code setDisallowedReceiversClasses} rejects method calls where a dangerous class
+     *     is the explicit receiver (e.g. {@code Runtime.getRuntime().exec(...)}).</li>
+     * </ol>
+     * {@code setIndirectImportCheckEnabled} is intentionally left at its default ({@code false}). When enabled it
+     * inspects every method-call receiver's static type and rejects anything not on the imports whitelist —
+     * including {@code java.lang.Object}, which is the compile-time type of all Groovy binding variables
+     * ({@code props}, {@code ctx}, etc.), causing false positives for legitimate property access.
+     * </p>
      *
      * @return configured SecureASTCustomizer
      */
@@ -75,24 +108,41 @@ public class PropertyGroovySecurityUtils
         // Allow closures for functional calculations
         secure.setClosuresAllowed(true);
 
-        // Whitelist safe package imports (explicit star imports only)
+        // Allow star-imports from safe packages only
         final List<String> allowedStarImports = Arrays.asList("java.util", "java.math", "java.text");
-        secure.setStarImportsWhitelist(allowedStarImports);
-        secure.setIndirectImportCheckEnabled(true);
+        secure.setAllowedStarImports(allowedStarImports);
 
-        // Block direct class references to dangerous classes
-        // This prevents using fully-qualified names like java.io.File
-        secure.setReceiversClassesBlackList(Arrays.asList(
-                                                          // System and runtime
-                                                          System.class, Runtime.class, ProcessBuilder.class, Thread.class,
-                                                          ClassLoader.class,
-                                                          // File I/O
-                                                          java.io.File.class, java.io.FileReader.class, java.io.FileWriter.class,
-                                                          java.io.FileInputStream.class, java.io.FileOutputStream.class,
-                                                          java.io.RandomAccessFile.class,
-                                                          // Network
-                                                          java.net.URL.class, java.net.URI.class, java.net.Socket.class,
-                                                          java.net.ServerSocket.class, java.net.HttpURLConnection.class));
+        // Block constructor calls to dangerous types (e.g. new java.io.File(...), new java.net.URL(...)).
+        // setDisallowedReceiversClasses does NOT cover ConstructorCallExpression, so we need a separate check.
+        secure.addExpressionCheckers(expr ->
+        {
+            if (expr instanceof ConstructorCallExpression)
+            {
+                final String typeName = ((ConstructorCallExpression) expr).getType().getName();
+                for (final String prefix : BLOCKED_CONSTRUCTOR_PREFIXES)
+                {
+                    if (typeName.startsWith(prefix))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
+
+        // Block method calls where a dangerous class is the explicit receiver
+        // (e.g. Runtime.getRuntime().exec(...), System.exit(...))
+        secure.setDisallowedReceiversClasses(Arrays.asList(
+                                                           // System and runtime
+                                                           System.class, Runtime.class, ProcessBuilder.class, Thread.class,
+                                                           ClassLoader.class,
+                                                           // File I/O
+                                                           java.io.File.class, java.io.FileReader.class, java.io.FileWriter.class,
+                                                           java.io.FileInputStream.class, java.io.FileOutputStream.class,
+                                                           java.io.RandomAccessFile.class,
+                                                           // Network
+                                                           java.net.URL.class, java.net.URI.class, java.net.Socket.class,
+                                                           java.net.ServerSocket.class, java.net.HttpURLConnection.class));
 
         return secure;
     }
