@@ -52,7 +52,7 @@ env = production
 value = #{ props.getProperty("limit.${props['env']}", '100') as int }
 
 # Default values
-orderUsers = #{ props.getProperty('order.users', '10') as int }
+orderUsers = #{ props.getProperty('order.users.fallback', '10') as int }
 ```
 
 For simple property access, prefer `${}` syntax instead:

@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -1014,5 +1015,265 @@ public class XltPropertiesTest
         // Assert that getProperty(key, defaultValue) correctly falls back to defaultValue (99)
         // rather than crashing with NumberFormatException
         assertEquals(99, p.getProperty("float.test", 99));
+    }
+
+    // =============================================
+    // Doc: "Load Mix Calculation" — .intValue() for clean integer results
+    // =============================================
+    /**
+     * Validates the documented load mix calculation pattern:
+     * {@code #{ (${totalUsers} * 0.40).intValue() }}
+     * Ensures .intValue() produces clean integers without trailing decimals.
+     *
+     * @see PROPERTY_EXPANSION.md "Practical Examples / Load Mix Calculation"
+     */
+    @Test
+    public void loadMixCalculationWithIntValue() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // totalUsers = 100, .intValue() produces clean integers
+        assertEquals(40, p.getProperty("mix.TBrowse.users", 0));
+        assertEquals(30, p.getProperty("mix.TSearch.users", 0));
+        assertEquals(10, p.getProperty("mix.TOrder.users", 0));
+        assertEquals(20, p.getProperty("mix.TCheckout.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Environment-Based Configuration" — multiplier scaling
+    // =============================================
+    /**
+     * Validates the documented environment-based scaling pattern:
+     * {@code #{ (${base.browse.users} * ${load.multiplier}).intValue() }}
+     *
+     * @see PROPERTY_EXPANSION.md "Practical Examples / Environment-Based Configuration"
+     */
+    @Test
+    public void environmentBasedMultiplierScaling() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // base.browse.users = 50, load.multiplier = 1.5 → 75
+        assertEquals(75, p.getProperty("scaled.TBrowse.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Available Bindings" — props.getProperty with default value
+    // =============================================
+    /**
+     * Validates the documented default value pattern:
+     * {@code #{ props.getProperty('order.users.fallback', '10') as int }}
+     *
+     * @see PROPERTY_EXPANSION.md "Available Bindings / props"
+     */
+    @Test
+    public void propsGetPropertyWithDefaultValue() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // 'order.users.fallback' does not exist → falls back to '10' in the Groovy expression
+        assertEquals(10, p.getProperty("orderUsers", 0));
+    }
+
+    // =============================================
+    // Doc: "Available Bindings" — dynamic key lookup
+    // =============================================
+    /**
+     * Validates the documented dynamic key lookup pattern:
+     * {@code #{ props.getProperty("limit.${props['env']}", '100') as int }}
+     * where env=production resolves to limit.production=500.
+     *
+     * @see PROPERTY_EXPANSION.md "Available Bindings / props"
+     */
+    @Test
+    public void dynamicKeyLookupViaProps() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // env=production, limit.production=500 → dynamic lookup resolves to 500
+        assertEquals(500, p.getProperty("dynamic.limit", 0));
+    }
+
+    // =============================================
+    // Doc: "Supported Operations — Conditionals"
+    // =============================================
+    /**
+     * Validates the documented ternary conditional pattern:
+     * {@code #{ props['mode'] == 'production' ? 100 : 10 }}
+     *
+     * @see PROPERTY_EXPANSION.md "Supported Operations"
+     */
+    @Test
+    public void conditionalTernaryOperator() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // mode=production → 100
+        assertEquals(100, p.getProperty("conditional.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Dynamic Arrival Rates" — multiline division
+    // =============================================
+    /**
+     * Validates the documented arrival rate calculation:
+     * {@code (props['totalRequests'] / props['testDurationHours']) as int}
+     *
+     * @see PROPERTY_EXPANSION.md "Practical Examples / Dynamic Arrival Rates"
+     */
+    @Test
+    public void dynamicArrivalRateCalculation() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // totalRequests=10000, testDurationHours=1.5 → 10000/1.5 = 6666 (truncated)
+        assertEquals(6666, p.getProperty("com.xceptance.xlt.loadtests.TSearch.arrivalRate", 0));
+    }
+
+    // =============================================
+    // Doc: "Multi-Line Scripts" — multiline ctx population
+    // =============================================
+    /**
+     * Validates the documented multiline script that populates ctx from a single
+     * "config" property and then uses ctx values in subsequent properties.
+     *
+     * @see PROPERTY_EXPANSION.md "Multi-Line Scripts"
+     */
+    @Test
+    public void multilineScriptWithContextPopulation() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Trigger the multiline script
+        assertEquals("configured", p.getProperty("com.xceptance.xlt.loadtests.config"));
+
+        // Verify ctx values are used by downstream properties
+        // totalUsers3=100 → browse3=(100*0.4)=40, order3=(100*0.1)=10
+        assertEquals(40, p.getProperty("com.xceptance.xlt.loadtests.TBrowse.users", 0));
+        assertEquals(10, p.getProperty("com.xceptance.xlt.loadtests.TOrder.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Supported Operations — Arithmetic"
+    // =============================================
+    /**
+     * Validates that modulo arithmetic works in Groovy expressions.
+     *
+     * @see PROPERTY_EXPANSION.md "Supported Operations"
+     */
+    @Test
+    public void arithmeticModulo() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // 17 % 5 = 2
+        assertEquals(2, p.getProperty("modulo.result", 0));
+    }
+
+    // =============================================
+    // Doc: "Supported Operations — Type conversion"
+    // =============================================
+    /**
+     * Validates the documented type conversion operations: {@code as int}, {@code as double}, {@code as String}.
+     *
+     * @see PROPERTY_EXPANSION.md "Supported Operations"
+     */
+    @Test
+    public void typeConversion() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        assertEquals(42, p.getProperty("typed.int", 0));
+        assertEquals("3.14", p.getProperty("typed.double"));
+        assertEquals("42", p.getProperty("typed.string"));
+    }
+
+    // =============================================
+    // Doc: "Error Handling"
+    // =============================================
+    /**
+     * Validates the documented error handling behavior: invalid Groovy syntax
+     * throws {@link IllegalArgumentException} with the script content in the message.
+     *
+     * @see PROPERTY_EXPANSION.md "Error Handling"
+     */
+    @Test
+    public void invalidGroovySyntaxThrowsWithMessage() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Inject invalid Groovy syntax at runtime
+        p.setProperty("bad.syntax", "#{ this is not valid ++ }");
+
+        try
+        {
+            p.getProperty("bad.syntax");
+            fail("Expected IllegalArgumentException for invalid Groovy syntax");
+        }
+        catch (final IllegalArgumentException e)
+        {
+            assertTrue("Exception message should contain the script",
+                       e.getMessage().contains("this is not valid ++"));
+        }
+    }
+
+    // =============================================
+    // Doc: "Security" — blocked operations
+    // =============================================
+    /**
+     * Validates the documented security sandbox: file system access, network operations,
+     * system access, thread creation, and reflection are all blocked with an
+     * {@link IllegalArgumentException}.
+     *
+     * @see PROPERTY_EXPANSION.md "Security"
+     */
+    @Test
+    public void securitySandboxBlocksDangerousOperations() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Doc: "File system access (File, FileReader, etc.)"
+        assertSecurityBlocks(p, "#{ new java.io.File('/etc/passwd') }", "File access");
+
+        // Doc: "Network operations (URL, Socket, etc.)"
+        assertSecurityBlocks(p, "#{ new java.net.URL('http://evil.com') }", "URL access");
+
+        // Doc: "System access (System, Runtime)"
+        assertSecurityBlocks(p, "#{ System.exit(0) }", "System.exit");
+        assertSecurityBlocks(p, "#{ Runtime.getRuntime().exec('ls') }", "Runtime.exec");
+
+        // Doc: "Thread creation"
+        assertSecurityBlocks(p, "#{ new Thread({ }).start() }", "Thread creation");
+
+        // Doc: "Reflection"
+        assertSecurityBlocks(p, "#{ Class.forName('java.lang.Runtime') }", "Reflection");
+    }
+
+    /**
+     * Helper to assert that a Groovy expression is blocked by the security sandbox.
+     */
+    private void assertSecurityBlocks(final XltPropertiesImpl p, final String expression, final String description)
+    {
+        p.setProperty("security.test", expression);
+        try
+        {
+            p.getProperty("security.test");
+            fail("Expected IllegalArgumentException for blocked operation: " + description);
+        }
+        catch (final IllegalArgumentException e)
+        {
+            // Expected — security sandbox blocked it
+        }
     }
 }

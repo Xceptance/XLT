@@ -16,8 +16,10 @@
 package com.xceptance.common.util;
 
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 
 /**
@@ -64,7 +66,9 @@ public class PropertyGroovySecurityUtils
      */
     private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = List.of("java.io.", "java.nio.", "java.net.", "java.lang.Runtime",
                                                                              "java.lang.ProcessBuilder", "java.lang.Thread",
-                                                                             "java.lang.ClassLoader");
+                                                                             "java.lang.ClassLoader",
+                                                                             // Groovy scripting infrastructure — block GroovyShell inception
+                                                                             "groovy.lang.", "org.codehaus.groovy.");
 
     /**
      * The list of packages star-imports are allowed for.
@@ -80,6 +84,8 @@ public class PropertyGroovySecurityUtils
                                                                             // System and runtime
                                                                             System.class, Runtime.class, ProcessBuilder.class, Thread.class,
                                                                             ClassLoader.class,
+                                                                            // Reflection
+                                                                            Class.class,
                                                                             // File I/O
                                                                             java.io.File.class, java.io.FileReader.class,
                                                                             java.io.FileWriter.class, java.io.FileInputStream.class,
@@ -128,7 +134,13 @@ public class PropertyGroovySecurityUtils
 
         // Block constructor calls to dangerous types (e.g. new java.io.File(...), new java.net.URL(...)).
         // setDisallowedReceiversClasses does NOT cover ConstructorCallExpression, so we need a separate check.
-        secure.addExpressionCheckers(expr -> {
+        //
+        // Additionally block method calls by name that are known Groovy GDK escape vectors.
+        // 'execute' is added by DefaultGroovyMethods to String/String[] at runtime and calls Runtime.exec()
+        // 'getClass' and '.class' allow bypassing the receiver checker by getting Class<?> dynamically.
+        final Set<String> blockedMethodNames = Set.of("execute", "getClass");
+
+        secure.addExpressionCheckers(final expr -> {
             if (expr instanceof ConstructorCallExpression)
             {
                 final String typeName = expr.getType().getName();
@@ -138,6 +150,22 @@ public class PropertyGroovySecurityUtils
                     {
                         return false;
                     }
+                }
+            }
+            else if (expr instanceof MethodCallExpression)
+            {
+                final String methodName = ((MethodCallExpression) expr).getMethodAsString();
+                if (methodName != null && blockedMethodNames.contains(methodName))
+                {
+                    return false;
+                }
+            }
+            else if (expr instanceof org.codehaus.groovy.ast.expr.PropertyExpression)
+            {
+                final String propertyName = ((org.codehaus.groovy.ast.expr.PropertyExpression) expr).getPropertyAsString();
+                if ("class".equals(propertyName))
+                {
+                    return false;
                 }
             }
             return true;
