@@ -18,8 +18,6 @@ package com.xceptance.common.util;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 
@@ -59,10 +57,7 @@ import groovy.lang.Script;
  */
 public class GroovyPropertyEvaluator
 {
-    /**
-     * Pattern to match Groovy expressions in the format {@code #{...}}. Uses DOTALL flag to support multi-line scripts.
-     */
-    private static final Pattern GROOVY_PATTERN = Pattern.compile("#\\{(.+?)\\}", Pattern.DOTALL);
+
 
     /**
      * Cache for compiled scripts to improve performance. Thread-safe via ConcurrentHashMap.
@@ -112,16 +107,90 @@ public class GroovyPropertyEvaluator
             return value;
         }
 
-        final Matcher matcher = GROOVY_PATTERN.matcher(value);
-        final StringBuffer result = new StringBuffer();
+        final StringBuilder result = new StringBuilder();
+        int currentIndex = 0;
 
-        while (matcher.find())
+        while (true)
         {
-            final String script = matcher.group(1).trim();
+            final int startIndex = value.indexOf("#{", currentIndex);
+            if (startIndex == -1)
+            {
+                result.append(value.substring(currentIndex));
+                break;
+            }
+
+            int openBrackets = 0;
+            int endIndex = -1;
+            boolean inSingleQuote = false;
+            boolean inDoubleQuote = false;
+            boolean escapeNext = false;
+
+            for (int i = startIndex + 2; i < value.length(); i++)
+            {
+                final char c = value.charAt(i);
+
+                if (escapeNext)
+                {
+                    escapeNext = false;
+                    continue;
+                }
+
+                if (c == '\\')
+                {
+                    escapeNext = true;
+                    continue;
+                }
+
+                if (c == '\'' && !inDoubleQuote)
+                {
+                    inSingleQuote = !inSingleQuote;
+                    continue;
+                }
+
+                if (c == '"' && !inSingleQuote)
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                    continue;
+                }
+
+                if (inSingleQuote || inDoubleQuote)
+                {
+                    continue;
+                }
+
+                if (c == '{')
+                {
+                    openBrackets++;
+                }
+                else if (c == '}')
+                {
+                    if (openBrackets == 0)
+                    {
+                        endIndex = i;
+                        break;
+                    }
+                    else
+                    {
+                        openBrackets--;
+                    }
+                }
+            }
+
+            if (endIndex == -1)
+            {
+                // No matching closing bracket found
+                result.append(value.substring(currentIndex));
+                break;
+            }
+
+            result.append(value.substring(currentIndex, startIndex));
+
+            final String script = value.substring(startIndex + 2, endIndex).trim();
             final String evaluated = evaluateSingleExpression(script, props, ctx);
-            matcher.appendReplacement(result, Matcher.quoteReplacement(evaluated));
+            result.append(evaluated);
+
+            currentIndex = endIndex + 1;
         }
-        matcher.appendTail(result);
 
         return result.toString();
     }

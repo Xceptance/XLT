@@ -258,6 +258,31 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
     }
 
     /**
+     * Test Groovy expression containing closures (nested brackets).
+     */
+    @Test
+    public void testGroovyWithClosures()
+    {
+        // This will fail if the parser stops at the first '}'
+        final String result = PropertiesUtils.substituteVariables("#{ [1, 2].collect { it * 2 }.join(',') }", props);
+        Assert.assertEquals("2,4", result);
+    }
+
+    /**
+     * Test Groovy expression with nested string interpolation (brackets inside quotes).
+     */
+    @Test
+    public void testGroovyWithNestedInterpolation()
+    {
+        props.setProperty("mode", "production");
+        
+        // This will fail if the parser stops at the first '}' which is inside the string
+        final String result = PropertiesUtils.substituteVariables("""
+            #{ "Env: ${props['mode']}" }""", props);
+        Assert.assertEquals("Env: production", result);
+    }
+
+    /**
      * Test that no Groovy markers returns value unchanged.
      */
     @Test

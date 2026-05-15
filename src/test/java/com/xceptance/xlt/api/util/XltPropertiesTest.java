@@ -121,6 +121,8 @@ public class XltPropertiesTest
             .filter(s -> s.startsWith("secret.")).collect(Collectors.toList());
         keys.forEach(System::clearProperty);
 
+        System.clearProperty("test");
+
         XltPropertiesImpl.getInstance().clear();
     }
 
@@ -145,6 +147,7 @@ public class XltPropertiesTest
 
         // load the happy path defaults, default, project, test, dev, secret, system
         var p = new XltPropertiesImpl(null, null, true, false);
+
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -884,5 +887,132 @@ public class XltPropertiesTest
         p.removeProperty(XltConstants.PROP_DATA_DIRECTORY);
         assertEquals(configDir.getPath(), p.getConfigDirectory());
         assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+    }
+
+    // =============================================
+    // Groovy Property Expansion Tests
+    // =============================================
+    /**
+     * Get config and data directories from XltPropertiesImpl object with empty properties
+     * @throws FileSystemException 
+     */
+    @Test
+    public void oneFileCalculation() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+
+        // Create instance of XltPropertiesImpl 
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // ask for simple properties first
+        assertEquals(100, p.getProperty("totalUsers", 0));
+
+        // simple evaluation without required larger context
+        assertEquals(400, p.getProperty("TBrowse.users", 0));
+        assertEquals(300, p.getProperty("TSearch.users", 0));
+        assertEquals(200, p.getProperty("TOrder.users", 0));
+        assertEquals(100, p.getProperty("TCheckout.users", 0));
+        
+        // stacked with references to other dynamic props
+        assertEquals(10, p.getProperty("TBrowse2.users", 0));
+        assertEquals(10 * 2, p.getProperty("TSearch2.users", 0));
+        assertEquals(10 * 2 * 3, p.getProperty("TCheckout2.users", 0));
+        assertEquals(10 * 2 * 3 * 4, p.getProperty("TOrder2.users", 0));
+        
+        // multiline and with context store
+        assertEquals("initialized", p.getProperty("init"));
+        assertEquals(40, p.getProperty("browse.users", 0));
+        assertEquals(10, p.getProperty("order.users", 0));
+    }
+
+    /**
+     * Verifies that clearing the properties successfully clears the persistent Groovy evaluation context.
+     * This ensures that state does not leak across explicit property reloads or programmatic resets.
+     *
+     * @throws FileSystemException if file operations fail during setup
+     */
+    @Test
+    public void clearClearsGroovyContext() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Evaluate "init" which populates ctx['base'] = 100
+        assertEquals("initialized", p.getProperty("init"));
+        
+        // Verify it works normally
+        assertEquals(40, p.getProperty("browse.users", 0));
+
+        // Now clear the properties. This should clear mergedProperties and its groovyContext
+        p.clear();
+
+        // Inject a property that tries to access the previous context state
+        p.setProperty("leak.test", "#{ (ctx['base'] ?: 0) * 0.4 }");
+        
+        // If context leaked, ctx['base'] would be 100 and it would return 40.0
+        // Because it was properly cleared, ctx['base'] is null, falls back to 0, and evaluates to 0.0
+        assertEquals("0.0", p.getProperty("leak.test"));
+    }
+
+    @Test
+    public void multiFileContextSharing() throws FileSystemException
+    {
+        setup("propertytest_groovy_multifile", "propertytest_groovy_multifile/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Evaluate init from project.properties
+        assertEquals("initialized", p.getProperty("init"));
+
+        // Evaluate browse.users from test.properties which uses ctx['base']
+        assertEquals(40, p.getProperty("browse.users", 0));
+    }
+
+    @Test
+    public void groovyEnvironmentAndDynamicSystemPropertyResolution() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Before dynamic system property
+        assertEquals("Environment: production", p.getProperty("env.label"));
+        
+        try
+        {
+            System.setProperty("mode", "staging");
+            
+            // ${mode} should see 'staging' because substituteVariables checks System.getProperty directly
+            p.setProperty("test.standard", "${mode}");
+            assertEquals("staging", p.getProperty("test.standard"));
+            
+            // props['mode'] in Groovy should still see 'production' because it reads from the snapshot
+            assertEquals("Environment: production", p.getProperty("env.label"));
+            
+            // Environment variable test
+            // PATH is a typical env var. props['PATH'] should be null.
+            p.setProperty("test.groovy.env", "#{ props['PATH'] == null ? 'missing' : 'found' }");
+            assertEquals("missing", p.getProperty("test.groovy.env"));
+        }
+        finally
+        {
+            System.clearProperty("mode");
+        }
+    }
+
+    @Test
+    public void groovyFloatEvaluationFallback() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Inject a property that explicitly evaluates to a floating-point string
+        p.setProperty("float.test", "#{ 100 * 0.405 }");
+        
+        // Assert that the raw string is a float with preserved scale from the multiplier
+        assertEquals("40.500", p.getProperty("float.test"));
+
+        // Assert that getProperty(key, defaultValue) correctly falls back to defaultValue (99)
+        // rather than crashing with NumberFormatException
+        assertEquals(99, p.getProperty("float.test", 99));
     }
 }
