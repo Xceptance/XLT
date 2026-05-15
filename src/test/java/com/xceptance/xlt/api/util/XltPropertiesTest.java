@@ -927,8 +927,9 @@ public class XltPropertiesTest
     }
 
     /**
-     * Verifies that clearing the properties successfully clears the persistent Groovy evaluation context.
-     * This ensures that state does not leak across explicit property reloads or programmatic resets.
+     * Verifies that clearing the properties successfully clears the persistent Groovy 
+     * evaluation context. This ensures that state does not leak across explicit property
+     * reloads or programmatic resets.
      *
      * @throws FileSystemException if file operations fail during setup
      */

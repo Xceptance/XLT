@@ -206,7 +206,7 @@ public final class PropertiesUtils
         // Step 2: Evaluate #{...} Groovy expressions
         if (result.contains("#{"))
         {
-            final Map<String, Object> contextMap = ctx != null ? ctx : new HashMap<>();
+            final Map<String, Object> contextMap = ctx != null ? ctx : new java.util.concurrent.ConcurrentHashMap<>();
             result = GroovyPropertyEvaluator.evaluateGroovyExpressions(result, properties, contextMap);
         }
 

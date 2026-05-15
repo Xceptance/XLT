@@ -140,7 +140,7 @@ public class PropertyGroovySecurityUtils
         // 'getClass' and '.class' allow bypassing the receiver checker by getting Class<?> dynamically.
         final Set<String> blockedMethodNames = Set.of("execute", "getClass");
 
-        secure.addExpressionCheckers(final expr -> {
+        secure.addExpressionCheckers(expr -> {
             if (expr instanceof ConstructorCallExpression)
             {
                 final String typeName = expr.getType().getName();

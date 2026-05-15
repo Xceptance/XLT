@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 
+import com.xceptance.common.util.GroovyPropertyEvaluator;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.PropertiesUtils;
@@ -1164,6 +1165,7 @@ public class XltPropertiesImpl extends XltProperties
         {
             super.clear();
             groovyContext.clear();
+            GroovyPropertyEvaluator.clearCache();
         }
 
         /**
