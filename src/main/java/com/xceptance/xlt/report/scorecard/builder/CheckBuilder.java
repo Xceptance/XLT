@@ -119,6 +119,82 @@ public class CheckBuilder
     }
 
     /**
+     * Fluent DSL method: specifies that the extracted value must be less than the given target.
+     * @param target the numeric or string target
+     */
+    public void isLessThan(Object target)
+    {
+        this.condition = "< " + formatTarget(target);
+    }
+
+    /**
+     * Fluent DSL method: specifies that the extracted value must be less than or equal to the given target.
+     * @param target the numeric or string target
+     */
+    public void isLessThanOrEqualTo(Object target)
+    {
+        this.condition = "<= " + formatTarget(target);
+    }
+
+    /**
+     * Fluent DSL method: specifies that the extracted value must be greater than the given target.
+     * @param target the numeric or string target
+     */
+    public void isGreaterThan(Object target)
+    {
+        this.condition = "> " + formatTarget(target);
+    }
+
+    /**
+     * Fluent DSL method: specifies that the extracted value must be greater than or equal to the given target.
+     * @param target the numeric or string target
+     */
+    public void isGreaterThanOrEqualTo(Object target)
+    {
+        this.condition = ">= " + formatTarget(target);
+    }
+
+    /**
+     * Fluent DSL method: specifies that the extracted value must be exactly equal to the given target.
+     * @param target the numeric or string target
+     */
+    public void isEqualTo(Object target)
+    {
+        this.condition = "= " + formatTarget(target);
+    }
+
+    /**
+     * Fluent DSL method: specifies that the extracted value must not be equal to the given target.
+     * @param target the numeric or string target
+     */
+    public void isNotEqualTo(Object target)
+    {
+        this.condition = "!= " + formatTarget(target);
+    }
+
+    /**
+     * Fluent DSL method: specifies that the extracted value must match the given regular expression.
+     * @param regex the regular expression to match against
+     */
+    public void matchesRegex(String regex)
+    {
+        this.condition = "matches(., '" + regex + "')";
+    }
+
+    /**
+     * Helper to format target values for XPath conditions.
+     * Wraps strings in single quotes.
+     */
+    private String formatTarget(Object target)
+    {
+        if (target instanceof CharSequence)
+        {
+            return "'" + target + "'";
+        }
+        return String.valueOf(target);
+    }
+
+    /**
      * Enables or disables this check.
      *
      * @param enabled

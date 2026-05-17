@@ -32,12 +32,12 @@ builder.selectors {
         // P95 selector
         selector {
             id "${pageName.toLowerCase()}P95"
-            expression "max(//requests/request[matches(name, '${regex}')]/percentiles/p95)"
+            expression metrics.requestP95(regex)
         }
         // P99 selector
         selector {
             id "${pageName.toLowerCase()}P99"
-            expression "max(//requests/request[matches(name, '${regex}')]/percentiles/p99)"
+            expression metrics.requestP99(regex)
         }
     }
 
@@ -51,13 +51,13 @@ builder.selectors {
     }
     
     // Additional Global Metrics
-    selector { id 'transactionErrors'; expression '/testreport/summary/transactions/errorPercentage' }
-    selector { id 'actionErrors'; expression '/testreport/summary/actions/errorPercentage' }
-    selector { id 'requestErrors'; expression '/testreport/summary/requests/errorPercentage' }
+    selector { id 'transactionErrors'; expression metrics.globalErrorPercentage('transactions') }
+    selector { id 'actionErrors'; expression metrics.globalErrorPercentage('actions') }
+    selector { id 'requestErrors'; expression metrics.globalErrorPercentage('requests') }
     
     // Agent CPU
-    selector { id 'agentCpuMean'; expression 'count(//agents/agent/totalCpuUsage/mean[number() > 60])' }
-    selector { id 'agentCpuMax'; expression 'max(//agents/agent/totalCpuUsage/max)' }
+    selector { id 'agentCpuMean'; expression metrics.agentCpuMeanHigh(60) }
+    selector { id 'agentCpuMax'; expression metrics.agentCpuMax() }
     selector { id 'agentCpuLow'; expression 'count(//agents/agent/totalCpuUsage/mean[number() < 25])' }
 }
 
@@ -76,12 +76,25 @@ builder.rules {
                 checks {
                     check {
                         selectorId "${pageName.toLowerCase()}P95"
-                        // For F, we want > limit, for others <= limit
-                        condition gradeName == 'F' ? "> ${grades.D.p95}" : "<= ${limits.p95}"
+                        
+                        // The 'F' grade acts as our absolute failure threshold.
+                        // If the performance is WORSE than our lowest acceptable grade (D), 
+                        // it falls into the F category. Thus, we check if the value is GREATER THAN
+                        // the D limit. For all other passing grades (A+, A, B, C, D), 
+                        // we verify the performance is LESS THAN OR EQUAL TO their respective limits.
+                        if (gradeName == 'F') {
+                            isGreaterThan grades.D.p95
+                        } else {
+                            isLessThanOrEqualTo limits.p95
+                        }
                     }
                     check {
                         selectorId "${pageName.toLowerCase()}P99"
-                        condition gradeName == 'F' ? "> ${grades.D.p99}" : "<= ${limits.p99}"
+                        if (gradeName == 'F') {
+                            isGreaterThan grades.D.p99
+                        } else {
+                            isLessThanOrEqualTo limits.p99
+                        }
                     }
                 }
                 messages {
@@ -103,7 +116,7 @@ builder.rules {
         name 'Agent CPU Usage'
         enabled true
         checks {
-            check { selectorId 'agentCpuMean'; condition '= 0' }
+            check { selectorId 'agentCpuMean'; isEqualTo 0 }
         }
     }
     rule {
@@ -111,7 +124,7 @@ builder.rules {
         name 'Max Agent CPU Usage'
         failsTest true
         checks {
-            check { selectorId 'agentCpuMax'; condition '< 95' }
+            check { selectorId 'agentCpuMax'; isLessThan 95 }
         }
     }
     
@@ -124,7 +137,7 @@ builder.rules {
             failsOn 'NOTPASSED'
             points 5
             checks {
-                check { selectorId errSel; condition '< 0.5' } // Simplified limit
+                check { selectorId errSel; isLessThan 0.5 } // Simplified limit
             }
         }
     }

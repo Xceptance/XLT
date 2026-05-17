@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
+import com.xceptance.xlt.report.scorecard.builder.MetricsHelper;
 import com.xceptance.xlt.report.scorecard.builder.ScorecardBuilder;
 
 import groovy.lang.Binding;
@@ -84,6 +85,7 @@ public class GroovyEvaluator extends AbstractEvaluator
         binding.setVariable("xpath", new ScorecardData(document, compiler));
         binding.setVariable("properties", new ScorecardProperties());
         binding.setVariable("builder", new ScorecardBuilder());
+        binding.setVariable("metrics", new MetricsHelper());
 
         final ScorecardLogger logger = new ScorecardLogger();
         binding.setVariable("log", logger);
