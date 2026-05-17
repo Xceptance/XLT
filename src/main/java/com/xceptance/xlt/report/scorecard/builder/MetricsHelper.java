@@ -36,12 +36,18 @@ public class MetricsHelper
         if (args.containsKey("name")) {
             conditions.add(String.format("matches(name, '%s')", escapeRegex((String)args.get("name"))));
         }
+        if (args.containsKey("excludeName")) {
+            conditions.add(String.format("not(matches(name, '%s'))", escapeRegex((String)args.get("excludeName"))));
+        }
         if (args.containsKey("label")) {
             conditions.add(String.format("labels = '%s'", escapeRegex((String)args.get("label"))));
         }
+        if (args.containsKey("excludeLabel")) {
+            conditions.add(String.format("labels != '%s'", escapeRegex((String)args.get("excludeLabel"))));
+        }
 
         if (conditions.isEmpty()) {
-            throw new IllegalArgumentException("Must provide at least 'name' or 'label' parameter");
+            throw new IllegalArgumentException("Must provide at least one parameter: 'name', 'excludeName', 'label', or 'excludeLabel'");
         }
 
         String conditionString = String.join(" and ", conditions);
@@ -244,6 +250,50 @@ public class MetricsHelper
     public String globalErrorPercentage(String type)
     {
         return "/testreport/summary/" + type + "/errorPercentage";
+    }
+
+    /**
+     * Selects the pre-computed count-per-hour from the global summary for a specific component type.
+     * XLT calculates this automatically based on the actual test duration.
+     * @param type e.g., 'requests', 'transactions', 'actions'
+     */
+    public String globalCountPerHour(String type)
+    {
+        return "/testreport/summary/" + type + "/countPerHour";
+    }
+
+    /**
+     * Returns the total number of errors whose HTTP response code matches the
+     * provided regular expression.
+     * <p>
+     * XLT aggregates HTTP response codes in {@code //responseCodes/responseCode} with
+     * {@code <code>} and {@code <count>} elements. This method matches the given
+     * regex against the code and sums the corresponding {@code <count>} values.
+     * </p>
+     * @param statusRegex Regex matching the HTTP status code (e.g. "5.." or "5\d\d" for 5xx errors)
+     */
+    public String httpErrorCount(String statusRegex)
+    {
+        // XPath: sum counts of response codes that match the regex.
+        return String.format(
+            "sum(//responseCodes/responseCode[matches(code, '^%s$')]/count)",
+            escapeRegex(statusRegex));
+    }
+
+    /**
+     * Wraps any XPath numeric expression to calculate its per-hour rate, using the 
+     * overall test duration.
+     * <p>
+     * Note: XLT provides {@code <duration>} in seconds under {@code /testreport/general/duration}.
+     * </p>
+     * @param metricExpression The raw XPath expression returning a number (e.g. {@code "sum(//...) "})
+     * @return An XPath expression dividing the metric by the test duration in hours.
+     */
+    public String perHour(String metricExpression)
+    {
+        return String.format(
+            "((%s) div (number(/testreport/general/duration) div 3600))",
+            metricExpression);
     }
 
     // =========================================================

@@ -101,12 +101,26 @@ If your test run makes use of labels to group requests, you can use the built-in
 *   `requestP95(label: 'homepage')`
 This performs an exact match on the label property rather than a regex over the name.
 
-You can also combine both conditions to be extremely precise:
-*   `requestP95(name: '^Homepage', label: 'critical')`
-This performs an `and` match against both the regex and the label property.
+**Excluding Elements:**
+You can compute metrics across all elements *except* those matching a specific regex by using the `excludeName` or `excludeLabel` parameters. This is useful for finding worst-case metrics excluding known outliers:
+*   `metrics.requestP95(excludeName: '^OrderSubmit')`
+
+You can freely combine these constraints:
+*   `metrics.requestP95(name: '^Homepage', excludeLabel: 'cached')`
 
 Similarly, these helpers are available for **transactions**, **actions** and **customTimers**:
 *   `transactionP95(name: '...Regex')`, `transactionP95(label: '...Label')`, `transactionCount(label: '...')`, `actionErrorPercentage(label: '...')`, etc.
+
+**Global Summaries & Errors:**
+You can retrieve pre-computed global totals and specialized error metrics directly:
+*   `metrics.globalCountPerHour('transactions')` (or 'requests', 'actions')
+*   `metrics.globalErrorPercentage('requests')`
+*   `metrics.httpErrorCount('5..')` (Counts all HTTP 500–599 errors by analyzing `//responseCodes/responseCode`)
+*   `metrics.httpErrorCount('404|400')` (Counts specific HTTP errors)
+
+**Per-Hour Calculation Wrapper:**
+If you need a per-hour rate for an absolute metric (like HTTP errors), wrap it with `metrics.perHour(...)`:
+*   `metrics.perHour(metrics.httpErrorCount('5..'))` (Yields the number of 5xx errors per hour of test duration)
 
 ### 3.2 Groups
 Groups logically organize your rules. A group calculates its achieved points based on its `mode`:
