@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,6 +37,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.io.Files;
 import com.thoughtworks.xstream.XStream;
@@ -67,7 +70,7 @@ public class Evaluator
      * Creates a new evaluator instance that uses the given configuration JSON file.
      *
      * @param configFile
-     *            the configuration JSON file to use
+     *                       the configuration JSON file to use
      */
     public Evaluator(final File configFile)
     {
@@ -81,7 +84,7 @@ public class Evaluator
      * Evaluates the given XML file.
      *
      * @param documentFile
-     *            the XML file to evaluate
+     *                         the XML file to evaluate
      * @return resulting scorecard
      */
     public Scorecard evaluate(final File documentFile)
@@ -104,11 +107,11 @@ public class Evaluator
      * Writes the given scorecard as serialized XML to the given output file.
      *
      * @param scorecard
-     *            the scorecard to be written
+     *                       the scorecard to be written
      * @param outputFile
-     *            the target output file
+     *                       the target output file
      * @throws IOException
-     *             thrown upon failure to write to given file
+     *                         thrown upon failure to write to given file
      */
     public void writeScorecardToFile(final Scorecard scorecard, final File outputFile) throws IOException
     {
@@ -122,11 +125,11 @@ public class Evaluator
      * Writes the given scorecard as serialized XML to the given destination writer.
      *
      * @param scorecard
-     *            the scorecard to be written
+     *                      the scorecard to be written
      * @param writer
-     *            the destination to write serialized XML to
+     *                      the destination to write serialized XML to
      * @throws IOException
-     *             thrown if scorecard could not be written
+     *                         thrown if scorecard could not be written
      */
     public void writeScorecard(final Scorecard scorecard, final Writer writer) throws IOException
     {
@@ -156,13 +159,33 @@ public class Evaluator
         }
 
         final JSONObject configJSON;
-        try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
+        final String fileName = configFile.getName().toLowerCase();
+
+        // Check if we go the YAML way or the JSON way
+        if (fileName.endsWith(".yaml") || fileName.endsWith(".yml"))
         {
-            configJSON = new JSONObject(new JSONTokener(reader));
+            try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
+            {
+                // We must use SnakeYAML directly to allow the resolution of aliases and anchors
+                final Yaml yamlParser = new Yaml();
+                final Map<String, Object> map = yamlParser.load(reader);
+                configJSON = new JSONObject(map);
+            }
+            catch (final Exception e)
+            {
+                throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as YAML", e);
+            }
         }
-        catch (final JSONException je)
+        else
         {
-            throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
+            try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
+            {
+                configJSON = new JSONObject(new JSONTokener(reader));
+            }
+            catch (final JSONException je)
+            {
+                throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
+            }
         }
 
         final Validator validator = new ValidatorFactory().withJsonNodeFactory(new OrgJsonNode.Factory()).createValidator();
