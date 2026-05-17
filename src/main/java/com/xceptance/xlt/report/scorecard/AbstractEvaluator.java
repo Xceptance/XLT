@@ -3,6 +3,8 @@ package com.xceptance.xlt.report.scorecard;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import com.thoughtworks.xstream.XStream;
@@ -141,5 +143,186 @@ public abstract class AbstractEvaluator
             }
         }
         return false;
+    }
+
+    /**
+     * Concludes the evaluation of a rule by determining its final status based on its checks. Sets the rule's status,
+     * message, and points accordingly.
+     *
+     * @param rule
+     *                 the rule to conclude
+     */
+    protected void conclude(final Scorecard.Rule rule)
+    {
+        // nothing to do for disabled rules
+        if (!rule.isEnabled())
+        {
+            return;
+        }
+
+        Status lastStatus = Status.PASSED;
+        // loop through rule's checks
+        for (final Scorecard.Rule.Check c : rule.getChecks())
+        {
+            final Status checkStatus = c.getStatus();
+            // ignore skipped checks
+            if (checkStatus.isSkipped())
+            {
+                continue;
+            }
+
+            // remember most recent check status that doesn't indicate a passed check
+            // or just the very first check status if all checks did pass
+            if (!checkStatus.isPassed())
+            {
+                lastStatus = checkStatus;
+                // encountered erroneous check -> set rule message to the check's error message and stop looping
+                if (checkStatus.isError())
+                {
+                    rule.setMessage(String.format("[Check #%d] %s", c.getIndex(), c.getErrorMessage()));
+                    break;
+                }
+            }
+        }
+
+        // negate rule status if desired
+        if (rule.getDefinition().isNegateResult())
+        {
+            lastStatus = lastStatus.negate();
+        }
+        rule.setStatus(lastStatus);
+        if (lastStatus.isPassed())
+        {
+            rule.setMessage(rule.getDefinition().getSuccessMessage());
+            rule.setPoints(rule.getDefinition().getPoints());
+        }
+        else if (lastStatus.isFailed())
+        {
+            rule.setMessage(rule.getDefinition().getFailMessage());
+        }
+    }
+
+    /**
+     * Concludes the evaluation of a group by determining its final status based on its rules. Sets the group's status,
+     * message, points, and determines if the test should fail.
+     *
+     * @param group
+     *                  the group to conclude
+     * @return true if the test should fail due to this group's evaluation
+     */
+    protected boolean conclude(final Scorecard.Group group)
+    {
+        // nothing to do for disabled groups
+        if (!group.isEnabled())
+        {
+            return false;
+        }
+
+        Scorecard.Rule firstMatch = null, lastMatch = null;
+        int maxPoints = 0, sumPointsTotal = 0, sumPointsMatching = 0;
+        boolean somePassed = false, someFailed = false, someError = false;
+
+        final List<Scorecard.Rule> rules = group.getRules();
+        for (final Scorecard.Rule rule : rules)
+        {
+            if (!rule.getDefinition().isEnabled())
+            {
+                continue;
+            }
+
+            final int pointsAchieved = rule.getPoints();
+            final int rulePoints = rule.getDefinition().getPoints();
+            final Status ruleStatus = rule.getStatus();
+
+            if (ruleStatus.isError())
+            {
+                someError = true;
+                break;
+            }
+
+            maxPoints = Math.max(maxPoints, rulePoints);
+            sumPointsTotal += rulePoints;
+
+            if (ruleStatus.isPassed())
+            {
+                somePassed = true;
+                if (firstMatch == null)
+                {
+                    firstMatch = rule;
+                }
+                lastMatch = rule;
+                sumPointsMatching += pointsAchieved;
+            }
+            else if (ruleStatus.isFailed())
+            {
+                someFailed = true;
+            }
+        }
+
+        if (someError)
+        {
+            group.setStatus(Status.ERROR);
+            group.setPoints(0);
+            group.setTotalPoints(0);
+            return false;
+        }
+
+        final int points, totalPoints;
+        final Status groupStatus;
+        final List<Scorecard.Rule> rulesThatMayFailTest;
+        final GroupDefinition.Mode mode = group.getDefinition().getMode();
+
+        if (mode == GroupDefinition.Mode.allPassed)
+        {
+            groupStatus = someFailed ? Status.FAILED : somePassed ? Status.PASSED : Status.SKIPPED;
+            points = sumPointsMatching;
+            totalPoints = sumPointsTotal;
+            rulesThatMayFailTest = rules;
+        }
+        else if (mode == GroupDefinition.Mode.firstPassed || mode == GroupDefinition.Mode.lastPassed)
+        {
+            final Scorecard.Rule triggerRule = (mode == GroupDefinition.Mode.firstPassed) ? firstMatch : lastMatch;
+            final int idx = triggerRule != null ? rules.indexOf(triggerRule) : -1;
+
+            groupStatus = somePassed ? Status.PASSED : someFailed ? Status.FAILED : Status.SKIPPED;
+            points = triggerRule != null ? triggerRule.getPoints() : 0;
+            totalPoints = maxPoints;
+            rulesThatMayFailTest = idx < 0 ? rules : rules.subList(0, idx + 1);
+        }
+        else
+        {
+            groupStatus = Status.ERROR;
+            points = 0;
+            totalPoints = 0;
+            rulesThatMayFailTest = Collections.emptyList();
+        }
+
+        boolean testFailed = rulesThatMayFailTest.stream().filter((rule) -> {
+            final boolean ruleFailedTest = rule.mayFailTest();
+            if (ruleFailedTest)
+            {
+                rule.setTestFailed();
+            }
+            return ruleFailedTest;
+        }).count() > 0L;
+
+        if (group.mayFailTest())
+        {
+            group.setTestFailed();
+            testFailed = true;
+        }
+
+        group.setStatus(groupStatus);
+        group.setPoints(points);
+        group.setTotalPoints(totalPoints);
+
+        final String groupMessage = groupStatus.isPassed() ? group.getDefinition().getSuccessMessage()
+                                                           : groupStatus.isFailed() ? group.getDefinition().getFailMessage() : null;
+        if (groupMessage != null)
+        {
+            group.setMessage(groupMessage);
+        }
+
+        return testFailed;
     }
 }

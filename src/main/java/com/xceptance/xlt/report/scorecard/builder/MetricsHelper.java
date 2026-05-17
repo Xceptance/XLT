@@ -17,13 +17,36 @@ public class MetricsHelper
     }
 
     /**
-     * Constructs a generic aggregate XPath expression.
+     * Constructs a generic aggregate XPath expression for a regex name match.
      */
     private String aggregateValue(String collectionName, String nodeName, String regex, String metricPath)
     {
         // Using max() safely aggregates the result if the regex matches multiple nodes.
         return String.format("max(//%s/%s[matches(name, '%s')]/%s)", 
                              collectionName, nodeName, escapeRegex(regex), metricPath);
+    }
+
+    /**
+     * Constructs a generic aggregate XPath expression with arbitrary map conditions.
+     */
+    private String aggregateValue(String collectionName, String nodeName, java.util.Map<String, Object> args, String metricPath)
+    {
+        java.util.List<String> conditions = new java.util.ArrayList<>();
+        
+        if (args.containsKey("name")) {
+            conditions.add(String.format("matches(name, '%s')", escapeRegex((String)args.get("name"))));
+        }
+        if (args.containsKey("label")) {
+            conditions.add(String.format("labels = '%s'", escapeRegex((String)args.get("label"))));
+        }
+
+        if (conditions.isEmpty()) {
+            throw new IllegalArgumentException("Must provide at least 'name' or 'label' parameter");
+        }
+
+        String conditionString = String.join(" and ", conditions);
+
+        return String.format("max(//%s/%s[%s]/%s)", collectionName, nodeName, conditionString, metricPath);
     }
 
     // =========================================================
@@ -40,19 +63,43 @@ public class MetricsHelper
         return aggregateValue("requests", "request", regex, metricPath);
     }
 
+    public String requestValue(java.util.Map<String, Object> args, String metricPath)
+    {
+        return aggregateValue("requests", "request", args, metricPath);
+    }
+
     public String requestP50(String regex) { return requestValue(regex, "percentiles/p50"); }
+    public String requestP50(java.util.Map<String, Object> args) { return requestValue(args, "percentiles/p50"); }
+
     public String requestP95(String regex) { return requestValue(regex, "percentiles/p95"); }
+    public String requestP95(java.util.Map<String, Object> args) { return requestValue(args, "percentiles/p95"); }
+
     public String requestP99(String regex) { return requestValue(regex, "percentiles/p99"); }
+    public String requestP99(java.util.Map<String, Object> args) { return requestValue(args, "percentiles/p99"); }
+
     public String requestP99_9(String regex) { return requestValue(regex, "percentiles/p99.9"); }
+    public String requestP99_9(java.util.Map<String, Object> args) { return requestValue(args, "percentiles/p99.9"); }
 
     public String requestMean(String regex) { return requestValue(regex, "mean"); }
+    public String requestMean(java.util.Map<String, Object> args) { return requestValue(args, "mean"); }
+
     public String requestMedian(String regex) { return requestValue(regex, "median"); }
+    public String requestMedian(java.util.Map<String, Object> args) { return requestValue(args, "median"); }
+
     public String requestMin(String regex) { return requestValue(regex, "min"); }
+    public String requestMin(java.util.Map<String, Object> args) { return requestValue(args, "min"); }
+
     public String requestMax(String regex) { return requestValue(regex, "max"); }
+    public String requestMax(java.util.Map<String, Object> args) { return requestValue(args, "max"); }
     
     public String requestErrors(String regex) { return requestValue(regex, "errors"); }
+    public String requestErrors(java.util.Map<String, Object> args) { return requestValue(args, "errors"); }
+
     public String requestErrorPercentage(String regex) { return requestValue(regex, "errorPercentage"); }
+    public String requestErrorPercentage(java.util.Map<String, Object> args) { return requestValue(args, "errorPercentage"); }
+
     public String requestCount(String regex) { return requestValue(regex, "count"); }
+    public String requestCount(java.util.Map<String, Object> args) { return requestValue(args, "count"); }
 
     // =========================================================
     // Transactions
@@ -66,19 +113,43 @@ public class MetricsHelper
         return aggregateValue("transactions", "transaction", regex, metricPath);
     }
 
+    public String transactionValue(java.util.Map<String, Object> args, String metricPath)
+    {
+        return aggregateValue("transactions", "transaction", args, metricPath);
+    }
+
     public String transactionP50(String regex) { return transactionValue(regex, "percentiles/p50"); }
+    public String transactionP50(java.util.Map<String, Object> args) { return transactionValue(args, "percentiles/p50"); }
+
     public String transactionP95(String regex) { return transactionValue(regex, "percentiles/p95"); }
+    public String transactionP95(java.util.Map<String, Object> args) { return transactionValue(args, "percentiles/p95"); }
+
     public String transactionP99(String regex) { return transactionValue(regex, "percentiles/p99"); }
+    public String transactionP99(java.util.Map<String, Object> args) { return transactionValue(args, "percentiles/p99"); }
+
     public String transactionP99_9(String regex) { return transactionValue(regex, "percentiles/p99.9"); }
+    public String transactionP99_9(java.util.Map<String, Object> args) { return transactionValue(args, "percentiles/p99.9"); }
 
     public String transactionMean(String regex) { return transactionValue(regex, "mean"); }
+    public String transactionMean(java.util.Map<String, Object> args) { return transactionValue(args, "mean"); }
+
     public String transactionMedian(String regex) { return transactionValue(regex, "median"); }
+    public String transactionMedian(java.util.Map<String, Object> args) { return transactionValue(args, "median"); }
+
     public String transactionMin(String regex) { return transactionValue(regex, "min"); }
+    public String transactionMin(java.util.Map<String, Object> args) { return transactionValue(args, "min"); }
+
     public String transactionMax(String regex) { return transactionValue(regex, "max"); }
+    public String transactionMax(java.util.Map<String, Object> args) { return transactionValue(args, "max"); }
     
     public String transactionErrors(String regex) { return transactionValue(regex, "errors"); }
+    public String transactionErrors(java.util.Map<String, Object> args) { return transactionValue(args, "errors"); }
+
     public String transactionErrorPercentage(String regex) { return transactionValue(regex, "errorPercentage"); }
+    public String transactionErrorPercentage(java.util.Map<String, Object> args) { return transactionValue(args, "errorPercentage"); }
+
     public String transactionCount(String regex) { return transactionValue(regex, "count"); }
+    public String transactionCount(java.util.Map<String, Object> args) { return transactionValue(args, "count"); }
 
     // =========================================================
     // Actions
@@ -92,19 +163,43 @@ public class MetricsHelper
         return aggregateValue("actions", "action", regex, metricPath);
     }
 
+    public String actionValue(java.util.Map<String, Object> args, String metricPath)
+    {
+        return aggregateValue("actions", "action", args, metricPath);
+    }
+
     public String actionP50(String regex) { return actionValue(regex, "percentiles/p50"); }
+    public String actionP50(java.util.Map<String, Object> args) { return actionValue(args, "percentiles/p50"); }
+
     public String actionP95(String regex) { return actionValue(regex, "percentiles/p95"); }
+    public String actionP95(java.util.Map<String, Object> args) { return actionValue(args, "percentiles/p95"); }
+
     public String actionP99(String regex) { return actionValue(regex, "percentiles/p99"); }
+    public String actionP99(java.util.Map<String, Object> args) { return actionValue(args, "percentiles/p99"); }
+
     public String actionP99_9(String regex) { return actionValue(regex, "percentiles/p99.9"); }
+    public String actionP99_9(java.util.Map<String, Object> args) { return actionValue(args, "percentiles/p99.9"); }
 
     public String actionMean(String regex) { return actionValue(regex, "mean"); }
+    public String actionMean(java.util.Map<String, Object> args) { return actionValue(args, "mean"); }
+
     public String actionMedian(String regex) { return actionValue(regex, "median"); }
+    public String actionMedian(java.util.Map<String, Object> args) { return actionValue(args, "median"); }
+
     public String actionMin(String regex) { return actionValue(regex, "min"); }
+    public String actionMin(java.util.Map<String, Object> args) { return actionValue(args, "min"); }
+
     public String actionMax(String regex) { return actionValue(regex, "max"); }
+    public String actionMax(java.util.Map<String, Object> args) { return actionValue(args, "max"); }
     
     public String actionErrors(String regex) { return actionValue(regex, "errors"); }
+    public String actionErrors(java.util.Map<String, Object> args) { return actionValue(args, "errors"); }
+
     public String actionErrorPercentage(String regex) { return actionValue(regex, "errorPercentage"); }
+    public String actionErrorPercentage(java.util.Map<String, Object> args) { return actionValue(args, "errorPercentage"); }
+
     public String actionCount(String regex) { return actionValue(regex, "count"); }
+    public String actionCount(java.util.Map<String, Object> args) { return actionValue(args, "count"); }
 
     // =========================================================
     // Custom Timers
@@ -118,12 +213,25 @@ public class MetricsHelper
         return aggregateValue("customTimers", "customTimer", regex, metricPath);
     }
 
+    public String customTimerValue(java.util.Map<String, Object> args, String metricPath)
+    {
+        return aggregateValue("customTimers", "customTimer", args, metricPath);
+    }
+
     public String customTimerP50(String regex) { return customTimerValue(regex, "percentiles/p50"); }
+    public String customTimerP50(java.util.Map<String, Object> args) { return customTimerValue(args, "percentiles/p50"); }
+
     public String customTimerP95(String regex) { return customTimerValue(regex, "percentiles/p95"); }
+    public String customTimerP95(java.util.Map<String, Object> args) { return customTimerValue(args, "percentiles/p95"); }
+
     public String customTimerP99(String regex) { return customTimerValue(regex, "percentiles/p99"); }
+    public String customTimerP99(java.util.Map<String, Object> args) { return customTimerValue(args, "percentiles/p99"); }
     
     public String customTimerMean(String regex) { return customTimerValue(regex, "mean"); }
+    public String customTimerMean(java.util.Map<String, Object> args) { return customTimerValue(args, "mean"); }
+
     public String customTimerMax(String regex) { return customTimerValue(regex, "max"); }
+    public String customTimerMax(java.util.Map<String, Object> args) { return customTimerValue(args, "max"); }
 
     // =========================================================
     // Global Summaries

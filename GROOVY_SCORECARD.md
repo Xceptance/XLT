@@ -92,10 +92,21 @@ builder.rules {
 
 **Fluent Assertions:** You must use one of the following methods to evaluate the selector's value: `isLessThan(value)`, `isLessThanOrEqualTo(value)`, `isGreaterThan(value)`, `isGreaterThanOrEqualTo(value)`, `isEqualTo(value)`, `isNotEqualTo(value)`, or `matchesRegex(pattern)`.
 
-**The `metrics` Helper:** Writing raw XPath is tedious. The `metrics` object abstracts this away. For example:
-* `metrics.requestP95('^Homepage')`
-* `metrics.transactionMean('^TOrder')`
-* `metrics.globalErrorPercentage('requests')`
+**The `metrics` Helper:** Writing raw XPath is tedious. The `metrics` object abstracts this away using named parameters:
+* `metrics.requestP95('^Homepage')` (legacy shorthand: matches by regex against the name)
+* `metrics.requestP95(name: '^Homepage')` (explicit regex match against name)
+
+**Label Selection:**
+If your test run makes use of labels to group requests, you can use the built-in named parameters to match by label instead of by name regex:
+*   `requestP95(label: 'homepage')`
+This performs an exact match on the label property rather than a regex over the name.
+
+You can also combine both conditions to be extremely precise:
+*   `requestP95(name: '^Homepage', label: 'critical')`
+This performs an `and` match against both the regex and the label property.
+
+Similarly, these helpers are available for **transactions**, **actions** and **customTimers**:
+*   `transactionP95(name: '...Regex')`, `transactionP95(label: '...Label')`, `transactionCount(label: '...')`, `actionErrorPercentage(label: '...')`, etc.
 
 ### 3.2 Groups
 Groups logically organize your rules. A group calculates its achieved points based on its `mode`:
