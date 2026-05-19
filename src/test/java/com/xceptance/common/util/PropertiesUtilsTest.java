@@ -225,4 +225,65 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
     {
         Assert.assertEquals("", PropertiesUtils.substituteVariables("#{ null }", props));
     }
+
+    // =========================================================================
+    // Chained Groovy Expression Tests
+    // =========================================================================
+
+    /**
+     * A Groovy expression that references another Groovy expression via ${} should resolve correctly.
+     */
+    @Test
+    public void testGroovyChainedReference()
+    {
+        props.setProperty("foo", "10");
+        props.setProperty("bar", "20");
+        props.setProperty("baz", "#{ (${foo} + ${bar})/2 }");
+        props.setProperty("bum", "#{ ${baz} }");
+
+        Assert.assertEquals("15", PropertiesUtils.substituteVariables(props.getProperty("bum"), props));
+    }
+
+    /**
+     * A chained Groovy reference used inside a larger expression should resolve and compute correctly.
+     */
+    @Test
+    public void testGroovyChainedUsedInExpression()
+    {
+        props.setProperty("foo", "10");
+        props.setProperty("bar", "20");
+        props.setProperty("baz", "#{ (${foo} + ${bar})/2 }");
+        props.setProperty("bum", "#{ ${baz} * 2 }");
+
+        Assert.assertEquals("30", PropertiesUtils.substituteVariables(props.getProperty("bum"), props));
+    }
+
+    /**
+     * A plain ${} reference to a Groovy-valued property (without an outer #{}) should resolve to the evaluated value.
+     */
+    @Test
+    public void testGroovyChainedWithoutOuterGroovy()
+    {
+        props.setProperty("foo", "10");
+        props.setProperty("bar", "20");
+        props.setProperty("baz", "#{ (${foo} + ${bar})/2 }");
+        props.setProperty("bum", "result=${baz}");
+
+        Assert.assertEquals("result=15", PropertiesUtils.substituteVariables(props.getProperty("bum"), props));
+    }
+
+    /**
+     * Three levels of chaining: qux → bum → baz → foo/bar.
+     */
+    @Test
+    public void testGroovyTripleChain()
+    {
+        props.setProperty("foo", "10");
+        props.setProperty("bar", "20");
+        props.setProperty("baz", "#{ (${foo} + ${bar})/2 }");
+        props.setProperty("bum", "#{ ${baz} + 5 }");
+        props.setProperty("qux", "#{ ${bum} * 10 }");
+
+        Assert.assertEquals("200", PropertiesUtils.substituteVariables(props.getProperty("qux"), props));
+    }
 }

@@ -232,6 +232,14 @@ public final class PropertiesUtils
                 // recursively replace any variable in the substitution string
                 substitution = resolveVariables(substitution, props, new HashSet<>(variables));
 
+                // evaluate any Groovy expressions in the resolved substitution so that
+                // chained references (e.g. bum=${baz} where baz=#{...}) are fully resolved
+                // before being pasted into the surrounding value
+                if (substitution.contains("#{"))
+                {
+                    substitution = GroovyPropertyEvaluator.evaluateGroovyExpressions(substitution);
+                }
+
                 // replace variable reference with its substitution value
                 result = RegExUtils.replaceAll(result, RegExUtils.escape(DELIMITER_START + key + DELIMITER_STOP),
                                                Matcher.quoteReplacement(substitution));
