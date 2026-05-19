@@ -123,7 +123,7 @@ public final class PropertiesUtils
         {
             ParameterCheckUtils.isReadableFile(file, "file");
         }
-        catch(IllegalArgumentException e)
+        catch (final IllegalArgumentException e)
         {
             throw new FileNotFoundException(file.toString());
         }
@@ -136,41 +136,22 @@ public final class PropertiesUtils
     }
 
     /**
-     * Perform variable substitution in string <code>value</code> from the values of keys found in the system
-     * properties.
+     * Performs variable substitution in string <code>value</code> from the values of keys found in the system
+     * properties, with support for Groovy expressions.
      * <p>
-     * The variable substitution delimiters are <b>${</b> and <b>}</b>.
-     * <p>
-     * For example, if the System properties contains "key=value", then the call
-     *
-     * <pre>
-     * String s = OptionConverter.substituteVars(&quot;Value of key is ${key}.&quot;);
-     * </pre>
-     *
-     * will set the variable <code>s</code> to "Value of key is value.".
-     * <p>
-     * If no value could be found for the specified key, then the <code>props</code> parameter is searched, if the value
-     * could not be found there, then substitution defaults to the empty string.
-     * <p>
-     * For example, if system properties contains no value for the key "inexistentKey", then the call
-     *
-     * <pre>
-     * String s = OptionConverter.subsVars(&quot;Value of nonexistentKey is [${nonexistentKey}]&quot;);
-     * </pre>
-     *
-     * will set <code>s</code> to "Value of nonexistentKey is []"
-     * <p>
-     * An {@link java.lang.IllegalArgumentException} is thrown if <code>value</code> contains a start delimiter "${"
-     * which is not balanced by a stop delimiter "}".
+     * Variable substitution uses <b>${...}</b> syntax. Groovy expressions use <b>#{...}</b> syntax and are evaluated
+     * after variable substitution. Property values referenced inside Groovy expressions must use the {@code ${...}}
+     * syntax which is resolved before Groovy evaluation.
      * </p>
      *
      * @param value
      *            the string on which variable substitution is performed
      * @param properties
      *            properties object to be used for variable lookup
-     * @return argument string where variable have been substituted
+     * @return argument string where variables and Groovy expressions have been substituted
      * @throws IllegalArgumentException
-     *             if <code>value</code> is malformed
+     *             if <code>value</code> is malformed or Groovy evaluation fails
+     * @since 10.0.0
      */
     public static String substituteVariables(final String value, final Properties properties) throws IllegalArgumentException
     {
@@ -178,13 +159,25 @@ public final class PropertiesUtils
         ParameterCheckUtils.isNotNull(value, "value");
         ParameterCheckUtils.isNotNull(properties, "props");
 
-        if (value.length() == 0 || properties.size() == 0)
+        if (value.isEmpty())
         {
             return value;
         }
 
-        // recursively resolve the variables in the value
-        return resolveVariables(value, properties, new HashSet<String>());
+        // Step 1: Resolve ${...} variable references
+        String result = value;
+        if (properties.size() > 0)
+        {
+            result = resolveVariables(value, properties, new HashSet<>());
+        }
+
+        // Step 2: Evaluate #{...} Groovy expressions
+        if (result.contains("#{"))
+        {
+            result = GroovyPropertyEvaluator.evaluateGroovyExpressions(result);
+        }
+
+        return result;
     }
 
     /**
@@ -237,7 +230,15 @@ public final class PropertiesUtils
             if (substitution != null)
             {
                 // recursively replace any variable in the substitution string
-                substitution = resolveVariables(substitution, props, new HashSet<String>(variables));
+                substitution = resolveVariables(substitution, props, new HashSet<>(variables));
+
+                // evaluate any Groovy expressions in the resolved substitution so that
+                // chained references (e.g. bum=${baz} where baz=#{...}) are fully resolved
+                // before being pasted into the surrounding value
+                if (substitution.contains("#{"))
+                {
+                    substitution = GroovyPropertyEvaluator.evaluateGroovyExpressions(substitution);
+                }
 
                 // replace variable reference with its substitution value
                 result = RegExUtils.replaceAll(result, RegExUtils.escape(DELIMITER_START + key + DELIMITER_STOP),
@@ -263,7 +264,7 @@ public final class PropertiesUtils
     public static Map<String, String> getPropertiesForKey(final String domainKey, final Properties properties)
     {
         // initialize map
-        final Map<String, String> result = new HashMap<String, String>();
+        final Map<String, String> result = new HashMap<>();
 
         // maybe we are finished yet
         if (domainKey == null || domainKey.isEmpty())
