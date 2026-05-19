@@ -16,7 +16,6 @@
 package com.xceptance.common.util;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -32,24 +31,16 @@ import groovy.lang.Script;
  * resolution time. Multi-line scripts are supported.
  * </p>
  * <p>
- * Scripts have access to:
- * <ul>
- * <li>{@code props} - Read-only access to property values</li>
- * <li>{@code ctx} - Shared Map for storing data between script evaluations</li>
- * </ul>
+ * Property values referenced inside Groovy expressions must use the standard {@code ${...}} variable substitution
+ * syntax, which is resolved <em>before</em> Groovy evaluation. The substituted value is pasted literally into the
+ * script text, so numeric values work naturally while string values must be quoted explicitly (e.g.
+ * {@code #{ '${mode}' == 'production' ? 100 : 10 }}).
  * </p>
  * Example usage in properties:
  *
  * <pre>
  * totalUsers = 100
- * browse.users = #{ (props['totalUsers'] as int) * 0.4 }
- *
- * # Multi-line with context sharing
- * setup = #{
- *     ctx['base'] = props['totalUsers'] as int
- *     'configured'
- * }
- * search.users = #{ ctx['base'] - 10 }
+ * browse.users = #{ (${totalUsers} * 0.4).intValue() }
  * </pre>
  *
  * @author Xceptance Software Technologies GmbH
@@ -92,15 +83,11 @@ public class GroovyPropertyEvaluator
      *
      * @param value
      *            the string potentially containing Groovy expressions
-     * @param props
-     *            properties available to scripts via 'props' binding (read-only)
-     * @param ctx
-     *            shared context map available to scripts via 'ctx' binding
      * @return the value with all Groovy expressions evaluated and replaced
      * @throws IllegalArgumentException
      *             if a Groovy expression cannot be evaluated
      */
-    public static String evaluateGroovyExpressions(final String value, final Properties props, final Map<String, Object> ctx)
+    public static String evaluateGroovyExpressions(final String value)
     {
         if (value == null || value.isEmpty() || !value.contains("#{"))
         {
@@ -186,7 +173,7 @@ public class GroovyPropertyEvaluator
             result.append(value.substring(currentIndex, startIndex));
 
             final String script = value.substring(startIndex + 2, endIndex).trim();
-            final String evaluated = evaluateSingleExpression(script, props, ctx);
+            final String evaluated = evaluateSingleExpression(script);
             result.append(evaluated);
 
             currentIndex = endIndex + 1;
@@ -200,22 +187,16 @@ public class GroovyPropertyEvaluator
      *
      * @param script
      *            the Groovy script to evaluate
-     * @param props
-     *            properties available via 'props' binding
-     * @param ctx
-     *            shared context map available via 'ctx' binding
      * @return the string representation of the script result
      * @throws IllegalArgumentException
      *             if the script cannot be evaluated
      */
-    private static String evaluateSingleExpression(final String script, final Properties props, final Map<String, Object> ctx)
+    private static String evaluateSingleExpression(final String script)
     {
         try
         {
             // Create bindings for this evaluation
             final Binding binding = new Binding();
-            binding.setVariable("props", new ReadOnlyProperties(props));
-            binding.setVariable("ctx", ctx);
 
             // Get or compile the script
             final Script compiledScript = SCRIPT_CACHE.computeIfAbsent(script, s -> {
@@ -247,72 +228,5 @@ public class GroovyPropertyEvaluator
     public static void clearCache()
     {
         SCRIPT_CACHE.clear();
-    }
-
-    /**
-     * Read-only wrapper for Properties to prevent scripts from modifying properties.
-     */
-    private static class ReadOnlyProperties
-    {
-        private final Properties props;
-
-        public ReadOnlyProperties(final Properties props)
-        {
-            this.props = props;
-        }
-
-        /**
-         * Get a property value by key.
-         *
-         * @param key
-         *            the property key
-         * @return the property value or null
-         */
-        @SuppressWarnings("unused")
-        public String getAt(final String key)
-        {
-            return props.getProperty(key);
-        }
-
-        /**
-         * Get a property value by key (alternative method name).
-         *
-         * @param key
-         *            the property key
-         * @return the property value or null
-         */
-        @SuppressWarnings("unused")
-        public String getProperty(final String key)
-        {
-            return props.getProperty(key);
-        }
-
-        /**
-         * Get a property value with default.
-         *
-         * @param key
-         *            the property key
-         * @param defaultValue
-         *            the default value if key not found
-         * @return the property value or default
-         */
-        @SuppressWarnings("unused")
-        public String getProperty(final String key, final String defaultValue)
-        {
-            return props.getProperty(key, defaultValue);
-        }
-
-        /**
-         * Check if a property exists.
-         *
-         * @param key
-         *            the property key
-         * @return true if the property exists
-         */
-        @SuppressWarnings("unused")
-        public boolean containsKey(final String key)
-        {
-            return props.containsKey(key);
-        }
     }
 }

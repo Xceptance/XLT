@@ -167,73 +167,6 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
     }
 
     /**
-     * Test Groovy property access using props binding.
-     */
-    @Test
-    public void testGroovyPropertyAccess()
-    {
-        props.setProperty("userCount", "100");
-
-        // Using getAt syntax (props['key'])
-        Assert.assertEquals("100", PropertiesUtils.substituteVariables("#{ props['userCount'] }", props));
-
-        // Using getProperty method
-        Assert.assertEquals("100", PropertiesUtils.substituteVariables("#{ props.getProperty('userCount') }", props));
-
-        // Calculation with property
-        Assert.assertEquals("40", PropertiesUtils.substituteVariables("#{ (props['userCount'] as int) * 0.4 as int }", props));
-    }
-
-    /**
-     * Test Groovy context sharing between expressions.
-     */
-    @Test
-    public void testGroovyContextSharing()
-    {
-        final java.util.Map<String, Object> ctx = new java.util.concurrent.ConcurrentHashMap<>();
-
-        // Store value in context
-        final String result1 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] = 42; 'stored' }", props, ctx);
-        Assert.assertEquals("stored", result1);
-
-        // Retrieve value from context
-        final String result2 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] }", props, ctx);
-        Assert.assertEquals("42", result2);
-
-        // Calculate based on stored context
-        final String result3 = PropertiesUtils.substituteVariables("#{ ctx['myKey'] * 2 }", props, ctx);
-        Assert.assertEquals("84", result3);
-    }
-
-    /**
-     * Test multi-line Groovy scripts.
-     */
-    @Test
-    public void testGroovyMultiLineScript()
-    {
-        props.setProperty("totalUsers", "100");
-
-        final java.util.Map<String, Object> ctx = new java.util.concurrent.ConcurrentHashMap<>();
-
-        final String script = """
-            #{
-                def total = props['totalUsers'] as int
-                ctx['base'] = total
-                ctx['browse'] = (total * 0.4) as int
-                'configured'
-            }""";
-
-        final String result = PropertiesUtils.substituteVariables(script, props, ctx);
-        Assert.assertEquals("configured", result);
-        Assert.assertEquals(100, ctx.get("base"));
-        Assert.assertEquals(40, ctx.get("browse"));
-
-        // Now use the stored values
-        final String users = PropertiesUtils.substituteVariables("#{ ctx['base'] - ctx['browse'] }", props, ctx);
-        Assert.assertEquals("60", users);
-    }
-
-    /**
      * Test mixed ${} and #{} expansion.
      */
     @Test
@@ -246,18 +179,6 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
     }
 
     /**
-     * Test Groovy expression embedded in text.
-     */
-    @Test
-    public void testGroovyEmbeddedInText()
-    {
-        props.setProperty("count", "5");
-
-        final String result = PropertiesUtils.substituteVariables("Users: #{ props['count'] as int * 10 }", props);
-        Assert.assertEquals("Users: 50", result);
-    }
-
-    /**
      * Test Groovy expression containing closures (nested brackets).
      */
     @Test
@@ -266,20 +187,6 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
         // This will fail if the parser stops at the first '}'
         final String result = PropertiesUtils.substituteVariables("#{ [1, 2].collect { it * 2 }.join(',') }", props);
         Assert.assertEquals("2,4", result);
-    }
-
-    /**
-     * Test Groovy expression with nested string interpolation (brackets inside quotes).
-     */
-    @Test
-    public void testGroovyWithNestedInterpolation()
-    {
-        props.setProperty("mode", "production");
-        
-        // This will fail if the parser stops at the first '}' which is inside the string
-        final String result = PropertiesUtils.substituteVariables("""
-            #{ "Env: ${props['mode']}" }""", props);
-        Assert.assertEquals("Env: production", result);
     }
 
     /**

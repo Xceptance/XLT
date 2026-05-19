@@ -1140,8 +1140,6 @@ public class XltPropertiesImpl extends XltProperties
      */
     private static class VarSubstitutionSupportedProperties extends Properties
     {
-        private final Map<String, Object> groovyContext = new java.util.concurrent.ConcurrentHashMap<>();
-
         /**
          * serialVersionUID
          */
@@ -1154,7 +1152,7 @@ public class XltPropertiesImpl extends XltProperties
         public String getProperty(final String key)
         {
             final String val = super.getProperty(key);
-            return val == null ? null : PropertiesUtils.substituteVariables(val, this, groovyContext);
+            return val == null ? null : PropertiesUtils.substituteVariables(val, this);
         }
 
         /**
@@ -1164,7 +1162,6 @@ public class XltPropertiesImpl extends XltProperties
         public synchronized void clear()
         {
             super.clear();
-            groovyContext.clear();
             GroovyPropertyEvaluator.clearCache();
         }
 

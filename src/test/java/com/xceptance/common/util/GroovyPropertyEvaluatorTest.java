@@ -15,10 +15,6 @@
  */
 package com.xceptance.common.util;
 
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,15 +28,9 @@ import org.junit.Test;
  */
 public class GroovyPropertyEvaluatorTest
 {
-    private Properties props;
-
-    private Map<String, Object> ctx;
-
     @Before
     public void setUp()
     {
-        props = new Properties();
-        ctx = new ConcurrentHashMap<>();
         GroovyPropertyEvaluator.clearCache();
     }
 
@@ -60,7 +50,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void nullInput()
     {
-        Assert.assertNull(GroovyPropertyEvaluator.evaluateGroovyExpressions(null, props, ctx));
+        Assert.assertNull(GroovyPropertyEvaluator.evaluateGroovyExpressions(null));
     }
 
     /**
@@ -69,7 +59,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void emptyInput()
     {
-        Assert.assertEquals("", GroovyPropertyEvaluator.evaluateGroovyExpressions("", props, ctx));
+        Assert.assertEquals("", GroovyPropertyEvaluator.evaluateGroovyExpressions(""));
     }
 
     /**
@@ -78,7 +68,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void noMarkers()
     {
-        Assert.assertEquals("plain text", GroovyPropertyEvaluator.evaluateGroovyExpressions("plain text", props, ctx));
+        Assert.assertEquals("plain text", GroovyPropertyEvaluator.evaluateGroovyExpressions("plain text"));
     }
 
     /**
@@ -87,7 +77,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void hashWithoutBrace()
     {
-        Assert.assertEquals("# not groovy", GroovyPropertyEvaluator.evaluateGroovyExpressions("# not groovy", props, ctx));
+        Assert.assertEquals("# not groovy", GroovyPropertyEvaluator.evaluateGroovyExpressions("# not groovy"));
     }
 
     // =========================================================================
@@ -100,7 +90,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void emptyExpression()
     {
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ }", props, ctx);
+        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ }");
         Assert.assertEquals("", result);
     }
 
@@ -111,7 +101,7 @@ public class GroovyPropertyEvaluatorTest
     public void unclosedExpression()
     {
         final String input = "prefix #{ 1 + 1";
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(input, props, ctx);
+        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(input);
         Assert.assertEquals(input, result);
     }
 
@@ -121,7 +111,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void multipleExpressions()
     {
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("a=#{ 1 + 1 } b=#{ 2 + 2 }", props, ctx);
+        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("a=#{ 1 + 1 } b=#{ 2 + 2 }");
         Assert.assertEquals("a=2 b=4", result);
     }
 
@@ -131,7 +121,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void adjacentExpressions()
     {
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 1 }#{ 2 }#{ 3 }", props, ctx);
+        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 1 }#{ 2 }#{ 3 }");
         Assert.assertEquals("123", result);
     }
 
@@ -142,11 +132,11 @@ public class GroovyPropertyEvaluatorTest
     public void nonStringResult()
     {
         // List
-        final String listResult = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ [1, 2, 3] }", props, ctx);
+        final String listResult = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ [1, 2, 3] }");
         Assert.assertEquals("[1, 2, 3]", listResult);
 
         // Map — Groovy map literal [a:1] creates a LinkedHashMap, whose toString() uses Java format {a=1}
-        final String mapResult = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ [a:1] }", props, ctx);
+        final String mapResult = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ [a:1] }");
         Assert.assertEquals("{a=1}", mapResult);
     }
 
@@ -156,7 +146,7 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void nullResult()
     {
-        Assert.assertEquals("", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ null }", props, ctx));
+        Assert.assertEquals("", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ null }"));
     }
 
     // =========================================================================
@@ -170,7 +160,7 @@ public class GroovyPropertyEvaluatorTest
     public void nestedBracesInClosure()
     {
         final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ [1, 2, 3].collect { it * 2 }.join(',') }", props, ctx);
+            "#{ [1, 2, 3].collect { it * 2 }.join(',') }");
         Assert.assertEquals("2,4,6", result);
     }
 
@@ -181,7 +171,7 @@ public class GroovyPropertyEvaluatorTest
     public void bracesInSingleQuotedString()
     {
         final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ '{not a brace}' }", props, ctx);
+            "#{ '{not a brace}' }");
         Assert.assertEquals("{not a brace}", result);
     }
 
@@ -192,7 +182,7 @@ public class GroovyPropertyEvaluatorTest
     public void bracesInDoubleQuotedString()
     {
         final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ \"{not a brace}\" }", props, ctx);
+            "#{ \"{not a brace}\" }");
         Assert.assertEquals("{not a brace}", result);
     }
 
@@ -203,7 +193,7 @@ public class GroovyPropertyEvaluatorTest
     public void escapedQuotesInString()
     {
         final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ 'it\\'s fine' }", props, ctx);
+            "#{ 'it\\'s fine' }");
         Assert.assertEquals("it's fine", result);
     }
 
@@ -214,58 +204,8 @@ public class GroovyPropertyEvaluatorTest
     public void deeplyNestedBraces()
     {
         final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ [[1,2],[3,4]].collect { outer -> outer.collect { it * 10 } }.flatten().join(',') }", props, ctx);
+            "#{ [[1,2],[3,4]].collect { outer -> outer.collect { it * 10 } }.flatten().join(',') }");
         Assert.assertEquals("10,20,30,40", result);
-    }
-
-    // =========================================================================
-    // Bindings (props and ctx)
-    // =========================================================================
-
-    /**
-     * props binding provides read-only access to properties via bracket syntax.
-     */
-    @Test
-    public void propsGetAt()
-    {
-        props.setProperty("myKey", "myValue");
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ props['myKey'] }", props, ctx);
-        Assert.assertEquals("myValue", result);
-    }
-
-    /**
-     * props.getProperty with default value.
-     */
-    @Test
-    public void propsGetPropertyWithDefault()
-    {
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ props.getProperty('missing', 'fallback') }", props, ctx);
-        Assert.assertEquals("fallback", result);
-    }
-
-    /**
-     * props.containsKey check.
-     */
-    @Test
-    public void propsContainsKey()
-    {
-        props.setProperty("exists", "yes");
-        Assert.assertEquals("true", GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ props.containsKey('exists') }", props, ctx));
-        Assert.assertEquals("false", GroovyPropertyEvaluator.evaluateGroovyExpressions(
-            "#{ props.containsKey('missing') }", props, ctx));
-    }
-
-    /**
-     * ctx allows storing and retrieving values between evaluations.
-     */
-    @Test
-    public void contextSharingBetweenEvaluations()
-    {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ ctx['shared'] = 42; '' }", props, ctx);
-        final String result = GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ ctx['shared'] * 2 }", props, ctx);
-        Assert.assertEquals("84", result);
     }
 
     // =========================================================================
@@ -278,7 +218,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void invalidSyntaxThrows()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ this is not valid ++ }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ this is not valid ++ }");
     }
 
     /**
@@ -289,7 +229,7 @@ public class GroovyPropertyEvaluatorTest
     {
         try
         {
-            GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ undefined_variable.method() }", props, ctx);
+            GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ undefined_variable.method() }");
             Assert.fail("Should have thrown IllegalArgumentException");
         }
         catch (final IllegalArgumentException e)
@@ -311,8 +251,8 @@ public class GroovyPropertyEvaluatorTest
     public void cacheProducesConsistentResults()
     {
         final String expr = "#{ 7 * 6 }";
-        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions(expr, props, ctx));
-        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions(expr, props, ctx));
+        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions(expr));
+        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions(expr));
     }
 
     /**
@@ -321,23 +261,9 @@ public class GroovyPropertyEvaluatorTest
     @Test
     public void clearCacheAllowsReEvaluation()
     {
-        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 42 }", props, ctx));
+        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 42 }"));
         GroovyPropertyEvaluator.clearCache();
-        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 42 }", props, ctx));
-    }
-
-    /**
-     * Cached scripts should work correctly with different bindings (different props/ctx).
-     */
-    @Test
-    public void cachedScriptWithDifferentBindings()
-    {
-        props.setProperty("x", "10");
-        Assert.assertEquals("10", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ props['x'] }", props, ctx));
-
-        // Change the property value and re-evaluate — should see the new value
-        props.setProperty("x", "20");
-        Assert.assertEquals("20", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ props['x'] }", props, ctx));
+        Assert.assertEquals("42", GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 42 }"));
     }
 
     // =========================================================================
@@ -350,7 +276,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksFileAccess()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new java.io.File('/etc/passwd') }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new java.io.File('/etc/passwd') }");
     }
 
     /**
@@ -359,7 +285,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksUrlAccess()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new java.net.URL('http://evil.com') }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new java.net.URL('http://evil.com') }");
     }
 
     /**
@@ -368,7 +294,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksSocketAccess()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new java.net.Socket('localhost', 80) }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new java.net.Socket('localhost', 80) }");
     }
 
     /**
@@ -377,7 +303,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksRuntimeExec()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ Runtime.getRuntime().exec('ls') }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ Runtime.getRuntime().exec('ls') }");
     }
 
     /**
@@ -386,7 +312,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksSystemExit()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ System.exit(0) }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ System.exit(0) }");
     }
 
     /**
@@ -395,7 +321,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksSystemSetProperty()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ System.setProperty('hack', 'true') }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ System.setProperty('hack', 'true') }");
     }
 
     /**
@@ -404,7 +330,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksProcessBuilder()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new ProcessBuilder('ls').start() }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new ProcessBuilder('ls').start() }");
     }
 
     /**
@@ -413,7 +339,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksThreadCreation()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new Thread({ println 'hi' }).start() }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new Thread({ println 'hi' }).start() }");
     }
 
     /**
@@ -424,7 +350,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksGdkStringExecute()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 'ls'.execute() }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ 'ls'.execute() }");
     }
 
     /**
@@ -433,7 +359,7 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksClassForName()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ Class.forName('java.lang.Runtime') }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ Class.forName('java.lang.Runtime') }");
     }
 
     /**
@@ -442,17 +368,6 @@ public class GroovyPropertyEvaluatorTest
     @Test(expected = IllegalArgumentException.class)
     public void securityBlocksGroovyShellInception()
     {
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new groovy.lang.GroovyShell().evaluate('1+1') }", props, ctx);
-    }
-
-    /**
-     * Attempting to write to the props binding should fail — ReadOnlyProperties does not expose putAt or setProperty
-     * with write semantics. Groovy's dynamic dispatch will throw a MissingMethodException or similar.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void securityBlocksPropsMutation()
-    {
-        props.setProperty("original", "safe");
-        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ props['injected'] = 'hacked'; '' }", props, ctx);
+        GroovyPropertyEvaluator.evaluateGroovyExpressions("#{ new groovy.lang.GroovyShell().evaluate('1+1') }");
     }
 }

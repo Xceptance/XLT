@@ -140,11 +140,8 @@ public final class PropertiesUtils
      * properties, with support for Groovy expressions.
      * <p>
      * Variable substitution uses <b>${...}</b> syntax. Groovy expressions use <b>#{...}</b> syntax and are evaluated
-     * after variable substitution. Groovy scripts can access:
-     * <ul>
-     * <li><code>props</code> - read-only access to property values</li>
-     * <li><code>ctx</code> - a local Map for storing data during script evaluation</li>
-     * </ul>
+     * after variable substitution. Property values referenced inside Groovy expressions must use the {@code ${...}}
+     * syntax which is resolved before Groovy evaluation.
      * </p>
      *
      * @param value
@@ -157,35 +154,6 @@ public final class PropertiesUtils
      * @since 10.0.0
      */
     public static String substituteVariables(final String value, final Properties properties) throws IllegalArgumentException
-    {
-        return substituteVariables(value, properties, null);
-    }
-
-    /**
-     * Performs variable substitution in string <code>value</code> from the values of keys found in the system
-     * properties, with support for Groovy expressions and shared context.
-     * <p>
-     * Variable substitution uses <b>${...}</b> syntax. Groovy expressions use <b>#{...}</b> syntax and are evaluated
-     * after variable substitution. Groovy scripts can access:
-     * <ul>
-     * <li><code>props</code> - read-only access to property values</li>
-     * <li><code>ctx</code> - shared Map for storing data between script evaluations</li>
-     * </ul>
-     * </p>
-     *
-     * @param value
-     *            the string on which variable substitution is performed
-     * @param properties
-     *            properties object to be used for variable lookup
-     * @param ctx
-     *            shared context map for Groovy scripts (may be null, in which case an empty map is used)
-     * @return argument string where variables and Groovy expressions have been substituted
-     * @throws IllegalArgumentException
-     *             if <code>value</code> is malformed or Groovy evaluation fails
-     * @since 10.0.0
-     */
-    public static String substituteVariables(final String value, final Properties properties, final Map<String, Object> ctx)
-        throws IllegalArgumentException
     {
         // parameter validation
         ParameterCheckUtils.isNotNull(value, "value");
@@ -206,8 +174,7 @@ public final class PropertiesUtils
         // Step 2: Evaluate #{...} Groovy expressions
         if (result.contains("#{"))
         {
-            final Map<String, Object> contextMap = ctx != null ? ctx : new java.util.concurrent.ConcurrentHashMap<>();
-            result = GroovyPropertyEvaluator.evaluateGroovyExpressions(result, properties, contextMap);
+            result = GroovyPropertyEvaluator.evaluateGroovyExpressions(result);
         }
 
         return result;

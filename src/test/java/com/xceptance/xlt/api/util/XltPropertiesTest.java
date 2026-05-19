@@ -894,7 +894,8 @@ public class XltPropertiesTest
     // Groovy Property Expansion Tests
     // =============================================
     /**
-     * Get config and data directories from XltPropertiesImpl object with empty properties
+     * Test that Groovy expressions using ${...} variable substitution work correctly
+     * within the XltProperties integration layer.
      * @throws FileSystemException 
      */
     @Test
@@ -919,86 +920,6 @@ public class XltPropertiesTest
         assertEquals(10 * 2, p.getProperty("TSearch2.users", 0));
         assertEquals(10 * 2 * 3, p.getProperty("TCheckout2.users", 0));
         assertEquals(10 * 2 * 3 * 4, p.getProperty("TOrder2.users", 0));
-        
-        // multiline and with context store
-        assertEquals("initialized", p.getProperty("init"));
-        assertEquals(40, p.getProperty("browse.users", 0));
-        assertEquals(10, p.getProperty("order.users", 0));
-    }
-
-    /**
-     * Verifies that clearing the properties successfully clears the persistent Groovy 
-     * evaluation context. This ensures that state does not leak across explicit property
-     * reloads or programmatic resets.
-     *
-     * @throws FileSystemException if file operations fail during setup
-     */
-    @Test
-    public void clearClearsGroovyContext() throws FileSystemException
-    {
-        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // Evaluate "init" which populates ctx['base'] = 100
-        assertEquals("initialized", p.getProperty("init"));
-        
-        // Verify it works normally
-        assertEquals(40, p.getProperty("browse.users", 0));
-
-        // Now clear the properties. This should clear mergedProperties and its groovyContext
-        p.clear();
-
-        // Inject a property that tries to access the previous context state
-        p.setProperty("leak.test", "#{ (ctx['base'] ?: 0) * 0.4 }");
-        
-        // If context leaked, ctx['base'] would be 100 and it would return 40.0
-        // Because it was properly cleared, ctx['base'] is null, falls back to 0, and evaluates to 0.0
-        assertEquals("0.0", p.getProperty("leak.test"));
-    }
-
-    @Test
-    public void multiFileContextSharing() throws FileSystemException
-    {
-        setup("propertytest_groovy_multifile", "propertytest_groovy_multifile/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // Evaluate init from project.properties
-        assertEquals("initialized", p.getProperty("init"));
-
-        // Evaluate browse.users from test.properties which uses ctx['base']
-        assertEquals(40, p.getProperty("browse.users", 0));
-    }
-
-    @Test
-    public void groovyEnvironmentAndDynamicSystemPropertyResolution() throws FileSystemException
-    {
-        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // Before dynamic system property
-        assertEquals("Environment: production", p.getProperty("env.label"));
-        
-        try
-        {
-            System.setProperty("mode", "staging");
-            
-            // ${mode} should see 'staging' because substituteVariables checks System.getProperty directly
-            p.setProperty("test.standard", "${mode}");
-            assertEquals("staging", p.getProperty("test.standard"));
-            
-            // props['mode'] in Groovy should still see 'production' because it reads from the snapshot
-            assertEquals("Environment: production", p.getProperty("env.label"));
-            
-            // Environment variable test
-            // PATH is a typical env var. props['PATH'] should be null.
-            p.setProperty("test.groovy.env", "#{ props['PATH'] == null ? 'missing' : 'found' }");
-            assertEquals("missing", p.getProperty("test.groovy.env"));
-        }
-        finally
-        {
-            System.clearProperty("mode");
-        }
     }
 
     @Test
@@ -1061,50 +982,11 @@ public class XltPropertiesTest
     }
 
     // =============================================
-    // Doc: "Available Bindings" — props.getProperty with default value
-    // =============================================
-    /**
-     * Validates the documented default value pattern:
-     * {@code #{ props.getProperty('order.users.fallback', '10') as int }}
-     *
-     * @see PROPERTY_EXPANSION.md "Available Bindings / props"
-     */
-    @Test
-    public void propsGetPropertyWithDefaultValue() throws FileSystemException
-    {
-        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // 'order.users.fallback' does not exist → falls back to '10' in the Groovy expression
-        assertEquals(10, p.getProperty("orderUsers", 0));
-    }
-
-    // =============================================
-    // Doc: "Available Bindings" — dynamic key lookup
-    // =============================================
-    /**
-     * Validates the documented dynamic key lookup pattern:
-     * {@code #{ props.getProperty("limit.${props['env']}", '100') as int }}
-     * where env=production resolves to limit.production=500.
-     *
-     * @see PROPERTY_EXPANSION.md "Available Bindings / props"
-     */
-    @Test
-    public void dynamicKeyLookupViaProps() throws FileSystemException
-    {
-        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // env=production, limit.production=500 → dynamic lookup resolves to 500
-        assertEquals(500, p.getProperty("dynamic.limit", 0));
-    }
-
-    // =============================================
     // Doc: "Supported Operations — Conditionals"
     // =============================================
     /**
-     * Validates the documented ternary conditional pattern:
-     * {@code #{ props['mode'] == 'production' ? 100 : 10 }}
+     * Validates that ternary conditional expressions work with ${} substitution.
+     * String values must be quoted when pasted via ${} into Groovy.
      *
      * @see PROPERTY_EXPANSION.md "Supported Operations"
      */
@@ -1114,51 +996,8 @@ public class XltPropertiesTest
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
         var p = new XltPropertiesImpl(null, null, true, false);
 
-        // mode=production → 100
+        // mode=production → quoted as '${mode}' in Groovy → 100
         assertEquals(100, p.getProperty("conditional.users", 0));
-    }
-
-    // =============================================
-    // Doc: "Dynamic Arrival Rates" — multiline division
-    // =============================================
-    /**
-     * Validates the documented arrival rate calculation:
-     * {@code (props['totalRequests'] / props['testDurationHours']) as int}
-     *
-     * @see PROPERTY_EXPANSION.md "Practical Examples / Dynamic Arrival Rates"
-     */
-    @Test
-    public void dynamicArrivalRateCalculation() throws FileSystemException
-    {
-        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // totalRequests=10000, testDurationHours=1.5 → 10000/1.5 = 6666 (truncated)
-        assertEquals(6666, p.getProperty("com.xceptance.xlt.loadtests.TSearch.arrivalRate", 0));
-    }
-
-    // =============================================
-    // Doc: "Multi-Line Scripts" — multiline ctx population
-    // =============================================
-    /**
-     * Validates the documented multiline script that populates ctx from a single
-     * "config" property and then uses ctx values in subsequent properties.
-     *
-     * @see PROPERTY_EXPANSION.md "Multi-Line Scripts"
-     */
-    @Test
-    public void multilineScriptWithContextPopulation() throws FileSystemException
-    {
-        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        // Trigger the multiline script
-        assertEquals("configured", p.getProperty("com.xceptance.xlt.loadtests.config"));
-
-        // Verify ctx values are used by downstream properties
-        // totalUsers3=100 → browse3=(100*0.4)=40, order3=(100*0.1)=10
-        assertEquals(40, p.getProperty("com.xceptance.xlt.loadtests.TBrowse.users", 0));
-        assertEquals(10, p.getProperty("com.xceptance.xlt.loadtests.TOrder.users", 0));
     }
 
     // =============================================
