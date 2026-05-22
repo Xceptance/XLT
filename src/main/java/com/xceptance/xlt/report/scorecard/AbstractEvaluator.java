@@ -6,12 +6,20 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.thoughtworks.xstream.XStream;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
 
 import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.s9api.XdmValue;
 
 /**
  * Base class for scorecard evaluators.
@@ -324,5 +332,152 @@ public abstract class AbstractEvaluator
         }
 
         return testFailed;
+    }
+
+    /**
+     * Evaluates a single rule by processing all its checks and determining the final rule status.
+     *
+     * @param rule
+     *            the rule to evaluate
+     * @param compiler
+     *            the XPath compiler
+     * @param document
+     *            the document to evaluate against
+     * @param selectorLookup
+     *            function to lookup selector definitions by ID
+     */
+    protected void evaluateRule(final Scorecard.Rule rule, final XPathCompiler compiler, final XdmNode document,
+                              final Function<String, SelectorDefinition> selectorLookup)
+    {
+        for (final RuleDefinition.Check check : rule.getDefinition().getChecks())
+        {
+            final Scorecard.Rule.Check ruleCheck = new Scorecard.Rule.Check(check, rule.isEnabled());
+            if (ruleCheck.isEnabled())
+            {
+                evaluateRuleCheck(ruleCheck, compiler, document, selectorLookup);
+            }
+            rule.addCheck(ruleCheck);
+        }
+        conclude(rule);
+    }
+
+    /**
+     * Evaluates a single check within a rule.
+     *
+     * @param check
+     *            the check to evaluate
+     * @param compiler
+     *            the XPath compiler
+     * @param document
+     *            the document to evaluate against
+     * @param selectorLookup
+     *            function to lookup selector definitions by ID
+     */
+    private void evaluateRuleCheck(final Scorecard.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
+                                   final Function<String, SelectorDefinition> selectorLookup)
+    {
+        // check for manually set status first
+        final Status manualStatus = check.getDefinition().getManualStatus();
+        if (manualStatus != null)
+        {
+            check.setStatus(manualStatus);
+            check.setErrorMessage(check.getDefinition().getManualErrorMessage());
+            if (check.getDefinition().isDisplayValue())
+            {
+                check.setValue(formatValue(check.getDefinition().getManualValue(), check.getDefinition().getFormatter()));
+                check.setRawValue(check.getDefinition().getManualValue());
+            }
+            return;
+        }
+
+        // pick the right selector (specified directly or referenced by ID)
+        final String selector;
+        final String selectorId = check.getDefinition().getSelectorId();
+        if (selectorId != null)
+        {
+            selector = selectorLookup.apply(selectorId).getExpression();
+        }
+        else
+        {
+            selector = check.getDefinition().getSelector();
+        }
+
+        Status status = Status.FAILED;
+        String message = null, value = null;
+        try
+        {
+            final XdmValue result = compiler.evaluate(selector, document);
+            if (result.isEmpty())
+            {
+                status = Status.ERROR;
+                message = "No item found for selector '" + selector + "'";
+            }
+            else if (result.size() > 1)
+            {
+                status = Status.ERROR;
+                message = "Selector must match a single item but found " + result.size() + " items instead";
+            }
+            else
+            {
+                final XdmItem node = result.itemAt(0);
+                if (!(node.isAtomicValue() || node.isNode()))
+                {
+                    status = Status.ERROR;
+                    message = "Selected item is neither a node nor an atomic value";
+                }
+                else
+                {
+                    value = node.getStringValue();
+                    final boolean matches = evaluateConditionSafe(check.getDefinition().getCondition(), compiler, node);
+                    if (matches)
+                    {
+                        status = Status.PASSED;
+                    }
+                }
+            }
+        }
+        catch (final SaxonApiException sae)
+        {
+            status = Status.ERROR;
+            message = sae.getMessage();
+        }
+        check.setStatus(status);
+        check.setErrorMessage(message);
+        if (check.getDefinition().isDisplayValue())
+        {
+            check.setValue(formatValue(value, check.getDefinition().getFormatter()));
+            check.setRawValue(value);
+        }
+    }
+
+    /**
+     * Safely evaluates a condition expression against a context value. If the expression starts with a comparison
+     * operator, it prepends '.' to make it a valid XPath.
+     *
+     * @param condition
+     *            the condition expression
+     * @param compiler
+     *            the XPath compiler
+     * @param contextValue
+     *            the context value to evaluate against
+     * @return true if the condition evaluates to true, false otherwise
+     */
+    private boolean evaluateConditionSafe(final String condition, final XPathCompiler compiler, final XdmValue contextValue)
+    {
+        // strip any leading/trailing whitespace
+        String expr = StringUtils.strip(condition);
+        // if expression starts with a comparison operator, put a '.' in front of it
+        if (startsWithAny(expr, "=", "<", ">", "!="))
+        {
+            expr = ". " + expr;
+        }
+        try
+        {
+            return contextValue.select(compiler.compile(expr).asStep()).asAtomic().getBooleanValue();
+        }
+        catch (final Exception e)
+        {
+            return false;
+        }
     }
 }

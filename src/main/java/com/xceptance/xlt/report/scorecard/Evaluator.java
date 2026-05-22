@@ -27,7 +27,7 @@ import com.xceptance.xlt.common.XltConstants;
 import net.sf.saxon.s9api.Processor;
 
 /**
- * Main entry point for evaluating scorecards. Dispatches to either {@link StaticEvaluator} or {@link GroovyEvaluator}
+ * Main entry point for evaluating scorecards. Dispatches to either {@link JsonEvaluator} or {@link GroovyEvaluator}
  * based on the configuration file extension.
  */
 public class Evaluator
@@ -48,7 +48,7 @@ public class Evaluator
         }
         else
         {
-            this.delegate = new StaticEvaluator(configFile, processor);
+            this.delegate = new JsonEvaluator(configFile, processor);
         }
     }
 
