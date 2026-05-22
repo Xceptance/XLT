@@ -4,11 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,9 +15,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.io.Files;
+
+import dev.harrel.jsonschema.Validator;
+import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.providers.OrgJsonNode;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.UnprefixedElementMatchingPolicy;
@@ -27,13 +29,8 @@ import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XdmValue;
 
-import java.net.URI;
-import dev.harrel.jsonschema.Validator;
-import dev.harrel.jsonschema.ValidatorFactory;
-import dev.harrel.jsonschema.providers.OrgJsonNode;
-
 /**
- * Evaluator for static (JSON/YAML) scorecard configurations.
+ * Evaluator for static JSON scorecard configurations.
  */
 public class StaticEvaluator extends AbstractEvaluator
 {
@@ -71,31 +68,13 @@ public class StaticEvaluator extends AbstractEvaluator
         }
 
         final JSONObject configJSON;
-        final String fileName = configFile.getName().toLowerCase();
-
-        if (fileName.endsWith(".yaml") || fileName.endsWith(".yml"))
+        try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
         {
-            try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
-            {
-                final Yaml yamlParser = new Yaml();
-                final Map<String, Object> map = yamlParser.load(reader);
-                configJSON = new JSONObject(map);
-            }
-            catch (final Exception e)
-            {
-                throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as YAML", e);
-            }
+            configJSON = new JSONObject(new JSONTokener(reader));
         }
-        else
+        catch (final JSONException je)
         {
-            try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
-            {
-                configJSON = new JSONObject(new JSONTokener(reader));
-            }
-            catch (final JSONException je)
-            {
-                throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
-            }
+            throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
         }
 
         final Validator validator = new ValidatorFactory().withJsonNodeFactory(new OrgJsonNode.Factory()).createValidator();
@@ -123,12 +102,12 @@ public class StaticEvaluator extends AbstractEvaluator
      * Performs the actual evaluation of the scorecard configuration against the document.
      *
      * @param config
-     *                         the parsed configuration
+     *            the parsed configuration
      * @param documentFile
-     *                         the XML file to evaluate against
+     *            the XML file to evaluate against
      * @return the resulting scorecard
      * @throws SaxonApiException
-     *                               thrown if XPath evaluation fails
+     *             thrown if XPath evaluation fails
      */
     protected Scorecard doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
     {
@@ -232,13 +211,13 @@ public class StaticEvaluator extends AbstractEvaluator
      * Evaluates a single rule by processing all its checks and determining the final rule status.
      *
      * @param rule
-     *                           the rule to evaluate
+     *            the rule to evaluate
      * @param compiler
-     *                           the XPath compiler
+     *            the XPath compiler
      * @param document
-     *                           the document to evaluate against
+     *            the document to evaluate against
      * @param selectorLookup
-     *                           function to lookup selector definitions by ID
+     *            function to lookup selector definitions by ID
      */
     private void evaluateRule(final Scorecard.Rule rule, final XPathCompiler compiler, final XdmNode document,
                               final Function<String, SelectorDefinition> selectorLookup)
@@ -259,13 +238,13 @@ public class StaticEvaluator extends AbstractEvaluator
      * Evaluates a single check within a rule.
      *
      * @param check
-     *                           the check to evaluate
+     *            the check to evaluate
      * @param compiler
-     *                           the XPath compiler
+     *            the XPath compiler
      * @param document
-     *                           the document to evaluate against
+     *            the document to evaluate against
      * @param selectorLookup
-     *                           function to lookup selector definitions by ID
+     *            function to lookup selector definitions by ID
      */
     private void evaluateRuleCheck(final Scorecard.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
                                    final Function<String, SelectorDefinition> selectorLookup)
@@ -345,15 +324,15 @@ public class StaticEvaluator extends AbstractEvaluator
     }
 
     /**
-     * Safely evaluates a condition expression against a context value. If the expression starts with a comparison operator,
-     * it prepends '.' to make it a valid XPath.
+     * Safely evaluates a condition expression against a context value. If the expression starts with a comparison
+     * operator, it prepends '.' to make it a valid XPath.
      *
      * @param condition
-     *                         the condition expression
+     *            the condition expression
      * @param compiler
-     *                         the XPath compiler
+     *            the XPath compiler
      * @param contextValue
-     *                         the context value to evaluate against
+     *            the context value to evaluate against
      * @return true if the condition evaluates to true, false otherwise
      */
     private boolean evaluateConditionSafe(final String condition, final XPathCompiler compiler, final XdmValue contextValue)
@@ -374,6 +353,4 @@ public class StaticEvaluator extends AbstractEvaluator
             return false;
         }
     }
-
-
 }
