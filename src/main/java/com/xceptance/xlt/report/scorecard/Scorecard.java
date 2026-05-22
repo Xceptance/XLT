@@ -84,7 +84,7 @@ public class Scorecard
         private Integer totalPoints;
 
         @XStreamAsAttribute
-        private Boolean testFailed;
+        private boolean testFailed;
 
         private List<Group> groups;
 
@@ -159,12 +159,12 @@ public class Scorecard
 
         public boolean isTestFailed()
         {
-            return testFailed != null ? testFailed : false;
+            return testFailed;
         }
 
         void setTestFailed(final boolean testFailed)
         {
-            this.testFailed = testFailed ? Boolean.TRUE : null;
+            this.testFailed = testFailed;
         }
 
         public Integer getTotalPoints()
@@ -224,7 +224,7 @@ public class Scorecard
          * Sets the log messages from scratch.
          *
          * @param logs
-         *                 list of log messages
+         *            list of log messages
          */
         void setLogs(final List<String> logs)
         {
@@ -252,7 +252,7 @@ public class Scorecard
          * Adds an issue to the result.
          *
          * @param issue
-         *                  the issue to add
+         *            the issue to add
          */
         void addIssue(final Issue issue)
         {
@@ -349,7 +349,7 @@ public class Scorecard
         private Status status = Status.SKIPPED;
 
         @XStreamAsAttribute
-        private Boolean testFailed;
+        private boolean testFailed;
 
         Group(final GroupDefinition definition)
         {
@@ -419,7 +419,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = Boolean.TRUE;
+            this.testFailed = true;
         }
 
         public boolean isEnabled()
@@ -460,7 +460,7 @@ public class Scorecard
         private final String id;
 
         @XStreamAsAttribute
-        private Boolean testFailed;
+        private boolean testFailed;
 
         Rule(final RuleDefinition definition, final boolean groupEnabled)
         {
@@ -537,7 +537,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = Boolean.TRUE;
+            this.testFailed = true;
         }
 
         @XStreamAlias("check")
@@ -556,7 +556,7 @@ public class Scorecard
             private String errorMessage;
 
             private String value;
-            
+
             private String rawValue;
 
             Check(final RuleDefinition.Check definition, final boolean ruleEnabled)
@@ -622,6 +622,5 @@ public class Scorecard
                 return ruleEnabled && definition.isEnabled();
             }
         }
-
     }
 }
