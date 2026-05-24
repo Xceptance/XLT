@@ -373,7 +373,20 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
             XltLogger.runTimeLogger.info("Return cached response for " + webRequest.getUrl());
         }
 
+        this.reportCacheHit(webRequest, cacheEntry.webResponse);
+
         return cacheEntry.webResponse;
+    }
+
+    /**
+     * Called when a request was served directly from the cache without revalidation.
+     * 
+     * @param webRequest the request
+     * @param webResponse the cached response
+     */
+    protected void reportCacheHit(final WebRequest webRequest, final WebResponse webResponse)
+    {
+        // empty by default
     }
 
     /**

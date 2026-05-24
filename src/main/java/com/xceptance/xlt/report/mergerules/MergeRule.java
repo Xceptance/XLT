@@ -33,6 +33,7 @@ import com.xceptance.xlt.report.mergerules.responsetime.ResponseTimeCondition;
 import com.xceptance.xlt.report.mergerules.statuscode.StatusCodeCondition;
 import com.xceptance.xlt.report.mergerules.transaction.TransactionNameCondition;
 import com.xceptance.xlt.report.mergerules.url.UrlCondition;
+import com.xceptance.xlt.report.mergerules.cached.CachedCondition;
 
 /**
  * A {@link MergeRule} governs the process of "merging" different requests into one request by renaming the
@@ -57,7 +58,7 @@ public class MergeRule
     /**
      * The pattern to find placeholders in the new name.
      */
-    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acmnrstu])(?::(.+?))?\\}");
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acmnrstu]|cache)(?::(.+?))?\\}");
 
     /**
      * The definition of the new name without any placeholders.
@@ -144,6 +145,10 @@ public class MergeRule
      *         the transaction name exclude pattern to match, may be empty
      * @param httpMethodExcludePattern
      *         the HTTP method exclude pattern to match, may be empty
+     * @param cachedPattern
+     *         the cached pattern to match, may be empty
+     * @param cachedExcludePattern
+     *         the cached exclude pattern to match, may be empty
      * @param continueOnMatchAtId
      *         the ID of the rule to continue processing at if this rule matched
      * @param continueOnNoMatchAtId
@@ -175,6 +180,8 @@ public class MergeRule
                      final AgentNameExcludePattern agentNameExcludePattern, 
                      final TransactionNameExcludePattern transactionNameExcludePattern,
                      final HttpMethodExcludePattern httpMethodExcludePattern, 
+                     final CachedPattern cachedPattern,
+                     final CachedExcludePattern cachedExcludePattern,
                      final ContinueOnMatchAtId continueOnMatchAtId, 
                      final ContinueOnNoMatchAtId continueOnNoMatchAtId,
                      final DropOnMatch dropOnMatch,
@@ -234,6 +241,9 @@ public class MergeRule
 
             includeConditions.add(HttpMethodCondition.build(httpMethodPattern.value));
             excludeConditions.add(HttpMethodCondition.build(httpMethodExcludePattern.value));
+
+            includeConditions.add(CachedCondition.build(cachedPattern.value));
+            excludeConditions.add(CachedCondition.build(cachedExcludePattern.value));
 
             includeConditions.add(new ResponseTimeCondition(responseTimeRanges.value));
         }
@@ -514,6 +524,7 @@ public class MergeRule
                 case "t" -> sb.append("txnName: ").append(condition.toString());
                 case "m" -> sb.append("httpMethod: ").append(condition.toString());
                 case "u" -> sb.append("url: ").append(condition.toString());
+                case "cache" -> sb.append("cached: ").append(condition.toString());
                 default -> 
                 {
                     sb.append("unknown");
@@ -613,6 +624,8 @@ public class MergeRule
     public static record AgentNameExcludePattern(String value) {}; 
     public static record TransactionNameExcludePattern(String value) {};
     public static record HttpMethodExcludePattern(String value) {}; 
+    public static record CachedPattern(String value) {}; 
+    public static record CachedExcludePattern(String value) {};
 
     public static record StopOnMatch(boolean value) {}; 
     public static record DropOnMatch(boolean value) {}; 

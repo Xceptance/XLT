@@ -56,6 +56,8 @@ import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.CachedExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.CachedPattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypeExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContinueOnMatchAtId;
@@ -1673,6 +1675,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final var agentNamePattern = new AgentNamePattern(getStringProperty(basePropertyName + ".agentPattern", ""));
             final var transactionNamePattern = new TransactionNamePattern(getStringProperty(basePropertyName + ".transactionPattern", ""));
             final var httpMethodPattern = new HttpMethodPattern(getStringProperty(basePropertyName + ".methodPattern", ""));
+            final var cachedPattern = new CachedPattern(getStringProperty(basePropertyName + ".cachedPattern", ""));
             final var runTimeRanges = new RunTimeRanges(getStringProperty(basePropertyName + ".runTimeRanges", ""));
 
             // performance check pattern
@@ -1693,6 +1696,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                                                                           ""));
             final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude",
                                                                                                 ""));
+            final var cachedExcludePattern = new CachedExcludePattern(getStringProperty(basePropertyName + ".cachedPattern.exclude", ""));
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName.value()) == dropOnMatch.value())
             {
@@ -1714,7 +1718,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                           agentNamePattern, transactionNamePattern, httpMethodPattern, runTimeRanges,
                                                           stopOnMatch, requestNameExcludePattern, urlExcludePattern,
                                                           contentTypeExcludePattern, statusCodeExcludePattern, agentNameExcludePattern,
-                                                          transactionNameExcludePattern, httpMethodExcludePattern, continueOnMatchAtId,
+                                                          transactionNameExcludePattern, httpMethodExcludePattern, cachedPattern, cachedExcludePattern, continueOnMatchAtId,
                                                           continueOnNoMatchAtId, dropOnMatch, urlText, urlTextExclude);
                 requestProcessingRules.add(mergeRule);
             }

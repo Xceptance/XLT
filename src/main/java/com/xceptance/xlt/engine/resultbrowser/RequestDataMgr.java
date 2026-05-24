@@ -242,6 +242,7 @@ class RequestDataMgr
         }
 
         requestInfo.setTimings(request.requestData);
+        requestInfo.cached = request.requestData.isCached();
 
         return requestInfo;
     }

@@ -356,7 +356,7 @@ public class RequestDataTest extends TimerDataTest
         var instance = fromCsv(csvLine);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine, toCsv(instance));
+        Assert.assertEquals(csvLine + ",false", toCsv(instance));
     }
 
     /**
@@ -378,7 +378,7 @@ public class RequestDataTest extends TimerDataTest
         var instance = fromCsv(csvLine);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine, toCsv(instance));
+        Assert.assertEquals(csvLine + ",false", toCsv(instance));
     }
 
     /**
@@ -400,7 +400,7 @@ public class RequestDataTest extends TimerDataTest
         var instance = fromCsv(csvLine);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine, toCsv(instance));
+        Assert.assertEquals(csvLine + ",false", toCsv(instance));
     }
 
     /**
@@ -429,7 +429,7 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(0, instance.getTimeToLastBytes());
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,0,0,0,0,0,,,,,0,,,", toCsv(instance));
+        Assert.assertEquals(csvLine + ",0,0,0,0,0,0,,,,,0,,,,false", toCsv(instance));
     }
 
     /**
@@ -452,7 +452,7 @@ public class RequestDataTest extends TimerDataTest
         validateBeforeXLT4_6_6_RequestData(instance, false);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",,,,0,,,", toCsv(instance));
+        Assert.assertEquals(csvLine + ",,,,0,,,,false", toCsv(instance));
     }
 
     /**
@@ -475,7 +475,7 @@ public class RequestDataTest extends TimerDataTest
         validateBeforeXLT4_6_6_RequestData(instance, true);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,,", toCsv(instance));
+        Assert.assertEquals(csvLine + ",0,,,,false", toCsv(instance));
     }
 
     /**
@@ -498,7 +498,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_6_6_RequestData(instance, false);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,,", toCsv(instance));
+        Assert.assertEquals(csvLine + ",0,,,,false", toCsv(instance));
     }
 
     /**
@@ -521,7 +521,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_6_6_RequestData(instance, true);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,,", toCsv(instance));
+        Assert.assertEquals(csvLine + ",0,,,,false", toCsv(instance));
     }
 
     /**
@@ -544,13 +544,34 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_7_0_RequestData(instance);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",,,", toCsv(instance));
+        Assert.assertEquals(csvLine + ",,,,false", toCsv(instance));
     }
 
     /**
      * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)} and {@link RequestData#toCSV()}.
      */
     @Test
+    public void testParsingCompatibility_XLT_10_0_0()
+    {
+        final String csvLine = getXLT10_0_0_CSVLine(true, true);
+
+        var instance = fromCsv(csvLine);
+        validateXLT10_0_0_RequestData(instance, true);
+
+        Assert.assertEquals(csvLine, toCsv(instance));
+    }
+
+    private String getXLT10_0_0_CSVLine(boolean includeformData, boolean cached)
+    {
+        return getXLT4_12_0_CSVLine(includeformData) + "," + usedIpAddresses + "," + cached;
+    }
+
+    private void validateXLT10_0_0_RequestData(RequestData instance, boolean cached)
+    {
+        validateRequestData(instance, true, 10_00_00);
+        Assert.assertEquals(cached, instance.isCached());
+    }
+
     public void testParsingCompatibility_XLT_4_12_0()
     {
         final String csvLine = getXLT4_12_0_CSVLine(true);
@@ -558,7 +579,7 @@ public class RequestDataTest extends TimerDataTest
         var instance = fromCsv(csvLine);
         validateXLT4_12_0_RequestData(instance);
 
-        Assert.assertEquals(csvLine + ",", toCsv(instance));
+        Assert.assertEquals(csvLine + ",,false", toCsv(instance));
     }
 
     /**
@@ -815,7 +836,11 @@ public class RequestDataTest extends TimerDataTest
 
         // XLT 7.0.0
         String usedIpAddress = (xltVersion < 7_00_00) ? null : this.usedIpAddresses;
-        Assert.assertEquals(usedIpAddress, instance.getUsedIpAddress());
+        Assert.assertEquals(XltCharBuffer.valueOf(usedIpAddress), instance.getUsedIpAddress());
+
+        // XLT 10.0.0 - Cached flag
+        boolean cached = (xltVersion < 10_00_00) ? false : true;
+        Assert.assertEquals(cached, instance.isCached());
     }
 
     /**

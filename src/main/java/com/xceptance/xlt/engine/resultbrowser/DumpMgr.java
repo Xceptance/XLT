@@ -333,14 +333,18 @@ class DumpMgr
         final WebResponse webResponse = request.webResponse;
         String fileName = null;
 
-        if (webResponse == null || isHtmlContent(webResponse))
+        // cached requests have no payload to dump to disk
+        if (request.requestData == null || !request.requestData.isCached())
         {
-            fileName = dumpHtmlContent(name, webResponse);
-        }
-        else
-        {
-            fileName = dumpStaticContent(name, webResponse);
-            dumpStaticContentToCache(webRequest, webResponse);
+            if (webResponse == null || isHtmlContent(webResponse))
+            {
+                fileName = dumpHtmlContent(name, webResponse);
+            }
+            else
+            {
+                fileName = dumpStaticContent(name, webResponse);
+                dumpStaticContentToCache(webRequest, webResponse);
+            }
         }
 
         dataMgr.requestDumped(fileName, request);
@@ -441,6 +445,12 @@ class DumpMgr
         for (final String resource : resourcesToCopy())
         {
             final URL url = getClass().getResource("assets/" + resource);
+            if (url == null)
+            {
+                XltLogger.runTimeLogger.debug("Result browser resource file not found in classpath: " + resource);
+                continue;
+            }
+
             final File file = new File(getDumpDirectory(), resource);
 
             try

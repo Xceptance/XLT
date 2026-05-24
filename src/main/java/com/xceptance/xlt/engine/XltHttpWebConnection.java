@@ -108,6 +108,11 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
      */
     private static final boolean logEventOnRequestFailure;
 
+    /**
+     * Indicates whether cached requests should be logged as request data records.
+     */
+    private static boolean logCachedRequests;
+
     static
     {
         FAKE_RESPONSE_HEADER_LIST = new ArrayList<>();
@@ -130,6 +135,9 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
         responseIdHeader = props.getProperty(responseIdPropertyPrefix + "headerName", "X-XLT-ResponseId");
 
         logEventOnRequestFailure = props.getProperty(XltConstants.XLT_PACKAGE_PATH + ".http.requestFailure.logEvent", true);
+
+        // cached request logging
+        logCachedRequests = props.getProperty(XltConstants.XLT_PACKAGE_PATH + ".http.cachedRequests.logging", true);
     }
 
     /**
@@ -385,6 +393,65 @@ public class XltHttpWebConnection extends CachingHttpWebConnection
                 response.setRawSize(requestData.getBytesReceived());
             }
         }
+    }
+
+    /**
+     * Called when a request was served directly from the cache without revalidation.
+     * 
+     * @param webRequest the request
+     * @param webResponse the cached response
+     */
+    @Override
+    protected void reportCacheHit(final WebRequest webRequest, final WebResponse webResponse)
+    {
+        if (!logCachedRequests)
+        {
+            return;
+        }
+
+        // log the cache hit
+        final RequestStack requestStack = RequestStack.getCurrent();
+        final String timerName = requestStack.getHierarchicalTimerName();
+        final String requestName = requestStack.getHierarchicalRequestName(webRequest.getUrl());
+
+        final RequestData requestData = new RequestData(timerName);
+        requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(webRequest.getUrl()));
+        requestData.setHttpMethod(webRequest.getHttpMethod().toString());
+        requestData.setCached(true);
+
+        this.putAdditionalRequestData(requestData, webRequest);
+
+        requestData.setTime(GlobalClock.millis());
+        requestData.setRunTime(0);
+
+        // set response data
+        requestData.setResponseCode(webResponse.getStatusCode());
+        requestData.setFailed(webResponse.getStatusCode() >= 500);
+        requestData.setContentType(webResponse.getContentType());
+
+        // metrics for cache hits are 0, no actual network transfer occurred
+        requestData.setBytesSent(0);
+        requestData.setBytesReceived(Math.max(0, webResponse.getRawSize()));
+        requestData.setConnectTime(0);
+        requestData.setSendTime(0);
+        requestData.setServerBusyTime(0);
+        requestData.setReceiveTime(0);
+        requestData.setTimeToFirstBytes(0);
+        requestData.setTimeToLastBytes(0);
+        requestData.setDnsTime(0);
+
+        // create a clone of the web request that is used for the request history only
+        final WebRequest clonedWebRequest = this.cloneWebRequest(webRequest);
+
+        final SessionImpl session = (SessionImpl) Session.getCurrent();
+        session.getDataManager().logDataRecord(requestData);
+        session.getRequestHistory().add(requestName, clonedWebRequest, webResponse, requestData);
+
+        // Note: NetworkData is intentionally NOT logged here. Cache hits do not involve
+        // any actual network traffic, so they should not appear in the NetworkDataManager.
+
+        // update page size statistics
+        PageStatistics.getPageStatistics().addToBytes(requestData.getBytesReceived());
     }
 
     /**

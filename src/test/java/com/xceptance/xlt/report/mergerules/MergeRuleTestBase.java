@@ -19,6 +19,8 @@ import java.util.List;
 
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.CachedExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.CachedPattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypeExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.ContinueOnMatchAtId;
@@ -79,6 +81,8 @@ public class MergeRuleTestBase
                              getOrDefault(data, AgentNameExcludePattern.class, new AgentNameExcludePattern("")),
                              getOrDefault(data, TransactionNameExcludePattern.class, new TransactionNameExcludePattern("")),
                              getOrDefault(data, HttpMethodExcludePattern.class, new HttpMethodExcludePattern("")),
+                             getOrDefault(data, CachedPattern.class, new CachedPattern("")),
+                             getOrDefault(data, CachedExcludePattern.class, new CachedExcludePattern("")),
                              getOrDefault(data, ContinueOnMatchAtId.class, new ContinueOnMatchAtId(id)),
                              getOrDefault(data, ContinueOnNoMatchAtId.class, new ContinueOnNoMatchAtId(id)),
                              getOrDefault(data, DropOnMatch.class, new DropOnMatch(false)),
