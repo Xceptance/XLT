@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.scorecard;
+package com.xceptance.xlt.report.scorecard.groovy;
 
 import com.xceptance.xlt.api.util.XltProperties;
 

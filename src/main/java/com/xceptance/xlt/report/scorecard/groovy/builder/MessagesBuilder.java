@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.scorecard.builder;
+package com.xceptance.xlt.report.scorecard.groovy.builder;
 
 import java.util.HashMap;
 import java.util.Map;

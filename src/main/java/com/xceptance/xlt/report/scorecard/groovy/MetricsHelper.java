@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.scorecard.builder;
+package com.xceptance.xlt.report.scorecard.groovy;
 
 /**
  * A helper class injected into the Groovy scorecard script as 'metrics'.

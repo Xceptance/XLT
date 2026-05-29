@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.scorecard;
+package com.xceptance.xlt.report.scorecard.groovy;
 
 import java.util.Arrays;
 import java.util.List;
