@@ -13,7 +13,7 @@ import org.junit.Test;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
 
-public class EvaluatorTest
+public class JsonEvaluatorTest
 {
     @Test
     public void testParseConfiguration() throws Exception

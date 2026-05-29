@@ -17,7 +17,7 @@ import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 
-public class EvaluatorGroovyTest
+public class GroovyEvaluatorTest
 {
     @Test
     public void testParseConfigurationGroovyValues() throws Exception
