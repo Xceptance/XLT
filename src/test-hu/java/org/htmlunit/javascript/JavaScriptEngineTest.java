@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.htmlunit.corejs.javascript.ContextFactory;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlButtonInput;
 import org.htmlunit.html.HtmlElement;
@@ -283,7 +285,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
             loadPageWithAlerts(content1);
         }
         catch (final Exception e) {
-            assertTrue(e.getMessage().indexOf(URL_FIRST.toString()) > -1);
+            assertTrue(e.getMessage().contains(URL_FIRST.toString()));
         }
 
         // external script
@@ -306,7 +308,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
             client.getPage(URL_FIRST);
         }
         catch (final Exception e) {
-            assertTrue(e.getMessage(), e.getMessage().indexOf(urlScript.toString()) > -1);
+            assertTrue(e.getMessage(), e.getMessage().contains(urlScript.toString()));
         }
     }
 
@@ -321,7 +323,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final String jsContent = "function doTest() { alert('gZip'); }";
         final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (GZIPOutputStream gzipper = new GZIPOutputStream(bytes)) {
-            gzipper.write(jsContent.getBytes("ASCII"));
+            gzipper.write(jsContent.getBytes(StandardCharsets.US_ASCII));
         }
 
         final List<NameValuePair> headers = new ArrayList<>();
@@ -349,7 +351,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final MockWebConnection webConnection = getMockWebConnection();
 
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
-            bytes.write("".getBytes("ASCII"));
+            bytes.write("".getBytes(StandardCharsets.US_ASCII));
 
             final List<NameValuePair> headers = new ArrayList<>();
             headers.add(new NameValuePair(HttpHeader.CONTENT_LENGTH, "0"));
@@ -378,7 +380,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
 
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
             final String jsContent = "function doTest() { alert('gZip'); }";
-            bytes.write(jsContent.getBytes("ASCII"));
+            bytes.write(jsContent.getBytes(StandardCharsets.US_ASCII));
 
             final List<NameValuePair> headers = new ArrayList<>();
             headers.add(new NameValuePair("Content-Encoding", "gzip"));
@@ -806,17 +808,14 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
             client.setWebConnection(webConnection);
 
             final Exception[] exceptions = {null};
-            final Thread runner = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        client.getPage(URL_FIRST);
-                    }
-                    catch (final Exception e) {
-                        exceptions[0] = e;
-                    }
+            final Thread runner = new Thread(() -> {
+                try {
+                    client.getPage(URL_FIRST);
                 }
-            };
+                catch (final Exception e) {
+                    exceptions[0] = e;
+                }
+            });
 
             runner.start();
 
@@ -826,7 +825,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
                 fail("Script was still running after timeout");
             }
 
-            Assertions.assertTrue(exceptions[0] instanceof RuntimeException, exceptions[0].getMessage());
+            Assertions.assertInstanceOf(RuntimeException.class, exceptions[0], exceptions[0].getMessage());
             final Throwable cause = exceptions[0].getCause();
             String msg = cause.getMessage();
             Assertions.assertTrue(cause.getMessage().startsWith(
@@ -861,7 +860,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         /** {@inheritDoc} */
         @Override
         public Object execute(
-                final HtmlPage page, final Scriptable scope,
+                final HtmlPage page, final VarScope scope,
                 final String sourceCode, final String sourceName, final int startLine) {
             scriptExecutionCount_++;
             return super.execute(page, scope, sourceCode, sourceName, startLine);
@@ -869,14 +868,14 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
 
         /** {@inheritDoc} */
         @Override
-        public Object execute(final HtmlPage page, final Scriptable scope, final Script script) {
+        public Object execute(final HtmlPage page, final VarScope scope, final Script script) {
             scriptExecuteScriptCount_++;
             return super.execute(page, scope, script);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Script compile(final HtmlPage page, final Scriptable scope,
+        public Script compile(final HtmlPage page, final VarScope scope,
                 final String sourceCode, final String sourceName, final int startLine) {
             scriptCompileCount_++;
             return super.compile(page, scope, sourceCode, sourceName, startLine);
@@ -1031,7 +1030,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final WebClient client = getWebClient();
         client.setJavaScriptEngine(new JavaScriptEngine(client) {
             @Override
-            public Object execute(final HtmlPage htmlPage, final Scriptable scope,
+            public Object execute(final HtmlPage htmlPage, final VarScope scope,
                     final String sourceCode, final String sourceName, final int startLine) {
                 collectedScripts.add(sourceCode);
                 return null;
@@ -1324,33 +1323,25 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
 
             final int runs = 100;
 
-            final Thread t1 = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        for (int i = 0; i < runs; i++) {
-                            webClient.getPage(window1, new WebRequest(URL_FIRST));
-                        }
+            final Thread t1 = new Thread(() -> {
+                try {
+                    for (int i = 0; i < runs; i++) {
+                        webClient.getPage(window1, new WebRequest(URL_FIRST));
                     }
-                    catch (final FailingHttpStatusCodeException | IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                }
+                catch (final FailingHttpStatusCodeException | IOException e) {
+                    throw new RuntimeException(e);
                 }
             });
 
-            final Thread t2 = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        for (int i = 0; i < runs; i++) {
-                            webClient.getPage(window2, new WebRequest(URL_FIRST));
-                        }
+            final Thread t2 = new Thread(() -> {
+                try {
+                    for (int i = 0; i < runs; i++) {
+                        webClient.getPage(window2, new WebRequest(URL_FIRST));
                     }
-                    catch (final FailingHttpStatusCodeException | IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                }
+                catch (final FailingHttpStatusCodeException | IOException e) {
+                    throw new RuntimeException(e);
                 }
             });
 

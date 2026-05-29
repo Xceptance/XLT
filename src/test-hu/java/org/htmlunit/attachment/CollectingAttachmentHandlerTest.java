@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class CollectingAttachmentHandlerTest extends SimpleWebTestCase {
         final byte[] bytes = SerializationUtils.serialize(new CollectingAttachmentHandler());
 
         final CollectingAttachmentHandler deserialized =
-                (CollectingAttachmentHandler) SerializationUtils.deserialize(bytes);
+                SerializationUtils.deserialize(bytes);
         deserialized.handleAttachment(new UnexpectedPage(null, null), null);
     }
 }

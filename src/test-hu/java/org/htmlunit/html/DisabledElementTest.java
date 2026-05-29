@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,14 +108,14 @@ public class DisabledElementTest extends SimpleWebTestCase {
                     throws Exception {
 
         String htmlContent = DOCTYPE_HTML + "<html><body><form id='form1'>{0}</form></body></html>";
-        htmlContent = MessageFormat.format(htmlContent, new Object[]{elementHtml});
+        htmlContent = MessageFormat.format(htmlContent, elementHtml);
 
 
-        htmlContent = MessageFormat.format(htmlContent, new Object[]{disabledAttribute});
+        htmlContent = MessageFormat.format(htmlContent, disabledAttribute);
         final List<String> collectedAlerts = new ArrayList<>();
         final HtmlPage page = loadPage(BrowserVersion.CHROME, htmlContent, collectedAlerts, URL_FIRST);
 
-        final DisabledElement element = (DisabledElement) page.getHtmlElementById("element1");
+        final DisabledElement element = page.getHtmlElementById("element1");
         assertEquals(expectedIsDisabled, element.isDisabled());
     }
 

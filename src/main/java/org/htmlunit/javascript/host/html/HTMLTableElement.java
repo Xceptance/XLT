@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,14 +83,13 @@ public class HTMLTableElement extends HTMLElement {
      */
     @JsxSetter
     public void setCaption(final Object o) {
-        if (!(o instanceof HTMLTableCaptionElement)) {
+        if (!(o instanceof HTMLTableCaptionElement caption)) {
             throw JavaScriptEngine.typeError("Not a caption");
         }
 
         // remove old caption (if any)
         deleteCaption();
 
-        final HTMLTableCaptionElement caption = (HTMLTableCaptionElement) o;
         getDomNodeOrDie().appendChild(caption.getDomNodeOrDie());
     }
 
@@ -114,16 +113,15 @@ public class HTMLTableElement extends HTMLElement {
      */
     @JsxSetter
     public void setTFoot(final Object o) {
-        if (!(o instanceof HTMLTableSectionElement
-            && "TFOOT".equals(((HTMLTableSectionElement) o).getTagName()))) {
+        if (!(o instanceof HTMLTableSectionElement element
+            && "TFOOT".equals(element.getTagName()))) {
             throw JavaScriptEngine.typeError("Not a tFoot");
         }
 
         // remove old caption (if any)
         deleteTFoot();
 
-        final HTMLTableSectionElement tfoot = (HTMLTableSectionElement) o;
-        getDomNodeOrDie().appendChild(tfoot.getDomNodeOrDie());
+        getDomNodeOrDie().appendChild(element.getDomNodeOrDie());
     }
 
     /**
@@ -146,16 +144,15 @@ public class HTMLTableElement extends HTMLElement {
      */
     @JsxSetter
     public void setTHead(final Object o) {
-        if (!(o instanceof HTMLTableSectionElement
-            && "THEAD".equals(((HTMLTableSectionElement) o).getTagName()))) {
+        if (!(o instanceof HTMLTableSectionElement element
+            && "THEAD".equals(element.getTagName()))) {
             throw JavaScriptEngine.typeError("Not a tHead");
         }
 
         // remove old caption (if any)
         deleteTHead();
 
-        final HTMLTableSectionElement thead = (HTMLTableSectionElement) o;
-        getDomNodeOrDie().appendChild(thead.getDomNodeOrDie());
+        getDomNodeOrDie().appendChild(element.getDomNodeOrDie());
     }
 
     /**
@@ -523,7 +520,7 @@ public class HTMLTableElement extends HTMLElement {
         final HTMLCollection rows = new HTMLCollection(getDomNodeOrDie(), false);
         rows.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
-                node -> node instanceof HtmlTableRow && isContainedRow((HtmlTableRow) node));
+                node -> node instanceof HtmlTableRow htr && isContainedRow(htr));
         return rows;
     }
 

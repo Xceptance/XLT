@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package org.htmlunit.websocket;
+
+import java.nio.ByteBuffer;
 
 /**
  * Helper to have no direct dependency to the WebSockt client
@@ -28,9 +30,9 @@ public interface WebSocketListener {
     void onWebSocketConnecting();
 
     /**
-     * Callback to be called when connected.
+     * Callback to be called when opened.
      */
-    void onWebSocketConnect();
+    void onWebSocketOpen();
 
     /**
      * Callback to be called when closed.
@@ -50,11 +52,9 @@ public interface WebSocketListener {
     /**
      * Callback to be called when binary data retrieved.
      *
-     * @param data the bytes
-     * @param offset start offset
-     * @param length the length
+     * @param payload a {@link ByteBuffer}
      */
-    void onWebSocketBinary(byte[] data, int offset, int length);
+    void onWebSocketBinary(ByteBuffer payload);
 
     /**
      * Callback to be called on connect error.

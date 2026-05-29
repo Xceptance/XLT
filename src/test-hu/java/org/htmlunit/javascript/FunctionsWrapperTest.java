@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
  * Tests for {@link FunctionWrapper}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class FunctionsWrapperTest extends WebDriverTestCase {
 
@@ -46,4 +47,119 @@ public class FunctionsWrapperTest extends WebDriverTestCase {
 
         loadPageVerifyTitle2(html);
     }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void symbolHasInstance() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  log(Function.prototype.toString instanceof Function);\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object Function]", "[object Function]", "[object Function]"})
+    public void symbolToStringTag() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var toString = Object.prototype.toString;\n"
+            + "  log(toString.call(Function.prototype.toString));\n"
+            + "  log(toString.call(Object.prototype.toString));\n"
+            + "  log(toString.call(Array.prototype.toString));\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"undefined", "undefined", "false", "false"})
+    public void symbolPropertyAccess() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var fn = Function.prototype.toString;\n"
+                + "  log(fn[Symbol.toStringTag]);\n"
+                + "  log(fn[Symbol.toPrimitive]);\n"
+                + "  log(Symbol.toStringTag in fn);\n"
+                + "  log(Symbol.toPrimitive in fn);\n"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"undefined", "hello", "true"})
+    public void symbolPropertyWriteRead() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var fn = Function.prototype.toString;\n"
+            + "  var sym = Symbol('test');\n"
+            + "  log(fn[sym]);\n"
+            + "  fn[sym] = 'hello';\n"
+            + "  log(fn[sym]);\n"
+            + "  log(sym in fn);\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"hello", "true", "undefined", "false"})
+    public void symbolPropertyDelete() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var fn = Function.prototype.toString;\n"
+            + "  var sym = Symbol('del');\n"
+            + "  fn[sym] = 'hello';\n"
+            + "  log(fn[sym]);\n"
+            + "  log(sym in fn);\n"
+            + "  delete fn[sym];\n"
+            + "  log(fn[sym]);\n"
+            + "  log(sym in fn);\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
 }

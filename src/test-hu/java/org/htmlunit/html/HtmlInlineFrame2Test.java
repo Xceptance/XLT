@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
         final WebDriver webDriver = loadPageVerifyTitle2(html);
         if (webDriver instanceof HtmlUnitDriver) {
             final HtmlElement element = toHtmlElement(webDriver.findElement(By.id("myId")));
-            assertTrue(HtmlInlineFrame.class.isInstance(element));
+            assertTrue(element instanceof HtmlInlineFrame);
         }
     }
 
@@ -246,10 +246,6 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1:true", "2:false", "3:false", "4:false"})
-    @HtmlUnitNYI(CHROME = {"1:false", "2:false", "3:false", "4:false"},
-            EDGE = {"1:false", "2:false", "3:false", "4:false"},
-            FF = {"1:false", "2:false", "3:false", "4:false"},
-            FF_ESR = {"1:false", "2:false", "3:false", "4:false"})
     public void createIframeFromStrictFunction() throws Exception {
         final String html = DOCTYPE_HTML
                 + "<html><head>\n"
@@ -298,13 +294,13 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
-        final URL iFrameUrl = new URL(URL_FIRST.toString() + "iframe.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
+        final URL iFrameUrl = new URL(URL_FIRST + "iframe.html");
 
         getMockWebConnection().setResponse(indexUrl, framesContent);
         getMockWebConnection().setResponse(iFrameUrl, iFrame);
 
-        loadPage2(framesContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        loadPage2(framesContent, new URL(URL_FIRST + "index.html?test#ref"));
         Thread.sleep(DEFAULT_WAIT_TIME.toMillis() / 10);
         assertEquals(2, getMockWebConnection().getRequestCount());
 

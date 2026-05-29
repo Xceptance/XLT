@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.file.Blob;
 import org.htmlunit.javascript.host.html.HTMLIFrameElement;
 import org.htmlunit.protocol.data.DataURLConnection;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.util.HeaderUtils;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
@@ -458,8 +458,8 @@ public class WebClient implements Serializable, AutoCloseable {
 
                 // clear the cache because the anchors are now matched by
                 // the target pseudo style
-                if (page instanceof HtmlPage) {
-                    ((HtmlPage) page).clearComputedStyles();
+                if (page instanceof HtmlPage htmlPage) {
+                    htmlPage.clearComputedStyles();
                 }
 
                 final Window window = webWindow.getScriptableObject();
@@ -656,12 +656,12 @@ public class WebClient implements Serializable, AutoCloseable {
         Page newPage = null;
         FrameWindow.PageDenied pageDenied = PageDenied.NONE;
         if (windows_.contains(webWindow)) {
-            if (webWindow instanceof FrameWindow) {
+            if (webWindow instanceof FrameWindow window) {
                 final String contentSecurityPolicy =
                         webResponse.getResponseHeaderValue(HttpHeader.CONTENT_SECURIRY_POLICY);
                 if (StringUtils.isNotBlank(contentSecurityPolicy)) {
                     final URL origin = UrlUtils.getUrlWithoutPathRefQuery(
-                            ((FrameWindow) webWindow).getEnclosingPage().getUrl());
+                            window.getEnclosingPage().getUrl());
                     final URL source = UrlUtils.getUrlWithoutPathRefQuery(webResponse.getWebRequest().getUrl());
                     final Policy policy = Policy.parseSerializedCSP(contentSecurityPolicy,
                                                     Policy.PolicyErrorConsumer.ignored);
@@ -715,8 +715,7 @@ public class WebClient implements Serializable, AutoCloseable {
                     // hack: onload should be fired the same way for all type of pages
                     // here is a hack to handle non HTML pages
                     if (isJavaScriptEnabled()
-                            && webWindow instanceof FrameWindow && !newPage.isHtmlPage()) {
-                        final FrameWindow fw = (FrameWindow) webWindow;
+                            && webWindow instanceof FrameWindow fw && !newPage.isHtmlPage()) {
                         final BaseFrameElement frame = fw.getFrameElement();
                         if (frame.hasEventHandlers("onload")) {
                             if (LOG.isDebugEnabled()) {
@@ -1004,8 +1003,8 @@ public class WebClient implements Serializable, AutoCloseable {
         currentWindow_ = window;
 
         // when marking an iframe window as current we have no need to move the focus
-        final boolean isIFrame = currentWindow_ instanceof FrameWindow
-                && ((FrameWindow) currentWindow_).getFrameElement() instanceof HtmlInlineFrame;
+        final boolean isIFrame = currentWindow_ instanceof FrameWindow fw
+                && fw.getFrameElement() instanceof HtmlInlineFrame;
         if (!isIFrame) {
             //1. activeElement becomes focused element for new current window
             //2. onFocus event is triggered for focusedElement of new current window
@@ -1151,8 +1150,8 @@ public class WebClient implements Serializable, AutoCloseable {
             webWindow = new TopLevelWindow(windowToOpen, this);
         }
 
-        if (webWindow instanceof TopLevelWindow && webWindow != opener.getTopWindow()) {
-            ((TopLevelWindow) webWindow).setOpener(opener);
+        if (webWindow instanceof TopLevelWindow window && webWindow != opener.getTopWindow()) {
+            window.setOpener(opener);
         }
 
         return webWindow;
@@ -1183,8 +1182,8 @@ public class WebClient implements Serializable, AutoCloseable {
                 try {
                     final FrameWindow frame = ((HtmlPage) page).getFrameByName(name);
                     final HtmlUnitScriptable scriptable = frame.getFrameElement().getScriptableObject();
-                    if (scriptable instanceof HTMLIFrameElement) {
-                        ((HTMLIFrameElement) scriptable).onRefresh();
+                    if (scriptable instanceof HTMLIFrameElement element) {
+                        element.onRefresh();
                     }
                     return frame;
                 }
@@ -1424,7 +1423,7 @@ public class WebClient implements Serializable, AutoCloseable {
         }
 
         String fileUrl = cleanUrl.toExternalForm();
-        fileUrl = URLDecoder.decode(fileUrl, UTF_8.name());
+        fileUrl = URLDecoder.decode(fileUrl, UTF_8);
         final File file = new File(fileUrl.substring(5));
         if (!file.exists()) {
             // construct 404
@@ -1463,8 +1462,7 @@ public class WebClient implements Serializable, AutoCloseable {
         if (!StringUtils.isEmptyOrNull(type)) {
             headers.add(new NameValuePair(HttpHeader.CONTENT_TYPE, fileOrBlob.getType()));
         }
-        if (fileOrBlob instanceof org.htmlunit.javascript.host.file.File) {
-            final org.htmlunit.javascript.host.file.File file = (org.htmlunit.javascript.host.file.File) fileOrBlob;
+        if (fileOrBlob instanceof org.htmlunit.javascript.host.file.File file) {
             final String fileName = file.getName();
             if (!StringUtils.isEmptyOrNull(fileName)) {
                 // https://datatracker.ietf.org/doc/html/rfc6266#autoid-10
@@ -1524,14 +1522,13 @@ public class WebClient implements Serializable, AutoCloseable {
         final Charset charset) throws FailingHttpStatusCodeException, IOException {
 
         HtmlPage page = null;
-        if (webWindow instanceof FrameWindow) {
-            final FrameWindow frameWindow = (FrameWindow) webWindow;
+        if (webWindow instanceof FrameWindow frameWindow) {
             page = (HtmlPage) frameWindow.getEnclosedPage();
         }
         else {
             final Page currentPage = webWindow.getEnclosedPage();
-            if (currentPage instanceof HtmlPage) {
-                page = (HtmlPage) currentPage;
+            if (currentPage instanceof HtmlPage htmlPage) {
+                page = htmlPage;
             }
         }
 
@@ -1558,26 +1555,14 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public WebResponse loadWebResponse(final WebRequest webRequest) throws IOException {
         final String protocol = webRequest.getUrl().getProtocol();
-        switch (protocol) {
-            case UrlUtils.ABOUT:
-                return makeWebResponseForAboutUrl(webRequest);
-
-            case "file":
-                return makeWebResponseForFileUrl(webRequest);
-
-            case "data":
-                return makeWebResponseForDataUrl(webRequest);
-
-            case "blob":
-                return makeWebResponseForBlobUrl(webRequest);
-
-            case "http":
-            case "https":
-                return loadWebResponseFromWebConnection(webRequest, ALLOWED_REDIRECTIONS_SAME_URL);
-
-            default:
-                throw new IOException("Unsupported protocol '" + protocol + "'");
-        }
+        return switch (protocol) {
+            case UrlUtils.ABOUT -> makeWebResponseForAboutUrl(webRequest);
+            case "file" -> makeWebResponseForFileUrl(webRequest);
+            case "data" -> makeWebResponseForDataUrl(webRequest);
+            case "blob" -> makeWebResponseForBlobUrl(webRequest);
+            case "http", "https" -> loadWebResponseFromWebConnection(webRequest, ALLOWED_REDIRECTIONS_SAME_URL);
+            default -> throw new IOException("Unsupported protocol '" + protocol + "'");
+        };
     }
 
     /**
@@ -1874,7 +1859,7 @@ public class WebClient implements Serializable, AutoCloseable {
      * @see #getTopLevelWindows()
      */
     public List<WebWindow> getWebWindows() {
-        return Collections.unmodifiableList(new ArrayList<>(windows_));
+        return List.copyOf(windows_);
     }
 
     /**
@@ -1902,7 +1887,7 @@ public class WebClient implements Serializable, AutoCloseable {
      * @see #getWebWindows()
      */
     public List<TopLevelWindow> getTopLevelWindows() {
-        return Collections.unmodifiableList(new ArrayList<>(topLevelWindows_));
+        return List.copyOf(topLevelWindows_);
     }
 
     /**
@@ -2239,8 +2224,7 @@ public class WebClient implements Serializable, AutoCloseable {
             else if (window instanceof TopLevelWindow) {
                 use = event.getOldPage() == null;
             }
-            else if (window instanceof FrameWindow) {
-                final FrameWindow fw = (FrameWindow) window;
+            else if (window instanceof FrameWindow fw) {
                 final String enclosingPageState = fw.getEnclosingPage().getDocumentElement().getReadyState();
                 final URL frameUrl = fw.getEnclosedPage().getUrl();
                 if (!DomNode.READY_STATE_COMPLETE.equals(enclosingPageState) || frameUrl == UrlUtils.URL_ABOUT_BLANK) {
@@ -2266,8 +2250,7 @@ public class WebClient implements Serializable, AutoCloseable {
         @Override
         public void webWindowOpened(final WebWindowEvent event) {
             final WebWindow window = event.getWebWindow();
-            if (window instanceof TopLevelWindow) {
-                final TopLevelWindow tlw = (TopLevelWindow) window;
+            if (window instanceof TopLevelWindow tlw) {
                 webClient_.topLevelWindows_.add(tlw);
             }
             // Page is not loaded yet, don't set it now as current window.
@@ -2295,8 +2278,7 @@ public class WebClient implements Serializable, AutoCloseable {
         // but the prepareShutdown() call will prevent the new window form getting js support
         List<WebWindow> windows = new ArrayList<>(windows_);
         for (final WebWindow window : windows) {
-            if (window instanceof TopLevelWindow) {
-                final TopLevelWindow topLevelWindow = (TopLevelWindow) window;
+            if (window instanceof TopLevelWindow topLevelWindow) {
 
                 try {
                     topLevelWindow.close(true);
@@ -2305,8 +2287,7 @@ public class WebClient implements Serializable, AutoCloseable {
                     LOG.error("Exception while closing a TopLevelWindow", e);
                 }
             }
-            else if (window instanceof DialogWindow) {
-                final DialogWindow dialogWindow = (DialogWindow) window;
+            else if (window instanceof DialogWindow dialogWindow) {
 
                 try {
                     dialogWindow.close();
@@ -2321,8 +2302,7 @@ public class WebClient implements Serializable, AutoCloseable {
         // the js engine because of prepareShutdown()
         windows = new ArrayList<>(windows_);
         for (final WebWindow window : windows) {
-            if (window instanceof TopLevelWindow) {
-                final TopLevelWindow topLevelWindow = (TopLevelWindow) window;
+            if (window instanceof TopLevelWindow topLevelWindow) {
 
                 try {
                     topLevelWindow.close(true);
@@ -2331,8 +2311,7 @@ public class WebClient implements Serializable, AutoCloseable {
                     LOG.error("Exception while closing a TopLevelWindow", e);
                 }
             }
-            else if (window instanceof DialogWindow) {
-                final DialogWindow dialogWindow = (DialogWindow) window;
+            else if (window instanceof DialogWindow dialogWindow) {
 
                 try {
                     dialogWindow.close();
@@ -2955,6 +2934,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
         try {
             final List<Cookie> cookies = HttpClientConverter.parseCookie(cookieString, pageUrl, getBrowserVersion());
+            // final List<Cookie> cookies = CookieParser.parseCookie(cookieString, pageUrl, getBrowserVersion());
 
             for (final Cookie cookie : cookies) {
                 cookieManager.addCookie(cookie);

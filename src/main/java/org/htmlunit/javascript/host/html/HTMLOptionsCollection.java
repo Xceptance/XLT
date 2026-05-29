@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.htmlunit.WebAssert;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.ElementFactory;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
@@ -67,7 +68,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * Creates an instance.
      * @param parentScope parent scope
      */
-    public HTMLOptionsCollection(final HtmlUnitScriptable parentScope) {
+    public HTMLOptionsCollection(final VarScope parentScope) {
         super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
@@ -254,8 +255,8 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
 
             beforeOption = (HtmlOption) ((HTMLOptionElement) item(index)).getDomNodeOrDie();
         }
-        else if (beforeOptionObject instanceof HTMLOptionElement) {
-            beforeOption = (HtmlOption) ((HTMLOptionElement) beforeOptionObject).getDomNodeOrDie();
+        else if (beforeOptionObject instanceof HTMLOptionElement element) {
+            beforeOption = (HtmlOption) element.getDomNodeOrDie();
             if (beforeOption.getParentNode() != htmlSelect_) {
                 throw JavaScriptEngine.asJavaScriptException(
                         getWindow(),

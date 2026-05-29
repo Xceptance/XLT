@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -427,9 +427,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            FF = "1",
-            FF_ESR = "1")
+    @Alerts("1")
     public void command() throws Exception {
         test("command");
     }
@@ -740,6 +738,17 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     @Alerts("1")
     public void header() throws Exception {
         test("header");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void hgroup() throws Exception {
+        test("hgroup");
     }
 
     /**

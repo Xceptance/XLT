@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1900,5 +1900,65 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
 
         final HtmlElement tester = page.getHtmlElementById("tester");
         assertEquals(getExpectedAlerts()[0], tester.asNormalizedText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Title\nSubtitle")
+    public void getNormalizedHgroup() throws Exception {
+        getNormalizedTextFormated("<hgroup id='tester'>"
+                + "<h1>Title</h1>"
+                + "<p>Subtitle</p>"
+                + "</hgroup>");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Title")
+    public void getNormalizedHgroupHeadingOnly() throws Exception {
+        getNormalizedTextFormated("<hgroup id='tester'>"
+                + "<h1>Title</h1>"
+                + "</hgroup>");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Title\nSubtitle\nTagline")
+    public void getNormalizedHgroupMultipleChildren() throws Exception {
+        getNormalizedTextFormated("<hgroup id='tester'>"
+                + "<h1>Title</h1>"
+                + "<p>Subtitle</p>"
+                + "<p>Tagline</p>"
+                + "</hgroup>");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("")
+    public void getNormalizedHgroupEmpty() throws Exception {
+        getNormalizedTextFormated("<hgroup id='tester'></hgroup>");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Outer\nTitle\nSubtitle")
+    public void getNormalizedHgroupNested() throws Exception {
+        getNormalizedTextFormated("<div id='tester'>"
+                + "<p>Outer</p>"
+                + "<hgroup>"
+                + "<h2>Title</h2>"
+                + "<p>Subtitle</p>"
+                + "</hgroup>"
+                + "</div>");
     }
 }

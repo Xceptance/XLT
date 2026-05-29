@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ import org.htmlunit.util.MimeType;
 public final class BrowserVersion implements Serializable {
 
     /** Latest Firefox. */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(146, "FF");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(150, "FF");
 
     private static final int FIREFOX_ESR_NUMERIC = 140;
 
@@ -73,10 +73,10 @@ public final class BrowserVersion implements Serializable {
     public static final BrowserVersion FIREFOX_ESR = new BrowserVersion(FIREFOX_ESR_NUMERIC, "FF-ESR");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(143, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(148, "Chrome");
 
     /** Latest Edge. */
-    public static final BrowserVersion EDGE = new BrowserVersion(143, "Edge");
+    public static final BrowserVersion EDGE = new BrowserVersion(148, "Edge");
 
     /**
      * Array with all supported browsers.
@@ -151,7 +151,7 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.SEC_FETCH_USER,
             HttpHeader.PRIORITY};
         FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-        FIREFOX.acceptLanguageHeader_ = "en-US,en;q=0.5";
+        FIREFOX.acceptLanguageHeader_ = "en-US,en;q=0.9";
         FIREFOX.xmlHttpRequestAcceptHeader_ = "*/*";
         FIREFOX.imgAcceptHeader_ = "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5";
         FIREFOX.cssAcceptHeader_ = "text/css,*/*;q=0.1";
@@ -197,9 +197,9 @@ public final class BrowserVersion implements Serializable {
         CHROME.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         CHROME.scriptAcceptHeader_ = "*/*";
 
-        CHROME.secClientHintUserAgentHeader_ = "\"Google Chrome\";v=\""
-                + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                + CHROME.getBrowserVersionNumeric() + "\", \"Not A(Brand\";v=\"24\"";
+        CHROME.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
+                + CHROME.getBrowserVersionNumeric() + "\", \"Google Chrome\";v=\""
+                + CHROME.getBrowserVersionNumeric() + "\", \"Not/A)Brand\";v=\"99\"";
 
         CHROME.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
@@ -244,9 +244,9 @@ public final class BrowserVersion implements Serializable {
         EDGE.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         EDGE.scriptAcceptHeader_ = "*/*";
 
-        EDGE.secClientHintUserAgentHeader_ = "\"Microsoft Edge\";v=\""
-                + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                + EDGE.getBrowserVersionNumeric() + "\", \"Not A(Brand\";v=\"24\"";
+        EDGE.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
+                + EDGE.getBrowserVersionNumeric() + "\", \"Microsoft Edge\";v=\""
+                + EDGE.getBrowserVersionNumeric() + "\", \"Not/A)Brand\";v=\"99\"";
 
         EDGE.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,

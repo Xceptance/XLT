@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,10 +161,10 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
             // support multiple header elements (comma cannot be treated as an element separator)
             final CharArrayBuffer buffer;
             final ParserCursor cursor;
-            if (header instanceof FormattedHeader) {
-                buffer = ((FormattedHeader) header).getBuffer();
+            if (header instanceof FormattedHeader formattedHeader) {
+                buffer = formattedHeader.getBuffer();
                 cursor = new ParserCursor(
-                        ((FormattedHeader) header).getValuePos(),
+                        formattedHeader.getValuePos(),
                         buffer.length());
             }
             else {

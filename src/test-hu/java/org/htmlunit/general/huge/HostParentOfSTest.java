@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.jupiter.params.provider.Arguments;
 
 /**
@@ -110,6 +111,76 @@ public class HostParentOfSTest extends HostParentOf {
     @Alerts("true/false")
     void _SourceBufferList_SourceBufferList() throws Exception {
         test("SourceBufferList", "SourceBufferList");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechGrammar_SpeechGrammar() throws Exception {
+        test("SpeechGrammar", "SpeechGrammar");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechGrammar_webkitSpeechGrammar() throws Exception {
+        test("SpeechGrammar", "webkitSpeechGrammar");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechGrammarList_SpeechGrammarList() throws Exception {
+        test("SpeechGrammarList", "SpeechGrammarList");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechGrammarList_webkitSpeechGrammarList() throws Exception {
+        test("SpeechGrammarList", "webkitSpeechGrammarList");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechRecognition_SpeechRecognition() throws Exception {
+        test("SpeechRecognition", "SpeechRecognition");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechRecognition_webkitSpeechRecognition() throws Exception {
+        test("SpeechRecognition", "webkitSpeechRecognition");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechRecognitionErrorEvent_SpeechRecognitionErrorEvent() throws Exception {
+        test("SpeechRecognitionErrorEvent", "SpeechRecognitionErrorEvent");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechRecognitionErrorEvent_webkitSpeechRecognitionError() throws Exception {
+        test("SpeechRecognitionErrorEvent", "webkitSpeechRecognitionError");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechRecognitionEvent_SpeechRecognitionEvent() throws Exception {
+        test("SpeechRecognitionEvent", "SpeechRecognitionEvent");
+    }
+
+    @Alerts(DEFAULT = "true/false",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _SpeechRecognitionEvent_webkitSpeechRecognitionEvent() throws Exception {
+        test("SpeechRecognitionEvent", "webkitSpeechRecognitionEvent");
     }
 
     @Alerts("true/false")
@@ -672,7 +743,9 @@ public class HostParentOfSTest extends HostParentOf {
         test("SVGElement", "SVGSwitchElement");
     }
 
-    @Alerts("true/true")
+    @Alerts(DEFAULT = "true/false",
+            FF_ESR = "true/true")
+    @HtmlUnitNYI(FF_ESR = "true/false")
     void _SVGElement_SVGSymbolElement() throws Exception {
         test("SVGElement", "SVGSymbolElement");
     }

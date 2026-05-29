@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -523,20 +523,17 @@ public class HtmlElementTest extends SimpleWebTestCase {
     static class HtmlAttributeChangeListenerTestImpl implements HtmlAttributeChangeListener {
         private final List<String> collectedValues_ = new ArrayList<>();
         @Override
-        @Test
         public void attributeAdded(final HtmlAttributeChangeEvent event) {
             collectedValues_.add("attributeAdded: " + event.getHtmlElement().getTagName() + ','
                     + event.getName() + ',' + event.getValue());
         }
         @Override
-        @Test
         public void attributeRemoved(final HtmlAttributeChangeEvent event) {
             collectedValues_.add("attributeRemoved: " + event.getHtmlElement().getTagName() + ','
                     + event.getName() + ',' + event.getValue());
         }
 
         @Override
-        @Test
         public void attributeReplaced(final HtmlAttributeChangeEvent event) {
             collectedValues_.add("attributeReplaced: " + event.getHtmlElement().getTagName() + ','
                     + event.getName() + ',' + event.getValue());
@@ -896,7 +893,7 @@ public class HtmlElementTest extends SimpleWebTestCase {
             + "<body><table><tr><td></tr></table>\n"
             + "</body></html>";
         final HtmlPage page = loadPage(html);
-        assertTrue(page.asXml().indexOf("/> ") == -1);
+        assertTrue(!page.asXml().contains("/> "));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,38 @@ import org.junit.jupiter.api.Test;
  * @author Ronald Brill
  */
 public class XPathEvaluatorTest extends WebDriverTestCase {
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"function", "[object XPathEvaluator]", "[object HTMLHtmlElement]", "first", "second", ""})
+    public void ctor() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
+            + "<span id='first'>hello</span>\n"
+            + "<div><span id='second'>world</span></div>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var res = '';\n"
+            + "try {\n"
+            + "  res += typeof window.XPathEvaluator + '§';\n"
+            + "  var xpe = new XPathEvaluator();\n"
+            + "  res += xpe + '§';\n"
+            + "  var nsResolver = xpe.createNSResolver(document.documentElement);\n"
+            + "  res += nsResolver + '§';\n"
+            + "  var result = xpe.evaluate('//span', document.body, nsResolver, 0, null);\n"
+            + "  var found = [];\n"
+            + "  var next;\n"
+            + "  while (next = result.iterateNext()) {\n"
+            + "    res += next.id + '§';\n"
+            + "  }\n"
+            + "} catch(e) { res += 'exception' + '§'; }\n"
+            + "log(res);\n"
+            + "</script></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
 
     /**
      * @throws Exception if the test fails
@@ -232,6 +264,27 @@ public class XPathEvaluatorTest extends WebDriverTestCase {
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("[object XPathExpression]")
+    public void createExpression() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var res = '';\n"
+            + "try {\n"
+            + "  var expression = new XPathEvaluator().createExpression('//span');\n"
+            + "  res += expression;\n"
+            + "} catch(e) { res += e.name; }\n"
+            + "log(res);\n"
+            + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
     }

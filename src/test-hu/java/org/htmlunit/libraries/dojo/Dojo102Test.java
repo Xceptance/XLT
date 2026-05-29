@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.libraries.dojo;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,9 +27,18 @@ import org.junit.jupiter.api.Test;
  */
 public class Dojo102Test extends DojoTestBase {
 
+    /**
+     * @throws Exception if an error occurs
+     */
+    @BeforeAll
+    public static void startServer() throws Exception {
+        startWebServer("src/test/resources/libraries/dojo/1.0.2", null);
+    }
+
     @Override
-    String getVersion() {
-        return "1.0.2";
+    protected String loadExpectation(final String expFileName) throws Exception {
+        final String resourcePrefix = "/libraries/dojo/1.0.2/expectations/" + expFileName;
+        return loadExpectation(resourcePrefix, ".txt");
     }
 
     @Override
@@ -266,8 +276,6 @@ public class Dojo102Test extends DojoTestBase {
      */
     @Test
     public void testsbehavior() throws Exception {
-        shutDownAll();
-
         test("tests.behavior");
     }
 

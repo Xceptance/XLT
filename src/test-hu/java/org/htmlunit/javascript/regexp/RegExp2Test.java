@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.JavaScriptException;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test;
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Carsten Steul
+ * @author Ronald Brill
  */
 public class RegExp2Test extends SimpleWebTestCase {
 
@@ -102,7 +104,7 @@ public class RegExp2Test extends SimpleWebTestCase {
         final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
         final Context ctx = cf.enterContext();
         try {
-            final ScriptableObject topScope = ctx.initStandardObjects();
+            final TopLevel topScope = ctx.initStandardObjects();
             topScope.put("str", topScope, STR);
             topScope.put("text", topScope, TEXT);
             topScope.put("expected", topScope, EXPECTED);
@@ -131,7 +133,7 @@ public class RegExp2Test extends SimpleWebTestCase {
         final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
         final Context cx = cf.enterContext();
         try {
-            final ScriptableObject topScope = cx.initStandardObjects();
+            final TopLevel topScope = cx.initStandardObjects();
             cx.evaluateString(topScope, SCRIPT_TEST_MATCH, "test script String.match", 0, null);
             try {
                 cx.evaluateString(topScope, SCRIPT_TEST_MATCH, "test script String.match", 0, null);

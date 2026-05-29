@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,10 +90,8 @@ public class HtmlImageInput2Test extends SimpleWebTestCase {
         final HtmlPage secondPage = imageInput.click(100, 200);
         assertNotNull(secondPage);
 
-        final List<NameValuePair> expectedPairs = Arrays.asList(new NameValuePair[]{
-            new NameValuePair("x", "100"),
-            new NameValuePair("y", "200")
-        });
+        final List<NameValuePair> expectedPairs = Arrays.asList(new NameValuePair("x", "100"),
+                new NameValuePair("y", "200"));
 
         assertEquals(expectedPairs, webConnection.getLastParameters());
     }

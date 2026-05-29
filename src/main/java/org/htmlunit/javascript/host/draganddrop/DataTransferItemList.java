@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -74,13 +75,13 @@ public class DataTransferItemList extends HtmlUnitScriptable {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536782.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public static DataTransferItem add(final Context context, final Scriptable scope,
+    public static DataTransferItem add(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         final DataTransferItemList itemList = (DataTransferItemList) thisObj;
         if (args.length == 1) {
-            if (args[0] instanceof File) {
-                final DataTransferItem item = DataTransferItem.buildFileItem((File) args[0]);
-                item.setParentScope(itemList.getParentScope());
+            if (args[0] instanceof File file) {
+                final DataTransferItem item = DataTransferItem.buildFileItem(file);
+                item.setParentScope(scope);
                 item.setPrototype(itemList.getPrototype(item.getClass()));
 
                 if (itemList.items_ == null) {
@@ -99,7 +100,7 @@ public class DataTransferItemList extends HtmlUnitScriptable {
             final String data = JavaScriptEngine.toString(args[0]);
             final String type = JavaScriptEngine.toString(args[1]);
             final DataTransferItem item = DataTransferItem.buildStringItem(data, type);
-            item.setParentScope(itemList.getParentScope());
+            item.setParentScope(scope);
             item.setPrototype(itemList.getPrototype(item.getClass()));
 
             if (itemList.items_ == null) {

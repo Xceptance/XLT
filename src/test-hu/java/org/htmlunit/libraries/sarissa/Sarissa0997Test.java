@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class Sarissa0997Test extends WebDriverTestCase {
     @Test
     @Alerts({"++++++++++++++++++", "+", "+", "+", "+++", "++", "++++++++"})
     public void sarissa() throws Exception {
-        startWebServer("src/test/resources/libraries/sarissa/0.9.9.7", null, null);
+        startWebServer("src/test/resources/libraries/sarissa/0.9.9.7", null);
         final String url = URL_FIRST + "test/testsarissa.html";
 
         final WebDriver driver = getWebDriver();

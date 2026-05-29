@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxConstructorAlias;
@@ -44,11 +44,11 @@ public class DOMMatrix extends DOMMatrixReadOnly {
      */
     @JsxConstructor
     @JsxConstructorAlias(alias = "WebKitCSSMatrix")
-    public static DOMMatrix jsConstructor(final Context cx, final Scriptable scope,
+    public static DOMMatrix jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
 
         final DOMMatrix matrix = new DOMMatrix();
-        matrix.init(args, ctorObj);
+        matrix.init(args, scope, ctorObj);
         return matrix;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -717,6 +717,45 @@ public class HtmlPage3Test extends WebDriverTestCase {
                 + "  <overheidrg:meta xmlns:overheidrg='http://standaarden.overheid.nl/cvdr/terms/'>\n"
                 + "</body>\n"
                 + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"sync-executed", "async-executed"})
+    public void asyncScriptExecuted() throws Exception {
+        final String content = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script async src='async.js'></script>\n"
+            + "<script>document.title += 'sync-executed§';</script>\n"
+            + "</head>"
+            + "<body></body>"
+            + "</html>";
+
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "async.js"),
+                "document.title += 'async-executed§';", MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("async-executed")
+    public void asyncScriptExecutedWithoutSyncScript() throws Exception {
+        final String content = DOCTYPE_HTML
+                + "<html><head>\n"
+                + "<script async src='async.js'></script>\n"
+                + "</head>"
+                + "<body></body>"
+                + "</html>";
+
+            getMockWebConnection().setResponse(new URL(URL_FIRST, "async.js"),
+                    "document.title += 'async-executed§';", MimeType.TEXT_JAVASCRIPT);
 
         loadPageVerifyTitle2(content);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -318,7 +318,7 @@ public class MutationObserverTest extends WebDriverTestCase {
         verifyTitle2(driver, ArrayUtils.EMPTY_STRING_ARRAY);
 
         driver.findElement(By.id("doAlert")).click();
-        verifyTitle2(driver, new String[] {"heho"});
+        verifyTitle2(driver, "heho");
 
         final String[] expected = getExpectedAlerts();
         driver.findElement(By.id("doIt")).click();
@@ -374,7 +374,7 @@ public class MutationObserverTest extends WebDriverTestCase {
         verifyTitle2(driver, ArrayUtils.EMPTY_STRING_ARRAY);
 
         driver.findElement(By.id("doAlert")).click();
-        verifyTitle2(driver, new String[] {"heho"});
+        verifyTitle2(driver, "heho");
 
         final String[] expected = getExpectedAlerts();
         driver.findElement(By.id("doIt")).click();

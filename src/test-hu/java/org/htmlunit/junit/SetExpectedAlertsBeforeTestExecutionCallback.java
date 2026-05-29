@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,12 +49,11 @@ public class SetExpectedAlertsBeforeTestExecutionCallback implements BeforeTestE
     public void beforeTestExecution(final ExtensionContext context) throws Exception {
         final Object testInstance = context.getRequiredTestInstance();
 
-        if (testInstance instanceof WebTestCase) {
-            final WebTestCase webTestCase = (WebTestCase) testInstance;
+        if (testInstance instanceof WebTestCase webTestCase) {
 
             Method testMethod = context.getRequiredTestMethod();
             final Optional<Method> potentialOberwrittenMethod =
-                    ReflectionUtils.findMethod(testInstance.getClass(), context.getDisplayName(), new Class[] {});
+                    ReflectionUtils.findMethod(testInstance.getClass(), context.getDisplayName());
             if (potentialOberwrittenMethod.isPresent()) {
                 testMethod = potentialOberwrittenMethod.get();
             }

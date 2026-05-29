@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class AttributesTest {
             "HtmlFieldSet", "HtmlFigureCaption", "HtmlFigure",
             "HtmlFont", "HtmlForm", "HtmlFooter",
             "HtmlFrame", "HtmlFrameSet",
-            "HtmlHead", "HtmlHeader",
+            "HtmlHead", "HtmlHeader", "HtmlHeadingGroup",
             "HtmlHeading1", "HtmlHeading2", "HtmlHeading3",
             "HtmlHeading4", "HtmlHeading5", "HtmlHeading6",
             "HtmlHorizontalRule", "HtmlHtml", "HtmlInlineFrame",
@@ -171,9 +171,7 @@ public class AttributesTest {
                                 methodName.substring(3, methodName.length() - 9).toLowerCase(Locale.ROOT));
 
                 final String testName = createTestName(clazz, method);
-                tests.add(DynamicTest.dynamicTest(testName, () -> {
-                    executeAttributeTest(clazz, method, attributeName);
-                }));
+                tests.add(DynamicTest.dynamicTest(testName, () -> executeAttributeTest(clazz, method, attributeName)));
             }
         }
         return tests;
@@ -183,16 +181,16 @@ public class AttributesTest {
      * Normalizes attribute names for special cases.
      */
     private static String normalizeAttributeName(final String attributeName) {
-        switch (attributeName) {
-            case "xmllang": return "xml:lang";
-            case "columns": return "cols";
-            case "columnspan": return "colspan";
-            case "textdirection": return "dir";
-            case "httpequiv": return "http-equiv";
-            case "acceptcharset": return "accept-charset";
-            case "htmlfor": return "for";
-            default: return attributeName;
-        }
+        return switch (attributeName) {
+            case "xmllang" -> "xml:lang";
+            case "columns" -> "cols";
+            case "columnspan" -> "colspan";
+            case "textdirection" -> "dir";
+            case "httpequiv" -> "http-equiv";
+            case "acceptcharset" -> "accept-charset";
+            case "htmlfor" -> "for";
+            default -> attributeName;
+        };
     }
 
     /**

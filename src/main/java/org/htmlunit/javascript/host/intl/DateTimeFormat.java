@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,22 +32,30 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
+import org.htmlunit.javascript.configuration.JsxStaticFunction;
+import org.htmlunit.javascript.configuration.JsxSymbolConstant;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.util.StringUtils;
 
 /**
- * A JavaScript object for {@code DateTimeFormat}.
+ * A JavaScript object for Intl.DateTimeFormat.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @JsxClass
 public class DateTimeFormat extends HtmlUnitScriptable {
+
+    /** Symbol.toStringTag support. */
+    @JsxSymbolConstant
+    public static final String TO_STRING_TAG = "Intl.DateTimeFormat";
 
     private static final ConcurrentHashMap<String, String> CHROME_FORMATS_ = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, String> EDGE_FORMATS_ = new ConcurrentHashMap<>();
@@ -250,12 +258,11 @@ public class DateTimeFormat extends HtmlUnitScriptable {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+    public static Scriptable jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         final String[] locales;
         if (args.length != 0) {
-            if (args[0] instanceof NativeArray) {
-                final NativeArray array = (NativeArray) args[0];
+            if (args[0] instanceof NativeArray array) {
                 locales = new String[(int) array.getLength()];
                 for (int i = 0; i < locales.length; i++) {
                     locales[i] = JavaScriptEngine.toString(array.get(i));
@@ -271,7 +278,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
 
         final Window window = getWindow(ctorObj);
         final DateTimeFormat format = new DateTimeFormat(locales, window.getBrowserVersion());
-        format.setParentScope(window);
+        format.setParentScope(getTopLevelScope(scope));
         format.setPrototype(((FunctionObject) ctorObj).getClassPrototype());
         return format;
     }
@@ -304,6 +311,26 @@ public class DateTimeFormat extends HtmlUnitScriptable {
             options.put("locale", options, formatter_.locale_);
         }
         return options;
+    }
+
+    /**
+     * Returns an array containing those of the provided locales that are supported
+     * without having to fall back to the default locale.
+     * @param localesArgument A string with a BCP 47 language tag, or an array of such strings
+     * @param options unused
+     * @return an array containing supported locales
+     */
+    @JsxStaticFunction
+    public static Scriptable supportedLocalesOf(final Scriptable localesArgument, final Scriptable options) {
+        return Intl.supportedLocalesOf(localesArgument);
+    }
+
+    @Override
+    public Object getDefaultValue(final Class<?> hint) {
+        if (String.class.equals(hint) || hint == null) {
+            return "[object Intl.DateTimeFormat]";
+        }
+        return super.getDefaultValue(hint);
     }
 
     /**

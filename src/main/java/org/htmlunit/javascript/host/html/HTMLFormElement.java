@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
-import org.htmlunit.html.FormFieldWithNameHistory;
 import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
@@ -106,11 +106,22 @@ public class HTMLFormElement extends HTMLElement implements Function {
     public HTMLFormControlsCollection getElements() {
         final HtmlForm htmlForm = getHtmlForm();
 
-        final HTMLFormControlsCollection elements = new HTMLFormControlsCollection(htmlForm,
-                false) {
+        final HTMLFormControlsCollection elements = new HTMLFormControlsCollection(htmlForm, false) {
             @Override
             protected Object getWithPreemption(final String name) {
-                return HTMLFormElement.this.getWithPreemption(name);
+                final List<HtmlElement> elementsForName = findElements(name);
+                if (elementsForName.isEmpty()) {
+                    return NOT_FOUND;
+                }
+                if (elementsForName.size() == 1) {
+                    return getScriptableFor(elementsForName.get(0));
+                }
+
+                final List<DomNode> nodes = new ArrayList<>(elementsForName);
+                final RadioNodeList nodeList = new RadioNodeList(getHtmlForm(), nodes);
+                nodeList.setElementsSupplier(
+                        (Supplier<List<DomNode>> & Serializable) () -> new ArrayList<>(findElements(name)));
+                return nodeList;
             }
         };
 
@@ -328,15 +339,14 @@ public class HTMLFormElement extends HTMLElement implements Function {
         }
 
         SubmittableElement submittable = null;
-        if (submitter instanceof HTMLElement) {
-            final HTMLElement subHtmlElement = (HTMLElement) submitter;
-            if (subHtmlElement instanceof HTMLButtonElement) {
-                if ("submit".equals(((HTMLButtonElement) subHtmlElement).getType())) {
+        if (submitter instanceof HTMLElement subHtmlElement) {
+            if (subHtmlElement instanceof HTMLButtonElement element1) {
+                if ("submit".equals(element1.getType())) {
                     submittable = (SubmittableElement) subHtmlElement.getDomNodeOrDie();
                 }
             }
-            else if (subHtmlElement instanceof HTMLInputElement) {
-                if ("submit".equals(((HTMLInputElement) subHtmlElement).getType())) {
+            else if (subHtmlElement instanceof HTMLInputElement element) {
+                if ("submit".equals(element.getType())) {
                     submittable = (SubmittableElement) subHtmlElement.getDomNodeOrDie();
                 }
             }
@@ -367,6 +377,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
 
     /**
      * Overridden to allow the retrieval of certain form elements by ID or name.
+     * @see <a href="https://html.spec.whatwg.org/multipage/forms.html#dom-form-nameditem">
+     *     HTML spec - form named item</a>
      *
      * @param name {@inheritDoc}
      * @return {@inheritDoc}
@@ -379,10 +391,13 @@ public class HTMLFormElement extends HTMLElement implements Function {
         final List<HtmlElement> elements = findElements(name);
 
         if (elements.isEmpty()) {
-            return NOT_FOUND;
+            final HtmlElement element = getHtmlForm().getNamedElement(name);
+            return element != null ? getScriptableFor(element) : NOT_FOUND;
         }
         if (elements.size() == 1) {
-            return getScriptableFor(elements.get(0));
+            final HtmlElement element = elements.get(0);
+            getHtmlForm().registerPastName(name, element);
+            return getScriptableFor(element);
         }
         final List<DomNode> nodes = new ArrayList<>(elements);
 
@@ -442,7 +457,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
         }
 
         for (final HtmlElement element : form.getElementsJS()) {
-            if (isAccessibleByIdOrName(element, name)) {
+            if (name.equals(element.getId())
+                    || name.equals(element.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
                 elements.add(element);
             }
         }
@@ -450,8 +466,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
         // If no form fields are found, browsers are able to find img elements by ID or name.
         if (elements.isEmpty()) {
             for (final DomNode node : form.getHtmlElementDescendants()) {
-                if (node instanceof HtmlImage) {
-                    final HtmlImage img = (HtmlImage) node;
+                if (node instanceof HtmlImage img) {
                     if (name.equals(img.getId()) || name.equals(img.getNameAttribute())) {
                         elements.add(img);
                     }
@@ -469,15 +484,15 @@ public class HTMLFormElement extends HTMLElement implements Function {
         }
 
         for (final HtmlElement node : form.getElementsJS()) {
-            if (isAccessibleByIdOrName(node, name)) {
+            if (name.equals(node.getId())
+                    || name.equals(node.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
                 return node;
             }
         }
 
         // If no form fields are found, browsers are able to find img elements by ID or name.
         for (final DomNode node : form.getHtmlElementDescendants()) {
-            if (node instanceof HtmlImage) {
-                final HtmlImage img = (HtmlImage) node;
+            if (node instanceof HtmlImage img) {
                 if (name.equals(img.getId()) || name.equals(img.getNameAttribute())) {
                     return img;
                 }
@@ -485,36 +500,6 @@ public class HTMLFormElement extends HTMLElement implements Function {
         }
 
         return null;
-    }
-
-    /**
-     * Indicates if the element can be reached by id or name in expressions like "myForm.myField".
-     * @param element the element to test
-     * @param name the name used to address the element
-     * @return {@code true} if this element matches the conditions
-     */
-    private static boolean isAccessibleByIdOrName(final HtmlElement element, final String name) {
-        if (name.equals(element.getId())) {
-            return true;
-        }
-
-        if (name.equals(element.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
-            return true;
-        }
-
-        if (element instanceof FormFieldWithNameHistory) {
-            final FormFieldWithNameHistory elementWithNames = (FormFieldWithNameHistory) element;
-
-            if (name.equals(elementWithNames.getOriginalName())) {
-                return true;
-            }
-
-            if (elementWithNames.getNewNames().contains(name)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -535,7 +520,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * {@inheritDoc}
      */
     @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
+    public Object call(final Context cx, final VarScope scope, final Scriptable thisObj, final Object[] args) {
         throw JavaScriptEngine.typeError("Not a function.");
     }
 
@@ -543,7 +528,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * {@inheritDoc}
      */
     @Override
-    public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
+    public Scriptable construct(final Context cx, final VarScope scope, final Object[] args) {
         throw JavaScriptEngine.typeError("Not a function.");
     }
 

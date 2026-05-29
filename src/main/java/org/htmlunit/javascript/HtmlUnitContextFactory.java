@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.htmlunit.corejs.javascript.EvaluatorException;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.corejs.javascript.debug.Debugger;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
@@ -197,7 +198,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
         }
 
         @Override
-        protected Function compileFunction(final Scriptable scope, String source,
+        protected Function compileFunction(final VarScope scope, String source,
                 final Evaluator compiler, final ErrorReporter compilationErrorReporter,
                 final String sourceName, final int lineno, final Object securityDomain) {
 
@@ -290,7 +291,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
      */
     @Override
     protected Object doTopCall(final Callable callable,
-            final Context cx, final Scriptable scope,
+            final Context cx, final VarScope scope,
             final Scriptable thisObj, final Object[] args) {
 
         final TimeoutContext tcx = (TimeoutContext) cx;
@@ -303,7 +304,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
      */
     @Override
     protected Object doTopCall(final Script script,
-            final Context cx, final Scriptable scope,
+            final Context cx, final VarScope scope,
             final Scriptable thisObj) {
 
         final TimeoutContext tcx = (TimeoutContext) cx;
@@ -335,24 +336,19 @@ public class HtmlUnitContextFactory extends ContextFactory {
      */
     @Override
     protected boolean hasFeature(final Context cx, final int featureIndex) {
-        switch (featureIndex) {
-            case Context.FEATURE_RESERVED_KEYWORD_AS_IDENTIFIER:
-            case Context.FEATURE_OLD_UNDEF_NULL_THIS:
-            case Context.FEATURE_LITTLE_ENDIAN:
-            case Context.FEATURE_LOCATION_INFORMATION_IN_ERROR:
-            case Context.FEATURE_INTL_402:
-            case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
-                return true;
-            case Context.FEATURE_E4X:
-            case Context.FEATURE_NON_ECMA_GET_YEAR:
-                return false;
-            case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
-                return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
-            case Context.FEATURE_HTMLUNIT_ARRAY_SORT_COMPERATOR_ACCEPTS_BOOL:
-                return browserVersion_.hasFeature(JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR);
-            default:
-                return super.hasFeature(cx, featureIndex);
-        }
+        return switch (featureIndex) {
+            case Context.FEATURE_RESERVED_KEYWORD_AS_IDENTIFIER,
+                 Context.FEATURE_OLD_UNDEF_NULL_THIS,
+                 Context.FEATURE_LITTLE_ENDIAN,
+                 Context.FEATURE_LOCATION_INFORMATION_IN_ERROR,
+                 Context.FEATURE_INTL_402,
+                 Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW -> true;
+            case Context.FEATURE_E4X -> false;
+            case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME -> browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
+            case Context.FEATURE_HTMLUNIT_ARRAY_SORT_COMPERATOR_ACCEPTS_BOOL ->
+                browserVersion_.hasFeature(JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR);
+            default -> super.hasFeature(cx, featureIndex);
+        };
     }
 
     private static final class HtmlUnitErrorReporter implements ErrorReporter, Serializable {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
  * Tests for {@link NumberFormat}.
  *
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 public class NumberFormatTest extends WebDriverTestCase {
 
@@ -103,6 +104,29 @@ public class NumberFormatTest extends WebDriverTestCase {
                 + "    log(numberFormat instanceof Intl.NumberFormat);\n"
 
                 + "    log(numberFormat.format(42.2468));\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"en", "en,ja", ""})
+    public void supportedLocalesOf() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log(Intl.NumberFormat.supportedLocalesOf('en'));\n"
+                + "    log(Intl.NumberFormat.supportedLocalesOf(['en', 'xx-YY', 'ja']));\n"
+                + "    log(Intl.NumberFormat.supportedLocalesOf([]));\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"

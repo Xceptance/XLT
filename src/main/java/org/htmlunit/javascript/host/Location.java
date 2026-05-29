@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,14 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.host.event.Event;
@@ -146,42 +150,59 @@ public class Location extends HtmlUnitScriptable {
     private String hash_;
 
     /**
-     * Creates an instance.
+     * JavaScript constructor.
+     * @param cx the current context
+     * @param scope the scope
+     * @param args the arguments to the WebSocket constructor
+     * @param ctorObj the function object
+     * @param inNewExpr Is new or not
+     * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public void jsConstructor() {
-        final int attributes = ScriptableObject.PERMANENT | ScriptableObject.READONLY;
+    public static Location jsConstructor(final Context cx, final VarScope scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
 
-        FunctionObject functionObject = new FunctionObject(METHOD_ASSIGN.getName(), METHOD_ASSIGN, this);
-        defineProperty(METHOD_ASSIGN.getName(), functionObject, attributes);
+        final Location location = new Location();
+        location.setParentScope(scope);
+        location.setPrototype(((FunctionObject) ctorObj).getClassPrototype());
 
-        functionObject = new FunctionObject(METHOD_RELOAD.getName(), METHOD_RELOAD, this);
-        defineProperty(METHOD_RELOAD.getName(), functionObject, attributes);
+        location.initialize(scope, null, null);
 
-        functionObject = new FunctionObject(METHOD_REPLACE.getName(), METHOD_REPLACE, this);
-        defineProperty(METHOD_REPLACE.getName(), functionObject, attributes);
-
-        functionObject = new FunctionObject(METHOD_TO_STRING.getName(), METHOD_TO_STRING, this);
-        defineProperty("toString", functionObject, attributes);
-
-        defineProperty("hash", null, GETTER_HASH, SETTER_HASH, attributes);
-        defineProperty("host", null, GETTER_HOST, SETTER_HOST, attributes);
-        defineProperty("hostname", null, GETTER_HOSTNAME, SETTER_HOSTNAME, attributes);
-        defineProperty("href", null, GETTER_HREF, SETTER_HREF, attributes);
-        defineProperty("origin", null, GETTER_ORIGIN, null, attributes);
-        defineProperty("pathname", null, GETTER_PATHNAME, SETTER_PATHNAME, attributes);
-        defineProperty("port", null, GETTER_PORT, SETTER_PORT, attributes);
-        defineProperty("protocol", null, GETTER_PROTOCOL, SETTER_PROTOCOL, attributes);
-        defineProperty("search", null, GETTER_SEARCH, SETTER_SEARCH, attributes);
+        return location;
     }
 
     /**
      * Initializes this Location.
      *
+     * @param scope the scope
      * @param window the window that this location belongs to
      * @param page the page that will become the enclosing page
      */
-    public void initialize(final Window window, final Page page) {
+    public void initialize(final VarScope scope, final Window window, final Page page) {
+        final int attributes = ScriptableObject.PERMANENT | ScriptableObject.READONLY;
+
+        FunctionObject functionObject = new FunctionObject(METHOD_ASSIGN.getName(), METHOD_ASSIGN, scope);
+        defineProperty(METHOD_ASSIGN.getName(), functionObject, attributes);
+
+        functionObject = new FunctionObject(METHOD_RELOAD.getName(), METHOD_RELOAD, scope);
+        defineProperty(METHOD_RELOAD.getName(), functionObject, attributes);
+
+        functionObject = new FunctionObject(METHOD_REPLACE.getName(), METHOD_REPLACE, scope);
+        defineProperty(METHOD_REPLACE.getName(), functionObject, attributes);
+
+        functionObject = new FunctionObject(METHOD_TO_STRING.getName(), METHOD_TO_STRING, scope);
+        defineProperty("toString", functionObject, attributes);
+
+        defineProperty(scope, "hash", null, GETTER_HASH, SETTER_HASH, attributes);
+        defineProperty(scope, "host", null, GETTER_HOST, SETTER_HOST, attributes);
+        defineProperty(scope, "hostname", null, GETTER_HOSTNAME, SETTER_HOSTNAME, attributes);
+        defineProperty(scope, "href", null, GETTER_HREF, SETTER_HREF, attributes);
+        defineProperty(scope, "origin", null, GETTER_ORIGIN, null, attributes);
+        defineProperty(scope, "pathname", null, GETTER_PATHNAME, SETTER_PATHNAME, attributes);
+        defineProperty(scope, "port", null, GETTER_PORT, SETTER_PORT, attributes);
+        defineProperty(scope, "protocol", null, GETTER_PROTOCOL, SETTER_PROTOCOL, attributes);
+        defineProperty(scope, "search", null, GETTER_SEARCH, SETTER_SEARCH, attributes);
+
         window_ = window;
         if (window_ != null && page != null) {
             setHash(null, page.getUrl().getRef());
@@ -225,7 +246,7 @@ public class Location extends HtmlUnitScriptable {
 
         // update request url with location.href in case hash was changed
         request.setUrl(new URL(getHref()));
-        if (webWindow.getWebClient().getBrowserVersion().hasFeature(JS_LOCATION_RELOAD_REFERRER)) {
+        if (getBrowserVersion().hasFeature(JS_LOCATION_RELOAD_REFERRER)) {
             request.setRefererHeader(htmlPage.getUrl());
         }
 
@@ -294,17 +315,21 @@ public class Location extends HtmlUnitScriptable {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533867.aspx">MSDN Documentation</a>
      */
     public void setHref(final String newLocation) throws IOException {
-        WebWindow webWindow = getWindowFromTopCallScope().getWebWindow();
-        final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
         if (newLocation.startsWith(JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
             final String script = newLocation.substring(11);
+            final HtmlPage page = (HtmlPage) window_.getWebWindow().getEnclosedPage();
             page.executeJavaScript(script, "new location value", 1);
             return;
         }
+
         try {
+            // we need to get the caller window to get the calling page
+            WebWindow webWindow = ((Window) JavaScriptEngine.getTopCallScope().getGlobalThis()).getWebWindow();
+            final HtmlPage callingPage = (HtmlPage) webWindow.getEnclosedPage();
+
             final BrowserVersion browserVersion = webWindow.getWebClient().getBrowserVersion();
 
-            URL url = page.getFullyQualifiedUrl(newLocation);
+            URL url = callingPage.getFullyQualifiedUrl(newLocation);
             // fix for empty url
             if (StringUtils.isEmptyOrNull(newLocation)) {
                 url = UrlUtils.getUrlWithNewRef(url, null);
@@ -312,7 +337,7 @@ public class Location extends HtmlUnitScriptable {
 
             final WebRequest request = new WebRequest(url,
                         browserVersion.getHtmlAcceptHeader(), browserVersion.getAcceptEncodingHeader());
-            request.setRefererHeader(page.getUrl());
+            request.setRefererHeader(callingPage.getUrl());
 
             webWindow = window_.getWebWindow();
             webWindow.getWebClient().download(webWindow, "", request, true, null, "JS set location");

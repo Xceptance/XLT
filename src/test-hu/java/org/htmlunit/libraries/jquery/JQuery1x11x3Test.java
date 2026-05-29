@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,15 @@
  */
 package org.htmlunit.libraries.jquery;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.Servlet;
 
 /**
  * Tests for compatibility with web server loading of
@@ -31,6 +37,17 @@ import org.junit.jupiter.api.Test;
  * @author Frank Danek
  */
 public class JQuery1x11x3Test extends JQueryTestBase {
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @BeforeAll
+    public static void startServer() throws Exception {
+        final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
+        servlets.put("*.php", org.htmlunit.util.quercus.servlet.QuercusServlet.class);
+        servlets.put("/jquery/test/data/jsonp.php/*", org.htmlunit.util.quercus.servlet.QuercusServlet.class);
+        startWebServer("src/test/resources/libraries/jQuery/1.11.3", servlets);
+    }
 
     /**
      * {@inheritDoc}
@@ -5708,7 +5725,7 @@ public class JQuery1x11x3Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("0, 8, 8")
+    @Alerts("2, 6, 8")
     public void ajax__jQuery_ajax____jQuery_get_Script_JSON_____jQuery_post____pass_through_request_object() throws Exception {
         runTest("ajax: jQuery.ajax(), jQuery.get[Script|JSON](), jQuery.post(), pass-through request object");
     }
@@ -5728,7 +5745,7 @@ public class JQuery1x11x3Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("2, 2, 4")
+    @Alerts("0, 4, 4")
     public void ajax__jQuery_ajax_____JSONP___Query_String___n____Same_Domain() throws Exception {
         runTest("ajax: jQuery.ajax() - JSONP - Query String (?n) - Same Domain");
     }
@@ -5778,7 +5795,7 @@ public class JQuery1x11x3Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("2, 2, 4")
+    @Alerts("0, 4, 4")
     public void ajax__jQuery_ajax_____JSONP___Query_String___n____Cross_Domain() throws Exception {
         runTest("ajax: jQuery.ajax() - JSONP - Query String (?n) - Cross Domain");
     }

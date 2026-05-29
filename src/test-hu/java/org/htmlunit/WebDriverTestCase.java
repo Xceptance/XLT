@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,36 +37,19 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.HandlerWrapper;
-import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.htmlunit.MockWebConnection.RawResponseData;
+import org.htmlunit.WebServerTestCase.SSLVariant;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.junit.TestCaseCorrector;
+import org.htmlunit.util.JettyServerUtils;
 import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -90,7 +71,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v143.emulation.Emulation;
+import org.openqa.selenium.devtools.v148.emulation.Emulation;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -105,9 +86,15 @@ import org.openqa.selenium.htmlunit.options.HtmlUnitDriverOptions;
 import org.openqa.selenium.htmlunit.options.HtmlUnitOption;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 /**
  * Base class for tests using WebDriver.
- *
+ * <p>
  * By default, this test runs with HtmlUnit, but this behavior can be changed by having a property file named
  * "{@code test.properties}" in the HtmlUnit root directory.
  * Sample (remove the part not matching your os):
@@ -244,16 +231,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
     /**
      * All browsers supported.
      */
-    private static List<BrowserVersion> ALL_BROWSERS_ = Collections.unmodifiableList(
-            Arrays.asList(BrowserVersion.CHROME,
-                    BrowserVersion.EDGE,
-                    BrowserVersion.FIREFOX,
-                    BrowserVersion.FIREFOX_ESR));
+    private static final List<BrowserVersion> ALL_BROWSERS_ = List.of(BrowserVersion.CHROME, BrowserVersion.EDGE, BrowserVersion.FIREFOX, BrowserVersion.FIREFOX_ESR);
 
     /**
      * Browsers which run by default.
      */
-    private static BrowserVersion[] DEFAULT_RUNNING_BROWSERS_ =
+    private static final BrowserVersion[] DEFAULT_RUNNING_BROWSERS_ =
         {BrowserVersion.CHROME,
             BrowserVersion.EDGE,
             BrowserVersion.FIREFOX,
@@ -491,23 +474,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * @throws Exception if it fails
      */
     protected static void stopWebServers() throws Exception {
-        if (STATIC_SERVER_ != null) {
-            STATIC_SERVER_.stop();
-            STATIC_SERVER_.destroy();
-            STATIC_SERVER_ = null;
-        }
+        JettyServerUtils.stopServer(STATIC_SERVER_);
+        STATIC_SERVER_ = null;
 
-        if (STATIC_SERVER2_ != null) {
-            STATIC_SERVER2_.stop();
-            STATIC_SERVER2_.destroy();
-            STATIC_SERVER2_ = null;
-        }
+        JettyServerUtils.stopServer(STATIC_SERVER2_);
+        STATIC_SERVER2_ = null;
 
-        if (STATIC_SERVER3_ != null) {
-            STATIC_SERVER3_.stop();
-            STATIC_SERVER3_.destroy();
-            STATIC_SERVER3_ = null;
-        }
+        JettyServerUtils.stopServer(STATIC_SERVER3_);
+        STATIC_SERVER3_ = null;
+
         LAST_TEST_UsesMockWebConnection_ = null;
     }
 
@@ -671,69 +646,29 @@ public abstract class WebDriverTestCase extends WebTestCase {
             stopWebServers();
         }
 
+        // The mock connection servlet call sit under both servers, so long as tests
+        // keep the URLs distinct.
+        final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
+        servlets.put("/*", MockWebConnectionServlet.class);
+
         LAST_TEST_UsesMockWebConnection_ = Boolean.TRUE;
+
         if (STATIC_SERVER_ == null) {
-            final Server server = new Server(PORT);
 
-            final WebAppContext context = new WebAppContext();
-            context.setContextPath("/");
-            context.setResourceBase("./");
-
-            if (isBasicAuthentication()) {
-                final Constraint constraint = new Constraint();
-                constraint.setName(Constraint.__BASIC_AUTH);
-                constraint.setRoles(new String[]{"user"});
-                constraint.setAuthenticate(true);
-
-                final ConstraintMapping constraintMapping = new ConstraintMapping();
-                constraintMapping.setConstraint(constraint);
-                constraintMapping.setPathSpec("/*");
-
-                final ConstraintSecurityHandler handler = (ConstraintSecurityHandler) context.getSecurityHandler();
-                handler.setLoginService(new HashLoginService("MyRealm", "./src/test/resources/realm.properties"));
-                handler.setConstraintMappings(new ConstraintMapping[]{constraintMapping});
-            }
-
-            context.addServlet(MockWebConnectionServlet.class, "/*");
-            if (serverCharset != null) {
-                AsciiEncodingFilter.CHARSET_ = serverCharset;
-                context.addFilter(AsciiEncodingFilter.class, "/*",
-                        EnumSet.of(DispatcherType.INCLUDE, DispatcherType.REQUEST));
-            }
-            server.setHandler(context);
-            WebServerTestCase.tryStart(PORT, server);
-
+            final Server server = JettyServerUtils.startWebServer(PORT, "./", servlets, serverCharset, isBasicAuthentication(), SSLVariant.NONE);
             STATIC_SERVER_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServerStarter"));
             STATIC_SERVER_ = server;
         }
         MockWebConnectionServlet.MockConnection_ = mockConnection;
 
         if (STATIC_SERVER2_ == null && needThreeConnections()) {
-            final Server server2 = new Server(PORT2);
-            final WebAppContext context2 = new WebAppContext();
-            context2.setContextPath("/");
-            context2.setResourceBase("./");
-            context2.addServlet(MockWebConnectionServlet.class, "/*");
-            server2.setHandler(context2);
-            WebServerTestCase.tryStart(PORT2, server2);
-
+            final Server server2 = JettyServerUtils.startWebServer(PORT2, "./", servlets, null, false, SSLVariant.NONE);
             STATIC_SERVER2_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServer2Starter"));
             STATIC_SERVER2_ = server2;
 
-            final Server server3 = new Server(PORT3);
-            final WebAppContext context3 = new WebAppContext();
-            context3.setContextPath("/");
-            context3.setResourceBase("./");
-            context3.addServlet(MockWebConnectionServlet.class, "/*");
-            server3.setHandler(context3);
-            WebServerTestCase.tryStart(PORT3, server3);
-
+            final Server server3 = JettyServerUtils.startWebServer(PORT3, "./", servlets, null, false, SSLVariant.NONE);
             STATIC_SERVER3_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServer3Starter"));
             STATIC_SERVER3_ = server3;
-            /*
-             * The mock connection servlet call sit under both servers, so long as tests
-             * keep the URLs distinct.
-             */
         }
     }
 
@@ -752,13 +687,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * <p><b>Don't forget to stop the returned HttpServer after the test</b>
      *
      * @param resourceBase the base of resources for the default context
-     * @param classpath additional classpath entries to add (may be null)
      * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
      * @throws Exception if the test fails
      */
-    protected static void startWebServer(final String resourceBase, final String[] classpath,
-            final Map<String, Class<? extends Servlet>> servlets) throws Exception {
-        startWebServer(resourceBase, classpath, servlets, null);
+    protected static void startWebServer(final String resourceBase, final Map<String, Class<? extends Servlet>> servlets) throws Exception {
+        stopWebServers();
+        LAST_TEST_UsesMockWebConnection_ = Boolean.FALSE;
+
+        STATIC_SERVER_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServerStarter"));
+        STATIC_SERVER_ = JettyServerUtils.startWebServer(PORT, resourceBase, servlets, null, false, SSLVariant.NONE);
     }
 
     /**
@@ -767,38 +704,15 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * <p><b>Don't forget to stop the returned HttpServer after the test</b>
      *
      * @param resourceBase the base of resources for the default context
-     * @param classpath additional classpath entries to add (may be null)
      * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
      * @throws Exception if the test fails
      */
-    protected static void startWebServer2(final String resourceBase, final String[] classpath,
-            final Map<String, Class<? extends Servlet>> servlets) throws Exception {
-
+    protected static void startWebServer2(final String resourceBase, final Map<String, Class<? extends Servlet>> servlets) throws Exception {
         if (STATIC_SERVER2_ != null) {
-            STATIC_SERVER2_.stop();
+            JettyServerUtils.stopServer(STATIC_SERVER2_);
         }
         STATIC_SERVER2_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServer2Starter"));
-        STATIC_SERVER2_ = WebServerTestCase.createWebServer(PORT2, resourceBase, classpath, servlets, null);
-    }
-
-    /**
-     * Starts the web server on the default {@link #PORT}.
-     * The given resourceBase is used to be the ROOT directory that serves the default context.
-     * <p><b>Don't forget to stop the returned Server after the test</b>
-     *
-     * @param resourceBase the base of resources for the default context
-     * @param classpath additional classpath entries to add (may be null)
-     * @param servlets map of {String, Class} pairs: String is the path spec, while class is the class
-     * @param handler wrapper for handler (can be null)
-     * @throws Exception if the test fails
-     */
-    protected static void startWebServer(final String resourceBase, final String[] classpath,
-            final Map<String, Class<? extends Servlet>> servlets, final HandlerWrapper handler) throws Exception {
-        stopWebServers();
-        LAST_TEST_UsesMockWebConnection_ = Boolean.FALSE;
-
-        STATIC_SERVER_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServerStarter"));
-        STATIC_SERVER_ = WebServerTestCase.createWebServer(PORT, resourceBase, classpath, servlets, handler);
+        STATIC_SERVER2_ = JettyServerUtils.startWebServer(PORT2, resourceBase, servlets, null, false, SSLVariant.NONE);
     }
 
     /**
@@ -881,7 +795,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
             }
             final URL requestedUrl = new URL(url);
             final WebRequest webRequest = new WebRequest(requestedUrl);
-            webRequest.setHttpMethod(HttpMethod.valueOf(request.getMethod()));
+
+            final String method = request.getMethod().toUpperCase(Locale.ROOT);
+            webRequest.setHttpMethod(HttpMethod.valueOf(method));
 
             // copy headers
             for (final Enumeration<String> en = request.getHeaderNames(); en.hasMoreElements();) {
@@ -1061,9 +977,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
         getMockWebConnection().setResponse(url, html);
         MockWebConnectionServlet.MockConnection_ = getMockWebConnection();
 
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
         if (servlets2 != null) {
-            startWebServer2("./", null, servlets2);
+            startWebServer2("./", servlets2);
         }
 
         WebDriver driver = getWebDriver();
@@ -1125,8 +1041,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
             final String... expectedAlerts) throws Exception {
 
         final StringBuilder expected = new StringBuilder();
-        for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('\u00A7');
+        for (String expectedAlert : expectedAlerts) {
+            expected.append(expectedAlert).append('\u00A7');
         }
         final String expectedTitle = expected.toString();
 
@@ -1155,8 +1071,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
 
         final StringBuilder expected = new StringBuilder();
-        for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('\u00A7');
+        for (String expectedAlert : expectedAlerts) {
+            expected.append(expectedAlert).append('\u00A7');
         }
 
         final String title = driver.getTitle();
@@ -1204,8 +1120,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
 
         final StringBuilder expected = new StringBuilder();
-        for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('\u00A7');
+        for (String expectedAlert : expectedAlerts) {
+            expected.append(expectedAlert).append('\u00A7');
         }
         verify(() -> textArea.getDomProperty("value"), expected.toString());
 
@@ -1246,8 +1162,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
     protected final WebDriver verifyWindowName2(final WebDriver driver,
             final String... expectedAlerts) throws Exception {
         final StringBuilder expected = new StringBuilder();
-        for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('\u00A7');
+        for (String expectedAlert : expectedAlerts) {
+            expected.append(expectedAlert).append('\u00A7');
         }
 
         return verifyJsVariable(driver, "window.top.name", expected.toString());
@@ -1256,8 +1172,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
     protected final WebDriver verifySessionStorage2(final WebDriver driver,
             final String... expectedAlerts) throws Exception {
         final StringBuilder expected = new StringBuilder();
-        for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('\u00A7');
+        for (String expectedAlert : expectedAlerts) {
+            expected.append(expectedAlert).append('\u00A7');
         }
 
         return verifyJsVariable(driver, "sessionStorage.getItem('Log')", expected.toString());
@@ -1329,14 +1245,13 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
         if (!useRealBrowser()) {
             // check if we have data-image Url
-            for (int i = 0; i < expected.length; i++) {
-                if (expected[i].startsWith("data:image/png;base64,")) {
+            for (String s : expected) {
+                if (s.startsWith("data:image/png;base64,")) {
                     // we have to compare element by element
                     for (int j = 0; j < expected.length; j++) {
                         if (expected[j].startsWith("data:image/png;base64,")) {
                             compareImages(expected[j], actualAlerts.get(j));
-                        }
-                        else {
+                        } else {
                             assertEquals(expected[j], actualAlerts.get(j));
                         }
                     }
@@ -1569,8 +1484,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
 
         final File file = new File(url.toURI());
-        String content = FileUtils.readFileToString(file, UTF_8);
-        content = StringUtils.replace(content, "\r\n", "\n");
+        final String content = FileUtils.readFileToString(file, UTF_8)
+                                        .replace("\r\n", "\n");
         return content;
     }
 
@@ -1671,7 +1586,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
                         // close all windows except the current one
                         handles.remove(currentWindow);
 
-                        if (handles.size() > 0) {
+                        if (!handles.isEmpty()) {
                             for (final String handle : handles) {
                                 try {
                                     driver.switchTo().window(handle);
@@ -1751,39 +1666,5 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     protected WebClient getWebClient() {
         return webDriver_.getWebClient();
-    }
-
-    /**
-     * Needed as Jetty starting from 9.4.4 expects UTF-8 encoding by default.
-     */
-    public static class AsciiEncodingFilter implements Filter {
-
-        private static Charset CHARSET_;
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void init(final FilterConfig filterConfig) throws ServletException {
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
-                throws IOException, ServletException {
-            if (request instanceof Request) {
-                ((Request) request).setQueryEncoding(CHARSET_.name());
-            }
-            chain.doFilter(request, response);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void destroy() {
-        }
     }
 }

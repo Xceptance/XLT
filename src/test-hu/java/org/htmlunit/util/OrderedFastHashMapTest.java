@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link OrderedFastHashMap}.
  *
  * @author Ren&eacute; Schwietzke
+ * @author Ronald Brill
  */
 public class OrderedFastHashMapTest {
 
@@ -199,7 +200,7 @@ public class OrderedFastHashMapTest {
     public void growSmall() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(3);
         for (int i = 0; i < 10; i++) {
-            m.add(String.valueOf(i), "V" + String.valueOf(i));
+            m.add(String.valueOf(i), "V" + i);
         }
 
         final BiConsumer<String, Integer> t = (k, index) -> {
@@ -451,7 +452,7 @@ public class OrderedFastHashMapTest {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         for (int i = 0; i < 200; i++) {
             // we add two, but immediately remove the last again
-            m.put(String.valueOf(i), "V" + String.valueOf(i));
+            m.put(String.valueOf(i), "V" + i);
             m.put(String.valueOf(i + 1), "any");
             assertEquals("any", m.remove(String.valueOf(i + 1)));
         }
@@ -476,7 +477,7 @@ public class OrderedFastHashMapTest {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         for (int i = 0; i < 4000; i = i + 2) {
             m.put(String.valueOf(i), "any");
-            m.put(String.valueOf(i + 1), "V" + String.valueOf(i + 1));
+            m.put(String.valueOf(i + 1), "V" + (i + 1));
             assertEquals("any", m.remove(String.valueOf(i)));
         }
 
@@ -499,9 +500,9 @@ public class OrderedFastHashMapTest {
     public void removeTryingToCoverEdges_Middle() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         for (int i = 0; i < 3 * 1972; i = i + 3) {
-            m.put(String.valueOf(i), "V" + String.valueOf(i));
+            m.put(String.valueOf(i), "V" + i);
             m.put(String.valueOf(i + 1), "any");
-            m.put(String.valueOf(i + 2), "V" + String.valueOf(i + 2));
+            m.put(String.valueOf(i + 2), "V" + (i + 2));
             assertEquals("any", m.remove(String.valueOf(i + 1)));
         }
 
@@ -1515,34 +1516,22 @@ public class OrderedFastHashMapTest {
     @Test
     public void collision() {
         final OrderedFastHashMap<MockKey<String>, String> f = new OrderedFastHashMap<>(13);
-        IntStream.range(0, 15).forEach(i -> {
-            f.put(new MockKey<>(12, "k" + i), "v" + i);
-        });
+        IntStream.range(0, 15).forEach(i -> f.put(new MockKey<>(12, "k" + i), "v" + i));
 
         assertEquals(15, f.size());
 
-        IntStream.range(0, 15).forEach(i -> {
-            assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i)));
-        });
+        IntStream.range(0, 15).forEach(i -> assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i))));
 
         // round 2
-        IntStream.range(0, 20).forEach(i -> {
-            f.put(new MockKey<>(12, "k" + i), "v" + i);
-        });
+        IntStream.range(0, 20).forEach(i -> f.put(new MockKey<>(12, "k" + i), "v" + i));
 
         assertEquals(20, f.size());
 
-        IntStream.range(0, 20).forEach(i -> {
-            assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i)));
-        });
+        IntStream.range(0, 20).forEach(i -> assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i))));
 
         // round 3
-        IntStream.range(0, 10).forEach(i -> {
-            assertEquals("v" + i, f.remove(new MockKey<>(12, "k" + i)));
-        });
-        IntStream.range(10, 20).forEach(i -> {
-            assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i)));
-        });
+        IntStream.range(0, 10).forEach(i -> assertEquals("v" + i, f.remove(new MockKey<>(12, "k" + i))));
+        IntStream.range(10, 20).forEach(i -> assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i))));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.util.geometry.Point2D;
 
 /**
  * Wrapper for the HTML element "table".
@@ -75,13 +76,13 @@ public class HtmlTable extends HtmlElement {
      */
     public final HtmlTableCell getCellAt(final int rowIndex, final int columnIndex) {
         final RowIterator rowIterator = getRowIterator();
-        final HashSet<Position> occupied = new HashSet<>();
+        final HashSet<Point2D> occupied = new HashSet<>();
         int row = 0;
         for (final HtmlTableRow htmlTableRow : rowIterator) {
             final HtmlTableRow.CellIterator cellIterator = htmlTableRow.getCellIterator();
             int col = 0;
             for (final HtmlTableCell cell : cellIterator) {
-                while (occupied.contains(new Position(row, col))) {
+                while (occupied.contains(new Point2D(row, col))) {
                     col++;
                 }
                 final int nextRow = row + cell.getRowSpan();
@@ -96,7 +97,7 @@ public class HtmlTable extends HtmlElement {
                 if (rowSpan > 1 || columnSpan > 1) {
                     for (int i = 0; i < rowSpan; i++) {
                         for (int j = 0; j < columnSpan; j++) {
-                            occupied.add(new Position(row + i, col + j));
+                            occupied.add(new Point2D(row + i, col + j));
                         }
                     }
                 }
@@ -194,8 +195,8 @@ public class HtmlTable extends HtmlElement {
      */
     public HtmlTableHeader getHeader() {
         for (final DomElement element : getChildElements()) {
-            if (element instanceof HtmlTableHeader) {
-                return (HtmlTableHeader) element;
+            if (element instanceof HtmlTableHeader header) {
+                return header;
             }
         }
         return null;
@@ -208,8 +209,8 @@ public class HtmlTable extends HtmlElement {
      */
     public HtmlTableFooter getFooter() {
         for (final DomElement element : getChildElements()) {
-            if (element instanceof HtmlTableFooter) {
-                return (HtmlTableFooter) element;
+            if (element instanceof HtmlTableFooter footer) {
+                return footer;
             }
         }
         return null;
@@ -224,8 +225,8 @@ public class HtmlTable extends HtmlElement {
     public List<HtmlTableBody> getBodies() {
         final List<HtmlTableBody> bodies = new ArrayList<>();
         for (final DomElement element : getChildElements()) {
-            if (element instanceof HtmlTableBody) {
-                bodies.add((HtmlTableBody) element);
+            if (element instanceof HtmlTableBody body) {
+                bodies.add(body);
             }
         }
         return bodies;
@@ -404,12 +405,12 @@ public class HtmlTable extends HtmlElement {
         private void setNextRow(final DomNode node) {
             nextRow_ = null;
             for (DomNode next = node; next != null; next = next.getNextSibling()) {
-                if (next instanceof HtmlTableRow) {
-                    nextRow_ = (HtmlTableRow) next;
+                if (next instanceof HtmlTableRow row) {
+                    nextRow_ = row;
                     return;
                 }
-                else if (currentGroup_ == null && next instanceof TableRowGroup) {
-                    currentGroup_ = (TableRowGroup) next;
+                else if (currentGroup_ == null && next instanceof TableRowGroup group) {
+                    currentGroup_ = group;
                     setNextRow(next.getFirstChild());
                     return;
                 }
@@ -442,48 +443,5 @@ public class HtmlTable extends HtmlElement {
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.TABLE;
-    }
-
-    private static final class Position {
-
-        private final int posX_;
-        private final int posY_;
-
-        Position(final int x, final int y) {
-            posX_ = x;
-            posY_ = y;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + posX_;
-            result = prime * result + posY_;
-            return result;
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-
-            final Position other = (Position) obj;
-            if (posX_ != other.posX_) {
-                return false;
-            }
-            if (posY_ != other.posY_) {
-                return false;
-            }
-
-            return true;
-        }
     }
 }

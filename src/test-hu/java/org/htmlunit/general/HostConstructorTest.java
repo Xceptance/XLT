@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class HostConstructorTest extends WebDriverTestCase {
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}")
+    @ParameterizedTest(name = "_{0}", quoteTextArguments = false)
     @MethodSource("data")
     @Alerts("TypeError")
     void test(final String className) throws Exception {

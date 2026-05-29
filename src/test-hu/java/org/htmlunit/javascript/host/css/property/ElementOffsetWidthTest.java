@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -825,6 +825,24 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(EDGE = "1240")
     public void header() throws Exception {
         test("header");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "1242",
+            EDGE = "1234",
+            FF = "1241",
+            FF_ESR = "1241")
+    @HtmlUnitNYI(CHROME = "1240",
+            EDGE = "1240",
+            FF = "1240",
+            FF_ESR = "1240")
+    public void hgroup() throws Exception {
+        test("hgroup");
     }
 
     /**

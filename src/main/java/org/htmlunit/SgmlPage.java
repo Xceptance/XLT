@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -269,7 +269,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
      */
     @Override
     public DomNodeList<DomElement> getElementsByTagName(final String tagName) {
-        return new AbstractDomNodeList<DomElement>(this) {
+        return new AbstractDomNodeList<>(this) {
             @Override
             protected List<DomElement> provideElements() {
                 final List<DomElement> res = new ArrayList<>();
@@ -291,7 +291,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
      */
     @Override
     public DomNodeList<DomElement> getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        return new AbstractDomNodeList<DomElement>(this) {
+        return new AbstractDomNodeList<>(this) {
             @Override
             protected List<DomElement> provideElements() {
                 final List<DomElement> res = new ArrayList<>();
@@ -308,9 +308,9 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
                     final String locName = elem.getLocalName();
 
                     if ((StringUtils.equalsChar('*', namespaceURI)
-                                    || comparator.compare(namespaceURI, elem.getNamespaceURI()) == 0)
+                            || comparator.compare(namespaceURI, elem.getNamespaceURI()) == 0)
                             && (StringUtils.equalsChar('*', locName)
-                                    || comparator.compare(locName, elem.getLocalName()) == 0)) {
+                            || comparator.compare(locName, elem.getLocalName()) == 0)) {
                         res.add(elem);
                     }
                 }

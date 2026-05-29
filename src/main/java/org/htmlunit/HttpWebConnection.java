@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -357,8 +357,8 @@ public class HttpWebConnection implements WebConnection {
                 builder.setCharset(c);
 
                 for (final NameValuePair pair : webRequest.getRequestParameters()) {
-                    if (pair instanceof KeyDataPair) {
-                        buildFilePart((KeyDataPair) pair, builder);
+                    if (pair instanceof KeyDataPair dataPair) {
+                        buildFilePart(dataPair, builder);
                     }
                     else {
                         builder.addTextBody(pair.getName(), pair.getValue(),
@@ -423,8 +423,7 @@ public class HttpWebConnection implements WebConnection {
 
     private static Charset getCharset(final Charset charset, final List<NameValuePair> pairs) {
         for (final NameValuePair pair : pairs) {
-            if (pair instanceof KeyDataPair) {
-                final KeyDataPair pairWithFile = (KeyDataPair) pair;
+            if (pair instanceof KeyDataPair pairWithFile) {
                 if (pairWithFile.getData() == null && pairWithFile.getFile() != null) {
                     final String fileName = pairWithFile.getFile().getName();
                     final int length = fileName.length();
@@ -486,43 +485,16 @@ public class HttpWebConnection implements WebConnection {
      * @return a new HttpClient HTTP method based on the specified parameters
      */
     private static HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri) {
-        final HttpRequestBase method;
-        switch (submitMethod) {
-            case GET:
-                method = new HttpGet(uri);
-                break;
-
-            case POST:
-                method = new HttpPost(uri);
-                break;
-
-            case PUT:
-                method = new HttpPut(uri);
-                break;
-
-            case DELETE:
-                method = new org.htmlunit.httpclient.HttpDelete(uri);
-                break;
-
-            case OPTIONS:
-                method = new org.htmlunit.httpclient.HttpOptions(uri);
-                break;
-
-            case HEAD:
-                method = new HttpHead(uri);
-                break;
-
-            case TRACE:
-                method = new HttpTrace(uri);
-                break;
-
-            case PATCH:
-                method = new HttpPatch(uri);
-                break;
-
-            default:
-                throw new IllegalStateException("Submit method not yet supported: " + submitMethod);
-        }
+        final HttpRequestBase method = switch (submitMethod) {
+            case GET -> new HttpGet(uri);
+            case POST -> new HttpPost(uri);
+            case PUT -> new HttpPut(uri);
+            case DELETE -> new org.htmlunit.httpclient.HttpDelete(uri);
+            case OPTIONS -> new org.htmlunit.httpclient.HttpOptions(uri);
+            case HEAD -> new HttpHead(uri);
+            case TRACE -> new HttpTrace(uri);
+            case PATCH -> new HttpPatch(uri);
+        };
         return method;
     }
 

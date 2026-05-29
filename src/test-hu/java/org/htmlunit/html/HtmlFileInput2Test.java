@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,19 +29,16 @@ import java.net.URLDecoder;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.DiskFileItem;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.FileUploadSizeException;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.JakartaServletRequestContext;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -54,6 +51,12 @@ import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
 import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link HtmlFileInput}.
@@ -84,7 +87,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
             path = path.substring(1);
         }
         if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")) {
-            testFileInput(new File(URLDecoder.decode(path.replace('/', '\\'), UTF_8.name())));
+            testFileInput(new File(URLDecoder.decode(path.replace('/', '\\'), UTF_8)));
         }
         testFileInput(new File("file:/" + path));
         testFileInput(new File("file://" + path));
@@ -355,8 +358,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         final HttpClientBuilder builder = (HttpClientBuilder) getHttpClientBuilderMethod.invoke(con);
 
         final HttpPost httpPost = (HttpPost) makeHttpMethod.invoke(con, webConnection.getLastWebRequest(), builder);
-        final HttpEntity httpEntity = httpPost.getEntity();
-        return httpEntity;
+        return httpPost.getEntity();
     }
 
     /**
@@ -454,7 +456,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/upload1", Upload1Servlet.class);
         servlets.put("/upload2", Upload2Servlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final String filename = "\u6A94\u6848\uD30C\uC77C\u30D5\u30A1\u30A4\u30EB\u0645\u0644\u0641.txt";
         final URL fileURL = getClass().getClassLoader().getResource(filename);
@@ -515,10 +517,22 @@ public class HtmlFileInput2Test extends WebServerTestCase {
             request.setCharacterEncoding(UTF_8.name());
             response.setContentType(MimeType.TEXT_HTML);
             final Writer writer = response.getWriter();
-            if (ServletFileUpload.isMultipartContent(request)) {
+            if (JakartaServletFileUpload.isMultipartContent(request)) {
                 try {
-                    final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-                    for (final FileItem item : upload.parseRequest(request)) {
+                    final DiskFileItemFactory factory = DiskFileItemFactory.builder()
+                        .setBufferSize(4096)
+                        .get();
+
+                    final JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload =
+                        new JakartaServletFileUpload<>(factory);
+
+                    // Set size limits if needed
+                    upload.setFileSizeMax(10 * 1024 * 1024); // 10 MB per file
+                    upload.setSizeMax(50 * 1024 * 1024);      // 50 MB total
+
+                    final List<DiskFileItem> items = upload.parseRequest(new JakartaServletRequestContext(request));
+
+                    for (final DiskFileItem item : items) {
                         if ("myInput".equals(item.getFieldName())) {
                             final String path = item.getName();
                             for (final char ch : path.toCharArray()) {
@@ -529,8 +543,11 @@ public class HtmlFileInput2Test extends WebServerTestCase {
                         }
                     }
                 }
-                catch (final FileUploadBase.SizeLimitExceededException e) {
+                catch (final FileUploadSizeException e) {
                     writer.write("SizeLimitExceeded");
+                }
+                catch (final FileUploadException e) {
+                    writer.write("error");
                 }
                 catch (final Exception e) {
                     writer.write("error");
@@ -547,7 +564,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/upload1", Multiple1Servlet.class);
         servlets.put("/upload2", PrintRequestServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final String filename1 = "HtmlFileInputTest_one.txt";
         final String path1 = getClass().getResource(filename1).toExternalForm();
@@ -586,7 +603,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/upload1", MultipleWebkitdirectoryServlet.class);
         servlets.put("/upload2", PrintRequestServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final File dir = new File("src/test/resources/pjl-comp-filter");
         assertTrue(dir.exists());
@@ -721,7 +738,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
                 + "</body></html>";
 
         final HtmlPage page = loadPage(html);
-        final HtmlFileInput file = page.<HtmlFileInput>getHtmlElementById("fileId");
+        final HtmlFileInput file = page.getHtmlElementById("fileId");
         assertEquals(0, file.getFiles().length);
     }
 
@@ -745,7 +762,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
                 + "</body></html>";
 
         final HtmlPage page = loadPage(html);
-        final HtmlFileInput file = page.<HtmlFileInput>getHtmlElementById("fileId");
+        final HtmlFileInput file = page.getHtmlElementById("fileId");
         file.setValue("");
         assertEquals(0, file.getFiles().length);
     }

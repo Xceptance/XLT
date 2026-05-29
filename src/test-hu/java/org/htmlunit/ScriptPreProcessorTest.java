@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -38,6 +36,7 @@ import org.junit.jupiter.api.Test;
  * @author Ahmed Ashour
  * @author Daniel Gredler
  * @author Sudhan Moghe
+ * @author Ronald Brill
  */
 public class ScriptPreProcessorTest extends WebServerTestCase {
 
@@ -66,41 +65,21 @@ public class ScriptPreProcessorTest extends WebServerTestCase {
         client.setWebConnection(webConnection);
 
         // Test null return from pre processor
-        client.setScriptPreProcessor(new ScriptPreProcessor() {
-            @Override
-            public String preProcess(final HtmlPage htmlPage, final String sourceCode, final String sourceName,
-                    final int lineNumber, final HtmlElement htmlElement) {
-                return null;
-            }
-        });
-        client.setAlertHandler(new AlertHandler() {
-            @Override
-            public void handleAlert(final Page page, final String message) {
-                fail("The pre processor did not remove the JavaScript");
-            }
-
-        });
+        client.setScriptPreProcessor((htmlPage, sourceCode, sourceName, lineNumber, htmlElement) -> null);
+        client.setAlertHandler((AlertHandler) (page, message) -> fail("The pre processor did not remove the JavaScript"));
         client.getPage(URL_FIRST);
 
         // Test modify script in pre processor
-        client.setScriptPreProcessor(new ScriptPreProcessor() {
-            @Override
-            public String preProcess(final HtmlPage htmlPage, final String sourceCode, final String sourceName,
-                    final int lineNumber, final HtmlElement htmlElement) {
-                final int start = sourceCode.indexOf(alertText);
-                final int end = start + alertText.length();
+        client.setScriptPreProcessor((htmlPage, sourceCode, sourceName, lineNumber, htmlElement) -> {
+            final int start = sourceCode.indexOf(alertText);
+            final int end = start + alertText.length();
 
-                return sourceCode.substring(0, start) + newAlertText + sourceCode.substring(end);
-            }
+            return sourceCode.substring(0, start) + newAlertText + sourceCode.substring(end);
         });
-        client.setAlertHandler(new AlertHandler() {
-            @Override
-            public void handleAlert(final Page page, final String message) {
-                if (!message.equals(newAlertText)) {
-                    fail("The pre processor did not modify the JavaScript");
-                }
+        client.setAlertHandler((AlertHandler) (page, message) -> {
+            if (!message.equals(newAlertText)) {
+                fail("The pre processor did not modify the JavaScript");
             }
-
         });
         client.getPage(URL_FIRST);
     }
@@ -125,22 +104,18 @@ public class ScriptPreProcessorTest extends WebServerTestCase {
         webConnection.setDefaultResponse(content);
         client.setWebConnection(webConnection);
 
-        client.setScriptPreProcessor(new ScriptPreProcessor() {
-            @Override
-            public String preProcess(final HtmlPage htmlPage, final String sourceCode, final String sourceName,
-                    final int lineNumber, final HtmlElement htmlElement) {
-                if (sourceCode.indexOf("unimplementedFunction") > -1) {
-                    return "";
-                }
-                return sourceCode;
+        client.setScriptPreProcessor((htmlPage, sourceCode, sourceName, lineNumber, htmlElement) -> {
+            if (sourceCode.contains("unimplementedFunction")) {
+                return "";
             }
+            return sourceCode;
         });
         final List<String> alerts = new ArrayList<>();
         client.setAlertHandler(new CollectingAlertHandler(alerts));
         client.getPage("http://page");
 
         assertEquals(1, alerts.size());
-        assertEquals("implemented function", alerts.get(0).toString());
+        assertEquals("implemented function", alerts.get(0));
     }
 
     /**
@@ -157,13 +132,7 @@ public class ScriptPreProcessorTest extends WebServerTestCase {
         conn.setDefaultResponse(html);
         client.setWebConnection(conn);
 
-        client.setScriptPreProcessor(new ScriptPreProcessor() {
-            @Override
-            public String preProcess(final HtmlPage p, final String src, final String srcName,
-                    final int lineNumber, final HtmlElement htmlElement) {
-                return src.replaceAll("aXert", "alert");
-            }
-        });
+        client.setScriptPreProcessor((p, src, srcName, lineNumber, htmlElement) -> src.replaceAll("aXert", "alert"));
 
         final List<String> alerts = new ArrayList<>();
         client.setAlertHandler(new CollectingAlertHandler(alerts));

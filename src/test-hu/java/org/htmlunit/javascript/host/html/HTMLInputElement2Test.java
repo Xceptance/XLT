@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
  * @author Marc Guillemot
  * @author Chris Erskine
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class HTMLInputElement2Test extends SimpleWebTestCase {
 
@@ -52,7 +53,7 @@ public class HTMLInputElement2Test extends SimpleWebTestCase {
             + "</body></html>";
 
         final String[] expected = getExpectedAlerts();
-        setExpectedAlerts(new String[] {expected[0]});
+        setExpectedAlerts(expected[0]);
         final HtmlPage page = loadPageWithAlerts(html);
         final HtmlTextInput input = page.getHtmlElementById("myInput");
 

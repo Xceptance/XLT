@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -555,6 +555,15 @@ public class ElementOuterHtmlTest extends WebDriverTestCase {
     @Alerts("<header></header>")
     public void header() throws Exception {
         test("header");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("<hgroup></hgroup>")
+    public void hgroup() throws Exception {
+        test("hgroup");
     }
 
     /**

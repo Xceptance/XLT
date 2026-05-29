@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,9 +117,6 @@ public final class CssPixelValueConverter {
         else if (value.endsWith("ch")) {
             i = i * 8;
         }
-        else if (value.endsWith("ch")) {
-            i = i * 8;
-        }
         else if (value.endsWith("vh")
                 || value.endsWith("vmin")) {
             // this matches also
@@ -146,12 +143,11 @@ public final class CssPixelValueConverter {
 
             final DomNode parent = element.getParentNode();
             final int absoluteValue;
-            if (parent instanceof DomElement) {
-                final DomElement parentElem = (DomElement) parent;
+            if (parent instanceof DomElement parentElem) {
                 final ComputedCssStyleDeclaration style =
                         parentElem.getPage().getEnclosingWindow().getComputedStyle(parentElem, null);
                 final String parentStyleValue = value.get(style);
-                absoluteValue = pixelValue((DomElement) parent, parentStyleValue, value, true);
+                absoluteValue = pixelValue(parentElem, parentStyleValue, value, true);
             }
             else {
                 absoluteValue = value.getWindowDefaultValue();

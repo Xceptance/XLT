@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,8 +188,8 @@ public class WebResponse implements Serializable {
         wasContentCharsetTentative_ = false;
 
         try (InputStream is = getContentAsStreamWithBomIfApplicable()) {
-            if (is instanceof BOMInputStream) {
-                final String bomCharsetName = ((BOMInputStream) is).getBOMCharsetName();
+            if (is instanceof BOMInputStream stream) {
+                final String bomCharsetName = stream.getBOMCharsetName();
                 if (bomCharsetName != null) {
                     return Charset.forName(bomCharsetName);
                 }
@@ -265,23 +265,21 @@ public class WebResponse implements Serializable {
     public String getContentAsString(final Charset encoding) {
         if (responseData_ != null) {
             try (InputStream in = responseData_.getInputStreamWithBomIfApplicable(BOM_HEADERS)) {
-                if (in instanceof BOMInputStream) {
-                    try (BOMInputStream bomIn = (BOMInputStream) in) {
-                        // there seems to be a bug in BOMInputStream
-                        // we have to call this before hasBOM(ByteOrderMark)
-                        if (bomIn.hasBOM()) {
-                            if (bomIn.hasBOM(ByteOrderMark.UTF_8)) {
-                                return IOUtils.toString(bomIn, UTF_8);
-                            }
-                            if (bomIn.hasBOM(ByteOrderMark.UTF_16BE)) {
-                                return IOUtils.toString(bomIn, UTF_16BE);
-                            }
-                            if (bomIn.hasBOM(ByteOrderMark.UTF_16LE)) {
-                                return IOUtils.toString(bomIn, UTF_16LE);
-                            }
+                if (in instanceof BOMInputStream bomIn) {
+                    // there seems to be a bug in BOMInputStream
+                    // we have to call this before hasBOM(ByteOrderMark)
+                    if (bomIn.hasBOM()) {
+                        if (bomIn.hasBOM(ByteOrderMark.UTF_8)) {
+                            return IOUtils.toString(bomIn, UTF_8);
                         }
-                        return IOUtils.toString(bomIn, encoding);
+                        if (bomIn.hasBOM(ByteOrderMark.UTF_16BE)) {
+                            return IOUtils.toString(bomIn, UTF_16BE);
+                        }
+                        if (bomIn.hasBOM(ByteOrderMark.UTF_16LE)) {
+                            return IOUtils.toString(bomIn, UTF_16LE);
+                        }
                     }
+                    return IOUtils.toString(bomIn, encoding);
                 }
 
                 return IOUtils.toString(in, encoding);

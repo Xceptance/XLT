@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,6 +150,7 @@ import org.htmlunit.javascript.host.dom.DocumentType;
 import org.htmlunit.javascript.host.dom.IdleDeadline;
 import org.htmlunit.javascript.host.dom.MutationObserver;
 import org.htmlunit.javascript.host.dom.MutationRecord;
+import org.htmlunit.javascript.host.dom.NativeXPathNSResolver;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeFilter;
 import org.htmlunit.javascript.host.dom.NodeIterator;
@@ -163,7 +164,6 @@ import org.htmlunit.javascript.host.dom.Text;
 import org.htmlunit.javascript.host.dom.TreeWalker;
 import org.htmlunit.javascript.host.dom.XPathEvaluator;
 import org.htmlunit.javascript.host.dom.XPathExpression;
-import org.htmlunit.javascript.host.dom.XPathNSResolver;
 import org.htmlunit.javascript.host.dom.XPathResult;
 import org.htmlunit.javascript.host.draganddrop.DataTransfer;
 import org.htmlunit.javascript.host.draganddrop.DataTransferItem;
@@ -211,7 +211,6 @@ import org.htmlunit.javascript.host.event.PromiseRejectionEvent;
 import org.htmlunit.javascript.host.event.RTCDataChannelEvent;
 import org.htmlunit.javascript.host.event.RTCPeerConnectionIceEvent;
 import org.htmlunit.javascript.host.event.SecurityPolicyViolationEvent;
-import org.htmlunit.javascript.host.event.SpeechSynthesisEvent;
 import org.htmlunit.javascript.host.event.StorageEvent;
 import org.htmlunit.javascript.host.event.SubmitEvent;
 import org.htmlunit.javascript.host.event.TextEvent;
@@ -221,8 +220,6 @@ import org.htmlunit.javascript.host.event.TrackEvent;
 import org.htmlunit.javascript.host.event.TransitionEvent;
 import org.htmlunit.javascript.host.event.UIEvent;
 import org.htmlunit.javascript.host.event.WebGLContextEvent;
-import org.htmlunit.javascript.host.event.WebkitSpeechRecognitionError;
-import org.htmlunit.javascript.host.event.WebkitSpeechRecognitionEvent;
 import org.htmlunit.javascript.host.event.WheelEvent;
 import org.htmlunit.javascript.host.fetch.Headers;
 import org.htmlunit.javascript.host.fetch.Request;
@@ -412,13 +409,16 @@ import org.htmlunit.javascript.host.security.Credential;
 import org.htmlunit.javascript.host.security.CredentialsContainer;
 import org.htmlunit.javascript.host.security.FederatedCredential;
 import org.htmlunit.javascript.host.security.PasswordCredential;
+import org.htmlunit.javascript.host.speech.SpeechGrammar;
+import org.htmlunit.javascript.host.speech.SpeechGrammarList;
+import org.htmlunit.javascript.host.speech.SpeechRecognition;
+import org.htmlunit.javascript.host.speech.SpeechRecognitionErrorEvent;
+import org.htmlunit.javascript.host.speech.SpeechRecognitionEvent;
 import org.htmlunit.javascript.host.speech.SpeechSynthesis;
 import org.htmlunit.javascript.host.speech.SpeechSynthesisErrorEvent;
+import org.htmlunit.javascript.host.speech.SpeechSynthesisEvent;
 import org.htmlunit.javascript.host.speech.SpeechSynthesisUtterance;
 import org.htmlunit.javascript.host.speech.SpeechSynthesisVoice;
-import org.htmlunit.javascript.host.speech.WebkitSpeechGrammar;
-import org.htmlunit.javascript.host.speech.WebkitSpeechGrammarList;
-import org.htmlunit.javascript.host.speech.WebkitSpeechRecognition;
 import org.htmlunit.javascript.host.svg.SVGAElement;
 import org.htmlunit.javascript.host.svg.SVGAngle;
 import org.htmlunit.javascript.host.svg.SVGAnimateElement;
@@ -559,7 +559,8 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         IntersectionObserver.class, IntersectionObserverEntry.class, KeyframeEffect.class, Location.class,
         MIDIInputMap.class, MIDIOutputMap.class, MediaDeviceInfo.class, MediaError.class, MediaKeyStatusMap.class,
         MediaKeySystemAccess.class, MediaKeys.class, MediaList.class, MessageChannel.class, MimeType.class,
-        MimeTypeArray.class, MutationObserver.class, MutationRecord.class, NamedNodeMap.class, Navigator.class,
+        MimeTypeArray.class, MutationObserver.class, MutationRecord.class, NamedNodeMap.class,
+        NativeXPathNSResolver.class, Navigator.class,
         NodeFilter.class, NodeIterator.class, Path2D.class, PaymentAddress.class, PerformanceEntry.class,
         PerformanceNavigation.class, PerformanceObserver.class, PerformanceObserverEntryList.class,
         PerformanceTiming.class, PeriodicSyncManager.class, PeriodicWave.class, Permissions.class, Plugin.class,
@@ -572,6 +573,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         SVGAnimatedTransformList.class, SVGLength.class, SVGLengthList.class, SVGMatrix.class, SVGNumber.class,
         SVGNumberList.class, SVGPoint.class, SVGPointList.class, SVGPreserveAspectRatio.class, SVGRect.class,
         SVGStringList.class, SVGTransform.class, SVGTransformList.class, SVGUnitTypes.class, Selection.class,
+        SpeechGrammar.class, SpeechGrammarList.class,
         SpeechSynthesisVoice.class, Storage.class, StorageManager.class, StyleMedia.class, StyleSheet.class,
         StyleSheetList.class, SubtleCrypto.class, SyncManager.class, TextDecoder.class, TextEncoder.class,
         TextMetrics.class, TextTrackCueList.class, TimeRanges.class, Touch.class, TouchList.class, TreeWalker.class,
@@ -579,9 +581,8 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         WebGLActiveInfo.class, WebGLBuffer.class, WebGLFramebuffer.class, WebGLProgram.class, WebGLQuery.class,
         WebGLRenderbuffer.class, WebGLRenderingContext.class, WebGLSampler.class, WebGLShader.class,
         WebGLShaderPrecisionFormat.class, WebGLSync.class, WebGLTexture.class, WebGLTransformFeedback.class,
-        WebGLUniformLocation.class, WebGLVertexArrayObject.class, WebkitSpeechGrammar.class,
-        WebkitSpeechGrammarList.class, XMLSerializer.class, XPathEvaluator.class, XPathEvaluator.class,
-        XPathExpression.class, XPathNSResolver.class, XPathResult.class, XSLTProcessor.class,
+        WebGLUniformLocation.class, WebGLVertexArrayObject.class, XMLSerializer.class, XPathEvaluator.class,
+        XPathEvaluator.class, XPathExpression.class, XPathResult.class, XSLTProcessor.class,
         // level 2
         AbortSignal.class, Animation.class, AnimationEvent.class, AudioNode.class, AudioProcessingEvent.class,
         BaseAudioContext.class, BatteryManager.class, BeforeInstallPromptEvent.class, BeforeUnloadEvent.class,
@@ -607,10 +608,10 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         RTCPeerConnectionIceEvent.class, RTCSctpTransport.class, Range.class, RemotePlayback.class, Screen.class,
         ScreenOrientation.class, SecurityPolicyViolationEvent.class, ServiceWorker.class, ServiceWorkerContainer.class,
         ServiceWorkerRegistration.class, SharedWorker.class, SourceBuffer.class, SourceBufferList.class,
-        SpeechSynthesis.class, SpeechSynthesisEvent.class, SpeechSynthesisUtterance.class, StorageEvent.class,
-        SubmitEvent.class, TextTrack.class, TextTrackCue.class, TextTrackList.class, TimeEvent.class, TrackEvent.class,
-        TransitionEvent.class, UIEvent.class, WebGLContextEvent.class, WebSocket.class, WebkitSpeechRecognition.class,
-        WebkitSpeechRecognitionError.class, WebkitSpeechRecognitionEvent.class, Window.class, Worker.class,
+        SpeechRecognition.class, SpeechRecognitionErrorEvent.class, SpeechRecognitionEvent.class, SpeechSynthesis.class,
+        SpeechSynthesisEvent.class, SpeechSynthesisUtterance.class, StorageEvent.class, SubmitEvent.class,
+        TextTrack.class, TextTrackCue.class, TextTrackList.class, TimeEvent.class, TrackEvent.class,
+        TransitionEvent.class, UIEvent.class, WebGLContextEvent.class, WebSocket.class, Window.class, Worker.class,
         XMLHttpRequestEventTarget.class,
         // level 3
         AnalyserNode.class, Attr.class, AudioContext.class, AudioDestinationNode.class, AudioScheduledSourceNode.class,
@@ -657,14 +658,14 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         SVGFETileElement.class, SVGFETurbulenceElement.class, SVGFilterElement.class, SVGGradientElement.class,
         SVGGraphicsElement.class, SVGMPathElement.class, SVGMarkerElement.class, SVGMaskElement.class,
         SVGMetadataElement.class, SVGPatternElement.class, SVGScriptElement.class, SVGStopElement.class,
-        SVGStyleElement.class, SVGSymbolElement.class, SVGTitleElement.class, SVGViewElement.class,
+        SVGStyleElement.class, SVGTitleElement.class, SVGViewElement.class,
         // level 6
         HTMLAudioElement.class, HTMLVideoElement.class, SVGAElement.class, SVGAnimateElement.class,
         SVGAnimateMotionElement.class, SVGAnimateTransformElement.class, SVGDefsElement.class,
         SVGFEFuncAElement.class, SVGFEFuncBElement.class, SVGFEFuncGElement.class, SVGFEFuncRElement.class,
         SVGForeignObjectElement.class, SVGGElement.class, SVGGeometryElement.class, SVGImageElement.class,
         SVGLinearGradientElement.class, SVGRadialGradientElement.class, SVGSVGElement.class, SVGSetElement.class,
-        SVGSwitchElement.class, SVGTextContentElement.class, SVGUseElement.class,
+        SVGSwitchElement.class, SVGSymbolElement.class, SVGTextContentElement.class, SVGUseElement.class,
         // level 7
         Audio.class, SVGCircleElement.class, SVGEllipseElement.class, SVGLineElement.class, SVGPathElement.class,
         SVGPolygonElement.class, SVGPolylineElement.class, SVGRectElement.class, SVGTextPathElement.class,
@@ -710,9 +711,9 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
     }
 
     /**
-     * @return the configuration of the scope class
+     * @return the configuration of the globalThis class
      */
     public ClassConfiguration getWindowClassConfiguration() {
-        return getScopeConfiguration();
+        return getGlobalThisConfiguration();
     }
 }

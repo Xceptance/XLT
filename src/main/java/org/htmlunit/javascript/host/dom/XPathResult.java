@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,8 +242,8 @@ public class XPathResult extends HtmlUnitScriptable {
             if (o instanceof Number) {
                 return ((Double) o).doubleValue();
             }
-            if (o instanceof Boolean) {
-                return ((Boolean) o).booleanValue() ? 1 : 0;
+            if (o instanceof Boolean boolean1) {
+                return boolean1.booleanValue() ? 1 : 0;
             }
         }
 
@@ -279,11 +279,11 @@ public class XPathResult extends HtmlUnitScriptable {
 
                 return 0.0 != d;
             }
-            if (o instanceof String) {
-                return !((String) o).isEmpty();
+            if (o instanceof String string) {
+                return !string.isEmpty();
             }
-            if (o instanceof Boolean) {
-                return ((Boolean) o).booleanValue();
+            if (o instanceof Boolean boolean1) {
+                return boolean1.booleanValue();
             }
         }
 
@@ -308,11 +308,11 @@ public class XPathResult extends HtmlUnitScriptable {
         }
 
         final Object resultObj = result_.get(0);
-        if (resultObj instanceof DomAttr) {
-            return ((DomAttr) resultObj).getValue();
+        if (resultObj instanceof DomAttr attr) {
+            return attr.getValue();
         }
-        if (resultObj instanceof DomNode) {
-            return ((DomNode) resultObj).asNormalizedText();
+        if (resultObj instanceof DomNode node) {
+            return node.asNormalizedText();
         }
         return resultObj.toString();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -263,7 +263,7 @@ public abstract class SimpleWebTestCase extends WebTestCase {
             // collect stack traces
             // caution: the threads may terminate after the threads have been returned by getJavaScriptThreads()
             // and before stack traces are retrieved
-            if (jsThreads.size() > 0) {
+            if (!jsThreads.isEmpty()) {
                 final Map<String, StackTraceElement[]> stackTraces = new HashMap<>();
                 for (final Thread t : jsThreads) {
                     final StackTraceElement[] elts = t.getStackTrace();

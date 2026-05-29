@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class CookieManager4Test extends WebDriverTestCase {
     public static final String URL_HOST4 = "http://" + "htmlunit-dev" + ":" + PORT + '/';
 
     /**
-     * {@link org.junit.Assume Assumes} that the host configurations are present.
+     * Assumes, the host configurations are present.
      *
      * @throws Exception if the test fails
      */

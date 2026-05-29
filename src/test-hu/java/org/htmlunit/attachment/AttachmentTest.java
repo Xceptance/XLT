@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class AttachmentTest extends SimpleWebTestCase {
         final Page clickResult = anchor.click();
         assertEquals(result, clickResult);
         assertEquals(1, attachments.size());
-        assertTrue(HtmlPage.class.isInstance(attachments.get(0).getPage()));
+        assertTrue(attachments.get(0).getPage() instanceof HtmlPage);
         // the attachment is opened inside a new window
         assertEquals(2, client.getWebWindows().size());
 
@@ -308,7 +308,7 @@ public class AttachmentTest extends SimpleWebTestCase {
         page.getAnchors().get(0).click();
         assertEquals(1, attachments.size());
 
-        final HtmlElement htmlElement = (HtmlElement) page.getFirstByXPath("//input");
+        final HtmlElement htmlElement = page.getFirstByXPath("//input");
         htmlElement.click(); // exception was occurring here
     }
 

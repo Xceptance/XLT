@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class XMLDocument3Test extends WebDriverTestCase {
         final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<something>\u064A\u0627 \u0644\u064A\u064A\u064A\u064A\u064A\u064A\u0644</something>";
 
-        getMockWebConnection().setResponse(URL_SECOND, xml.getBytes("UTF-8"), 200, "OK",
+        getMockWebConnection().setResponse(URL_SECOND, xml.getBytes(UTF_8), 200, "OK",
                 MimeType.TEXT_XML, Collections.emptyList());
 
         loadPageVerifyTitle2(html);

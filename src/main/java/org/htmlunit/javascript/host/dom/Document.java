@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONANIMATION_DOCUMENT_CREATE_NOT_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONPOPSTATE_DOCUMENT_CREATE_NOT_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_MUTATIONEVENT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_WHEELEVENT;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_EVALUATE_RECREATES_RESULT;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_SELECTION_RANGE_COUNT;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
@@ -32,7 +28,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.StringWebResponse;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Callable;
@@ -55,6 +51,7 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeFunction;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomDocumentFragment;
@@ -81,6 +78,7 @@ import org.htmlunit.html.HtmlSvg;
 import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.UnknownElementFactory;
 import org.htmlunit.html.impl.SimpleRange;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.http.HttpUtils;
 import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -90,6 +88,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.configuration.JsxStaticFunction;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.FontFaceSet;
 import org.htmlunit.javascript.host.Location;
@@ -99,9 +98,10 @@ import org.htmlunit.javascript.host.animations.AnimationEvent;
 import org.htmlunit.javascript.host.css.StyleSheetList;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.event.BeforeUnloadEvent;
-import org.htmlunit.javascript.host.event.CloseEvent;
 import org.htmlunit.javascript.host.event.CompositionEvent;
 import org.htmlunit.javascript.host.event.CustomEvent;
+import org.htmlunit.javascript.host.event.DeviceMotionEvent;
+import org.htmlunit.javascript.host.event.DeviceOrientationEvent;
 import org.htmlunit.javascript.host.event.DragEvent;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.FocusEvent;
@@ -122,7 +122,6 @@ import org.htmlunit.javascript.host.html.HTMLBodyElement;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLFrameSetElement;
-import org.htmlunit.util.Cookie;
 import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xpath.xml.utils.PrefixResolver;
@@ -186,39 +185,37 @@ public class Document extends Node {
       have a no-arg constructor.
      */
     static {
-        final Map<String, Class<? extends Event>> dom2EventMap = new HashMap<>();
-        dom2EventMap.put("HTMLEvents", Event.class);
-        dom2EventMap.put("MouseEvents", MouseEvent.class);
-        dom2EventMap.put("MutationEvents", MutationEvent.class);
-        dom2EventMap.put("UIEvents", UIEvent.class);
-        SUPPORTED_DOM2_EVENT_TYPE_MAP = Collections.unmodifiableMap(dom2EventMap);
+        SUPPORTED_DOM2_EVENT_TYPE_MAP = Map.of(
+                "HTMLEvents", Event.class,
+                "MouseEvents", MouseEvent.class,
+                "MutationEvents", MutationEvent.class,
+                "UIEvents", UIEvent.class);
 
-        final Map<String, Class<? extends Event>> dom3EventMap = new HashMap<>();
-        dom3EventMap.put("Event", Event.class);
-        dom3EventMap.put("KeyboardEvent", KeyboardEvent.class);
-        dom3EventMap.put("MouseEvent", MouseEvent.class);
-        dom3EventMap.put("MessageEvent", MessageEvent.class);
-        dom3EventMap.put("MutationEvent", MutationEvent.class);
-        dom3EventMap.put("UIEvent", UIEvent.class);
-        dom3EventMap.put("CustomEvent", CustomEvent.class);
-        dom3EventMap.put("CloseEvent", CloseEvent.class);
-        dom3EventMap.put("CompositionEvent", CompositionEvent.class);
-        dom3EventMap.put("DragEvent", DragEvent.class);
-        dom3EventMap.put("TextEvent", TextEvent.class);
-        SUPPORTED_DOM3_EVENT_TYPE_MAP = Collections.unmodifiableMap(dom3EventMap);
+        SUPPORTED_DOM3_EVENT_TYPE_MAP = Map.ofEntries(
+                Map.entry("Event", Event.class),
+                Map.entry("KeyboardEvent", KeyboardEvent.class),
+                Map.entry("MouseEvent", MouseEvent.class),
+                Map.entry("MessageEvent", MessageEvent.class),
+                Map.entry("MutationEvent", MutationEvent.class),
+                Map.entry("UIEvent", UIEvent.class),
+                Map.entry("CustomEvent", CustomEvent.class),
+                Map.entry("CompositionEvent", CompositionEvent.class),
+                Map.entry("DragEvent", DragEvent.class),
+                Map.entry("TextEvent", TextEvent.class),
+                Map.entry("DeviceMotionEvent", DeviceMotionEvent.class),
+                Map.entry("DeviceOrientationEvent", DeviceOrientationEvent.class));
 
-        final Map<String, Class<? extends Event>> additionalEventMap = new HashMap<>();
-        additionalEventMap.put("BeforeUnloadEvent", BeforeUnloadEvent.class);
-        additionalEventMap.put("Events", Event.class);
-        additionalEventMap.put("HashChangeEvent", HashChangeEvent.class);
-        additionalEventMap.put("KeyEvents", KeyboardEvent.class);
-        additionalEventMap.put("PointerEvent", PointerEvent.class);
-        additionalEventMap.put("PopStateEvent", PopStateEvent.class);
-        additionalEventMap.put("ProgressEvent", ProgressEvent.class);
-        additionalEventMap.put("FocusEvent", FocusEvent.class);
-        additionalEventMap.put("WheelEvent", WheelEvent.class);
-        additionalEventMap.put("AnimationEvent", AnimationEvent.class);
-        SUPPORTED_VENDOR_EVENT_TYPE_MAP = Collections.unmodifiableMap(additionalEventMap);
+        SUPPORTED_VENDOR_EVENT_TYPE_MAP = Map.ofEntries(
+                Map.entry("BeforeUnloadEvent", BeforeUnloadEvent.class),
+                Map.entry("Events", Event.class),
+                Map.entry("HashChangeEvent", HashChangeEvent.class),
+                Map.entry("KeyEvents", KeyboardEvent.class),
+                Map.entry("PointerEvent", PointerEvent.class),
+                Map.entry("PopStateEvent", PopStateEvent.class),
+                Map.entry("ProgressEvent", ProgressEvent.class),
+                Map.entry("FocusEvent", FocusEvent.class),
+                Map.entry("WheelEvent", WheelEvent.class),
+                Map.entry("AnimationEvent", AnimationEvent.class));
     }
 
     private Window window_;
@@ -281,6 +278,44 @@ public class Document extends Node {
     @JsxConstructor
     public void jsConstructor() {
         throw JavaScriptEngine.typeErrorIllegalConstructor();
+    }
+
+    /**
+     * Parses the given string of HTML without sanitizing it and returns a new HTMLDocument.
+     *
+     * @param cx the current context
+     * @param scope the scope
+     * @param thisObj the scriptable this object
+     * @param args the arguments
+     * @param funObj the function object
+     * @return a newly created {@link org.htmlunit.javascript.host.html.HTMLDocument}
+     *
+     * @see <a href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtmlunsafe">
+     *     HTML spec - parseHTMLUnsafe</a>
+     */
+    @JsxStaticFunction
+    public static Document parseHTMLUnsafe(final Context cx, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function funObj) {
+        if (args.length < 1) {
+            throw JavaScriptEngine
+                    .typeError("Document.parseHTMLUnsafe: At least 1 argument required, but only 0 passed");
+        }
+
+        final Window win = getWindow(thisObj);
+        if (JavaScriptEngine.isUndefined(args[0])) {
+            return win.getDocument();
+        }
+
+        final String html = JavaScriptEngine.toString(args[0]);
+
+        try {
+            final WebWindow webWindow = win.getWebWindow();
+            final WebResponse webResponse = new StringWebResponse(html, webWindow.getEnclosedPage().getUrl());
+            return DOMParser.parseHtmlDocument(win.getDocument(), webResponse, webWindow);
+        }
+        catch (final IOException e) {
+            throw JavaScriptEngine.syntaxError("Parsing failed" + e.getMessage());
+        }
     }
 
     /**
@@ -488,7 +523,7 @@ public class Document extends Node {
     public DOMImplementation getImplementation() {
         if (implementation_ == null) {
             implementation_ = new DOMImplementation();
-            implementation_.setParentScope(getWindow());
+            implementation_.setParentScope(getParentScope());
             implementation_.setPrototype(getPrototype(implementation_.getClass()));
         }
         return implementation_;
@@ -502,10 +537,10 @@ public class Document extends Node {
      *         in scope for a specified node
      */
     @JsxFunction
-    public XPathNSResolver createNSResolver(final Node nodeResolver) {
-        final XPathNSResolver resolver = new XPathNSResolver();
+    public NativeXPathNSResolver createNSResolver(final Node nodeResolver) {
+        final NativeXPathNSResolver resolver = new NativeXPathNSResolver();
         resolver.setElement(nodeResolver);
-        resolver.setParentScope(getWindow());
+        resolver.setParentScope(getParentScope());
         resolver.setPrototype(getPrototype(resolver.getClass()));
         return resolver;
     }
@@ -547,8 +582,8 @@ public class Document extends Node {
     public XPathResult evaluate(final String expression, final Node contextNode,
             final Object resolver, final int type, final Object result) {
         XPathResult xPathResult = null;
-        if (result instanceof XPathResult) {
-            xPathResult = (XPathResult) result;
+        if (result instanceof XPathResult pathResult) {
+            xPathResult = pathResult;
 
             if (getBrowserVersion().hasFeature(JS_DOCUMENT_EVALUATE_RECREATES_RESULT)) {
                 xPathResult = new XPathResult();
@@ -569,12 +604,12 @@ public class Document extends Node {
 
         try {
             PrefixResolver prefixResolver = null;
-            if (resolver instanceof NativeFunction) {
+            if (resolver instanceof NativeFunction function) {
                 prefixResolver = new NativeFunctionPrefixResolver(
-                                            (NativeFunction) resolver, contextNode.getParentScope());
+                                            function, contextNode.getParentScope());
             }
-            else if (resolver instanceof PrefixResolver) {
-                prefixResolver = (PrefixResolver) resolver;
+            else if (resolver instanceof PrefixResolver prefixResolver1) {
+                prefixResolver = prefixResolver1;
             }
             xPathResult.init(contextNode.getDomNodeOrDie().getByXPath(expression, prefixResolver), type);
             return xPathResult;
@@ -610,12 +645,22 @@ public class Document extends Node {
 
         // but I have no idea what the browsers are doing
         // the following code is a wild guess that might be good enough for the moment
+
+        // April 2026
+        // looks like the browsers using a more simple approach now
+        // see
+        //   org.htmlunit.javascript.host.dom.DocumentTest.documentCreateElementValidTagNames()
+        //   org.htmlunit.javascript.host.dom.DocumentTest.documentCreateElementValidTagNames1000()
+        //   org.htmlunit.javascript.host.dom.DocumentTest.documentCreateElementValidTagNames2000()
+        //   org.htmlunit.javascript.host.dom.DocumentTest.documentCreateElementValidTagNames3000()
+        //   org.htmlunit.javascript.host.dom.DocumentTest.documentCreateElementValidTagNames4000()
+
         final String tagNameString = JavaScriptEngine.toString(tagName);
         if (tagNameString.length() > 0) {
             final int firstChar = tagNameString.charAt(0);
-            if (!(isLetter(firstChar)
-                    || ':' == firstChar
-                    || '_' == firstChar)) {
+            if (firstChar < 128
+                    && !Character.isLetter(firstChar)
+                    && firstChar != ':' && firstChar != '_') {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("createElement: Provided string '" + tagNameString + "' contains an invalid character");
                 }
@@ -624,46 +669,52 @@ public class Document extends Node {
                         "createElement: Provided string '" + tagNameString + "' contains an invalid character",
                         org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
             }
+
             final int length = tagNameString.length();
             for (int i = 1; i < length; i++) {
                 final int c = tagNameString.charAt(i);
-                if (!(Character.isLetterOrDigit(c)
-                        || ':' == c
-                        || '_' == c
-                        || '-' == c
-                        || '.' == c)) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("createElement: Provided string '"
-                                    + tagNameString + "' contains an invalid character");
+                if (c < 128) {
+                    if (c == 0
+                            || c == 9
+                            || c == 10
+                            || c == 12
+                            || c == 13
+                            || c == ' '
+                            || c == '/'
+                            || c == '>') {
+                        if (LOG.isInfoEnabled()) {
+                            LOG.info("createElement: Provided string '"
+                                        + tagNameString + "' contains an invalid character");
+                        }
+                        throw JavaScriptEngine.asJavaScriptException(
+                                getWindow(),
+                                "createElement: Provided string '" + tagNameString
+                                    + "' contains an invalid character",
+                                org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
                     }
-                    throw JavaScriptEngine.asJavaScriptException(
-                            getWindow(),
-                            "createElement: Provided string '" + tagNameString
-                                + "' contains an invalid character",
-                            org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
                 }
             }
         }
 
         org.w3c.dom.Node element = getPage().createElement(tagNameString);
 
-        if (element instanceof HtmlImage) {
-            ((HtmlImage) element).markAsCreatedByJavascript();
+        if (element instanceof HtmlImage image) {
+            image.markAsCreatedByJavascript();
         }
-        else if (element instanceof HtmlRb) {
-            ((HtmlRb) element).markAsCreatedByJavascript();
+        else if (element instanceof HtmlRb rb) {
+            rb.markAsCreatedByJavascript();
         }
-        else if (element instanceof HtmlRp) {
-            ((HtmlRp) element).markAsCreatedByJavascript();
+        else if (element instanceof HtmlRp rp) {
+            rp.markAsCreatedByJavascript();
         }
-        else if (element instanceof HtmlRt) {
-            ((HtmlRt) element).markAsCreatedByJavascript();
+        else if (element instanceof HtmlRt rt) {
+            rt.markAsCreatedByJavascript();
         }
-        else if (element instanceof HtmlRtc) {
-            ((HtmlRtc) element).markAsCreatedByJavascript();
+        else if (element instanceof HtmlRtc rtc) {
+            rtc.markAsCreatedByJavascript();
         }
-        else if (element instanceof HtmlUnknownElement) {
-            ((HtmlUnknownElement) element).markAsCreatedByJavascript();
+        else if (element instanceof HtmlUnknownElement unknownElement) {
+            unknownElement.markAsCreatedByJavascript();
         }
         else if (element instanceof HtmlSvg) {
             element = UnknownElementFactory.INSTANCE.createElementNS(getPage(), "", "svg", null);
@@ -679,15 +730,6 @@ public class Document extends Node {
             }
         }
         return jsElement;
-    }
-
-    // our version of the Character.isLetter() without MODIFIER_LETTER
-    private static boolean isLetter(final int codePoint) {
-        return ((((1 << Character.UPPERCASE_LETTER)
-                    | (1 << Character.LOWERCASE_LETTER)
-                    | (1 << Character.TITLECASE_LETTER)
-                    | (1 << Character.OTHER_LETTER)
-                ) >> Character.getType(codePoint)) & 1) != 0;
     }
 
     /**
@@ -801,10 +843,9 @@ public class Document extends Node {
         anchors.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
                 node -> {
-                    if (!(node instanceof HtmlAnchor)) {
+                    if (!(node instanceof HtmlAnchor anchor)) {
                         return false;
                     }
-                    final HtmlAnchor anchor = (HtmlAnchor) node;
                     return anchor.hasAttribute(DomElement.NAME_ATTRIBUTE);
                 });
 
@@ -841,8 +882,7 @@ public class Document extends Node {
     @JsxGetter
     public HTMLElement getBody() {
         final Page page = getPage();
-        if (page instanceof HtmlPage) {
-            final HtmlPage htmlPage = (HtmlPage) page;
+        if (page instanceof HtmlPage htmlPage) {
             final HtmlElement body = htmlPage.getBody();
             if (body != null) {
                 return body.getScriptableObject();
@@ -853,7 +893,7 @@ public class Document extends Node {
             if (doc != null) {
                 for (final DomNode node : doc.getChildren()) {
                     if (node instanceof HtmlFrameSet) {
-                        return (HTMLElement) node.getScriptableObject();
+                        return node.getScriptableObject();
                     }
                 }
             }
@@ -869,8 +909,8 @@ public class Document extends Node {
     public void setBody(final HTMLElement htmlElement) {
         if (htmlElement instanceof HTMLBodyElement || htmlElement instanceof HTMLFrameSetElement) {
             final Page page = getPage();
-            if (page instanceof HtmlPage) {
-                final HtmlElement body = ((HtmlPage) page).getBody();
+            if (page instanceof HtmlPage htmlPage) {
+                final HtmlElement body = htmlPage.getBody();
                 if (body != null) {
                     body.replace(htmlElement.getDomNodeOrDie());
                 }
@@ -1001,7 +1041,7 @@ public class Document extends Node {
     @JsxFunction
     public NodeList querySelectorAll(final String selectors) {
         try {
-            return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
+            return NodeList.staticNodeList(getParentScope(), getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
@@ -1140,10 +1180,6 @@ public class Document extends Node {
         Class<? extends Event> clazz = SUPPORTED_DOM2_EVENT_TYPE_MAP.get(eventType);
         if (clazz == null) {
             clazz = SUPPORTED_DOM3_EVENT_TYPE_MAP.get(eventType);
-            if (CloseEvent.class == clazz
-                    && getBrowserVersion().hasFeature(EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED)) {
-                clazz = null;
-            }
         }
 
         if (MutationEvent.class == clazz
@@ -1154,21 +1190,8 @@ public class Document extends Node {
                 && ("Events".equals(eventType)
                     || "HashChangeEvent".equals(eventType)
                     || "BeforeUnloadEvent".equals(eventType)
-                    || "PopStateEvent".equals(eventType)
-                    || "FocusEvent".equals(eventType)
-                    || "WheelEvent".equals(eventType)
-                            && getBrowserVersion().hasFeature(EVENT_TYPE_WHEELEVENT)
-                    || "AnimationEvent".equals(eventType))) {
+                    || "FocusEvent".equals(eventType))) {
             clazz = SUPPORTED_VENDOR_EVENT_TYPE_MAP.get(eventType);
-
-            if (PopStateEvent.class == clazz
-                    && getBrowserVersion().hasFeature(EVENT_ONPOPSTATE_DOCUMENT_CREATE_NOT_SUPPORTED)) {
-                clazz = null;
-            }
-            if (AnimationEvent.class == clazz
-                    && getBrowserVersion().hasFeature(EVENT_ONANIMATION_DOCUMENT_CREATE_NOT_SUPPORTED)) {
-                clazz = null;
-            }
         }
 
         if (clazz == null) {
@@ -1180,7 +1203,7 @@ public class Document extends Node {
 
         try {
             final Event event = clazz.getDeclaredConstructor().newInstance();
-            event.setParentScope(getWindow());
+            event.setParentScope(getParentScope());
             event.setPrototype(getPrototype(clazz));
             event.eventCreated();
             return event;
@@ -1217,8 +1240,8 @@ public class Document extends Node {
             filterWrapper = n -> {
                 final Object[] args = {((DomNode) n).getScriptableObject()};
                 final Object response;
-                if (filter instanceof Callable) {
-                    response = ((Callable) filter).call(Context.getCurrentContext(), filter, filter, args);
+                if (filter instanceof Callable callable) {
+                    response = callable.call(Context.getCurrentContext(), filter.getParentScope(), filter, args);
                 }
                 else {
                     if (filterFunctionOnly) {
@@ -1263,7 +1286,7 @@ public class Document extends Node {
 
         final org.w3c.dom.traversal.NodeFilter filterWrapper = createFilterWrapper(filter, false);
         final TreeWalker t = new TreeWalker(root, whatToShowI, filterWrapper, false);
-        t.setParentScope(getWindow(this));
+        t.setParentScope(getParentScope());
         t.setPrototype(staticGetPrototype(getWindow(this), TreeWalker.class));
         return t;
     }
@@ -1286,7 +1309,7 @@ public class Document extends Node {
     @JsxFunction
     public Range createRange() {
         final Range range = new Range(this);
-        range.setParentScope(getWindow());
+        range.setParentScope(getParentScope());
         range.setPrototype(getPrototype(Range.class));
         return range;
     }
@@ -1304,8 +1327,8 @@ public class Document extends Node {
             URL url = getPage().getUrl();
             if (url == UrlUtils.URL_ABOUT_BLANK) {
                 final WebWindow w = getWindow().getWebWindow();
-                if (w instanceof FrameWindow) {
-                    url = ((FrameWindow) w).getEnclosingPage().getUrl();
+                if (w instanceof FrameWindow window) {
+                    url = window.getEnclosingPage().getUrl();
                 }
                 else {
                     return null;
@@ -1978,8 +2001,8 @@ public class Document extends Node {
     @JsxGetter
     public String getAlinkColor() {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            return ((HTMLBodyElement) body).getALink();
+        if (body instanceof HTMLBodyElement element) {
+            return element.getALink();
         }
         return null;
     }
@@ -1991,8 +2014,8 @@ public class Document extends Node {
     @JsxSetter
     public void setAlinkColor(final String color) {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            ((HTMLBodyElement) body).setALink(color);
+        if (body instanceof HTMLBodyElement element) {
+            element.setALink(color);
         }
     }
 
@@ -2004,8 +2027,8 @@ public class Document extends Node {
     @JsxGetter
     public String getBgColor() {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            return ((HTMLBodyElement) body).getBgColor();
+        if (body instanceof HTMLBodyElement element) {
+            return element.getBgColor();
         }
         return null;
     }
@@ -2018,8 +2041,8 @@ public class Document extends Node {
     @JsxSetter
     public void setBgColor(final String color) {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            ((HTMLBodyElement) body).setBgColor(color);
+        if (body instanceof HTMLBodyElement element) {
+            element.setBgColor(color);
         }
     }
 
@@ -2030,8 +2053,8 @@ public class Document extends Node {
     @JsxGetter
     public String getFgColor() {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            return ((HTMLBodyElement) body).getText();
+        if (body instanceof HTMLBodyElement element) {
+            return element.getText();
         }
         return null;
     }
@@ -2043,8 +2066,8 @@ public class Document extends Node {
     @JsxSetter
     public void setFgColor(final String color) {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            ((HTMLBodyElement) body).setText(color);
+        if (body instanceof HTMLBodyElement element) {
+            element.setText(color);
         }
     }
 
@@ -2055,8 +2078,8 @@ public class Document extends Node {
     @JsxGetter
     public String getLinkColor() {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            return ((HTMLBodyElement) body).getLink();
+        if (body instanceof HTMLBodyElement element) {
+            return element.getLink();
         }
         return null;
     }
@@ -2068,8 +2091,8 @@ public class Document extends Node {
     @JsxSetter
     public void setLinkColor(final String color) {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            ((HTMLBodyElement) body).setLink(color);
+        if (body instanceof HTMLBodyElement element) {
+            element.setLink(color);
         }
     }
 
@@ -2080,8 +2103,8 @@ public class Document extends Node {
     @JsxGetter
     public String getVlinkColor() {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            return ((HTMLBodyElement) body).getVLink();
+        if (body instanceof HTMLBodyElement element) {
+            return element.getVLink();
         }
         return null;
     }
@@ -2093,8 +2116,8 @@ public class Document extends Node {
     @JsxSetter
     public void setVlinkColor(final String color) {
         final HTMLElement body = getBody();
-        if (body instanceof HTMLBodyElement) {
-            ((HTMLBodyElement) body).setVLink(color);
+        if (body instanceof HTMLBodyElement element) {
+            element.setVLink(color);
         }
     }
 
@@ -3461,7 +3484,7 @@ public class Document extends Node {
     public ScriptableObject getFonts() {
         if (fonts_ == null) {
             final FontFaceSet fonts = new FontFaceSet();
-            fonts.setParentScope(getWindow());
+            fonts.setParentScope(getParentScope());
             fonts.setPrototype(getPrototype(fonts.getClass()));
             fonts_ = fonts;
         }

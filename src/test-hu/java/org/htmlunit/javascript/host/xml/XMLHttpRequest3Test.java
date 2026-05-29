@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,9 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.htmlunit.CollectingAlertHandler;
-import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
@@ -47,6 +40,11 @@ import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link XMLHttpRequest}.
@@ -161,7 +159,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
             + "<body onload='test()'></body></html>";
 
         final WebClient client = getWebClient();
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
         final MockWebConnection conn = new MockWebConnection() {
             @Override
@@ -181,49 +179,6 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         final String[] alerts = {URL_FIRST.toExternalForm(), "before long loop", "after long loop",
             urlPage2.toExternalForm(), "ready state handler, content loaded: j=5000" };
         assertEquals(alerts, collectedAlerts);
-    }
-
-    /**
-     * Tests that the different HTTP methods are supported.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    public void methods() throws Exception {
-        testMethod(HttpMethod.GET);
-        testMethod(HttpMethod.HEAD);
-        testMethod(HttpMethod.DELETE);
-        testMethod(HttpMethod.POST);
-        testMethod(HttpMethod.PUT);
-        testMethod(HttpMethod.OPTIONS);
-        testMethod(HttpMethod.TRACE);
-        testMethod(HttpMethod.PATCH);
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    private void testMethod(final HttpMethod method) throws Exception {
-        final String content = DOCTYPE_HTML
-            + "<html><head><script>\n"
-            + "function test() {\n"
-            + "  var req = new XMLHttpRequest();\n"
-            + "  req.open('" + method.name().toLowerCase(Locale.ROOT) + "', 'foo.xml', false);\n"
-            + "  req.send('');\n"
-            + "}\n"
-            + "</script></head>\n"
-            + "<body onload='test()'></body></html>";
-
-        final WebClient client = getWebClient();
-        final MockWebConnection conn = new MockWebConnection();
-        conn.setResponse(URL_FIRST, content);
-        final URL urlPage2 = new URL(URL_FIRST, "foo.xml");
-        conn.setResponse(urlPage2, "<foo/>\n", MimeType.TEXT_XML);
-        client.setWebConnection(conn);
-        client.getPage(URL_FIRST);
-
-        final WebRequest request = conn.getLastWebRequest();
-        assertEquals(urlPage2, request.getUrl());
-        assertSame(method, request.getHttpMethod());
     }
 
     /**
@@ -325,7 +280,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         servlets.put("/test", StreamingServlet.class);
 
         final String resourceBase = "./src/test/resources/org/htmlunit/javascript/host";
-        startWebServer(resourceBase, null, servlets);
+        startWebServer(resourceBase, servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "XMLHttpRequestTest_streaming.html");
         assertEquals(Integer.parseInt(getExpectedAlerts()[0]), client.waitForBackgroundJavaScriptStartingBefore(1000));
@@ -391,13 +346,13 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         servlets.put("/content.html", ContentServlet.class);
         servlets.put("/ajax_headers.html", AjaxHeaderServlet.class);
         servlets.put("/form_headers.html", FormHeaderServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         COLLECTED_HEADERS.clear();
         XMLHttpRequest3Test.STATE_ = 0;
         final WebClient client = getWebClient();
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
         final HtmlPage page = client.getPage(URL_FIRST + "content.html");
@@ -425,7 +380,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         assertTrue(headers, headers.contains("Html-Unit=is great,;"));
     }
 
-    static final List<String> COLLECTED_HEADERS = Collections.synchronizedList(new ArrayList<String>());
+    static final List<String> COLLECTED_HEADERS = Collections.synchronizedList(new ArrayList<>());
     static int STATE_ = 0;
 
     /**

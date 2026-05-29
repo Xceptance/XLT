@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,8 +116,7 @@ public class ScriptException extends RuntimeException {
         printWriter.println("======= EXCEPTION START ========");
 
         if (getCause() != null) {
-            if (getCause() instanceof EcmaError) {
-                final EcmaError ecmaError = (EcmaError) getCause();
+            if (getCause() instanceof EcmaError ecmaError) {
                 printWriter.print("EcmaError: ");
                 printWriter.print("lineNumber=[");
                 printWriter.print(ecmaError.lineNumber());
@@ -144,15 +143,14 @@ public class ScriptException extends RuntimeException {
             final Object value = ((JavaScriptException) getCause()).getValue();
 
             printWriter.print("JavaScriptException value = ");
-            if (value instanceof Throwable) {
-                ((Throwable) value).printStackTrace(printWriter);
+            if (value instanceof Throwable throwable) {
+                throwable.printStackTrace(printWriter);
             }
             else {
                 printWriter.println(value);
             }
         }
-        else if (getCause() instanceof WrappedException) {
-            final WrappedException wrappedException = (WrappedException) getCause();
+        else if (getCause() instanceof WrappedException wrappedException) {
             printWriter.print("WrappedException: ");
             wrappedException.printStackTrace(printWriter);
 
@@ -221,8 +219,7 @@ public class ScriptException extends RuntimeException {
      *         execution of a script.
      */
     public int getFailingLineNumber() {
-        if (getCause() instanceof RhinoException) {
-            final RhinoException cause = (RhinoException) getCause();
+        if (getCause() instanceof RhinoException cause) {
             return cause.lineNumber();
         }
 
@@ -236,8 +233,7 @@ public class ScriptException extends RuntimeException {
      *         execution of a script.
      */
     public int getFailingColumnNumber() {
-        if (getCause() instanceof RhinoException) {
-            final RhinoException cause = (RhinoException) getCause();
+        if (getCause() instanceof RhinoException cause) {
             return cause.columnNumber();
         }
 

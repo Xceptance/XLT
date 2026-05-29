@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1252,10 +1252,6 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"anonymous", "false", "false", "true"})
-    @HtmlUnitNYI(CHROME = "org.htmlunit.ScriptException: TypeError: Cannot read property \"constructor\" from null",
-            EDGE = "org.htmlunit.ScriptException: TypeError: Cannot read property \"constructor\" from null",
-            FF = "org.htmlunit.ScriptException: TypeError: Cannot read property \"constructor\" from null",
-            FF_ESR = "org.htmlunit.ScriptException: TypeError: Cannot read property \"constructor\" from null")
     public void generatorFunction() throws Exception {
         final String html = DOCTYPE_HTML
             + "<html><body>"

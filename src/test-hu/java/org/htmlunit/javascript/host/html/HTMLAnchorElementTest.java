@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
  * @author Marc Guillemot
  * @author Sudhan Moghe
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class HTMLAnchorElementTest extends SimpleWebTestCase {
     private static final URL URL_GARGOYLE;
@@ -141,9 +142,9 @@ public class HTMLAnchorElementTest extends SimpleWebTestCase {
             + "</body></html>";
         final HtmlPage page = loadPage(getBrowserVersion(), html, null, URL_GARGOYLE);
         HtmlAnchor link = page.getAnchors().get(0);
-        assertEquals("http://www.gargoylesoftware.com:80/foo.html#O", link.getHrefAttribute());
+        assertEquals("http://www.gargoylesoftware.com/foo.html#O", link.getHrefAttribute());
         link = page.getAnchors().get(1);
-        assertEquals("http://www.gargoylesoftware.com:8080/foo.html#O", link.getHrefAttribute());
+        assertEquals("http://www.gargoylesoftware.com/foo.html#O", link.getHrefAttribute());
     }
 
     /**
@@ -198,7 +199,7 @@ public class HTMLAnchorElementTest extends SimpleWebTestCase {
         link = page.getAnchors().get(1);
         assertEquals("http://www.gargoylesoftware.commotion/foo.html#O", link.getHrefAttribute());
         link = page.getAnchors().get(2);
-        assertEquals("http://www.gargoylesoftware.com:8080/foo.html#O", link.getHrefAttribute());
+        assertEquals("http://www.gargoylesoftware.com80/foo.html#O", link.getHrefAttribute());
         link = page.getAnchors().get(3);
         assertEquals("http://www.gargoylesoftware.com/foo.html#O", link.getHrefAttribute());
     }

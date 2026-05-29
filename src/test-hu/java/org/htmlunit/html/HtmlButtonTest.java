@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,9 +103,7 @@ public class HtmlButtonTest extends SimpleWebTestCase {
         assertEquals(expectedAlerts, collectedAlerts);
 
         assertNotSame(page, secondPage);
-        final List<NameValuePair> expectedParameters = Arrays.asList(new NameValuePair[]{
-            new NameValuePair("button", "foo")
-        });
+        final List<NameValuePair> expectedParameters = Arrays.asList(new NameValuePair("button", "foo"));
         final List<NameValuePair> collectedParameters = getMockConnection(secondPage).getLastParameters();
 
         assertEquals(expectedParameters, collectedParameters);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.TestCaseTest;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -58,7 +59,7 @@ public class CtorPrototypeTest extends WebDriverTestCase {
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}")
+    @ParameterizedTest(name = "_{0}", quoteTextArguments = false)
     @MethodSource("data")
     @Alerts("true")
     void ctor(final String jsClassName) throws Exception {
@@ -1756,7 +1757,6 @@ public class CtorPrototypeTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "true",
             FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception")
     void _SpeechGrammar() throws Exception {
         test("SpeechGrammar");
     }
@@ -1764,7 +1764,6 @@ public class CtorPrototypeTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "true",
             FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception")
     void _SpeechGrammarList() throws Exception {
         test("SpeechGrammarList");
     }
@@ -1772,7 +1771,7 @@ public class CtorPrototypeTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "false",
             FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception")
+    @Test
     void _SpeechRecognition() throws Exception {
         test("SpeechRecognition");
     }
@@ -1780,7 +1779,6 @@ public class CtorPrototypeTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "false",
             FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception")
     void _SpeechRecognitionErrorEvent() throws Exception {
         test("SpeechRecognitionErrorEvent");
     }
@@ -1788,7 +1786,6 @@ public class CtorPrototypeTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "false",
             FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception")
     void _SpeechRecognitionEvent() throws Exception {
         test("SpeechRecognitionEvent");
     }
@@ -2039,6 +2036,41 @@ public class CtorPrototypeTest extends WebDriverTestCase {
             FF_ESR = "exception")
     void _WebKitMediaStream() throws Exception {
         test("webkitMediaStream");
+    }
+
+    @Alerts(DEFAULT = "true",
+            FF = "exception",
+            FF_ESR = "exception")
+    void _webkitSpeechGrammar() throws Exception {
+        test("webkitSpeechGrammar");
+    }
+
+    @Alerts(DEFAULT = "true",
+            FF = "exception",
+            FF_ESR = "exception")
+    void _webkitSpeechGrammarList() throws Exception {
+        test("webkitSpeechGrammarList");
+    }
+
+    @Alerts(DEFAULT = "false",
+            FF = "exception",
+            FF_ESR = "exception")
+    void _webkitSpeechRecognition() throws Exception {
+        test("webkitSpeechRecognition");
+    }
+
+    @Alerts(DEFAULT = "false",
+            FF = "exception",
+            FF_ESR = "exception")
+    void _webkitSpeechRecognitionError() throws Exception {
+        test("webkitSpeechRecognitionError");
+    }
+
+    @Alerts(DEFAULT = "false",
+            FF = "exception",
+            FF_ESR = "exception")
+    void _webkitSpeechRecognitionEvent() throws Exception {
+        test("webkitSpeechRecognitionEvent");
     }
 
     @Alerts("false")

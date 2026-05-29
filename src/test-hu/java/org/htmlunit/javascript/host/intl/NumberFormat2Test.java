@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -429,7 +429,8 @@ public class NumberFormat2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("31\u2019415.927")
+    @Alerts(DEFAULT = "31'415.927",
+            FF_ESR = "31\u2019415.927")
     public void format_de_ch() throws Exception {
         test("new Intl.NumberFormat('de-CH').format(number)");
     }
@@ -982,7 +983,8 @@ public class NumberFormat2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("31\u2019415.927")
+    @Alerts(DEFAULT = "31'415.927",
+            FF_ESR = "31\u2019415.927")
     public void format_it_ch() throws Exception {
         test("new Intl.NumberFormat('it-CH').format(number)");
     }

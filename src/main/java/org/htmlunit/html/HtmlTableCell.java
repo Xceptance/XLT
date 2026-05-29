@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,16 @@ import org.htmlunit.util.StringUtils;
 /**
  * An abstract cell that provides the implementation for HtmlTableDataCell and HtmlTableHeaderCell.
  *
+ * @see HtmlTableDataCell
+ * @see HtmlTableHeaderCell
+ *
  * @author Mike Bowler
  * @author David K. Taylor
  * @author Christian Sell
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Lai Quang Duong
- * @see HtmlTableDataCell
- * @see HtmlTableHeaderCell
+ * @author Ronald Brill
  */
 public abstract class HtmlTableCell extends HtmlElement {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -364,7 +364,7 @@ public class StringUtilsTest {
      */
     @Test
     public void replaceChars() {
-        assertEquals(null, StringUtils.replaceChars(null, "", ""));
+        assertNull(StringUtils.replaceChars(null, "", ""));
         assertEquals("", StringUtils.replaceChars("", "", null));
         assertEquals("abc", StringUtils.replaceChars("abc", null, null));
         assertEquals("abc", StringUtils.replaceChars("abc", "", ""));
@@ -418,7 +418,7 @@ public class StringUtilsTest {
      */
     @Test
     public void escapeXmlAttributeValueBorderCases() throws Exception {
-        assertEquals(null, StringUtils.escapeXmlAttributeValue(null));
+        assertNull(StringUtils.escapeXmlAttributeValue(null));
         assertEquals("", StringUtils.escapeXmlAttributeValue(""));
 
         // [#x20-#xD7FF]
@@ -482,7 +482,7 @@ public class StringUtilsTest {
      */
     @Test
     public void escapeXmlBorderCases() throws Exception {
-        assertEquals(null, StringUtils.escapeXml(null));
+        assertNull(StringUtils.escapeXml(null));
         assertEquals("", StringUtils.escapeXml(""));
 
         // [#x20-#xD7FF]

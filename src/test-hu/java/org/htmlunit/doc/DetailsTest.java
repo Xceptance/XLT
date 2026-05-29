@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.FrameContentHandler;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpWebConnection;
 import org.htmlunit.MockWebConnection;
@@ -33,7 +32,6 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
 import org.htmlunit.WebServerTestCase;
-import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.http.HttpStatus;
 import org.htmlunit.util.ArrayUtils;
@@ -159,15 +157,10 @@ public class DetailsTest extends WebServerTestCase {
 
         try (WebClient webClient = new WebClient()) {
             // use our own FrameContentHandler
-            webClient.setFrameContentHandler(new FrameContentHandler() {
-
-                @Override
-                public boolean loadFrameDocument(final BaseFrameElement baseFrameElement) {
-                    final String src = baseFrameElement.getSrcAttribute();
-                    // don't load the content from google
-                    return !src.contains("google");
-                }
-
+            webClient.setFrameContentHandler(baseFrameElement -> {
+                final String src = baseFrameElement.getSrcAttribute();
+                // don't load the content from google
+                return !src.contains("google");
             });
 
             // use the client as usual

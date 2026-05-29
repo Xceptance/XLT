@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,23 +94,23 @@ public class Architecture2Test {
         oneTests.removeAll(anotherTests);
 
         if (tmp.size() + oneTests.size() > 0) {
-            if (tmp.size() == 0) {
+            if (tmp.isEmpty()) {
                 Assertions.fail("The " + oneTests.size() + " method(s) "
-                    + oneTests.stream().sorted().collect(Collectors.toList())
+                    + oneTests.stream().sorted().toList()
                     + " are available in " + oneName + " but missing in " + anotherName + ".");
             }
-            else if (oneTests.size() == 0) {
+            else if (oneTests.isEmpty()) {
                 anotherTests.removeAll(oneTests);
                 Assertions.fail("The " + tmp.size() + " method(s) "
-                    + tmp.stream().sorted().collect(Collectors.toList())
+                    + tmp.stream().sorted().toList()
                     + " are available in " + anotherName + " but missing in " + oneName + ".");
             }
 
             Assertions.fail("The " + tmp.size() + " method(s) "
-                    + tmp.stream().sorted().collect(Collectors.toList())
+                    + tmp.stream().sorted().toList()
                     + " are available in " + anotherName + " but missing in " + oneName
                     + " and the " + oneTests.size() + " method(s) "
-                    + oneTests.stream().sorted().collect(Collectors.toList())
+                    + oneTests.stream().sorted().toList()
                     + " are available in " + oneName + " but missing in " + anotherName + ".");
         }
     }
@@ -131,7 +131,7 @@ public class Architecture2Test {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.DateTimeFormat")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.NumberFormat")
 
-        .should().callMethod(BrowserVersion.class, "isChrome", new Class[] {});
+        .should().callMethod(BrowserVersion.class, "isChrome");
 
     /**
      * Do not use BrowserVersion.isEdge().
@@ -150,7 +150,7 @@ public class Architecture2Test {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.DateTimeFormat")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.NumberFormat")
 
-        .should().callMethod(BrowserVersion.class, "isEdge", new Class[] {});
+        .should().callMethod(BrowserVersion.class, "isEdge");
 
     /**
      * Do not use BrowserVersion.isFirefox().
@@ -170,7 +170,7 @@ public class Architecture2Test {
 
             .and().doNotHaveFullyQualifiedName("org.htmlunit.general.huge.ElementClosesElementTest")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.general.huge.ElementClosesElement2Test")
-        .should().callMethod(BrowserVersion.class, "isFirefox", new Class[] {});
+        .should().callMethod(BrowserVersion.class, "isFirefox");
 
     /**
      * Do not use BrowserVersion.isFirefoxESR().
@@ -184,7 +184,7 @@ public class Architecture2Test {
 
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.DateTimeFormat")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.NumberFormat")
-        .should().callMethod(BrowserVersion.class, "isFirefoxESR", new Class[] {});
+        .should().callMethod(BrowserVersion.class, "isFirefoxESR");
 
     /**
      * Do not use hamcrest.
@@ -194,7 +194,7 @@ public class Architecture2Test {
         .should().dependOnClassesThat().resideInAPackage("org.hamcrest..");
 
     private static final ArchCondition<JavaMethod> haveConsistentTestAnnotations =
-            new ArchCondition<JavaMethod>("have consistent HtmlUnit test annotations") {
+            new ArchCondition<>("have consistent HtmlUnit test annotations") {
                 @Override
                 public void check(final JavaMethod method, final ConditionEvents events) {
                     try {
@@ -214,4 +214,52 @@ public class Architecture2Test {
             .that().areAnnotatedWith(Test.class)
             .and().areNotDeclaredIn("org.htmlunit.junit.annotation.AnnotationUtilsTest")
             .should(haveConsistentTestAnnotations);
+
+    /**
+     * Do not use archunit outside of this.
+     */
+    @ArchTest
+    public static final ArchRule archunitPackageRule = noClasses()
+            .that()
+                .resideOutsideOfPackage("org.htmlunit.archunit..")
+
+            .should().dependOnClassesThat().resideInAnyPackage("com.tngtech.archunit..");
+
+    /**
+     * Do not use google commons.
+     */
+    @ArchTest
+    public static final ArchRule googleCommonPackageRule = noClasses()
+            .should().dependOnClassesThat().resideInAnyPackage("com.google.common..");
+
+    /**
+     * Do not use jetty.
+     */
+    @ArchTest
+    public static final ArchRule jettyPackageRule = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.archunit..")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.JettyServerUtils")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.JettyServerUtils$ConsoleErrorHandler")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebServerTestCase")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebDriverTestCase")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.HttpWebConnectionProxyTest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.WebSocketTest$ChatWebSocketListener")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.WebSocketTest$CookiesWebSocketListener")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.WebSocketTest$EventsWebSocketListener")
+        .should()
+            .dependOnClassesThat().resideInAnyPackage("org.eclipse.jetty..");
+
+    /**
+     * Do not use java.util.logging.
+     */
+    @ArchTest
+    public static final ArchRule javaLogginPackageRule = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.archunit..")
+            .and().resideOutsideOfPackage("org.htmlunit.jetty..")
+       .should()
+            .dependOnClassesThat().resideInAnyPackage("java.util.logging..");
 }

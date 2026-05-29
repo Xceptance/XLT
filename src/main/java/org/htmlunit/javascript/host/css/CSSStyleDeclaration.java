@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 package org.htmlunit.javascript.host.css;
 
 import static org.htmlunit.BrowserVersionFeatures.CSS_BACKGROUND_INITIAL;
-import static org.htmlunit.BrowserVersionFeatures.JS_STYLE_LETTER_SPACING_ACCEPTS_PERCENT;
-import static org.htmlunit.BrowserVersionFeatures.JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT;
 import static org.htmlunit.css.CssStyleSheet.ABSOLUTE;
 import static org.htmlunit.css.CssStyleSheet.AUTO;
 import static org.htmlunit.css.CssStyleSheet.FIXED;
@@ -121,6 +119,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
 
     /** The wrapped CSSStyleDeclaration */
     private AbstractCssStyleDeclaration styleDeclaration_;
+    private CSSStyleSheet parentStyleSheet_;
 
     /**
      * Creates an instance.
@@ -165,13 +164,14 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     CSSStyleDeclaration(final CSSStyleSheet parentStyleSheet, final WrappedCssStyleDeclaration styleDeclaration) {
         super();
-        setParentScope(parentStyleSheet);
+        setParentScope(parentStyleSheet.getParentScope());
         setPrototype(getPrototype(getClass()));
 
         if (styleDeclaration == null) {
             throw new IllegalStateException("styleDeclaration can't be null");
         }
         styleDeclaration_ = styleDeclaration;
+        parentStyleSheet_ = parentStyleSheet;
     }
 
     protected AbstractCssStyleDeclaration getCssStyleDeclaration() {
@@ -965,8 +965,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setLetterSpacing(final Object letterSpacing) {
-        setStyleLengthAttribute(Definition.LETTER_SPACING.getAttributeName(), letterSpacing, "",
-                false, getBrowserVersion().hasFeature(JS_STYLE_LETTER_SPACING_ACCEPTS_PERCENT), null);
+        setStyleLengthAttribute(Definition.LETTER_SPACING.getAttributeName(), letterSpacing, "", false, true, null);
     }
 
     /**
@@ -1317,8 +1316,8 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
         }
 
         final double doubleValue;
-        if (opacity instanceof Number) {
-            doubleValue = ((Number) opacity).doubleValue();
+        if (opacity instanceof Number number) {
+            doubleValue = number.doubleValue();
         }
         else {
             String valueString = JavaScriptEngine.toString(opacity);
@@ -1504,7 +1503,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     public CSSRule getParentRule() {
         final AbstractCSSRuleImpl parentRule = styleDeclaration_.getParentRule();
         if (parentRule != null) {
-            return CSSRule.create((CSSStyleSheet) getParentScope(), parentRule);
+            return CSSRule.create(parentStyleSheet_, parentRule);
         }
         return null;
     }
@@ -1772,7 +1771,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     @JsxSetter
     public void setWordSpacing(final Object wordSpacing) {
         setStyleLengthAttribute(Definition.WORD_SPACING.getAttributeName(), wordSpacing, "",
-                false, getBrowserVersion().hasFeature(JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT), null);
+                false, true, null);
     }
 
     /**
@@ -1804,8 +1803,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
         }
 
         // string
-        if (zIndex instanceof Number) {
-            final Number number = (Number) zIndex;
+        if (zIndex instanceof Number number) {
             if (number.doubleValue() % 1 == 0) {
                 setStyleAttribute(Definition.Z_INDEX_.getAttributeName(), Integer.toString(number.intValue()));
             }
@@ -1829,8 +1827,8 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     public String getPropertyValue(final String name) {
         if (name != null && name.contains("-")) {
             final Object value = getProperty(this, StringUtils.cssCamelize(name));
-            if (value instanceof String) {
-                return (String) value;
+            if (value instanceof String string) {
+                return string;
             }
         }
 
@@ -1879,11 +1877,11 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
         }
         else if (Definition.LETTER_SPACING.getAttributeName().equals(name)) {
             setStyleLengthAttribute(Definition.LETTER_SPACING.getAttributeName(), value, imp,
-                    false, getBrowserVersion().hasFeature(JS_STYLE_LETTER_SPACING_ACCEPTS_PERCENT), null);
+                    false, true, null);
         }
         else if (Definition.WORD_SPACING.getAttributeName().equals(name)) {
             setStyleLengthAttribute(Definition.WORD_SPACING.getAttributeName(), value, imp,
-                    false, getBrowserVersion().hasFeature(JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT), null);
+                    false, true, null);
         }
         else if (Definition.VERTICAL_ALIGN.getAttributeName().equals(name)) {
             setStyleLengthAttribute(Definition.VERTICAL_ALIGN.getAttributeName(), value, imp, false, true, null);

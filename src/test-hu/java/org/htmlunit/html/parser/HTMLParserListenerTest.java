@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,12 @@ import org.junit.jupiter.api.Test;
  */
 public class HTMLParserListenerTest extends SimpleWebTestCase {
     static class MessageInfo {
-        private boolean error_; // versus warning
-        private String message_;
-        private URL url_;
-        private String html_;
-        private int line_;
-        private int column_;
+        private final boolean error_; // versus warning
+        private final String message_;
+        private final URL url_;
+        private final String html_;
+        private final int line_;
+        private final int column_;
 
         /**
          * Utility class to hold data.
@@ -78,10 +78,9 @@ public class HTMLParserListenerTest extends SimpleWebTestCase {
          */
         @Override
         public boolean equals(final Object obj) {
-            if (!(obj instanceof MessageInfo)) {
+            if (!(obj instanceof MessageInfo other)) {
                 return false;
             }
-            final MessageInfo other = (MessageInfo) obj;
             final EqualsBuilder builder = new EqualsBuilder();
             builder.append(error_, other.error_);
             builder.append(message_, other.message_);

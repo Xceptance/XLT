@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,10 +313,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return null;
         }
 
-        if (webResponse_ instanceof NetworkErrorWebResponse) {
+        if (webResponse_ instanceof NetworkErrorWebResponse response) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
-                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+                        + response.getError() + ")");
             }
             return null;
         }
@@ -355,7 +355,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
                 nativeArrayBuffer.setParentScope(getParentScope());
                 nativeArrayBuffer.setPrototype(
-                        ScriptableObject.getClassPrototype(getWindow(), nativeArrayBuffer.getClassName()));
+                        ScriptableObject.getClassPrototype(getParentScope(), nativeArrayBuffer.getClassName()));
 
                 return nativeArrayBuffer;
             }
@@ -370,7 +370,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     try (InputStream inputStream = webResponse_.getContentAsStream()) {
                         final Blob blob = new Blob(IOUtils.toByteArray(inputStream), webResponse_.getContentType());
                         blob.setParentScope(getParentScope());
-                        blob.setPrototype(ScriptableObject.getClassPrototype(getWindow(), blob.getClassName()));
+                        blob.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), blob.getClassName()));
 
                         return blob;
                     }
@@ -403,7 +403,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 }
 
                 try {
-                    return new JsonParser(Context.getCurrentContext(), this).parseValue(content);
+                    return new JsonParser(Context.getCurrentContext(), getParentScope()).parseValue(content);
                 }
                 catch (final ParseException e) {
                     webResponse_ = new NetworkErrorWebResponse(webRequest_, new IOException(e));
@@ -468,13 +468,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return "";
         }
 
-        if (webResponse_ instanceof NetworkErrorWebResponse) {
+        if (webResponse_ instanceof NetworkErrorWebResponse resp) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
-                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+                        + resp.getError() + ")");
             }
-
-            final NetworkErrorWebResponse resp = (NetworkErrorWebResponse) webResponse_;
             if (resp.getError() instanceof NoPermittedHeaderException) {
                 return "";
             }
@@ -512,10 +510,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return null;
         }
 
-        if (webResponse_ instanceof NetworkErrorWebResponse) {
+        if (webResponse_ instanceof NetworkErrorWebResponse response) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
-                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+                        + response.getError() + ")");
             }
             return null;
         }
@@ -683,7 +681,25 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             request.setRefererHeader(pageUrl);
 
             try {
-                request.setHttpMethod(HttpMethod.valueOf(method.toUpperCase(Locale.ROOT)));
+                HttpMethod.validateHttpMethodName(method);
+            }
+            catch (final IllegalArgumentException e) {
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        e.getMessage(),
+                        DOMException.SYNTAX_ERR);
+            }
+
+            final String methodUC = method.toUpperCase(Locale.ROOT);
+            if ("TRACE".equals(methodUC)) {
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "HTTP Method '" + method + "' not allowed.",
+                        DOMException.SECURITY_ERR);
+            }
+
+            try {
+                request.setHttpMethod(HttpMethod.valueOf(methodUC));
             }
             catch (final IllegalArgumentException e) {
                 if (LOG.isInfoEnabled()) {
@@ -699,7 +715,6 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             else {
                 isSameOrigin_ = UrlUtils.isSameOrigin(pageUrl, fullUrl);
                 final boolean alwaysAddOrigin = HttpMethod.GET != request.getHttpMethod()
-                                                && HttpMethod.PATCH != request.getHttpMethod()
                                                 && HttpMethod.HEAD != request.getHttpMethod();
                 if (alwaysAddOrigin || !isSameOrigin_) {
                     final StringBuilder origin = new StringBuilder().append(pageUrl.getProtocol()).append("://")
@@ -773,7 +788,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         else {
             // Create and start a thread in which to execute the request.
             final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
-            final ContextAction<Object> action = new ContextAction<Object>() {
+            final ContextAction<Object> action = new ContextAction<>() {
                 @Override
                 public Object run(final Context cx) {
                     doSend();
@@ -809,9 +824,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             final boolean setEncodingType = webRequest_.getAdditionalHeader(HttpHeader.CONTENT_TYPE) == null;
 
-            if (content instanceof HTMLDocument) {
+            if (content instanceof HTMLDocument document) {
                 // final String body = ((HTMLDocument) content).getDomNodeOrDie().asXml();
-                String body = new XMLSerializer().serializeToString((HTMLDocument) content);
+                String body = new XMLSerializer().serializeToString(document);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Setting request body to: " + body);
                 }
@@ -828,10 +843,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     webRequest_.setAdditionalHeader(HttpHeader.CONTENT_TYPE, "text/html;charset=UTF-8");
                 }
             }
-            else if (content instanceof XMLDocument) {
+            else if (content instanceof XMLDocument xmlDocument) {
                 // this output differs from real browsers but it seems to be a good starting point
                 try (StringWriter writer = new StringWriter()) {
-                    final XMLDocument xmlDocument = (XMLDocument) content;
 
                     final Transformer transformer = TransformerFactory.newInstance().newTransformer();
                     transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -854,22 +868,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
                 }
             }
-            else if (content instanceof FormData) {
-                ((FormData) content).fillRequest(webRequest_);
+            else if (content instanceof FormData data) {
+                data.fillRequest(webRequest_);
             }
-            else if (content instanceof NativeArrayBufferView) {
-                final NativeArrayBufferView view = (NativeArrayBufferView) content;
+            else if (content instanceof NativeArrayBufferView view) {
                 webRequest_.setRequestBody(new String(view.getBuffer().getBuffer(), UTF_8));
                 if (setEncodingType) {
                     webRequest_.setEncodingType(null);
                 }
             }
-            else if (content instanceof URLSearchParams) {
-                ((URLSearchParams) content).fillRequest(webRequest_);
+            else if (content instanceof URLSearchParams params) {
+                params.fillRequest(webRequest_);
                 webRequest_.addHint(HttpHint.IncludeCharsetInContentTypeHeader);
             }
-            else if (content instanceof Blob) {
-                ((Blob) content).fillRequest(webRequest_);
+            else if (content instanceof Blob blob) {
+                blob.fillRequest(webRequest_);
             }
             else {
                 final String body = JavaScriptEngine.toString(content);
@@ -1119,6 +1132,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             if (HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.equalsIgnoreCase(pair.getName())) {
                 String value = pair.getValue();
                 if (value != null) {
+                    if (ALLOW_ORIGIN_ALL.equals(value)) {
+                        // all headers are allowed
+                        return true;
+                    }
                     value = org.htmlunit.util.StringUtils.toRootLowerCase(value);
                     final String[] values = org.htmlunit.util.StringUtils.splitAtComma(value);
                     for (String part : values) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -510,7 +510,7 @@ public class Event extends HtmlUnitScriptable {
      * @param type the event type
      */
     public Event(final DomNode domNode, final String type) {
-        this((EventTarget) domNode.getScriptableObject(), type);
+        this(domNode.getScriptableObject(), type);
         setDomNode(domNode, false);
     }
 
@@ -526,7 +526,7 @@ public class Event extends HtmlUnitScriptable {
         target_ = target;
         currentTarget_ = target;
 
-        setParentScope(target);
+        setParentScope(target.getParentScope());
         setPrototype(getPrototype(getClass()));
 
         if (TYPE_CHANGE.equals(type)) {
@@ -1008,5 +1008,14 @@ public class Event extends HtmlUnitScriptable {
      */
     protected static boolean isMissingOrUndefined(final Object value) {
         return value == Scriptable.NOT_FOUND || JavaScriptEngine.isUndefined(value);
+    }
+
+    /**
+     * Returns whether the given value indicates null, a missing or undefined property.
+     * @param value the new value
+     * @return whether the given value indicates null, a missing or undefined property
+     */
+    protected static boolean isNullMissingOrUndefined(final Object value) {
+        return value == null || value == Scriptable.NOT_FOUND || JavaScriptEngine.isUndefined(value);
     }
 }

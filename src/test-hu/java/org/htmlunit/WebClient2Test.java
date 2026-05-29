@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.util.Cookie;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -169,11 +169,11 @@ public class WebClient2Test extends SimpleWebTestCase {
         page.getWebClient().close();
 
         // deserialize page and verify that 1 background job exists
-        final HtmlPage clonedPage = (HtmlPage) SerializationUtils.deserialize(bytes);
+        final HtmlPage clonedPage = SerializationUtils.deserialize(bytes);
         assertEquals(Integer.parseInt(expected[1]), clonedPage.getEnclosingWindow().getJobManager().getJobCount());
 
         // configure a new CollectingAlertHandler (in fact it has surely already one and we could get and cast it)
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         final AlertHandler alertHandler = new CollectingAlertHandler(collectedAlerts);
         clonedPage.getWebClient().setAlertHandler(alertHandler);
 
@@ -193,7 +193,6 @@ public class WebClient2Test extends SimpleWebTestCase {
      */
     @Test
     @Alerts(DEFAULT = "en-US,en;q=0.9",
-            FF = "en-US,en;q=0.5",
             FF_ESR = "en-US,en;q=0.5")
     public void acceptLanguage() throws Exception {
         final String html = DOCTYPE_HTML + "<html><body></body></html>";
@@ -442,7 +441,7 @@ public class WebClient2Test extends SimpleWebTestCase {
     @Test
     public void localFile() throws Exception {
         final URL url = getClass().getClassLoader().getResource("simple.html");
-        String file = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
+        String file = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
         if (file.startsWith("/") && file.contains(":")) {
             // we have to remove the trailing slash to test the c:\.... case.
             file = file.substring(1);
@@ -468,7 +467,7 @@ public class WebClient2Test extends SimpleWebTestCase {
     @Alerts("titel - simple.html")
     public void localFileFile() throws Exception {
         final URL url = getClass().getClassLoader().getResource("simple.html");
-        String file = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
+        String file = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
         if (file.startsWith("/") && file.contains(":")) {
             // we have to remove the trailing slash to test the c:\.... case.
             file = file.substring(1);

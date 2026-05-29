@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -414,7 +414,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {"58", "29", "76", "178"},
-            EDGE = {"58", "29", "80", "165"},
+            EDGE = {"58", "29", "80", "164"},
             FF = {"58", "29", "70", "119"},
             FF_ESR = {"58", "29", "70", "119"})
     @HtmlUnitNYI(CHROME = {"18", "18", "18", "18"},
@@ -800,7 +800,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
 
     private void addEventListener(final int statusCode) throws Exception {
         // use always a different url to avoid caching effects
-        final URL scriptUrl = new URL(URL_SECOND, "" + System.currentTimeMillis() + ".png");
+        final URL scriptUrl = new URL(URL_SECOND, System.currentTimeMillis() + ".png");
 
         final String html = DOCTYPE_HTML
             + "<html><head>\n"

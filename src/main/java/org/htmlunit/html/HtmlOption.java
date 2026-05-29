@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,8 +122,7 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
     @Override
     public void insertBefore(final DomNode newNode) {
         super.insertBefore(newNode);
-        if (newNode instanceof HtmlOption) {
-            final HtmlOption option = (HtmlOption) newNode;
+        if (newNode instanceof HtmlOption option) {
             if (option.isSelected()) {
                 getEnclosingSelect().setSelectedAttribute(option, true);
             }
@@ -179,8 +178,8 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
 
         Node node = getParentNode();
         while (node != null) {
-            if (node instanceof DisabledElement
-                    && ((DisabledElement) node).isDisabled()) {
+            if (node instanceof DisabledElement element
+                    && element.isDisabled()) {
                 return true;
             }
             node = node.getParentNode();

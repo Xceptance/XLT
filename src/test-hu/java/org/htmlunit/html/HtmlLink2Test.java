@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class HtmlLink2Test extends WebDriverTestCase {
         final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getEnclosedPage();
-            assertTrue(HtmlLink.class.isInstance(page.getHtmlElementById("myId")));
+            assertTrue(page.getHtmlElementById("myId") instanceof HtmlLink);
         }
     }
 
@@ -570,12 +570,12 @@ public class HtmlLink2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, html);
         getMockWebConnection().setResponse(URL_SECOND, "");
 
-        loadPage2(html, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        loadPage2(html, new URL(URL_FIRST + "index.html?test#ref"));
 
         assertEquals(2, getMockWebConnection().getRequestCount());
 

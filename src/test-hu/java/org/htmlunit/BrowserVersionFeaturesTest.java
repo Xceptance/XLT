@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,14 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
 import org.junit.jupiter.api.Test;
-
-import com.tngtech.archunit.thirdparty.com.google.common.base.Objects;
 
 /**
  * Tests for {@link BrowserVersionFeatures}.
@@ -90,7 +88,7 @@ public class BrowserVersionFeaturesTest {
                 for (final SupportedBrowser annotatedBrowser : browserFeature.value()) {
                     boolean inUse = false;
                     for (final BrowserVersion supportedBrowserVersion : browsers) {
-                        if (Objects.equal(supportedBrowser(supportedBrowserVersion), annotatedBrowser)) {
+                        if (Objects.equals(supportedBrowser(supportedBrowserVersion), annotatedBrowser)) {
                             inUse = true;
                             continue;
                         }
@@ -148,11 +146,7 @@ public class BrowserVersionFeaturesTest {
                     final List<String> lines = FileUtils.readLines(file, ISO_8859_1);
                     final String browserVersionFeatures = BrowserVersionFeatures.class.getSimpleName();
                     for (final String line : lines) {
-                        for (final Iterator<String> it = unusedFeatures.iterator(); it.hasNext();) {
-                            if (line.contains(browserVersionFeatures + '.' + it.next())) {
-                                it.remove();
-                            }
-                        }
+                        unusedFeatures.removeIf(s -> line.contains(browserVersionFeatures + '.' + s));
                     }
                 }
             }

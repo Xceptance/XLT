@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,11 +279,7 @@ public class JavaScriptConfigurationTest {
                 parent = parent.getSuperclass();
             }
 
-            List<String> clsAtLevel = levels.get(level);
-            if (clsAtLevel == null) {
-                clsAtLevel = new ArrayList<>();
-                levels.put(level, clsAtLevel);
-            }
+            List<String> clsAtLevel = levels.computeIfAbsent(level, k -> new ArrayList<>());
             clsAtLevel.add(c.getSimpleName());
         }
 

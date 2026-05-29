@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.util.MimeType;
 import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link WebClient} that run with BrowserRunner.
@@ -87,7 +87,7 @@ public class WebClient4Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put(RedirectServlet307.URL, RedirectServlet307.class);
         servlets.put(RedirectServlet303.URL, RedirectServlet303.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
 
@@ -104,8 +104,8 @@ public class WebClient4Test extends WebServerTestCase {
      */
     public static class RedirectServlet extends HttpServlet {
         private int count_;
-        private int status_;
-        private String location_;
+        private final int status_;
+        private final String location_;
 
         /**
          * Creates a new instance.
@@ -161,7 +161,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void bodyDowloadTime() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/*", ServeBodySlowlyServlet.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final Page page = getWebClient().getPage(URL_FIRST);
         final long loadTime = page.getWebResponse().getLoadTime();
@@ -205,7 +205,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void useProxy() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", UseProxyHeaderServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test");
@@ -239,7 +239,7 @@ public class WebClient4Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test1", NoContentServlet1.class);
         servlets.put("/test2", NoContentServlet2.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test1");
         final HtmlPage page2 = page.getHtmlElementById("submit").click();
@@ -287,7 +287,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void notModified() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", NotModifiedServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test");
         final TextPage page2 = client.getPage(URL_FIRST + "test");
@@ -325,7 +325,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void timeout() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/*", DelayDeliverServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
         client.getOptions().setTimeout(500);
@@ -425,7 +425,7 @@ public class WebClient4Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test1", RedirectMetaServlet1.class);
         servlets.put("/test2", RedirectMetaServlet2.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
 

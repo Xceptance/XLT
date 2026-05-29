@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ import org.htmlunit.util.NameValuePair;
  * @author Ronald Brill
  */
 public class WebResponseMock extends WebResponse {
-    private Map<String, String> headers_;
+    private final Map<String, String> headers_;
 
-    private Map<String, Integer> callCounts_ = new HashMap<>();
+    private final Map<String, Integer> callCounts_ = new HashMap<>();
 
     /**
      * Ctor.

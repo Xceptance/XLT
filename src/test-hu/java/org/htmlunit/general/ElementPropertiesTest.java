@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,6 +162,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             BROWSER_VERSION_ = getBrowserVersion();
         }
 
+        getMockWebConnection().setDefaultResponse("<html></html>");
         loadPageVerifyTextArea2(html);
     }
 
@@ -378,7 +379,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 && realProperties.contains("exception")
                 && implementedProperties.size() == 1
                 && implementedProperties.contains("exception")
-                && erroredProperties.size() == 0) {
+                && erroredProperties.isEmpty()) {
             html.append("&nbsp;");
         }
         else {
@@ -466,43 +467,45 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "accessKey,attachInternals(),attributeStyleMap,autocapitalize,autofocus,blur(),click(),"
                 + "contentEditable,dataset,dir,draggable,editContext,enterKeyHint,focus(),hidden,hidePopover(),"
                 + "inert,innerText,inputMode,isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,"
-                + "offsetTop,offsetWidth,onabort,onanimationend,onanimationiteration,onanimationstart,onauxclick,"
-                + "onbeforeinput,onbeforematch,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
-                + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
-                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
-                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
-                + "onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
-                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,"
-                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,"
-                + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,"
-                + "onreset,onresize,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "offsetTop,offsetWidth,onabort,onanimationcancel,onanimationend,onanimationiteration,"
+                + "onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforetoggle,onbeforexrselect,onblur,"
+                + "oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncommand,"
+                + "oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,oncontextrestored,oncopy,"
+                + "oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
+                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,"
+                + "oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
+                + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
+                + "onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
+                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
+                + "onpointerup,onprogress,onratechange,onreset,onresize,onscroll,onscrollend,onscrollsnapchange,"
+                + "onscrollsnapchanging,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
+                + "onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
                 + "ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,outerText,"
                 + "popover,showPopover(),spellcheck,style,tabIndex,title,togglePopover(),translate,"
-                + "virtualKeyboardPolicy,writingSuggestions",
+                + "virtualKeyboardPolicy,"
+                + "writingSuggestions",
             EDGE = "accessKey,attachInternals(),attributeStyleMap,autocapitalize,autofocus,blur(),click(),"
                 + "contentEditable,dataset,dir,draggable,editContext,enterKeyHint,focus(),hidden,hidePopover(),"
                 + "inert,innerText,inputMode,isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,"
-                + "offsetTop,offsetWidth,onabort,onanimationend,onanimationiteration,onanimationstart,onauxclick,"
-                + "onbeforeinput,onbeforematch,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
-                + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
-                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
-                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
-                + "onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,"
-                + "onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,"
-                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,"
-                + "onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,"
-                + "onreset,onresize,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "offsetTop,offsetWidth,onabort,onanimationcancel,onanimationend,onanimationiteration,"
+                + "onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforetoggle,onbeforexrselect,onblur,"
+                + "oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncommand,"
+                + "oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,oncontextrestored,oncopy,"
+                + "oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
+                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,"
+                + "oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
+                + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
+                + "onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
+                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
+                + "onpointerup,onprogress,onratechange,onreset,onresize,onscroll,onscrollend,onscrollsnapchange,"
+                + "onscrollsnapchanging,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
+                + "onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
                 + "ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,onwebkitanimationend,"
                 + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,outerText,"
                 + "popover,showPopover(),spellcheck,style,tabIndex,title,togglePopover(),translate,"
-                + "virtualKeyboardPolicy,writingSuggestions",
+                + "virtualKeyboardPolicy,"
+                + "writingSuggestions",
             FF = "accessKey,accessKeyLabel,attachInternals(),autocapitalize,autocorrect,autofocus,blur(),click(),"
                 + "contentEditable,dataset,dir,draggable,enterKeyHint,focus(),hidden,hidePopover(),inert,innerText,"
                 + "inputMode,isContentEditable,lang,nonce,offsetHeight,offsetLeft,offsetParent,offsetTop,"
@@ -624,63 +627,65 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "animate(),append(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
-                + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
-                + "ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,ariaDescription,"
-                + "ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,ariaFlowToElements,"
-                + "ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLabelledByElements,ariaLevel,"
-                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaNotify(),ariaOrientation,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
-                + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,ariaSelected,"
-                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,attachShadow(),"
-                + "attributes,checkVisibility(),childElementCount,children,classList,className,clientHeight,"
-                + "clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,elementTiming,"
-                + "firstElementChild,getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),getHTML(),"
-                + "hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,localName,"
-                + "matches(),moveBefore(),namespaceURI,onbeforecopy,onbeforecut,onbeforepaste,onfullscreenchange,"
-                + "onfullscreenerror,onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,"
-                + "prefix,prepend(),querySelector(),querySelectorAll(),releasePointerCapture(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),requestFullscreen(),"
-                + "requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
-                + "scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),"
-                + "shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
+    @Alerts(CHROME = "activeViewTransition,animate(),append(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColIndexText,ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,"
+                + "ariaDescription,ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,"
+                + "ariaFlowToElements,ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,"
+                + "ariaLabelledByElements,ariaLevel,ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,"
+                + "ariaNotify(),ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,"
+                + "ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,"
+                + "ariaSelected,ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,"
+                + "attachShadow(),attributes,checkVisibility(),childElementCount,children,classList,className,"
+                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,"
+                + "customElementRegistry,elementTiming,firstElementChild,getAnimations(),getAttribute(),"
+                + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
+                + "getElementsByTagNameNS(),getHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),lastElementChild,localName,matches(),moveBefore(),namespaceURI,onbeforecopy,"
+                + "onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,"
+                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,"
+                + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTML(),"
+                + "setHTMLUnsafe(),setPointerCapture(),shadowRoot,slot,startViewTransition(),tagName,"
+                + "toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
-            EDGE = "animate(),append(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
-                + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
-                + "ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,ariaDescription,"
-                + "ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,ariaFlowToElements,"
-                + "ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLabelledByElements,ariaLevel,"
-                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaNotify(),ariaOrientation,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
-                + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,ariaSelected,"
-                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,attachShadow(),"
-                + "attributes,checkVisibility(),childElementCount,children,classList,className,clientHeight,"
-                + "clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,elementTiming,"
-                + "firstElementChild,getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),getHTML(),"
-                + "hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild,localName,"
-                + "matches(),moveBefore(),namespaceURI,onbeforecopy,onbeforecut,onbeforepaste,onfullscreenchange,"
-                + "onfullscreenerror,onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,"
-                + "prefix,prepend(),querySelector(),querySelectorAll(),releasePointerCapture(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),requestFullscreen(),"
-                + "requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
-                + "scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),"
-                + "shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
+            EDGE = "activeViewTransition,animate(),append(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColIndexText,ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,"
+                + "ariaDescription,ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,"
+                + "ariaFlowToElements,ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,"
+                + "ariaLabelledByElements,ariaLevel,ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,"
+                + "ariaNotify(),ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,"
+                + "ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,"
+                + "ariaSelected,ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,"
+                + "attachShadow(),attributes,checkVisibility(),childElementCount,children,classList,className,"
+                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,"
+                + "customElementRegistry,elementTiming,firstElementChild,getAnimations(),getAttribute(),"
+                + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
+                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
+                + "getElementsByTagNameNS(),getHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),lastElementChild,localName,matches(),moveBefore(),namespaceURI,onbeforecopy,"
+                + "onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
+                + "onwebkitfullscreenerror,outerHTML,part,prefix,prepend(),querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,"
+                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,"
+                + "setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTML(),"
+                + "setHTMLUnsafe(),setPointerCapture(),shadowRoot,slot,startViewTransition(),tagName,"
+                + "toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
             FF = "animate(),append(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
                 + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
                 + "ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,ariaDescription,"
                 + "ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,ariaFlowToElements,"
                 + "ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLabelledByElements,ariaLevel,"
-                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaOrientation,ariaOwnsElements,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
+                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaNotify(),ariaOrientation,"
+                + "ariaOwnsElements,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
                 + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,ariaSelected,"
                 + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,attachShadow(),"
                 + "attributes,checkVisibility(),childElementCount,children,classList,className,clientHeight,"
@@ -695,7 +700,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),"
                 + "requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
                 + "scrollLeft,scrollLeftMax,scrollTo(),scrollTop,scrollTopMax,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),setHTMLUnsafe(),"
+                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),setHTML(),setHTMLUnsafe(),"
                 + "setPointerCapture(),shadowRoot,slot,tagName,toggleAttribute(),"
                 + "webkitMatchesSelector()",
             FF_ESR = "animate(),append(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
@@ -797,61 +802,65 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "after(),animate(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
-                + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
-                + "ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,ariaDescription,"
-                + "ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,ariaFlowToElements,"
-                + "ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLabelledByElements,ariaLevel,"
-                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaNotify(),ariaOrientation,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
-                + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,ariaSelected,"
-                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,assignedSlot,"
-                + "attachShadow(),attributes,before(),checkVisibility(),classList,className,clientHeight,clientLeft,"
-                + "clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,elementTiming,getAnimations(),"
-                + "getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
-                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
-                + "hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),localName,matches(),namespaceURI,nextElementSibling,onbeforecopy,"
-                + "onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
-                + "onwebkitfullscreenerror,outerHTML,part,prefix,previousElementSibling,releasePointerCapture(),"
-                + "remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceWith(),"
-                + "requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
-                + "scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),"
-                + "shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
+    @Alerts(CHROME = "activeViewTransition,after(),animate(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColIndexText,ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,"
+                + "ariaDescription,ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,"
+                + "ariaFlowToElements,ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,"
+                + "ariaLabelledByElements,ariaLevel,ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,"
+                + "ariaNotify(),ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,"
+                + "ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,"
+                + "ariaSelected,ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,"
+                + "assignedSlot,attachShadow(),attributes,before(),checkVisibility(),classList,className,"
+                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,"
+                + "customElementRegistry,elementTiming,getAnimations(),getAttribute(),getAttributeNames(),"
+                + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
+                + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
+                + "getHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,"
+                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
+                + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,onbeforepaste,onfullscreenchange,"
+                + "onfullscreenerror,onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,"
+                + "prefix,previousElementSibling,releasePointerCapture(),remove(),removeAttribute(),"
+                + "removeAttributeNode(),removeAttributeNS(),replaceWith(),requestFullscreen(),requestPointerLock(),"
+                + "role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,"
+                + "scrollTo(),scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
+                + "setAttributeNS(),setHTML(),setHTMLUnsafe(),setPointerCapture(),shadowRoot,slot,"
+                + "startViewTransition(),tagName,toggleAttribute(),webkitMatchesSelector(),"
+                + "webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
-            EDGE = "after(),animate(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
-                + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
-                + "ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,ariaDescription,"
-                + "ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,ariaFlowToElements,"
-                + "ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLabelledByElements,ariaLevel,"
-                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaNotify(),ariaOrientation,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
-                + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,ariaSelected,"
-                + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,assignedSlot,"
-                + "attachShadow(),attributes,before(),checkVisibility(),classList,className,clientHeight,clientLeft,"
-                + "clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,elementTiming,getAnimations(),"
-                + "getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
-                + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
-                + "hasPointerCapture(),id,innerHTML,insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),localName,matches(),namespaceURI,nextElementSibling,onbeforecopy,"
-                + "onbeforecut,onbeforepaste,onfullscreenchange,onfullscreenerror,onsearch,onwebkitfullscreenchange,"
-                + "onwebkitfullscreenerror,outerHTML,part,prefix,previousElementSibling,releasePointerCapture(),"
-                + "remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceWith(),"
-                + "requestFullscreen(),requestPointerLock(),role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),"
-                + "scrollIntoViewIfNeeded(),scrollLeft,scrollTo(),scrollTop,scrollWidth,setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),"
-                + "shadowRoot,slot,tagName,toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
+            EDGE = "activeViewTransition,after(),animate(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,"
+                + "ariaBrailleLabel,ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,"
+                + "ariaColIndexText,ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,"
+                + "ariaDescription,ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,"
+                + "ariaFlowToElements,ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,"
+                + "ariaLabelledByElements,ariaLevel,ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,"
+                + "ariaNotify(),ariaOrientation,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,"
+                + "ariaRequired,ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,"
+                + "ariaSelected,ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,"
+                + "assignedSlot,attachShadow(),attributes,before(),checkVisibility(),classList,className,"
+                + "clientHeight,clientLeft,clientTop,clientWidth,closest(),computedStyleMap(),currentCSSZoom,"
+                + "customElementRegistry,elementTiming,getAnimations(),getAttribute(),getAttributeNames(),"
+                + "getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
+                + "getClientRects(),getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),"
+                + "getHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),hasPointerCapture(),id,innerHTML,"
+                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),localName,matches(),"
+                + "namespaceURI,nextElementSibling,onbeforecopy,onbeforecut,onbeforepaste,onfullscreenchange,"
+                + "onfullscreenerror,onsearch,onwebkitfullscreenchange,onwebkitfullscreenerror,outerHTML,part,"
+                + "prefix,previousElementSibling,releasePointerCapture(),remove(),removeAttribute(),"
+                + "removeAttributeNode(),removeAttributeNS(),replaceWith(),requestFullscreen(),requestPointerLock(),"
+                + "role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft,"
+                + "scrollTo(),scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
+                + "setAttributeNS(),setHTML(),setHTMLUnsafe(),setPointerCapture(),shadowRoot,slot,"
+                + "startViewTransition(),tagName,toggleAttribute(),webkitMatchesSelector(),"
+                + "webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
             FF = "after(),animate(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
                 + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
                 + "ariaColSpan,ariaControlsElements,ariaCurrent,ariaDescribedByElements,ariaDescription,"
                 + "ariaDetailsElements,ariaDisabled,ariaErrorMessageElements,ariaExpanded,ariaFlowToElements,"
                 + "ariaHasPopup,ariaHidden,ariaInvalid,ariaKeyShortcuts,ariaLabel,ariaLabelledByElements,ariaLevel,"
-                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaOrientation,ariaOwnsElements,"
-                + "ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
+                + "ariaLive,ariaModal,ariaMultiLine,ariaMultiSelectable,ariaNotify(),ariaOrientation,"
+                + "ariaOwnsElements,ariaPlaceholder,ariaPosInSet,ariaPressed,ariaReadOnly,ariaRelevant,ariaRequired,"
                 + "ariaRoleDescription,ariaRowCount,ariaRowIndex,ariaRowIndexText,ariaRowSpan,ariaSelected,"
                 + "ariaSetSize,ariaSort,ariaValueMax,ariaValueMin,ariaValueNow,ariaValueText,assignedSlot,"
                 + "attachShadow(),attributes,before(),checkVisibility(),classList,className,clientHeight,clientLeft,"
@@ -866,8 +875,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "removeAttributeNode(),removeAttributeNS(),replaceWith(),requestFullscreen(),requestPointerLock(),"
                 + "role,scroll(),scrollBy(),scrollHeight,scrollIntoView(),scrollLeft,scrollLeftMax,scrollTo(),"
                 + "scrollTop,scrollTopMax,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
-                + "setAttributeNS(),setCapture(),setHTMLUnsafe(),setPointerCapture(),shadowRoot,slot,tagName,"
-                + "toggleAttribute(),"
+                + "setAttributeNS(),setCapture(),setHTML(),setHTMLUnsafe(),setPointerCapture(),shadowRoot,slot,"
+                + "tagName,toggleAttribute(),"
                 + "webkitMatchesSelector()",
             FF_ESR = "after(),animate(),ariaActiveDescendantElement,ariaAtomic,ariaAutoComplete,ariaBrailleLabel,"
                 + "ariaBrailleRoleDescription,ariaBusy,ariaChecked,ariaColCount,ariaColIndex,ariaColIndexText,"
@@ -1019,53 +1028,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cdc_adoQpoasnfa76pfcZLmcfl_JSON,cdc_adoQpoasnfa76pfcZLmcfl_Object(),"
                 + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Proxy(),"
                 + "cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),cdc_adoQpoasnfa76pfcZLmcfl_Window(),chrome,clearInterval(),"
-                + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,createImageBitmap(),"
-                + "credentialless,crossOriginIsolated,crypto,customElements,devicePixelRatio,dispatchEvent(),"
-                + "document,documentPictureInPicture,event,external,fence,fetch(),fetchLater(),find(),focus(),"
-                + "frameElement,frames,getComputedStyle(),getScreenDetails(),getSelection(),history,indexedDB,"
-                + "innerHeight,innerWidth,isSecureContext,launchQueue,length,localStorage,location,locationbar,"
-                + "log(),logEx(),matchMedia(),menubar,moveBy(),moveTo(),name,navigation,navigator,onabort,"
-                + "onafterprint,onanimationend,onanimationiteration,onanimationstart,onappinstalled,onauxclick,"
-                + "onbeforeinput,onbeforeinstallprompt,onbeforematch,onbeforeprint,onbeforetoggle,onbeforeunload,"
-                + "onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncommand,"
-                + "oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,oncontextrestored,oncuechange,"
-                + "ondblclick,ondevicemotion,ondeviceorientation,ondeviceorientationabsolute,ondrag,ondragend,"
-                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
-                + "onfocus,onformdata,ongamepadconnected,ongamepaddisconnected,ongotpointercapture,onhashchange,"
-                + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),onloadeddata,"
-                + "onloadedmetadata,onloadstart,onlostpointercapture,onmessage,onmessageerror,onmousedown,"
-                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onoffline,"
-                + "ononline,onpagehide,onpagereveal,onpageshow,onpageswap,onpause,onplay,onplaying,onpointercancel,"
-                + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,"
-                + "onresize,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onunhandledrejection,onunload,onvolumechange,"
-                + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
-                + "onwebkittransitionend,onwheel,open(),opener,origin,originAgentCluster,outerHeight,outerWidth,"
-                + "pageXOffset,pageYOffset,parent,performance,PERSISTENT,personalbar,postMessage(),print(),"
-                + "process(),prompt(),queryLocalFonts(),queueMicrotask(),releaseEvents(),removeEventListener(),"
-                + "reportError(),requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),scheduler,"
-                + "screen,screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,"
-                + "scrollY,self,sessionStorage,setInterval(),setTimeout(),sharedStorage,showDirectoryPicker(),"
-                + "showOpenFilePicker(),showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),"
-                + "structuredClone(),styleMedia,TEMPORARY,test(),toolbar,top,trustedTypes,viewport,visualViewport,"
-                + "webkitCancelAnimationFrame(),webkitRequestAnimationFrame(),webkitRequestFileSystem(),"
-                + "webkitResolveLocalFileSystemURL(),when(),"
-                + "window",
-            EDGE = "addEventListener(),alert(),atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
-                + "cancelIdleCallback(),captureEvents(),cdc_adoQpoasnfa76pfcZLmcfl_Array(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_JSON,cdc_adoQpoasnfa76pfcZLmcfl_Object(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Proxy(),"
-                + "cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),cdc_adoQpoasnfa76pfcZLmcfl_Window(),chrome,clearInterval(),"
-                + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,createImageBitmap(),"
-                + "credentialless,crossOriginIsolated,crypto,customElements,devicePixelRatio,dispatchEvent(),"
-                + "document,documentPictureInPicture,event,external,fence,fetch(),fetchLater(),find(),focus(),"
-                + "frameElement,frames,getComputedStyle(),getDigitalGoodsService(),getScreenDetails(),"
-                + "getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,launchQueue,length,"
-                + "localStorage,location,locationbar,log(),logEx(),matchMedia(),menubar,moveBy(),moveTo(),name,"
-                + "navigation,navigator,onabort,onafterprint,onanimationend,onanimationiteration,onanimationstart,"
+                + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,crashReport,"
+                + "createImageBitmap(),credentialless,crossOriginIsolated,crypto,customElements,devicePixelRatio,"
+                + "dispatchEvent(),document,documentPictureInPicture,event,external,fence,fetch(),fetchLater(),"
+                + "find(),focus(),frameElement,frames,getComputedStyle(),getScreenDetails(),getSelection(),history,"
+                + "indexedDB,innerHeight,innerWidth,isSecureContext,launchQueue,length,localStorage,location,"
+                + "locationbar,log(),logEx(),matchMedia(),menubar,moveBy(),moveTo(),name,navigation,navigator,"
+                + "onabort,onafterprint,onanimationcancel,onanimationend,onanimationiteration,onanimationstart,"
                 + "onappinstalled,onauxclick,onbeforeinput,onbeforeinstallprompt,onbeforematch,onbeforeprint,"
                 + "onbeforetoggle,onbeforeunload,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,"
                 + "onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,"
@@ -1095,6 +1064,47 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "webkitCancelAnimationFrame(),webkitRequestAnimationFrame(),webkitRequestFileSystem(),"
                 + "webkitResolveLocalFileSystemURL(),when(),"
                 + "window",
+            EDGE = "addEventListener(),alert(),atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
+                + "cancelIdleCallback(),captureEvents(),cdc_adoQpoasnfa76pfcZLmcfl_Array(),"
+                + "cdc_adoQpoasnfa76pfcZLmcfl_JSON,cdc_adoQpoasnfa76pfcZLmcfl_Object(),"
+                + "cdc_adoQpoasnfa76pfcZLmcfl_Promise(),cdc_adoQpoasnfa76pfcZLmcfl_Proxy(),"
+                + "cdc_adoQpoasnfa76pfcZLmcfl_Symbol(),cdc_adoQpoasnfa76pfcZLmcfl_Window(),chrome,clearInterval(),"
+                + "clearTimeout(),clientInformation,close(),closed,confirm(),cookieStore,crashReport,"
+                + "createImageBitmap(),credentialless,crossOriginIsolated,crypto,customElements,devicePixelRatio,"
+                + "dispatchEvent(),document,documentPictureInPicture,event,external,fence,fetch(),fetchLater(),"
+                + "find(),focus(),frameElement,frames,getComputedStyle(),getDigitalGoodsService(),"
+                + "getScreenDetails(),getSelection(),history,indexedDB,innerHeight,innerWidth,isSecureContext,"
+                + "launchQueue,length,localStorage,location,locationbar,log(),logEx(),matchMedia(),menubar,moveBy(),"
+                + "moveTo(),name,navigation,navigator,onabort,onafterprint,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onappinstalled,onauxclick,onbeforeinput,"
+                + "onbeforeinstallprompt,onbeforematch,onbeforeprint,onbeforetoggle,onbeforeunload,onbeforexrselect,"
+                + "onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncommand,"
+                + "oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,oncontextrestored,oncuechange,"
+                + "ondblclick,ondevicemotion,ondeviceorientation,ondeviceorientationabsolute,ondrag,ondragend,"
+                + "ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,"
+                + "onfocus,onformdata,ongamepadconnected,ongamepaddisconnected,ongotpointercapture,onhashchange,"
+                + "oninput,oninvalid,onkeydown,onkeypress,onkeyup,onlanguagechange,onload(),onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmessage,onmessageerror,onmousedown,"
+                + "onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onoffline,"
+                + "ononline,onpagehide,onpagereveal,onpageshow,onpageswap,onpause,onplay,onplaying,onpointercancel,"
+                + "onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,"
+                + "onpointerrawupdate,onpointerup,onpopstate,onprogress,onratechange,onrejectionhandled,onreset,"
+                + "onresize,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,"
+                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
+                + "onslotchange,onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
+                + "ontransitionend,ontransitionrun,ontransitionstart,onunhandledrejection,onunload,onvolumechange,"
+                + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,open(),opener,origin,originAgentCluster,outerHeight,outerWidth,"
+                + "pageXOffset,pageYOffset,parent,performance,PERSISTENT,personalbar,postMessage(),print(),"
+                + "process(),prompt(),queryLocalFonts(),queueMicrotask(),releaseEvents(),removeEventListener(),"
+                + "reportError(),requestAnimationFrame(),requestIdleCallback(),resizeBy(),resizeTo(),scheduler,"
+                + "screen,screenLeft,screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollTo(),scrollX,"
+                + "scrollY,self,sessionStorage,setInterval(),setTimeout(),sharedStorage,showDirectoryPicker(),"
+                + "showOpenFilePicker(),showSaveFilePicker(),sortFunction(),speechSynthesis,status,statusbar,stop(),"
+                + "structuredClone(),styleMedia,TEMPORARY,test(),toolbar,top,trustedTypes,viewport,visualViewport,"
+                + "webkitCancelAnimationFrame(),webkitRequestAnimationFrame(),webkitRequestFileSystem(),"
+                + "webkitResolveLocalFileSystemURL(),when(),"
+                + "window",
             FF = "addEventListener(),alert(),atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
                 + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),"
                 + "closed,confirm(),cookieStore,createImageBitmap(),crossOriginIsolated,crypto,customElements,"
@@ -1102,7 +1112,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "frameElement,frames,fullScreen,getComputedStyle(),getDefaultComputedStyle(),getSelection(),"
                 + "history,indexedDB,innerHeight,innerWidth,InstallTrigger,isSecureContext,length,localStorage,"
                 + "location,locationbar,log(),logEx(),matchMedia(),menubar,moveBy(),moveTo(),mozInnerScreenX,"
-                + "mozInnerScreenY,name,navigator,onabort,onafterprint,onanimationcancel,onanimationend,"
+                + "mozInnerScreenY,name,navigation,navigator,onabort,onafterprint,onanimationcancel,onanimationend,"
                 + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforeprint,"
                 + "onbeforetoggle,onbeforeunload,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
                 + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
@@ -1127,7 +1137,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "screenTop,screenX,screenY,scroll(),scrollbars,scrollBy(),scrollByLines(),scrollByPages(),"
                 + "scrollMaxX,scrollMaxY,scrollTo(),scrollX,scrollY,self,sessionStorage,setInterval(),"
                 + "setResizable(),setTimeout(),sortFunction(),speechSynthesis,status,statusbar,stop(),"
-                + "structuredClone(),test(),toolbar,top,updateCommands(),visualViewport,"
+                + "structuredClone(),test(),toolbar,top,trustedTypes,updateCommands(),visualViewport,"
                 + "window",
             FF_ESR = "addEventListener(),alert(),atob(),blur(),btoa(),caches,cancelAnimationFrame(),"
                 + "cancelIdleCallback(),captureEvents(),clearInterval(),clearTimeout(),clientInformation,close(),"
@@ -1186,6 +1196,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
                 + "onwebkittransitionend,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
                 + "pageYOffset,parent,performance,PERSISTENT,postMessage(),print(),process(),prompt(),"
+                + "queueMicrotask(),"
                 + "releaseEvents(),removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),"
                 + "screen,scroll(),scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,stop(),styleMedia,"
@@ -1213,6 +1224,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
                 + "onwebkittransitionend,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,pageYOffset,"
                 + "parent,performance,PERSISTENT,postMessage(),print(),process(),prompt(),"
+                + "queueMicrotask(),"
                 + "releaseEvents(),removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),"
                 + "screen,scroll(),scrollBy(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),speechSynthesis,status,stop(),styleMedia,"
@@ -1237,7 +1249,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onpopstate,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
                 + "onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,"
                 + "onvolumechange,onwaiting,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
-                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),releaseEvents(),"
+                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),"
+                + "queueMicrotask(),releaseEvents(),"
                 + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,scroll(),"
                 + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window",
@@ -1261,7 +1274,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "onpopstate,onprogress,onratechange,onreset,onresize,onscroll,onseeked,onseeking,onselect,"
                 + "onstalled,onstorage,onsubmit,onsuspend,ontimeupdate,onunload,"
                 + "onvolumechange,onwaiting,onwheel,open(),opener,outerHeight,outerWidth,pageXOffset,"
-                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),releaseEvents(),"
+                + "pageYOffset,parent,performance,postMessage(),print(),process(),prompt(),"
+                + "queueMicrotask(),releaseEvents(),"
                 + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,scroll(),"
                 + "scrollBy(),scrollByLines(),scrollByPages(),scrollTo(),scrollX,scrollY,self,sessionStorage,"
                 + "setInterval(),setTimeout(),sortFunction(),status,stop(),test(),top,window")
@@ -1356,10 +1370,15 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "protocol,referrerPolicy,rel,relList,search,shape,target,username",
             FF_ESR = "alt,coords,download,hash,host,hostname,href,noHref,origin,password,pathname,ping,port,"
                 + "protocol,referrerPolicy,rel,relList,search,shape,target,username")
-    @HtmlUnitNYI(CHROME = "alt,coords,rel,relList",
-            EDGE = "alt,coords,rel,relList",
-            FF_ESR = "alt,coords,rel,relList",
-            FF = "alt,coords,rel,relList")
+    @HtmlUnitNYI(
+            CHROME = "alt,coords,hash,host,hostname,href,origin,password,pathname,port,protocol,"
+                + "rel,relList,search,username",
+            EDGE = "alt,coords,hash,host,hostname,href,origin,password,pathname,port,protocol,"
+                + "rel,relList,search,username",
+            FF_ESR = "alt,coords,hash,host,hostname,href,origin,password,pathname,port,protocol,"
+                + "rel,relList,search,username",
+            FF = "alt,coords,hash,host,hostname,href,origin,password,pathname,port,protocol,"
+                + "rel,relList,search,username")
     public void area() throws Exception {
         test("area");
     }
@@ -1392,28 +1411,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "addTextTrack(),autoplay,buffered,"
-                + "canPlayType(),captureStream(),controls,controlsList,crossOrigin,currentSrc,currentTime,"
-                + "defaultMuted,defaultPlaybackRate,disableRemotePlayback,duration,"
-                + "ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
-                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,"
-                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,preservesPitch,readyState,remote,"
-                + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,textTracks,"
-                + "volume,webkitAudioDecodedByteCount,"
+    @Alerts(CHROME = "addTextTrack(),autoplay,buffered,canPlayType(),captureStream(),controls,controlsList,crossOrigin,"
+                + "currentSrc,currentTime,defaultMuted,defaultPlaybackRate,disableRemotePlayback,duration,ended,"
+                + "error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),"
+                + "loading,loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,"
+                + "networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,"
+                + "preservesPitch,readyState,remote,seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,"
+                + "srcObject,textTracks,volume,webkitAudioDecodedByteCount,"
                 + "webkitVideoDecodedByteCount",
-            EDGE = "addTextTrack(),autoplay,buffered,"
-                + "canPlayType(),captureStream(),controls,controlsList,crossOrigin,currentSrc,currentTime,"
-                + "defaultMuted,defaultPlaybackRate,disableRemotePlayback,duration,"
-                + "ended,error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,"
-                + "HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,"
-                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
-                + "onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,preservesPitch,readyState,remote,"
-                + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,textTracks,"
-                + "volume,webkitAudioDecodedByteCount,"
+            EDGE = "addTextTrack(),autoplay,buffered,canPlayType(),captureStream(),controls,controlsList,crossOrigin,"
+                + "currentSrc,currentTime,defaultMuted,defaultPlaybackRate,disableRemotePlayback,duration,ended,"
+                + "error,HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),"
+                + "loading,loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,"
+                + "networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,preload,"
+                + "preservesPitch,readyState,remote,seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,"
+                + "srcObject,textTracks,volume,webkitAudioDecodedByteCount,"
                 + "webkitVideoDecodedByteCount",
-            FF = "addTextTrack(),autoplay,buffered,canPlayType(),controls,crossOrigin,currentSrc,currentTime,"
-                + "defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),HAVE_CURRENT_DATA,"
+            FF = "addTextTrack(),autoplay,buffered,canPlayType(),captureStream(),controls,crossOrigin,currentSrc,"
+                + "currentTime,defaultMuted,defaultPlaybackRate,duration,ended,error,fastSeek(),HAVE_CURRENT_DATA,"
                 + "HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,load(),loop,mediaKeys,"
                 + "mozAudioCaptured,mozCaptureStream(),mozCaptureStreamUntilEnded(),mozFragmentEnd,mozGetMetadata(),"
                 + "muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,"
@@ -2077,6 +2092,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("-")
+    public void hgroup() throws Exception {
+        test("hgroup");
+    }
+
+    /**
      * Test {@link org.htmlunit.html.HtmlHorizontalRule}.
      *
      * @throws Exception if the test fails
@@ -2625,14 +2651,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
-                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),mark(),measure(),memory,"
-                + "navigation,now(),onresourcetimingbufferfull,removeEventListener(),setResourceTimingBufferSize(),"
-                + "timeOrigin,timing,toJSON(),"
+                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),interactionCount,mark(),measure(),"
+                + "memory,navigation,now(),onresourcetimingbufferfull,removeEventListener(),"
+                + "setResourceTimingBufferSize(),timeOrigin,timing,toJSON(),"
                 + "when()",
             EDGE = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
-                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),mark(),measure(),memory,"
-                + "navigation,now(),onresourcetimingbufferfull,removeEventListener(),setResourceTimingBufferSize(),"
-                + "timeOrigin,timing,toJSON(),"
+                + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),interactionCount,mark(),measure(),"
+                + "memory,navigation,now(),onresourcetimingbufferfull,removeEventListener(),"
+                + "setResourceTimingBufferSize(),timeOrigin,timing,toJSON(),"
                 + "when()",
             FF = "addEventListener(),clearMarks(),clearMeasures(),clearResourceTimings(),dispatchEvent(),"
                 + "eventCounts,getEntries(),getEntriesByName(),getEntriesByType(),interactionCount,mark(),measure(),"
@@ -3237,9 +3263,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "controls,controlsList,crossOrigin,currentSrc,currentTime,defaultMuted,defaultPlaybackRate,"
                 + "disablePictureInPicture,disableRemotePlayback,duration,ended,error,getVideoPlaybackQuality(),"
                 + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
-                + "loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,"
-                + "onencrypted,onenterpictureinpicture,onleavepictureinpicture,onwaitingforkey,pause(),paused,"
-                + "play(),playbackRate,played,playsInline,poster,preload,preservesPitch,readyState,remote,"
+                + "loading,loop,mediaKeys,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,"
+                + "networkState,onencrypted,onenterpictureinpicture,onleavepictureinpicture,onwaitingforkey,pause(),"
+                + "paused,play(),playbackRate,played,playsInline,poster,preload,preservesPitch,readyState,remote,"
                 + "requestPictureInPicture(),requestVideoFrameCallback(),seekable,seeking,setMediaKeys(),"
                 + "setSinkId(),sinkId,src,srcObject,textTracks,videoHeight,videoWidth,volume,"
                 + "webkitAudioDecodedByteCount,webkitDecodedFrameCount,webkitDroppedFrameCount,"
@@ -3249,24 +3275,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "controls,controlsList,crossOrigin,currentSrc,currentTime,defaultMuted,defaultPlaybackRate,"
                 + "disablePictureInPicture,disableRemotePlayback,duration,ended,error,getVideoPlaybackQuality(),"
                 + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
-                + "loop,mediaKeys,msGetVideoProcessingTypes(),msVideoProcessing,muted,NETWORK_EMPTY,NETWORK_IDLE,"
-                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,onenterpictureinpicture,"
+                + "loading,loop,mediaKeys,msGetVideoProcessingTypes(),msVideoProcessing,muted,NETWORK_EMPTY,"
+                + "NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,onenterpictureinpicture,"
                 + "onleavepictureinpicture,onwaitingforkey,pause(),paused,play(),playbackRate,played,playsInline,"
                 + "poster,preload,preservesPitch,readyState,remote,requestPictureInPicture(),"
                 + "requestVideoFrameCallback(),seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,"
                 + "textTracks,videoHeight,videoWidth,volume,webkitAudioDecodedByteCount,webkitDecodedFrameCount,"
                 + "webkitDroppedFrameCount,webkitVideoDecodedByteCount,"
                 + "width",
-            FF = "addTextTrack(),autoplay,buffered,cancelVideoFrameCallback(),canPlayType(),controls,crossOrigin,"
-                + "currentSrc,currentTime,defaultMuted,defaultPlaybackRate,disablePictureInPicture,duration,ended,"
-                + "error,fastSeek(),getVideoPlaybackQuality(),HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,"
-                + "HAVE_METADATA,HAVE_NOTHING,height,load(),loop,mediaKeys,mozAudioCaptured,mozCaptureStream(),"
-                + "mozCaptureStreamUntilEnded(),mozDecodedFrames,mozFragmentEnd,mozFrameDelay,mozGetMetadata(),"
-                + "mozHasAudio,mozPaintedFrames,mozParsedFrames,mozPresentedFrames,muted,NETWORK_EMPTY,NETWORK_IDLE,"
-                + "NETWORK_LOADING,NETWORK_NO_SOURCE,networkState,onencrypted,onwaitingforkey,pause(),paused,play(),"
-                + "playbackRate,played,poster,preload,preservesPitch,readyState,requestVideoFrameCallback(),"
-                + "seekable,seeking,setMediaKeys(),setSinkId(),sinkId,src,srcObject,textTracks,videoHeight,"
-                + "videoWidth,volume,"
+            FF = "addTextTrack(),autoplay,buffered,cancelVideoFrameCallback(),canPlayType(),captureStream(),"
+                + "controls,crossOrigin,currentSrc,currentTime,defaultMuted,defaultPlaybackRate,"
+                + "disablePictureInPicture,duration,ended,error,fastSeek(),getVideoPlaybackQuality(),"
+                + "HAVE_CURRENT_DATA,HAVE_ENOUGH_DATA,HAVE_FUTURE_DATA,HAVE_METADATA,HAVE_NOTHING,height,load(),"
+                + "loop,mediaKeys,mozAudioCaptured,mozCaptureStream(),mozCaptureStreamUntilEnded(),mozDecodedFrames,"
+                + "mozFragmentEnd,mozFrameDelay,mozGetMetadata(),mozHasAudio,mozPaintedFrames,mozParsedFrames,"
+                + "mozPresentedFrames,muted,NETWORK_EMPTY,NETWORK_IDLE,NETWORK_LOADING,NETWORK_NO_SOURCE,"
+                + "networkState,onencrypted,onwaitingforkey,pause(),paused,play(),playbackRate,played,poster,"
+                + "preload,preservesPitch,readyState,requestVideoFrameCallback(),seekable,seeking,setMediaKeys(),"
+                + "setSinkId(),sinkId,src,srcObject,textTracks,videoHeight,videoWidth,volume,"
                 + "width",
             FF_ESR = "addTextTrack(),autoplay,buffered,cancelVideoFrameCallback(),canPlayType(),controls,crossOrigin,"
                 + "currentSrc,currentTime,defaultMuted,defaultPlaybackRate,disablePictureInPicture,duration,ended,"
@@ -3343,10 +3369,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "setSelectionRange(),showPicker(),size,src,step,stepDown(),stepUp(),type,useMap,validationMessage,"
                 + "validity,value,valueAsDate,valueAsNumber,webkitdirectory,webkitEntries,width,"
                 + "willValidate",
-            FF = "accept,align,alt,autocomplete,checked,checkValidity(),defaultChecked,defaultValue,dirName,"
-                + "disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
-                + "indeterminate,labels,list,max,maxLength,min,minLength,multiple,name,pattern,"
-                + "placeholder,popoverTargetAction,popoverTargetElement,readOnly,reportValidity(),required,select(),"
+            FF = "accept,align,alt,autocomplete,checked,checkValidity(),colorSpace,defaultChecked,defaultValue,"
+                + "dirName,disabled,files,form,formAction,formEnctype,formMethod,formNoValidate,formTarget,height,"
+                + "indeterminate,labels,list,max,maxLength,min,minLength,multiple,name,pattern,placeholder,"
+                + "popoverTargetAction,popoverTargetElement,readOnly,reportValidity(),required,select(),"
                 + "selectionDirection,selectionEnd,selectionStart,setCustomValidity(),setRangeText(),"
                 + "setSelectionRange(),showPicker(),size,src,step,stepDown(),stepUp(),textLength,type,useMap,"
                 + "validationMessage,validity,value,valueAsDate,valueAsNumber,webkitdirectory,webkitEntries,width,"
@@ -3424,8 +3450,12 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "content,shadowRootClonable,shadowRootDelegatesFocus,shadowRootMode,shadowRootSerializable",
-            EDGE = "content,shadowRootClonable,shadowRootDelegatesFocus,shadowRootMode,shadowRootSerializable",
+    @Alerts(CHROME = "content,shadowRootClonable,shadowRootCustomElementRegistry,shadowRootDelegatesFocus,"
+                + "shadowRootMode,"
+                + "shadowRootSerializable",
+            EDGE = "content,shadowRootClonable,shadowRootCustomElementRegistry,shadowRootDelegatesFocus,"
+                + "shadowRootMode,"
+                + "shadowRootSerializable",
             FF = "content,shadowRootClonable,shadowRootDelegatesFocus,shadowRootMode,shadowRootSerializable",
             FF_ESR = "content,shadowRootClonable,shadowRootDelegatesFocus,shadowRootMode,shadowRootSerializable")
     @HtmlUnitNYI(CHROME = "content",
@@ -3434,203 +3464,6 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF_ESR = "content")
     public void template() throws Exception {
         test("template");
-    }
-
-    /**
-     * Test {@link org.htmlunit.javascript.host.event.KeyboardEvent}.
-     *
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
-                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
-                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,"
-                + "getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,isTrusted,key,"
-                + "keyCode,location,metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,sourceCapabilities,"
-                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
-                + "which",
-            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
-                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
-                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,"
-                + "getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,isTrusted,key,"
-                + "keyCode,location,metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,sourceCapabilities,"
-                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
-                + "which",
-            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
-                + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,"
-                + "DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,"
-                + "DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
-                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,"
-                + "DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,"
-                + "DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
-                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,"
-                + "DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,"
-                + "DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
-                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
-                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
-                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
-                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
-                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
-                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
-                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
-                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
-                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,"
-                + "DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,"
-                + "DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,"
-                + "DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,"
-                + "DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,"
-                + "DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
-                + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
-                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,"
-                + "DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
-                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
-                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
-                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,"
-                + "DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,"
-                + "DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
-                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,"
-                + "DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,"
-                + "getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,"
-                + "isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,originalTarget,"
-                + "preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
-                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type,view,which",
-            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
-                + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,"
-                + "DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,"
-                + "DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
-                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,"
-                + "DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,"
-                + "DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,"
-                + "DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
-                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,"
-                + "DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,DOM_VK_F17,"
-                + "DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,DOM_VK_F3,"
-                + "DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,"
-                + "DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,"
-                + "DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
-                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
-                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
-                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
-                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
-                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,"
-                + "DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,"
-                + "DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,"
-                + "DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,"
-                + "DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
-                + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
-                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,"
-                + "DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,"
-                + "DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,"
-                + "DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
-                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
-                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,"
-                + "DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),initKeyboardEvent(),"
-                + "initUIEvent(),isComposing,isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,"
-                + "originalTarget,preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,"
-                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,"
-                + "which")
-    @HtmlUnitNYI(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "charCode,"
-                + "code,composed,ctrlKey,currentTarget,"
-                + "defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,key,keyCode,location,"
-                + "metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which",
-            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
-                + "code,composed,ctrlKey,currentTarget,"
-                + "defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
-                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,key,keyCode,location,"
-                + "metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,charCode,"
-                + "code,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
-                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,"
-                + "DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,"
-                + "DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,"
-                + "DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,"
-                + "DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,"
-                + "DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,"
-                + "DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,"
-                + "DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
-                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,"
-                + "DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,"
-                + "DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
-                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
-                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
-                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
-                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
-                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
-                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
-                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,"
-                + "DOM_VK_OPEN_CURLY_BRACKET,DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,"
-                + "DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,"
-                + "DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,"
-                + "DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,"
-                + "DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,"
-                + "DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,DOM_VK_UNDERSCORE,DOM_VK_UP,"
-                + "DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,"
-                + "DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
-                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
-                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
-                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
-                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
-                + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
-                + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,"
-                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,"
-                + "key,keyCode,location,META_MASK,metaKey,NONE,preventDefault(),repeat,returnValue,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
-                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,"
-                + "code,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
-                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,"
-                + "DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,"
-                + "DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,"
-                + "DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,"
-                + "DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,"
-                + "DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,"
-                + "DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,"
-                + "DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
-                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,"
-                + "DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,"
-                + "DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
-                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
-                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
-                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,"
-                + "DOM_VK_KANA,DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,"
-                + "DOM_VK_MODECHANGE,DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,"
-                + "DOM_VK_NUMPAD1,DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,"
-                + "DOM_VK_NUMPAD7,DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,"
-                + "DOM_VK_OPEN_CURLY_BRACKET,DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,"
-                + "DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,"
-                + "DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,"
-                + "DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,"
-                + "DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,"
-                + "DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,DOM_VK_UNDERSCORE,DOM_VK_UP,"
-                + "DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,"
-                + "DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,"
-                + "DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,"
-                + "DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,"
-                + "DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
-                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,"
-                + "DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
-                + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,"
-                + "eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,"
-                + "key,keyCode,location,META_MASK,metaKey,NONE,preventDefault(),repeat,returnValue,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
-                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which")
-    public void keyboardEvent() throws Exception {
-        testString("", "document.createEvent('KeyboardEvent')");
     }
 
     /**
@@ -3680,58 +3513,6 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.UIEvent}.
-     *
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
-                + "preventDefault(),returnValue,sourceCapabilities,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,"
-                + "which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
-                + "preventDefault(),returnValue,sourceCapabilities,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,"
-                + "which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
-                + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
-                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
-                + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
-                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
-    public void uiEvent() throws Exception {
-        testString("", "document.createEvent('UIEvent')");
-    }
-
-    /**
      * Test {@link org.htmlunit.javascript.host.URL}.
      *
      * @throws Exception if the test fails
@@ -3768,6 +3549,444 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.javascript.host.event.AnimationEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "animationName,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,elapsedTime,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),pseudoElement,returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "animationName,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,elapsedTime,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),pseudoElement,returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,animationName,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,elapsedTime,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "pseudoElement,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,animationName,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,elapsedTime,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "pseudoElement,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void animationEvent() throws Exception {
+        testString("", "new AnimationEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.AudioProcessingEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
+    public void audioProcessingEvent() throws Exception {
+        testString("", "new AudioProcessingEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.BeforeInstallPromptEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,platforms,preventDefault(),"
+                + "prompt(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,"
+                + "userChoice",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,platforms,preventDefault(),"
+                + "prompt(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,"
+                + "userChoice",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void beforeInstallPromptEvent() throws Exception {
+        testString("", "new BeforeInstallPromptEvent('event')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void beforeUnloadEvent() throws Exception {
+        testString("", "document.createEvent('BeforeUnloadEvent')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timecode,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timecode,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void blobEvent() throws Exception {
+        testString("var debug = {hello: 'world'};"
+                    + "var blob = new Blob([JSON.stringify(debug, null, 2)], {type : 'application/json'});",
+                    "new BlobEvent('blob', { 'data': blob })");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.ClipboardEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,clipboardData,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,clipboardData,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,clipboardData,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,clipboardData,"
+                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void clipboardEvent() throws Exception {
+        testString("", "new ClipboardEvent('event')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),reason,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,"
+                + "wasClean",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),reason,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,"
+                + "wasClean",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),reason,returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
+                + "wasClean",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),reason,returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
+                + "wasClean")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),reason,returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),reason,returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),reason,returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),reason,returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean")
+    public void closeEvent() throws Exception {
+        testString("", "new CloseEvent('type-close')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.CompositionEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initCompositionEvent(),initEvent(),"
+                + "initUIEvent(),isTrusted,NONE,preventDefault(),returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initCompositionEvent(),initEvent(),"
+                + "initUIEvent(),isTrusted,NONE,preventDefault(),returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,layerX,layerY,"
+                + "META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,layerX,layerY,"
+                + "locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
+    public void compositionEvent() throws Exception {
+        testString("", "document.createEvent('CompositionEvent')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.CustomEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initCustomEvent(),initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initCustomEvent(),initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCustomEvent(),initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initCustomEvent(),initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initCustomEvent(),initEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initCustomEvent(),initEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initCustomEvent(),initEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initCustomEvent(),initEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type")
+    public void customEvent() throws Exception {
+        testString("", "new CustomEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.DeviceMotionEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "acceleration,accelerationIncludingGravity,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,eventPhase,"
+                + "initEvent(),interval,isTrusted,NONE,preventDefault(),returnValue,rotationRate,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "acceleration,accelerationIncludingGravity,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,eventPhase,"
+                + "initEvent(),interval,isTrusted,NONE,preventDefault(),returnValue,rotationRate,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,"
+                + "eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),interval,isTrusted,"
+                + "META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,"
+                + "eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),interval,isTrusted,"
+                + "META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+
+    public void deviceMotionEvent() throws Exception {
+        testString("", "new DeviceMotionEvent('motion')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.DeviceOrientationEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "absolute,alpha,AT_TARGET,beta,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,gamma,initEvent(),isTrusted,"
+                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "absolute,alpha,AT_TARGET,beta,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "composed,composedPath(),currentTarget,defaultPrevented,eventPhase,gamma,initEvent(),isTrusted,"
+                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "absolute,alpha,ALT_MASK,AT_TARGET,beta,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,gamma,initDeviceOrientationEvent(),initEvent(),isTrusted,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "absolute,alpha,ALT_MASK,AT_TARGET,beta,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,gamma,initDeviceOrientationEvent(),initEvent(),isTrusted,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void deviceOrientationEvent() throws Exception {
+        testString("", "new DeviceOrientationEvent('event')");
+    }
+
+    /**
      * Test {@link org.htmlunit.javascript.host.event.DragEvent}.
      *
      * @throws Exception if the test fails
@@ -3792,13 +4011,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
                 + "dataTransfer,defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),"
-                + "initDragEvent(),initEvent(),initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,"
-                + "layerX,layerY,META_MASK,metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "initDragEvent(),initEvent(),initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,"
+                + "layerY,META_MASK,metaKey,movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
                 + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,"
                 + "mozInputSource,mozPressure,NONE,offsetX,offsetY,originalTarget,pageX,pageY,preventDefault(),"
                 + "rangeOffset,rangeParent,relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,"
                 + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which,x,y",
+                + "target,timeStamp,type,view,which,x,"
+                + "y",
             FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
                 + "dataTransfer,defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),"
@@ -3810,94 +4030,815 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which,x,"
                 + "y")
-    @HtmlUnitNYI(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
-                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+    @HtmlUnitNYI(
+            CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),returnValue,screenX,"
+                + "screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),returnValue,screenX,"
+                + "screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type,view,which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,"
+                + "pageX,pageY,preventDefault(),returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
                 + "target,timeStamp,type,view,which",
-            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
-                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
-                + "eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,"
-                + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
-                + "MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,"
+                + "pageX,pageY,preventDefault(),returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,which")
+    public void dragEvent() throws Exception {
+        testString("", "new DragEvent('error')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.ErrorEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,error,eventPhase,filename,initEvent(),isTrusted,"
+                + "lineno,message,NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,composed,"
+                + "composedPath(),currentTarget,defaultPrevented,error,eventPhase,filename,initEvent(),isTrusted,"
+                + "lineno,message,NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
+                + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
+                + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void errorEvent() throws Exception {
+        testString("", "new ErrorEvent('error')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.FocusEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void eventEvent() throws Exception {
+        testString("", "new Event('event')");
+    }
+
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.FocusEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
+                + "preventDefault(),relatedTarget,returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
+                + "preventDefault(),relatedTarget,returnValue,sourceCapabilities,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which")
+    public void focusEvent() throws Exception {
+        testString("", "new FocusEvent('FocusEvent')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.GamepadEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,gamepad,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,gamepad,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void gamepadEvent() throws Exception {
+        testString("", "new GamepadEvent('gamepad')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.HashChangeEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,newURL,NONE,oldURL,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,newURL,NONE,oldURL,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,newURL,NONE,oldURL,originalTarget,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,newURL,NONE,oldURL,originalTarget,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),newURL,NONE,oldURL,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),newURL,NONE,oldURL,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,newURL,NONE,oldURL,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,newURL,NONE,oldURL,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void hashChangeEvent() throws Exception {
+        testString("", "new HashChangeEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.IDBVersionChangeEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,dataLoss,dataLossMessage,defaultPrevented,eventPhase,initEvent(),isTrusted,"
+                + "newVersion,NONE,oldVersion,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,dataLoss,dataLossMessage,defaultPrevented,eventPhase,initEvent(),isTrusted,"
+                + "newVersion,NONE,oldVersion,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,newVersion,NONE,oldVersion,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,newVersion,NONE,oldVersion,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void idbVersionChangeEvent() throws Exception {
+        testString("", "new IDBVersionChangeEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.InputEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,dataTransfer,defaultPrevented,detail,eventPhase,getTargetRanges(),initEvent(),"
+                + "initUIEvent(),inputType,isComposing,isTrusted,NONE,preventDefault(),returnValue,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
+                + "view,"
+                + "which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,dataTransfer,defaultPrevented,detail,eventPhase,getTargetRanges(),initEvent(),"
+                + "initUIEvent(),inputType,isComposing,isTrusted,NONE,preventDefault(),returnValue,"
+                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
+                + "view,"
+                + "which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,getTargetRanges(),initEvent(),initUIEvent(),inputType,isComposing,"
+                + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
+                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,getTargetRanges(),initEvent(),initUIEvent(),inputType,isComposing,"
+                + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
+                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),inputType,isComposing,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),inputType,isComposing,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),"
+                + "inputType,isComposing,META_MASK,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),"
+                + "inputType,isComposing,META_MASK,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
+    public void inputEvent() throws Exception {
+        testString("", "new InputEvent('input')");
+    }
+
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.KeyboardEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,"
+                + "getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,isTrusted,key,"
+                + "keyCode,location,metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,sourceCapabilities,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,"
+                + "getModifierState(),initEvent(),initKeyboardEvent(),initUIEvent(),isComposing,isTrusted,key,"
+                + "keyCode,location,metaKey,NONE,preventDefault(),repeat,returnValue,shiftKey,sourceCapabilities,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
+                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,"
+                + "DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,"
+                + "DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
+                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,"
+                + "DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,"
+                + "DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,"
+                + "DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
+                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,"
+                + "DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,DOM_VK_F17,"
+                + "DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,DOM_VK_F3,"
+                + "DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,"
+                + "DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,"
+                + "DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
+                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
+                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
+                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
+                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,"
+                + "DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,"
+                + "DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,"
+                + "DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,"
+                + "DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
+                + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
+                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,"
+                + "DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,"
+                + "DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,"
+                + "DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
+                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
+                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,"
+                + "DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),initKeyboardEvent(),"
+                + "initUIEvent(),isComposing,isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,"
+                + "which",
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "charCode,code,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
+                + "DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
+                + "DOM_VK_0,DOM_VK_1,DOM_VK_2,DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,"
+                + "DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,"
+                + "DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,"
+                + "DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,"
+                + "DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,"
+                + "DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,"
+                + "DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,"
+                + "DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,"
+                + "DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,DOM_VK_F16,DOM_VK_F17,"
+                + "DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,DOM_VK_F24,DOM_VK_F3,"
+                + "DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,DOM_VK_G,"
+                + "DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,DOM_VK_HOME,"
+                + "DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
+                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
+                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
+                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
+                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,"
+                + "DOM_VK_PERCENT,DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,"
+                + "DOM_VK_PROCESSKEY,DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,"
+                + "DOM_VK_S,DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,"
+                + "DOM_VK_SLASH,DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,"
+                + "DOM_VK_UNDERSCORE,DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,"
+                + "DOM_VK_W,DOM_VK_WIN,DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,"
+                + "DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,"
+                + "DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,"
+                + "DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,"
+                + "DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,"
+                + "DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,DOM_VK_X,DOM_VK_Y,DOM_VK_Z,"
+                + "DOM_VK_ZOOM,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),initKeyboardEvent(),"
+                + "initUIEvent(),isComposing,isTrusted,key,keyCode,layerX,layerY,location,META_MASK,metaKey,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,repeat,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,type,view,"
+                + "which")
+    @HtmlUnitNYI(
+            CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
+                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,initEvent(),initKeyboardEvent(),"
+                + "initUIEvent(),isComposing,key,keyCode,location,metaKey,NONE,preventDefault(),repeat,returnValue,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,DOM_KEY_LOCATION_NUMPAD,"
+                + "DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,eventPhase,initEvent(),initKeyboardEvent(),"
+                + "initUIEvent(),isComposing,key,keyCode,location,metaKey,NONE,preventDefault(),repeat,returnValue,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,DOM_VK_2,"
+                + "DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,"
+                + "DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,"
+                + "DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,"
+                + "DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,"
+                + "DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
+                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,"
+                + "DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,"
+                + "DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
+                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
+                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
+                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
+                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
+                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
+                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
+                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
+                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,"
+                + "DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,"
+                + "DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,"
+                + "DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,"
+                + "DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,DOM_VK_UNDERSCORE,"
+                + "DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,"
+                + "DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,"
+                + "DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,"
+                + "DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,"
+                + "DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,"
+                + "DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
+                + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),"
+                + "isComposing,key,keyCode,location,META_MASK,metaKey,NONE,preventDefault(),repeat,returnValue,"
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,"
-                + "eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,"
-                + "MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,"
-                + "MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,"
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,charCode,code,"
+                + "composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_KEY_LOCATION_LEFT,"
+                + "DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,DOM_VK_0,DOM_VK_1,DOM_VK_2,"
+                + "DOM_VK_3,DOM_VK_4,DOM_VK_5,DOM_VK_6,DOM_VK_7,DOM_VK_8,DOM_VK_9,DOM_VK_A,DOM_VK_ACCEPT,DOM_VK_ADD,"
+                + "DOM_VK_ALT,DOM_VK_ALTGR,DOM_VK_AMPERSAND,DOM_VK_ASTERISK,DOM_VK_AT,DOM_VK_ATTN,DOM_VK_B,"
+                + "DOM_VK_BACK_QUOTE,DOM_VK_BACK_SLASH,DOM_VK_BACK_SPACE,DOM_VK_C,DOM_VK_CANCEL,DOM_VK_CAPS_LOCK,"
+                + "DOM_VK_CIRCUMFLEX,DOM_VK_CLEAR,DOM_VK_CLOSE_BRACKET,DOM_VK_CLOSE_CURLY_BRACKET,DOM_VK_CLOSE_PAREN,"
+                + "DOM_VK_COLON,DOM_VK_COMMA,DOM_VK_CONTEXT_MENU,DOM_VK_CONTROL,DOM_VK_CONVERT,DOM_VK_CRSEL,DOM_VK_D,"
+                + "DOM_VK_DECIMAL,DOM_VK_DELETE,DOM_VK_DIVIDE,DOM_VK_DOLLAR,DOM_VK_DOUBLE_QUOTE,DOM_VK_DOWN,DOM_VK_E,"
+                + "DOM_VK_EISU,DOM_VK_END,DOM_VK_EQUALS,DOM_VK_EREOF,DOM_VK_ESCAPE,DOM_VK_EXCLAMATION,DOM_VK_EXECUTE,"
+                + "DOM_VK_EXSEL,DOM_VK_F,DOM_VK_F1,DOM_VK_F10,DOM_VK_F11,DOM_VK_F12,DOM_VK_F13,DOM_VK_F14,DOM_VK_F15,"
+                + "DOM_VK_F16,DOM_VK_F17,DOM_VK_F18,DOM_VK_F19,DOM_VK_F2,DOM_VK_F20,DOM_VK_F21,DOM_VK_F22,DOM_VK_F23,"
+                + "DOM_VK_F24,DOM_VK_F3,DOM_VK_F4,DOM_VK_F5,DOM_VK_F6,DOM_VK_F7,DOM_VK_F8,DOM_VK_F9,DOM_VK_FINAL,"
+                + "DOM_VK_G,DOM_VK_GREATER_THAN,DOM_VK_H,DOM_VK_HANGUL,DOM_VK_HANJA,DOM_VK_HASH,DOM_VK_HELP,"
+                + "DOM_VK_HOME,DOM_VK_HYPHEN_MINUS,DOM_VK_I,DOM_VK_INSERT,DOM_VK_J,DOM_VK_JUNJA,DOM_VK_K,DOM_VK_KANA,"
+                + "DOM_VK_KANJI,DOM_VK_L,DOM_VK_LEFT,DOM_VK_LESS_THAN,DOM_VK_M,DOM_VK_META,DOM_VK_MODECHANGE,"
+                + "DOM_VK_MULTIPLY,DOM_VK_N,DOM_VK_NONCONVERT,DOM_VK_NUM_LOCK,DOM_VK_NUMPAD0,DOM_VK_NUMPAD1,"
+                + "DOM_VK_NUMPAD2,DOM_VK_NUMPAD3,DOM_VK_NUMPAD4,DOM_VK_NUMPAD5,DOM_VK_NUMPAD6,DOM_VK_NUMPAD7,"
+                + "DOM_VK_NUMPAD8,DOM_VK_NUMPAD9,DOM_VK_O,DOM_VK_OPEN_BRACKET,DOM_VK_OPEN_CURLY_BRACKET,"
+                + "DOM_VK_OPEN_PAREN,DOM_VK_P,DOM_VK_PA1,DOM_VK_PAGE_DOWN,DOM_VK_PAGE_UP,DOM_VK_PAUSE,DOM_VK_PERCENT,"
+                + "DOM_VK_PERIOD,DOM_VK_PIPE,DOM_VK_PLAY,DOM_VK_PLUS,DOM_VK_PRINT,DOM_VK_PRINTSCREEN,DOM_VK_PROCESSKEY,"
+                + "DOM_VK_Q,DOM_VK_QUESTION_MARK,DOM_VK_QUOTE,DOM_VK_R,DOM_VK_RETURN,DOM_VK_RIGHT,DOM_VK_S,"
+                + "DOM_VK_SCROLL_LOCK,DOM_VK_SELECT,DOM_VK_SEMICOLON,DOM_VK_SEPARATOR,DOM_VK_SHIFT,DOM_VK_SLASH,"
+                + "DOM_VK_SLEEP,DOM_VK_SPACE,DOM_VK_SUBTRACT,DOM_VK_T,DOM_VK_TAB,DOM_VK_TILDE,DOM_VK_U,DOM_VK_UNDERSCORE,"
+                + "DOM_VK_UP,DOM_VK_V,DOM_VK_VOLUME_DOWN,DOM_VK_VOLUME_MUTE,DOM_VK_VOLUME_UP,DOM_VK_W,DOM_VK_WIN,"
+                + "DOM_VK_WIN_ICO_00,DOM_VK_WIN_ICO_CLEAR,DOM_VK_WIN_ICO_HELP,DOM_VK_WIN_OEM_ATTN,DOM_VK_WIN_OEM_AUTO,"
+                + "DOM_VK_WIN_OEM_BACKTAB,DOM_VK_WIN_OEM_CLEAR,DOM_VK_WIN_OEM_COPY,DOM_VK_WIN_OEM_CUSEL,"
+                + "DOM_VK_WIN_OEM_ENLW,DOM_VK_WIN_OEM_FINISH,DOM_VK_WIN_OEM_FJ_JISHO,DOM_VK_WIN_OEM_FJ_LOYA,"
+                + "DOM_VK_WIN_OEM_FJ_MASSHOU,DOM_VK_WIN_OEM_FJ_ROYA,DOM_VK_WIN_OEM_FJ_TOUROKU,DOM_VK_WIN_OEM_JUMP,"
+                + "DOM_VK_WIN_OEM_PA1,DOM_VK_WIN_OEM_PA2,DOM_VK_WIN_OEM_PA3,DOM_VK_WIN_OEM_RESET,DOM_VK_WIN_OEM_WSCTRL,"
+                + "DOM_VK_X,DOM_VK_Y,DOM_VK_Z,DOM_VK_ZOOM,eventPhase,initEvent(),initKeyboardEvent(),initUIEvent(),"
+                + "isComposing,key,keyCode,location,META_MASK,metaKey,NONE,preventDefault(),repeat,returnValue,"
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,which")
-    public void dragEvent() throws Exception {
-        testString("", "document.createEvent('DragEvent')");
+    public void keyboardEvent() throws Exception {
+        testString("", "new KeyboardEvent('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.PointerEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.MediaEncryptedEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,isPrimary,"
-                + "persistentDeviceId,pointerId,pointerType,pressure,tangentialPressure,tiltX,tiltY,twist,"
-                + "width",
-            EDGE = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,isPrimary,"
-                + "persistentDeviceId,pointerId,pointerType,pressure,tangentialPressure,tiltX,tiltY,twist,"
-                + "width",
-            FF = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,isPrimary,"
-                + "persistentDeviceId,pointerId,pointerType,pressure,tangentialPressure,tiltX,tiltY,twist,"
-                + "width",
-            FF_ESR = "altitudeAngle,azimuthAngle,getCoalescedEvents(),getPredictedEvents(),height,isPrimary,pointerId,"
-                + "pointerType,pressure,tangentialPressure,tiltX,tiltY,twist,"
-                + "width")
-    @HtmlUnitNYI(CHROME = "altitudeAngle,azimuthAngle,height,isPrimary,persistentDeviceId,pointerId,"
-                + "pointerType,pressure,tiltX,tiltY,width",
-            EDGE = "altitudeAngle,azimuthAngle,height,isPrimary,persistentDeviceId,pointerId,"
-                + "pointerType,pressure,tiltX,tiltY,width",
-            FF = "altitudeAngle,azimuthAngle,height,isPrimary,persistentDeviceId,pointerId,pointerType,pressure,"
-                + "tiltX,tiltY,width",
-            FF_ESR = "altitudeAngle,azimuthAngle,height,isPrimary,persistentDeviceId,pointerId,pointerType,pressure,"
-                + "tiltX,tiltY,width")
-    public void pointerEvent() throws Exception {
-        testString("", "new PointerEvent('click'), document.createEvent('MouseEvent')");
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initData,initDataType,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initData,initDataType,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initData,initDataType,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initData,initDataType,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void mediaEncryptedEvent() throws Exception {
+        testString("", "new MediaEncryptedEvent('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.PointerEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.MediaKeyMessageEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "NotSupportedError/DOMException",
-            EDGE = "NotSupportedError/DOMException",
-            FF = "NotSupportedError/DOMException",
-            FF_ESR = "NotSupportedError/DOMException")
-    public void pointerEvent2() throws Exception {
-        testString("", " document.createEvent('PointerEvent'), document.createEvent('MouseEvent')");
+    @Alerts(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
+    public void mediaKeyMessageEvent() throws Exception {
+        testString("", "new MediaKeyMessageEvent('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.WheelEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.MediaQueryListEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,"
-                + "DOM_DELTA_PIXEL,wheelDelta,wheelDeltaX,wheelDeltaY",
-            EDGE = "deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,"
-                + "DOM_DELTA_PIXEL,wheelDelta,wheelDeltaX,wheelDeltaY",
-            FF = "NotSupportedError/DOMException",
-            FF_ESR = "NotSupportedError/DOMException")
-    @HtmlUnitNYI(CHROME = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL",
-            EDGE = "DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL")
-    public void wheelEvent() throws Exception {
-        testString("", "document.createEvent('WheelEvent'), document.createEvent('MouseEvent')");
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,matches,media,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,matches,media,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,matches,media,META_MASK,NONE,originalTarget,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,matches,media,META_MASK,NONE,originalTarget,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void mediaQueryListEvent() throws Exception {
+        testString("", "new MediaQueryListEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MediaStreamEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),stream,target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),stream,target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),stream,target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),stream,target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void mediaStreamEvent() throws Exception {
+        testString("", "new MediaStreamEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MediaStreamTrackEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
+    public void mediaStreamTrackEvent() throws Exception {
+        testString("", "new MediaStreamTrackEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MessageEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),initMessageEvent(),isTrusted,"
+                + "lastEventId,NONE,origin,ports,preventDefault(),returnValue,source,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
+                + "userActivation",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),initMessageEvent(),isTrusted,"
+                + "lastEventId,NONE,origin,ports,preventDefault(),returnValue,source,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
+                + "userActivation",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initMessageEvent(),isTrusted,lastEventId,META_MASK,NONE,"
+                + "origin,originalTarget,ports,preventDefault(),returnValue,SHIFT_MASK,source,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initMessageEvent(),isTrusted,lastEventId,META_MASK,NONE,"
+                + "origin,originalTarget,ports,preventDefault(),returnValue,SHIFT_MASK,source,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),initMessageEvent(),lastEventId,"
+                + "NONE,origin,ports,preventDefault(),returnValue,source,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),initMessageEvent(),lastEventId,"
+                + "NONE,origin,ports,preventDefault(),returnValue,source,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,initEvent(),initMessageEvent(),"
+                + "lastEventId,META_MASK,NONE,origin,ports,preventDefault(),returnValue,SHIFT_MASK,source,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,initEvent(),initMessageEvent(),"
+                + "lastEventId,META_MASK,NONE,origin,ports,preventDefault(),returnValue,SHIFT_MASK,source,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void messageEvent() throws Exception {
+        testString("", "new MessageEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MIDIConnectionEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,port,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,port,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,port,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,port,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void midiConnectionEvent() throws Exception {
+        testString("", "new MIDIConnectionEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MIDIMessageEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void midiMessageEvent() throws Exception {
+        testString("", "new MIDIMessageEvent('event')");
     }
 
     /**
@@ -3926,9 +4867,10 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
                 + "movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
                 + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
-                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,"
-                + "relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,"
-                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which,x,y",
+                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,relatedTarget,"
+                + "returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which,x,"
+                + "y",
             FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
                 + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
                 + "defaultPrevented,detail,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),"
@@ -3939,222 +4881,455 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which,x,"
                 + "y")
-    @HtmlUnitNYI(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
-                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "initEvent(),initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),"
-                + "returnValue,screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,"
-                + "detail,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,"
-                + "MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
-                + "MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,"
-                + "screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,"
-                + "detail,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,"
-                + "MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
-                + "MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,"
-                + "screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which")
+    @HtmlUnitNYI(
+            CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),returnValue,"
+                + "screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
+                + "initMouseEvent(),initUIEvent(),metaKey,NONE,pageX,pageY,preventDefault(),returnValue,"
+                + "screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,"
+                + "pageX,pageY,preventDefault(),returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "initEvent(),initMouseEvent(),initUIEvent(),META_MASK,metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,"
+                + "MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,"
+                + "pageX,pageY,preventDefault(),returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
     public void mouseEvent() throws Exception {
-        testString("", "document.createEvent('MouseEvent')");
+        testString("", "new MouseEvent('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.CompositionEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.MouseScrollEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "ReferenceError",
+            EDGE = "ReferenceError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
+    public void mouseScrollEvent() throws Exception {
+        testString("", "new MouseScrollEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MutationEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "ReferenceError",
+            EDGE = "ReferenceError",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    public void mutationEvent() throws Exception {
+        testString("", "new MutationEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.OfflineAudioCompletionEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
+    public void offlineAudioCompletionEvent() throws Exception {
+        testString("", "new OfflineAudioCompletionEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.PageTransitionEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
     @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,data,defaultPrevented,detail,eventPhase,initCompositionEvent(),initEvent(),"
-                + "initUIEvent(),isTrusted,NONE,preventDefault(),returnValue,sourceCapabilities,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
-                + "which",
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,persisted,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
             EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,data,defaultPrevented,detail,eventPhase,initCompositionEvent(),initEvent(),"
-                + "initUIEvent(),isTrusted,NONE,preventDefault(),returnValue,sourceCapabilities,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
-                + "which",
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,persisted,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
             FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
-                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,layerX,layerY,"
-                + "META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,"
-                + "which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,detail,eventPhase,"
-                + "explicitOriginalTarget,initCompositionEvent(),initEvent(),initUIEvent(),isTrusted,"
-                + "layerX,layerY,locale,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,rangeParent,"
-                + "returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
-    public void compositionEvent() throws Exception {
-        testString("", "document.createEvent('CompositionEvent')");
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void pageTransitionEvent() throws Exception {
+        testString("", "new PageTransitionEvent('transition')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.FocusEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.PointerEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,fromElement,getCoalescedEvents(),getModifierState(),"
+                + "getPredictedEvents(),height,initEvent(),initMouseEvent(),initUIEvent(),isPrimary,isTrusted,"
+                + "layerX,layerY,metaKey,movementX,movementY,NONE,offsetX,offsetY,pageX,pageY,persistentDeviceId,"
+                + "pointerId,pointerType,pressure,preventDefault(),relatedTarget,returnValue,screenX,screenY,"
+                + "shiftKey,sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "tangentialPressure,target,tiltX,tiltY,timeStamp,toElement,twist,type,view,which,width,x,"
+                + "y",
+            EDGE = "altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,fromElement,getCoalescedEvents(),getModifierState(),"
+                + "getPredictedEvents(),height,initEvent(),initMouseEvent(),initUIEvent(),isPrimary,isTrusted,"
+                + "layerX,layerY,metaKey,movementX,movementY,NONE,offsetX,offsetY,pageX,pageY,persistentDeviceId,"
+                + "pointerId,pointerType,pressure,preventDefault(),relatedTarget,returnValue,screenX,screenY,"
+                + "shiftKey,sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "tangentialPressure,target,tiltX,tiltY,timeStamp,toElement,twist,type,view,which,width,x,"
+                + "y",
+            FF = "ALT_MASK,altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,"
+                + "cancelable,cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,"
+                + "ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,explicitOriginalTarget,"
+                + "getCoalescedEvents(),getModifierState(),getPredictedEvents(),height,initEvent(),initMouseEvent(),"
+                + "initNSMouseEvent(),initUIEvent(),isPrimary,isTrusted,layerX,layerY,META_MASK,metaKey,movementX,"
+                + "movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
+                + "offsetY,originalTarget,pageX,pageY,persistentDeviceId,pointerId,pointerType,pressure,"
+                + "preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,screenX,screenY,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),tangentialPressure,target,tiltX,tiltY,timeStamp,twist,type,view,which,width,x,"
+                + "y",
+            FF_ESR = "ALT_MASK,altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,"
+                + "cancelable,cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,"
+                + "ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,explicitOriginalTarget,"
+                + "getCoalescedEvents(),getModifierState(),getPredictedEvents(),height,initEvent(),initMouseEvent(),"
+                + "initNSMouseEvent(),initUIEvent(),isPrimary,isTrusted,layerX,layerY,META_MASK,metaKey,movementX,"
+                + "movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
+                + "offsetY,originalTarget,pageX,pageY,pointerId,pointerType,pressure,preventDefault(),rangeOffset,"
+                + "rangeParent,relatedTarget,returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),tangentialPressure,target,tiltX,"
+                + "tiltY,timeStamp,twist,type,view,which,width,x,"
+                + "y")
+    @HtmlUnitNYI(
+            CHROME = "altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,"
+                + "detail,eventPhase,height,initEvent(),initMouseEvent(),initUIEvent(),isPrimary,metaKey,NONE,"
+                + "pageX,pageY,persistentDeviceId,pointerId,pointerType,pressure,preventDefault(),returnValue,"
+                + "screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,tiltX,tiltY,timeStamp,type,view,which,width",
+            EDGE = "altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,cancelable,"
+                + "cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,"
+                + "detail,eventPhase,height,initEvent(),initMouseEvent(),initUIEvent(),isPrimary,metaKey,NONE,"
+                + "pageX,pageY,persistentDeviceId,pointerId,pointerType,pressure,preventDefault(),returnValue,"
+                + "screenX,screenY,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,tiltX,tiltY,timeStamp,type,view,which,width",
+            FF = "ALT_MASK,altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,"
+                + "cancelable,cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,height,initEvent(),initMouseEvent(),initUIEvent(),isPrimary,"
+                + "META_MASK,metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,persistentDeviceId,pointerId,"
+                + "pointerType,pressure,preventDefault(),returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,"
+                + "SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,tiltX,tiltY,timeStamp,type,view,which,width",
+            FF_ESR = "ALT_MASK,altitudeAngle,altKey,AT_TARGET,azimuthAngle,bubbles,BUBBLING_PHASE,button,buttons,"
+                + "cancelable,cancelBubble,CAPTURING_PHASE,clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,height,initEvent(),initMouseEvent(),initUIEvent(),isPrimary,"
+                + "META_MASK,metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,pointerId,pointerType,"
+                + "pressure,preventDefault(),returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,"
+                + "shiftKey,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "target,tiltX,tiltY,timeStamp,type,view,which,width")
+    public void pointerEvent() throws Exception {
+        testString("", "new PointerEvent('click')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.PopStateEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
     @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
-                + "preventDefault(),relatedTarget,returnValue,sourceCapabilities,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
-                + "which",
+                + "currentTarget,defaultPrevented,eventPhase,hasUAVisualTransition,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,state,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,"
+                + "type",
             EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
-                + "preventDefault(),relatedTarget,returnValue,sourceCapabilities,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,"
-                + "which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
-                + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
-                + "originalTarget,preventDefault(),rangeOffset,rangeParent,relatedTarget,returnValue,"
-                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
-                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,"
-                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
-    public void focusEvent() throws Exception {
-        testString("", "document.createEvent('FocusEvent')");
+                + "currentTarget,defaultPrevented,eventPhase,hasUAVisualTransition,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,srcElement,state,stopImmediatePropagation(),stopPropagation(),"
+                + "target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "hasUAVisualTransition,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,state,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,state,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,state,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,state,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,state,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,state,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void popStateEvent() throws Exception {
+        testString("", "new PopStateEvent('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.InputEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.PresentationConnectionAvailableEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    public void presentationConnectionAvailableEvent() throws Exception {
+        testString("", "new PresentationConnectionAvailableEvent('close')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.PresentationConnectionCloseEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    public void presentationConnectionCloseEvent() throws Exception {
+        testString("", "new PresentationConnectionCloseEvent('close')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.ProgressEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
     @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,data,dataTransfer,defaultPrevented,detail,eventPhase,getTargetRanges(),initEvent(),"
-                + "initUIEvent(),inputType,isComposing,isTrusted,NONE,preventDefault(),returnValue,"
-                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,"
-                + "which",
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,lengthComputable,loaded,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,total,"
+                + "type",
             EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,data,dataTransfer,defaultPrevented,detail,eventPhase,getTargetRanges(),initEvent(),"
-                + "initUIEvent(),inputType,isComposing,isTrusted,NONE,preventDefault(),returnValue,"
-                + "sourceCapabilities,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,"
-                + "which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,"
-                + "detail,eventPhase,explicitOriginalTarget,getTargetRanges(),"
-                + "initEvent(),initUIEvent(),inputType,isComposing,"
-                + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,"
-                + "rangeParent,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,dataTransfer,defaultPrevented,"
-                + "detail,eventPhase,explicitOriginalTarget,getTargetRanges(),"
-                + "initEvent(),initUIEvent(),inputType,isComposing,"
-                + "isTrusted,layerX,layerY,META_MASK,NONE,originalTarget,preventDefault(),rangeOffset,"
-                + "rangeParent,returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),"
-                + "inputType,isComposing,NONE,"
-                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),"
-                + "inputType,isComposing,NONE,"
-                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),"
-                + "initUIEvent(),inputType,isComposing,"
-                + "META_MASK,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,"
-                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),"
-                + "initUIEvent(),inputType,isComposing,"
-                + "META_MASK,NONE,preventDefault(),returnValue,SCROLL_PAGE_DOWN,"
-                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,view,which")
-    public void inputEvent() throws Exception {
-        testString("", "new InputEvent('input')");
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,lengthComputable,loaded,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,total,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,lengthComputable,loaded,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "total,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,lengthComputable,loaded,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "total,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),lengthComputable,loaded,NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,total,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),lengthComputable,loaded,NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,total,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),lengthComputable,loaded,META_MASK,NONE,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,total,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),lengthComputable,loaded,META_MASK,NONE,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,total,type")
+    public void progressEvent() throws Exception {
+        testString("", "new ProgressEvent('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.MouseWheelEvent}.
+     * Test {@link org.htmlunit.javascript.host.speech.SpeechRecognitionError}.
      *
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "NotSupportedError/DOMException",
-            EDGE = "NotSupportedError/DOMException",
-            FF = "NotSupportedError/DOMException",
-            FF_ESR = "NotSupportedError/DOMException")
-    public void mouseWheelEvent() throws Exception {
-        testString("", "document.createEvent('MouseWheelEvent')");
+    @Alerts("ReferenceError")
+    public void speechRecognitionError() throws Exception {
+        testString("", "new SpeechRecognitionError('event')");
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.SVGZoomEvent}.
+     * Test {@link org.htmlunit.javascript.host.speech.SpeechRecognitionErrorEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("NotSupportedError/DOMException")
-    public void svgZoomEvent() throws Exception {
-        testString("", "document.createEvent('SVGZoomEvent')");
+    @Alerts(DEFAULT = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,error,eventPhase,initEvent(),isTrusted,message,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void speechRecognitionErrorEvent() throws Exception {
+        testString("", "new SpeechRecognitionErrorEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.speech.SpeechSynthesisErrorEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("TypeError")
+    public void speechSynthesisErrorEvent() throws Exception {
+        testString("", "new SpeechSynthesisErrorEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.speech.SpeechSynthesisEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("TypeError")
+    public void SpeechSynthesisEvent() throws Exception {
+        testString("", "new SpeechSynthesisEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.StorageEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),initStorageEvent(),isTrusted,key,newValue,"
+                + "NONE,oldValue,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),storageArea,target,timeStamp,type,"
+                + "url",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),initStorageEvent(),isTrusted,key,newValue,"
+                + "NONE,oldValue,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),storageArea,target,timeStamp,type,"
+                + "url",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),initStorageEvent(),isTrusted,key,META_MASK,newValue,NONE,oldValue,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "storageArea,target,timeStamp,type,"
+                + "url",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),initStorageEvent(),isTrusted,key,META_MASK,newValue,NONE,oldValue,originalTarget,"
+                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
+                + "storageArea,target,timeStamp,type,"
+                + "url")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void storageEvent() throws Exception {
+        testString("", "new StorageEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.SubmitEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),submitter,target,timeStamp,type")
+    public void submitEvent() throws Exception {
+        testString("", "new SubmitEvent('event')");
     }
 
     /**
@@ -4187,22 +5362,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
                 + "stopPropagation(),target,timeStamp,type,view,"
                 + "which")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,data,"
-                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,data,"
-                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
                 + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,currentTarget,"
-                + "data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,data,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
                 + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
                 + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
     public void textEvent() throws Exception {
@@ -4210,37 +5382,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.event.TouchEvent}.
+     * Test {@link org.htmlunit.javascript.host.event.TimeEvent}.
      *
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,changedTouches,"
-                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
-                + "initUIEvent(),isTrusted,metaKey,NONE,preventDefault(),returnValue,shiftKey,sourceCapabilities,"
-                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,targetTouches,timeStamp,touches,"
-                + "type,view,"
-                + "which",
-            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,changedTouches,"
-                + "composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,detail,eventPhase,initEvent(),"
-                + "initUIEvent(),isTrusted,metaKey,NONE,preventDefault(),returnValue,shiftKey,sourceCapabilities,"
-                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,targetTouches,timeStamp,touches,"
-                + "type,view,"
-                + "which",
-            FF = "ReferenceError",
-            FF_ESR = "ReferenceError")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,"
-                + "view,which")
-    public void touchEvent() throws Exception {
-        testString("", "new TouchEvent('touch')");
+    @Alerts(CHROME = "ReferenceError",
+            EDGE = "ReferenceError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
+    public void timeEvent() throws Exception {
+        testString("", "new TimeEvent('time')");
     }
 
     /**
@@ -4263,16 +5415,353 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "which",
             FF = "ReferenceError",
             FF_ESR = "ReferenceError")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,view,which")
-    public void touchEvent2() throws Exception {
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
+    public void touchEvent() throws Exception {
         testString("", "new TouchEvent('touch')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.TrackEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,track,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,track,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,track,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,track,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void trackEvent() throws Exception {
+        testString("", "new TrackEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.TransitionEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,elapsedTime,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),propertyName,pseudoElement,returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,elapsedTime,eventPhase,initEvent(),isTrusted,NONE,"
+                + "preventDefault(),propertyName,pseudoElement,returnValue,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,elapsedTime,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "propertyName,pseudoElement,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,elapsedTime,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
+                + "propertyName,pseudoElement,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void transitionEvent() throws Exception {
+        testString("", "new TransitionEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.UIEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,sourceCapabilities,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),isTrusted,NONE,"
+                + "preventDefault(),returnValue,sourceCapabilities,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,"
+                + "which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,"
+                + "which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,detail,eventPhase,"
+                + "explicitOriginalTarget,initEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,NONE,"
+                + "originalTarget,preventDefault(),rangeOffset,rangeParent,returnValue,SCROLL_PAGE_DOWN,"
+                + "SCROLL_PAGE_UP,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,type,view,"
+                + "which")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),NONE,preventDefault(),returnValue,"
+                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,detail,eventPhase,initEvent(),initUIEvent(),META_MASK,NONE,"
+                + "preventDefault(),returnValue,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which")
+    public void uiEvent() throws Exception {
+        testString("", "new UIEvent('event')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.WebGLContextEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,statusMessage,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "returnValue,srcElement,statusMessage,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,statusMessage,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
+                + "composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,explicitOriginalTarget,"
+                + "initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,SHIFT_MASK,"
+                + "srcElement,statusMessage,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
+                + "type")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,CONTROL_MASK,"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),returnValue,"
+                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void webGLContextEvent() throws Exception {
+        testString("", "new WebGLContextEvent('WebGLContext')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.speech.WebkitSpeechRecognitionError}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,error,eventPhase,initEvent(),isTrusted,message,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,error,eventPhase,initEvent(),isTrusted,message,NONE,"
+                + "preventDefault(),returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void webkitSpeechRecognitionError() throws Exception {
+        testString("", "new webkitSpeechRecognitionError('webkitSpeechRecognition')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.speech.SpeechRecognitionEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "resultIndex,results,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
+                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
+                + "resultIndex,results,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,"
+                + "timeStamp,"
+                + "type",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    @HtmlUnitNYI(
+            CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
+            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,currentTarget,"
+                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
+    public void webkitSpeechRecognitionEvent() throws Exception {
+        testString("", "new webkitSpeechRecognitionEvent('webkitSpeechRecognition')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.WheelEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,deltaMode,deltaX,"
+                + "deltaY,deltaZ,detail,DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL,eventPhase,fromElement,"
+                + "getModifierState(),initEvent(),initMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,metaKey,"
+                + "movementX,movementY,NONE,offsetX,offsetY,pageX,pageY,preventDefault(),relatedTarget,returnValue,"
+                + "screenX,screenY,shiftKey,sourceCapabilities,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,toElement,type,view,wheelDelta,wheelDeltaX,wheelDeltaY,which,"
+                + "x,"
+                + "y",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,composedPath(),ctrlKey,currentTarget,defaultPrevented,deltaMode,deltaX,"
+                + "deltaY,deltaZ,detail,DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL,eventPhase,fromElement,"
+                + "getModifierState(),initEvent(),initMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,metaKey,"
+                + "movementX,movementY,NONE,offsetX,offsetY,pageX,pageY,preventDefault(),relatedTarget,returnValue,"
+                + "screenX,screenY,shiftKey,sourceCapabilities,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,toElement,type,view,wheelDelta,wheelDeltaX,wheelDeltaY,which,"
+                + "x,"
+                + "y",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
+                + "defaultPrevented,deltaMode,deltaX,deltaY,deltaZ,detail,DOM_DELTA_LINE,DOM_DELTA_PAGE,"
+                + "DOM_DELTA_PIXEL,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),"
+                + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
+                + "movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
+                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,relatedTarget,"
+                + "returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,wheelDelta,wheelDeltaX,"
+                + "wheelDeltaY,which,x,"
+                + "y",
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,"
+                + "CAPTURING_PHASE,clientX,clientY,composed,composedPath(),CONTROL_MASK,ctrlKey,currentTarget,"
+                + "defaultPrevented,deltaMode,deltaX,deltaY,deltaZ,detail,DOM_DELTA_LINE,DOM_DELTA_PAGE,"
+                + "DOM_DELTA_PIXEL,eventPhase,explicitOriginalTarget,getModifierState(),initEvent(),"
+                + "initMouseEvent(),initNSMouseEvent(),initUIEvent(),isTrusted,layerX,layerY,META_MASK,metaKey,"
+                + "movementX,movementY,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,"
+                + "MOZ_SOURCE_PEN,MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,mozInputSource,mozPressure,NONE,offsetX,"
+                + "offsetY,originalTarget,pageX,pageY,preventDefault(),rangeOffset,rangeParent,relatedTarget,"
+                + "returnValue,screenX,screenY,SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,wheelDelta,wheelDeltaX,"
+                + "wheelDeltaY,which,x,"
+                + "y")
+    @HtmlUnitNYI(
+            CHROME = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,DOM_DELTA_LINE,"
+                + "DOM_DELTA_PAGE,DOM_DELTA_PIXEL,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),"
+                + "metaKey,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            EDGE = "altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,ctrlKey,currentTarget,defaultPrevented,detail,DOM_DELTA_LINE,"
+                + "DOM_DELTA_PAGE,DOM_DELTA_PIXEL,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),"
+                + "metaKey,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,shiftKey,srcElement,"
+                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,view,which",
+            FF = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_DELTA_LINE,"
+                + "DOM_DELTA_PAGE,DOM_DELTA_PIXEL,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,"
+                + "metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
+                + "MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which",
+            FF_ESR = "ALT_MASK,altKey,AT_TARGET,bubbles,BUBBLING_PHASE,button,buttons,cancelable,cancelBubble,CAPTURING_PHASE,"
+                + "clientX,clientY,composed,CONTROL_MASK,ctrlKey,currentTarget,defaultPrevented,detail,DOM_DELTA_LINE,"
+                + "DOM_DELTA_PAGE,DOM_DELTA_PIXEL,eventPhase,initEvent(),initMouseEvent(),initUIEvent(),META_MASK,"
+                + "metaKey,MOZ_SOURCE_CURSOR,MOZ_SOURCE_ERASER,MOZ_SOURCE_KEYBOARD,MOZ_SOURCE_MOUSE,MOZ_SOURCE_PEN,"
+                + "MOZ_SOURCE_TOUCH,MOZ_SOURCE_UNKNOWN,NONE,pageX,pageY,preventDefault(),returnValue,screenX,screenY,"
+                + "SCROLL_PAGE_DOWN,SCROLL_PAGE_UP,SHIFT_MASK,shiftKey,srcElement,stopImmediatePropagation(),"
+                + "stopPropagation(),target,timeStamp,type,view,which")
+    public void wheelEvent() throws Exception {
+        testString("", "new WheelEvent('wheel')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.MouseWheelEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "NotSupportedError/DOMException",
+            EDGE = "NotSupportedError/DOMException",
+            FF = "NotSupportedError/DOMException",
+            FF_ESR = "NotSupportedError/DOMException")
+    public void mouseWheelEvent() throws Exception {
+        testString("", "document.createEvent('MouseWheelEvent')");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.event.SVGZoomEvent}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("NotSupportedError/DOMException")
+    public void svgZoomEvent() throws Exception {
+        testString("", "document.createEvent('SVGZoomEvent')");
     }
 
     /**
@@ -4307,8 +5796,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cookie,createAttribute(),createAttributeNS(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createExpression(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
-                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),"
-                + "doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
+                + "createTextNode(),createTreeWalker(),currentScript,customElementRegistry,defaultView,designMode,"
+                + "dir,dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
                 + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
@@ -4321,23 +5810,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "hidden,images,implementation,importNode(),inputEncoding,insertBefore(),isConnected,"
                 + "isDefaultNamespace(),isEqualNode(),isSameNode(),lastChild,lastElementChild,lastModified,"
                 + "linkColor,links,location,lookupNamespaceURI(),lookupPrefix(),moveBefore(),nextSibling,nodeName,"
-                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,onbeforematch,onbeforepaste,"
-                + "onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
-                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "onfreeze,onfullscreenchange,onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,"
-                + "onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,onprerenderingchange,onprogress,onratechange,onreadystatechange,"
-                + "onreset,onresize,onresume,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
+                + "onbeforematch,onbeforepaste,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
+                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
+                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,onfullscreenerror,"
+                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
+                + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
+                + "onprerenderingchange,onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,"
+                + "onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,onsecuritypolicyviolation,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,"
+                + "onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
                 + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),ownerDocument,parentElement,"
                 + "parentNode,pictureInPictureElement,pictureInPictureEnabled,plugins,pointerLockElement,prepend(),"
                 + "prerendering,previousSibling,PROCESSING_INSTRUCTION_NODE,queryCommandEnabled(),"
@@ -4358,8 +5848,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cookie,createAttribute(),createAttributeNS(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createExpression(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
-                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),"
-                + "doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
+                + "createTextNode(),createTreeWalker(),currentScript,customElementRegistry,defaultView,designMode,"
+                + "dir,dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
                 + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
@@ -4372,23 +5862,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "hidden,images,implementation,importNode(),inputEncoding,insertBefore(),isConnected,"
                 + "isDefaultNamespace(),isEqualNode(),isSameNode(),lastChild,lastElementChild,lastModified,"
                 + "linkColor,links,location,lookupNamespaceURI(),lookupPrefix(),moveBefore(),nextSibling,nodeName,"
-                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,onbeforematch,onbeforepaste,"
-                + "onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
-                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "onfreeze,onfullscreenchange,onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,"
-                + "onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,onprerenderingchange,onprogress,onratechange,onreadystatechange,"
-                + "onreset,onresize,onresume,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
+                + "onbeforematch,onbeforepaste,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
+                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
+                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,onfullscreenerror,"
+                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
+                + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
+                + "onprerenderingchange,onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,"
+                + "onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,onsecuritypolicyviolation,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,"
+                + "onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
                 + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),ownerDocument,parentElement,"
                 + "parentNode,pictureInPictureElement,pictureInPictureEnabled,plugins,pointerLockElement,prepend(),"
                 + "prerendering,previousSibling,PROCESSING_INSTRUCTION_NODE,queryCommandEnabled(),"
@@ -4401,16 +5892,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,webkitIsFullScreen,"
                 + "webkitVisibilityState,when(),write(),writeln(),xmlEncoding,xmlStandalone,"
                 + "xmlVersion",
-            FF = "activeElement,addEventListener(),adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),"
-                + "appendChild(),applets,ATTRIBUTE_NODE,baseURI,bgColor,body,captureEvents(),"
-                + "caretPositionFromPoint(),CDATA_SECTION_NODE,characterSet,charset,childElementCount,childNodes,"
-                + "children,clear(),cloneNode(),close(),COMMENT_NODE,compareDocumentPosition(),compatMode,"
-                + "contains(),contentType,cookie,createAttribute(),createAttributeNS(),createCDATASection(),"
-                + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
-                + "createExpression(),createNodeIterator(),createNSResolver(),createProcessingInstruction(),"
-                + "createRange(),createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,"
-                + "dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
-                + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
+            FF = "activeElement,activeViewTransition,addEventListener(),adoptedStyleSheets,adoptNode(),alinkColor,"
+                + "all,anchors,append(),appendChild(),applets,ariaNotify(),ATTRIBUTE_NODE,baseURI,bgColor,body,"
+                + "captureEvents(),caretPositionFromPoint(),caretRangeFromPoint(),CDATA_SECTION_NODE,characterSet,"
+                + "charset,childElementCount,childNodes,children,clear(),cloneNode(),close(),COMMENT_NODE,"
+                + "compareDocumentPosition(),compatMode,contains(),contentType,cookie,createAttribute(),"
+                + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),"
+                + "createElement(),createElementNS(),createEvent(),createExpression(),createNodeIterator(),"
+                + "createNSResolver(),createProcessingInstruction(),createRange(),createTextNode(),"
+                + "createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),doctype,"
+                + "DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
+                + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
                 + "enableStyleSheetsForSet(),ENTITY_NODE,ENTITY_REFERENCE_NODE,evaluate(),execCommand(),"
@@ -4515,8 +6007,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cookie,createAttribute(),createAttributeNS(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createExpression(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
-                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),"
-                + "doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
+                + "createTextNode(),createTreeWalker(),currentScript,customElementRegistry,defaultView,designMode,"
+                + "dir,dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
                 + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
@@ -4529,7 +6021,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "hidden,images,implementation,importNode(),inputEncoding,insertBefore(),isConnected,"
                 + "isDefaultNamespace(),isEqualNode(),isSameNode(),lastChild,lastElementChild,lastModified,"
                 + "linkColor,links,location,lookupNamespaceURI(),lookupPrefix(),moveBefore(),myForm,nextSibling,"
-                + "nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationend,"
+                + "nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationcancel,onanimationend,"
                 + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
                 + "onbeforematch,onbeforepaste,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
                 + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
@@ -4567,8 +6059,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cookie,createAttribute(),createAttributeNS(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createExpression(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
-                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),"
-                + "doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
+                + "createTextNode(),createTreeWalker(),currentScript,customElementRegistry,defaultView,designMode,"
+                + "dir,dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
                 + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
@@ -4581,7 +6073,7 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "hidden,images,implementation,importNode(),inputEncoding,insertBefore(),isConnected,"
                 + "isDefaultNamespace(),isEqualNode(),isSameNode(),lastChild,lastElementChild,lastModified,"
                 + "linkColor,links,location,lookupNamespaceURI(),lookupPrefix(),moveBefore(),myForm,nextSibling,"
-                + "nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationend,"
+                + "nodeName,nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationcancel,onanimationend,"
                 + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
                 + "onbeforematch,onbeforepaste,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
                 + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
@@ -4611,16 +6103,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,webkitIsFullScreen,"
                 + "webkitVisibilityState,when(),write(),writeln(),xmlEncoding,xmlStandalone,"
                 + "xmlVersion",
-            FF = "activeElement,addEventListener(),adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),"
-                + "appendChild(),applets,ATTRIBUTE_NODE,baseURI,bgColor,body,captureEvents(),"
-                + "caretPositionFromPoint(),CDATA_SECTION_NODE,characterSet,charset,childElementCount,childNodes,"
-                + "children,clear(),cloneNode(),close(),COMMENT_NODE,compareDocumentPosition(),compatMode,"
-                + "contains(),contentType,cookie,createAttribute(),createAttributeNS(),createCDATASection(),"
-                + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
-                + "createExpression(),createNodeIterator(),createNSResolver(),createProcessingInstruction(),"
-                + "createRange(),createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,"
-                + "dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
-                + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
+            FF = "activeElement,activeViewTransition,addEventListener(),adoptedStyleSheets,adoptNode(),alinkColor,"
+                + "all,anchors,append(),appendChild(),applets,ariaNotify(),ATTRIBUTE_NODE,baseURI,bgColor,body,"
+                + "captureEvents(),caretPositionFromPoint(),caretRangeFromPoint(),CDATA_SECTION_NODE,characterSet,"
+                + "charset,childElementCount,childNodes,children,clear(),cloneNode(),close(),COMMENT_NODE,"
+                + "compareDocumentPosition(),compatMode,contains(),contentType,cookie,createAttribute(),"
+                + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),"
+                + "createElement(),createElementNS(),createEvent(),createExpression(),createNodeIterator(),"
+                + "createNSResolver(),createProcessingInstruction(),createRange(),createTextNode(),"
+                + "createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),doctype,"
+                + "DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
+                + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
                 + "enableStyleSheetsForSet(),ENTITY_NODE,ENTITY_REFERENCE_NODE,evaluate(),execCommand(),"
@@ -4849,8 +6342,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cookie,createAttribute(),createAttributeNS(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createExpression(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
-                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),"
-                + "doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
+                + "createTextNode(),createTreeWalker(),currentScript,customElementRegistry,defaultView,designMode,"
+                + "dir,dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
                 + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
@@ -4863,23 +6356,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "hidden,images,implementation,importNode(),inputEncoding,insertBefore(),isConnected,"
                 + "isDefaultNamespace(),isEqualNode(),isSameNode(),lastChild,lastElementChild,lastModified,"
                 + "linkColor,links,location,lookupNamespaceURI(),lookupPrefix(),moveBefore(),nextSibling,nodeName,"
-                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,onbeforematch,onbeforepaste,"
-                + "onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
-                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "onfreeze,onfullscreenchange,onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,"
-                + "onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,onprerenderingchange,onprogress,onratechange,onreadystatechange,"
-                + "onreset,onresize,onresume,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
+                + "onbeforematch,onbeforepaste,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
+                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
+                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,onfullscreenerror,"
+                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
+                + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
+                + "onprerenderingchange,onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,"
+                + "onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,onsecuritypolicyviolation,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,"
+                + "onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
                 + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),ownerDocument,parentElement,"
                 + "parentNode,pictureInPictureElement,pictureInPictureEnabled,plugins,pointerLockElement,prepend(),"
                 + "prerendering,previousSibling,PROCESSING_INSTRUCTION_NODE,queryCommandEnabled(),"
@@ -4900,8 +6394,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "cookie,createAttribute(),createAttributeNS(),createCDATASection(),createComment(),"
                 + "createDocumentFragment(),createElement(),createElementNS(),createEvent(),createExpression(),"
                 + "createNodeIterator(),createNSResolver(),createProcessingInstruction(),createRange(),"
-                + "createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),"
-                + "doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
+                + "createTextNode(),createTreeWalker(),currentScript,customElementRegistry,defaultView,designMode,"
+                + "dir,dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
                 + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
@@ -4914,23 +6408,24 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "hidden,images,implementation,importNode(),inputEncoding,insertBefore(),isConnected,"
                 + "isDefaultNamespace(),isEqualNode(),isSameNode(),lastChild,lastElementChild,lastModified,"
                 + "linkColor,links,location,lookupNamespaceURI(),lookupPrefix(),moveBefore(),nextSibling,nodeName,"
-                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationend,onanimationiteration,"
-                + "onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,onbeforematch,onbeforepaste,"
-                + "onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
-                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
-                + "onfreeze,onfullscreenchange,onfullscreenerror,ongotpointercapture,oninput,oninvalid,onkeydown,"
-                + "onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,onlostpointercapture,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,"
-                + "onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,"
-                + "onpointerlockchange,onpointerlockerror,onpointermove,onpointerout,onpointerover,"
-                + "onpointerrawupdate,onpointerup,onprerenderingchange,onprogress,onratechange,onreadystatechange,"
-                + "onreset,onresize,onresume,onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,"
-                + "onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,onselectstart,"
-                + "onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,"
-                + "onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
+                + "nodeType,nodeValue,normalize(),NOTATION_NODE,onabort,onanimationcancel,onanimationend,"
+                + "onanimationiteration,onanimationstart,onauxclick,onbeforecopy,onbeforecut,onbeforeinput,"
+                + "onbeforematch,onbeforepaste,onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,"
+                + "oncanplaythrough,onchange,onclick,onclose,oncommand,oncontentvisibilityautostatechange,"
+                + "oncontextlost,oncontextmenu,oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,"
+                + "ondragend,ondragenter,ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,"
+                + "onended,onerror,onfocus,onformdata,onfreeze,onfullscreenchange,onfullscreenerror,"
+                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointerlockchange,"
+                + "onpointerlockerror,onpointermove,onpointerout,onpointerover,onpointerrawupdate,onpointerup,"
+                + "onprerenderingchange,onprogress,onratechange,onreadystatechange,onreset,onresize,onresume,"
+                + "onscroll,onscrollend,onscrollsnapchange,onscrollsnapchanging,onsearch,onsecuritypolicyviolation,"
+                + "onseeked,onseeking,onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,"
+                + "onsuspend,ontimeupdate,ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,"
+                + "ontransitionstart,onvisibilitychange,onvolumechange,onwaiting,onwebkitanimationend,"
+                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkitfullscreenchange,"
                 + "onwebkitfullscreenerror,onwebkittransitionend,onwheel,open(),ownerDocument,parentElement,"
                 + "parentNode,pictureInPictureElement,pictureInPictureEnabled,plugins,pointerLockElement,prepend(),"
                 + "prerendering,previousSibling,PROCESSING_INSTRUCTION_NODE,queryCommandEnabled(),"
@@ -4943,16 +6438,17 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "webkitFullscreenElement,webkitFullscreenEnabled,webkitHidden,webkitIsFullScreen,"
                 + "webkitVisibilityState,when(),write(),writeln(),xmlEncoding,xmlStandalone,"
                 + "xmlVersion",
-            FF = "activeElement,addEventListener(),adoptedStyleSheets,adoptNode(),alinkColor,all,anchors,append(),"
-                + "appendChild(),applets,ATTRIBUTE_NODE,baseURI,bgColor,body,captureEvents(),"
-                + "caretPositionFromPoint(),CDATA_SECTION_NODE,characterSet,charset,childElementCount,childNodes,"
-                + "children,clear(),cloneNode(),close(),COMMENT_NODE,compareDocumentPosition(),compatMode,"
-                + "contains(),contentType,cookie,createAttribute(),createAttributeNS(),createCDATASection(),"
-                + "createComment(),createDocumentFragment(),createElement(),createElementNS(),createEvent(),"
-                + "createExpression(),createNodeIterator(),createNSResolver(),createProcessingInstruction(),"
-                + "createRange(),createTextNode(),createTreeWalker(),currentScript,defaultView,designMode,dir,"
-                + "dispatchEvent(),doctype,DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,"
-                + "DOCUMENT_POSITION_CONTAINS,DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
+            FF = "activeElement,activeViewTransition,addEventListener(),adoptedStyleSheets,adoptNode(),alinkColor,"
+                + "all,anchors,append(),appendChild(),applets,ariaNotify(),ATTRIBUTE_NODE,baseURI,bgColor,body,"
+                + "captureEvents(),caretPositionFromPoint(),caretRangeFromPoint(),CDATA_SECTION_NODE,characterSet,"
+                + "charset,childElementCount,childNodes,children,clear(),cloneNode(),close(),COMMENT_NODE,"
+                + "compareDocumentPosition(),compatMode,contains(),contentType,cookie,createAttribute(),"
+                + "createAttributeNS(),createCDATASection(),createComment(),createDocumentFragment(),"
+                + "createElement(),createElementNS(),createEvent(),createExpression(),createNodeIterator(),"
+                + "createNSResolver(),createProcessingInstruction(),createRange(),createTextNode(),"
+                + "createTreeWalker(),currentScript,defaultView,designMode,dir,dispatchEvent(),doctype,"
+                + "DOCUMENT_FRAGMENT_NODE,DOCUMENT_NODE,DOCUMENT_POSITION_CONTAINED_BY,DOCUMENT_POSITION_CONTAINS,"
+                + "DOCUMENT_POSITION_DISCONNECTED,DOCUMENT_POSITION_FOLLOWING,"
                 + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,DOCUMENT_POSITION_PRECEDING,DOCUMENT_TYPE_NODE,"
                 + "documentElement,documentURI,domain,ELEMENT_NODE,elementFromPoint(),elementsFromPoint(),embeds,"
                 + "enableStyleSheetsForSet(),ENTITY_NODE,ENTITY_REFERENCE_NODE,evaluate(),execCommand(),"
@@ -5173,39 +6669,39 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "attributeStyleMap,autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,"
-                + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforetoggle,"
-                + "onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncommand,"
-                + "oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,oncontextrestored,oncopy,"
-                + "oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,"
-                + "oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
-                + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
-                + "onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
-                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
-                + "onpointerup,onprogress,onratechange,onreset,onresize,onscroll,onscrollend,onscrollsnapchange,"
-                + "onscrollsnapchanging,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
-                + "onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,onwebkitanimationend,"
-                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,ownerSVGElement,"
-                + "style,tabIndex,"
+    @Alerts(CHROME = "attributeStyleMap,autofocus,blur(),dataset,focus(),nonce,onabort,onanimationcancel,"
+                + "onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,"
+                + "onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
+                + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
+                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
+                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
+                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onscrollend,onscrollsnapchange,onscrollsnapchanging,onsecuritypolicyviolation,onseeked,onseeking,"
+                + "onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,"
+                + "ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
+                + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,"
                 + "viewportElement",
-            EDGE = "attributeStyleMap,autofocus,blur(),dataset,focus(),nonce,onabort,onanimationend,"
-                + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforetoggle,"
-                + "onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,onclose,oncommand,"
-                + "oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,oncontextrestored,oncopy,"
-                + "oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,ongotpointercapture,oninput,"
-                + "oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
-                + "onlostpointercapture,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,"
-                + "onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,onpointercancel,onpointerdown,"
-                + "onpointerenter,onpointerleave,onpointermove,onpointerout,onpointerover,onpointerrawupdate,"
-                + "onpointerup,onprogress,onratechange,onreset,onresize,onscroll,onscrollend,onscrollsnapchange,"
-                + "onscrollsnapchanging,onsecuritypolicyviolation,onseeked,onseeking,onselect,onselectionchange,"
-                + "onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,ontoggle,ontransitioncancel,"
-                + "ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,onwaiting,onwebkitanimationend,"
-                + "onwebkitanimationiteration,onwebkitanimationstart,onwebkittransitionend,onwheel,ownerSVGElement,"
-                + "style,tabIndex,"
+            EDGE = "attributeStyleMap,autofocus,blur(),dataset,focus(),nonce,onabort,onanimationcancel,"
+                + "onanimationend,onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,"
+                + "onbeforetoggle,onbeforexrselect,onblur,oncancel,oncanplay,oncanplaythrough,onchange,onclick,"
+                + "onclose,oncommand,oncontentvisibilityautostatechange,oncontextlost,oncontextmenu,"
+                + "oncontextrestored,oncopy,oncuechange,oncut,ondblclick,ondrag,ondragend,ondragenter,ondragleave,"
+                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onformdata,"
+                + "ongotpointercapture,oninput,oninvalid,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
+                + "onloadedmetadata,onloadstart,onlostpointercapture,onmousedown,onmouseenter,onmouseleave,"
+                + "onmousemove,onmouseout,onmouseover,onmouseup,onmousewheel,onpaste,onpause,onplay,onplaying,"
+                + "onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,onpointerout,"
+                + "onpointerover,onpointerrawupdate,onpointerup,onprogress,onratechange,onreset,onresize,onscroll,"
+                + "onscrollend,onscrollsnapchange,onscrollsnapchanging,onsecuritypolicyviolation,onseeked,onseeking,"
+                + "onselect,onselectionchange,onselectstart,onslotchange,onstalled,onsubmit,onsuspend,ontimeupdate,"
+                + "ontoggle,ontransitioncancel,ontransitionend,ontransitionrun,ontransitionstart,onvolumechange,"
+                + "onwaiting,onwebkitanimationend,onwebkitanimationiteration,onwebkitanimationstart,"
+                + "onwebkittransitionend,onwheel,ownerSVGElement,style,tabIndex,"
                 + "viewportElement",
             FF = "autofocus,blur(),dataset,focus(),nonce,onabort,onanimationcancel,onanimationend,"
                 + "onanimationiteration,onanimationstart,onauxclick,onbeforeinput,onbeforematch,onbeforetoggle,"
@@ -5573,7 +7069,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "createMediaStreamSource(),createOscillator(),createPanner(),createPeriodicWave(),"
                 + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,decodeAudioData(),"
                 + "destination,dispatchEvent(),getOutputTimestamp(),listener,onerror,onsinkchange,onstatechange,"
-                + "outputLatency,removeEventListener(),resume(),sampleRate,setSinkId(),sinkId,state,suspend(),"
+                + "outputLatency,playbackStats,removeEventListener(),resume(),sampleRate,setSinkId(),sinkId,state,"
+                + "suspend(),"
                 + "when()",
             EDGE = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
                 + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
@@ -5582,7 +7079,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "createMediaStreamSource(),createOscillator(),createPanner(),createPeriodicWave(),"
                 + "createScriptProcessor(),createStereoPanner(),createWaveShaper(),currentTime,decodeAudioData(),"
                 + "destination,dispatchEvent(),getOutputTimestamp(),listener,onerror,onsinkchange,onstatechange,"
-                + "outputLatency,removeEventListener(),resume(),sampleRate,setSinkId(),sinkId,state,suspend(),"
+                + "outputLatency,playbackStats,removeEventListener(),resume(),sampleRate,setSinkId(),sinkId,state,"
+                + "suspend(),"
                 + "when()",
             FF = "addEventListener(),audioWorklet,baseLatency,close(),createAnalyser(),createBiquadFilter(),"
                 + "createBuffer(),createBufferSource(),createChannelMerger(),createChannelSplitter(),"
@@ -5702,352 +7200,6 @@ public class ElementPropertiesTest extends WebDriverTestCase {
             FF = "addEventListener(),connect(),dispatchEvent(),gain,removeEventListener()")
     public void gainNode() throws Exception {
         testString("var audioCtx = new AudioContext();", "new GainNode(audioCtx)");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
-                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
-                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "initEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "initEvent(),META_MASK,NONE,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type")
-    public void beforeUnloadEvent() throws Exception {
-        testString("", "document.createEvent('BeforeUnloadEvent')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,"
-                + "composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,"
-                + "preventDefault(),reason,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,"
-                + "wasClean",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,composed,"
-                + "composedPath(),currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,"
-                + "preventDefault(),reason,returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type,"
-                + "wasClean",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
-                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,wasClean",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
-                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,wasClean")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
-                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
-                + "NONE,preventDefault(),reason,returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
-                + "composed,currentTarget,defaultPrevented,eventPhase,initEvent(),"
-                + "NONE,preventDefault(),reason,returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type,wasClean",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
-                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "initEvent(),META_MASK,NONE,preventDefault(),"
-                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,wasClean",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,code,"
-                + "composed,CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "initEvent(),META_MASK,NONE,preventDefault(),"
-                + "reason,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type,wasClean")
-    public void closeEvent() throws Exception {
-        testString("", "new CloseEvent('type-close')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timecode,timeStamp,"
-                + "type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timecode,timeStamp,"
-                + "type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),"
-                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "currentTarget,data,defaultPrevented,eventPhase,initEvent(),"
-                + "NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
-                + "initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,"
-                + "CONTROL_MASK,currentTarget,data,defaultPrevented,eventPhase,"
-                + "initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type")
-    public void blobEvent() throws Exception {
-        testString("var debug = {hello: 'world'};"
-                    + "var blob = new Blob([JSON.stringify(debug, null, 2)], {type : 'application/json'});",
-                    "new BlobEvent('blob', { 'data': blob })");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "acceleration,accelerationIncludingGravity,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
-                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,eventPhase,"
-                + "initEvent(),interval,isTrusted,NONE,preventDefault(),returnValue,rotationRate,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            EDGE = "acceleration,accelerationIncludingGravity,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,"
-                + "cancelBubble,CAPTURING_PHASE,composed,composedPath(),currentTarget,defaultPrevented,eventPhase,"
-                + "initEvent(),interval,isTrusted,NONE,preventDefault(),returnValue,rotationRate,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            FF = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,"
-                + "cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,"
-                + "defaultPrevented,eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),"
-                + "interval,isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,"
-                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF_ESR = "acceleration,accelerationIncludingGravity,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,"
-                + "cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,"
-                + "defaultPrevented,eventPhase,explicitOriginalTarget,initDeviceMotionEvent(),initEvent(),"
-                + "interval,isTrusted,META_MASK,NONE,originalTarget,preventDefault(),returnValue,rotationRate,"
-                + "SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type")
-    public void deviceMotionEvent() throws Exception {
-        testString("", "new DeviceMotionEvent('motion')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,composed,"
-                + "composedPath(),currentTarget,defaultPrevented,error,eventPhase,filename,initEvent(),isTrusted,"
-                + "lineno,message,NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,"
-                + "type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,composed,"
-                + "composedPath(),currentTarget,defaultPrevented,error,eventPhase,filename,initEvent(),isTrusted,"
-                + "lineno,message,NONE,preventDefault(),returnValue,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,"
-                + "type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
-                + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
-                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,colno,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,error,eventPhase,"
-                + "explicitOriginalTarget,filename,initEvent(),isTrusted,lineno,message,META_MASK,NONE,"
-                + "originalTarget,preventDefault(),returnValue,SHIFT_MASK,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type")
-    public void errorEvent() throws Exception {
-        testString("", "new ErrorEvent('error')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,eventPhase,gamepad,initEvent(),isTrusted,NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,eventPhase,gamepad,initEvent(),isTrusted,NONE,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,gamepad,initEvent(),isTrusted,META_MASK,NONE,originalTarget,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type")
-    public void gamepadEvent() throws Exception {
-        testString("", "new GamepadEvent('gamepad')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "NotSupportedError/DOMException",
-            EDGE = "NotSupportedError/DOMException",
-            FF = "NotSupportedError/DOMException",
-            FF_ESR = "ADDITION,ALT_MASK,AT_TARGET,attrChange,attrName,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),initMutationEvent(),isTrusted,META_MASK,MODIFICATION,newValue,"
-                + "NONE,originalTarget,preventDefault(),prevValue,relatedNode,REMOVAL,returnValue,SHIFT_MASK,"
-                + "srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,type")
-    @HtmlUnitNYI(FF_ESR = "ADDITION,ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,CONTROL_MASK,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),META_MASK,MODIFICATION,NONE,"
-                + "preventDefault(),REMOVAL,returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type")
-    public void mutationEvent() throws Exception {
-        testString("", "document.createEvent('MutationEvent')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("NotSupportedError/DOMException")
-    public void offlineAudioCompletionEvent() throws Exception {
-        testString("", "document.createEvent('OfflineAudioCompletionEvent')");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,persisted,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,composed,composedPath(),"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,NONE,persisted,preventDefault(),"
-                + "returnValue,srcElement,stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,"
-                + "composed,composedPath(),CONTROL_MASK,currentTarget,defaultPrevented,eventPhase,"
-                + "explicitOriginalTarget,initEvent(),isTrusted,META_MASK,NONE,originalTarget,persisted,"
-                + "preventDefault(),returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),"
-                + "stopPropagation(),target,timeStamp,type")
-    @HtmlUnitNYI(CHROME = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            EDGE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,currentTarget,"
-                + "defaultPrevented,eventPhase,initEvent(),NONE,preventDefault(),returnValue,srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,type",
-            FF = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type",
-            FF_ESR = "ALT_MASK,AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,"
-                + "CAPTURING_PHASE,composed,CONTROL_MASK,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),META_MASK,NONE,preventDefault(),"
-                + "returnValue,SHIFT_MASK,srcElement,stopImmediatePropagation(),stopPropagation(),"
-                + "target,timeStamp,type")
-    public void pageTransitionEvent() throws Exception {
-        testString("", "new PageTransitionEvent('transition')");
     }
 
     /**
@@ -6246,12 +7398,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "341,342,343,344,345,346,347,348,349,35,350,351,352,353,354,355,356,357,358,359,36,360,361,362,"
                 + "363,364,365,366,367,368,369,37,370,371,372,373,374,375,376,377,378,379,38,380,381,382,383,384,"
                 + "385,386,387,388,389,39,390,391,392,393,394,395,396,397,398,399,4,40,400,401,402,403,404,405,406,"
-                + "407,408,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,"
-                + "69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,94,95,96,97,98,"
-                + "99,accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,"
-                + "anchorName,anchorScope,animation,animationComposition,animationDelay,animationDirection,"
-                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
-                + "animationRange,animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,"
+                + "407,408,409,41,410,411,412,413,414,415,416,417,418,419,42,420,421,422,423,424,425,426,427,428,"
+                + "429,43,430,431,432,433,434,435,436,437,438,439,44,440,441,442,443,444,445,446,447,448,449,45,450,"
+                + "451,452,453,454,455,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,69,"
+                + "7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,94,95,96,97,98,99,"
+                + "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,anchorName,"
+                + "anchorScope,animation,animationComposition,animationDelay,animationDirection,animationDuration,"
+                + "animationFillMode,animationIterationCount,animationName,animationPlayState,animationRange,"
+                + "animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,animationTrigger,"
                 + "appearance,appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
                 + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
                 + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
@@ -6265,30 +7419,31 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
                 + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
                 + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderShape,borderSpacing,"
                 + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
                 + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
                 + "boxDecorationBreak,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,"
-                + "captionSide,caretAnimation,caretColor,clear,clip,clipPath,clipRule,color,colorInterpolation,"
-                + "colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,columnGap,columnRule,"
-                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,contain,container,"
-                + "containerName,containerType,containIntrinsicBlockSize,containIntrinsicHeight,"
-                + "containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,content,contentVisibility,"
-                + "cornerBlockEndShape,cornerBlockStartShape,cornerBottomLeftShape,cornerBottomRightShape,"
-                + "cornerBottomShape,cornerEndEndShape,cornerEndStartShape,cornerInlineEndShape,"
-                + "cornerInlineStartShape,cornerLeftShape,cornerRightShape,cornerShape,cornerStartEndShape,"
-                + "cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,cornerTopShape,counterIncrement,"
-                + "counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,"
-                + "dominantBaseline,dynamicRangeLimit,emptyCells,fallback,fieldSizing,fill,fillOpacity,fillRule,"
-                + "filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,floodColor,"
-                + "floodOpacity,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,"
-                + "fontOpticalSizing,fontPalette,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,"
-                + "fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,fontVariantAlternates,"
-                + "fontVariantCaps,fontVariantEastAsian,fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,"
-                + "fontVariantPosition,fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),"
-                + "getPropertyValue(),grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,"
-                + "gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,"
-                + "gridTemplate,gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
+                + "captionSide,caretAnimation,caretColor,caretShape,clear,clip,clipPath,clipRule,color,"
+                + "colorInterpolation,colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,"
+                + "columnGap,columnHeight,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,columnWrap,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,cornerBlockEndShape,cornerBlockStartShape,"
+                + "cornerBottomLeftShape,cornerBottomRightShape,cornerBottomShape,cornerEndEndShape,"
+                + "cornerEndStartShape,cornerInlineEndShape,cornerInlineStartShape,cornerLeftShape,cornerRightShape,"
+                + "cornerShape,cornerStartEndShape,cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,"
+                + "cornerTopShape,counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,"
+                + "descentOverride,direction,display,dominantBaseline,dynamicRangeLimit,emptyCells,fallback,"
+                + "fieldSizing,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontPalette,fontSize,"
+                + "fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,"
+                + "fontSynthesisWeight,fontVariant,fontVariantAlternates,fontVariantCaps,fontVariantEastAsian,"
+                + "fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
                 + "hyphenateLimitChars,hyphens,imageOrientation,imageRendering,inherits,initialLetter,initialValue,"
                 + "inlineSize,inset,insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,"
                 + "insetInlineStart,interactivity,interestDelay,interestDelayEnd,interestDelayStart,interpolateSize,"
@@ -6323,51 +7478,54 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textAutospace,"
                 + "textBox,textBoxEdge,textBoxTrim,textCombineUpright,textDecoration,textDecorationColor,"
                 + "textDecorationLine,textDecorationSkipInk,textDecorationStyle,textDecorationThickness,"
-                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textOrientation,"
-                + "textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,textTransform,"
-                + "textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,timelineScope,top,"
-                + "touchAction,transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
-                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,types,"
-                + "unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,viewTimelineAxis,"
-                + "viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,viewTransitionName,"
-                + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
-                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
-                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
-                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
-                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
-                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
-                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
-                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
-                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
-                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
-                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
-                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
-                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
-                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
-                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
-                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
-                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
-                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,"
-                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
-                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
-                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
-                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
-                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
-                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskSize,"
-                + "webkitMaxLogicalHeight,webkitMaxLogicalWidth,webkitMinLogicalHeight,webkitMinLogicalWidth,"
-                + "webkitOpacity,webkitOrder,webkitPaddingAfter,webkitPaddingBefore,webkitPaddingEnd,"
-                + "webkitPaddingStart,webkitPerspective,webkitPerspectiveOrigin,webkitPerspectiveOriginX,"
-                + "webkitPerspectiveOriginY,webkitPrintColorAdjust,webkitRtlOrdering,webkitRubyPosition,"
-                + "webkitShapeImageThreshold,webkitShapeMargin,webkitShapeOutside,webkitTapHighlightColor,"
-                + "webkitTextCombine,webkitTextDecorationsInEffect,webkitTextEmphasis,webkitTextEmphasisColor,"
-                + "webkitTextEmphasisPosition,webkitTextEmphasisStyle,webkitTextFillColor,webkitTextOrientation,"
-                + "webkitTextSecurity,webkitTextSizeAdjust,webkitTextStroke,webkitTextStrokeColor,"
-                + "webkitTextStrokeWidth,webkitTransform,webkitTransformOrigin,webkitTransformOriginX,"
-                + "webkitTransformOriginY,webkitTransformOriginZ,webkitTransformStyle,webkitTransition,"
-                + "webkitTransitionDelay,webkitTransitionDuration,webkitTransitionProperty,"
-                + "webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,webkitUserSelect,"
-                + "webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,wordBreak,wordSpacing,"
-                + "wordWrap,writingMode,x,y,zIndex,"
+                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,"
+                + "textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
+                + "textTransform,textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,"
+                + "timelineScope,timelineTrigger,timelineTriggerActivationRange,timelineTriggerActivationRangeEnd,"
+                + "timelineTriggerActivationRangeStart,timelineTriggerActiveRange,timelineTriggerActiveRangeEnd,"
+                + "timelineTriggerActiveRangeStart,timelineTriggerName,timelineTriggerSource,top,touchAction,"
+                + "transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
+                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,"
+                + "triggerScope,types,unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,"
+                + "viewTimelineAxis,viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,"
+                + "viewTransitionName,viewTransitionScope,visibility,webkitAlignContent,webkitAlignItems,"
+                + "webkitAlignSelf,webkitAnimation,webkitAnimationDelay,webkitAnimationDirection,"
+                + "webkitAnimationDuration,webkitAnimationFillMode,webkitAnimationIterationCount,"
+                + "webkitAnimationName,webkitAnimationPlayState,webkitAnimationTimingFunction,webkitAppearance,"
+                + "webkitAppRegion,webkitBackfaceVisibility,webkitBackgroundClip,webkitBackgroundOrigin,"
+                + "webkitBackgroundSize,webkitBorderAfter,webkitBorderAfterColor,webkitBorderAfterStyle,"
+                + "webkitBorderAfterWidth,webkitBorderBefore,webkitBorderBeforeColor,webkitBorderBeforeStyle,"
+                + "webkitBorderBeforeWidth,webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,"
+                + "webkitBorderEnd,webkitBorderEndColor,webkitBorderEndStyle,webkitBorderEndWidth,"
+                + "webkitBorderHorizontalSpacing,webkitBorderImage,webkitBorderRadius,webkitBorderStart,"
+                + "webkitBorderStartColor,webkitBorderStartStyle,webkitBorderStartWidth,webkitBorderTopLeftRadius,"
+                + "webkitBorderTopRightRadius,webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,"
+                + "webkitBoxDirection,webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,"
+                + "webkitBoxReflect,webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,"
+                + "webkitColumnBreakBefore,webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,"
+                + "webkitColumnRule,webkitColumnRuleColor,webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,"
+                + "webkitColumnSpan,webkitColumnWidth,webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,"
+                + "webkitFlexFlow,webkitFlexGrow,webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,"
+                + "webkitFontSmoothing,webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,"
+                + "webkitLineClamp,webkitLocale,webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,"
+                + "webkitMarginBefore,webkitMarginEnd,webkitMarginStart,webkitMask,webkitMaskBoxImage,"
+                + "webkitMaskBoxImageOutset,webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,"
+                + "webkitMaskBoxImageSource,webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,"
+                + "webkitMaskImage,webkitMaskOrigin,webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,"
+                + "webkitMaskRepeat,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,"
+                + "wordBreak,wordSpacing,wordWrap,writingMode,x,y,zIndex,"
                 + "zoom",
             EDGE = "0,1,10,100,101,102,103,104,105,106,107,108,109,11,110,111,112,113,114,115,116,117,118,119,12,120,"
                 + "121,122,123,124,125,126,127,128,129,13,130,131,132,133,134,135,136,137,138,139,14,140,141,142,"
@@ -6383,12 +7541,14 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "341,342,343,344,345,346,347,348,349,35,350,351,352,353,354,355,356,357,358,359,36,360,361,362,"
                 + "363,364,365,366,367,368,369,37,370,371,372,373,374,375,376,377,378,379,38,380,381,382,383,384,"
                 + "385,386,387,388,389,39,390,391,392,393,394,395,396,397,398,399,4,40,400,401,402,403,404,405,406,"
-                + "407,408,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,"
-                + "69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,94,95,96,97,98,"
-                + "99,accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,"
-                + "anchorName,anchorScope,animation,animationComposition,animationDelay,animationDirection,"
-                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
-                + "animationRange,animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,"
+                + "407,408,409,41,410,411,412,413,414,415,416,417,418,419,42,420,421,422,423,424,425,426,427,428,"
+                + "429,43,430,431,432,433,434,435,436,437,438,439,44,440,441,442,443,444,445,446,447,448,449,45,450,"
+                + "451,452,453,454,455,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,69,"
+                + "7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,94,95,96,97,98,99,"
+                + "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,anchorName,"
+                + "anchorScope,animation,animationComposition,animationDelay,animationDirection,animationDuration,"
+                + "animationFillMode,animationIterationCount,animationName,animationPlayState,animationRange,"
+                + "animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,animationTrigger,"
                 + "appearance,appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
                 + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
                 + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
@@ -6402,30 +7562,31 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
                 + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
                 + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderShape,borderSpacing,"
                 + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
                 + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
                 + "boxDecorationBreak,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,"
-                + "captionSide,caretAnimation,caretColor,clear,clip,clipPath,clipRule,color,colorInterpolation,"
-                + "colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,columnGap,columnRule,"
-                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,contain,container,"
-                + "containerName,containerType,containIntrinsicBlockSize,containIntrinsicHeight,"
-                + "containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,content,contentVisibility,"
-                + "cornerBlockEndShape,cornerBlockStartShape,cornerBottomLeftShape,cornerBottomRightShape,"
-                + "cornerBottomShape,cornerEndEndShape,cornerEndStartShape,cornerInlineEndShape,"
-                + "cornerInlineStartShape,cornerLeftShape,cornerRightShape,cornerShape,cornerStartEndShape,"
-                + "cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,cornerTopShape,counterIncrement,"
-                + "counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,"
-                + "dominantBaseline,dynamicRangeLimit,emptyCells,fallback,fieldSizing,fill,fillOpacity,fillRule,"
-                + "filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,floodColor,"
-                + "floodOpacity,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,"
-                + "fontOpticalSizing,fontPalette,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,"
-                + "fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,fontVariantAlternates,"
-                + "fontVariantCaps,fontVariantEastAsian,fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,"
-                + "fontVariantPosition,fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),"
-                + "getPropertyValue(),grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,"
-                + "gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,"
-                + "gridTemplate,gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
+                + "captionSide,caretAnimation,caretColor,caretShape,clear,clip,clipPath,clipRule,color,"
+                + "colorInterpolation,colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,"
+                + "columnGap,columnHeight,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,columnWrap,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,cornerBlockEndShape,cornerBlockStartShape,"
+                + "cornerBottomLeftShape,cornerBottomRightShape,cornerBottomShape,cornerEndEndShape,"
+                + "cornerEndStartShape,cornerInlineEndShape,cornerInlineStartShape,cornerLeftShape,cornerRightShape,"
+                + "cornerShape,cornerStartEndShape,cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,"
+                + "cornerTopShape,counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,"
+                + "descentOverride,direction,display,dominantBaseline,dynamicRangeLimit,emptyCells,fallback,"
+                + "fieldSizing,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontPalette,fontSize,"
+                + "fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,"
+                + "fontSynthesisWeight,fontVariant,fontVariantAlternates,fontVariantCaps,fontVariantEastAsian,"
+                + "fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
                 + "hyphenateLimitChars,hyphens,imageOrientation,imageRendering,inherits,initialLetter,initialValue,"
                 + "inlineSize,inset,insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,"
                 + "insetInlineStart,interactivity,interestDelay,interestDelayEnd,interestDelayStart,interpolateSize,"
@@ -6460,51 +7621,54 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textAutospace,"
                 + "textBox,textBoxEdge,textBoxTrim,textCombineUpright,textDecoration,textDecorationColor,"
                 + "textDecorationLine,textDecorationSkipInk,textDecorationStyle,textDecorationThickness,"
-                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textOrientation,"
-                + "textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,textTransform,"
-                + "textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,timelineScope,top,"
-                + "touchAction,transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
-                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,types,"
-                + "unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,viewTimelineAxis,"
-                + "viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,viewTransitionName,"
-                + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
-                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
-                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
-                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
-                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
-                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
-                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
-                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
-                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
-                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
-                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
-                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
-                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
-                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
-                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
-                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
-                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
-                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,"
-                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
-                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
-                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
-                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
-                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
-                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskSize,"
-                + "webkitMaxLogicalHeight,webkitMaxLogicalWidth,webkitMinLogicalHeight,webkitMinLogicalWidth,"
-                + "webkitOpacity,webkitOrder,webkitPaddingAfter,webkitPaddingBefore,webkitPaddingEnd,"
-                + "webkitPaddingStart,webkitPerspective,webkitPerspectiveOrigin,webkitPerspectiveOriginX,"
-                + "webkitPerspectiveOriginY,webkitPrintColorAdjust,webkitRtlOrdering,webkitRubyPosition,"
-                + "webkitShapeImageThreshold,webkitShapeMargin,webkitShapeOutside,webkitTapHighlightColor,"
-                + "webkitTextCombine,webkitTextDecorationsInEffect,webkitTextEmphasis,webkitTextEmphasisColor,"
-                + "webkitTextEmphasisPosition,webkitTextEmphasisStyle,webkitTextFillColor,webkitTextOrientation,"
-                + "webkitTextSecurity,webkitTextSizeAdjust,webkitTextStroke,webkitTextStrokeColor,"
-                + "webkitTextStrokeWidth,webkitTransform,webkitTransformOrigin,webkitTransformOriginX,"
-                + "webkitTransformOriginY,webkitTransformOriginZ,webkitTransformStyle,webkitTransition,"
-                + "webkitTransitionDelay,webkitTransitionDuration,webkitTransitionProperty,"
-                + "webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,webkitUserSelect,"
-                + "webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,wordBreak,wordSpacing,"
-                + "wordWrap,writingMode,x,y,zIndex,"
+                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,"
+                + "textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
+                + "textTransform,textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,"
+                + "timelineScope,timelineTrigger,timelineTriggerActivationRange,timelineTriggerActivationRangeEnd,"
+                + "timelineTriggerActivationRangeStart,timelineTriggerActiveRange,timelineTriggerActiveRangeEnd,"
+                + "timelineTriggerActiveRangeStart,timelineTriggerName,timelineTriggerSource,top,touchAction,"
+                + "transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
+                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,"
+                + "triggerScope,types,unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,"
+                + "viewTimelineAxis,viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,"
+                + "viewTransitionName,viewTransitionScope,visibility,webkitAlignContent,webkitAlignItems,"
+                + "webkitAlignSelf,webkitAnimation,webkitAnimationDelay,webkitAnimationDirection,"
+                + "webkitAnimationDuration,webkitAnimationFillMode,webkitAnimationIterationCount,"
+                + "webkitAnimationName,webkitAnimationPlayState,webkitAnimationTimingFunction,webkitAppearance,"
+                + "webkitAppRegion,webkitBackfaceVisibility,webkitBackgroundClip,webkitBackgroundOrigin,"
+                + "webkitBackgroundSize,webkitBorderAfter,webkitBorderAfterColor,webkitBorderAfterStyle,"
+                + "webkitBorderAfterWidth,webkitBorderBefore,webkitBorderBeforeColor,webkitBorderBeforeStyle,"
+                + "webkitBorderBeforeWidth,webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,"
+                + "webkitBorderEnd,webkitBorderEndColor,webkitBorderEndStyle,webkitBorderEndWidth,"
+                + "webkitBorderHorizontalSpacing,webkitBorderImage,webkitBorderRadius,webkitBorderStart,"
+                + "webkitBorderStartColor,webkitBorderStartStyle,webkitBorderStartWidth,webkitBorderTopLeftRadius,"
+                + "webkitBorderTopRightRadius,webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,"
+                + "webkitBoxDirection,webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,"
+                + "webkitBoxReflect,webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,"
+                + "webkitColumnBreakBefore,webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,"
+                + "webkitColumnRule,webkitColumnRuleColor,webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,"
+                + "webkitColumnSpan,webkitColumnWidth,webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,"
+                + "webkitFlexFlow,webkitFlexGrow,webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,"
+                + "webkitFontSmoothing,webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,"
+                + "webkitLineClamp,webkitLocale,webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,"
+                + "webkitMarginBefore,webkitMarginEnd,webkitMarginStart,webkitMask,webkitMaskBoxImage,"
+                + "webkitMaskBoxImageOutset,webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,"
+                + "webkitMaskBoxImageSource,webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,"
+                + "webkitMaskImage,webkitMaskOrigin,webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,"
+                + "webkitMaskRepeat,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,"
+                + "wordBreak,wordSpacing,wordWrap,writingMode,x,y,zIndex,"
                 + "zoom",
             FF = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
                 + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
@@ -6549,21 +7713,23 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "306,307,308,309,31,310,311,312,313,314,315,316,317,318,319,32,320,321,322,323,324,325,326,327,"
                 + "328,329,33,330,331,332,333,334,335,336,337,338,339,34,340,341,342,343,344,345,346,347,348,349,35,"
                 + "350,351,352,353,354,355,356,357,358,359,36,360,361,362,363,364,365,366,367,368,369,37,370,371,"
-                + "372,373,38,39,4,40,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,"
-                + "65,66,67,68,69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,85,86,87,88,89,9,90,91,92,93,94,"
-                + "95,96,97,98,99,accent-color,accentColor,align-content,align-items,align-self,alignContent,"
-                + "alignItems,alignSelf,all,animation,animation-composition,animation-delay,animation-direction,"
-                + "animation-duration,animation-fill-mode,animation-iteration-count,animation-name,"
-                + "animation-play-state,animation-timing-function,animationComposition,animationDelay,"
-                + "animationDirection,animationDuration,animationFillMode,animationIterationCount,animationName,"
-                + "animationPlayState,animationTimingFunction,appearance,aspect-ratio,aspectRatio,backdrop-filter,"
-                + "backdropFilter,backface-visibility,backfaceVisibility,background,background-attachment,"
-                + "background-blend-mode,background-clip,background-color,background-image,background-origin,"
-                + "background-position,background-position-x,background-position-y,background-repeat,"
-                + "background-size,backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,"
-                + "backgroundImage,backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,"
-                + "backgroundRepeat,backgroundSize,baseline-source,baselineSource,block-size,blockSize,border,"
-                + "border-block,border-block-color,border-block-end,border-block-end-color,border-block-end-style,"
+                + "372,373,374,375,376,377,378,379,38,380,381,39,4,40,41,42,43,44,45,46,47,48,49,5,50,51,52,53,54,"
+                + "55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,69,7,70,71,72,73,74,75,76,77,78,79,8,80,81,82,83,84,"
+                + "85,86,87,88,89,9,90,91,92,93,94,95,96,97,98,99,accent-color,accentColor,align-content,"
+                + "align-items,align-self,alignContent,alignItems,alignment-baseline,alignmentBaseline,alignSelf,"
+                + "all,anchor-name,anchor-scope,anchorName,anchorScope,animation,animation-composition,"
+                + "animation-delay,animation-direction,animation-duration,animation-fill-mode,"
+                + "animation-iteration-count,animation-name,animation-play-state,animation-timing-function,"
+                + "animationComposition,animationDelay,animationDirection,animationDuration,animationFillMode,"
+                + "animationIterationCount,animationName,animationPlayState,animationTimingFunction,appearance,"
+                + "aspect-ratio,aspectRatio,backdrop-filter,backdropFilter,backface-visibility,backfaceVisibility,"
+                + "background,background-attachment,background-blend-mode,background-clip,background-color,"
+                + "background-image,background-origin,background-position,background-position-x,"
+                + "background-position-y,background-repeat,background-size,backgroundAttachment,backgroundBlendMode,"
+                + "backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,"
+                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundSize,baseline-shift,"
+                + "baseline-source,baselineShift,baselineSource,block-size,blockSize,border,border-block,"
+                + "border-block-color,border-block-end,border-block-end-color,border-block-end-style,"
                 + "border-block-end-width,border-block-start,border-block-start-color,border-block-start-style,"
                 + "border-block-start-width,border-block-style,border-block-width,border-bottom,border-bottom-color,"
                 + "border-bottom-left-radius,border-bottom-right-radius,border-bottom-style,border-bottom-width,"
@@ -6663,17 +7829,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "paddingTop,page,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
                 + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
                 + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
-                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
-                + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
-                + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
-                + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
-                + "scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,scroll-margin-right,"
-                + "scroll-margin-top,scroll-padding,scroll-padding-block,scroll-padding-block-end,"
-                + "scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,scroll-padding-inline-end,"
-                + "scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,scroll-padding-top,"
-                + "scroll-snap-align,scroll-snap-stop,scroll-snap-type,scrollbar-color,scrollbar-gutter,"
-                + "scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,"
-                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "pointer-events,pointerEvents,position,position-anchor,position-area,position-try,"
+                + "position-try-fallbacks,position-try-order,position-visibility,positionAnchor,positionArea,"
+                + "positionTry,positionTryFallbacks,positionTryOrder,positionVisibility,print-color-adjust,"
+                + "printColorAdjust,quotes,r,removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,"
+                + "ruby-position,rubyAlign,rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,"
+                + "scroll-margin-block,scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,"
+                + "scroll-margin-inline,scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,"
+                + "scroll-margin-right,scroll-margin-top,scroll-padding,scroll-padding-block,"
+                + "scroll-padding-block-end,scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,"
+                + "scroll-padding-inline-end,scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,"
+                + "scroll-padding-top,scroll-snap-align,scroll-snap-stop,scroll-snap-type,scrollbar-color,"
+                + "scrollbar-gutter,scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,"
+                + "scrollMargin,scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
                 + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
                 + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
                 + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
@@ -6971,7 +8139,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
                 + "animationName,animationPlayState,"
                 + "animationRange,animationRangeEnd,animationRangeStart,animationTimeline,"
-                + "animationTimingFunction,appearance,appRegion,ascentOverride,"
+                + "animationTimingFunction,animationTrigger,"
+                + "appearance,appRegion,ascentOverride,"
                 + "aspectRatio,backdropFilter,backfaceVisibility,background,backgroundAttachment,"
                 + "backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,"
                 + "backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
@@ -6986,15 +8155,16 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
                 + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
                 + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderShape,borderSpacing,"
                 + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
                 + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
                 + "boxDecorationBreak,"
                 + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,"
-                + "caretAnimation,caretColor,"
+                + "caretAnimation,caretColor,caretShape,"
                 + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
-                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
-                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnHeight,"
+                + "columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,columnWrap,contain,"
                 + "container,containerName,containerType,"
                 + "containIntrinsicBlockSize,"
                 + "containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,"
@@ -7059,15 +8229,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "textBox,textBoxEdge,textBoxTrim,textCombineUpright,textDecoration,"
                 + "textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
                 + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
-                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
+                + "textIndent,textJustify,"
+                + "textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
                 + "textTransform,textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,"
-                + "timelineScope,"
+                + "timelineScope,timelineTrigger,timelineTriggerActivationRange,timelineTriggerActivationRangeEnd,"
+                + "timelineTriggerActivationRangeStart,timelineTriggerActiveRange,timelineTriggerActiveRangeEnd,"
+                + "timelineTriggerActiveRangeStart,timelineTriggerName,timelineTriggerSource,"
                 + "top,touchAction,transform,transformBox,transformOrigin,"
                 + "transformStyle,transition,transitionBehavior,transitionDelay,transitionDuration,transitionProperty,"
-                + "transitionTimingFunction,translate,types,"
+                + "transitionTimingFunction,translate,triggerScope,types,"
                 + "unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,"
                 + "viewTimeline,viewTimelineAxis,viewTimelineInset,viewTimelineName,"
-                + "viewTransitionClass,viewTransitionGroup,viewTransitionName,"
+                + "viewTransitionClass,viewTransitionGroup,viewTransitionName,viewTransitionScope,"
                 + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
                 + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
                 + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
@@ -7113,7 +8286,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "animationDelay,animationDirection,animationDuration,animationFillMode,animationIterationCount,"
                 + "animationName,animationPlayState,"
                 + "animationRange,animationRangeEnd,animationRangeStart,animationTimeline,"
-                + "animationTimingFunction,appearance,appRegion,ascentOverride,"
+                + "animationTimingFunction,animationTrigger,"
+                + "appearance,appRegion,ascentOverride,"
                 + "aspectRatio,backdropFilter,backfaceVisibility,background,backgroundAttachment,"
                 + "backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,"
                 + "backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
@@ -7128,15 +8302,16 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
                 + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
                 + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderShape,borderSpacing,"
                 + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
                 + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
                 + "boxDecorationBreak,"
                 + "boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,captionSide,"
-                + "caretAnimation,caretColor,"
+                + "caretAnimation,caretColor,caretShape,"
                 + "clear,clip,clipPath,clipRule,color,colorInterpolation,colorInterpolationFilters,colorRendering,"
-                + "colorScheme,columnCount,columnFill,columnGap,columnRule,columnRuleColor,columnRuleStyle,"
-                + "columnRuleWidth,columns,columnSpan,columnWidth,contain,"
+                + "colorScheme,columnCount,columnFill,columnGap,columnHeight,"
+                + "columnRule,columnRuleColor,columnRuleStyle,"
+                + "columnRuleWidth,columns,columnSpan,columnWidth,columnWrap,contain,"
                 + "container,containerName,containerType,containIntrinsicBlockSize,"
                 + "containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,"
                 + "content,contentVisibility,"
@@ -7200,15 +8375,18 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "textBox,textBoxEdge,textBoxTrim,textCombineUpright,textDecoration,"
                 + "textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,"
                 + "textDecorationThickness,textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,"
-                + "textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
+                + "textIndent,textJustify,"
+                + "textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
                 + "textTransform,textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,"
-                + "timelineScope,"
+                + "timelineScope,timelineTrigger,timelineTriggerActivationRange,timelineTriggerActivationRangeEnd,"
+                + "timelineTriggerActivationRangeStart,timelineTriggerActiveRange,timelineTriggerActiveRangeEnd,"
+                + "timelineTriggerActiveRangeStart,timelineTriggerName,timelineTriggerSource,"
                 + "top,touchAction,transform,transformBox,transformOrigin,"
                 + "transformStyle,transition,transitionBehavior,transitionDelay,transitionDuration,transitionProperty,"
-                + "transitionTimingFunction,translate,types,"
+                + "transitionTimingFunction,translate,triggerScope,types,"
                 + "unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,"
                 + "viewTimeline,viewTimelineAxis,viewTimelineInset,viewTimelineName,"
-                + "viewTransitionClass,viewTransitionGroup,viewTransitionName,"
+                + "viewTransitionClass,viewTransitionGroup,viewTransitionName,viewTransitionScope,"
                 + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
                 + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
                 + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
@@ -7280,7 +8458,9 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "-webkit-transform-origin,-webkit-transform-style,-webkit-transition,-webkit-transition-delay,"
                 + "-webkit-transition-duration,-webkit-transition-property,-webkit-transition-timing-function,"
                 + "-webkit-user-select,accent-color,accentColor,align-content,align-items,align-self,"
-                + "alignContent,alignItems,alignSelf,all,animation,animation-composition,animation-delay,"
+                + "alignContent,alignItems,alignment-baseline,alignmentBaseline,"
+                + "alignSelf,all,anchor-name,anchor-scope,anchorName,anchorScope,"
+                + "animation,animation-composition,animation-delay,"
                 + "animation-direction,animation-duration,animation-fill-mode,animation-iteration-count,"
                 + "animation-name,animation-play-state,animation-timing-function,animationComposition,animationDelay,"
                 + "animationDirection,animationDuration,animationFillMode,animationIterationCount,animationName,"
@@ -7290,7 +8470,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "background-position,background-position-x,background-position-y,background-repeat,"
                 + "background-size,backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,"
                 + "backgroundImage,backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,"
-                + "backgroundRepeat,backgroundSize,baseline-source,baselineSource,block-size,blockSize,border,"
+                + "backgroundRepeat,backgroundSize,"
+                + "baseline-shift,baseline-source,baselineShift,baselineSource,block-size,blockSize,border,"
                 + "border-block,border-block-color,border-block-end,border-block-end-color,border-block-end-style,"
                 + "border-block-end-width,border-block-start,border-block-start-color,border-block-start-style,"
                 + "border-block-start-width,border-block-style,border-block-width,border-bottom,border-bottom-color,"
@@ -7393,7 +8574,11 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "paddingTop,page,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
                 + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
                 + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
-                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
+                + "pointer-events,pointerEvents,"
+                + "position,position-anchor,position-area,position-try,position-try-fallbacks,"
+                + "position-try-order,position-visibility,positionAnchor,positionArea,positionTry,"
+                + "positionTryFallbacks,positionTryOrder,positionVisibility,"
+                + "print-color-adjust,printColorAdjust,quotes,r,"
                 + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
                 + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
                 + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
@@ -7698,8 +8883,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,anchorName,"
                 + "anchorScope,animation,animationComposition,animationDelay,animationDirection,animationDuration,"
                 + "animationFillMode,animationIterationCount,animationName,animationPlayState,animationRange,"
-                + "animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,appearance,"
-                + "appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
+                + "animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,animationTrigger,"
+                + "appearance,appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
                 + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
                 + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
                 + "backgroundSize,baselineShift,baselineSource,basePalette,blockSize,border,borderBlock,"
@@ -7712,30 +8897,31 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
                 + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
                 + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderShape,borderSpacing,"
                 + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
                 + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
                 + "boxDecorationBreak,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,"
-                + "captionSide,caretAnimation,caretColor,clear,clip,clipPath,clipRule,color,colorInterpolation,"
-                + "colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,columnGap,columnRule,"
-                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,contain,container,"
-                + "containerName,containerType,containIntrinsicBlockSize,containIntrinsicHeight,"
-                + "containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,content,contentVisibility,"
-                + "cornerBlockEndShape,cornerBlockStartShape,cornerBottomLeftShape,cornerBottomRightShape,"
-                + "cornerBottomShape,cornerEndEndShape,cornerEndStartShape,cornerInlineEndShape,"
-                + "cornerInlineStartShape,cornerLeftShape,cornerRightShape,cornerShape,cornerStartEndShape,"
-                + "cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,cornerTopShape,counterIncrement,"
-                + "counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,"
-                + "dominantBaseline,dynamicRangeLimit,emptyCells,fallback,fieldSizing,fill,fillOpacity,fillRule,"
-                + "filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,floodColor,"
-                + "floodOpacity,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,"
-                + "fontOpticalSizing,fontPalette,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,"
-                + "fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,fontVariantAlternates,"
-                + "fontVariantCaps,fontVariantEastAsian,fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,"
-                + "fontVariantPosition,fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),"
-                + "getPropertyValue(),grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,"
-                + "gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,"
-                + "gridTemplate,gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
+                + "captionSide,caretAnimation,caretColor,caretShape,clear,clip,clipPath,clipRule,color,"
+                + "colorInterpolation,colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,"
+                + "columnGap,columnHeight,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,columnWrap,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,cornerBlockEndShape,cornerBlockStartShape,"
+                + "cornerBottomLeftShape,cornerBottomRightShape,cornerBottomShape,cornerEndEndShape,"
+                + "cornerEndStartShape,cornerInlineEndShape,cornerInlineStartShape,cornerLeftShape,cornerRightShape,"
+                + "cornerShape,cornerStartEndShape,cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,"
+                + "cornerTopShape,counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,"
+                + "descentOverride,direction,display,dominantBaseline,dynamicRangeLimit,emptyCells,fallback,"
+                + "fieldSizing,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontPalette,fontSize,"
+                + "fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,"
+                + "fontSynthesisWeight,fontVariant,fontVariantAlternates,fontVariantCaps,fontVariantEastAsian,"
+                + "fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
                 + "hyphenateLimitChars,hyphens,imageOrientation,imageRendering,inherits,initialLetter,initialValue,"
                 + "inlineSize,inset,insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,"
                 + "insetInlineStart,interactivity,interestDelay,interestDelayEnd,interestDelayStart,interpolateSize,"
@@ -7770,57 +8956,60 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textAutospace,"
                 + "textBox,textBoxEdge,textBoxTrim,textCombineUpright,textDecoration,textDecorationColor,"
                 + "textDecorationLine,textDecorationSkipInk,textDecorationStyle,textDecorationThickness,"
-                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textOrientation,"
-                + "textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,textTransform,"
-                + "textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,timelineScope,top,"
-                + "touchAction,transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
-                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,types,"
-                + "unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,viewTimelineAxis,"
-                + "viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,viewTransitionName,"
-                + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
-                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
-                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
-                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
-                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
-                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
-                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
-                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
-                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
-                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
-                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
-                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
-                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
-                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
-                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
-                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
-                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
-                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,"
-                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
-                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
-                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
-                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
-                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
-                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskSize,"
-                + "webkitMaxLogicalHeight,webkitMaxLogicalWidth,webkitMinLogicalHeight,webkitMinLogicalWidth,"
-                + "webkitOpacity,webkitOrder,webkitPaddingAfter,webkitPaddingBefore,webkitPaddingEnd,"
-                + "webkitPaddingStart,webkitPerspective,webkitPerspectiveOrigin,webkitPerspectiveOriginX,"
-                + "webkitPerspectiveOriginY,webkitPrintColorAdjust,webkitRtlOrdering,webkitRubyPosition,"
-                + "webkitShapeImageThreshold,webkitShapeMargin,webkitShapeOutside,webkitTapHighlightColor,"
-                + "webkitTextCombine,webkitTextDecorationsInEffect,webkitTextEmphasis,webkitTextEmphasisColor,"
-                + "webkitTextEmphasisPosition,webkitTextEmphasisStyle,webkitTextFillColor,webkitTextOrientation,"
-                + "webkitTextSecurity,webkitTextSizeAdjust,webkitTextStroke,webkitTextStrokeColor,"
-                + "webkitTextStrokeWidth,webkitTransform,webkitTransformOrigin,webkitTransformOriginX,"
-                + "webkitTransformOriginY,webkitTransformOriginZ,webkitTransformStyle,webkitTransition,"
-                + "webkitTransitionDelay,webkitTransitionDuration,webkitTransitionProperty,"
-                + "webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,webkitUserSelect,"
-                + "webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,wordBreak,wordSpacing,"
-                + "wordWrap,writingMode,x,y,zIndex,"
+                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,"
+                + "textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
+                + "textTransform,textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,"
+                + "timelineScope,timelineTrigger,timelineTriggerActivationRange,timelineTriggerActivationRangeEnd,"
+                + "timelineTriggerActivationRangeStart,timelineTriggerActiveRange,timelineTriggerActiveRangeEnd,"
+                + "timelineTriggerActiveRangeStart,timelineTriggerName,timelineTriggerSource,top,touchAction,"
+                + "transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
+                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,"
+                + "triggerScope,types,unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,"
+                + "viewTimelineAxis,viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,"
+                + "viewTransitionName,viewTransitionScope,visibility,webkitAlignContent,webkitAlignItems,"
+                + "webkitAlignSelf,webkitAnimation,webkitAnimationDelay,webkitAnimationDirection,"
+                + "webkitAnimationDuration,webkitAnimationFillMode,webkitAnimationIterationCount,"
+                + "webkitAnimationName,webkitAnimationPlayState,webkitAnimationTimingFunction,webkitAppearance,"
+                + "webkitAppRegion,webkitBackfaceVisibility,webkitBackgroundClip,webkitBackgroundOrigin,"
+                + "webkitBackgroundSize,webkitBorderAfter,webkitBorderAfterColor,webkitBorderAfterStyle,"
+                + "webkitBorderAfterWidth,webkitBorderBefore,webkitBorderBeforeColor,webkitBorderBeforeStyle,"
+                + "webkitBorderBeforeWidth,webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,"
+                + "webkitBorderEnd,webkitBorderEndColor,webkitBorderEndStyle,webkitBorderEndWidth,"
+                + "webkitBorderHorizontalSpacing,webkitBorderImage,webkitBorderRadius,webkitBorderStart,"
+                + "webkitBorderStartColor,webkitBorderStartStyle,webkitBorderStartWidth,webkitBorderTopLeftRadius,"
+                + "webkitBorderTopRightRadius,webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,"
+                + "webkitBoxDirection,webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,"
+                + "webkitBoxReflect,webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,"
+                + "webkitColumnBreakBefore,webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,"
+                + "webkitColumnRule,webkitColumnRuleColor,webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,"
+                + "webkitColumnSpan,webkitColumnWidth,webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,"
+                + "webkitFlexFlow,webkitFlexGrow,webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,"
+                + "webkitFontSmoothing,webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,"
+                + "webkitLineClamp,webkitLocale,webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,"
+                + "webkitMarginBefore,webkitMarginEnd,webkitMarginStart,webkitMask,webkitMaskBoxImage,"
+                + "webkitMaskBoxImageOutset,webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,"
+                + "webkitMaskBoxImageSource,webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,"
+                + "webkitMaskImage,webkitMaskOrigin,webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,"
+                + "webkitMaskRepeat,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,"
+                + "wordBreak,wordSpacing,wordWrap,writingMode,x,y,zIndex,"
                 + "zoom",
             EDGE = "accentColor,additiveSymbols,alignContent,alignItems,alignmentBaseline,alignSelf,all,anchorName,"
                 + "anchorScope,animation,animationComposition,animationDelay,animationDirection,animationDuration,"
                 + "animationFillMode,animationIterationCount,animationName,animationPlayState,animationRange,"
-                + "animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,appearance,"
-                + "appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
+                + "animationRangeEnd,animationRangeStart,animationTimeline,animationTimingFunction,animationTrigger,"
+                + "appearance,appRegion,ascentOverride,aspectRatio,backdropFilter,backfaceVisibility,background,"
                 + "backgroundAttachment,backgroundBlendMode,backgroundClip,backgroundColor,backgroundImage,"
                 + "backgroundOrigin,backgroundPosition,backgroundPositionX,backgroundPositionY,backgroundRepeat,"
                 + "backgroundSize,baselineShift,baselineSource,basePalette,blockSize,border,borderBlock,"
@@ -7833,30 +9022,31 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "borderInlineEnd,borderInlineEndColor,borderInlineEndStyle,borderInlineEndWidth,borderInlineStart,"
                 + "borderInlineStartColor,borderInlineStartStyle,borderInlineStartWidth,borderInlineStyle,"
                 + "borderInlineWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,"
+                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderShape,borderSpacing,"
                 + "borderStartEndRadius,borderStartStartRadius,borderStyle,borderTop,borderTopColor,"
                 + "borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,borderWidth,bottom,"
                 + "boxDecorationBreak,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,bufferedRendering,"
-                + "captionSide,caretAnimation,caretColor,clear,clip,clipPath,clipRule,color,colorInterpolation,"
-                + "colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,columnGap,columnRule,"
-                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,contain,container,"
-                + "containerName,containerType,containIntrinsicBlockSize,containIntrinsicHeight,"
-                + "containIntrinsicInlineSize,containIntrinsicSize,containIntrinsicWidth,content,contentVisibility,"
-                + "cornerBlockEndShape,cornerBlockStartShape,cornerBottomLeftShape,cornerBottomRightShape,"
-                + "cornerBottomShape,cornerEndEndShape,cornerEndStartShape,cornerInlineEndShape,"
-                + "cornerInlineStartShape,cornerLeftShape,cornerRightShape,cornerShape,cornerStartEndShape,"
-                + "cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,cornerTopShape,counterIncrement,"
-                + "counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,descentOverride,direction,display,"
-                + "dominantBaseline,dynamicRangeLimit,emptyCells,fallback,fieldSizing,fill,fillOpacity,fillRule,"
-                + "filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,flexShrink,flexWrap,float,floodColor,"
-                + "floodOpacity,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,fontLanguageOverride,"
-                + "fontOpticalSizing,fontPalette,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,"
-                + "fontSynthesisSmallCaps,fontSynthesisStyle,fontSynthesisWeight,fontVariant,fontVariantAlternates,"
-                + "fontVariantCaps,fontVariantEastAsian,fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,"
-                + "fontVariantPosition,fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),"
-                + "getPropertyValue(),grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,"
-                + "gridColumnEnd,gridColumnGap,gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,"
-                + "gridTemplate,gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
+                + "captionSide,caretAnimation,caretColor,caretShape,clear,clip,clipPath,clipRule,color,"
+                + "colorInterpolation,colorInterpolationFilters,colorRendering,colorScheme,columnCount,columnFill,"
+                + "columnGap,columnHeight,columnRule,columnRuleColor,columnRuleStyle,columnRuleWidth,columns,"
+                + "columnSpan,columnWidth,columnWrap,contain,container,containerName,containerType,"
+                + "containIntrinsicBlockSize,containIntrinsicHeight,containIntrinsicInlineSize,containIntrinsicSize,"
+                + "containIntrinsicWidth,content,contentVisibility,cornerBlockEndShape,cornerBlockStartShape,"
+                + "cornerBottomLeftShape,cornerBottomRightShape,cornerBottomShape,cornerEndEndShape,"
+                + "cornerEndStartShape,cornerInlineEndShape,cornerInlineStartShape,cornerLeftShape,cornerRightShape,"
+                + "cornerShape,cornerStartEndShape,cornerStartStartShape,cornerTopLeftShape,cornerTopRightShape,"
+                + "cornerTopShape,counterIncrement,counterReset,counterSet,cssFloat,cssText,cursor,cx,cy,d,"
+                + "descentOverride,direction,display,dominantBaseline,dynamicRangeLimit,emptyCells,fallback,"
+                + "fieldSizing,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,flexFlow,flexGrow,"
+                + "flexShrink,flexWrap,float,floodColor,floodOpacity,font,fontDisplay,fontFamily,"
+                + "fontFeatureSettings,fontKerning,fontLanguageOverride,fontOpticalSizing,fontPalette,fontSize,"
+                + "fontSizeAdjust,fontStretch,fontStyle,fontSynthesis,fontSynthesisSmallCaps,fontSynthesisStyle,"
+                + "fontSynthesisWeight,fontVariant,fontVariantAlternates,fontVariantCaps,fontVariantEastAsian,"
+                + "fontVariantEmoji,fontVariantLigatures,fontVariantNumeric,fontVariantPosition,"
+                + "fontVariationSettings,fontWeight,forcedColorAdjust,gap,getPropertyPriority(),getPropertyValue(),"
+                + "grid,gridArea,gridAutoColumns,gridAutoFlow,gridAutoRows,gridColumn,gridColumnEnd,gridColumnGap,"
+                + "gridColumnStart,gridGap,gridRow,gridRowEnd,gridRowGap,gridRowStart,gridTemplate,"
+                + "gridTemplateAreas,gridTemplateColumns,gridTemplateRows,height,hyphenateCharacter,"
                 + "hyphenateLimitChars,hyphens,imageOrientation,imageRendering,inherits,initialLetter,initialValue,"
                 + "inlineSize,inset,insetBlock,insetBlockEnd,insetBlockStart,insetInline,insetInlineEnd,"
                 + "insetInlineStart,interactivity,interestDelay,interestDelayEnd,interestDelayStart,interpolateSize,"
@@ -7891,51 +9081,54 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "symbols,syntax,system,tableLayout,tabSize,textAlign,textAlignLast,textAnchor,textAutospace,"
                 + "textBox,textBoxEdge,textBoxTrim,textCombineUpright,textDecoration,textDecorationColor,"
                 + "textDecorationLine,textDecorationSkipInk,textDecorationStyle,textDecorationThickness,"
-                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textOrientation,"
-                + "textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,textTransform,"
-                + "textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,timelineScope,top,"
-                + "touchAction,transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
-                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,types,"
-                + "unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,viewTimelineAxis,"
-                + "viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,viewTransitionName,"
-                + "visibility,webkitAlignContent,webkitAlignItems,webkitAlignSelf,webkitAnimation,"
-                + "webkitAnimationDelay,webkitAnimationDirection,webkitAnimationDuration,webkitAnimationFillMode,"
-                + "webkitAnimationIterationCount,webkitAnimationName,webkitAnimationPlayState,"
-                + "webkitAnimationTimingFunction,webkitAppearance,webkitAppRegion,webkitBackfaceVisibility,"
-                + "webkitBackgroundClip,webkitBackgroundOrigin,webkitBackgroundSize,webkitBorderAfter,"
-                + "webkitBorderAfterColor,webkitBorderAfterStyle,webkitBorderAfterWidth,webkitBorderBefore,"
-                + "webkitBorderBeforeColor,webkitBorderBeforeStyle,webkitBorderBeforeWidth,"
-                + "webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,webkitBorderEnd,webkitBorderEndColor,"
-                + "webkitBorderEndStyle,webkitBorderEndWidth,webkitBorderHorizontalSpacing,webkitBorderImage,"
-                + "webkitBorderRadius,webkitBorderStart,webkitBorderStartColor,webkitBorderStartStyle,"
-                + "webkitBorderStartWidth,webkitBorderTopLeftRadius,webkitBorderTopRightRadius,"
-                + "webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,webkitBoxDirection,"
-                + "webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,webkitBoxReflect,"
-                + "webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,webkitColumnBreakBefore,"
-                + "webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,webkitColumnRule,webkitColumnRuleColor,"
-                + "webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,webkitColumnSpan,webkitColumnWidth,"
-                + "webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,webkitFlexFlow,webkitFlexGrow,"
-                + "webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,webkitFontSmoothing,"
-                + "webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,webkitLineClamp,webkitLocale,"
-                + "webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,webkitMarginBefore,webkitMarginEnd,"
-                + "webkitMarginStart,webkitMask,webkitMaskBoxImage,webkitMaskBoxImageOutset,"
-                + "webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,webkitMaskBoxImageSource,"
-                + "webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,webkitMaskImage,webkitMaskOrigin,"
-                + "webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,webkitMaskRepeat,webkitMaskSize,"
-                + "webkitMaxLogicalHeight,webkitMaxLogicalWidth,webkitMinLogicalHeight,webkitMinLogicalWidth,"
-                + "webkitOpacity,webkitOrder,webkitPaddingAfter,webkitPaddingBefore,webkitPaddingEnd,"
-                + "webkitPaddingStart,webkitPerspective,webkitPerspectiveOrigin,webkitPerspectiveOriginX,"
-                + "webkitPerspectiveOriginY,webkitPrintColorAdjust,webkitRtlOrdering,webkitRubyPosition,"
-                + "webkitShapeImageThreshold,webkitShapeMargin,webkitShapeOutside,webkitTapHighlightColor,"
-                + "webkitTextCombine,webkitTextDecorationsInEffect,webkitTextEmphasis,webkitTextEmphasisColor,"
-                + "webkitTextEmphasisPosition,webkitTextEmphasisStyle,webkitTextFillColor,webkitTextOrientation,"
-                + "webkitTextSecurity,webkitTextSizeAdjust,webkitTextStroke,webkitTextStrokeColor,"
-                + "webkitTextStrokeWidth,webkitTransform,webkitTransformOrigin,webkitTransformOriginX,"
-                + "webkitTransformOriginY,webkitTransformOriginZ,webkitTransformStyle,webkitTransition,"
-                + "webkitTransitionDelay,webkitTransitionDuration,webkitTransitionProperty,"
-                + "webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,webkitUserSelect,"
-                + "webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,wordBreak,wordSpacing,"
-                + "wordWrap,writingMode,x,y,zIndex,"
+                + "textEmphasis,textEmphasisColor,textEmphasisPosition,textEmphasisStyle,textIndent,textJustify,"
+                + "textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textSpacingTrim,"
+                + "textTransform,textUnderlineOffset,textUnderlinePosition,textWrap,textWrapMode,textWrapStyle,"
+                + "timelineScope,timelineTrigger,timelineTriggerActivationRange,timelineTriggerActivationRangeEnd,"
+                + "timelineTriggerActivationRangeStart,timelineTriggerActiveRange,timelineTriggerActiveRangeEnd,"
+                + "timelineTriggerActiveRangeStart,timelineTriggerName,timelineTriggerSource,top,touchAction,"
+                + "transform,transformBox,transformOrigin,transformStyle,transition,transitionBehavior,"
+                + "transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,translate,"
+                + "triggerScope,types,unicodeBidi,unicodeRange,userSelect,vectorEffect,verticalAlign,viewTimeline,"
+                + "viewTimelineAxis,viewTimelineInset,viewTimelineName,viewTransitionClass,viewTransitionGroup,"
+                + "viewTransitionName,viewTransitionScope,visibility,webkitAlignContent,webkitAlignItems,"
+                + "webkitAlignSelf,webkitAnimation,webkitAnimationDelay,webkitAnimationDirection,"
+                + "webkitAnimationDuration,webkitAnimationFillMode,webkitAnimationIterationCount,"
+                + "webkitAnimationName,webkitAnimationPlayState,webkitAnimationTimingFunction,webkitAppearance,"
+                + "webkitAppRegion,webkitBackfaceVisibility,webkitBackgroundClip,webkitBackgroundOrigin,"
+                + "webkitBackgroundSize,webkitBorderAfter,webkitBorderAfterColor,webkitBorderAfterStyle,"
+                + "webkitBorderAfterWidth,webkitBorderBefore,webkitBorderBeforeColor,webkitBorderBeforeStyle,"
+                + "webkitBorderBeforeWidth,webkitBorderBottomLeftRadius,webkitBorderBottomRightRadius,"
+                + "webkitBorderEnd,webkitBorderEndColor,webkitBorderEndStyle,webkitBorderEndWidth,"
+                + "webkitBorderHorizontalSpacing,webkitBorderImage,webkitBorderRadius,webkitBorderStart,"
+                + "webkitBorderStartColor,webkitBorderStartStyle,webkitBorderStartWidth,webkitBorderTopLeftRadius,"
+                + "webkitBorderTopRightRadius,webkitBorderVerticalSpacing,webkitBoxAlign,webkitBoxDecorationBreak,"
+                + "webkitBoxDirection,webkitBoxFlex,webkitBoxOrdinalGroup,webkitBoxOrient,webkitBoxPack,"
+                + "webkitBoxReflect,webkitBoxShadow,webkitBoxSizing,webkitClipPath,webkitColumnBreakAfter,"
+                + "webkitColumnBreakBefore,webkitColumnBreakInside,webkitColumnCount,webkitColumnGap,"
+                + "webkitColumnRule,webkitColumnRuleColor,webkitColumnRuleStyle,webkitColumnRuleWidth,webkitColumns,"
+                + "webkitColumnSpan,webkitColumnWidth,webkitFilter,webkitFlex,webkitFlexBasis,webkitFlexDirection,"
+                + "webkitFlexFlow,webkitFlexGrow,webkitFlexShrink,webkitFlexWrap,webkitFontFeatureSettings,"
+                + "webkitFontSmoothing,webkitHyphenateCharacter,webkitJustifyContent,webkitLineBreak,"
+                + "webkitLineClamp,webkitLocale,webkitLogicalHeight,webkitLogicalWidth,webkitMarginAfter,"
+                + "webkitMarginBefore,webkitMarginEnd,webkitMarginStart,webkitMask,webkitMaskBoxImage,"
+                + "webkitMaskBoxImageOutset,webkitMaskBoxImageRepeat,webkitMaskBoxImageSlice,"
+                + "webkitMaskBoxImageSource,webkitMaskBoxImageWidth,webkitMaskClip,webkitMaskComposite,"
+                + "webkitMaskImage,webkitMaskOrigin,webkitMaskPosition,webkitMaskPositionX,webkitMaskPositionY,"
+                + "webkitMaskRepeat,webkitMaskSize,webkitMaxLogicalHeight,webkitMaxLogicalWidth,"
+                + "webkitMinLogicalHeight,webkitMinLogicalWidth,webkitOpacity,webkitOrder,webkitPaddingAfter,"
+                + "webkitPaddingBefore,webkitPaddingEnd,webkitPaddingStart,webkitPerspective,"
+                + "webkitPerspectiveOrigin,webkitPerspectiveOriginX,webkitPerspectiveOriginY,webkitPrintColorAdjust,"
+                + "webkitRtlOrdering,webkitRubyPosition,webkitShapeImageThreshold,webkitShapeMargin,"
+                + "webkitShapeOutside,webkitTapHighlightColor,webkitTextCombine,webkitTextDecorationsInEffect,"
+                + "webkitTextEmphasis,webkitTextEmphasisColor,webkitTextEmphasisPosition,webkitTextEmphasisStyle,"
+                + "webkitTextFillColor,webkitTextOrientation,webkitTextSecurity,webkitTextSizeAdjust,"
+                + "webkitTextStroke,webkitTextStrokeColor,webkitTextStrokeWidth,webkitTransform,"
+                + "webkitTransformOrigin,webkitTransformOriginX,webkitTransformOriginY,webkitTransformOriginZ,"
+                + "webkitTransformStyle,webkitTransition,webkitTransitionDelay,webkitTransitionDuration,"
+                + "webkitTransitionProperty,webkitTransitionTimingFunction,webkitUserDrag,webkitUserModify,"
+                + "webkitUserSelect,webkitWritingMode,whiteSpace,whiteSpaceCollapse,widows,width,willChange,"
+                + "wordBreak,wordSpacing,wordWrap,writingMode,x,y,zIndex,"
                 + "zoom",
             FF = "-moz-animation,-moz-animation-delay,-moz-animation-direction,-moz-animation-duration,"
                 + "-moz-animation-fill-mode,-moz-animation-iteration-count,-moz-animation-name,"
@@ -7968,7 +9161,8 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "-webkit-transform,-webkit-transform-origin,-webkit-transform-style,-webkit-transition,"
                 + "-webkit-transition-delay,-webkit-transition-duration,-webkit-transition-property,"
                 + "-webkit-transition-timing-function,-webkit-user-select,accent-color,accentColor,align-content,"
-                + "align-items,align-self,alignContent,alignItems,alignSelf,all,animation,animation-composition,"
+                + "align-items,align-self,alignContent,alignItems,alignment-baseline,alignmentBaseline,alignSelf,"
+                + "all,anchor-name,anchor-scope,anchorName,anchorScope,animation,animation-composition,"
                 + "animation-delay,animation-direction,animation-duration,animation-fill-mode,"
                 + "animation-iteration-count,animation-name,animation-play-state,animation-timing-function,"
                 + "animationComposition,animationDelay,animationDirection,animationDuration,animationFillMode,"
@@ -7978,19 +9172,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "background-image,background-origin,background-position,background-position-x,"
                 + "background-position-y,background-repeat,background-size,backgroundAttachment,backgroundBlendMode,"
                 + "backgroundClip,backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,"
-                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundSize,baseline-source,"
-                + "baselineSource,block-size,blockSize,border,border-block,border-block-color,border-block-end,"
-                + "border-block-end-color,border-block-end-style,border-block-end-width,border-block-start,"
-                + "border-block-start-color,border-block-start-style,border-block-start-width,border-block-style,"
-                + "border-block-width,border-bottom,border-bottom-color,border-bottom-left-radius,"
-                + "border-bottom-right-radius,border-bottom-style,border-bottom-width,border-collapse,border-color,"
-                + "border-end-end-radius,border-end-start-radius,border-image,border-image-outset,"
-                + "border-image-repeat,border-image-slice,border-image-source,border-image-width,border-inline,"
-                + "border-inline-color,border-inline-end,border-inline-end-color,border-inline-end-style,"
-                + "border-inline-end-width,border-inline-start,border-inline-start-color,border-inline-start-style,"
-                + "border-inline-start-width,border-inline-style,border-inline-width,border-left,border-left-color,"
-                + "border-left-style,border-left-width,border-radius,border-right,border-right-color,"
-                + "border-right-style,border-right-width,border-spacing,border-start-end-radius,"
+                + "backgroundPositionX,backgroundPositionY,backgroundRepeat,backgroundSize,baseline-shift,"
+                + "baseline-source,baselineShift,baselineSource,block-size,blockSize,border,border-block,"
+                + "border-block-color,border-block-end,border-block-end-color,border-block-end-style,"
+                + "border-block-end-width,border-block-start,border-block-start-color,border-block-start-style,"
+                + "border-block-start-width,border-block-style,border-block-width,border-bottom,border-bottom-color,"
+                + "border-bottom-left-radius,border-bottom-right-radius,border-bottom-style,border-bottom-width,"
+                + "border-collapse,border-color,border-end-end-radius,border-end-start-radius,border-image,"
+                + "border-image-outset,border-image-repeat,border-image-slice,border-image-source,"
+                + "border-image-width,border-inline,border-inline-color,border-inline-end,border-inline-end-color,"
+                + "border-inline-end-style,border-inline-end-width,border-inline-start,border-inline-start-color,"
+                + "border-inline-start-style,border-inline-start-width,border-inline-style,border-inline-width,"
+                + "border-left,border-left-color,border-left-style,border-left-width,border-radius,border-right,"
+                + "border-right-color,border-right-style,border-right-width,border-spacing,border-start-end-radius,"
                 + "border-start-start-radius,border-style,border-top,border-top-color,border-top-left-radius,"
                 + "border-top-right-radius,border-top-style,border-top-width,border-width,borderBlock,"
                 + "borderBlockColor,borderBlockEnd,borderBlockEndColor,borderBlockEndStyle,borderBlockEndWidth,"
@@ -8080,17 +9274,19 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "paddingTop,page,page-break-after,page-break-before,page-break-inside,pageBreakAfter,"
                 + "pageBreakBefore,pageBreakInside,paint-order,paintOrder,parentRule,perspective,perspective-origin,"
                 + "perspectiveOrigin,place-content,place-items,place-self,placeContent,placeItems,placeSelf,"
-                + "pointer-events,pointerEvents,position,print-color-adjust,printColorAdjust,quotes,r,"
-                + "removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,ruby-position,rubyAlign,"
-                + "rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,scroll-margin-block,"
-                + "scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,scroll-margin-inline,"
-                + "scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,scroll-margin-right,"
-                + "scroll-margin-top,scroll-padding,scroll-padding-block,scroll-padding-block-end,"
-                + "scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,scroll-padding-inline-end,"
-                + "scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,scroll-padding-top,"
-                + "scroll-snap-align,scroll-snap-stop,scroll-snap-type,scrollbar-color,scrollbar-gutter,"
-                + "scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,scrollMargin,"
-                + "scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
+                + "pointer-events,pointerEvents,position,position-anchor,position-area,position-try,"
+                + "position-try-fallbacks,position-try-order,position-visibility,positionAnchor,positionArea,"
+                + "positionTry,positionTryFallbacks,positionTryOrder,positionVisibility,print-color-adjust,"
+                + "printColorAdjust,quotes,r,removeProperty(),resize,right,rotate,row-gap,rowGap,ruby-align,"
+                + "ruby-position,rubyAlign,rubyPosition,rx,ry,scale,scroll-behavior,scroll-margin,"
+                + "scroll-margin-block,scroll-margin-block-end,scroll-margin-block-start,scroll-margin-bottom,"
+                + "scroll-margin-inline,scroll-margin-inline-end,scroll-margin-inline-start,scroll-margin-left,"
+                + "scroll-margin-right,scroll-margin-top,scroll-padding,scroll-padding-block,"
+                + "scroll-padding-block-end,scroll-padding-block-start,scroll-padding-bottom,scroll-padding-inline,"
+                + "scroll-padding-inline-end,scroll-padding-inline-start,scroll-padding-left,scroll-padding-right,"
+                + "scroll-padding-top,scroll-snap-align,scroll-snap-stop,scroll-snap-type,scrollbar-color,"
+                + "scrollbar-gutter,scrollbar-width,scrollbarColor,scrollbarGutter,scrollbarWidth,scrollBehavior,"
+                + "scrollMargin,scrollMarginBlock,scrollMarginBlockEnd,scrollMarginBlockStart,scrollMarginBottom,"
                 + "scrollMarginInline,scrollMarginInlineEnd,scrollMarginInlineStart,scrollMarginLeft,"
                 + "scrollMarginRight,scrollMarginTop,scrollPadding,scrollPaddingBlock,scrollPaddingBlockEnd,"
                 + "scrollPaddingBlockStart,scrollPaddingBottom,scrollPaddingInline,scrollPaddingInlineEnd,"
@@ -8381,13 +9577,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "ancestorOrigins,assign(),hash,host,hostname,href,origin,"
                     + "pathname,port,protocol,reload(),replace(),search,toString()",
-            FF = "assign(),hash,host,hostname,href,origin,"
-               + "pathname,port,protocol,reload(),replace(),search,toString()",
             FF_ESR = "assign(),hash,host,hostname,href,origin,"
                    + "pathname,port,protocol,reload(),replace(),search,toString()")
     @HtmlUnitNYI(CHROME = "assign(),hash,host,hostname,href,origin,"
                         + "pathname,port,protocol,reload(),replace(),search,toString()",
                  EDGE = "assign(),hash,host,hostname,href,origin,"
+                      + "pathname,port,protocol,reload(),replace(),search,toString()",
+                 FF = "assign(),hash,host,hostname,href,origin,"
                       + "pathname,port,protocol,reload(),replace(),search,toString()")
     public void location() throws Exception {
         testString("", "window.location");
@@ -8743,11 +9939,13 @@ public class ElementPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "arrayBuffer(),size,slice(),stream(),text(),type",
-            EDGE = "arrayBuffer(),size,slice(),stream(),text(),type",
+    @Alerts(CHROME = "arrayBuffer(),bytes(),size,slice(),stream(),text(),type",
+            EDGE = "arrayBuffer(),bytes(),size,slice(),stream(),text(),type",
             FF = "arrayBuffer(),bytes(),size,slice(),stream(),text(),type",
             FF_ESR = "arrayBuffer(),bytes(),size,slice(),stream(),text(),type")
-    @HtmlUnitNYI(FF = "arrayBuffer(),size,slice(),stream(),text(),type",
+    @HtmlUnitNYI(CHROME = "arrayBuffer(),size,slice(),stream(),text(),type",
+            EDGE = "arrayBuffer(),size,slice(),stream(),text(),type",
+            FF = "arrayBuffer(),size,slice(),stream(),text(),type",
             FF_ESR = "arrayBuffer(),size,slice(),stream(),text(),type")
     public void blob() throws Exception {
         testString("", "new Blob([1, 2], { type: \"text/html\" })");
@@ -9771,5 +10969,67 @@ public class ElementPropertiesTest extends WebDriverTestCase {
                 + "time(),timeEnd(),timeLog(),toSource(),trace(),warn()")
     public void console() throws Exception {
         testString("", "console");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("-")
+    public void intl() throws Exception {
+        testString("", "Intl");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("-")
+    public void intl_Collator() throws Exception {
+        testString("", "new Intl.Collator('de')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("-")
+    @HtmlUnitNYI(CHROME = "format(),resolvedOptions()",
+            EDGE = "format(),resolvedOptions()",
+            FF = "format(),resolvedOptions()",
+            FF_ESR = "format(),resolvedOptions()")
+    public void intl_DateTimeFormat() throws Exception {
+        testString("", "new Intl.DateTimeFormat('en-US')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("-")
+    @HtmlUnitNYI(
+            CHROME = "baseName,calendar,caseFirst,collation,hourCycle,language,maximize(),minimize(),"
+                + "numberingSystem,numeric,region,script,toString()",
+            EDGE = "baseName,calendar,caseFirst,collation,hourCycle,language,maximize(),minimize(),"
+                + "numberingSystem,numeric,region,script,toString()",
+            FF = "baseName,calendar,caseFirst,collation,hourCycle,language,maximize(),minimize(),"
+                + "numberingSystem,numeric,region,script,toString()",
+            FF_ESR = "baseName,calendar,caseFirst,collation,hourCycle,language,maximize(),minimize(),"
+                + "numberingSystem,numeric,region,script,toString()")
+    public void intl_Locale() throws Exception {
+        testString("", "new Intl.Locale('de')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("-")
+    @HtmlUnitNYI(CHROME = "format(),resolvedOptions()",
+            EDGE = "format(),resolvedOptions()",
+            FF = "format(),resolvedOptions()",
+            FF_ESR = "format(),resolvedOptions()")
+    public void intl_NumberFormat() throws Exception {
+        testString("", "new Intl.NumberFormat('de-DE')");
     }
 }

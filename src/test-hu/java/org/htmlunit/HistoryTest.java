@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,18 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link History}.
@@ -54,7 +54,7 @@ public class HistoryTest extends WebDriverTestCase {
         servlets.put("/post1", Post1Servlet.class);
         servlets.put("/post2", Post2Servlet.class);
         servlets.put("/post3", Post3Servlet.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final WebDriver driver = getWebDriver();
         driver.get(URL_FIRST + "post1");
@@ -95,7 +95,7 @@ public class HistoryTest extends WebDriverTestCase {
         for (int i = 0; i < testDeep; i++) {
             servlets.put("/post" + i, Post1Servlet.class);
         }
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final WebDriver driver = getWebDriver();
 

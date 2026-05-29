@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,24 +163,12 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"fontSize: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                       "letterSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42em]",
-                       "outlineWidth: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42em]",
-                       "textIndent: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                       "verticalAlign: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                       "wordSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42em]"},
-            FF = {"fontSize: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                  "letterSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                  "outlineWidth: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42em]",
-                  "textIndent: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                  "verticalAlign: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                  "wordSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]"},
-            FF_ESR = {"fontSize: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                      "letterSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                      "outlineWidth: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42em]",
-                      "textIndent: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                      "verticalAlign: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
-                      "wordSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]"})
+    @Alerts({"fontSize: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
+             "letterSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
+             "outlineWidth: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42em]",
+             "textIndent: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
+             "verticalAlign: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]",
+             "wordSpacing: initial [] 42.0 [] 42.7 [] 42 [] 42px [42px] 42mm [42mm] 42em [42em] 42% [42%]"})
     public void width_like_properties_font() throws Exception {
         width_like_properties("fontSize", "letterSpacing", "outlineWidth", "textIndent",
                         "verticalAlign", "wordSpacing");

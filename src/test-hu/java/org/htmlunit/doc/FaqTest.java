@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import javax.imageio.ImageIO;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ScriptPreProcessor;
 import org.htmlunit.WebClient;
-import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
 import org.junit.jupiter.api.Assertions;
@@ -110,16 +109,11 @@ public class FaqTest {
         final URL url = new URL("https://www.htmlunit.org");
 
         // create a ScriptPreProcessor
-        final ScriptPreProcessor myScriptPreProcessor = new ScriptPreProcessor() {
+        final ScriptPreProcessor myScriptPreProcessor = (htmlPage, sourceCode, sourceName, lineNumber, htmlElement) -> {
 
-            @Override
-            public String preProcess(final HtmlPage htmlPage, final String sourceCode, final String sourceName,
-                    final int lineNumber, final HtmlElement htmlElement) {
+            // modify the source code here
 
-                // modify the source code here
-
-                return sourceCode;
-            }
+            return sourceCode;
         };
 
         try (WebClient webClient = new WebClient()) {

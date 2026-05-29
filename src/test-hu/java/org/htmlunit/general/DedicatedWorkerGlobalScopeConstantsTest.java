@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -66,7 +65,7 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}")
+    @ParameterizedTest(name = "_{0}", quoteTextArguments = false)
     @MethodSource("data")
     void test(final String host) throws Exception {
         test(host, getExpectedString(host));
@@ -157,12 +156,7 @@ public class DedicatedWorkerGlobalScopeConstantsTest extends WebDriverTestCase {
             first = false;
         }
 
-        Collections.sort(constants, new Comparator<String>() {
-            @Override
-            public int compare(final String o1, final String o2) {
-                return o1.substring(0, o1.indexOf(':')).compareTo(o2.substring(0, o2.indexOf(':')));
-            }
-        });
+        constants.sort((o1, o2) -> o1.substring(0, o1.indexOf(':')).compareTo(o2.substring(0, o2.indexOf(':'))));
         return constants.toArray(new String[0]);
     }
 

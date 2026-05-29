@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +88,8 @@ public class HTMLTableCellElement extends HTMLElement {
         if ("collapse".equals(style.getStyleAttribute(StyleAttributes.Definition.BORDER_COLLAPSE, true))) {
             final HtmlTableRow row = getRow();
             if (row != null) {
-                w -= 0.5 * style.getBorderLeftValue();
-                w -= 0.5 * style.getBorderRightValue();
+                w -= 0.5f * style.getBorderLeftValue();
+                w -= 0.5f * style.getBorderRightValue();
             }
         }
 

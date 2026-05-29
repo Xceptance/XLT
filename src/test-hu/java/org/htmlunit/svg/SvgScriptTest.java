@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,10 +62,10 @@ public class SvgScriptTest extends WebDriverTestCase {
 
     private void assertType(final String expectedAlert, final DomElement element) {
         if ("[object SVGScriptElement]".equals(expectedAlert)) {
-            assertTrue(SvgScript.class.isInstance(element));
+            assertTrue(element instanceof SvgScript);
         }
         else {
-            assertTrue(HtmlScript.class.isInstance(element));
+            assertTrue(element instanceof HtmlScript);
         }
     }
 

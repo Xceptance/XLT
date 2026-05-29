@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.apache.commons.lang3.function.FailableSupplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Context;
@@ -33,9 +32,12 @@ import org.htmlunit.corejs.javascript.LambdaFunction;
 import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.WindowOrWorkerGlobalScope;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLUnknownElement;
 
@@ -86,17 +88,6 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
      */
     public void setClassName(final String className) {
         className_ = className;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setParentScope(final Scriptable m) {
-        if (m == this) {
-            throw new IllegalArgumentException("Object can't be its own parentScope");
-        }
-        super.setParentScope(m);
     }
 
     /**
@@ -209,8 +200,8 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
      * @return the JavaScript object or NOT_FOUND
      */
     protected HtmlUnitScriptable getScriptableFor(final Object object) {
-        if (object instanceof WebWindow) {
-            return ((WebWindow) object).getScriptableObject();
+        if (object instanceof WebWindow window) {
+            return window.getScriptableObject();
         }
 
         final DomNode domNode = (DomNode) object;
@@ -231,8 +222,8 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         // Get the JS class name for the specified DOM node.
         // Walk up the inheritance chain if necessary.
         Class<? extends HtmlUnitScriptable> javaScriptClass = null;
-        if (domNode instanceof HtmlImage && "image".equals(((HtmlImage) domNode).getOriginalQualifiedName())
-                && ((HtmlImage) domNode).wasCreatedByJavascript()) {
+        if (domNode instanceof HtmlImage image && "image".equals(image.getOriginalQualifiedName())
+                && image.wasCreatedByJavascript()) {
             if (domNode.hasFeature(HTMLIMAGE_HTMLELEMENT)) {
                 javaScriptClass = HTMLElement.class;
             }
@@ -264,28 +255,12 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
                 throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
         }
-        initParentScope(domNode, scriptable);
 
+        scriptable.setParentScope(getParentScope());
         scriptable.setPrototype(getPrototype(javaScriptClass));
         scriptable.setDomNode(domNode);
 
         return scriptable;
-    }
-
-    /**
-     * Initialize the parent scope of a newly created scriptable.
-     * @param domNode the DOM node for the script object
-     * @param scriptable the script object to initialize
-     */
-    protected void initParentScope(final DomNode domNode, final HtmlUnitScriptable scriptable) {
-        final SgmlPage page = domNode.getPage();
-        final WebWindow enclosingWindow = page.getEnclosingWindow();
-        if (enclosingWindow != null && enclosingWindow.getEnclosedPage() == page) {
-            scriptable.setParentScope(enclosingWindow.getScriptableObject());
-        }
-        else {
-            scriptable.setParentScope(ScriptableObject.getTopLevelScope(page.getScriptableObject()));
-        }
     }
 
     /**
@@ -332,24 +307,28 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
      * @throws RuntimeException if the window cannot be found, which should never occur
      */
     protected static Window getWindow(final Scriptable s) throws RuntimeException {
-        final Scriptable top = ScriptableObject.getTopLevelScope(s);
-        if (top instanceof Window) {
-            return (Window) top;
+        if (s instanceof Window window) {
+            return window;
+        }
+
+        final TopLevel topLevel = ScriptableObject.getTopLevelScope(s.getParentScope());
+        if (topLevel.getGlobalThis() instanceof Window window) {
+            return window;
         }
         throw new RuntimeException("Unable to find window associated with " + s);
     }
 
-    /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * @return the window that is set as the top call scope
-     */
-    protected static Window getWindowFromTopCallScope() throws RuntimeException {
-        final Scriptable top = JavaScriptEngine.getTopCallScope();
-        if (top instanceof Window) {
-            return (Window) top;
+    protected static WindowOrWorkerGlobalScope getWindowOrWorkerGlobalScope(
+                        final Scriptable s) throws RuntimeException {
+        if (s instanceof WindowOrWorkerGlobalScope wow) {
+            return wow;
         }
-        throw new RuntimeException("Unable to find window in scope");
+
+        final TopLevel topLevel = ScriptableObject.getTopLevelScope(s.getParentScope());
+        if (topLevel.getGlobalThis() instanceof WindowOrWorkerGlobalScope wow) {
+            return wow;
+        }
+        throw new RuntimeException("Unable to find WindowOrWorkerGlobalScope associated with " + s);
     }
 
     /**
@@ -396,8 +375,8 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
      */
     @Override
     protected Object equivalentValues(Object value) {
-        if (value instanceof HtmlUnitScriptableProxy<?>) {
-            value = ((HtmlUnitScriptableProxy<?>) value).getDelegee();
+        if (value instanceof HtmlUnitScriptableProxy<?> proxy) {
+            value = proxy.getDelegee();
         }
         return super.equivalentValues(value);
     }
@@ -416,23 +395,24 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
     }
 
     protected NativePromise setupPromise(final FailableSupplier<Object, IOException> resolver) {
-        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final VarScope scope = ScriptableObject.getTopLevelScope(getParentScope());
         final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
 
         try {
             final LambdaFunction resolve = (LambdaFunction) getProperty(ctor, "resolve");
-            return (NativePromise) resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
+            return (NativePromise) resolve.call(Context.getCurrentContext(), scope,
+                                                ctor, new Object[] {resolver.get()});
         }
         catch (final IOException e) {
             final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
-            return (NativePromise) reject.call(Context.getCurrentContext(), this, ctor, new Object[] {e.getMessage()});
+            return (NativePromise) reject.call(Context.getCurrentContext(), scope, ctor, new Object[] {e.getMessage()});
         }
     }
 
     protected NativePromise setupRejectedPromise(final Supplier<Object> resolver) {
-        final Scriptable scope = ScriptableObject.getTopLevelScope(this);
+        final VarScope scope = ScriptableObject.getTopLevelScope(getParentScope());
         final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
         final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
-        return (NativePromise) reject.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
+        return (NativePromise) reject.call(Context.getCurrentContext(), scope, ctor, new Object[] {resolver.get()});
     }
 }

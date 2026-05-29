@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
  * @author Mike Dirolf
  * @author Marc Guillemot
  * @author Frank Danek
+ * @author Ronald Brill
  */
 public class TreeWalkerTest extends WebDriverTestCase {
     private static final String CONTENT_START = DOCTYPE_HTML
@@ -398,8 +399,7 @@ public class TreeWalkerTest extends WebDriverTestCase {
     @Test
     @Alerts({"P", "undefined"})
     public void secondFilterReject() throws Exception {
-        final String script = ""
-            + "var noScripts = {\n"
+        final String script = "var noScripts = {\n"
             + "  acceptNode: function(node) {\n"
             + "    if (node.tagName == 'SPAN' || node.tagName == 'DIV') {\n"
             + "      return NodeFilter.FILTER_REJECT;\n"

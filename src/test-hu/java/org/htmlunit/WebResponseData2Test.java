@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Daniel Gredler
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class WebResponseData2Test extends SimpleWebTestCase {
 
@@ -30,9 +31,7 @@ public class WebResponseData2Test extends SimpleWebTestCase {
     @Test
     public void bigContent() throws Exception {
         final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 300; i++) {
-            builder.append(' ');
-        }
+        builder.append(" ".repeat(300));
         builder.append("Hello World!");
         loadPage(builder.toString());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,14 +90,13 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             final String source, final boolean createdByJavascript)
         throws SAXException, IOException {
         final Page page = parent.getPage();
-        if (!(page instanceof HtmlPage)) {
+        if (!(page instanceof HtmlPage htmlPage)) {
             return;
         }
-        final HtmlPage htmlPage = (HtmlPage) page;
         final URL url = htmlPage.getUrl();
 
         final HtmlUnitNekoDOMBuilder domBuilder =
-                new HtmlUnitNekoDOMBuilder(this, parent, url, source, createdByJavascript);
+                new HtmlUnitNekoDOMBuilder(this, webClient, parent, url, source, createdByJavascript);
         domBuilder.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
         // build fragment context stack
         DomNode node = context;
@@ -140,7 +139,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             final boolean xhtml, final boolean createdByJavascript) throws IOException {
         final URL url = webResponse.getWebRequest().getUrl();
         final HtmlUnitNekoDOMBuilder domBuilder =
-                new HtmlUnitNekoDOMBuilder(this, page, url, null, createdByJavascript);
+                new HtmlUnitNekoDOMBuilder(this, webClient, page, url, null, createdByJavascript);
 
         final Charset charset = webResponse.getContentCharset();
         try {

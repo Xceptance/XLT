@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
         final BrowserVersion browserVersion = getBrowserVersion();
 
         final HtmlStyle node = (HtmlStyle) page.getElementsByTagName("style").item(0);
-        final HTMLStyleElement host = (HTMLStyleElement) node.getScriptableObject();
+        final HTMLStyleElement host = node.getScriptableObject();
         final CSSStyleSheet sheet = host.getSheet();
 
         Selector selector = parseSelector(sheet, "*.yui-log input");

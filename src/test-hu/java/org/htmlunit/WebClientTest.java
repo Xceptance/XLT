@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,17 +142,13 @@ public class WebClientTest extends SimpleWebTestCase {
         final HtmlPage firstPage = client.getPage(URL_FIRST);
         final HtmlAnchor anchor = firstPage.getHtmlElementById("a2");
 
-        final List<WebWindowEvent> firstExpectedEvents = Arrays.asList(new WebWindowEvent[] {
-            new WebWindowEvent(client.getCurrentWindow(), WebWindowEvent.CHANGE, null, firstPage)
-        });
+        final List<WebWindowEvent> firstExpectedEvents = Arrays.asList(new WebWindowEvent(client.getCurrentWindow(), WebWindowEvent.CHANGE, null, firstPage));
         assertEquals(firstExpectedEvents, events);
 
         events.clear();
         final HtmlPage secondPage = anchor.click();
 
-        final List<WebWindowEvent> secondExpectedEvents = Arrays.asList(new WebWindowEvent[] {
-            new WebWindowEvent(client.getCurrentWindow(), WebWindowEvent.CHANGE, firstPage, secondPage)
-        });
+        final List<WebWindowEvent> secondExpectedEvents = Arrays.asList(new WebWindowEvent(client.getCurrentWindow(), WebWindowEvent.CHANGE, firstPage, secondPage));
         assertEquals(secondExpectedEvents, events);
     }
 
@@ -201,14 +197,12 @@ public class WebClientTest extends SimpleWebTestCase {
 
         final WebWindow firstWindow = client.getCurrentWindow();
         final WebWindow secondWindow = client.getWebWindowByName("myNewWindow");
-        final List<WebWindowEvent> expectedEvents = Arrays.asList(new WebWindowEvent[] {
-            new WebWindowEvent(
-                secondWindow, WebWindowEvent.OPEN, null, null),
-            new WebWindowEvent(
-                secondWindow, WebWindowEvent.CHANGE, null, secondWindow.getEnclosedPage()),
-            new WebWindowEvent(
-                firstWindow, WebWindowEvent.CHANGE, null, firstPage),
-        });
+        final List<WebWindowEvent> expectedEvents = Arrays.asList(new WebWindowEvent(
+            secondWindow, WebWindowEvent.OPEN, null, null),
+                new WebWindowEvent(
+                    secondWindow, WebWindowEvent.CHANGE, null, secondWindow.getEnclosedPage()),
+                new WebWindowEvent(
+                    firstWindow, WebWindowEvent.CHANGE, null, firstPage));
         assertEquals(expectedEvents, events);
     }
 
@@ -265,12 +259,10 @@ public class WebClientTest extends SimpleWebTestCase {
         assertEquals("second", secondPage.getTitleText());
 
         final WebWindow firstWindow = client.getCurrentWindow();
-        final List<WebWindowEvent> expectedEvents = Arrays.asList(new WebWindowEvent[] {
-            new WebWindowEvent(
-                frame.getEnclosedWindow(), WebWindowEvent.CLOSE, thirdPage, null),
-            new WebWindowEvent(
-                firstWindow, WebWindowEvent.CHANGE, firstPage, secondPage),
-        });
+        final List<WebWindowEvent> expectedEvents = Arrays.asList(new WebWindowEvent(
+            frame.getEnclosedWindow(), WebWindowEvent.CLOSE, thirdPage, null),
+                new WebWindowEvent(
+                    firstWindow, WebWindowEvent.CHANGE, firstPage, secondPage));
         assertEquals(expectedEvents.get(0), events.get(0));
         assertEquals(expectedEvents, events);
     }
@@ -662,7 +654,7 @@ public class WebClientTest extends SimpleWebTestCase {
         final Page page = client.getPage(URL_FIRST);
         assertTrue("instanceof TextPage", page instanceof TextPage);
 
-        final List<Page> expectedPageCreationItems = Arrays.asList(new Page[] {page});
+        final List<Page> expectedPageCreationItems = Arrays.asList(page);
 
         assertEquals(expectedPageCreationItems, collectedPageCreationItems);
     }
@@ -863,7 +855,7 @@ public class WebClientTest extends SimpleWebTestCase {
         final URL fileURL = new URL("file://" + tmpFile.getCanonicalPath());
 
         final WebClient client = getWebClient();
-        final XmlPage page = (XmlPage) client.getPage(fileURL);
+        final XmlPage page = client.getPage(fileURL);
 
         assertEquals(xmlContent, page.getWebResponse().getContentAsString());
         // "text/xml" or "application/xml", it doesn't matter
@@ -892,9 +884,7 @@ public class WebClientTest extends SimpleWebTestCase {
 
         webClient.setWebConnection(webConnection);
 
-        final URL url = URL_FIRST;
-
-        final HtmlPage page = webClient.getPage(url);
+        final HtmlPage page = webClient.getPage(URL_FIRST);
         assertEquals("Second", page.getTitleText());
     }
 
@@ -909,7 +899,7 @@ public class WebClientTest extends SimpleWebTestCase {
                 DOCTYPE_HTML + "<html><head><title>first</title></head><body></body></html>", URL_FIRST);
 
         final Page page = webClient.loadWebResponseInto(webResponse, webClient.getCurrentWindow());
-        assertTrue(HtmlPage.class.isInstance(page));
+        assertTrue(page instanceof HtmlPage);
 
         final HtmlPage htmlPage = (HtmlPage) page;
         assertEquals("first", htmlPage.getTitleText());
@@ -1131,7 +1121,7 @@ public class WebClientTest extends SimpleWebTestCase {
     @Test
     public void refreshHandlerAccessors() {
         final WebClient webClient = getWebClient();
-        assertTrue(ImmediateRefreshHandler.class.isInstance(webClient.getRefreshHandler()));
+        assertTrue(webClient.getRefreshHandler() instanceof ImmediateRefreshHandler);
 
         final RefreshHandler handler = new ImmediateRefreshHandler();
         webClient.setRefreshHandler(handler);
@@ -1156,7 +1146,7 @@ public class WebClientTest extends SimpleWebTestCase {
         client.setWebConnection(webConnection);
 
         final Page page = client.getPage(URL_FIRST);
-        assertTrue(HtmlPage.class.isInstance(page));
+        assertTrue(page instanceof HtmlPage);
     }
 
     /**
@@ -1303,9 +1293,8 @@ public class WebClientTest extends SimpleWebTestCase {
         if (url == null) {
             throw new FileNotFoundException(fileName);
         }
-        final File file = new File(new URI(url.toString()));
 
-        return file;
+        return new File(new URI(url.toString()));
     }
 
     /**
@@ -1485,19 +1474,19 @@ public class WebClientTest extends SimpleWebTestCase {
         final String[] expectedAlerts = {"foo"};
 
         webConnection.setResponse(URL_FIRST, content, "Text/Html");
-        assertTrue(HtmlPage.class.isInstance(client.getPage(URL_FIRST)));
+        assertTrue(client.getPage(URL_FIRST) instanceof HtmlPage);
         assertEquals(expectedAlerts, collectedAlerts);
 
         webConnection.setResponse(URL_FIRST, content, "Text/Xml");
-        assertTrue(XmlPage.class.isInstance(client.getPage(URL_FIRST)));
+        assertTrue(client.getPage(URL_FIRST) instanceof XmlPage);
         webConnection.setResponse(URL_FIRST, content, MimeType.APPLICATION_XML);
-        assertTrue(XmlPage.class.isInstance(client.getPage(URL_FIRST)));
+        assertTrue(client.getPage(URL_FIRST) instanceof XmlPage);
 
         webConnection.setResponse(URL_FIRST, content, MimeType.TEXT_PLAIN);
-        assertTrue(TextPage.class.isInstance(client.getPage(URL_FIRST)));
+        assertTrue(client.getPage(URL_FIRST) instanceof TextPage);
 
         webConnection.setResponse(URL_FIRST, "", "Text/JavaScript");
-        assertTrue(HtmlPage.class.isInstance(client.getPage(URL_FIRST)));
+        assertTrue(client.getPage(URL_FIRST) instanceof HtmlPage);
     }
 
     /**
@@ -1707,17 +1696,14 @@ public class WebClientTest extends SimpleWebTestCase {
             client.setWebConnection(webConnection);
 
             final Exception[] exceptions = {null};
-            final Thread runner = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        client.getPage(URL_FIRST);
-                    }
-                    catch (final Exception e) {
-                        exceptions[0] = e;
-                    }
+            final Thread runner = new Thread(() -> {
+                try {
+                    client.getPage(URL_FIRST);
                 }
-            };
+                catch (final Exception e) {
+                    exceptions[0] = e;
+                }
+            });
 
             runner.start();
 
@@ -1727,7 +1713,7 @@ public class WebClientTest extends SimpleWebTestCase {
                 fail("Script was still running after timeout");
             }
 
-            Assertions.assertTrue(exceptions[0] instanceof RuntimeException, exceptions[0].getMessage());
+            Assertions.assertInstanceOf(RuntimeException.class, exceptions[0], exceptions[0].getMessage());
             final Throwable cause = exceptions[0].getCause();
             String msg = cause.getMessage();
             Assertions.assertTrue(cause.getMessage().startsWith(

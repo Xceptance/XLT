@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.javascript.SilentJavaScriptErrorListener;
 import org.htmlunit.junit.annotation.Alerts;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -68,7 +69,7 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}_{1}")
+    @ParameterizedTest(name = "_{0}_{1}", quoteTextArguments = false)
     @MethodSource("data")
     void test(final String parent, final String child) throws Exception {
         String bodyStart = "<body>\n";
@@ -170,6 +171,10 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final WebClient webClient = ((HtmlUnitDriver) driver).getWebClient();
             webClient.getOptions().setThrowExceptionOnScriptError(false);
+
+            // no need to log all the js errors we got because of only opened script tags
+            // hopefully this make the tests faster on CI
+            webClient.setJavaScriptErrorListener(new SilentJavaScriptErrorListener());
         }
 
         loadPage2(pageHtml);
@@ -458,6 +463,11 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
     @Alerts("0")
     void _body_h6() throws Exception {
         test("body", "h6");
+    }
+
+    @Alerts("0")
+    void _body_hgroup() throws Exception {
+        test("body", "hgroup");
     }
 
     @Alerts("0")
@@ -1151,6 +1161,11 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
     }
 
     @Alerts("0")
+    void _frameset_hgroup() throws Exception {
+        test("frameset", "hgroup");
+    }
+
+    @Alerts("0")
     void _frameset_hr() throws Exception {
         test("frameset", "hr");
     }
@@ -1823,6 +1838,11 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
     @Alerts("2")
     void _head_h6() throws Exception {
         test("head", "h6");
+    }
+
+    @Alerts("2")
+    void _head_hgroup() throws Exception {
+        test("head", "hgroup");
     }
 
     @Alerts("2")
@@ -2503,6 +2523,11 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
     @Alerts("0")
     void _html_h6() throws Exception {
         test("html", "h6");
+    }
+
+    @Alerts("0")
+    void _html_hgroup() throws Exception {
+        test("html", "hgroup");
     }
 
     @Alerts("0")
@@ -3233,6 +3258,11 @@ public class ElementClosesElement2Test extends WebDriverTestCase {
     @Alerts("0")
     void _script_h6() throws Exception {
         test("script", "h6");
+    }
+
+    @Alerts("0")
+    void _script_hgroup() throws Exception {
+        test("script", "hgroup");
     }
 
     @Alerts("0")

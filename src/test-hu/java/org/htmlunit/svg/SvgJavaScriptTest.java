@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.openqa.selenium.WebElement;
  * Tests for running JavaScripts in SVG elements..
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class SvgJavaScriptTest extends WebDriverTestCase {
 
@@ -34,8 +35,7 @@ public class SvgJavaScriptTest extends WebDriverTestCase {
      */
     @Test
     public void onclick() throws Exception {
-        final String html = ""
-            + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+        final String html = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
             + "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" baseProfile=\"full\" width=\"100px\""
             + " height=\"100px\" viewBox=\"0 0 100 100\">\n"
             + "  <rect id=\"rect\" width=\"50\" height=\"50\" fill=\"blue\" "

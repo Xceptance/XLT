@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,6 +186,13 @@ public class HostParentOfS2Test extends HostParentOf {
     @Alerts("true/true")
     void _SVGGraphicsElement_SVGSwitchElement() throws Exception {
         test("SVGGraphicsElement", "SVGSwitchElement");
+    }
+
+    @Alerts(DEFAULT = "true/true",
+            FF_ESR = "false/false")
+    @HtmlUnitNYI(FF_ESR = "true/true")
+    void _SVGGraphicsElement_SVGSymbolElement() throws Exception {
+        test("SVGGraphicsElement", "SVGSymbolElement");
     }
 
     @Alerts("true/true")

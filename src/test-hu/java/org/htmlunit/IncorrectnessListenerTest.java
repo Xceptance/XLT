@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,7 @@ public final class IncorrectnessListenerTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
 
         final List<String> collectedIncorrectness = new ArrayList<>();
-        final IncorrectnessListener listener = new IncorrectnessListener() {
-            @Override
-            public void notify(final String message, final Object origin) {
-                collectedIncorrectness.add(message);
-            }
-        };
+        final IncorrectnessListener listener = (message, origin) -> collectedIncorrectness.add(message);
         webClient.setIncorrectnessListener(listener);
 
         final MockWebConnection webConnection = new MockWebConnection();

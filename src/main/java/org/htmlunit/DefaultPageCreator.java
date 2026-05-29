@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
      */
     public static PageType determinePageType(final WebResponse webResponse) throws IOException {
         final String contentType = webResponse.getContentType();
-        if (!StringUtils.isEmptyOrNull(contentType)) {
+        if (!StringUtils.isEmptyOrNull(contentType) && !"*/*".equals(contentType)) {
             return determinePageType(contentType);
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package org.htmlunit.javascript.host.intl;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 public class IntlTest extends WebDriverTestCase {
 
@@ -33,6 +35,114 @@ public class IntlTest extends WebDriverTestCase {
     @Alerts("[object Intl]")
     public void intl() throws Exception {
         test("Intl");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("function Collator() { [native code] }")
+    public void collator() throws Exception {
+        test("Intl.Collator");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object Intl.Collator]",
+             "function Collator() { [native code] }",
+             "[object Intl.Collator]"})
+    public void collatorCtor() throws Exception {
+        testCtor("new Intl.Collator('de')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("function DateTimeFormat() { [native code] }")
+    public void dateTimeFormat() throws Exception {
+        test("Intl.DateTimeFormat");
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object Intl.DateTimeFormat]",
+             "function DateTimeFormat() { [native code] }",
+             "[object Intl.DateTimeFormat]"})
+    public void dateTimeFormatCtor() throws Exception {
+        testCtor("new Intl.DateTimeFormat('en-US')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("function Locale() { [native code] }")
+    public void locale() throws Exception {
+        test("Intl.Locale");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"de",
+             "function Locale() { [native code] }",
+             "TypeError"})
+    @HtmlUnitNYI(
+            CHROME = {"de", "function Locale() { [native code] }", "[object Locale]"},
+            EDGE = {"de", "function Locale() { [native code] }", "[object Locale]"},
+            FF = {"de", "function Locale() { [native code] }", "[object Locale]"},
+            FF_ESR = {"de", "function Locale() { [native code] }", "[object Locale]"})
+    public void localeCtor() throws Exception {
+        testCtor("new Intl.Locale('de')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("function NumberFormat() { [native code] }")
+    public void numberFormat() throws Exception {
+        test("Intl.NumberFormat");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object Intl.NumberFormat]",
+             "function NumberFormat() { [native code] }",
+             "[object Intl.NumberFormat]"})
+    public void numberFormatCtor() throws Exception {
+        testCtor("new Intl.NumberFormat('de-DE')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function v8BreakIterator() { [native code] }",
+            EDGE = "function v8BreakIterator() { [native code] }")
+    public void v8BreakIterator() throws Exception {
+        test("Intl.v8BreakIterator");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "TypeError",
+            CHROME = "[object Object]",
+            EDGE = "[object Object]")
+    public void v8BreakIteratorCtor() throws Exception {
+        test("new Intl.v8BreakIterator('de-DE')");
     }
 
     private void test(final String string) throws Exception {
@@ -52,42 +162,59 @@ public class IntlTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("function Collator() { [native code] }")
-    public void collator() throws Exception {
-        test("Intl.Collator");
+    private void testCtor(final String string) throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      let ctor = " + string + ";\n"
+            + "      log(ctor);\n"
+            + "      log(ctor.constructor);\n"
+            + "      log(ctor.constructor.prototype);\n"
+            + "    } catch(e) { logEx(e) }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("function DateTimeFormat() { [native code] }")
-    public void dateTimeFormat() throws Exception {
-        test("Intl.DateTimeFormat");
-    }
+    @Alerts({"en-US", "en-US,fr-FR,ja-JP", "zh-Hant-TW", "en-Latn-US",
+             "ja-JP", "en-US,fr", "en-US", "RangeError", "ja-JP",
+             "TypeError", "", "", "RangeError", "RangeError", ""})
+    public void getCanonicalLocales() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try { log(Intl.getCanonicalLocales('EN-us')); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(['en-US', 'fr-FR', 'ja-JP', 'EN-US'])); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales('zh-hant-tw')); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales('en-latn-us')); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(new Intl.Locale('ja-JP'))); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales([new Intl.Locale('en-US'), new Intl.Locale('fr')])); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(String('en-US'))); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(new String('en-US'))); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales([new String('ja-JP')])); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(null)); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(undefined)); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales([])); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales('')); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales('en-US!@#')); } catch(e) { logEx(e) }\n"
+            + "    try { log(Intl.getCanonicalLocales(42)); } catch(e) { logEx(e) }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "</body></html>";
 
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("function NumberFormat() { [native code] }")
-    public void numberFormat() throws Exception {
-        test("Intl.NumberFormat");
+        loadPageVerifyTitle2(html);
     }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts(DEFAULT = "undefined",
-            CHROME = "function v8BreakIterator() { [native code] }",
-            EDGE = "function v8BreakIterator() { [native code] }")
-    public void v8BreakIterator() throws Exception {
-        test("Intl.v8BreakIterator");
-    }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -43,11 +43,11 @@ public class DOMRect extends DOMRectReadOnly {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static DOMRect jsConstructor(final Context cx, final Scriptable scope,
+    public static DOMRect jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
 
         final DOMRect rect = new DOMRect();
-        rect.init(args, ctorObj);
+        rect.init(args, scope, ctorObj);
         return rect;
     }
 

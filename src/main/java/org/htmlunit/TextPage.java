@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,6 @@ public class TextPage extends AbstractPage {
         final Path savePath = file.toPath();
         final String text = getContent();
         final Charset charset = getWebResponse().getContentCharset();
-        Files.write(savePath, text.getBytes(charset));
+        Files.writeString(savePath, text, charset);
     }
 }

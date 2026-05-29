@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5504,7 +5504,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     * Test {@link org.htmlunit.javascript.host.dom.NativeXPathNSResolver}.
      *
      * @throws Exception if an error occurs
      */
@@ -7108,7 +7108,6 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
             EDGE = "function")
-    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined")
     public void speechGrammar() throws Exception {
         test("SpeechGrammar");
     }
@@ -7120,7 +7119,6 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
             EDGE = "function")
-    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined")
     public void speechGrammarList() throws Exception {
         test("SpeechGrammarList");
     }
@@ -7132,7 +7130,6 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
             EDGE = "function")
-    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined")
     public void speechRecognition() throws Exception {
         test("SpeechRecognition");
     }
@@ -7162,7 +7159,6 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
             EDGE = "function")
-    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined")
     public void speechRecognitionErrorEvent() throws Exception {
         test("SpeechRecognitionErrorEvent");
     }
@@ -7174,7 +7170,6 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "undefined",
             CHROME = "function",
             EDGE = "function")
-    @HtmlUnitNYI(CHROME = "undefined", EDGE = "undefined")
     public void speechRecognitionEvent() throws Exception {
         test("SpeechRecognitionEvent");
     }
@@ -10184,7 +10179,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     * Test {@link org.htmlunit.javascript.host.dom.NativeXPathNSResolver}.
      *
      * @throws Exception if an error occurs
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -56,7 +58,7 @@ public class BroadcastChannel extends EventTarget {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static BroadcastChannel jsConstructor(final Context cx, final Scriptable scope,
+    public static BroadcastChannel jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         if (args.length < 1 || JavaScriptEngine.isUndefined(args[0])) {
             throw JavaScriptEngine.typeError("BroadcastChannel constructor requires a channel name argument");
@@ -64,7 +66,7 @@ public class BroadcastChannel extends EventTarget {
 
         final BroadcastChannel broadcastChannel = new BroadcastChannel();
         final Window window = getWindow(ctorObj);
-        broadcastChannel.setParentScope(window);
+        broadcastChannel.setParentScope(getTopLevelScope(scope));
         broadcastChannel.setPrototype(((FunctionObject) ctorObj).getClassPrototype());
 
         broadcastChannel.name_ = JavaScriptEngine.toString(args[0]);
@@ -147,15 +149,15 @@ public class BroadcastChannel extends EventTarget {
             for (final BroadcastChannel channel : broadcastChannels) {
                 if (channel != this && name_.equals(channel.name_)) {
                     final Window channelWindow = channel.getWindow();
-                    final WebWindow channelWebWindow = channelWindow.getWebWindow();
-                    final Page channelPage = channelWebWindow.getEnclosedPage();
+                    final Page channelPage = channelWindow.getWebWindow().getEnclosedPage();
 
                     if (UrlUtils.isSameOrigin(currentURL, channelPage.getUrl())) {
-                        final Scriptable ports = JavaScriptEngine.newArray(w, 0);
+                        final TopLevel scope = getTopLevelScope(channelWindow.getParentScope());
+                        final Scriptable ports = JavaScriptEngine.newArray(scope, 0);
 
                         final MessageEvent event = new MessageEvent();
                         event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin, "", null, ports);
-                        event.setParentScope(channelWindow);
+                        event.setParentScope(scope);
                         event.setPrototype(channelWindow.getPrototype(event.getClass()));
 
                         final PostponedAction action =

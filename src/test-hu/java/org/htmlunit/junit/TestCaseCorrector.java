@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -58,8 +57,7 @@ public final class TestCaseCorrector implements TestExecutionExceptionHandler {
         final Object testInstance = context.getRequiredTestInstance();
 
         if (Boolean.parseBoolean(System.getProperty(WebDriverTestCase.AUTOFIX_))
-                && testInstance instanceof WebDriverTestCase) {
-            final WebDriverTestCase webDriverTestCase = (WebDriverTestCase) testInstance;
+                && testInstance instanceof WebDriverTestCase webDriverTestCase) {
             final Method testMethod = context.getRequiredTestMethod();
             final boolean realBrowser = webDriverTestCase.useRealBrowser();
             final BrowserVersion browserVersion = webDriverTestCase.getBrowserVersion();
@@ -145,11 +143,7 @@ public final class TestCaseCorrector implements TestExecutionExceptionHandler {
             i--;
         }
         final List<String> alerts = CodeStyleTest.alertsToList(lines, i);
-        for (final Iterator<String> it = alerts.iterator(); it.hasNext();) {
-            if (it.next().startsWith(browserString + " = ")) {
-                it.remove();
-            }
-        }
+        alerts.removeIf(s -> s.startsWith(browserString + " = "));
         alerts.add(browserString + " = " + getActualString(comparisonFailure));
         lines.remove(i);
         while (lines.get(i).startsWith("        ")) {
@@ -205,10 +199,10 @@ public final class TestCaseCorrector implements TestExecutionExceptionHandler {
                 if (length == 0 && !actual.isEmpty()) {
                     length = Math.min(lineLength, actual.length());
                 }
-                if (builder.length() != 0) {
+                if (!builder.isEmpty()) {
                     builder.append(System.lineSeparator()).append("                + ");
                 }
-                builder.append('"').append(actual.substring(0, length)).append('"');
+                builder.append('"').append(actual, 0, length).append('"');
                 actual = actual.substring(length);
             }
             return builder.toString();
@@ -244,11 +238,7 @@ public final class TestCaseCorrector implements TestExecutionExceptionHandler {
             }
             else {
                 final List<String> allBrowsers = new ArrayList<>(Arrays.asList("CHROME", "EDGE", "FF", "FF_ESR"));
-                for (final Iterator<String> it = allBrowsers.iterator(); it.hasNext();) {
-                    if (it.next().equals(browserString)) {
-                        it.remove();
-                    }
-                }
+                allBrowsers.removeIf(s -> s.equals(browserString));
                 lines.set(i - 1, "    @NotYetImplemented({" + String.join(", ", allBrowsers) + "})");
             }
         }

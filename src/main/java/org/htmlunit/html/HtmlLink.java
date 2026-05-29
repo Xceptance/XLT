@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.cssparser.dom.MediaListImpl;
-import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.html.HTMLLinkElement;
@@ -325,9 +324,8 @@ public class HtmlLink extends HtmlElement {
                 }
             };
 
-            final AbstractJavaScriptEngine<?> engine = webClient.getJavaScriptEngine();
             if (postponed) {
-                engine.addPostponedAction(action);
+                webClient.getJavaScriptEngine().addPostponedAction(action);
             }
             else {
                 try {

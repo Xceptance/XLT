@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
@@ -43,6 +36,7 @@ import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.PrimitiveWebServer;
 import org.htmlunit.util.UrlUtils;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
@@ -50,6 +44,12 @@ import org.openqa.selenium.By.ById;
 import org.openqa.selenium.By.ByTagName;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link HtmlForm}, with BrowserRunner.
@@ -302,9 +302,10 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"§§URL§§?par%F6m=Hello+G%FCnter", "par\u00F6m", "Hello G\u00FCnter"})
+    @Alerts({"§§URL§§/?par%F6m=Hello+G%FCnter", "GET /?par%F6m=Hello+G%FCnter HTTP/1.1"})
     public void encodingSubmit() throws Exception {
         stopWebServers();
+
         final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
@@ -317,21 +318,28 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  </form>\n"
             + "</body></html>";
 
-        expandExpectedAlertsVariables(URL_FIRST);
-        final WebDriver driver = loadPage2(html, URL_FIRST, "text/html;charset=ISO-8859-1", ISO_8859_1, ISO_8859_1);
-        driver.findElement(new ById("mySubmit")).click();
-        if (useRealBrowser()) {
-            Thread.sleep(400);
+        final String response = "HTTP/1.1 200 OK\r\n"
+                + "Content-Length: " + (html.length()) + "\r\n"
+                + "Content-Type: text/html;charset=ISO-8859-1\r\n"
+                + "\r\n"
+                + html;
+
+        try (PrimitiveWebServer primitiveWebServer = new PrimitiveWebServer(null, response, null)) {
+            final URL url = new URL("http://localhost:" + primitiveWebServer.getPort());
+            expandExpectedAlertsVariables(url);
+
+            final WebDriver driver = getWebDriver();
+            driver.get(url.toExternalForm());
+
+            driver.findElement(new ById("mySubmit")).click();
+            if (useRealBrowser()) {
+                Thread.sleep(400);
+            }
+
+            assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
+            assertEquals(2, primitiveWebServer.getRequests().size());
+            assertTrue(primitiveWebServer.getRequests().get(1).contains(getExpectedAlerts()[1]));
         }
-
-        assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
-        assertEquals(2, getMockWebConnection().getRequestCount());
-
-        final List<NameValuePair> requestedParams =
-                getMockWebConnection().getLastWebRequest().getRequestParameters();
-        assertEquals(1, requestedParams.size());
-        assertEquals(getExpectedAlerts()[1], requestedParams.get(0).getName());
-        assertEquals(getExpectedAlerts()[2], requestedParams.get(0).getValue());
     }
 
     /**
@@ -404,8 +412,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         assertEquals(2, getMockWebConnection().getRequestCount());
         final Map<String, String> lastAdditionalHeaders = webConnection.getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.ORIGIN));
-        assertEquals(getExpectedAlerts()[1], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.ORIGIN));
+        assertEquals(getExpectedAlerts()[1], lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
@@ -1227,7 +1235,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final List<NameValuePair> requestedParams =
                 getMockWebConnection().getLastWebRequest().getRequestParameters();
-        Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
+        requestedParams.sort(Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
 
@@ -1285,7 +1293,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final List<NameValuePair> requestedParams =
                 getMockWebConnection().getLastWebRequest().getRequestParameters();
-        Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
+        requestedParams.sort(Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
 
@@ -1328,7 +1336,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final List<NameValuePair> requestedParams =
                 getMockWebConnection().getLastWebRequest().getRequestParameters();
-        Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
+        requestedParams.sort(Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
 
@@ -1370,7 +1378,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final List<NameValuePair> requestedParams =
                 getMockWebConnection().getLastWebRequest().getRequestParameters();
-        Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
+        requestedParams.sort(Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
 
@@ -1409,7 +1417,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final List<NameValuePair> requestedParams =
                 getMockWebConnection().getLastWebRequest().getRequestParameters();
-        Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
+        requestedParams.sort(Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
 
@@ -1554,7 +1562,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final List<NameValuePair> requestedParams =
                 getMockWebConnection().getLastWebRequest().getRequestParameters();
-        Collections.sort(requestedParams, Comparator.comparing(NameValuePair::getName));
+        requestedParams.sort(Comparator.comparing(NameValuePair::getName));
 
         assertEquals(getExpectedAlerts().length, requestedParams.size());
 
@@ -1580,12 +1588,12 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstHtml);
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
 
-        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("button")).click();
         if (useRealBrowser()) {
             Thread.sleep(400);
@@ -1615,12 +1623,12 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstHtml);
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
 
-        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("button")).click();
         if (useRealBrowser()) {
             Thread.sleep(400);
@@ -1650,12 +1658,12 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstHtml);
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
 
-        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("button")).click();
         if (useRealBrowser()) {
             Thread.sleep(400);
@@ -1685,12 +1693,12 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstHtml);
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
 
-        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstHtml, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("button")).click();
         if (useRealBrowser()) {
             Thread.sleep(400);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.htmlunit.CookieManager;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
  * Tests the HtmlUnitCookieStore, which is a wrapper around the CookieManager.
  *
  * @author James Phillpotts
+ * @author Ronald Brill
  */
 public class HtmlUnitCookieStoreTest {
 

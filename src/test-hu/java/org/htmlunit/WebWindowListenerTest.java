@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public class WebWindowListenerTest extends SimpleWebTestCase {
         assertEquals(getExpectedAlerts()[0], logger.getMsg());
     }
 
-    private final class LoggingWebWindowListener implements WebWindowListener {
+    private static final class LoggingWebWindowListener implements WebWindowListener {
         private final StringBuilder msg_ = new StringBuilder();
 
         @Override
@@ -192,8 +192,7 @@ public class WebWindowListenerTest extends SimpleWebTestCase {
         private void log(final String prefix, final WebWindowEvent event) {
             msg_.append(prefix).append(" '");
             Page page = event.getOldPage();
-            if (page instanceof HtmlPage) {
-                final HtmlPage htmlPage = (HtmlPage) page;
+            if (page instanceof HtmlPage htmlPage) {
                 if (StringUtils.isNotBlank(htmlPage.getTitleText())) {
                     msg_.append(htmlPage.getTitleText());
                 }
@@ -213,8 +212,7 @@ public class WebWindowListenerTest extends SimpleWebTestCase {
 
             msg_.append("' - '");
             page = event.getNewPage();
-            if (page instanceof HtmlPage) {
-                final HtmlPage htmlPage = (HtmlPage) page;
+            if (page instanceof HtmlPage htmlPage) {
                 if (StringUtils.isNotBlank(htmlPage.getTitleText())) {
                     msg_.append(htmlPage.getTitleText());
                 }

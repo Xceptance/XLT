@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,13 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.lang3.ArrayUtils;
-import org.htmlunit.MiniServer;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebTestCase;
 import org.htmlunit.html.HtmlScript;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.MiniServer;
 import org.htmlunit.util.NameValuePair;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -112,7 +112,7 @@ public class ScriptEncodingTest extends WebDriverTestCase {
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}_{1}_{2}_{3}_{4}_{5}")
+    @ParameterizedTest(name = "_{0}_{1}_{2}_{3}_{4}_{5}", quoteTextArguments = false)
     @MethodSource("data")
     @Alerts({"a", "ä", "أهلاً", "мир", "房间"})
     void charset(
@@ -124,7 +124,7 @@ public class ScriptEncodingTest extends WebDriverTestCase {
             final boolean gzip) throws Exception {
 
         // use always a different url to avoid caching effects
-        final URL scriptUrl = new URL(URL_SECOND, "" + System.currentTimeMillis() + ".js");
+        final URL scriptUrl = new URL(URL_SECOND, System.currentTimeMillis() + ".js");
 
         String html = DOCTYPE_HTML
             + "<html><head>\n"

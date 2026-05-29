@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1139,8 +1138,6 @@ public final class UrlUtils {
 
     /**
      * Class <code>Url</code> represents a Uniform Resource Locator.
-     *
-     * @author Martin Tamme
      */
     private static class Url {
 
@@ -1356,12 +1353,7 @@ public final class UrlUtils {
             return "";
         }
 
-        try {
-            return URLEncoder.encode(part, "UTF-8");
-        }
-        catch (final UnsupportedEncodingException e) {
-            return part;
-        }
+        return URLEncoder.encode(part, UTF_8);
     }
 
     /**

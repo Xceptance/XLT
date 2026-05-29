@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,28 @@ public class HostClassNameTest extends WebDriverTestCase {
             + "</body></html>";
 
         loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortController}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("function AbortController() { [native code] }")
+    public void abortController() throws Exception {
+        test("AbortController");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortSignal}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("function AbortSignal() { [native code] }")
+    public void abortSignal() throws Exception {
+        test("AbortSignal");
     }
 
     /**
@@ -1169,33 +1191,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link CSSStyleProperties}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "function CSSStyleProperties() { [native code] }")
-    public void cssStyleProperties() throws Exception {
-        test("CSSStyleProperties");
-    }
-
-    /**
-     * Test {@link CSSPageDescriptors}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts(DEFAULT = "ReferenceError",
-            FF = "function CSSPageDescriptors() { [native code] }",
-            FF_ESR = "function CSSPageDescriptors() { [native code] }")
-    @HtmlUnitNYI(FF = "ReferenceError",
-            FF_ESR = "ReferenceError")
-    public void cssPageDescriptors() throws Exception {
-        test("CSSPageDescriptors");
-    }
-
-    /**
      * @throws Exception if an error occurs
      */
     @Test
@@ -1301,6 +1296,21 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link CSSPageDescriptors}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "ReferenceError",
+            FF = "function CSSPageDescriptors() { [native code] }",
+            FF_ESR = "function CSSPageDescriptors() { [native code] }")
+    @HtmlUnitNYI(FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    public void cssPageDescriptors() throws Exception {
+        test("CSSPageDescriptors");
+    }
+
+    /**
      * Test {@link CSSPageRule}.
      *
      * @throws Exception if the test fails
@@ -1353,6 +1363,18 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts("function CSSStyleDeclaration() { [native code] }")
     public void cssStyleDeclaration() throws Exception {
         test("CSSStyleDeclaration");
+    }
+
+    /**
+     * Test {@link CSSStyleProperties}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "ReferenceError",
+            FF = "function CSSStyleProperties() { [native code] }")
+    public void cssStyleProperties() throws Exception {
+        test("CSSStyleProperties");
     }
 
     /**
@@ -2720,6 +2742,15 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts("ReferenceError")
     public void gestureEvent() throws Exception {
         test("GestureEvent");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("ReferenceError")
+    public void global() throws Exception {
+        test("global");
     }
 
     /**
@@ -4354,9 +4385,29 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts("function Locale() { [native code] }")
+    public void intl_Locale() throws Exception {
+        test("Intl.Locale");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts("function NumberFormat() { [native code] }")
     public void intl_NumberFormat() throws Exception {
         test("Intl.NumberFormat");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function v8BreakIterator() { [native code] }",
+            EDGE = "function v8BreakIterator() { [native code] }")
+    public void intl_v8BreakIterator() throws Exception {
+        test("Intl.v8BreakIterator");
     }
 
     /**
@@ -5526,7 +5577,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     * Test {@link org.htmlunit.javascript.host.dom.NativeXPathNSResolver}.
      *
      * @throws Exception if an error occurs
      */
@@ -7126,7 +7177,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "ReferenceError",
             CHROME = "function SpeechGrammar() { [native code] }",
             EDGE = "function SpeechGrammar() { [native code] }")
-    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechGrammar() throws Exception {
         test("SpeechGrammar");
     }
@@ -7138,7 +7188,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "ReferenceError",
             CHROME = "function SpeechGrammarList() { [native code] }",
             EDGE = "function SpeechGrammarList() { [native code] }")
-    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechGrammarList() throws Exception {
         test("SpeechGrammarList");
     }
@@ -7150,7 +7199,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "ReferenceError",
             CHROME = "function SpeechRecognition() { [native code] }",
             EDGE = "function SpeechRecognition() { [native code] }")
-    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechRecognition() throws Exception {
         test("SpeechRecognition");
     }
@@ -7180,7 +7228,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "ReferenceError",
             CHROME = "function SpeechRecognitionErrorEvent() { [native code] }",
             EDGE = "function SpeechRecognitionErrorEvent() { [native code] }")
-    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechRecognitionErrorEvent() throws Exception {
         test("SpeechRecognitionErrorEvent");
     }
@@ -7192,7 +7239,6 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "ReferenceError",
             CHROME = "function SpeechRecognitionEvent() { [native code] }",
             EDGE = "function SpeechRecognitionEvent() { [native code] }")
-    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void speechRecognitionEvent() throws Exception {
         test("SpeechRecognitionEvent");
     }
@@ -10204,7 +10250,7 @@ public class HostClassNameTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     * Test {@link org.htmlunit.javascript.host.dom.NativeXPathNSResolver}.
      *
      * @throws Exception if an error occurs
      */
@@ -10243,36 +10289,5 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts("function XSLTProcessor() { [native code] }")
     public void xsltProcessor() throws Exception {
         test("XSLTProcessor");
-    }
-
-    /**
-     * Test {@link org.htmlunit.javascript.host.abort.AbortController}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("function AbortController() { [native code] }")
-    public void abortController() throws Exception {
-        test("AbortController");
-    }
-
-    /**
-     * Test {@link org.htmlunit.javascript.host.abort.AbortSignal}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("function AbortSignal() { [native code] }")
-    public void abortSignal() throws Exception {
-        test("AbortSignal");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("ReferenceError")
-    public void global() throws Exception {
-        test("global");
     }
 }

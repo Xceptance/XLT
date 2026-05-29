@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,10 +100,8 @@ public class ImageIOImageData implements ImageData {
     @SuppressWarnings("PMD.UnusedLocalVariable")
     public void close() throws IOException {
         if (imageReader_ != null) {
-            try {
-                try (ImageInputStream stream = (ImageInputStream) imageReader_.getInput()) {
-                    // nothing
-                }
+            try (ImageInputStream stream = (ImageInputStream) imageReader_.getInput()) {
+                // nothing
             }
             finally {
                 imageReader_.setInput(null);

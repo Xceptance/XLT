@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.ElementCssStyleDeclaration;
 import org.htmlunit.cssparser.parser.CSSException;
@@ -122,12 +125,13 @@ public class Element extends Node {
     public void setDomNode(final DomNode domNode) {
         super.setDomNode(domNode);
 
-        setParentScope(getWindow().getDocument());
+        final Window window = getWindow();
+        setParentScope(new WithScope(getTopLevelScope(getParentScope()), window.getDocument()));
         // CSSStyleDeclaration uses the parent scope
         style_ = new CSSStyleDeclaration(this, new ElementCssStyleDeclaration(getDomNodeOrDie()));
 
         // Convert JavaScript snippets defined in the attribute map to executable event handlers.
-        //Should be called only on construction.
+        // Should be called only on construction.
         final DomElement htmlElt = (DomElement) domNode;
         for (final DomAttr attr : htmlElt.getAttributesMap().values()) {
             final String eventName = StringUtils.toRootLowerCase(attr.getName());
@@ -147,7 +151,7 @@ public class Element extends Node {
 
         // TODO: check that it is an "allowed" event for the browser, and take care to the case
         final BaseFunction eventHandler = new EventHandler(htmlElt, eventName, attrValue);
-        eventHandler.setPrototype(ScriptableObject.getClassPrototype(htmlElt.getScriptableObject(), "Function"));
+        eventHandler.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), "Function"));
 
         setEventHandler(eventName, eventHandler);
     }
@@ -343,7 +347,7 @@ public class Element extends Node {
     @JsxFunction
     public DOMRect getBoundingClientRect() {
         final DOMRect textRectangle = new DOMRect(1, 1, 0, 0);
-        textRectangle.setParentScope(getWindow());
+        textRectangle.setParentScope(getTopLevelScope(getParentScope()));
         textRectangle.setPrototype(getPrototype(textRectangle.getClass()));
         return textRectangle;
     }
@@ -514,7 +518,7 @@ public class Element extends Node {
     @JsxFunction
     public NodeList querySelectorAll(final String selectors) {
         try {
-            return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
+            return NodeList.staticNodeList(getParentScope(), getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
@@ -659,14 +663,14 @@ public class Element extends Node {
      */
     @JsxFunction
     public DOMRectList getClientRects() {
-        final Window w = getWindow();
+        final TopLevel topScope = getTopLevelScope(getParentScope());
         final DOMRectList rectList = new DOMRectList();
-        rectList.setParentScope(w);
+        rectList.setParentScope(topScope);
         rectList.setPrototype(getPrototype(rectList.getClass()));
 
         if (!isDisplayNone() && getDomNodeOrDie().isAttachedToPage()) {
             final DOMRect rect = new DOMRect(0, 0, 1, 1);
-            rect.setParentScope(w);
+            rect.setParentScope(topScope);
             rect.setPrototype(getPrototype(rect.getClass()));
             rectList.add(rect);
         }
@@ -683,7 +687,7 @@ public class Element extends Node {
         final org.w3c.dom.NamedNodeMap attributes = getDomNodeOrDie().getAttributes();
 
         if (attributes.getLength() == 0) {
-            return JavaScriptEngine.newArray(this, 0);
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final ArrayList<String> res = new ArrayList<>();
@@ -691,7 +695,7 @@ public class Element extends Node {
             res.add(attributes.item(i).getNodeName());
         }
 
-        return JavaScriptEngine.newArray(this, res.toArray());
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
     }
 
     /**
@@ -722,8 +726,7 @@ public class Element extends Node {
      */
     @JsxFunction
     public Node insertAdjacentElement(final String where, final Object insertedElement) {
-        if (insertedElement instanceof Node) {
-            final Node insertedElementNode = (Node) insertedElement;
+        if (insertedElement instanceof Node insertedElementNode) {
             final DomNode childNode = insertedElementNode.getDomNodeOrDie();
             final Object[] values = getInsertAdjacentLocation(where);
             final DomNode node = (DomNode) values[0];
@@ -857,7 +860,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF})
-    public static void moveBefore(final Context context, final Scriptable scope,
+    public static void moveBefore(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.moveBefore(context, scope, thisObj, args, function);
     }
@@ -1023,8 +1026,7 @@ public class Element extends Node {
      * @param html flag
      */
     protected final void printChildren(final StringBuilder builder, final DomNode node, final boolean html) {
-        if (node instanceof HtmlTemplate) {
-            final HtmlTemplate template = (HtmlTemplate) node;
+        if (node instanceof HtmlTemplate template) {
 
             for (final DomNode child : template.getContent().getChildren()) {
                 printNode(builder, child, html);
@@ -1085,8 +1087,7 @@ public class Element extends Node {
             }
         }
         else {
-            if (node instanceof HtmlElement) {
-                final HtmlElement element = (HtmlElement) node;
+            if (node instanceof HtmlElement element) {
                 if (StringUtils.equalsChar('p', element.getTagName())) {
                     int i = builder.length() - 1;
                     while (i >= 0 && Character.isWhitespace(builder.charAt(i))) {
@@ -1557,7 +1558,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void before(final Context context, final Scriptable scope,
+    public static void before(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
     }
@@ -1572,7 +1573,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void after(final Context context, final Scriptable scope,
+    public static void after(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
@@ -1586,7 +1587,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceWith(final Context context, final Scriptable scope,
+    public static void replaceWith(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }
@@ -1601,7 +1602,7 @@ public class Element extends Node {
      * @return the value
      */
     @JsxFunction
-    public static boolean matches(final Context context, final Scriptable scope,
+    public static boolean matches(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1614,7 +1615,7 @@ public class Element extends Node {
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
-                    (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                    (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                     "An invalid or illegal selector was specified (selector: '"
                             + selectorString + "' error: " + e.getMessage() + ").",
                     DOMException.SYNTAX_ERR);
@@ -1631,7 +1632,7 @@ public class Element extends Node {
      * @return the value
      */
     @JsxFunction({FF, FF_ESR})
-    public static boolean mozMatchesSelector(final Context context, final Scriptable scope,
+    public static boolean mozMatchesSelector(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
@@ -1646,7 +1647,7 @@ public class Element extends Node {
      * @return the value
      */
     @JsxFunction
-    public static boolean webkitMatchesSelector(final Context context, final Scriptable scope,
+    public static boolean webkitMatchesSelector(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
@@ -1662,7 +1663,7 @@ public class Element extends Node {
      * @return the found element or null
      */
     @JsxFunction
-    public static Element closest(final Context context, final Scriptable scope,
+    public static Element closest(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1731,7 +1732,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void append(final Context context, final Scriptable scope,
+    public static void append(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1751,7 +1752,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void prepend(final Context context, final Scriptable scope,
+    public static void prepend(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1771,7 +1772,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceChildren(final Context context, final Scriptable scope,
+    public static void replaceChildren(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");

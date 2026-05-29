@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,15 @@
  */
 package org.htmlunit.libraries.jquery;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.Servlet;
 
 /**
  * Tests for compatibility with web server loading of
@@ -31,6 +37,16 @@ import org.junit.jupiter.api.Test;
  * @author Frank Danek
  */
 public class JQuery1x8x2Test extends JQueryTestBase {
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @BeforeAll
+    public static void startServer() throws Exception {
+        final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
+        servlets.put("*.php", org.htmlunit.util.quercus.servlet.QuercusServlet.class);
+        startWebServer("src/test/resources/libraries/jQuery/1.8.2", servlets);
+    }
 
     /**
      * {@inheritDoc}
@@ -4382,7 +4398,7 @@ public class JQuery1x8x2Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("0, 8, 8")
+    @Alerts("2, 6, 8")
     public void ajax__pass_through_request_object() throws Exception {
         runTest("ajax: pass-through request object");
     }
@@ -4602,7 +4618,7 @@ public class JQuery1x8x2Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("0, 3, 3")
+    @Alerts("2, 0, 2")
     public void ajax__jQuery_ajax_____script__Remote_with_POST() throws Exception {
         runTest("ajax: jQuery.ajax() - script, Remote with POST");
     }

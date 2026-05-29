@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.w3c.dom.NodeList;
  */
 public final class XPathHelper {
 
-    private static final ThreadLocal<Boolean> PROCESS_XPATH_ = new ThreadLocal<Boolean>() {
+    private static final ThreadLocal<Boolean> PROCESS_XPATH_ = new ThreadLocal<>() {
         @Override
         protected synchronized Boolean initialValue() {
             return Boolean.FALSE;
@@ -127,7 +127,7 @@ public final class XPathHelper {
                 list.add((T) result.str());
             }
             else {
-                throw new RuntimeException("Unproccessed " + result.getClass().getName());
+                throw new RuntimeException("Unprocessed " + result.getClass().getName());
             }
         }
         finally {

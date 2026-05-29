@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package org.htmlunit.javascript.host.speech;
 
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.host.event.SpeechSynthesisEvent;
 
 /**
  * A JavaScript object for {@code SpeechSynthesisErrorEvent}.
@@ -27,11 +27,11 @@ import org.htmlunit.javascript.host.event.SpeechSynthesisEvent;
 public class SpeechSynthesisErrorEvent extends SpeechSynthesisEvent {
 
     /**
-     * JavaScript constructor.
+     * {@inheritDoc}
      */
     @Override
     @JsxConstructor
-    public void jsConstructor() {
-        super.jsConstructor();
+    public void jsConstructor(final String type, final ScriptableObject details) {
+        super.jsConstructor(type, details);
     }
 }

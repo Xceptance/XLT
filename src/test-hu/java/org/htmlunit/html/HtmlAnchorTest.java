@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -597,7 +597,9 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"click", "href", "click", "doubleClick", "href"})
+    @Alerts(DEFAULT = {"click", "click", "doubleClick", "href", "href"},
+            FF = {"click", "href", "click", "doubleClick", "href"},
+            FF_ESR = {"click", "href", "click", "doubleClick", "href"})
     @HtmlUnitNYI(CHROME = {"click", "href", "click", "href", "doubleClick"},
             EDGE = {"click", "href", "click", "href", "doubleClick"},
             FF = {"click", "href", "click", "href", "doubleClick"},
@@ -633,8 +635,8 @@ public class HtmlAnchorTest extends WebDriverTestCase {
     @Test
     @Alerts({"§§URL§§bug.html?h%C3%B6=G%C3%BCnter", "h\u00F6", "G\u00FCnter"})
     public void encoding() throws Exception {
-        final String href = "bug.html?" + URLEncoder.encode("h\u00F6", "UTF-8")
-                + '=' + URLEncoder.encode("G\u00FCnter", "UTF-8");
+        final String href = "bug.html?" + URLEncoder.encode("h\u00F6", UTF_8)
+                + '=' + URLEncoder.encode("G\u00FCnter", UTF_8);
         final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
@@ -765,12 +767,12 @@ public class HtmlAnchorTest extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstContent);
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
-        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("link")).click();
 
         assertEquals(2, getMockWebConnection().getRequestCount());
@@ -794,12 +796,12 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "<body></body>\n"
             + "</html>";
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstContent);
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
-        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("link")).click();
 
         assertEquals(2, getMockWebConnection().getRequestCount());
@@ -823,12 +825,12 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "<body></body>\n"
             + "</html>";
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstContent);
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
-        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST + "index.html?test#ref"));
         driver.findElement(By.id("link")).click();
 
         assertEquals(2, getMockWebConnection().getRequestCount());
@@ -856,12 +858,12 @@ public class HtmlAnchorTest extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstContent);
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
-        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        final WebDriver driver = loadPage2(firstContent, new URL(URL_FIRST + "index.html?test#ref"));
         new Actions(driver)
                 .keyDown(Keys.CONTROL)
                 .click(driver.findElement(By.id("link")))

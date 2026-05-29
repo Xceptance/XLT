@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.corejs.javascript.typedarrays.NativeFloat32Array;
 import org.htmlunit.corejs.javascript.typedarrays.NativeFloat64Array;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -29,7 +28,6 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.host.Window;
 
 /**
  * A JavaScript object for {@code DOMMatrixReadOnly}.
@@ -40,7 +38,7 @@ import org.htmlunit.javascript.host.Window;
 @JsxClass
 public class DOMMatrixReadOnly extends HtmlUnitScriptable {
 
-    private static final Log LOG = LogFactory.getLog(DOMMatrixReadOnly.class);
+    // private static final Log LOG = LogFactory.getLog(DOMMatrixReadOnly.class);
 
     private double m11_;
     private double m12_;
@@ -101,25 +99,23 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static DOMMatrixReadOnly jsConstructor(final Context cx, final Scriptable scope,
+    public static DOMMatrixReadOnly jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
 
         final DOMMatrixReadOnly matrix = new DOMMatrixReadOnly();
-        matrix.init(args, ctorObj);
+        matrix.init(args, scope, ctorObj);
         return matrix;
     }
 
-    protected void init(final Object[] args, final Function ctorObj) {
-        final Window window = getWindow(ctorObj);
-        setParentScope(window);
+    protected void init(final Object[] args, final VarScope scope, final Function ctorObj) {
+        setParentScope(scope);
         setPrototype(((FunctionObject) ctorObj).getClassPrototype());
 
         if (args.length == 0 || JavaScriptEngine.isUndefined(args[0])) {
             return;
         }
 
-        if (args[0] instanceof NativeArray) {
-            final NativeArray arrayArgs = (NativeArray) args[0];
+        if (args[0] instanceof NativeArray arrayArgs) {
             if (arrayArgs.getLength() == 6) {
                 m11_ = JavaScriptEngine.toNumber(arrayArgs.get(0));
                 m12_ = JavaScriptEngine.toNumber(arrayArgs.get(1));
@@ -164,7 +160,7 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
         }
 
         throw JavaScriptEngine.asJavaScriptException(
-                window,
+                getWindow(),
                 "An invalid or illegal string was specified",
                 DOMException.SYNTAX_ERR);
     }
@@ -494,9 +490,8 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
     @JsxFunction
     public DOMMatrix flipX() {
         final DOMMatrix matrix = new DOMMatrix();
-        final Window window = getWindow();
-        matrix.setParentScope(window);
-        matrix.setPrototype(window.getPrototype(DOMMatrix.class));
+        matrix.setParentScope(getParentScope());
+        matrix.setPrototype(getWindow().getPrototype(DOMMatrix.class));
 
         matrix.setM11(-m11_);
         matrix.setM12(-m12_);
@@ -530,9 +525,8 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
     @JsxFunction
     public DOMMatrix flipY() {
         final DOMMatrix matrix = new DOMMatrix();
-        final Window window = getWindow();
-        matrix.setParentScope(window);
-        matrix.setPrototype(window.getPrototype(DOMMatrix.class));
+        matrix.setParentScope(getParentScope());
+        matrix.setPrototype(getWindow().getPrototype(DOMMatrix.class));
 
         matrix.setM11(m11_);
         matrix.setM12(m12_);
@@ -566,9 +560,8 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
     @JsxFunction
     public DOMMatrix inverse() {
         final DOMMatrix matrix = new DOMMatrix();
-        final Window window = getWindow();
-        matrix.setParentScope(window);
-        matrix.setPrototype(window.getPrototype(DOMMatrix.class));
+        matrix.setParentScope(getParentScope());
+        matrix.setPrototype(getWindow().getPrototype(DOMMatrix.class));
 
         matrix.setM11(m11_);
         matrix.setM12(m12_);
@@ -605,21 +598,18 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
     @JsxFunction
     public DOMMatrix multiply(final Object other) {
         final DOMMatrix result = new DOMMatrix();
-        final Window window = getWindow();
-        result.setParentScope(window);
-        result.setPrototype(window.getPrototype(DOMMatrix.class));
+        result.setParentScope(getParentScope());
+        result.setPrototype(getWindow().getPrototype(DOMMatrix.class));
 
         // Handle null/undefined by treating as identity matrix
         if (other == null || JavaScriptEngine.isUndefined(other)) {
             return result;
         }
 
-        if (!(other instanceof DOMMatrixReadOnly)) {
+        if (!(other instanceof DOMMatrixReadOnly otherMatrix)) {
             throw JavaScriptEngine.typeError("Failed to execute 'multiply' on 'DOMMatrixReadOnly': "
                     + "parameter 1 is not of type 'DOMMatrixReadOnly'.");
         }
-
-        final DOMMatrixReadOnly otherMatrix = (DOMMatrixReadOnly) other;
 
         // Matrix multiplication: result = this * otherMatrix
         // Standard matrix multiplication formula: C[i][j] = sum(A[i][k] * B[k][j])
@@ -713,9 +703,8 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
     @JsxFunction
     public DOMMatrixReadOnly rotate(final Object rotZ) {
         final DOMMatrix result = new DOMMatrix();
-        final Window window = getWindow();
-        result.setParentScope(window);
-        result.setPrototype(window.getPrototype(DOMMatrix.class));
+        result.setParentScope(getParentScope());
+        result.setPrototype(getWindow().getPrototype(DOMMatrix.class));
 
         // Handle undefined/null/missing parameter - default to 0
         double angleInDegrees = 0;
@@ -809,9 +798,8 @@ public class DOMMatrixReadOnly extends HtmlUnitScriptable {
         // If axis is (0,0,0), throw TypeError per spec
         if (x == 0 && y == 0 && z == 0) {
             final DOMMatrix result = new DOMMatrix();
-            final Window window = getWindow();
-            result.setParentScope(window);
-            result.setPrototype(window.getPrototype(DOMMatrix.class));
+            result.setParentScope(getParentScope());
+            result.setPrototype(getWindow().getPrototype(DOMMatrix.class));
             return result;
         }
 

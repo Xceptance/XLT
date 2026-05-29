@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.FailingHttpStatusCodeException;
-import org.htmlunit.FrameContentHandler;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
@@ -239,12 +238,7 @@ public class HtmlFrameTest extends SimpleWebTestCase {
         HtmlFrame frame1 = page.getHtmlElementById("frame1");
         assertEquals(getExpectedAlerts()[0], ((HtmlPage) frame1.getEnclosedPage()).getTitleText());
 
-        webClient.setFrameContentHandler(new FrameContentHandler() {
-            @Override
-            public boolean loadFrameDocument(final BaseFrameElement baseFrameElement) {
-                return false;
-            }
-        });
+        webClient.setFrameContentHandler(baseFrameElement -> false);
 
         page = webClient.getPage(URL_FIRST);
         assertEquals("frames", page.getTitleText());

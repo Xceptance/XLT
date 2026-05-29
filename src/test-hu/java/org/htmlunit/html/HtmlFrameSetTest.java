@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class HtmlFrameSetTest extends SimpleWebTestCase {
         assertEquals("Second", ((HtmlPage) secondWebWindow.getEnclosedPage()).getTitleText());
 
         final WebWindow thirdWebWindow = webClient.getWebWindowByName("right");
-        assertTrue(FrameWindow.class.isInstance(thirdWebWindow));
+        assertTrue(thirdWebWindow instanceof FrameWindow);
         assertSame(firstPage, ((FrameWindow) thirdWebWindow).getEnclosingPage());
         assertEquals("Third", ((HtmlPage) thirdWebWindow.getEnclosedPage()).getTitleText());
     }
@@ -101,7 +101,7 @@ public class HtmlFrameSetTest extends SimpleWebTestCase {
         assertEquals("First", firstPage.getTitleText());
 
         final WebWindow secondWebWindow = webClient.getWebWindowByName("left");
-        assertTrue(FrameWindow.class.isInstance(secondWebWindow));
+        assertTrue(secondWebWindow instanceof FrameWindow);
         assertSame(firstPage, ((FrameWindow) secondWebWindow).getEnclosingPage());
         assertEquals("Second", ((HtmlPage) secondWebWindow.getEnclosedPage()).getTitleText());
     }

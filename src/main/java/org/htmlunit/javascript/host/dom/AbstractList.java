@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 
 import org.htmlunit.corejs.javascript.ExternalArrayData;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomChangeEvent;
 import org.htmlunit.html.DomChangeListener;
 import org.htmlunit.html.DomElement;
@@ -109,10 +110,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         super();
         if (domNode != null) {
             setDomNode(domNode, false);
-            final HtmlUnitScriptable parentScope = domNode.getScriptableObject();
-            if (parentScope != null) {
-                setParentScope(parentScope);
-            }
+            setParentScope(domNode.getScriptableObject().getParentScope());
             setPrototype(getPrototype(getClass()));
         }
         attributeChangeSensitive_ = attributeChangeSensitive;
@@ -120,7 +118,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         if (initialElements != null) {
             registerListener();
         }
-        setExternalArrayData(this);
+        setExternalArrayData(getParentScope(), this);
     }
 
     /**
@@ -193,8 +191,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * @return the element or elements corresponding to the specified index or key
      */
     protected Object getIt(final Object o) {
-        if (o instanceof Number) {
-            final Number n = (Number) o;
+        if (o instanceof Number n) {
             final int i = n.intValue();
             return get(i, this);
         }
@@ -244,11 +241,11 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
                 final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl(this);
                 domNode.addDomChangeListener(listener);
                 if (attributeChangeSensitive_) {
-                    if (domNode instanceof HtmlElement) {
-                        ((HtmlElement) domNode).addHtmlAttributeChangeListener(listener);
+                    if (domNode instanceof HtmlElement element) {
+                        element.addHtmlAttributeChangeListener(listener);
                     }
-                    else if (domNode instanceof HtmlPage) {
-                        ((HtmlPage) domNode).addHtmlAttributeChangeListener(listener);
+                    else if (domNode instanceof HtmlPage page) {
+                        page.addHtmlAttributeChangeListener(listener);
                     }
                 }
                 listenerRegistered_ = true;
@@ -278,8 +275,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         final List<DomNode> matchingElements = new ArrayList<>();
 
         for (final DomNode next : elements) {
-            if (next instanceof DomElement) {
-                final String id = ((DomElement) next).getId();
+            if (next instanceof DomElement element) {
+                final String id = element.getId();
                 if (name.equals(id)) {
                     matchingElements.add(next);
                 }
@@ -318,8 +315,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     protected Object getWithPreemptionByName(final String name, final List<DomNode> elements) {
         final List<DomNode> matchingElements = new ArrayList<>();
         for (final DomNode next : elements) {
-            if (next instanceof DomElement) {
-                final String nodeName = ((DomElement) next).getAttributeDirect(DomElement.NAME_ATTRIBUTE);
+            if (next instanceof DomElement element) {
+                final String nodeName = element.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     matchingElements.add(next);
                 }
@@ -365,8 +362,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         if (other == this) {
             return Boolean.TRUE;
         }
-        else if (other instanceof AbstractList) {
-            final AbstractList otherArray = (AbstractList) other;
+        else if (other instanceof AbstractList otherArray) {
             final DomNode domNode = getDomNodeOrNull();
             final DomNode domNodeOther = otherArray.getDomNodeOrNull();
             if (getClass() == other.getClass()
@@ -466,8 +462,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * @return the scriptable
      */
     protected Scriptable getScriptableForElement(final Object object) {
-        if (object instanceof Scriptable) {
-            return (Scriptable) object;
+        if (object instanceof Scriptable scriptable) {
+            return scriptable;
         }
         return getScriptableFor(object);
     }
@@ -476,14 +472,15 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * {@inheritDoc}
      */
     @Override
-    public void defineProperty(final String propertyName, final Object delegateTo,
+    public void defineProperty(final VarScope scope,
+            final String propertyName, final Object delegateTo,
             final Method getter, final Method setter, final int attributes) {
         // length is defined on the prototype, don't define it again
         if ("length".equals(propertyName) && getPrototype() != null) {
             return;
         }
 
-        super.defineProperty(propertyName, delegateTo, getter, setter, attributes);
+        super.defineProperty(scope, propertyName, delegateTo, getter, setter, attributes);
     }
 
     @Override

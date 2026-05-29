@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.html.parser.neko;
 
-import static org.htmlunit.BrowserVersionFeatures.HTML_COMMAND_TAG;
 import static org.htmlunit.BrowserVersionFeatures.JS_SCRIPT_IN_TEMPLATE_EXECUTED_ON_ATTACH;
 
 import java.io.IOException;
@@ -97,22 +96,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         implements ContentHandler, LexicalHandler, HTMLTagBalancingListener, HTMLParserDOMBuilder {
 
     // cache Neko Elements for performance and memory efficiency
-    private static final HTMLElements HTMLELEMENTS;
-    private static final HTMLElements HTMLELEMENTS_WITH_CMD;
-
-    static {
-        // continue short code enumeration
-        final short commandShortCode = HTMLElements.UNKNOWN + 1;
-
-        final HTMLElements.Element command = new HTMLElements.Element(commandShortCode, "COMMAND",
-                HTMLElements.Element.EMPTY, new short[] {HTMLElements.BODY, HTMLElements.HEAD}, null);
-
-        HTMLELEMENTS = new HTMLElements();
-
-        final HTMLElements value = new HTMLElements();
-        value.setElement(command);
-        HTMLELEMENTS_WITH_CMD = value;
-    }
+    private static final HTMLElements HTMLELEMENTS = new HTMLElements();
 
     private enum HeadParsed { YES, SYNTHESIZED, NO }
 
@@ -167,9 +151,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * @param url the page's URL
      * @param createdByJavascript if true the (script) tag was created by javascript
      */
-    HtmlUnitNekoDOMBuilder(final HTMLParser htmlParser,
+    HtmlUnitNekoDOMBuilder(final HTMLParser htmlParser, final WebClient webClient,
             final DomNode node, final URL url, final String htmlContent, final boolean createdByJavascript) {
-        super(createConfiguration(node.getPage().getWebClient().getBrowserVersion()));
+        super(createConfiguration(webClient.getBrowserVersion()));
 
         htmlParser_ = htmlParser;
         page_ = (HtmlPage) node.getPage();
@@ -180,7 +164,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
         createdByJavascript_ = createdByJavascript;
 
-        final WebClient webClient = page_.getWebClient();
         final HTMLParserListener listener = webClient.getHTMLParserListener();
         final boolean reportErrors = listener != null;
         if (reportErrors) {
@@ -210,10 +193,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         // HTMLElements.HTMLElementsWithCache are not thread safe
         // because the cache is not synchronized
         // we have to create a new one for each parser run
-
-        if (browserVersion.hasFeature(HTML_COMMAND_TAG)) {
-            return new HTMLConfiguration(new HTMLElements.HTMLElementsWithCache(HTMLELEMENTS_WITH_CMD));
-        }
         return new HTMLConfiguration(new HTMLElements.HTMLElementsWithCache(HTMLELEMENTS));
     }
 
@@ -314,8 +293,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         // Forms own elements simply by enclosing source-wise rather than DOM parent-child relationship
         // Forms without a </form> will keep consuming forever
-        else if (newElement instanceof HtmlForm) {
-            consumingForm_ = (HtmlForm) newElement;
+        else if (newElement instanceof HtmlForm form) {
+            consumingForm_ = form;
             formEndingIsAdjusting_ = false;
         }
         else if (consumingForm_ != null) {
@@ -338,11 +317,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             body_ = (HtmlElement) newElement;
         }
         else if (createdByJavascript_
-                && newElement instanceof ScriptElement
+                && newElement instanceof ScriptElement script
                 && (!insideTemplate_
                         || !page_.getWebClient().getBrowserVersion()
                                 .hasFeature(JS_SCRIPT_IN_TEMPLATE_EXECUTED_ON_ATTACH))) {
-            final ScriptElement script = (ScriptElement) newElement;
             script.markAsCreatedByDomParser();
         }
 
@@ -557,12 +535,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
 
         // malformed HTML: </td>some text</tr> => text comes before the table
-        if (currentNode_ instanceof HtmlTableRow) {
-            final HtmlTableRow row = (HtmlTableRow) currentNode_;
+        if (currentNode_ instanceof HtmlTableRow row) {
             final HtmlTable enclosingTable = row.getEnclosingTable();
             if (enclosingTable != null) { // may be null when called from Range.createContextualFragment
-                if (enclosingTable.getPreviousSibling() instanceof DomText) {
-                    final DomText domText = (DomText) enclosingTable.getPreviousSibling();
+                if (enclosingTable.getPreviousSibling() instanceof DomText domText) {
                     domText.setTextContent(domText.getWholeText() + textValue);
                 }
                 else {
@@ -570,10 +546,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                 }
             }
         }
-        else if (currentNode_ instanceof HtmlTable) {
-            final HtmlTable enclosingTable = (HtmlTable) currentNode_;
-            if (enclosingTable.getPreviousSibling() instanceof DomText) {
-                final DomText domText = (DomText) enclosingTable.getPreviousSibling();
+        else if (currentNode_ instanceof HtmlTable enclosingTable) {
+            if (enclosingTable.getPreviousSibling() instanceof DomText domText) {
                 domText.setTextContent(domText.getWholeText() + textValue);
             }
             else {
@@ -738,8 +712,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                 }
                 else if ("html".equalsIgnoreCase(lp)) {
                     final DomNode parent = body_.getParentNode();
-                    if (parent instanceof DomElement) {
-                        copyAttributes((DomElement) parent, attrs);
+                    if (parent instanceof DomElement element) {
+                        copyAttributes(element, attrs);
                     }
                 }
             }
@@ -778,8 +752,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     }
 
     private static void appendChild(final DomNode parent, final DomNode child) {
-        if (parent instanceof HtmlTemplate) {
-            ((HtmlTemplate) parent).getContent().appendChild(child);
+        if (parent instanceof HtmlTemplate template) {
+            template.getContent().appendChild(child);
             return;
         }
 

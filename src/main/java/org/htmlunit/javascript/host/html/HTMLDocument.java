@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -54,6 +55,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxStaticFunction;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.Attr;
@@ -134,6 +136,25 @@ public class HTMLDocument extends Document {
     }
 
     /**
+     * Parses the given string of HTML without sanitizing it and returns a new HTMLDocument.
+     *
+     * @param cx the current context
+     * @param scope the scope
+     * @param thisObj the scriptable this object
+     * @param args the arguments
+     * @param funObj the function object
+     * @return a newly created {@link HTMLDocument}
+     *
+     * @see <a href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtmlunsafe">
+     *     HTML spec - parseHTMLUnsafe</a>
+     */
+    @JsxStaticFunction
+    public static HTMLDocument parseHTMLUnsafe(final Context cx, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function funObj) {
+        return (HTMLDocument) Document.parseHTMLUnsafe(cx, scope, thisObj, args, funObj);
+    }
+
+    /**
      * JavaScript function "write" may accept a variable number of arguments.
      * @param context the JavaScript context
      * @param scope the scope
@@ -143,7 +164,7 @@ public class HTMLDocument extends Document {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536782.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public static void write(final Context context, final Scriptable scope,
+    public static void write(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         final HTMLDocument thisAsDocument = getDocument(thisObj);
         thisAsDocument.write(concatArgsAsString(args));
@@ -172,7 +193,7 @@ public class HTMLDocument extends Document {
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF})
-    public static void moveBefore(final Context context, final Scriptable scope,
+    public static void moveBefore(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.moveBefore(context, scope, thisObj, args, function);
     }
@@ -187,7 +208,7 @@ public class HTMLDocument extends Document {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536783.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public static void writeln(final Context context, final Scriptable scope,
+    public static void writeln(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         final HTMLDocument thisAsDocument = getDocument(thisObj);
         thisAsDocument.write(concatArgsAsString(args) + "\n");
@@ -203,11 +224,11 @@ public class HTMLDocument extends Document {
         // cf unit test DocumentTest#testDocumentWrite_AssignedToVar
         // may be the prototype too
         // cf DocumentTest#testDocumentWrite_AssignedToVar2
-        if (thisObj instanceof HTMLDocument && thisObj.getPrototype() instanceof HTMLDocument) {
-            return (HTMLDocument) thisObj;
+        if (thisObj instanceof HTMLDocument document && thisObj.getPrototype() instanceof HTMLDocument) {
+            return document;
         }
-        if (thisObj instanceof DocumentProxy && thisObj.getPrototype() instanceof HTMLDocument) {
-            return (HTMLDocument) ((DocumentProxy) thisObj).getDelegee();
+        if (thisObj instanceof DocumentProxy proxy && thisObj.getPrototype() instanceof HTMLDocument) {
+            return (HTMLDocument) proxy.getDelegee();
         }
 
         throw JavaScriptEngine.reportRuntimeError("Function can't be used detached from document");
@@ -449,9 +470,9 @@ public class HTMLDocument extends Document {
         }
         writeInCurrentDocument_ = false;
         final WebWindow ww = getWindow().getWebWindow();
-        if (ww instanceof FrameWindow
+        if (ww instanceof FrameWindow window
                 && UrlUtils.ABOUT_BLANK.equals(getPage().getUrl().toExternalForm())) {
-            final URL enclosingUrl = ((FrameWindow) ww).getEnclosingPage().getUrl();
+            final URL enclosingUrl = window.getEnclosingPage().getUrl();
             getPage().getWebResponse().getWebRequest().setUrl(enclosingUrl);
         }
         return this;
@@ -477,11 +498,11 @@ public class HTMLDocument extends Document {
             final WebClient webClient = page.getWebClient();
             final WebWindow window = page.getEnclosingWindow();
             // reset isAttachedToPageDuringOnload_ to trigger the onload event for chrome also
-            if (window instanceof FrameWindow) {
-                final BaseFrameElement frame = ((FrameWindow) window).getFrameElement();
+            if (window instanceof FrameWindow frameWindow) {
+                final BaseFrameElement frame = frameWindow.getFrameElement();
                 final HtmlUnitScriptable scriptable = frame.getScriptableObject();
-                if (scriptable instanceof HTMLIFrameElement) {
-                    ((HTMLIFrameElement) scriptable).onRefresh();
+                if (scriptable instanceof HTMLIFrameElement element) {
+                    element.onRefresh();
                 }
             }
             webClient.loadWebResponseInto(webResponse, window);
@@ -571,7 +592,7 @@ public class HTMLDocument extends Document {
         if ("null".equals(elementName)
                 || (elementName.isEmpty()
                     && getBrowserVersion().hasFeature(HTMLDOCUMENT_ELEMENTS_BY_NAME_EMPTY))) {
-            return NodeList.staticNodeList(getWindow(), new ArrayList<>());
+            return NodeList.staticNodeList(getParentScope(), new ArrayList<>());
         }
 
         final HtmlPage page = getPage();
@@ -626,8 +647,8 @@ public class HTMLDocument extends Document {
         }
         if (size == 1) {
             final DomNode object = matchingElements.get(0);
-            if (object instanceof BaseFrameElement) {
-                return ((BaseFrameElement) object).getEnclosedWindow().getScriptableObject();
+            if (object instanceof BaseFrameElement element) {
+                return element.getEnclosedWindow().getScriptableObject();
             }
             return super.getScriptableFor(object);
         }
@@ -635,8 +656,8 @@ public class HTMLDocument extends Document {
         final HTMLCollection coll = new HTMLCollection(page, matchingElements) {
             @Override
             protected HtmlUnitScriptable getScriptableFor(final Object object) {
-                if (object instanceof BaseFrameElement) {
-                    return ((BaseFrameElement) object).getEnclosedWindow().getScriptableObject();
+                if (object instanceof BaseFrameElement element) {
+                    return element.getEnclosedWindow().getScriptableObject();
                 }
                 return super.getScriptableFor(object);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class XMLHttpRequestResponseTextEncodingTest extends AbstractXMLHttpReque
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}_{1}_{2}_{3}_{4}")
+    @ParameterizedTest(name = "_{0}_{1}_{2}_{3}_{4}", quoteTextArguments = false)
     @MethodSource("data")
     void responseText(
             final String xmlEncodingHeader,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,18 @@ package org.htmlunit.libraries.jquery;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import jakarta.servlet.Servlet;
 
 /**
  * Tests for compatibility with web server loading of
@@ -34,6 +39,16 @@ import org.openqa.selenium.WebElement;
  * @author Ronald Brill
  */
 public class JQuery3x3x1Test extends JQueryTestBase {
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @BeforeAll
+    public static void startServer() throws Exception {
+        final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
+        servlets.put("*.php", org.htmlunit.util.quercus.servlet.QuercusServlet.class);
+        startWebServer("src/test/resources/libraries/jQuery/3.3.1", servlets);
+    }
 
     /**
      * {@inheritDoc}
@@ -52,8 +67,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
                                         + getVersion() + "/expectations/results", ".txt");
         final String[] lines = testResults.split("\n");
         Arrays.sort(lines, Comparator.comparingInt(String::length));
-        for (int i = 0; i < lines.length; i++) {
-            final String line = lines[i];
+        for (final String line : lines) {
             final int pos = line.indexOf(testName);
             if (pos != -1) {
                 final int start = line.lastIndexOf('[') + 1;

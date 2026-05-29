@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -301,25 +301,13 @@ public class HtmlEmailInputTest extends WebDriverTestCase {
                        "false-false-false-false-false-false-false-false-false-true-false",
                        "true",
                        "§§URL§§?k=abc%40email.com", "2"},
-            FF = {"null",
-                  "abc@email.com",
-                  "false",
-                  "false-false-false-false-false-false-false-false-true-false-false",
-                  "true",
-                  "§§URL§§", "1"},
             FF_ESR = {"null",
                       "abc@email.com",
                       "false",
                       "false-false-false-false-false-false-false-false-true-false-false",
                       "true",
                       "§§URL§§", "1"})
-    @HtmlUnitNYI(FF = {"null",
-                       "abc@email.com",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abc%40email.com", "2"},
-                 FF_ESR = {"null",
+    @HtmlUnitNYI(FF_ESR = {"null",
                            "abc@email.com",
                            "true",
                            "false-false-false-false-false-false-false-false-false-true-false",

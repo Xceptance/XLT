@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,7 +360,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         assertNotSame("new page not returned", page, secondPage);
         assertTrue("new page in wrong window type",
-                TopLevelWindow.class.isInstance(secondPage.getEnclosingWindow()));
+                secondPage.getEnclosingWindow() instanceof TopLevelWindow);
         assertEquals("new window not created", 2, page.getWebClient().getWebWindows().size());
         assertNotSame("new window not used", page.getEnclosingWindow(), secondPage
                 .getEnclosingWindow());
@@ -913,13 +913,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
         final LinkedList<Page> pages = new LinkedList<>();
-        getWebClient().setAttachmentHandler(new AttachmentHandler() {
-
-            @Override
-            public void handleAttachment(final Page page, final String attachmentFilename) {
-                pages.add(page);
-            }
-        });
+        getWebClient().setAttachmentHandler((AttachmentHandler) (page, attachmentFilename) -> pages.add(page));
 
         try {
             final HtmlPage page = loadPage(html);
@@ -1116,12 +1110,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
         final LinkedList<Page> pages = new LinkedList<>();
-        getWebClient().setAttachmentHandler(new AttachmentHandler() {
-            @Override
-            public void handleAttachment(final Page page, final String attachmentFilename) {
-                pages.add(page);
-            }
-        });
+        getWebClient().setAttachmentHandler((AttachmentHandler) (page, attachmentFilename) -> pages.add(page));
 
         try {
             final HtmlPage page = loadPage(html);

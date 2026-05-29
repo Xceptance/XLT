@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     ANCHOR_SEND_PING_REQUEST,
 
+    /** Screen colorDepth is 32 instead of 24. */
+    @BrowserFeature({CHROME, EDGE})
+    COLOR_DEPHT_32,
+
     /** Background image is 'initial'. */
     @BrowserFeature({CHROME, EDGE})
     CSS_BACKGROUND_INITIAL,
@@ -70,18 +74,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({FF, FF_ESR})
     EVENT_FOCUS_ON_LOAD,
 
-    /** <code>AnimationEvent</code> can not be created by calling document.createEvent('AnimationEvent'). */
-    @BrowserFeature({FF, FF_ESR})
-    EVENT_ONANIMATION_DOCUMENT_CREATE_NOT_SUPPORTED,
-
-    /** <code>CloseEvent</code> can not be created by calling document.createEvent('CloseEvent'). */
-    @BrowserFeature({FF, FF_ESR})
-    EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED,
-
-    /** <code>PopStateEvent</code> can not be created by calling document.createEvent('PopStateEvent'). */
-    @BrowserFeature({FF, FF_ESR})
-    EVENT_ONPOPSTATE_DOCUMENT_CREATE_NOT_SUPPORTED,
-
     /** Scroll events are of type 'UIEvent'. */
     @BrowserFeature({FF, FF_ESR})
     EVENT_SCROLL_UIEVENT,
@@ -89,10 +81,6 @@ public enum BrowserVersionFeatures {
     /** Supports event type 'MutationEvent'. */
     @BrowserFeature(FF_ESR)
     EVENT_TYPE_MUTATIONEVENT,
-
-    /** Supports event type 'WheelEvent'. */
-    @BrowserFeature({CHROME, EDGE})
-    EVENT_TYPE_WHEELEVENT,
 
     /** Form elements are able to refer to the for by using the form attribute. */
     @BrowserFeature({CHROME, EDGE})
@@ -105,10 +93,6 @@ public enum BrowserVersionFeatures {
     /** Should org.htmlunit.javascript.host.html.HTMLBaseFontElement#isEndTagForbidden(). */
     @BrowserFeature({FF, FF_ESR})
     HTMLBASEFONT_END_TAG_FORBIDDEN,
-
-    /** willValidate does not check the readonly property. */
-    @BrowserFeature({FF, FF_ESR})
-    HTMLBUTTON_WILL_VALIDATE_IGNORES_READONLY,
 
     /** HtmlCollection.namedItem searches by id first. */
     @BrowserFeature({CHROME, EDGE})
@@ -160,17 +144,9 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     HTMLLINK_CHECK_TYPE_FOR_STYLESHEET,
 
-    /** willValidate does not check the readonly property. */
-    @BrowserFeature({FF, FF_ESR})
-    HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY,
-
     /** Should org.htmlunit.javascript.host.html.HTMLTrackElement#isEndTagForbidden(). */
     @BrowserFeature({FF, FF_ESR})
     HTMLTRACK_END_TAG_FORBIDDEN,
-
-    /** HTML parser supports the 'command' tag. */
-    @BrowserFeature({CHROME, EDGE})
-    HTML_COMMAND_TAG,
 
     /** HTML parser supports the 'layer' tag. */
     @BrowserFeature({CHROME, EDGE})
@@ -383,14 +359,6 @@ public enum BrowserVersionFeatures {
     /** Whether to add to the storage even preserved words. */
     @BrowserFeature({FF, FF_ESR})
     JS_STORAGE_PRESERVED_INCLUDED,
-
-    /** Indicates letterSpacing support percent values. */
-    @BrowserFeature({FF, FF_ESR})
-    JS_STYLE_LETTER_SPACING_ACCEPTS_PERCENT,
-
-    /** Indicates wordSpacing support percent values. */
-    @BrowserFeature({FF, FF_ESR})
-    JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT,
 
     /** window.getComputedStyle works with pseudo selectors without colon in front. */
     @BrowserFeature({CHROME, EDGE})

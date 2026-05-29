@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class ErrorOutputChecker implements BeforeEachCallback, AfterEachCallback
             Pattern.compile("SLF4J\\(I\\): .*\r?\n"),
 
             // Quercus
+            Pattern.compile(".*org.htmlunit.util.quercus.servlet.QuercusServlet initImpl\r?\n"),
             Pattern.compile(".*com.caucho.quercus.servlet.QuercusServlet initImpl\r?\n"),
             Pattern.compile(".*QuercusServlet starting as QuercusServletImpl\r?\n"),
             Pattern.compile(".*Quercus finished initialization in \\d*ms\r?\n"),
@@ -66,8 +67,7 @@ public class ErrorOutputChecker implements BeforeEachCallback, AfterEachCallback
             final Optional<Object> testInstance = context.getTestInstance();
 
             if (testInstance.isPresent()
-                    && testInstance.get() instanceof WebDriverTestCase) {
-                final WebDriverTestCase webDriverTestCase = (WebDriverTestCase) testInstance.get();
+                    && testInstance.get() instanceof WebDriverTestCase webDriverTestCase) {
                 if (!webDriverTestCase.useRealBrowser()) {
                     verifyNoOutput();
                 }
@@ -118,7 +118,7 @@ public class ErrorOutputChecker implements BeforeEachCallback, AfterEachCallback
  * It prints the content to the wrapped {@link PrintStream} and captures it simultaneously.
  */
 class NSAPrintStreamWrapper extends PrintStream {
-    private PrintStream wrapped_;
+    private final PrintStream wrapped_;
 
     NSAPrintStreamWrapper(final PrintStream original, final OutputStream spyOut) {
         super(spyOut, true);

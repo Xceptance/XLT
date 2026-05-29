@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,14 +68,15 @@ public class HashChangeEvent extends Event {
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        String oldURL = "";
-        String newURL = "";
         if (details != null && !JavaScriptEngine.isUndefined(details)) {
-            oldURL = (String) details.get("oldURL");
-            newURL = (String) details.get("newURL");
+            if (details.has("oldURL", details)) {
+                oldURL_ = JavaScriptEngine.toString(details.get("oldURL"));
+            }
+
+            if (details.has("newURL", details)) {
+                newURL_ = JavaScriptEngine.toString(details.get("newURL"));
+            }
         }
-        oldURL_ = oldURL;
-        newURL_ = newURL;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -345,9 +345,7 @@ public class ElementChildNodesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "2", "2", "3", "2", "3"},
-            FF = {"3", "2", "2", "3", "2", "2"},
-            FF_ESR = {"3", "2", "2", "3", "2", "2"})
+    @Alerts({"3", "2", "2", "3", "2", "2"})
     public void command() throws Exception {
         loadPageVerifyTitle2(test("command"));
     }
@@ -658,6 +656,17 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     @Alerts({"1", "0", "1", "1", "0", "1"})
     public void header() throws Exception {
         loadPageVerifyTitle2(test("header"));
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "0", "1", "1", "0", "1"})
+    public void hgroup() throws Exception {
+        loadPageVerifyTitle2(test("hgroup"));
     }
 
     /**

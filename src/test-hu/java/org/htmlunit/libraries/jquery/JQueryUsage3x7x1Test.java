@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,22 @@ package org.htmlunit.libraries.jquery;
 
 import org.htmlunit.WebClient;
 import org.htmlunit.junit.annotation.Alerts;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
- * Tests jQuery 3.7.0 scenarios.
+ * Tests jQuery 3.7.1 scenarios.
  *
  * @author Ronald Brill
  */
 public class JQueryUsage3x7x1Test extends JQueryTestBase {
+
+    @BeforeAll
+    public static void startServer() throws Exception {
+        startWebServer("src/test/resources/libraries/jQuery/3.7.1", null);
+    }
 
     /**
      * {@inheritDoc}

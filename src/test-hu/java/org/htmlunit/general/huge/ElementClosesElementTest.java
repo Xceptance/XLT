@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import java.util.List;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.DefaultElementFactory;
+import org.htmlunit.javascript.SilentJavaScriptErrorListener;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -87,7 +89,7 @@ public class ElementClosesElementTest extends WebDriverTestCase {
      * The default test.
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}_{1}")
+    @ParameterizedTest(name = "_{0}_{1}", quoteTextArguments = false)
     @MethodSource("data")
     void test(final String parent, final String child) throws Exception {
         String bodyStart = "<body>\n";
@@ -207,6 +209,10 @@ public class ElementClosesElementTest extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final WebClient webClient = ((HtmlUnitDriver) driver).getWebClient();
             webClient.getOptions().setThrowExceptionOnScriptError(false);
+
+            // no need to log all the js errors we got because of only opened script tags
+            // hopefully this make the tests faster on CI
+            webClient.setJavaScriptErrorListener(new SilentJavaScriptErrorListener());
         }
 
         loadPage2(pageHtml);
@@ -831,6 +837,12 @@ public class ElementClosesElementTest extends WebDriverTestCase {
     }
 
     @Alerts("0")
+    @Test
+    void _p_hgroup() throws Exception {
+        test("p", "hgroup");
+    }
+
+    @Alerts("0")
     void _p_hr() throws Exception {
         test("p", "hr");
     }
@@ -893,6 +905,16 @@ public class ElementClosesElementTest extends WebDriverTestCase {
     @Alerts("0")
     void _p_summary() throws Exception {
         test("p", "summary");
+    }
+
+    @Alerts("0")
+    @HtmlUnitNYI(
+            CHROME = "1",
+            EDGE = "1",
+            FF = "1",
+            FF_ESR = "1")
+    void _p_table() throws Exception {
+        test("p", "table");
     }
 
     @Alerts("0")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ public class AlphanumericTest extends WebDriverTestCase {
 
             setExpectedAlerts(expected);
 
-            final String s = "sd" + input + String.valueOf((i + 10) * (i + 10) - 2 * (i + 10));
+            final String s = "sd" + input + ((i + 10) * (i + 10) - 2 * (i + 10));
             test("'" + s + "'.match(new RegExp('\\\\W'))", false);
         }
     }

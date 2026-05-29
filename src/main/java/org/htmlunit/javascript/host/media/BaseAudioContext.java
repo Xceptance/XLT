@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class BaseAudioContext extends EventTarget {
 
         final DOMException domException = new DOMException(
                 "decodeAudioData not supported by HtmlUnit", DOMException.NOT_SUPPORTED_ERR);
-        domException.setParentScope(window);
+        domException.setParentScope(getParentScope());
         domException.setPrototype(window.getPrototype(DOMException.class));
 
         if (error != null) {

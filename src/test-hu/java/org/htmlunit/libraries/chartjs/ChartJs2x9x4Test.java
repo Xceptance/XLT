@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@ package org.htmlunit.libraries.chartjs;
 
 import java.net.URL;
 
-import org.eclipse.jetty.server.Server;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebServerTestCase;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
@@ -32,27 +29,12 @@ import org.openqa.selenium.WebDriver;
  */
 public class ChartJs2x9x4Test extends WebDriverTestCase {
 
-    /** The server. */
-    protected static Server SERVER_;
-
     /**
      * @throws Exception if an error occurs
      */
     @BeforeAll
-    public static void startSesrver() throws Exception {
-        SERVER_ = WebServerTestCase.createWebServer("src/test/resources/libraries/chartjs/2.9.4/", null);
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @AfterAll
-    public static void stopServer() throws Exception {
-        if (SERVER_ != null) {
-            SERVER_.stop();
-            SERVER_.destroy();
-            SERVER_ = null;
-        }
+    public static void startServer() throws Exception {
+        startWebServer("src/test/resources/libraries/chartjs/2.9.4/", null);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
     public Scriptable getLanguages() {
         final String acceptLang = getBrowserVersion().getAcceptLanguageHeader();
         if (StringUtils.isEmptyOrNull(acceptLang)) {
-            return JavaScriptEngine.newArray(this, 0);
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final ArrayList<String> res = new ArrayList<>();
@@ -126,7 +126,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
             }
         }
 
-        return JavaScriptEngine.newArray(this, res.toArray());
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
     }
 
     /**

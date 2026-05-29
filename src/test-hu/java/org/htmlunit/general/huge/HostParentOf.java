@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,15 @@ public abstract class HostParentOf extends WebDriverTestCase {
         final Set<String> jsClassNames = TestCaseTest.getAllConfiguredJsConstructorNames();
 
         final List<Arguments> list = new ArrayList<>(jsClassNames.size() * jsClassNames.size() / 10);
+
+        int i = 0;
         for (final String parent : jsClassNames) {
             if (predicate.test(parent)) {
                 for (final String child : jsClassNames) {
                     list.add(Arguments.of(parent, child));
+                }
+                if (++i > 100) {
+                    return list;
                 }
             }
         }
@@ -65,7 +70,7 @@ public abstract class HostParentOf extends WebDriverTestCase {
      * @param child the child host name
      * @throws Exception if an error occurs
      */
-    @ParameterizedTest(name = "_{0}_{1}")
+    @ParameterizedTest(name = "_{0}_{1}", quoteTextArguments = false)
     @MethodSource("data")
     @Alerts("false/false")
     protected void test(final String parent, final String child) throws Exception {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -242,13 +243,12 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @param function the function
      */
     @JsxFunction
-    public static void clip(final Context context, final Scriptable scope,
+    public static void clip(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
-        if (!(thisObj instanceof CanvasRenderingContext2D)) {
+        if (!(thisObj instanceof CanvasRenderingContext2D canvas)) {
             throw JavaScriptEngine.reportRuntimeError(
                     "CanvasRenderingContext2D.getImageData() failed - this is not a CanvasRenderingContext2D");
         }
-        final CanvasRenderingContext2D canvas = (CanvasRenderingContext2D) thisObj;
 
         RenderingBackend.WindingRule windingRule = WindingRule.NON_ZERO;
         if (args.length == 1) {
@@ -296,19 +296,17 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @return the {@code ImageData} object
      */
     @JsxFunction
-    public static ImageData createImageData(final Context context, final Scriptable scope,
+    public static ImageData createImageData(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
-        if (!(thisObj instanceof CanvasRenderingContext2D)) {
+        if (!(thisObj instanceof CanvasRenderingContext2D canvas)) {
             throw JavaScriptEngine.reportRuntimeError(
                     "CanvasRenderingContext2D.getImageData() failed - this is not a CanvasRenderingContext2D");
         }
-        final CanvasRenderingContext2D canvas = (CanvasRenderingContext2D) thisObj;
 
-        if (args.length > 0 && args[0] instanceof ImageData) {
-            final ImageData imageDataParameter = (ImageData) args[0];
+        if (args.length > 0 && args[0] instanceof ImageData imageDataParameter) {
             final ImageData imageData = new ImageData(null,
                     0, 0, imageDataParameter.getWidth(), imageDataParameter.getHeight());
-            imageData.setParentScope(canvas.getParentScope());
+            imageData.setParentScope(scope);
             imageData.setPrototype(canvas.getPrototype(imageData.getClass()));
             return imageData;
         }
@@ -393,8 +391,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
     public void drawImage(final Object image, final int sx, final int sy, final Object sWidth, final Object sHeight,
             final Object dx, final Object dy, final Object dWidth, final Object dHeight) {
 
-        if (image instanceof HTMLImageElement) {
-            final HTMLImageElement imageElem = (HTMLImageElement) image;
+        if (image instanceof HTMLImageElement imageElem) {
             try {
                 final org.htmlunit.platform.image.ImageData imageData
                             = ((HtmlImage) imageElem.getDomNodeOrDie()).getImageData();

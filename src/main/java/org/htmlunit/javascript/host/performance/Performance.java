@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public class Performance extends EventTarget {
      */
     @JsxFunction
     public Scriptable getEntries() {
-        return JavaScriptEngine.newArray(this, 0);
+        return JavaScriptEngine.newArray(getParentScope(), 0);
     }
 
     /**
@@ -98,7 +98,7 @@ public class Performance extends EventTarget {
      */
     @JsxFunction
     public Scriptable getEntriesByName() {
-        return JavaScriptEngine.newArray(this, 0);
+        return JavaScriptEngine.newArray(getParentScope(), 0);
     }
 
     /**
@@ -108,6 +108,6 @@ public class Performance extends EventTarget {
      */
     @JsxFunction
     public Scriptable getEntriesByType() {
-        return JavaScriptEngine.newArray(this, 0);
+        return JavaScriptEngine.newArray(getParentScope(), 0);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package org.htmlunit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import java.util.TimeZone;
 
@@ -38,10 +38,10 @@ public class BrowserVersionTest {
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(146, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(150, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
         assertEquals(140, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
-        assertEquals(143, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(143, BrowserVersion.EDGE.getBrowserVersionNumeric());
+        assertEquals(148, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(148, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**
@@ -54,10 +54,10 @@ public class BrowserVersionTest {
         final BrowserVersion clone = new BrowserVersion.BrowserVersionBuilder(ff).build();
 
         // Nickname is used as key for dictionaries storing browser setups
-        assertTrue(ff.getNickname().equals(clone.getNickname()));
+        assertEquals(ff.getNickname(), clone.getNickname());
 
-        assertFalse(ff == clone);
-        assertFalse(ff.equals(clone));
+        assertNotSame(ff, clone);
+        assertNotEquals(ff, clone);
     }
 
     /**
@@ -70,10 +70,10 @@ public class BrowserVersionTest {
                                                 .build();
 
         // Nickname is used as key for dictionaries storing browser setups
-        assertTrue(BrowserVersion.FIREFOX.getNickname().equals(ffBerlin.getNickname()));
+        assertEquals(BrowserVersion.FIREFOX.getNickname(), ffBerlin.getNickname());
 
-        assertFalse(BrowserVersion.FIREFOX == ffBerlin);
-        assertFalse(BrowserVersion.FIREFOX.equals(ffBerlin));
+        assertNotSame(BrowserVersion.FIREFOX, ffBerlin);
+        assertNotEquals(BrowserVersion.FIREFOX, ffBerlin);
 
         Assertions.assertNotEquals(BrowserVersion.FIREFOX.getSystemTimezone(), ffBerlin.getSystemTimezone());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package org.htmlunit.javascript.regexp;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
@@ -408,10 +407,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "", "false", "false", "false"},
-            EDGE = {"get undefined", "", "false", "false", "false"},
-            FF = {"get undefined", "", "false", "false", "false"},
-            FF_ESR = {"get undefined", "", "false", "false", "false"})
     public void flagsProperty() throws Exception {
         testProperty("flags");
     }
@@ -421,10 +416,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "false", "false", "false", "false"},
-            EDGE = {"get undefined", "false", "false", "false", "false"},
-            FF = {"get undefined", "false", "false", "false", "false"},
-            FF_ESR = {"get undefined", "false", "false", "false", "false"})
     public void globalProperty() throws Exception {
         testProperty("global");
     }
@@ -434,10 +425,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "false", "false", "false", "false"},
-            EDGE = {"get undefined", "false", "false", "false", "false"},
-            FF = {"get undefined", "false", "false", "false", "false"},
-            FF_ESR = {"get undefined", "false", "false", "false", "false"})
     public void ignoreCaseProperty() throws Exception {
         testProperty("ignoreCase");
     }
@@ -447,10 +434,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "false", "false", "false", "false"},
-            EDGE = {"get undefined", "false", "false", "false", "false"},
-            FF = {"get undefined", "false", "false", "false", "false"},
-            FF_ESR = {"get undefined", "false", "false", "false", "false"})
     public void multilineProperty() throws Exception {
         testProperty("multiline");
     }
@@ -460,10 +443,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "false", "false", "false", "false"},
-            EDGE = {"get undefined", "false", "false", "false", "false"},
-            FF = {"get undefined", "false", "false", "false", "false"},
-            FF_ESR = {"get undefined", "false", "false", "false", "false"})
     public void stickyProperty() throws Exception {
         testProperty("sticky");
     }
@@ -473,10 +452,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "false", "false", "false", "false"},
-            EDGE = {"get undefined", "false", "false", "false", "false"},
-            FF = {"get undefined", "false", "false", "false", "false"},
-            FF_ESR = {"get undefined", "false", "false", "false", "false"})
     public void dotAllProperty() throws Exception {
         testProperty("dotAll");
     }
@@ -487,10 +462,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "false", "false", "false", "false"},
-            EDGE = {"get undefined", "false", "false", "false", "false"},
-            FF = {"get undefined", "false", "false", "false", "false"},
-            FF_ESR = {"get undefined", "false", "false", "false", "false"})
     public void unicodeProperty() throws Exception {
         testProperty("unicode");
     }
@@ -501,10 +472,6 @@ public class RegExpTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"0", "undefined", "true", "false", "undefined"})
-    @HtmlUnitNYI(CHROME = {"get undefined", "", "false", "false", "false"},
-            EDGE = {"get undefined", "", "false", "false", "false"},
-            FF = {"get undefined", "", "false", "false", "false"},
-            FF_ESR = {"get undefined", "", "false", "false", "false"})
     public void sourceProperty() throws Exception {
         testProperty("source");
     }

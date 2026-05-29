@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -399,8 +399,8 @@ public class MouseEvent extends UIEvent {
             if (events != null && !events.isEmpty()) {
                 final int lastIdx = events.size() - 1;
                 final Event lastEvent = events.get(lastIdx);
-                if (lastEvent instanceof MouseEvent) {
-                    return (MouseEvent) lastEvent;
+                if (lastEvent instanceof MouseEvent event) {
+                    return event;
                 }
             }
         }

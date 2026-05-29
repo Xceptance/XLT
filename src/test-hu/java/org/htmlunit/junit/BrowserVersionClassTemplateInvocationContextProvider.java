@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,20 +100,16 @@ public class BrowserVersionClassTemplateInvocationContextProvider implements Cla
             public List<Extension> getAdditionalExtensions() {
                 final ArrayList<Extension> extensions = new ArrayList<>();
 
-                extensions.add(new TestInstancePostProcessor() {
+                extensions.add((TestInstancePostProcessor) (testInstance, context) -> {
+                    if (testInstance instanceof WebTestCase) {
+                        final WebTestCase webTestCase = (WebTestCase) testInstance;
 
-                    @Override
-                    public void postProcessTestInstance(final Object testInstance, final ExtensionContext context) {
-                        if (testInstance instanceof WebTestCase) {
-                            final WebTestCase webTestCase = (WebTestCase) testInstance;
+                        webTestCase.setBrowserVersion(browserVersion);
+                    }
+                    if (testInstance instanceof WebDriverTestCase) {
+                        final WebDriverTestCase webDriverTestCase = (WebDriverTestCase) testInstance;
 
-                            webTestCase.setBrowserVersion(browserVersion);
-                        }
-                        if (testInstance instanceof WebDriverTestCase) {
-                            final WebDriverTestCase webDriverTestCase = (WebDriverTestCase) testInstance;
-
-                            webDriverTestCase.setUseRealBrowser(realBrowser);
-                        }
+                        webDriverTestCase.setUseRealBrowser(realBrowser);
                     }
                 });
 

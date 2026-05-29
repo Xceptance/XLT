@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -681,7 +681,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "621",
-            EDGE = "630",
+            EDGE = "631",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "0",
@@ -699,7 +699,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "621",
-            EDGE = "630",
+            EDGE = "631",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "18",
@@ -796,6 +796,21 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
     @Alerts("0")
     public void header() throws Exception {
         test("header");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("0")
+    @HtmlUnitNYI(CHROME = "18",
+            EDGE = "18",
+            FF = "18",
+            FF_ESR = "18")
+    public void hgroup() throws Exception {
+        test("hgroup");
     }
 
     /**
@@ -1245,7 +1260,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "20",
+    @Alerts(DEFAULT = "40",
             FF = "18",
             FF_ESR = "18")
     @HtmlUnitNYI(CHROME = "18",

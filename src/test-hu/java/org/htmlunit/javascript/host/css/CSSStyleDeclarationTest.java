@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2688,12 +2688,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"17px", "5px", "6em", "17px", "17px", "initial", "inherit",
-                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF = {"17px", "5px", "6em", "17px", "7%", "initial", "inherit",
-                  "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF_ESR = {"17px", "5px", "6em", "17px", "7%", "initial", "inherit",
-                      "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @Alerts({"17px", "5px", "6em", "17px", "7%", "initial", "inherit",
+             "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
     public void setWordSpacingProperty() throws Exception {
         setLengthProperty("word-spacing", "wordSpacing");
     }
@@ -2702,12 +2698,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"17px", "5px", "6em", "17px", "17px", "initial", "inherit",
-                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
-            FF = {"17px", "5px", "6em", "17px", "70%", "initial", "inherit",
-                  "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"},
-            FF_ESR = {"17px", "5px", "6em", "17px", "70%", "initial", "inherit",
-                      "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"})
+    @Alerts({"17px", "5px", "6em", "17px", "70%", "initial", "inherit",
+             "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px", "17px"})
     public void setWordSpacing() throws Exception {
         setLength("word-spacing", "wordSpacing");
     }
@@ -2716,12 +2708,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"17px", "5px", "6em", "17px", "17px", "initial", "inherit",
-                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF = {"17px", "5px", "6em", "17px", "7%", "initial", "inherit",
-                  "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF_ESR = {"17px", "5px", "6em", "17px", "7%", "initial", "inherit",
-                      "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @Alerts({"17px", "5px", "6em", "17px", "7%", "initial", "inherit",
+             "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
     public void setLetterSpacingProperty() throws Exception {
         setLengthProperty("letter-spacing", "letterSpacing");
     }
@@ -2730,12 +2718,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"17px", "5px", "6em", "17px", "17px", "initial", "inherit",
-                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF = {"17px", "5px", "6em", "17px", "70%", "initial", "inherit",
-                  "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
-            FF_ESR = {"17px", "5px", "6em", "17px", "70%", "initial", "inherit",
-                      "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @Alerts({"17px", "5px", "6em", "17px", "70%", "initial", "inherit",
+             "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
     public void setLetterSpacing() throws Exception {
         setLength("letter-spacing", "letterSpacing");
     }

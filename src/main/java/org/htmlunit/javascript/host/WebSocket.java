@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
@@ -39,6 +40,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.event.CloseEvent;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
@@ -99,14 +101,16 @@ public class WebSocket extends EventTarget implements AutoCloseable {
      * Creates a new instance.
      *
      * @param url    the URL to which to connect
+     * @param scope  the scope
      * @param window the top level window
      */
-    private WebSocket(final String url, final Window window) {
+    private WebSocket(final String url, final VarScope scope, final Window window) {
         super();
         try {
             final WebWindow webWindow = window.getWebWindow();
             containingPage_ = (HtmlPage) webWindow.getEnclosedPage();
-            setParentScope(window);
+
+            setParentScope(scope);
             setDomNode(containingPage_.getDocumentElement(), false);
 
             final WebClient webClient = webWindow.getWebClient();
@@ -120,11 +124,11 @@ public class WebSocket extends EventTarget implements AutoCloseable {
                 }
 
                 @Override
-                public void onWebSocketConnect() {
+                public void onWebSocketOpen() {
                     setReadyState(OPEN);
 
                     final Event openEvent = new Event(Event.TYPE_OPEN);
-                    openEvent.setParentScope(window);
+                    openEvent.setParentScope(scope);
                     openEvent.setPrototype(getPrototype(openEvent.getClass()));
                     openEvent.setSrcElement(WebSocket.this);
                     fire(openEvent);
@@ -136,11 +140,11 @@ public class WebSocket extends EventTarget implements AutoCloseable {
                     setReadyState(CLOSED);
 
                     final CloseEvent closeEvent = new CloseEvent();
-                    closeEvent.setParentScope(window);
+                    closeEvent.setParentScope(scope);
                     closeEvent.setPrototype(getPrototype(closeEvent.getClass()));
                     closeEvent.setCode(statusCode);
                     closeEvent.setReason(reason);
-                    closeEvent.setWasClean(true);
+                    closeEvent.setWasClean(statusCode == 1000);
                     fire(closeEvent);
                     callFunction(closeHandler_, new Object[] {closeEvent});
                 }
@@ -148,10 +152,17 @@ public class WebSocket extends EventTarget implements AutoCloseable {
                 @Override
                 public void onWebSocketText(final String message) {
                     final MessageEvent msgEvent = new MessageEvent(message);
-                    msgEvent.setParentScope(window);
+                    msgEvent.setParentScope(scope);
                     msgEvent.setPrototype(getPrototype(msgEvent.getClass()));
                     if (originSet_) {
-                        msgEvent.setOrigin(getUrl());
+                        try {
+                            URL originUrl = UrlUtils.toUrlUnsafe(getUrl());
+                            originUrl = UrlUtils.getUrlWithoutPathRefQuery(originUrl);
+                            msgEvent.setOrigin(originUrl.toExternalForm());
+                        }
+                        catch (final MalformedURLException e) {
+                            // ignore
+                        }
                     }
                     msgEvent.setSrcElement(WebSocket.this);
                     fire(msgEvent);
@@ -159,17 +170,25 @@ public class WebSocket extends EventTarget implements AutoCloseable {
                 }
 
                 @Override
-                public void onWebSocketBinary(final byte[] data, final int offset, final int length) {
-                    final NativeArrayBuffer buffer = new NativeArrayBuffer(length);
-                    System.arraycopy(data, offset, buffer.getBuffer(), 0, length);
+                public void onWebSocketBinary(final ByteBuffer payload) {
+                    final NativeArrayBuffer buffer = new NativeArrayBuffer(payload.remaining());
+                    payload.get(buffer.getBuffer());
+
                     buffer.setParentScope(getParentScope());
-                    buffer.setPrototype(ScriptableObject.getClassPrototype(getWindow(), buffer.getClassName()));
+                    buffer.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), buffer.getClassName()));
 
                     final MessageEvent msgEvent = new MessageEvent(buffer);
-                    msgEvent.setParentScope(window);
+                    msgEvent.setParentScope(scope);
                     msgEvent.setPrototype(getPrototype(msgEvent.getClass()));
                     if (originSet_) {
-                        msgEvent.setOrigin(getUrl());
+                        try {
+                            URL originUrl = UrlUtils.toUrlUnsafe(getUrl());
+                            originUrl = UrlUtils.getUrlWithoutPathRefQuery(originUrl);
+                            msgEvent.setOrigin(originUrl.toExternalForm());
+                        }
+                        catch (final MalformedURLException e) {
+                            // ignore
+                        }
                     }
                     msgEvent.setSrcElement(WebSocket.this);
                     fire(msgEvent);
@@ -181,21 +200,26 @@ public class WebSocket extends EventTarget implements AutoCloseable {
                     if (LOG.isErrorEnabled()) {
                         LOG.error("WS connect error for url '" + url + "':", cause);
                     }
+                    onWebSocketError(cause);
                 }
 
                 @Override
                 public void onWebSocketError(final Throwable cause) {
+                    if (CLOSED == getReadyState()) {
+                        return;
+                    }
+
                     setReadyState(CLOSED);
 
                     final Event errorEvent = new Event(Event.TYPE_ERROR);
-                    errorEvent.setParentScope(window);
+                    errorEvent.setParentScope(scope);
                     errorEvent.setPrototype(getPrototype(errorEvent.getClass()));
                     errorEvent.setSrcElement(WebSocket.this);
                     fire(errorEvent);
                     callFunction(errorHandler_, new Object[] {errorEvent});
 
                     final CloseEvent closeEvent = new CloseEvent();
-                    closeEvent.setParentScope(window);
+                    closeEvent.setParentScope(scope);
                     closeEvent.setPrototype(getPrototype(closeEvent.getClass()));
                     closeEvent.setCode(1006);
                     closeEvent.setReason(cause.getMessage());
@@ -232,28 +256,52 @@ public class WebSocket extends EventTarget implements AutoCloseable {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Scriptable scope, final Object[] args,
+    public static Scriptable jsConstructor(final Context cx, final VarScope scope, final Object[] args,
             final Function ctorObj, final boolean inNewExpr) {
         if (args.length < 1 || args.length > 2) {
             throw JavaScriptEngine
-                    .reportRuntimeError("WebSocket Error: constructor must have one or two String parameters.");
+                    .typeError("WebSocket Error: constructor must have one or two String parameters.");
         }
 
         final Window win = getWindow(ctorObj);
         String urlString = JavaScriptEngine.toString(args[0]);
         try {
             final Page page = win.getWebWindow().getEnclosedPage();
-            if (page instanceof HtmlPage) {
-                URL url = ((HtmlPage) page).getFullyQualifiedUrl(urlString);
-                url = UrlUtils.getUrlWithNewProtocol(url, "ws");
+            if (page instanceof HtmlPage htmlPage) {
+                URL url = htmlPage.getFullyQualifiedUrl(urlString);
+
+                if (url.getRef() != null) {
+                    throw JavaScriptEngine.asJavaScriptException(
+                            win,
+                            "WebSocket Error: 'url' parameter '" + urlString + "' contains a fragment identifier.",
+                            DOMException.SYNTAX_ERR);
+                }
+
+                // Per spec: only ws/wss are valid; convert http/https (relative resolution), reject everything else
+                final String scheme = url.getProtocol();
+                if ("http".equals(scheme)) {
+                    url = UrlUtils.getUrlWithNewProtocol(url, "ws");
+                }
+                else if ("https".equals(scheme)) {
+                    url = UrlUtils.getUrlWithNewProtocol(url, "wss");
+                }
+                else if (!"ws".equals(scheme) && !"wss".equals(scheme)) {
+                    throw JavaScriptEngine.asJavaScriptException(
+                            win,
+                            "WebSocket Error: 'url' parameter '" + urlString + "' is not a valid url.",
+                            DOMException.SYNTAX_ERR);
+                }
+
                 urlString = url.toExternalForm();
             }
         }
         catch (final MalformedURLException e) {
-            throw JavaScriptEngine.reportRuntimeError(
-                    "WebSocket Error: 'url' parameter '" + urlString + "' is not a valid url.");
+            throw JavaScriptEngine.asJavaScriptException(
+                    win,
+                    "WebSocket Error: 'url' parameter '" + urlString + "' is not a valid url.",
+                    DOMException.SYNTAX_ERR);
         }
-        return new WebSocket(urlString, win);
+        return new WebSocket(urlString, getTopLevelScope(scope), win);
     }
 
     /**
@@ -417,9 +465,13 @@ public class WebSocket extends EventTarget implements AutoCloseable {
      */
     @JsxFunction
     public void close(final Object code, final Object reason) {
+        if (webSocketImpl_ == null) {
+            return;
+        }
+
         if (readyState_ != CLOSED) {
             try {
-                webSocketImpl_.closeIncommingSession();
+                webSocketImpl_.closeIncomingSession();
             }
             catch (final Throwable e) {
                 LOG.error("WS close error - incomingSession_.close() failed", e);
@@ -449,8 +501,8 @@ public class WebSocket extends EventTarget implements AutoCloseable {
     @JsxFunction
     public void send(final Object content) {
         try {
-            if (content instanceof NativeArrayBuffer) {
-                final byte[] bytes = ((NativeArrayBuffer) content).getBuffer();
+            if (content instanceof NativeArrayBuffer buffer1) {
+                final byte[] bytes = buffer1.getBuffer();
                 final ByteBuffer buffer = ByteBuffer.wrap(bytes);
                 webSocketImpl_.send(buffer);
                 return;
@@ -468,18 +520,22 @@ public class WebSocket extends EventTarget implements AutoCloseable {
         evt.setPrototype(getPrototype(evt.getClass()));
 
         final AbstractJavaScriptEngine<?> engine = containingPage_.getWebClient().getJavaScriptEngine();
-        engine.getContextFactory().call(cx -> {
-            executeEventLocally(evt);
-            return null;
-        });
+        if (engine != null) {
+            engine.getContextFactory().call(cx -> {
+                executeEventLocally(evt);
+                return null;
+            });
+        }
     }
 
     void callFunction(final Function function, final Object[] args) {
         if (function == null) {
             return;
         }
-        final Scriptable scope = function.getParentScope();
+        final VarScope scope = function.getParentScope();
         final JavaScriptEngine engine = (JavaScriptEngine) containingPage_.getWebClient().getJavaScriptEngine();
-        engine.callFunction(containingPage_, function, scope, this, args);
+        if (engine != null) {
+            engine.callFunction(containingPage_, function, scope, this, args);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ public class StorageTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"works 52", "fails"})
+    @Alerts({"works 52", "fails", "overwrite works 52"})
     public void localStorageSizeManyEntries() throws Exception {
         final String firstHtml = DOCTYPE_HTML
             + "<html>\n"
@@ -177,6 +177,18 @@ public class StorageTest extends WebDriverTestCase {
             + "    } catch(e) {\n"
             + "      log('fails');\n"
             + "    }\n"
+
+            // but replacing the existing entries should work
+            + "    for (var i = 0; i < 52; i++) {\n"
+            + "      try {"
+            + "        localStorage.setItem('HtmlUnit-' + i, bigContent);\n"
+            + "      } catch(e) {\n"
+            + "        log('fails ' + i);\n"
+            + "        break;\n"
+            + "      }\n"
+            + "    }"
+            + "    log('overwrite works ' + i);\n"
+
             + "  }\n"
             + "</script>\n"
             + "</body></html>";

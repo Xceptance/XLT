@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -895,7 +895,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
 
     private void addEventListener(final int statusCode) throws Exception {
         // use always a different url to avoid caching effects
-        final URL scriptUrl = new URL(URL_SECOND, "" + System.currentTimeMillis() + ".js");
+        final URL scriptUrl = new URL(URL_SECOND, System.currentTimeMillis() + ".js");
 
         final String html = DOCTYPE_HTML
             + "<html><head>\n"
@@ -1153,13 +1153,13 @@ public class HtmlScript2Test extends WebDriverTestCase {
         int i = 0;
         for ( ; i < 20; i++) {
             html.append("  <script type='text/javascript'>document.title += ' ")
-                .append(Integer.toString(i))
+                .append(i)
                 .append("'</script>\n");
         }
         html.append("</head>\n<body>\n");
         for ( ; i < 40; i++) {
             html.append("  <script type='text/javascript'>document.title += ' ")
-                .append(Integer.toString(i))
+                .append(i)
                 .append("'</script>\n");
         }
         html.append("</body>\n</html>");
@@ -1184,12 +1184,12 @@ public class HtmlScript2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_FIRST);
 
-        final URL indexUrl = new URL(URL_FIRST.toString() + "index.html");
+        final URL indexUrl = new URL(URL_FIRST + "index.html");
 
         getMockWebConnection().setResponse(indexUrl, firstContent);
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
 
-        loadPage2(firstContent, new URL(URL_FIRST.toString() + "index.html?test#ref"));
+        loadPage2(firstContent, new URL(URL_FIRST + "index.html?test#ref"));
 
         assertEquals(2, getMockWebConnection().getRequestCount());
 

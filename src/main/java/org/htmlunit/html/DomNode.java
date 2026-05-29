@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ import org.xml.sax.SAXException;
  * @author Ronald Brill
  * @author Chuck Dumont
  * @author Frank Danek
+ * @author Lai Quang Duong
  */
 public abstract class DomNode implements Cloneable, Serializable, Node {
 
@@ -696,14 +697,13 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             final ArrayList<ComputedCssStyleDeclaration> styles = new ArrayList<>(ancestors.size());
 
             for (final Node node : ancestors) {
-                if (node instanceof HtmlElement) {
-                    final HtmlElement elem = (HtmlElement) node;
+                if (node instanceof HtmlElement elem) {
                     if (elem.isHidden()) {
                         return false;
                     }
 
-                    if (elem instanceof HtmlDialog) {
-                        if (!((HtmlDialog) elem).isOpen()) {
+                    if (elem instanceof HtmlDialog dialog) {
+                        if (!dialog.isOpen()) {
                             return false;
                         }
                     }
@@ -925,8 +925,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Can not add (grand)parent to itself " + this);
         }
 
-        if (domNode instanceof DomDocumentFragment) {
-            final DomDocumentFragment fragment = (DomDocumentFragment) domNode;
+        if (domNode instanceof DomDocumentFragment fragment) {
             for (final DomNode child : fragment.getChildren()) {
                 appendChild(child);
             }
@@ -975,8 +974,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      */
     @Override
     public Node insertBefore(final Node newChild, final Node refChild) {
-        if (newChild instanceof DomDocumentFragment) {
-            final DomDocumentFragment fragment = (DomDocumentFragment) newChild;
+        if (newChild instanceof DomDocumentFragment fragment) {
             for (final DomNode child : fragment.getChildren()) {
                 insertBefore(child, refChild);
             }
@@ -1008,6 +1006,13 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         }
 
         if (newNode == this) {
+            return;
+        }
+
+        if (newNode instanceof DomDocumentFragment) {
+            for (final DomNode child : newNode.getChildren()) {
+                insertBefore(child);
+            }
             return;
         }
 
@@ -1192,11 +1197,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
 
     private void fireRemoval(final DomNode exParent) {
         final SgmlPage page = getPage();
-        if (page instanceof HtmlPage) {
+        if (page instanceof HtmlPage htmlPage) {
             // some actions executed on removal need an intact parent relationship (e.g. for the
             // DocumentPositionComparator) so we have to restore it temporarily
             parent_ = exParent;
-            ((HtmlPage) page).notifyNodeRemoved(this);
+            htmlPage.notifyNodeRemoved(this);
             parent_ = null;
         }
 
@@ -1337,8 +1342,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             return;
         }
 
-        if (movedDomNode instanceof DomDocumentFragment) {
-            final DomDocumentFragment fragment = (DomDocumentFragment) movedDomNode;
+        if (movedDomNode instanceof DomDocumentFragment fragment) {
             for (final DomNode child : fragment.getChildren()) {
                 moveBefore(child, referenceDomNode);
             }
@@ -1388,7 +1392,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             return;
         }
 
-        movedDomNode.basicDetach();
+        movedDomNode.detach();
         basicInsertBefore(movedDomNode);
 
         fireAddition(movedDomNode);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class TextEncoder extends HtmlUnitScriptable {
         if (JavaScriptEngine.isUndefined(toEncode)) {
             final NativeUint8Array result = new NativeUint8Array(0);
             result.setParentScope(getParentScope());
-            result.setPrototype(ScriptableObject.getClassPrototype(getWindow(this), result.getClassName()));
+            result.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), result.getClassName()));
             return result;
         }
 
@@ -79,7 +79,7 @@ public class TextEncoder extends HtmlUnitScriptable {
 
         final NativeUint8Array result = new NativeUint8Array(arrayBuffer, 0, bytes.length);
         result.setParentScope(getParentScope());
-        result.setPrototype(ScriptableObject.getClassPrototype(getWindow(this), result.getClassName()));
+        result.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), result.getClassName()));
         return result;
     }
 }

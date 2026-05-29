@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.htmlunit.SgmlPage;
  * @author Ahmed Ashour
  * @author Rodney Gitzel
  * @author Frank Danek
+ * @author Ronald Brill
  */
 public class HtmlParagraph extends HtmlElement {
 

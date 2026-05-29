@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -70,7 +71,7 @@ public class FormData extends HtmlUnitScriptable {
          * @param scope the scope
          * @param className the class name
          */
-        public static void init(final ScriptableObject scope, final String className) {
+        public static void init(final TopLevel scope, final String className) {
             ES6Iterator.init(scope, false, new FormDataIterator(className), FORM_DATA_TAG);
         }
 
@@ -96,7 +97,7 @@ public class FormData extends HtmlUnitScriptable {
          * @param type the type
          * @param nameValuePairList the list of name value pairs
          */
-        public FormDataIterator(final Scriptable scope, final String className, final Type type,
+        public FormDataIterator(final VarScope scope, final String className, final Type type,
                 final List<NameValuePair> nameValuePairList) {
             super(scope, FORM_DATA_TAG);
             type_ = type;
@@ -117,7 +118,7 @@ public class FormData extends HtmlUnitScriptable {
          * {@inheritDoc}
          */
         @Override
-        protected boolean isDone(final Context cx, final Scriptable scope) {
+        protected boolean isDone(final Context cx, final VarScope scope) {
             return index_ >= nameValuePairList_.size();
         }
 
@@ -125,22 +126,18 @@ public class FormData extends HtmlUnitScriptable {
          * {@inheritDoc}
          */
         @Override
-        protected Object nextValue(final Context cx, final Scriptable scope) {
+        protected Object nextValue(final Context cx, final VarScope scope) {
             if (isDone(cx, scope)) {
                 return Context.getUndefinedValue();
             }
 
             final NameValuePair nextNameValuePair = nameValuePairList_.get(index_++);
-            switch (type_) {
-                case KEYS:
-                    return nextNameValuePair.getName();
-                case VALUES:
-                    return nextNameValuePair.getValue();
-                case BOTH:
-                    return cx.newArray(scope, new Object[] {nextNameValuePair.getName(), nextNameValuePair.getValue()});
-                default:
-                    throw new AssertionError();
-            }
+            return switch (type_) {
+                case KEYS -> nextNameValuePair.getName();
+                case VALUES -> nextNameValuePair.getValue();
+                case BOTH ->
+                    cx.newArray(scope, new Object[]{nextNameValuePair.getName(), nextNameValuePair.getValue()});
+            };
         }
     }
 
@@ -150,8 +147,7 @@ public class FormData extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor(final Object formObj) {
-        if (formObj instanceof HTMLFormElement) {
-            final HTMLFormElement form = (HTMLFormElement) formObj;
+        if (formObj instanceof HTMLFormElement form) {
             requestParameters_.addAll(form.getHtmlForm().getParameterListForSubmit(null));
         }
     }
@@ -165,14 +161,13 @@ public class FormData extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void append(final String name, final Object value, final Object filename) {
-        if (value instanceof Blob) {
-            final Blob blob = (Blob) value;
+        if (value instanceof Blob blob) {
             String fileName = "blob";
             if (value instanceof File) {
                 fileName = null;
             }
-            if (filename instanceof String) {
-                fileName = (String) filename;
+            if (filename instanceof String string) {
+                fileName = string;
             }
             requestParameters_.add(blob.getKeyDataPair(name, fileName));
             return;
@@ -218,7 +213,7 @@ public class FormData extends HtmlUnitScriptable {
     @JsxFunction
     public Scriptable getAll(final String name) {
         if (StringUtils.isEmptyOrNull(name)) {
-            return JavaScriptEngine.newArray(this, 0);
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final List<Object> values = new ArrayList<>();
@@ -229,7 +224,7 @@ public class FormData extends HtmlUnitScriptable {
         }
 
         final Object[] stringValues = values.toArray(new Object[0]);
-        return JavaScriptEngine.newArray(this, stringValues);
+        return JavaScriptEngine.newArray(getParentScope(), stringValues);
     }
 
     /**
@@ -282,14 +277,13 @@ public class FormData extends HtmlUnitScriptable {
             pos = requestParameters_.size();
         }
 
-        if (value instanceof Blob) {
-            final Blob blob = (Blob) value;
+        if (value instanceof Blob blob) {
             String fileName = "blob";
             if (value instanceof File) {
                 fileName = null;
             }
-            if (filename instanceof String) {
-                fileName = (String) filename;
+            if (filename instanceof String string) {
+                fileName = string;
             }
             requestParameters_.add(pos, blob.getKeyDataPair(name, fileName));
         }
@@ -304,7 +298,8 @@ public class FormData extends HtmlUnitScriptable {
     @JsxFunction
     @JsxSymbol(symbolName = "iterator")
     public Scriptable entries() {
-        return new FormDataIterator(this, "FormData Iterator", FormDataIterator.Type.BOTH, requestParameters_);
+        return new FormDataIterator(getParentScope(),
+                    "FormData Iterator", FormDataIterator.Type.BOTH, requestParameters_);
     }
 
     /**
@@ -323,12 +318,10 @@ public class FormData extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void forEach(final Object callback) {
-        if (!(callback instanceof Function)) {
+        if (!(callback instanceof Function fun)) {
             throw JavaScriptEngine.typeError(
                     "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
-
-        final Function fun = (Function) callback;
 
         // This must be indexes instead of iterator() for correct behavior when of list changes while iterating
         for (int i = 0;; i++) {

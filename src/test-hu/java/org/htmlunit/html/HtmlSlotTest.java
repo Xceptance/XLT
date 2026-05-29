@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * Tests for {@link HtmlSlot}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class HtmlSlotTest extends WebDriverTestCase {
 
@@ -49,10 +50,10 @@ public class HtmlSlotTest extends WebDriverTestCase {
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getEnclosedPage();
             if ("[object HTMLSlotElement]".equals(getExpectedAlerts()[0])) {
-                assertTrue(HtmlSlot.class.isInstance(page.getElementById("myId")));
+                assertTrue(page.getElementById("myId") instanceof HtmlSlot);
             }
             else {
-                assertTrue(HtmlUnknownElement.class.isInstance(page.getElementById("myId")));
+                assertTrue(page.getElementById("myId") instanceof HtmlUnknownElement);
             }
         }
     }

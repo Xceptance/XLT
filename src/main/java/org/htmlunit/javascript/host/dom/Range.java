@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.DOMRect;
 import org.htmlunit.javascript.host.DOMRectList;
-import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLElement;
 
 /**
@@ -442,9 +441,8 @@ public class Range extends AbstractRange {
      */
     @JsxFunction
     public DOMRectList getClientRects() {
-        final Window w = getWindow();
         final DOMRectList rectList = new DOMRectList();
-        rectList.setParentScope(w);
+        rectList.setParentScope(getParentScope());
         rectList.setPrototype(getPrototype(rectList.getClass()));
 
         try {
@@ -453,7 +451,7 @@ public class Range extends AbstractRange {
                 final HtmlUnitScriptable scriptable = node.getScriptableObject();
                 if (scriptable instanceof HTMLElement) {
                     final DOMRect rect = new DOMRect(0, 0, 1, 1);
-                    rect.setParentScope(w);
+                    rect.setParentScope(getParentScope());
                     rect.setPrototype(getPrototype(rect.getClass()));
                     rectList.add(rect);
                 }
@@ -474,15 +472,15 @@ public class Range extends AbstractRange {
     @JsxFunction
     public DOMRect getBoundingClientRect() {
         final DOMRect rect = new DOMRect();
-        rect.setParentScope(getWindow());
+        rect.setParentScope(getParentScope());
         rect.setPrototype(getPrototype(rect.getClass()));
 
         try {
             // simple impl for now
             for (final DomNode node : getSimpleRange().containedNodes()) {
                 final HtmlUnitScriptable scriptable = node.getScriptableObject();
-                if (scriptable instanceof HTMLElement) {
-                    final DOMRect childRect = ((HTMLElement) scriptable).getBoundingClientRect();
+                if (scriptable instanceof HTMLElement element) {
+                    final DOMRect childRect = element.getBoundingClientRect();
                     rect.setY(Math.min(rect.getX(), childRect.getX()));
                     rect.setY(Math.min(rect.getY(), childRect.getY()));
                     rect.setWidth(Math.max(rect.getWidth(), childRect.getWidth()));

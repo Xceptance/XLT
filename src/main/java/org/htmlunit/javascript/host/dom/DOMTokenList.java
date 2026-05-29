@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -145,7 +146,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      * @param function the function
      */
     @JsxFunction
-    public static void add(final Context context, final Scriptable scope,
+    public static void add(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (args.length > 0) {
             final DOMTokenList list = (DOMTokenList) thisObj;
@@ -156,13 +157,13 @@ public class DOMTokenList extends HtmlUnitScriptable {
 
                 if (org.htmlunit.util.StringUtils.isEmptyOrNull(token)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: add() does not support empty tokens",
                             DOMException.SYNTAX_ERR);
                 }
                 if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: add() does not support whitespace chars in tokens",
                             DOMException.INVALID_CHARACTER_ERR);
                 }
@@ -185,7 +186,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      * @param function the function
      */
     @JsxFunction
-    public static void remove(final Context context, final Scriptable scope,
+    public static void remove(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         final DOMTokenList list = (DOMTokenList) thisObj;
 
@@ -202,13 +203,13 @@ public class DOMTokenList extends HtmlUnitScriptable {
 
                 if (org.htmlunit.util.StringUtils.isEmptyOrNull(token)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: remove() does not support empty tokens",
                             DOMException.SYNTAX_ERR);
                 }
                 if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: remove() does not support whitespace chars in tokens",
                             DOMException.INVALID_CHARACTER_ERR);
                 }
@@ -405,7 +406,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void forEach(final Object callback) {
-        if (!(callback instanceof Function)) {
+        if (!(callback instanceof Function function)) {
             throw JavaScriptEngine.typeError(
                     "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
@@ -419,8 +420,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
 
         final ContextAction<Object> contextAction = cx -> {
-            final Function function = (Function) callback;
-            final Scriptable scope = getParentScope();
+            final VarScope scope = getParentScope();
 
             List<String> parts = split(value);
             final int size = parts.size();

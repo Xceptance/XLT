@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,8 @@ public final class ScriptElementSupport {
         final String srcAttrib = script.getScriptSource();
         final boolean hasNoSrcAttrib = ATTRIBUTE_NOT_DEFINED == srcAttrib;
         if (!hasNoSrcAttrib && script.isDeferred()) {
+            // HtmlPage.executeDeferredScriptsIfNeeded() will process these
+            // directly after the load
             return;
         }
 
@@ -306,7 +308,7 @@ public final class ScriptElementSupport {
         final EventTarget eventTarget = element.getScriptableObject();
         final Event event = new Event(element, type);
 
-        event.setParentScope(eventTarget);
+        event.setParentScope(eventTarget.getParentScope());
         event.setPrototype(eventTarget.getPrototype(event.getClass()));
 
         eventTarget.executeEventLocally(event);
@@ -355,8 +357,7 @@ public final class ScriptElementSupport {
         final Iterable<DomNode> textNodes = element.getChildren();
         final StringBuilder scriptCode = new StringBuilder();
         for (final DomNode node : textNodes) {
-            if (node instanceof DomText) {
-                final DomText domText = (DomText) node;
+            if (node instanceof DomText domText) {
                 scriptCode.append(domText.getData());
             }
         }

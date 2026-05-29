@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
  * Tests for {@link XHtmlPage}.
  *
  * @author Daniel Gredler
+ * @author Ronald Brill
  */
 public class XHtmlPageTest extends SimpleWebTestCase {
 
@@ -87,7 +88,7 @@ public class XHtmlPageTest extends SimpleWebTestCase {
         assertEquals("OK", page.getWebResponse().getStatusMessage());
         assertEquals(HttpStatus.OK_200, page.getWebResponse().getStatusCode());
         assertEquals(MimeType.TEXT_XML, page.getWebResponse().getContentType());
-        assertTrue(XHtmlPage.class.isInstance(page));
+        assertTrue(page instanceof XHtmlPage);
     }
 
     /**

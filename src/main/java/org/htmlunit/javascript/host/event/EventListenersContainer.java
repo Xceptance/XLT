@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,9 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -58,45 +61,25 @@ public class EventListenersContainer implements Serializable {
     private final ConcurrentMap<String, TypeContainer> typeContainers_ = new ConcurrentHashMap<>();
     private final EventTarget jsNode_;
 
-    private static class TypeContainer implements Serializable {
+    private record TypeContainer(List<Scriptable> capturingListeners_, List<Scriptable> bubblingListeners_,
+                                 List<Scriptable> atTargetListeners_, Function handler_) implements Serializable {
         public static final TypeContainer EMPTY = new TypeContainer();
 
         // This sentinel value could be some singleton instance but null
         // isn't used for anything else so why not.
         private static final Scriptable EVENT_HANDLER_PLACEHOLDER = null;
 
-        private final List<Scriptable> capturingListeners_;
-        private final List<Scriptable> bubblingListeners_;
-        private final List<Scriptable> atTargetListeners_;
-        private final Function handler_;
-
         TypeContainer() {
-            capturingListeners_ = Collections.emptyList();
-            bubblingListeners_ = Collections.emptyList();
-            atTargetListeners_ = Collections.emptyList();
-            handler_ = null;
-        }
-
-        private TypeContainer(final List<Scriptable> capturingListeners,
-                    final List<Scriptable> bubblingListeners, final List<Scriptable> atTargetListeners,
-                    final Function handler) {
-            capturingListeners_ = capturingListeners;
-            bubblingListeners_ = bubblingListeners;
-            atTargetListeners_ = atTargetListeners;
-            handler_ = handler;
+            this(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null);
         }
 
         List<Scriptable> getListeners(final int eventPhase) {
-            switch (eventPhase) {
-                case Event.CAPTURING_PHASE:
-                    return capturingListeners_;
-                case Event.AT_TARGET:
-                    return atTargetListeners_;
-                case Event.BUBBLING_PHASE:
-                    return bubblingListeners_;
-                default:
-                    throw new UnsupportedOperationException("eventPhase: " + eventPhase);
-            }
+            return switch (eventPhase) {
+                case Event.CAPTURING_PHASE -> capturingListeners_;
+                case Event.AT_TARGET -> atTargetListeners_;
+                case Event.BUBBLING_PHASE -> bubblingListeners_;
+                default -> throw new UnsupportedOperationException("eventPhase: " + eventPhase);
+            };
         }
 
         public TypeContainer setPropertyHandler(final Function propertyHandler) {
@@ -124,7 +107,6 @@ public class EventListenersContainer implements Serializable {
         }
 
         public TypeContainer addListener(final Scriptable listener, final boolean useCapture) {
-
             List<Scriptable> capturingListeners = capturingListeners_;
             List<Scriptable> bubblingListeners = bubblingListeners_;
             final List<Scriptable> listeners = useCapture ? capturingListeners : bubblingListeners;
@@ -154,7 +136,6 @@ public class EventListenersContainer implements Serializable {
         }
 
         public TypeContainer removeListener(final Scriptable listener, final boolean useCapture) {
-
             List<Scriptable> capturingListeners = capturingListeners_;
             List<Scriptable> bubblingListeners = bubblingListeners_;
             final List<Scriptable> listeners = useCapture ? capturingListeners : bubblingListeners;
@@ -303,15 +284,27 @@ public class EventListenersContainer implements Serializable {
                 page = (HtmlPage) jsNode_.getDomNodeOrDie();
             }
             else {
-                final Scriptable parentScope = jsNode_.getParentScope();
-                if (parentScope instanceof Window) {
-                    page = (HtmlPage) ((Window) parentScope).getDomNodeOrDie();
+                Scriptable scriptableObj = null;
+                final VarScope parentScope = jsNode_.getParentScope();
+                if (parentScope instanceof TopLevel topLevel) {
+                    scriptableObj = topLevel.getGlobalThis();
                 }
-                else if (parentScope instanceof HTMLDocument) {
-                    page = ((HTMLDocument) parentScope).getPage();
+                else if (parentScope instanceof WithScope withScope) {
+                    scriptableObj = withScope.getObject();
+                }
+
+                if (scriptableObj instanceof Window window) {
+                    page = (HtmlPage) window.getDomNodeOrDie();
+                }
+                else if (scriptableObj instanceof HTMLDocument document) {
+                    page = document.getPage();
+                }
+                else if (scriptableObj != null) {
+                    page = ((HTMLElement) scriptableObj).getDomNodeOrDie().getHtmlPageOrNull();
                 }
                 else {
-                    page = ((HTMLElement) parentScope).getDomNodeOrDie().getHtmlPageOrNull();
+                    page = null;
+                    throw new UnsupportedOperationException("TODO ");
                 }
             }
 
@@ -324,14 +317,14 @@ public class EventListenersContainer implements Serializable {
                 }
                 Function function = null;
                 Scriptable thisObject = null;
-                if (listener instanceof Function) {
-                    function = (Function) listener;
+                if (listener instanceof Function function2) {
+                    function = function2;
                     thisObject = jsNode_;
                 }
                 else if (listener instanceof NativeObject) {
                     final Object handleEvent = ScriptableObject.getProperty(listener, "handleEvent");
-                    if (handleEvent instanceof Function) {
-                        function = (Function) handleEvent;
+                    if (handleEvent instanceof Function function1) {
+                        function = function1;
                         thisObject = listener;
                     }
                 }

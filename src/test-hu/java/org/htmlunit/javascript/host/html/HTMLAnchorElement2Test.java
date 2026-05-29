@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
@@ -43,6 +37,12 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 /**
  * Unit tests for {@link HTMLAnchorElement}.
  *
@@ -50,6 +50,7 @@ import org.openqa.selenium.WebDriver;
  * @author Ronald Brill
  * @author Marc Guillemot
  * @author Frank Danek
+ * @author Lai Quang Duong
  */
 public class HTMLAnchorElement2Test extends WebDriverTestCase {
 
@@ -1012,7 +1013,7 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
      */
     public static class PingServlet extends HttpServlet {
 
-        private static Map<String, String> HEADERS_ = new HashMap<>();
+        private static final Map<String, String> HEADERS_ = new HashMap<>();
         private static String BODY_;
 
         /**
@@ -1594,6 +1595,45 @@ public class HTMLAnchorElement2Test extends WebDriverTestCase {
             + "</html>";
 
         expandExpectedAlertsVariables("" + PORT);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "example.com", "", "example.com", "https://example.com",
+             "", "example.com", "https://example.com"})
+    public void defaultPortStripping() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            // http:80 should be stripped
+            + "    var a = document.getElementById('a1');\n"
+            + "    log(a.port);\n"
+            + "    log(a.hostname);\n"
+            // https:443 should be stripped
+            + "    var b = document.getElementById('a2');\n"
+            + "    log(b.port);\n"
+            + "    log(b.host);\n"
+            + "    log(b.origin);\n"
+            // setPort to default should strip
+            + "    var c = document.getElementById('a3');\n"
+            + "    c.port = '443';\n"
+            + "    log(c.port);\n"
+            + "    log(c.host);\n"
+            + "    log(c.origin);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <a id='a1' href='http://example.com:80/path'>link 1</a>\n"
+            + "  <a id='a2' href='https://example.com:443/path'>link 2</a>\n"
+            + "  <a id='a3' href='https://example.com:9000/path'>link 3</a>\n"
+            + "</body></html>";
+
         loadPageVerifyTitle2(html);
     }
 }

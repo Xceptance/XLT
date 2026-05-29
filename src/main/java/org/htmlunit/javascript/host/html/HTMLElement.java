@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.util.Set;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -62,6 +63,7 @@ import org.htmlunit.html.HtmlFigureCaption;
 import org.htmlunit.html.HtmlFooter;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlHeader;
+import org.htmlunit.html.HtmlHeadingGroup;
 import org.htmlunit.html.HtmlItalic;
 import org.htmlunit.html.HtmlKeyboard;
 import org.htmlunit.html.HtmlLayer;
@@ -152,6 +154,7 @@ import org.htmlunit.util.StringUtils;
 @JsxClass(domClass = HtmlFigureCaption.class)
 @JsxClass(domClass = HtmlFooter.class)
 @JsxClass(domClass = HtmlHeader.class)
+@JsxClass(domClass = HtmlHeadingGroup.class)
 @JsxClass(domClass = HtmlItalic.class)
 @JsxClass(domClass = HtmlKeyboard.class)
 @JsxClass(domClass = HtmlLayer.class, value = {CHROME, EDGE})
@@ -231,7 +234,7 @@ public class HTMLElement extends Element {
                 || "select".equalsIgnoreCase(name)) {
             final HtmlForm form = ((HtmlElement) domNode).getEnclosingForm();
             if (form != null) {
-                setParentScope(getScriptableFor(form));
+                setParentScope(new WithScope(getParentScope(), getScriptableFor(form)));
             }
         }
     }
@@ -352,7 +355,7 @@ public class HTMLElement extends Element {
                     name = Character.toUpperCase(name.charAt(0)) + name.substring(1);
                     final Method method = getClass().getMethod("set" + name, METHOD_PARAMS_OBJECT);
                     final EventHandler eventHandler = new EventHandler(getDomNodeOrDie(), name.substring(2), value);
-                    eventHandler.setPrototype(ScriptableObject.getClassPrototype(this, "Function"));
+                    eventHandler.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), "Function"));
                     method.invoke(this, eventHandler);
                 }
                 catch (final NoSuchMethodException | IllegalAccessException ignored) {
@@ -581,10 +584,9 @@ public class HTMLElement extends Element {
         if (event == null) {
             return false;
         }
-        if (!(event.getSrcElement() instanceof HTMLElement)) {
+        if (!(event.getSrcElement() instanceof HTMLElement srcElement)) {
             return false;
         }
-        final HTMLElement srcElement = (HTMLElement) event.getSrcElement();
         return getDomNodeOrDie().isAncestorOf(srcElement.getDomNodeOrDie());
     }
 
@@ -977,9 +979,8 @@ public class HTMLElement extends Element {
 
         // account for any scrolled ancestors
         Node parentNode = getOffestParentElement(false);
-        while ((parentNode instanceof HTMLElement)
+        while ((parentNode instanceof HTMLElement elem)
                 && !(parentNode instanceof HTMLBodyElement)) {
-            final HTMLElement elem = (HTMLElement) parentNode;
             left -= elem.getScrollLeft();
             top -= elem.getScrollTop();
 
@@ -1114,8 +1115,8 @@ public class HTMLElement extends Element {
             final DomNode parent = getDomNodeOrDie().getParentNode();
             if (parent != null) {
                 final HtmlUnitScriptable parentScriptable = parent.getScriptableObject();
-                if (parentScriptable instanceof HTMLElement) {
-                    return ((HTMLElement) parentScriptable).isIsContentEditable();
+                if (parentScriptable instanceof HTMLElement element) {
+                    return element.isIsContentEditable();
                 }
             }
         }
@@ -1448,8 +1449,8 @@ public class HTMLElement extends Element {
      */
     @JsxSetter
     public void setHidden(final Object hidden) {
-        if (hidden instanceof Boolean) {
-            getDomNodeOrDie().setHidden((Boolean) hidden);
+        if (hidden instanceof Boolean boolean1) {
+            getDomNodeOrDie().setHidden(boolean1);
             return;
         }
         getDomNodeOrDie().setHidden(JavaScriptEngine.toString(hidden));

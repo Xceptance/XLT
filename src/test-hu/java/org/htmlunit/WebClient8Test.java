@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,7 @@ public class WebClient8Test extends SimpleWebTestCase {
 
             final HtmlPage page = webClient.getPage(URL_FIRST);
             final DomElement para = page.getElementById("para");
-            page.getWebClient().getPageCreator().getHtmlParser().parseFragment(null, para, para, fragment, false);
+            page.getWebClient().getPageCreator().getHtmlParser().parseFragment(webClient, para, para, fragment, false);
 
             final HtmlInlineFrame iFrame = (HtmlInlineFrame) page.getElementById("tester");
             assertEquals("frame", ((HtmlPage) iFrame.getEnclosedWindow().getEnclosedPage()).getTitleText());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
  */
 package org.htmlunit;
 
-import static org.eclipse.jetty.http.HttpVersion.HTTP_1_1;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.ssl.SslContextFactory.Server;
 import org.htmlunit.html.HtmlPage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
@@ -115,20 +110,8 @@ public class SocksProxyTest extends WebServerTestCase {
         return client;
     }
 
-
     @Override
-    protected boolean isHttps() {
-        return true;
-    }
-
-    @Override
-    public SslConnectionFactory getSslConnectionFactory() {
-        final URL url = HttpWebConnectionInsecureSSLWithClientCertificateTest.class
-                .getClassLoader().getResource("insecureSSL.pfx");
-
-        final SslContextFactory contextFactory = new Server.Server();
-        contextFactory.setKeyStorePath(url.toExternalForm());
-        contextFactory.setKeyStorePassword("nopassword");
-        return new SslConnectionFactory(contextFactory, HTTP_1_1.toString());
+    public SSLVariant getSSLVariant() {
+        return SSLVariant.INSECURE;
     }
 }

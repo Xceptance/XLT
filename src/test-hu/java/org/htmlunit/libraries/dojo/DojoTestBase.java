@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,8 @@ import java.time.Duration;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.server.Server;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebServerTestCase;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -41,15 +37,6 @@ import org.openqa.selenium.WebElement;
  * @author Ronald Brill
  */
 public abstract class DojoTestBase extends WebDriverTestCase {
-
-    private static final String BASE_FILE_PATH = "libraries/dojo";
-
-    private static Server SERVER_;
-
-    /**
-     * @return the Dojo version being tested
-     */
-    abstract String getVersion();
 
     abstract String getUrl(String module);
 
@@ -103,11 +90,12 @@ public abstract class DojoTestBase extends WebDriverTestCase {
                         }
                     }
 
-                    String expFileName = StringUtils.replace(module, ".", "");
-                    expFileName = StringUtils.replace(expFileName, "_", "");
-                    expFileName = StringUtils.replace(expFileName, "/", "_");
+                    final String expFileName = module
+                                            .replace(".", "")
+                                            .replace("_", "")
+                                            .replace("/", "_");
                     String expected = loadExpectation(expFileName);
-                    expected = StringUtils.replace(expected, "\r\n", "\n");
+                    expected = expected.replace("\r\n", "\n");
 
                     assertEquals(normalize(expected), normalize(result.toString()));
                     // assertEquals(expected, result.toString());
@@ -180,10 +168,7 @@ public abstract class DojoTestBase extends WebDriverTestCase {
         return normalized.toString().replaceAll("\\d+ ms", "x ms");
     }
 
-    private String loadExpectation(final String expFileName) throws Exception {
-        final String resourcePrefix = "/" + BASE_FILE_PATH + "/" + getVersion() + "/expectations/" + expFileName;
-        return loadExpectation(resourcePrefix, ".txt");
-    }
+    protected abstract String loadExpectation(final String expFileName) throws Exception;
 
     private static String getResultElementText(final WebDriver webdriver) {
         // if the elem is not available or stale we return an empty string
@@ -199,29 +184,6 @@ public abstract class DojoTestBase extends WebDriverTestCase {
         }
         catch (final NoSuchElementException e) {
             return "";
-        }
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @BeforeEach
-    public void startSesrver() throws Exception {
-        if (SERVER_ == null) {
-            SERVER_ = WebServerTestCase.createWebServer("src/test/resources/"
-                        + BASE_FILE_PATH + "/" + getVersion(), null);
-        }
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @AfterAll
-    public static void stopServer() throws Exception {
-        if (SERVER_ != null) {
-            SERVER_.stop();
-            SERVER_.destroy();
-            SERVER_ = null;
         }
     }
 }

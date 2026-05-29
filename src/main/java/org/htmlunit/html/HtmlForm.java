@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -93,6 +94,13 @@ public class HtmlForm extends HtmlElement {
     private boolean isPreventDefault_;
 
     /**
+     * A map that holds past names (name or id attribute) to elements belonging to this form.
+     * @see <a href="https://html.spec.whatwg.org/multipage/forms.html#the-form-element:the-form-element-10">
+     *     HTML spec - past names map</a>
+     */
+    private Map<String, HtmlElement> pastNamesMap_;
+
+    /**
      * Creates an instance.
      *
      * @param qualifiedName the qualified name of the element type to instantiate
@@ -126,12 +134,11 @@ public class HtmlForm extends HtmlElement {
                 isPreventDefault_ = false;
 
                 boolean validate = true;
-                if (submitElement instanceof HtmlSubmitInput
-                        && ((HtmlSubmitInput) submitElement).isFormNoValidate()) {
+                if (submitElement instanceof HtmlSubmitInput input
+                        && input.isFormNoValidate()) {
                     validate = false;
                 }
-                else if (submitElement instanceof HtmlButton) {
-                    final HtmlButton htmlButton = (HtmlButton) submitElement;
+                else if (submitElement instanceof HtmlButton htmlButton) {
                     if ("submit".equalsIgnoreCase(htmlButton.getType())
                             && htmlButton.isFormNoValidate()) {
                         validate = false;
@@ -201,8 +208,7 @@ public class HtmlForm extends HtmlElement {
      * @param submitElement the element to update
      */
     private void updateHtml5Attributes(final SubmittableElement submitElement) {
-        if (submitElement instanceof HtmlElement) {
-            final HtmlElement element = (HtmlElement) submitElement;
+        if (submitElement instanceof HtmlElement element) {
 
             final String type = element.getAttributeDirect(TYPE_ATTRIBUTE);
             boolean typeImage = false;
@@ -421,8 +427,8 @@ public class HtmlForm extends HtmlElement {
         }
 
         for (final HtmlElement next : getHtmlElementDescendants()) {
-            if (next instanceof SubmittableElement) {
-                ((SubmittableElement) next).reset();
+            if (next instanceof SubmittableElement element) {
+                element.reset();
             }
         }
 
@@ -481,14 +487,13 @@ public class HtmlForm extends HtmlElement {
             return false;
         }
 
-        if (element instanceof HtmlInput) {
-            final HtmlInput input = (HtmlInput) element;
+        if (element instanceof HtmlInput input) {
             if (input.isCheckable()) {
-                return ((HtmlInput) element).isChecked();
+                return input.isChecked();
             }
         }
-        if (element instanceof HtmlSelect) {
-            return ((HtmlSelect) element).isValidForSubmission();
+        if (element instanceof HtmlSelect select) {
+            return select.isValidForSubmission();
         }
         return true;
     }
@@ -511,8 +516,7 @@ public class HtmlForm extends HtmlElement {
         if (element == submitElement) {
             return true;
         }
-        if (element instanceof HtmlInput) {
-            final HtmlInput input = (HtmlInput) element;
+        if (element instanceof HtmlInput input) {
             if (!input.isSubmitable()) {
                 return false;
             }
@@ -730,8 +734,8 @@ public class HtmlForm extends HtmlElement {
         final List<HtmlRadioButtonInput> results = new ArrayList<>();
 
         for (final HtmlElement element : getInputsByName(name)) {
-            if (element instanceof HtmlRadioButtonInput) {
-                results.add((HtmlRadioButtonInput) element);
+            if (element instanceof HtmlRadioButtonInput input) {
+                results.add(input);
             }
         }
 
@@ -1008,5 +1012,35 @@ public class HtmlForm extends HtmlElement {
         else {
             removeAttribute(ATTRIBUTE_NOVALIDATE);
         }
+    }
+
+    /**
+     * Register an element to the past names map with the specified name.
+     * @param name name or id attribute of the element
+     * @param element the element to register
+     */
+    public void registerPastName(final String name, final HtmlElement element) {
+        if (pastNamesMap_ == null) {
+            pastNamesMap_ = new HashMap<>();
+        }
+        pastNamesMap_.put(name, element);
+    }
+
+    /**
+     * Return the element registered in the past names map with the specified name.
+     * If the element is no longer owned by this form, the entry is removed and null is returned.
+     * @param name name or id attribute of the element
+     * @return the element, or null if not found or no longer owned by this form
+     */
+    public HtmlElement getNamedElement(final String name) {
+        if (pastNamesMap_ == null) {
+            return null;
+        }
+        final HtmlElement element = pastNamesMap_.get(name);
+        if (element != null && element.getEnclosingForm() != this) {
+            pastNamesMap_.remove(name);
+            return null;
+        }
+        return element;
     }
 }

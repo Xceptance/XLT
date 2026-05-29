@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.NoHttpResponseException;
 import org.apache.http.cookie.ClientCookie;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
 import org.apache.http.cookie.MalformedCookieException;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BufferedHeader;
 import org.apache.http.util.CharArrayBuffer;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
 /**
@@ -43,27 +41,6 @@ public final class HttpClientConverter {
 
     private HttpClientConverter() {
         // util class
-    }
-
-    /**
-     * Converts the specified name/value pairs into HttpClient name/value pairs.
-     * @param pairs the name/value pairs to convert
-     * @return the converted name/value pairs
-     */
-    public static List<org.apache.http.NameValuePair> nameValuePairsToHttpClient(final List<NameValuePair> pairs) {
-        final List<org.apache.http.NameValuePair> resultingPairs = new ArrayList<>(pairs.size());
-        for (final NameValuePair pair : pairs) {
-            resultingPairs.add(new BasicNameValuePair(pair.getName(), pair.getValue()));
-        }
-        return resultingPairs;
-    }
-
-    /**
-     * @param e the exception to check
-     * @return true if the provided Exception is na {@link NoHttpResponseException}
-     */
-    public static boolean isNoHttpResponseException(final Exception e) {
-        return e instanceof NoHttpResponseException;
     }
 
     /**
@@ -113,11 +90,11 @@ public final class HttpClientConverter {
      * @param cookieString the string to parse
      * @param pageUrl the page url as root
      * @param browserVersion the {@link BrowserVersion}
-     * @return a list of {@link org.htmlunit.util.Cookie}'s
+     * @return a list of {@link org.htmlunit.http.Cookie}'s
      * @throws MalformedCookieException in case the cookie does not conform to the spec
      */
-    public static List<org.htmlunit.util.Cookie> parseCookie(final String cookieString, final URL pageUrl,
-            final BrowserVersion browserVersion)
+    public static List<org.htmlunit.http.Cookie> parseCookie(final String cookieString, final URL pageUrl,
+                                                             final BrowserVersion browserVersion)
             throws MalformedCookieException {
         final CharArrayBuffer buffer = new CharArrayBuffer(cookieString.length() + 22);
         buffer.append("Set-Cookie: ");
@@ -126,9 +103,9 @@ public final class HttpClientConverter {
         final CookieSpec cookieSpec = new HtmlUnitBrowserCompatCookieSpec(browserVersion);
         final List<Cookie> cookies = cookieSpec.parse(new BufferedHeader(buffer), buildCookieOrigin(pageUrl));
 
-        final List<org.htmlunit.util.Cookie> htmlUnitCookies = new ArrayList<>(cookies.size());
+        final List<org.htmlunit.http.Cookie> htmlUnitCookies = new ArrayList<>(cookies.size());
         for (final Cookie cookie : cookies) {
-            final org.htmlunit.util.Cookie htmlUnitCookie = new org.htmlunit.util.Cookie((ClientCookie) cookie);
+            final org.htmlunit.http.Cookie htmlUnitCookie = new HttpClientCookie((ClientCookie) cookie);
             htmlUnitCookies.add(htmlUnitCookie);
         }
         return htmlUnitCookies;
@@ -139,25 +116,12 @@ public final class HttpClientConverter {
      * @param cookies the cookies to be converted
      * @return the specified cookies, as HttpClient cookies
      */
-    public static List<Cookie> toHttpClient(final Collection<org.htmlunit.util.Cookie> cookies) {
+    public static List<Cookie> toHttpClient(final Collection<org.htmlunit.http.Cookie> cookies) {
         final ArrayList<Cookie> array = new ArrayList<>(cookies.size());
-        for (final org.htmlunit.util.Cookie cookie : cookies) {
-            array.add(cookie.toHttpClient());
+        for (final org.htmlunit.http.Cookie cookie : cookies) {
+            array.add(toHttpClient(cookie));
         }
         return array;
-    }
-
-    /**
-     * Converts the specified array of HttpClient cookies into a list of cookies.
-     * @param cookies the cookies to be converted
-     * @return the specified HttpClient cookies, as cookies
-     */
-    public static List<org.htmlunit.util.Cookie> fromHttpClient(final List<Cookie> cookies) {
-        final List<org.htmlunit.util.Cookie> list = new ArrayList<>(cookies.size());
-        for (final Cookie c : cookies) {
-            list.add(new org.htmlunit.util.Cookie((ClientCookie) c));
-        }
-        return list;
     }
 
     /**
@@ -167,17 +131,44 @@ public final class HttpClientConverter {
      * @param browserVersion the {@link BrowserVersion}
      * @param matches the set to add
      */
-    public static void addMatching(final Set<org.htmlunit.util.Cookie> cookies,
+    public static void addMatching(final Set<org.htmlunit.http.Cookie> cookies,
             final URL normalizedUrl, final BrowserVersion browserVersion,
-            final Set<org.htmlunit.util.Cookie> matches) {
+            final Set<org.htmlunit.http.Cookie> matches) {
         if (!cookies.isEmpty()) {
             final CookieOrigin cookieOrigin = HttpClientConverter.buildCookieOrigin(normalizedUrl);
             final CookieSpec cookieSpec = new HtmlUnitBrowserCompatCookieSpec(browserVersion);
-            for (final org.htmlunit.util.Cookie cookie : cookies) {
-                if (cookieSpec.match(cookie.toHttpClient(), cookieOrigin)) {
+            for (final org.htmlunit.http.Cookie cookie : cookies) {
+                if (cookieSpec.match(toHttpClient(cookie), cookieOrigin)) {
                     matches.add(cookie);
                 }
             }
         }
+    }
+
+    private static ClientCookie toHttpClient(final org.htmlunit.http.Cookie cookie) {
+        if (cookie instanceof HttpClientCookie) {
+            return ((HttpClientCookie) cookie).getHttpClientCookie();
+        }
+
+        final BasicClientCookie httpClientCookie = new BasicClientCookie(cookie.getName(),
+                cookie.getValue() == null ? "" : cookie.getValue());
+
+        httpClientCookie.setDomain(cookie.getDomain());
+        // BasicDomainHandler.match(Cookie, CookieOrigin) checks the attribute also (see #333)
+        httpClientCookie.setAttribute(ClientCookie.DOMAIN_ATTR, cookie.getDomain());
+
+        httpClientCookie.setPath(cookie.getPath());
+        httpClientCookie.setExpiryDate(cookie.getExpires());
+
+        httpClientCookie.setSecure(cookie.isSecure());
+        if (cookie.isHttpOnly()) {
+            httpClientCookie.setAttribute("httponly", "true");
+        }
+
+        if (cookie.getSameSite() != null) {
+            httpClientCookie.setAttribute("samesite", cookie.getSameSite());
+        }
+
+        return httpClientCookie;
     }
 }

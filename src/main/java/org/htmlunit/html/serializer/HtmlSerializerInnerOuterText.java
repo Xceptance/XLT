@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlBreak;
+import org.htmlunit.html.HtmlDefinitionTerm;
 import org.htmlunit.html.HtmlDetails;
 import org.htmlunit.html.HtmlHead;
 import org.htmlunit.html.HtmlListItem;
@@ -112,20 +113,20 @@ public class HtmlSerializerInnerOuterText {
      */
     protected void appendNode(final HtmlSerializerTextBuilder builder, final DomNode node,
             final Mode mode, final boolean insideHead) {
-        if (node instanceof DomText) {
-            appendText(builder, (DomText) node, mode);
+        if (node instanceof DomText text) {
+            appendText(builder, text, mode);
         }
-        else if (node instanceof HtmlBreak) {
-            appendBreak(builder, (HtmlBreak) node);
+        else if (node instanceof HtmlBreak break1) {
+            appendBreak(builder, break1);
         }
-        else if (node instanceof HtmlParagraph) {
-            appendParagraph(builder, (HtmlParagraph) node, mode, insideHead);
+        else if (node instanceof HtmlParagraph paragraph) {
+            appendParagraph(builder, paragraph, mode, insideHead);
         }
-        else if (node instanceof HtmlListItem) {
-            appendListItem(builder, (HtmlListItem) node, mode, insideHead);
+        else if (node instanceof HtmlListItem item) {
+            appendListItem(builder, item, mode, insideHead);
         }
-        else if (node instanceof HtmlDetails) {
-            appendDetails(builder, (HtmlDetails) node, mode, insideHead);
+        else if (node instanceof HtmlDetails details) {
+            appendDetails(builder, details, mode, insideHead);
         }
         else if (node instanceof HtmlHead) {
             appendChildren(builder, node, mode, true);
@@ -143,6 +144,9 @@ public class HtmlSerializerInnerOuterText {
             if (insideHead) {
                 appendChildren(builder, node, mode, insideHead);
             }
+        }
+        else if (node instanceof HtmlDefinitionTerm item) {
+            appendDefinitionTerm(builder, item, mode, insideHead);
         }
         else if (node instanceof HtmlSvg) {
             if (browserVersion_.hasFeature(JS_INNER_TEXT_SVG_NL)) {
@@ -245,6 +249,21 @@ public class HtmlSerializerInnerOuterText {
                 appendNode(builder, child, mode, insideHead);
             }
         }
+    }
+
+    /**
+     * Process {@link HtmlDefinitionTerm}.
+     *
+     * @param builder the StringBuilder to add to
+     * @param htmlDefinitionTerm the target to process
+     * @param mode the {@link Mode} to use for processing
+     * @param insideHead true if inside head section
+     */
+    protected void appendDefinitionTerm(final HtmlSerializerTextBuilder builder,
+            final HtmlDefinitionTerm htmlDefinitionTerm, final Mode mode, final boolean insideHead) {
+        builder.appendRequiredLineBreak();
+        appendChildren(builder, htmlDefinitionTerm, mode, insideHead);
+        builder.appendRequiredLineBreak();
     }
 
     private static Mode whiteSpaceStyle(final DomNode domNode, final Mode defaultMode) {

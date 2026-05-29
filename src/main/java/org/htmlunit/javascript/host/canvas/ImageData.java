@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.canvas;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.corejs.javascript.typedarrays.NativeUint8ClampedArray;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -59,7 +59,7 @@ public class ImageData extends HtmlUnitScriptable {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static ImageData jsConstructor(final Context cx, final Scriptable scope,
+    public static ImageData jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         if (args.length < 2) {
             throw JavaScriptEngine.typeError("ImageData ctor - too less arguments");
@@ -68,11 +68,11 @@ public class ImageData extends HtmlUnitScriptable {
         NativeUint8ClampedArray data = null;
         final int width;
         final int height;
-        if (args[0] instanceof NativeUint8ClampedArray) {
-            data = (NativeUint8ClampedArray) args[0];
+        if (args[0] instanceof NativeUint8ClampedArray array) {
+            data = array;
             if (data.getArrayLength() % 4 != 0) {
                 throw JavaScriptEngine.asJavaScriptException(
-                        (HtmlUnitScriptable) JavaScriptEngine.getTopCallScope(),
+                        (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                         "ImageData ctor - data length mod 4 not zero",
                         DOMException.INVALID_STATE_ERR);
             }
@@ -83,7 +83,7 @@ public class ImageData extends HtmlUnitScriptable {
 
                 if (data.getArrayLength() != 4 * width * height) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) JavaScriptEngine.getTopCallScope(),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "ImageData ctor - width not correct",
                             DOMException.INDEX_SIZE_ERR);
                 }
@@ -94,7 +94,7 @@ public class ImageData extends HtmlUnitScriptable {
 
             if (data.getArrayLength() != 4 * width * height) {
                 throw JavaScriptEngine.asJavaScriptException(
-                        (HtmlUnitScriptable) JavaScriptEngine.getTopCallScope(),
+                        (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                         "ImageData ctor - width/height not correct",
                         DOMException.INDEX_SIZE_ERR);
             }
@@ -106,13 +106,13 @@ public class ImageData extends HtmlUnitScriptable {
 
         if (width < 0) {
             throw JavaScriptEngine.asJavaScriptException(
-                    (HtmlUnitScriptable) JavaScriptEngine.getTopCallScope(),
+                    (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                     "ImageData ctor - width negative",
                     DOMException.INDEX_SIZE_ERR);
         }
         if (height < 0) {
             throw JavaScriptEngine.asJavaScriptException(
-                    (HtmlUnitScriptable) JavaScriptEngine.getTopCallScope(),
+                    (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                     "ImageData ctor - height negative",
                     DOMException.INDEX_SIZE_ERR);
         }
@@ -169,7 +169,7 @@ public class ImageData extends HtmlUnitScriptable {
 
             data_ = new NativeUint8ClampedArray(arrayBuffer, 0, bytes_.length);
             data_.setParentScope(getParentScope());
-            data_.setPrototype(ScriptableObject.getClassPrototype(getWindow(this), data_.getClassName()));
+            data_.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), data_.getClassName()));
         }
 
         return data_;

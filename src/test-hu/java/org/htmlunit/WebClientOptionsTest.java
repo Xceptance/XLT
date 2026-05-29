@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
         final WebClientOptions original = new WebClientOptions();
 
         final byte[] bytes = SerializationUtils.serialize(original);
-        final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
+        final WebClientOptions deserialized = SerializationUtils.deserialize(bytes);
 
         assertEquals(original.isJavaScriptEnabled(), deserialized.isJavaScriptEnabled());
         assertEquals(original.isCssEnabled(), deserialized.isCssEnabled());
@@ -65,12 +65,8 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
                         deserialized.isWebSocketEnabled());
         assertEquals(original.getWebSocketMaxTextMessageSize(),
                         deserialized.getWebSocketMaxTextMessageSize());
-        assertEquals(original.getWebSocketMaxTextMessageBufferSize(),
-                        deserialized.getWebSocketMaxTextMessageBufferSize());
         assertEquals(original.getWebSocketMaxBinaryMessageSize(),
                         deserialized.getWebSocketMaxBinaryMessageSize());
-        assertEquals(original.getWebSocketMaxBinaryMessageBufferSize(),
-                        deserialized.getWebSocketMaxBinaryMessageBufferSize());
 
         assertEquals(original.isFetchPolyfillEnabled(), deserialized.isFetchPolyfillEnabled());
     }
@@ -97,14 +93,12 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
 
         original.setWebSocketEnabled(false);
         original.setWebSocketMaxTextMessageSize(77);
-        original.setWebSocketMaxTextMessageBufferSize(771);
         original.setWebSocketMaxBinaryMessageSize(44);
-        original.setWebSocketMaxBinaryMessageBufferSize(441);
 
         original.setFetchPolyfillEnabled(true);
 
         final byte[] bytes = SerializationUtils.serialize(original);
-        final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
+        final WebClientOptions deserialized = SerializationUtils.deserialize(bytes);
 
         assertEquals(original.isJavaScriptEnabled(), deserialized.isJavaScriptEnabled());
         assertEquals(original.isCssEnabled(), deserialized.isCssEnabled());
@@ -132,12 +126,8 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
                         deserialized.isWebSocketEnabled());
         assertEquals(original.getWebSocketMaxTextMessageSize(),
                         deserialized.getWebSocketMaxTextMessageSize());
-        assertEquals(original.getWebSocketMaxTextMessageBufferSize(),
-                        deserialized.getWebSocketMaxTextMessageBufferSize());
         assertEquals(original.getWebSocketMaxBinaryMessageSize(),
                         deserialized.getWebSocketMaxBinaryMessageSize());
-        assertEquals(original.getWebSocketMaxBinaryMessageBufferSize(),
-                        deserialized.getWebSocketMaxBinaryMessageBufferSize());
 
         assertEquals(original.isFetchPolyfillEnabled(), deserialized.isFetchPolyfillEnabled());
     }
@@ -151,7 +141,7 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
         original.setSSLContext(SSLContext.getDefault());
 
         final byte[] bytes = SerializationUtils.serialize(original);
-        final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
+        final WebClientOptions deserialized = SerializationUtils.deserialize(bytes);
 
         assertNull(deserialized.getSSLContext());
     }
@@ -167,7 +157,7 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
         original.setSSLTrustStore(keyStore);
 
         final byte[] bytes = SerializationUtils.serialize(original);
-        final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
+        final WebClientOptions deserialized = SerializationUtils.deserialize(bytes);
 
         assertNull(deserialized.getSSLTrustStore());
     }
@@ -183,7 +173,7 @@ public class WebClientOptionsTest extends SimpleWebTestCase {
         original.setSSLClientCertificateKeyStore(keyStore, "secret".toCharArray());
 
         final byte[] bytes = SerializationUtils.serialize(original);
-        final WebClientOptions deserialized = (WebClientOptions) SerializationUtils.deserialize(bytes);
+        final WebClientOptions deserialized = SerializationUtils.deserialize(bytes);
 
         assertNull(deserialized.getSSLClientCertificateStore());
         Assertions.assertArrayEquals("secret".toCharArray(), deserialized.getSSLClientCertificatePassword());

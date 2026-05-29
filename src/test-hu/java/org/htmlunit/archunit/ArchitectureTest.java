@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,9 +60,13 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule utilsPackageRule = classes()
         .that().haveNameMatching(".*Util.?")
+
         .and().doNotHaveFullyQualifiedName("org.htmlunit.cssparser.util.ParserUtils")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.http.HttpUtils")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.util.brotli.Utils")
+
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.html.HTMLHyperlinkElementUtils")
+
 
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.AwtFontUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.FontUtil")
@@ -72,9 +76,8 @@ public class ArchitectureTest {
         .and().doNotHaveFullyQualifiedName("org.htmlunit.cyberneko.util.StringUtils")
 
         .and().resideOutsideOfPackage("org.htmlunit.jetty.util..")
-        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.api.util.QuoteUtil")
-        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.ReflectUtils")
-        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.TextUtil")
+        .and().resideOutsideOfPackage("org.htmlunit.jetty.http..")
+        .and().resideOutsideOfPackage("org.htmlunit.jetty.websocket.core.util..")
 
         .and().resideOutsideOfPackage("org.htmlunit.corejs..")
 
@@ -154,6 +157,12 @@ public class ArchitectureTest {
     public static final ArchRule apacheStringsContainsRule = noClasses()
         .should().callMethod(org.apache.commons.lang3.Strings.class, "contains", CharSequence.class, CharSequence.class);
 
+    /**
+     * Do not use org.apache.commons.lang3.builder.HashCodeBuilder.
+     */
+    @ArchTest
+    public static final ArchRule apacheHashCodeBuilderRule = noClasses()
+            .should().dependOnClassesThat().haveFullyQualifiedName("org.apache.commons.lang3.builder.HashCodeBuilder");
 
     /**
      * Do not use org.apache.commons.lang3.math.NumberUtils.
@@ -172,6 +181,7 @@ public class ArchitectureTest {
                 .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter")
                 .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter$JettyWebSocketAdapterFactory")
                 .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter$JettyWebSocketAdapterImpl")
+                .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter$WebSocketCookieStore")
             .should()
                 .dependOnClassesThat().resideInAnyPackage("org.htmlunit.jetty..");
 
@@ -232,7 +242,7 @@ public class ArchitectureTest {
             .orShould().beDeclaredInClassesThat().areAnnotatedWith(JsxClasses.class);
 
     private static final DescribedPredicate<? super JavaClass> isAssignableToScriptable =
-            new DescribedPredicate<JavaClass>("@is not assignable to Scriptable") {
+            new DescribedPredicate<>("@is not assignable to Scriptable") {
                 @Override
                 public boolean test(final JavaClass javaClass) {
                     // we have to build a more complex implemenation because
@@ -308,6 +318,17 @@ public class ArchitectureTest {
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLProgressElement.getValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.getValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLTextAreaElement.getValue()")
+
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getBaseName()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getCalendar()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getCaseFirst()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getCollation()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getHourCycle()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getLanguage()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getNumberingSystem()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getRegion()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.Locale.getScript()")
+
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.getSelf()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponse()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponseXML()")
@@ -338,11 +359,10 @@ public class ArchitectureTest {
             .that()
                 .areAnnotatedWith(JsxFunction.class)
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.External.isSearchProviderInstalled()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.SimpleArray.item(int)")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.SimpleArray.namedItem(java.lang.String)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Storage.getItem(java.lang.String)")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.queueMicrotask(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.VarScope, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.VarScope, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.VarScope, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.css.CSSRuleList.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.css.StyleSheetList.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeList.item(java.lang.Object)")
@@ -351,8 +371,8 @@ public class ArchitectureTest {
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionsCollection.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.item(int)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.V8BreakIterator.resolvedOptions()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.VarScope, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.VarScope, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XSLTProcessor.getParameter(java.lang.String, java.lang.String)")
 
             .should().haveRawReturnType(String.class)
@@ -399,7 +419,7 @@ public class ArchitectureTest {
             .orShould().haveNameStartingWith("is");
 
     private static final DescribedPredicate<JavaMethod> haveJsxGetterWithNonDefaultPropertyName =
-            new DescribedPredicate<JavaMethod>("@JsxGetter has a non default propertyName") {
+            new DescribedPredicate<>("@JsxGetter has a non default propertyName") {
                 @Override
                 public boolean test(final JavaMethod method) {
                     return StringUtils.isNotEmpty(method.getAnnotationOfType(JsxGetter.class).propertyName());
@@ -424,7 +444,7 @@ public class ArchitectureTest {
             .should().haveNameStartingWith("set");
 
     private static final DescribedPredicate<JavaMethod> haveJsxSetterWithNonDefaultPropertyName =
-            new DescribedPredicate<JavaMethod>("@JsxSetter has a non default propertyName") {
+            new DescribedPredicate<>("@JsxSetter has a non default propertyName") {
                 @Override
                 public boolean test(final JavaMethod method) {
                     return StringUtils.isNotEmpty(method.getAnnotationOfType(JsxSetter.class).propertyName());
@@ -441,7 +461,7 @@ public class ArchitectureTest {
             .should().haveNameEndingWith("_js");
 
     private static final ArchCondition<JavaMethod> hasMatchingGetter =
-            new ArchCondition<JavaMethod>("every @JsxSetter needs a matching @JsxGetter") {
+            new ArchCondition<>("every @JsxSetter needs a matching @JsxGetter") {
                 @Override
                 public void check(final JavaMethod method, final ConditionEvents events) {
                     String getterName = "g" + method.getName().substring(1);
@@ -558,7 +578,7 @@ public class ArchitectureTest {
 
             .and().doNotHaveFullyQualifiedName("org.htmlunit.WebClient")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.WebRequest")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.Cookie")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.http.Cookie")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.DefaultCredentialsProvider")
 
             .and().resideOutsideOfPackage("org.htmlunit.httpclient..")
@@ -652,7 +672,6 @@ public class ArchitectureTest {
     public static final ArchRule jettyPackageRule = noClasses()
         .should().dependOnClassesThat().resideInAnyPackage("org.eclipse.jetty..");
 
-
     /**
      * Some methods should not be used.
      */
@@ -660,6 +679,7 @@ public class ArchitectureTest {
     public static final ArchRule forbidObjectsRequireNonNull = noClasses()
         .that()
             .resideOutsideOfPackage("org.htmlunit.corejs..")
+            .and().resideOutsideOfPackage("org.htmlunit.cyberneko..")
 
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomNode") // strange but reports method fireAddition() on jenkins
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage") // strange but reports method notifyNodeAdded() on jenkins

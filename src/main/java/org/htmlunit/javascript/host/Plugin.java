@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,11 @@ import org.htmlunit.javascript.configuration.JsxSymbol;
 /**
  * A JavaScript object for {@code Plugin}.
  *
+ * @see <a href="http://www.xulplanet.com/references/objref/MimeTypeArray.html">XUL Planet</a>
+ *
  * @author Marc Guillemot
  * @author Ahmed Ashour
- *
- * @see <a href="http://www.xulplanet.com/references/objref/MimeTypeArray.html">XUL Planet</a>
+ * @author Ronald Brill
  */
 @JsxClass
 public class Plugin extends HtmlUnitScriptable {

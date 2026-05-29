@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@ package org.htmlunit;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.util.PrimitiveWebServer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -160,8 +162,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
             driver.get("http://localhost:" + primitiveWebServer.getPort());
             final String request = primitiveWebServer.getRequests().get(0);
             final String[] headers = request.split("\\r\\n");
-            for (int i = 0; i < headers.length; i++) {
-                final String header = headers[i];
+            for (final String header : headers) {
                 if (StringUtils.startsWithIgnoreCase(header, HttpHeader.ACCEPT_ENCODING_LC)) {
                     final String value = header.substring(header.indexOf(':') + 1);
                     assertEquals(getExpectedAlerts()[0], value.trim());
@@ -179,12 +180,9 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
      * @return true when the url matches, false otherwise
      */
     public static ExpectedCondition<Boolean> currentUrlContains(final String url) {
-        return new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(final WebDriver driver) {
-                final String currentUrl = driver.getCurrentUrl();
-                return currentUrl != null && currentUrl.contains(url);
-            }
+        return driver -> {
+            final String currentUrl = driver.getCurrentUrl();
+            return currentUrl != null && currentUrl.contains(url);
         };
     }
 
@@ -239,7 +237,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                 + "Location: "
                     +  url
                     + "test?"
-                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", "UTF-8")
+                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", StandardCharsets.UTF_8)
                     + "\r\n"
                 + "\r\n";
 
@@ -277,7 +275,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                 + "Content-Length: 0\r\n"
                 + "Location: "
                     +  url
-                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", "UTF-8")
+                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", StandardCharsets.UTF_8)
                     + "\r\n"
                 + "\r\n";
 
@@ -368,7 +366,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -428,7 +426,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -506,10 +504,10 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "sec-ch-ua: §§SEC_USER_AGENT§§",
                       "sec-ch-ua-mobile: ?0",
                       "sec-ch-ua-platform: \"Windows\"",
-                      "Origin: http://localhost:§§PORT§§",
-                      "Content-Type: application/x-www-form-urlencoded",
                       "Upgrade-Insecure-Requests: 1",
+                      "Content-Type: application/x-www-form-urlencoded",
                       "User-Agent: §§USER_AGENT§§",
+                      "Origin: http://localhost:§§PORT§§",
                       "Accept: §§ACCEPT§§",
                       "Sec-Fetch-Site: same-origin",
                       "Sec-Fetch-Mode: navigate",
@@ -528,10 +526,10 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
-                    "Origin: http://localhost:§§PORT§§",
-                    "Content-Type: application/x-www-form-urlencoded",
                     "Upgrade-Insecure-Requests: 1",
+                    "Content-Type: application/x-www-form-urlencoded",
                     "User-Agent: §§USER_AGENT§§",
+                    "Origin: http://localhost:§§PORT§§",
                     "Accept: §§ACCEPT§§",
                     "Sec-Fetch-Site: same-origin",
                     "Sec-Fetch-Mode: navigate",
@@ -546,7 +544,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Content-Type: application/x-www-form-urlencoded",
                   "Content-Length: 48",
@@ -628,7 +626,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -745,7 +743,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -805,7 +803,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -905,7 +903,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -963,7 +961,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1063,7 +1061,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1121,7 +1119,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1217,7 +1215,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1273,7 +1271,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1369,7 +1367,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1425,7 +1423,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1467,8 +1465,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
         final String hi = "HTTP/1.1 200 OK\r\n"
                 + "Content-Length: 0\r\n"
                 + "Content-Type: text/javascript\r\n"
-                + "\r\n"
-                + "";
+                + "\r\n";
 
         shutDownAll();
         try (PrimitiveWebServer primitiveWebServer = new PrimitiveWebServer(Charset.forName("GB2312"), html, hi)) {
@@ -1489,7 +1486,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
 
             // let's try some wait on our CI server
             final long endTime = System.currentTimeMillis() + Duration.ofSeconds(4).toMillis();
-            while (primitiveWebServer.getRequests().size() < 1
+            while (primitiveWebServer.getRequests().isEmpty()
                         && System.currentTimeMillis() < endTime) {
                 Thread.sleep(100);
             }

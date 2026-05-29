@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -752,31 +752,6 @@ public final class StringUtils {
      */
     public static String toRootLowerCase(final String s) {
         return s == null ? null : s.toLowerCase(Locale.ROOT);
-    }
-
-    /**
-     * Transforms the specified string from camel-cased (e.g. <code>fontSize</code>)
-     * to delimiter-separated (e.g. <code>font-size</code>).
-     * to camel-cased .
-     * @param string the string to decamelize
-     * @return the transformed string
-     */
-    public static String cssDeCamelize(final String string) {
-        if (string == null || string.isEmpty()) {
-            return string;
-        }
-
-        final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < string.length(); i++) {
-            final char ch = string.charAt(i);
-            if (Character.isUpperCase(ch)) {
-                builder.append('-').append(Character.toLowerCase(ch));
-            }
-            else {
-                builder.append(ch);
-            }
-        }
-        return builder.toString();
     }
 
     /**

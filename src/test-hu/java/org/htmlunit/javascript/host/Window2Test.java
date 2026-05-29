@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.CookieManager4Test;
@@ -43,6 +44,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Carsten Steul
  * @author Colin Alworth
  * @author Christoph Burgmer
+ * @author Lai Quang Duong
  */
 public class Window2Test extends WebDriverTestCase {
 
@@ -948,8 +950,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"true", "621", "147", "true", "16", "16"},
-            EDGE = {"true", "630", "138", "true", "16", "24"},
+    @Alerts(CHROME = {"true", "621", "-621", "true", "16", "-1256"},
+            EDGE = {"true", "631", "137", "true", "16", "24"},
             FF = {"true", "674", "94", "true", "16", "16"},
             FF_ESR = {"true", "674", "94", "true", "16", "16"})
     @HtmlUnitNYI(CHROME = {"true", "605", "147", "true", "0", "16"},
@@ -978,10 +980,12 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"true", "0", "147", "true", "true", "16"},
-            EDGE = {"true", "0", "138", "true", "true", "24"},
+    @Alerts(CHROME = {"true", "0", "-621", "true", "true", "-1256"},
+            EDGE = {"true", "0", "137", "true", "true", "24"},
             FF = {"true", "0", "94", "true", "true", "16"},
             FF_ESR = {"true", "0", "94", "true", "true", "16"})
+    @HtmlUnitNYI(CHROME = {"true", "0", "147", "true", "true", "16"},
+            EDGE = {"true", "0", "138", "true", "true", "24"})
     public void heightsAndWidthsQuirks() throws Exception {
         final String html =
             "<html><body onload='test()'><script>\n"
@@ -1041,7 +1045,11 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"true", "1234"})
+    @Alerts(CHROME = {"false", "1234"},
+            EDGE = {"true", "1234"},
+            FF = {"true", "1234"},
+            FF_ESR = {"true", "1234"})
+    @HtmlUnitNYI(CHROME = {"true", "1234"})
     public void setOuterWidth() throws Exception {
         final String html = DOCTYPE_HTML
             + "<html><body onload='test()'><script>\n"
@@ -1060,7 +1068,11 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"true", "1234"})
+    @Alerts(CHROME = {"false", "1234"},
+            EDGE = {"true", "1234"},
+            FF = {"true", "1234"},
+            FF_ESR = {"true", "1234"})
+    @HtmlUnitNYI(CHROME = {"true", "1234"})
     public void setOuterHeight() throws Exception {
         final String html = DOCTYPE_HTML
             + "<html><body onload='test()'><script>\n"
@@ -1120,7 +1132,7 @@ public class Window2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {"621", "1256", "606", "1241"},
-            EDGE = {"630", "1248", "615", "1233"},
+            EDGE = {"631", "1248", "616", "1233"},
             FF = {"674", "1256", "674", "1256"},
             FF_ESR = {"674", "1256", "674", "1256"})
     // TODO width and height calculation needs to be reworked in HtmlUnit
@@ -2152,6 +2164,8 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts("-onsubmit-")
     public void onsubmit_withHandler() throws Exception {
+        shutDownAll();
+
         final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
@@ -3495,5 +3509,59 @@ public class Window2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         verifySessionStorage2(driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("TypeError")
+    public void queueMicrotaskNoArgs() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  try { queueMicrotask(); } catch(e) { logEx(e); }\n"
+            + "</script></head></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("TypeError")
+    public void queueMicrotaskNonFunction() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  try { queueMicrotask('str'); } catch(e) { logEx(e); }\n"
+            + "</script></head></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1-sync, 2-microtask, 3-microtask, 4-nested-microtask, 5-timeout")
+    public void queueMicrotaskExecutionOrder() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var r = [];\n"
+            + "  queueMicrotask(function() { r.push('2-microtask'); });\n"
+            + "  setTimeout(function() { r.push('5-timeout'); }, 0);\n"
+            + "  queueMicrotask(function() {\n"
+            + "    r.push('3-microtask');\n"
+            + "    queueMicrotask(function() { r.push('4-nested-microtask'); });\n"
+            + "  });\n"
+            + "  r.push('1-sync');\n"
+            + "  setTimeout(function() { log(r.join(', ')); }, 200);\n"
+            + "</script></head></html>";
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(Duration.ofSeconds(1), driver, getExpectedAlerts());
     }
 }

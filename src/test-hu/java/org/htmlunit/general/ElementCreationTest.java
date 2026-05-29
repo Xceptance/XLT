@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -623,6 +623,17 @@ public class ElementCreationTest extends WebDriverTestCase {
     @Alerts("[object HTMLHeadingElement]")
     public void h6() throws Exception {
         test("h6");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("[object HTMLElement]")
+    public void hgroup() throws Exception {
+        test("hgroup");
     }
 
     /**

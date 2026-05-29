@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.htmlunit.util.brotli.BrotliInputStream;
  * @author Daniel Gredler
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public class WebResponseData implements Serializable {
     private static final Log LOG = LogFactory.getLog(WebResponseData.class);
@@ -113,17 +114,18 @@ public class WebResponseData implements Serializable {
                     LOG.error("Reading gzip encodec content failed.", e);
                     stream.close();
                     stream = IOUtils.toInputStream(
-                                "<!DOCTYPE html><html>\n"
-                                 + "<head><title>Problem loading page</title></head>\n"
-                                 + "<body>\n"
-                                 + "<h1>Content Encoding Error</h1>\n"
-                                 + "<p>The page you are trying to view cannot be shown because"
-                                 + " it uses an invalid or unsupported form of compression.</p>\n"
-                                 + "</body>\n"
-                                 + "</html>", ISO_8859_1);
+                                """
+                                <!DOCTYPE html><html>
+                                <head><title>Problem loading page</title></head>
+                                <body>
+                                <h1>Content Encoding Error</h1>
+                                <p>The page you are trying to view cannot be shown because\
+                                 it uses an invalid or unsupported form of compression.</p>
+                                </body>
+                                </html>""", ISO_8859_1);
                 }
                 if (stream != null && bomHeaders != null) {
-                    stream = new BOMInputStream(stream, bomHeaders);
+                    stream = BOMInputStream.builder().setInputStream(stream).setByteOrderMarks(bomHeaders).get();
                 }
                 return stream;
             }
@@ -136,14 +138,15 @@ public class WebResponseData implements Serializable {
                     LOG.error("Reading Brotli encodec content failed.", e);
                     stream.close();
                     stream = IOUtils.toInputStream(
-                                "<!DOCTYPE html><html>\n"
-                                 + "<head><title>Problem loading page</title></head>\n"
-                                 + "<body>\n"
-                                 + "<h1>Content Encoding Error</h1>\n"
-                                 + "<p>The page you are trying to view cannot be shown because"
-                                 + " it uses an invalid or unsupported form of compression.</p>\n"
-                                 + "</body>\n"
-                                 + "</html>", ISO_8859_1);
+                                """
+                                <!DOCTYPE html><html>
+                                <head><title>Problem loading page</title></head>
+                                <body>
+                                <h1>Content Encoding Error</h1>
+                                <p>The page you are trying to view cannot be shown because\
+                                 it uses an invalid or unsupported form of compression.</p>
+                                </body>
+                                </html>""", ISO_8859_1);
                 }
                 return stream;
             }
@@ -168,7 +171,7 @@ public class WebResponseData implements Serializable {
         }
 
         if (stream != null && bomHeaders != null) {
-            stream = new BOMInputStream(stream, bomHeaders);
+            stream = BOMInputStream.builder().setInputStream(stream).setByteOrderMarks(bomHeaders).get();
         }
         return stream;
     }

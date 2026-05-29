@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  */
 package org.htmlunit;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.util.Cookie;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -92,8 +91,7 @@ public class CookieManager2Test extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final URL url = URL_FIRST;
-        webConnection.setResponse(url, CookieManagerTest.HTML_ALERT_COOKIE);
+        webConnection.setResponse(URL_FIRST, CookieManagerTest.HTML_ALERT_COOKIE);
         webClient.setWebConnection(webConnection);
 
         final CookieManager mgr = webClient.getCookieManager();
@@ -115,8 +113,7 @@ public class CookieManager2Test extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
         final MockWebConnection webConnection = new MockWebConnection();
 
-        final URL url = URL_FIRST;
-        webConnection.setResponse(url, CookieManagerTest.HTML_ALERT_COOKIE);
+        webConnection.setResponse(URL_FIRST, CookieManagerTest.HTML_ALERT_COOKIE);
         webClient.setWebConnection(webConnection);
 
         final CookieManager mgr = webClient.getCookieManager();

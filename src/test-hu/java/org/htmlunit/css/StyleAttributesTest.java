@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.htmlunit.css.StyleAttributes.Definition;
@@ -97,7 +96,7 @@ public class StyleAttributesTest {
     public void javaDoc() throws IOException {
         try (Stream<String> stream = Files.lines(Paths.get("src/main/java/"
                 + getClass().getPackage().getName().replace('.', '/') + "/StyleAttributes.java"))) {
-            final List<String> lines = stream.collect(Collectors.toList());
+            final List<String> lines = stream.toList();
             final Pattern pattern = Pattern.compile("\\s+[A-Z_]+\\(\"(.*?)\",");
             for (int i = 1; i < lines.size(); i++) {
                 final Matcher matcher = pattern.matcher(lines.get(i));

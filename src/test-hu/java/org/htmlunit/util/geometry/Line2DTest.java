@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package org.htmlunit.util.geometry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -91,6 +92,6 @@ public class Line2DTest {
 
         final Line2D testLine2 = new Line2D(new Point2D(5, 7), new Point2D(5, 11));
         final Point2D intersectionPoint = testLine.intersect(testLine2);
-        assertEquals(null, intersectionPoint);
+        assertNull(intersectionPoint);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.w3c.dom.DOMException;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Ronald Brill
+ * @author Kanoko Yamamoto
  */
 @JsxClass
 public class Storage extends HtmlUnitScriptable {
@@ -74,7 +75,7 @@ public class Storage extends HtmlUnitScriptable {
         super();
         store_ = store;
         storeSize_ = 0L;
-        setParentScope(window);
+        setParentScope(getTopLevelScope(window.getParentScope()));
         setPrototype(window.getPrototype(Storage.class));
     }
 
@@ -164,7 +165,8 @@ public class Storage extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void setItem(final String key, final String data) {
-        final long storeSize = storeSize_ + data.length();
+        final String existingData = store_.get(key);
+        final long storeSize = storeSize_ + data.length() - (existingData != null ? existingData.length() : 0);
         if (storeSize > STORE_SIZE_KIMIT) {
             throw JavaScriptEngine.throwAsScriptRuntimeEx(
                     new DOMException((short) 22, "QuotaExceededError: Failed to execute 'setItem' on 'Storage': "

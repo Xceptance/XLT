@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,10 +220,6 @@ public class HostParentOfDTest extends HostParentOf {
     }
 
     @Alerts("true/false")
-    @HtmlUnitNYI(CHROME = "false/false",
-            EDGE = "false/false",
-            FF = "false/false",
-            FF_ESR = "false/false")
     void _DOMStringMap_DOMStringMap() throws Exception {
         test("DOMStringMap", "DOMStringMap");
     }
@@ -2242,6 +2238,13 @@ public class HostParentOfDTest extends HostParentOf {
         test("EventTarget", "SourceBufferList");
     }
 
+    @Alerts(DEFAULT = "true/true",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _EventTarget_SpeechRecognition() throws Exception {
+        test("EventTarget", "SpeechRecognition");
+    }
+
     @Alerts("true/true")
     void _EventTarget_SpeechSynthesis() throws Exception {
         test("EventTarget", "SpeechSynthesis");
@@ -2706,6 +2709,20 @@ public class HostParentOfDTest extends HostParentOf {
     @Alerts("true/false")
     void _EventTarget_XMLHttpRequestUpload() throws Exception {
         test("EventTarget", "XMLHttpRequestUpload");
+    }
+
+    @Alerts(DEFAULT = "true/true",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _Event_SpeechRecognitionEvent() throws Exception {
+        test("Event", "SpeechRecognitionEvent");
+    }
+
+    @Alerts(DEFAULT = "true/true",
+            FF = "false/false",
+            FF_ESR = "false/false")
+    void _Event_SpeechRecognitionErrorEvent() throws Exception {
+        test("Event", "SpeechRecognitionErrorEvent");
     }
 
     @Alerts("true/false")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
  * @author Ahmed Ashour
  * @author Sudhan Moghe
  * @author Frank Danek
+ * @author Ronald Brill
  */
 public class HTMLParserTest extends SimpleWebTestCase {
 
@@ -53,12 +54,12 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final HtmlPage page = new HtmlPage(webResponse, webClient.getCurrentWindow());
         webClient.getCurrentWindow().setEnclosedPage(page);
 
-        webClient.getPageCreator().getHtmlParser().parse(null, webResponse, page, false, false);
+        webClient.getPageCreator().getHtmlParser().parse(webClient, webResponse, page, false, false);
 
         final String stringVal = page.<HtmlDivision>getFirstByXPath("//div").getFirstChild().getNodeValue();
         assertEquals("TEST", stringVal);
 
-        final HtmlElement node = (HtmlElement) page.getFirstByXPath("//*[./text() = 'TEST']");
+        final HtmlElement node = page.getFirstByXPath("//*[./text() = 'TEST']");
         assertEquals(node.getTagName(), HtmlDivision.TAG_NAME);
     }
 
@@ -139,7 +140,7 @@ public class HTMLParserTest extends SimpleWebTestCase {
         final XHtmlPage page = new XHtmlPage(webResponse, webClient.getCurrentWindow());
         webClient.getCurrentWindow().setEnclosedPage(page);
 
-        webClient.getPageCreator().getHtmlParser().parse(null, webResponse, page, true, false);
+        webClient.getPageCreator().getHtmlParser().parse(webClient, webResponse, page, true, false);
 
         final DomElement col = page.getElementsByTagName("col").get(0);
         assertEquals(col.getParentNode().getNodeName(), HtmlTableColumnGroup.TAG_NAME);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@ package org.htmlunit.libraries.mochikit;
 
 import java.time.Duration;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.WebDriverTestCase;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -29,7 +27,7 @@ import org.openqa.selenium.WebElement;
  *
  * @author Marc Guillemot
  * @author Frank Danek
- * @author Ronald Brill#
+ * @author Ronald Brill
  */
 public abstract class MochiKitTest extends WebDriverTestCase {
 
@@ -172,28 +170,20 @@ public abstract class MochiKitTest extends WebDriverTestCase {
         driver.findElement(By.linkText("Toggle failed tests")).click();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
 
-        String expected = loadExpectation(testName);
-        expected = expected.trim();
-        expected = StringUtils.replace(expected, "\r\n", "\n");
+        final String expected = loadExpectation(testName)
+                                .trim()
+                                .replace("\r\n", "\n");
         final WebElement div = driver.findElement(By.xpath("//div[@class = 'tests_report']"));
 
         assertNotNull(div);
-        String actual = div.getText().trim();
-        actual = StringUtils.replace(actual, "\n\n", "\n");
+        final String actual = div.getText()
+                                    .trim()
+                                    .replace("\n\n", "\n");
         assertEquals(expected.trim(), actual);
     }
 
     private String loadExpectation(final String testName) throws Exception {
         final String resourcePrefix = "/libraries/MochiKit/" + srcFolder() + "/test-" + testName;
         return loadExpectation(resourcePrefix, ".expected.txt");
-    }
-
-    /**
-     * Performs pre-test initialization.
-     * @throws Exception if an error occurs
-     */
-    @BeforeEach
-    public void setUp() throws Exception {
-        startWebServer("src/test/resources/libraries/MochiKit/" + srcFolder(), null, null);
     }
 }

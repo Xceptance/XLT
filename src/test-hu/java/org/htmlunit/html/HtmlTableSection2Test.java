@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,9 @@ public class HtmlTableSection2Test extends WebDriverTestCase {
         final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getEnclosedPage();
-            assertTrue(HtmlTableHeader.class.isInstance(page.getHtmlElementById("myId1")));
-            assertTrue(HtmlTableBody.class.isInstance(page.getHtmlElementById("myId2")));
-            assertTrue(HtmlTableFooter.class.isInstance(page.getHtmlElementById("myId3")));
+            assertTrue(page.getHtmlElementById("myId1") instanceof HtmlTableHeader);
+            assertTrue(page.getHtmlElementById("myId2") instanceof HtmlTableBody);
+            assertTrue(page.getHtmlElementById("myId3") instanceof HtmlTableFooter);
         }
     }
 }

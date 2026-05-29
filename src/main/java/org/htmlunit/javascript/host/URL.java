@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,13 +91,11 @@ public class URL extends HtmlUnitScriptable {
      */
     @JsxStaticFunction
     public static String createObjectURL(final Object fileOrBlob) {
-        if (fileOrBlob instanceof File) {
-            final File file = (File) fileOrBlob;
+        if (fileOrBlob instanceof File file) {
             return getWindow(file).getDocument().generateBlobUrl(file);
         }
 
-        if (fileOrBlob instanceof Blob) {
-            final Blob blob = (Blob) fileOrBlob;
+        if (fileOrBlob instanceof Blob blob) {
             return getWindow(blob).getDocument().generateBlobUrl(blob);
         }
 

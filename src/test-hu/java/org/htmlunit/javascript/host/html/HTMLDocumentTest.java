@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1227,7 +1227,10 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"32 commands supported", "not supported: foo, 123"})
-    @BuggyWebDriver({"31 commands supported", "not supported: Paste, foo, 123"})
+    @BuggyWebDriver(
+            CHROME = {"31 commands supported", "not supported: Paste, foo, 123"},
+            EDGE = {"31 commands supported", "not supported: Paste, foo, 123"},
+            FF_ESR = {"31 commands supported", "not supported: Paste, foo, 123"})
     public void queryCommandSupported_common() throws Exception {
         final String[] commands = {"BackColor", "Bold",
             "Copy", "CreateLink", "Cut", "Delete",
@@ -2390,8 +2393,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             FF = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF_ESR = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"})
     public void type() throws Exception {
-        final String html = ""
-            + "<html><head>\n"
+        final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -2448,7 +2450,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                 + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        final URL url = new URL(URL_FIRST.toString() + "details/abc");
+        final URL url = new URL(URL_FIRST + "details/abc");
         final WebDriver driver = loadPage2(html, url);
         verifyTitle2(driver, getExpectedAlerts());
         if (driver instanceof HtmlUnitDriver && !"undefined".equals(getExpectedAlerts()[0])) {
@@ -2473,7 +2475,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                 + "</body></html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        final URL url = new URL(URL_FIRST.toString() + "?x=y&z=zz");
+        final URL url = new URL(URL_FIRST + "?x=y&z=zz");
         final WebDriver driver = loadPage2(html, url);
         verifyTitle2(driver, getExpectedAlerts());
         if (driver instanceof HtmlUnitDriver && !"undefined".equals(getExpectedAlerts()[0])) {
@@ -2497,7 +2499,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                 + "</script>\n"
                 + "</body></html>";
 
-        final URL url = new URL(URL_FIRST.toString() + "details/abc;jsessionid=42?x=y&z=zz");
+        final URL url = new URL(URL_FIRST + "details/abc;jsessionid=42?x=y&z=zz");
         expandExpectedAlertsVariables(URL_FIRST);
         final WebDriver driver = loadPage2(html, url);
         verifyTitle2(driver, getExpectedAlerts());
