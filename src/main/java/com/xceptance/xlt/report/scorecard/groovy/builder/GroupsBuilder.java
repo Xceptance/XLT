@@ -1,6 +1,8 @@
 package com.xceptance.xlt.report.scorecard.groovy.builder;
 
-import com.xceptance.xlt.report.scorecard.Configuration;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.xceptance.xlt.report.scorecard.GroupDefinition;
 
 import groovy.lang.Closure;
@@ -10,7 +12,7 @@ import groovy.lang.DelegatesTo;
  * Groovy DSL builder for collecting multiple {@link GroupDefinition} entries.
  * <p>
  * This container builder is used within the top-level {@code groups} section to define rule groups. Each
- * {@code group { }} block creates a new group that is immediately registered with the {@link Configuration}.
+ * {@code group { }} block creates a new group that is added to the collection.
  * </p>
  * <p>
  * Groups determine how rules are organized, how points are calculated, and when the test should fail.
@@ -18,36 +20,22 @@ import groovy.lang.DelegatesTo;
  *
  * @see GroupDefinition
  * @see GroupBuilder
- * @see ScorecardBuilder
  */
 public class GroupsBuilder
 {
-    /** Configuration to register groups with */
-    private final Configuration config;
-
-    /**
-     * Creates a new GroupsBuilder that adds groups to the given configuration.
-     *
-     * @param config
-     *                   the configuration to populate with groups
-     */
-    public GroupsBuilder(Configuration config)
-    {
-        this.config = config;
-    }
+    /** Accumulated list of groups built from nested group {} blocks */
+    private final List<GroupDefinition> groups = new ArrayList<>();
 
     /**
      * Defines a single group within this groups section.
      * <p>
-     * Creates a new {@link GroupBuilder}, applies the closure to configure the group, builds it, and registers it with the
-     * configuration.
+     * Creates a new {@link GroupBuilder}, applies the closure to configure the group, builds it, and registers it with
+     * the configuration.
      * </p>
      *
      * @param closure
-     *                    the closure defining group properties using {@link GroupBuilder}
+     *            the closure defining group properties using {@link GroupBuilder}
      * @return the builder for potential method chaining
-     * @throws RuntimeException
-     *                              if the group cannot be added (e.g., duplicate ID)
      */
     public GroupBuilder group(@DelegatesTo(GroupBuilder.class) Closure<?> closure)
     {
@@ -55,15 +43,20 @@ public class GroupsBuilder
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
+
         GroupDefinition group = builder.build();
-        try
-        {
-            config.addGroup(group);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        groups.add(group);
+
         return builder;
+    }
+
+    /**
+     * Builds and returns all configured groups as an array.
+     *
+     * @return array of {@link GroupDefinition} instances in definition order
+     */
+    public GroupDefinition[] build()
+    {
+        return groups.toArray(new GroupDefinition[0]);
     }
 }

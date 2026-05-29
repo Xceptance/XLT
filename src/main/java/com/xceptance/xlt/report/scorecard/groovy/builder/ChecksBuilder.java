@@ -39,7 +39,7 @@ public class ChecksBuilder
      * </p>
      *
      * @param closure
-     *                    the closure defining check properties using {@link CheckBuilder}
+     *            the closure defining check properties using {@link CheckBuilder}
      * @return the builder for method chaining (though typically not used in DSL)
      */
     public CheckBuilder check(@DelegatesTo(CheckBuilder.class) Closure<?> closure)
@@ -50,7 +50,10 @@ public class ChecksBuilder
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
-        checks.add(builder.build());
+
+        Check check = builder.build();
+        checks.add(check);
+
         return builder;
     }
 

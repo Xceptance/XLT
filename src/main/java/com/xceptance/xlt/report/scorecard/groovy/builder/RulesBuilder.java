@@ -1,6 +1,8 @@
 package com.xceptance.xlt.report.scorecard.groovy.builder;
 
-import com.xceptance.xlt.report.scorecard.Configuration;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.xceptance.xlt.report.scorecard.RuleDefinition;
 
 import groovy.lang.Closure;
@@ -10,7 +12,7 @@ import groovy.lang.DelegatesTo;
  * Groovy DSL builder for collecting multiple {@link RuleDefinition} entries.
  * <p>
  * This container builder is used within the top-level {@code rules} section to define validation rules. Each
- * {@code rule { }} block creates a new rule that is immediately registered with the {@link Configuration}.
+ * {@code rule { }} block creates a new rule that is added to the collection..
  * </p>
  * <p>
  * Rules defined here can later be referenced by groups using their IDs.
@@ -18,36 +20,22 @@ import groovy.lang.DelegatesTo;
  *
  * @see RuleDefinition
  * @see RuleBuilder
- * @see ScorecardBuilder
  */
 public class RulesBuilder
 {
-    /** Configuration to register rules with */
-    private final Configuration config;
-
-    /**
-     * Creates a new RulesBuilder that adds rules to the given configuration.
-     *
-     * @param config
-     *                   the configuration to populate with rules
-     */
-    public RulesBuilder(Configuration config)
-    {
-        this.config = config;
-    }
+    /** Accumulated list of rules built from nested rule {} blocks */
+    private final List<RuleDefinition> rules = new ArrayList<>();
 
     /**
      * Defines a single rule within this rules section.
      * <p>
-     * Creates a new {@link RuleBuilder}, applies the closure to configure the rule, builds it, and registers it with the
-     * configuration.
+     * Creates a new {@link RuleBuilder}, applies the closure to configure the rule, builds it, and registers it with
+     * the configuration.
      * </p>
      *
      * @param closure
-     *                    the closure defining rule properties using {@link RuleBuilder}
+     *            the closure defining rule properties using {@link RuleBuilder}
      * @return the builder for potential method chaining
-     * @throws RuntimeException
-     *                              if the rule cannot be added (e.g., duplicate ID)
      */
     public RuleBuilder rule(@DelegatesTo(RuleBuilder.class) Closure<?> closure)
     {
@@ -55,15 +43,20 @@ public class RulesBuilder
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
+
         RuleDefinition rule = builder.build();
-        try
-        {
-            config.addRule(rule);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        rules.add(rule);
+
         return builder;
+    }
+
+    /**
+     * Builds and returns all configured rules as an array.
+     *
+     * @return array of {@link RuleDefinition} instances in definition order
+     */
+    public RuleDefinition[] build()
+    {
+        return rules.toArray(new RuleDefinition[0]);
     }
 }

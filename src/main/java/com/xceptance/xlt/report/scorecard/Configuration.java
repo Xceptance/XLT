@@ -189,6 +189,25 @@ public class Configuration
         return version;
     }
 
+    /**
+     * Performs any validation that can be done only after setting up the configuration is complete.
+     * 
+     * @throws ValidationException
+     *             in case of validation errors
+     */
+    public void validate() throws ValidationException
+    {
+        if (!rules.values().stream().anyMatch(RuleDefinition::isEnabled))
+        {
+            throw new ValidationException("Configuration must contain at least one enabled rule");
+        }
+
+        if (!groups.values().stream().anyMatch((groupDef) -> groupDef.isEnabled() && !groupDef.getRuleIds().isEmpty()))
+        {
+            throw new ValidationException("Configuration must contain at least one enabled and non-empty group");
+        }
+    }
+
     private void validateId(final String id) throws ValidationException
     {
         final String ambigousUDErrorMsg = "Some other %s shares the same ID: '%s'. IDs must be unique.";
@@ -282,15 +301,7 @@ public class Configuration
             }
         }
 
-        if (!config.rules.values().stream().anyMatch(RuleDefinition::isEnabled))
-        {
-            throw new ValidationException("Configuration must contain at least one enabled rule");
-        }
-
-        if (!config.groups.values().stream().anyMatch((groupDef) -> groupDef.isEnabled() && !groupDef.getRuleIds().isEmpty()))
-        {
-            throw new ValidationException("Configuration must contain at least one enabled and non-empty group");
-        }
+        config.validate();
 
         return config;
     }

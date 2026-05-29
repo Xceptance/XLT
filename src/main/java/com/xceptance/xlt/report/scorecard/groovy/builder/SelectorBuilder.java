@@ -1,8 +1,6 @@
 package com.xceptance.xlt.report.scorecard.groovy.builder;
 
 import com.xceptance.xlt.report.scorecard.SelectorDefinition;
-import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
 
 /**
  * Groovy DSL builder for constructing {@link SelectorDefinition} objects.
@@ -34,6 +32,7 @@ public class SelectorBuilder
     private String expression;
 
     /** Optional comment describing what this selector does (for documentation) */
+    @SuppressWarnings("unused")
     private String comment;
 
     /**
