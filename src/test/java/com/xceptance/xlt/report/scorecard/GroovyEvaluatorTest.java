@@ -23,7 +23,7 @@ public class GroovyEvaluatorTest
     public void testParseConfigurationGroovyValues() throws Exception
     {
         final var groovy = """
-            import com.xceptance.xlt.report.scorecard.builder.ScorecardBuilder
+            import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder
 
             def builder = new ScorecardBuilder()
 
@@ -82,12 +82,20 @@ public class GroovyEvaluatorTest
     {
         // Test usage of 'builder' variable exposed in binding
         final var groovy = """
-            builder.selectors {
-                selector {
-                    id 'sel1'
-                    expression '//foo'
+            builder.rules {
+                rule {
+                    id 'rule1'
                 }
             }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
+
             // implicitly returns builder? No, we likely need to return builder.build() or just configuration
             // current impl expects return value to be Configuration or ScorecardBuilder
             return builder;
@@ -99,7 +107,8 @@ public class GroovyEvaluatorTest
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
             final var config = new TestEvaluator(tempFile).parseConfiguration();
-            Assert.assertTrue(config.containsSelector("sel1"));
+            Assert.assertTrue(config.containsRule("rule1"));
+            Assert.assertTrue(config.containsGroup("G1"));
         }
         finally
         {
@@ -136,6 +145,20 @@ public class GroovyEvaluatorTest
             import java.util.Date
 
             def sdf = new SimpleDateFormat("yyyy")
+
+            builder.rules {
+                rule {
+                    id 'rule1'
+                }
+            }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
             return builder
             """;
 
@@ -167,6 +190,15 @@ public class GroovyEvaluatorTest
                     }
                 }
             }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
+
             return builder
             """;
 
@@ -201,6 +233,15 @@ public class GroovyEvaluatorTest
                     }
                 }
             }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
+
             return builder
             """;
 
@@ -369,8 +410,7 @@ public class GroovyEvaluatorTest
         {
             try
             {
-                final XdmNode doc = proc.newDocumentBuilder()
-                                  .build(new StreamSource(new StringReader("<dummy/>")));
+                final XdmNode doc = proc.newDocumentBuilder().build(new StreamSource(new StringReader("<dummy/>")));
                 final XPathCompiler compiler = proc.newXPathCompiler();
                 return super.parseGroovyConfiguration(doc, compiler);
             }

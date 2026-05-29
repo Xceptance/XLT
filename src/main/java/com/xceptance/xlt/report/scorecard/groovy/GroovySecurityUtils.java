@@ -19,9 +19,9 @@ public class GroovySecurityUtils
         secure.setClosuresAllowed(true);
 
         // Imports
-        List<String> starImports = Arrays.asList("java.util", "java.math", "java.text", "com.xceptance.xlt.report.scorecard.builder",
+        List<String> starImports = Arrays.asList("java.util", "java.math", "java.text", "com.xceptance.xlt.report.scorecard.groovy.builder",
                                                  "com.xceptance.xlt.report.scorecard",
-                                                 "com.xceptance.xlt.report.scorecard.ScorecardLogger");
+                                                 "com.xceptance.xlt.report.scorecard.groovy.ScorecardLogger");
         secure.setStarImportsWhitelist(starImports);
 
         // allow static imports if needed, for now none
