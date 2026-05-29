@@ -1,38 +1,56 @@
 package com.xceptance.xlt.report.scorecard;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
 
 public class EvaluatorTest
 {
     @Test
     public void testParseConfiguration() throws Exception
     {
-        var yaml = """
-            version: 2
-            selectors:
-              - id: sel1
-                expression: //foo
-            rules:
-              - id: rule1
-                checks:
-                  - selectorId: sel1
-                    condition: exists
-            groups:
-              - id: G1
-                rules: [rule1]
+        var json = """
+            {
+              "version": 2,
+              "selectors": [
+                {
+                  "id": "sel1",
+                  "expression": "//foo"
+                }
+              ],
+              "rules": [
+                {
+                  "id": "rule1",
+                  "checks": [
+                    {
+                      "selectorId": "sel1",
+                      "condition": "exists"
+                    }
+                  ]
+                }
+              ],
+              "groups": [
+                {
+                  "id": "G1",
+                  "rules": ["rule1"]
+                }
+              ]
+            }
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
+        var tempFile = Files.createTempFile("scorecard-config", ".json").toFile();
         try
         {
-            FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(tempFile, json, StandardCharsets.UTF_8);
 
             var config = new TestStaticEvaluator(tempFile).parseConfiguration();
 
@@ -48,28 +66,42 @@ public class EvaluatorTest
     @Test
     public void testEvaluate() throws Exception
     {
-        var yaml = """
-            version: 2
-            selectors:
-              - id: sel1
-                expression: //count
-            rules:
-              - id: rule1
-                checks:
-                  - selectorId: sel1
-                    condition: "> 10"
-            groups:
-              - id: G1
-                rules: [rule1]
+        var json = """
+            {
+              "version": 2,
+              "selectors": [
+                {
+                  "id": "sel1",
+                  "expression": "//count"
+                }
+              ],
+              "rules": [
+                {
+                  "id": "rule1",
+                  "checks": [
+                    {
+                      "selectorId": "sel1",
+                      "condition": "> 10"
+                    }
+                  ]
+                }
+              ],
+              "groups": [
+                {
+                  "id": "G1",
+                  "rules": ["rule1"]
+                }
+              ]
+            }
             """;
 
         var xml = "<root><count>15</count></root>";
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("scorecard-data", ".xml").toFile();
+        var tempFile = Files.createTempFile("scorecard-config", ".json").toFile();
+        var xmlFile = Files.createTempFile("scorecard-data", ".xml").toFile();
         try
         {
-            FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(tempFile, json, StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(xmlFile, xml, StandardCharsets.UTF_8);
 
             var evaluator = new TestStaticEvaluator(tempFile);
@@ -87,29 +119,43 @@ public class EvaluatorTest
     @Test
     public void testEvaluatePoints() throws Exception
     {
-        var yaml = """
-            version: 2
-            selectors:
-              - id: sel1
-                expression: //count
-            rules:
-              - id: rule1
-                points: 10
-                checks:
-                  - selectorId: sel1
-                    condition: "> 10"
-            groups:
-              - id: G1
-                rules: [rule1]
+        var json = """
+            {
+              "version": 2,
+              "selectors": [
+                {
+                  "id": "sel1",
+                  "expression": "//count"
+                }
+              ],
+              "rules": [
+                {
+                  "id": "rule1",
+                  "points": 10,
+                  "checks": [
+                    {
+                      "selectorId": "sel1",
+                      "condition": "> 10"
+                    }
+                  ]
+                }
+              ],
+              "groups": [
+                {
+                  "id": "G1",
+                  "rules": ["rule1"]
+                }
+              ]
+            }
             """;
 
         var xml = "<root><count>15</count></root>";
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("scorecard-data", ".xml").toFile();
+        var tempFile = Files.createTempFile("scorecard-config", ".json").toFile();
+        var xmlFile = Files.createTempFile("scorecard-data", ".xml").toFile();
         try
         {
-            FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(tempFile, json, StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(xmlFile, xml, StandardCharsets.UTF_8);
 
             var evaluator = new TestStaticEvaluator(tempFile);
@@ -127,7 +173,7 @@ public class EvaluatorTest
     @Test
     public void testFormatting() throws Exception
     {
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
+        var tempFile = Files.createTempFile("scorecard-config", ".json").toFile();
         try
         {
             var evaluator = new TestStaticEvaluator(tempFile);
@@ -157,8 +203,8 @@ public class EvaluatorTest
     @Test
     public void testManualResultBypass() throws Exception
     {
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
-        var dummyXml = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        var tempFile = Files.createTempFile("scorecard-config", ".json").toFile();
+        var dummyXml = Files.createTempFile("dummy", ".xml").toFile();
         try
         {
             FileUtils.writeStringToFile(dummyXml, "<dummy/>", StandardCharsets.UTF_8);
@@ -171,7 +217,7 @@ public class EvaluatorTest
                 {
                     manualCheck
                 });
-            var groupDef = new GroupDefinition("G1", "Group 1", java.util.List.of("rule1"));
+            var groupDef = new GroupDefinition("G1", "Group 1", List.of("rule1"));
             groupDef.setEnabled(true);
             groupDef.setMode(GroupDefinition.Mode.allPassed);
             var config = new Configuration(2);
@@ -197,30 +243,44 @@ public class EvaluatorTest
     public void testEvaluateWithoutRatings() throws Exception
     {
         // Configuration with rules and groups but NO ratings
-        var yaml = """
-            version: 2
-            selectors:
-              - id: sel1
-                expression: //count
-            rules:
-              - id: rule1
-                failsTest: true
-                points: 10
-                checks:
-                  - selectorId: sel1
-                    condition: "> 100"
-            groups:
-              - id: G1
-                rules: [rule1]
+        var json = """
+            {
+              "version": 2,
+              "selectors": [
+                {
+                  "id": "sel1",
+                  "expression": "//count"
+                }
+              ],
+              "rules": [
+                {
+                  "id": "rule1",
+                  "failsTest": true,
+                  "points": 10,
+                  "checks": [
+                    {
+                      "selectorId": "sel1",
+                      "condition": "> 100"
+                    }
+                  ]
+                }
+              ],
+              "groups": [
+                {
+                  "id": "G1",
+                  "rules": ["rule1"]
+                }
+              ]
+            }
             """;
 
         var xml = "<root><count>5</count></root>";
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".yaml").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("scorecard-data", ".xml").toFile();
+        var tempFile = Files.createTempFile("scorecard-config", ".json").toFile();
+        var xmlFile = Files.createTempFile("scorecard-data", ".xml").toFile();
         try
         {
-            FileUtils.writeStringToFile(tempFile, yaml, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(tempFile, json, StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(xmlFile, xml, StandardCharsets.UTF_8);
 
             var evaluator = new TestStaticEvaluator(tempFile);
@@ -244,21 +304,21 @@ public class EvaluatorTest
     }
 
     // Helper subclass to access protected method
-    static class TestStaticEvaluator extends StaticEvaluator
+    static class TestStaticEvaluator extends JsonEvaluator
     {
-        public TestStaticEvaluator(java.io.File file)
+        public TestStaticEvaluator(File file)
         {
-            super(file, new net.sf.saxon.s9api.Processor(false));
+            super(file, new Processor(false));
         }
 
         @Override
-        public Configuration parseConfiguration() throws java.io.IOException, ValidationException
+        public Configuration parseConfiguration() throws IOException, ValidationException
         {
             return super.parseConfiguration();
         }
 
         @Override
-        public Scorecard doEvaluate(final Configuration config, final File documentFile) throws net.sf.saxon.s9api.SaxonApiException
+        public Scorecard doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
         {
             return super.doEvaluate(config, documentFile);
         }

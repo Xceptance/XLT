@@ -2,6 +2,7 @@ package com.xceptance.xlt.report.scorecard;
 
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -18,7 +19,7 @@ public class IssueLoggingTest
     public void testIssueLogging() throws Exception
     {
         // Create a Groovy config with an intentional XPath error
-        var groovy = """
+        final var groovy = """
             builder.rules {
                 rule {
                     id 'rule1'
@@ -43,15 +44,15 @@ public class IssueLoggingTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-issue-test", ".groovy").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("test-report", ".xml").toFile();
+        final var tempFile = Files.createTempFile("scorecard-issue-test", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("test-report", ".xml").toFile();
 
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
             // Create a simple XML document for evaluation
-            var xmlContent = """
+            final var xmlContent = """
                 <?xml version="1.0"?>
                 <testreport>
                     <summary>
@@ -64,16 +65,16 @@ public class IssueLoggingTest
             FileUtils.writeStringToFile(xmlFile, xmlContent, StandardCharsets.UTF_8);
 
             // Evaluate the scorecard
-            var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
-            var scorecard = evaluator.evaluate(xmlFile);
+            final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
+            final var scorecard = evaluator.evaluate(xmlFile);
 
             // Verify that issues were collected
             Assert.assertNotNull("Scorecard result should not be null", scorecard.result);
-            var issues = scorecard.result.getIssues();
+            final var issues = scorecard.result.getIssues();
             Assert.assertTrue("Should have at least one issue logged", issues.size() > 0);
 
             // Verify issue details
-            var firstIssue = issues.get(0);
+            final var firstIssue = issues.get(0);
             Assert.assertEquals("ERROR", firstIssue.getSeverity());
             Assert.assertTrue("Message should mention selector", firstIssue.getMessage().contains("No item found"));
             Assert.assertTrue("Location should mention rule1", firstIssue.getLocation().contains("rule1"));
@@ -89,7 +90,7 @@ public class IssueLoggingTest
     public void testIssueXmlSerialization() throws Exception
     {
         // Create a Groovy config with multiple intentional errors
-        var groovy = """
+        final var groovy = """
             builder.rules {
                 rule {
                     id 'rule1'
@@ -124,15 +125,15 @@ public class IssueLoggingTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-xml-test", ".groovy").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("test-report", ".xml").toFile();
+        final var tempFile = Files.createTempFile("scorecard-xml-test", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("test-report", ".xml").toFile();
 
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
             // Create a simple XML document
-            var xmlContent = """
+            final var xmlContent = """
                 <?xml version="1.0"?>
                 <testreport>
                     <summary>
@@ -145,13 +146,13 @@ public class IssueLoggingTest
             FileUtils.writeStringToFile(xmlFile, xmlContent, StandardCharsets.UTF_8);
 
             // Evaluate the scorecard
-            var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
-            var scorecard = evaluator.evaluate(xmlFile);
+            final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
+            final var scorecard = evaluator.evaluate(xmlFile);
 
             // Serialize to XML
-            var writer = new StringWriter();
+            final var writer = new StringWriter();
             evaluator.writeScorecard(scorecard, writer);
-            var xml = writer.toString();
+            final var xml = writer.toString();
 
             // Verify XML contains issues
             Assert.assertTrue("XML should contain <issues> element", xml.contains("<issues>"));

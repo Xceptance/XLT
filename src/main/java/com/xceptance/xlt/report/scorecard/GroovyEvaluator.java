@@ -9,8 +9,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
-import com.xceptance.xlt.report.scorecard.builder.MetricsHelper;
-import com.xceptance.xlt.report.scorecard.builder.ScorecardBuilder;
+import com.xceptance.xlt.report.scorecard.groovy.GroovySecurityUtils;
+import com.xceptance.xlt.report.scorecard.groovy.MetricsHelper;
+import com.xceptance.xlt.report.scorecard.groovy.ScorecardLogger;
+import com.xceptance.xlt.report.scorecard.groovy.ScorecardProperties;
+import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;

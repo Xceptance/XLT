@@ -1,22 +1,28 @@
 package com.xceptance.xlt.report.scorecard;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
+
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmNode;
 
 public class EvaluatorGroovyTest
 {
     @Test
     public void testParseConfigurationGroovyValues() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             import com.xceptance.xlt.report.scorecard.builder.ScorecardBuilder
 
             def builder = new ScorecardBuilder()
@@ -54,12 +60,12 @@ public class EvaluatorGroovyTest
             return builder.build()
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-config", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
-            var config = new TestEvaluator(tempFile).parseConfiguration();
+            final var config = new TestEvaluator(tempFile).parseConfiguration();
 
             Assert.assertTrue(config.containsSelector("sel1"));
             Assert.assertTrue(config.containsRule("rule1"));
@@ -75,7 +81,7 @@ public class EvaluatorGroovyTest
     public void testParseConfigurationGroovyBinder() throws Exception
     {
         // Test usage of 'builder' variable exposed in binding
-        var groovy = """
+        final var groovy = """
             builder.selectors {
                 selector {
                     id 'sel1'
@@ -87,12 +93,12 @@ public class EvaluatorGroovyTest
             return builder;
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-config-binder", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-config-binder", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
-            var config = new TestEvaluator(tempFile).parseConfiguration();
+            final var config = new TestEvaluator(tempFile).parseConfiguration();
             Assert.assertTrue(config.containsSelector("sel1"));
         }
         finally
@@ -104,12 +110,12 @@ public class EvaluatorGroovyTest
     @Test(expected = ValidationException.class)
     public void testSecurityBlock() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             import java.io.File
             new File("/tmp/foo")
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-security", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-security", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
@@ -125,7 +131,7 @@ public class EvaluatorGroovyTest
     public void testWhiteListedImports() throws Exception
     {
         // java.util and java.text should be allowed
-        var groovy = """
+        final var groovy = """
             import java.text.SimpleDateFormat
             import java.util.Date
 
@@ -133,7 +139,7 @@ public class EvaluatorGroovyTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-whitelist", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-whitelist", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
@@ -148,7 +154,7 @@ public class EvaluatorGroovyTest
     @Test
     public void testParseConfigurationGroovyFormatter() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             builder.rules {
                 rule {
                     id 'rule1'
@@ -164,13 +170,13 @@ public class EvaluatorGroovyTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-formatter", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-formatter", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
-            var config = new TestEvaluator(tempFile).parseConfiguration();
+            final var config = new TestEvaluator(tempFile).parseConfiguration();
 
-            var rule = config.getRule("rule1");
+            final var rule = config.getRule("rule1");
             Assert.assertEquals("%.2f ms", rule.getChecks()[0].getFormatter());
         }
         finally
@@ -182,7 +188,7 @@ public class EvaluatorGroovyTest
     @Test
     public void testParseConfigurationGroovyManualResult() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             builder.rules {
                 rule {
                     id 'rule1'
@@ -198,14 +204,14 @@ public class EvaluatorGroovyTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-manual", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-manual", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
-            var config = new TestEvaluator(tempFile).parseConfiguration();
+            final var config = new TestEvaluator(tempFile).parseConfiguration();
 
-            var rule = config.getRule("rule1");
-            var check = rule.getChecks()[0];
+            final var rule = config.getRule("rule1");
+            final var check = rule.getChecks()[0];
             Assert.assertEquals(Status.FAILED, check.getManualStatus());
             Assert.assertEquals("Manual Value", check.getManualValue());
             Assert.assertEquals("Manual Error", check.getManualErrorMessage());
@@ -219,7 +225,7 @@ public class EvaluatorGroovyTest
     @Test
     public void testLogging() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             log.info("Info message")
             log.warn("Warn message")
             log.error("Error message")
@@ -238,18 +244,18 @@ public class EvaluatorGroovyTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-logging", ".groovy").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        final var tempFile = Files.createTempFile("scorecard-logging", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("dummy", ".xml").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(xmlFile, "<foo/>", StandardCharsets.UTF_8);
 
-            var proc = new Processor(false);
-            var evaluator = new GroovyEvaluator(tempFile, proc);
+            final var proc = new Processor(false);
+            final var evaluator = new GroovyEvaluator(tempFile, proc);
 
-            var scorecard = evaluator.evaluate(xmlFile);
-            List<String> logs = scorecard.result.getLogs();
+            final var scorecard = evaluator.evaluate(xmlFile);
+            final List<String> logs = scorecard.result.getLogs();
 
             Assert.assertEquals(3, logs.size());
             Assert.assertEquals("[INFO] Info message", logs.get(0));
@@ -266,23 +272,23 @@ public class EvaluatorGroovyTest
     @Test
     public void testExceptionLogging() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             log.info("Before error")
             throw new RuntimeException("Hard failure")
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-exception", ".groovy").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        final var tempFile = Files.createTempFile("scorecard-exception", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("dummy", ".xml").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(xmlFile, "<foo/>", StandardCharsets.UTF_8);
 
-            var proc = new Processor(false);
-            var evaluator = new GroovyEvaluator(tempFile, proc);
+            final var proc = new Processor(false);
+            final var evaluator = new GroovyEvaluator(tempFile, proc);
 
-            var scorecard = evaluator.evaluate(xmlFile);
-            List<String> logs = scorecard.result.getLogs();
+            final var scorecard = evaluator.evaluate(xmlFile);
+            final List<String> logs = scorecard.result.getLogs();
 
             // Should have 2 logs: "Before error" and then the error log with stacktrace
             Assert.assertTrue(logs.size() >= 2);
@@ -300,7 +306,7 @@ public class EvaluatorGroovyTest
     @Test
     public void testManualRatingActive() throws Exception
     {
-        var groovy = """
+        final var groovy = """
             builder.selectors {
                 selector { id 'sel1'; expression '//foo' }
             }
@@ -324,17 +330,17 @@ public class EvaluatorGroovyTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-active-rating", ".groovy").toFile();
-        var xmlFile = java.nio.file.Files.createTempFile("dummy", ".xml").toFile();
+        final var tempFile = Files.createTempFile("scorecard-active-rating", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("dummy", ".xml").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
             FileUtils.writeStringToFile(xmlFile, "<foo/>", StandardCharsets.UTF_8);
 
-            var proc = new Processor(false);
-            var evaluator = new GroovyEvaluator(tempFile, proc);
+            final var proc = new Processor(false);
+            final var evaluator = new GroovyEvaluator(tempFile, proc);
 
-            var scorecard = evaluator.evaluate(xmlFile);
+            final var scorecard = evaluator.evaluate(xmlFile);
 
             // Despite perfect score (rule passes), rating should be 'F' because it's marked active
             Assert.assertEquals("F", scorecard.result.getRating());
@@ -354,26 +360,30 @@ public class EvaluatorGroovyTest
     {
         private final Processor proc = new Processor(false);
 
-        public TestEvaluator(java.io.File file)
+        public TestEvaluator(final File file)
         {
             super(file, new Processor(false));
         }
 
-        public Configuration parseConfiguration() throws java.io.IOException, ValidationException
+        public Configuration parseConfiguration() throws IOException, ValidationException
         {
             try
             {
-                XdmNode doc = proc.newDocumentBuilder()
-                                  .build(new javax.xml.transform.stream.StreamSource(new java.io.StringReader("<dummy/>")));
-                XPathCompiler compiler = proc.newXPathCompiler();
+                final XdmNode doc = proc.newDocumentBuilder()
+                                  .build(new StreamSource(new StringReader("<dummy/>")));
+                final XPathCompiler compiler = proc.newXPathCompiler();
                 return super.parseGroovyConfiguration(doc, compiler);
             }
-            catch (Exception e)
+            catch (final Exception e)
             {
                 if (e instanceof ValidationException)
+                {
                     throw (ValidationException) e;
-                if (e instanceof java.io.IOException)
-                    throw (java.io.IOException) e;
+                }
+                if (e instanceof IOException)
+                {
+                    throw (IOException) e;
+                }
                 throw new RuntimeException(e);
             }
         }

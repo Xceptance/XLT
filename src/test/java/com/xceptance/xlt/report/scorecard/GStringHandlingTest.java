@@ -1,6 +1,12 @@
 package com.xceptance.xlt.report.scorecard;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -17,7 +23,7 @@ public class GStringHandlingTest
     public void testGStringInterpolationInSelectors() throws Exception
     {
         // Test that GString interpolation works in selectors
-        var groovy = """
+        final var groovy = """
             def pageName = "Homepage"
             def regex = "^Homepage"
 
@@ -50,16 +56,16 @@ public class GStringHandlingTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-gstring", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-gstring", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
-            var config = new TestEvaluator(tempFile).parseConfiguration();
+            final var config = new TestEvaluator(tempFile).parseConfiguration();
 
             // Verify the selector was created with the interpolated string
             Assert.assertTrue("Selector should exist", config.containsSelector("homepageP95"));
-            var selector = config.getSelector("homepageP95");
+            final var selector = config.getSelector("homepageP95");
             Assert.assertTrue("Expression should contain interpolated value", selector.getExpression().contains("^Homepage"));
         }
         finally
@@ -72,7 +78,7 @@ public class GStringHandlingTest
     public void testGStringInRuleNames() throws Exception
     {
         // Test GString in rule names and messages
-        var groovy = """
+        final var groovy = """
             def gradeName = "A"
             def limit = 500
 
@@ -103,16 +109,16 @@ public class GStringHandlingTest
             return builder
             """;
 
-        var tempFile = java.nio.file.Files.createTempFile("scorecard-gstring-rule", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-gstring-rule", ".groovy").toFile();
         try
         {
             FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
 
-            var config = new TestEvaluator(tempFile).parseConfiguration();
+            final var config = new TestEvaluator(tempFile).parseConfiguration();
 
             // Verify the rule was created with interpolated strings
             Assert.assertTrue("Rule should exist", config.containsRule("ruleA"));
-            var rule = config.getRule("ruleA");
+            final var rule = config.getRule("ruleA");
             Assert.assertEquals("Rule name should be interpolated", "Grade A", rule.getName());
             Assert.assertEquals("Success message should be interpolated", "A", rule.getSuccessMessage());
         }
@@ -127,26 +133,30 @@ public class GStringHandlingTest
     {
         private final Processor proc = new Processor(false);
 
-        public TestEvaluator(java.io.File file)
+        public TestEvaluator(final File file)
         {
             super(file, new Processor(false));
         }
 
-        public Configuration parseConfiguration() throws java.io.IOException, ValidationException
+        public Configuration parseConfiguration() throws IOException, ValidationException
         {
             try
             {
-                var doc = proc.newDocumentBuilder()
-                              .build(new javax.xml.transform.stream.StreamSource(new java.io.StringReader("<dummy/>")));
-                var compiler = proc.newXPathCompiler();
+                final var doc = proc.newDocumentBuilder()
+                              .build(new StreamSource(new StringReader("<dummy/>")));
+                final var compiler = proc.newXPathCompiler();
                 return super.parseGroovyConfiguration(doc, compiler);
             }
-            catch (Exception e)
+            catch (final Exception e)
             {
                 if (e instanceof ValidationException)
+                {
                     throw (ValidationException) e;
-                if (e instanceof java.io.IOException)
-                    throw (java.io.IOException) e;
+                }
+                if (e instanceof IOException)
+                {
+                    throw (IOException) e;
+                }
                 throw new RuntimeException(e);
             }
         }
