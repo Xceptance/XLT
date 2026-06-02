@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,6 +91,10 @@ abstract class BrowserConfiguration {
 
     static BrowserConfiguration chromeAndEdgeNotIterable(final String defaultValue) {
         return new ChromeAndEdgeNotIterable(defaultValue);
+    }
+
+    static BrowserConfiguration ffAuto() {
+        return new FF("auto");
     }
 
     static BrowserConfiguration ffNone() {

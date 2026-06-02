@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.apache.commons.io.FileUtils;
  * Prints out a tiny test case, from a provided HTML file.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public final class TestCaseCreator {
 

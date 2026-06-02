@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,10 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CSSStyleDeclaration} background, font and border shorthand.
@@ -28,7 +26,6 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class CSSStyleDeclaration3Test extends WebDriverTestCase {
 
     /**
@@ -184,8 +181,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void background(final String backgroundStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <div id='tester' style='background: " + backgroundStyle + "' >hello</div>\n"
             + "  <script>\n"
@@ -361,8 +358,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void backgroundCss(final String backgroundStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "</head>\n"
             + "  <style type='text/css'>div { background: " + backgroundStyle + " }</style>\n"
             + "</head>\n"
@@ -512,8 +509,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void backgroundComputed(final String backgroundStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "</head>\n"
             + "  <style type='text/css'>div { background: " + backgroundStyle + " }</style>\n"
             + "</head>\n"
@@ -797,8 +794,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void font(final String fontStyle) throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<body>\n"
                 + "  <div id='tester' style='font: " + fontStyle + "' >hello</div>\n"
                 + "  <script>\n"
@@ -817,8 +814,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void font(final String fontStyle, final String otherStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <div id='tester' style='" + otherStyle + "; font: " + fontStyle + "' >hello</div>\n"
             + "  <script>\n"
@@ -1098,8 +1095,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void fontCss(final String fontStyle) throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "</head>\n"
                 + "  <style type='text/css'>div { font: " + fontStyle + " }</style>\n"
                 + "</head>\n"
@@ -1121,8 +1118,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void fontCss(final String fontStyle, final String otherStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "</head>\n"
             + "  <style type='text/css'>div { " + otherStyle + "; font: " + fontStyle + " }</style>\n"
             + "</head>\n"
@@ -1417,8 +1414,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void fontComputed(final String fontStyle) throws Exception {
-        final String html =
-                "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "</head>\n"
                 + "  <style type='text/css'>div { font: " + fontStyle + " }</style>\n"
                 + "</head>\n"
@@ -1441,8 +1438,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void fontComputed(final String fontStyle, final String otherStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "</head>\n"
             + "  <style type='text/css'>div { " + otherStyle + "; font: " + fontStyle + " }</style>\n"
             + "</head>\n"
@@ -1479,12 +1476,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"thin", "thin", "thin", "thin", "initial", "initial", "initial", "initial",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"thin", "thin", "thin", "thin", "none", "none", "none", "none",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"thin", "thin", "thin", "thin", "none", "none", "none", "none",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"thin", "thin", "thin", "thin", "none", "none", "none", "none",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"thin", "thin", "thin", "thin", "", "", "", "", "", "", "", ""},
             EDGE = {"thin", "thin", "thin", "thin", "", "", "", "", "", "", "", ""},
             FF = {"thin", "thin", "thin", "thin", "", "", "", "", "", "", "", ""},
@@ -1497,12 +1490,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2px", "2px", "2px", "2px", "initial", "initial", "initial", "initial",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"2px", "2px", "2px", "2px", "none", "none", "none", "none",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"2px", "2px", "2px", "2px", "none", "none", "none", "none",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"2px", "2px", "2px", "2px", "none", "none", "none", "none",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"2px", "2px", "2px", "2px", "", "", "", "", "", "", "", ""},
             EDGE = {"2px", "2px", "2px", "2px", "", "", "", "", "", "", "", ""},
             FF = {"2px", "2px", "2px", "2px", "", "", "", "", "", "", "", ""},
@@ -1515,12 +1504,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "solid", "solid", "solid", "solid",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"medium", "medium", "medium", "medium", "solid", "solid", "solid", "solid",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "solid", "solid", "solid", "solid",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"medium", "medium", "medium", "medium", "solid", "solid", "solid", "solid",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "solid", "solid", "solid", "solid", "", "", "", ""},
             EDGE = {"", "", "", "", "solid", "solid", "solid", "solid", "", "", "", ""},
             FF = {"", "", "", "", "solid", "solid", "solid", "solid", "", "", "", ""},
@@ -1533,12 +1518,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid", "", "", "", ""},
             EDGE = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid", "", "", "", ""},
             FF = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid", "", "", "", ""},
@@ -1551,12 +1532,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid", "", "", "", ""},
             EDGE = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid", "", "", "", ""},
             FF = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid", "", "", "", ""},
@@ -1569,12 +1546,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "red", "red", "red", "red"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "red", "red", "red", "red"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "red", "red", "red", "red"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "red", "red", "red", "red"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "", "red", "red", "red", "red"},
             EDGE = {"", "", "", "", "", "", "", "", "red", "red", "red", "red"},
             FF = {"", "", "", "", "", "", "", "", "red", "red", "red", "red"},
@@ -1587,12 +1560,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "",
                            "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
             EDGE = {"", "", "", "", "", "", "", "",
@@ -1609,12 +1578,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "",
                            "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
             EDGE = {"", "", "", "", "", "", "", "",
@@ -1631,12 +1596,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "",
                            "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"},
             EDGE = {"", "", "", "", "", "", "", "",
@@ -1660,8 +1621,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void border(final String borderStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <div id='tester' style='border: " + borderStyle + "' >hello</div>\n"
             + "  <script>\n"
@@ -1700,12 +1661,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"thin", "thin", "thin", "thin", "initial", "initial", "initial", "initial",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"thin", "thin", "thin", "thin", "none", "none", "none", "none",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"thin", "thin", "thin", "thin", "none", "none", "none", "none",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"thin", "thin", "thin", "thin", "none", "none", "none", "none",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"tHin", "tHin", "tHin", "tHin", "", "", "", "", "", "", "", ""},
             EDGE = {"tHin", "tHin", "tHin", "tHin", "", "", "", "", "", "", "", ""},
             FF = {"tHin", "tHin", "tHin", "tHin", "", "", "", "", "", "", "", ""},
@@ -1718,12 +1675,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2px", "2px", "2px", "2px", "initial", "initial", "initial", "initial",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"2px", "2px", "2px", "2px", "none", "none", "none", "none",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"2px", "2px", "2px", "2px", "none", "none", "none", "none",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"2px", "2px", "2px", "2px", "none", "none", "none", "none",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"2px", "2px", "2px", "2px", "", "", "", "", "", "", "", ""},
             EDGE = {"2px", "2px", "2px", "2px", "", "", "", "", "", "", "", ""},
             FF = {"2px", "2px", "2px", "2px", "", "", "", "", "", "", "", ""},
@@ -1736,12 +1689,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "solid", "solid", "solid", "solid",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"medium", "medium", "medium", "medium", "solid", "solid", "solid", "solid",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "solid", "solid", "solid", "solid",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"medium", "medium", "medium", "medium", "solid", "solid", "solid", "solid",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
             EDGE = {"", "", "", "", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
             FF = {"", "", "", "", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
@@ -1754,12 +1703,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"thin", "thin", "thin", "thin", "solid", "solid", "solid", "solid",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"tHin", "tHin", "tHin", "tHin", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
             EDGE = {"tHin", "tHin", "tHin", "tHin", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
             FF = {"tHin", "tHin", "tHin", "tHin", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
@@ -1772,12 +1717,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
-                       "initial", "initial", "initial", "initial"},
-            FF = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
-                  "currentcolor", "currentcolor", "currentcolor", "currentcolor"},
-            FF_ESR = {"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
-                      "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
+    @Alerts({"2px", "2px", "2px", "2px", "solid", "solid", "solid", "solid",
+             "currentcolor", "currentcolor", "currentcolor", "currentcolor"})
     @HtmlUnitNYI(CHROME = {"2px", "2px", "2px", "2px", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
             EDGE = {"2px", "2px", "2px", "2px", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
             FF = {"2px", "2px", "2px", "2px", "sOlid", "sOlid", "sOlid", "sOlid", "", "", "", ""},
@@ -1790,12 +1731,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "red", "red", "red", "red"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "red", "red", "red", "red"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "red", "red", "red", "red"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "red", "red", "red", "red"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "", "rEd", "rEd", "rEd", "rEd"},
             EDGE = {"", "", "", "", "", "", "", "", "rEd", "rEd", "rEd", "rEd"},
             FF = {"", "", "", "", "", "", "", "", "rEd", "rEd", "rEd", "rEd"},
@@ -1808,12 +1745,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "",
                            "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
             EDGE = {"", "", "", "", "", "", "", "",
@@ -1830,12 +1763,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "",
                            "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)", "rgb(255, 204, 221)"},
             EDGE = {"", "", "", "", "", "", "", "",
@@ -1852,12 +1781,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"initial", "initial", "initial", "initial", "initial", "initial", "initial", "initial",
-                       "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"},
-            FF = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                  "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"},
-            FF_ESR = {"medium", "medium", "medium", "medium", "none", "none", "none", "none",
-                      "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"})
+    @Alerts({"medium", "medium", "medium", "medium", "none", "none", "none", "none",
+             "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"})
     @HtmlUnitNYI(CHROME = {"", "", "", "", "", "", "", "",
                            "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)", "rgb(20, 40, 60)"},
             EDGE = {"", "", "", "", "", "", "", "",
@@ -1889,8 +1814,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void borderCss(final String borderStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "</head>\n"
             + "  <style type='text/css'>div { border: " + borderStyle + " }</style>\n"
             + "</head>\n"
@@ -2066,8 +1991,8 @@ public class CSSStyleDeclaration3Test extends WebDriverTestCase {
     }
 
     private void borderComputed(final String borderStyle) throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "</head>\n"
             + "  <style type='text/css'>div { border: " + borderStyle + " }</style>\n"
             + "</head>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,13 @@ public class CloseEvent extends Event {
 
         if (details != null && !JavaScriptEngine.isUndefined(details)) {
             code_ = JavaScriptEngine.toInt32(details.get("code"));
-            reason_ = JavaScriptEngine.toString(details.get("reason"));
             wasClean_ = JavaScriptEngine.toBoolean(details.get("wasClean"));
+
+            final Object reason = details.get("reason");
+            if (!isNullMissingOrUndefined(reason)) {
+                reason_ = JavaScriptEngine.toString(reason);
+            }
+
         }
     }
 

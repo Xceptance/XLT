@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,21 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.fail;
-
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.htmlunit.junit.annotation.NotYetImplemented;
-import org.htmlunit.junit.annotation.OS;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.htmlunit.util.PrimitiveWebServer;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -42,7 +41,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HttpWebConnection3Test extends WebDriverTestCase {
 
     /**
@@ -164,15 +162,14 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
             driver.get("http://localhost:" + primitiveWebServer.getPort());
             final String request = primitiveWebServer.getRequests().get(0);
             final String[] headers = request.split("\\r\\n");
-            for (int i = 0; i < headers.length; i++) {
-                final String header = headers[i];
+            for (final String header : headers) {
                 if (StringUtils.startsWithIgnoreCase(header, HttpHeader.ACCEPT_ENCODING_LC)) {
                     final String value = header.substring(header.indexOf(':') + 1);
                     assertEquals(getExpectedAlerts()[0], value.trim());
                     return;
                 }
             }
-            fail("No accept-encoding header found.");
+            Assertions.fail("No accept-encoding header found.");
         }
     }
 
@@ -183,12 +180,9 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
      * @return true when the url matches, false otherwise
      */
     public static ExpectedCondition<Boolean> currentUrlContains(final String url) {
-        return new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(final WebDriver driver) {
-                final String currentUrl = driver.getCurrentUrl();
-                return currentUrl != null && currentUrl.contains(url);
-            }
+        return driver -> {
+            final String currentUrl = driver.getCurrentUrl();
+            return currentUrl != null && currentUrl.contains(url);
         };
     }
 
@@ -243,7 +237,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                 + "Location: "
                     +  url
                     + "test?"
-                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", "UTF-8")
+                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", StandardCharsets.UTF_8)
                     + "\r\n"
                 + "\r\n";
 
@@ -260,7 +254,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
             final WebDriver driver = getWebDriver();
 
             driver.get(url);
-            Thread.sleep(DEFAULT_WAIT_TIME);
+            Thread.sleep(DEFAULT_WAIT_TIME.toMillis());
             assertEquals(getExpectedAlerts()[0], driver.getCurrentUrl());
             assertEquals(2, primitiveWebServer.getRequests().size());
             assertTrue(driver.getPageSource(), driver.getPageSource().contains("Hi"));
@@ -281,7 +275,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                 + "Content-Length: 0\r\n"
                 + "Location: "
                     +  url
-                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", "UTF-8")
+                    + URLEncoder.encode("\u0623\u0647\u0644\u0627\u064b", StandardCharsets.UTF_8)
                     + "\r\n"
                 + "\r\n";
 
@@ -311,7 +305,11 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @NotYetImplemented
+    @Alerts("para=%u65E5")
+    @HtmlUnitNYI(CHROME = "para=%25u65E5",
+            EDGE = "para=%25u65E5",
+            FF = "para=%25u65E5",
+            FF_ESR = "para=%25u65E5")
     public void queryString() throws Exception {
         final String response = "HTTP/1.1 302 Found\r\n"
                 + "Content-Length: 0\r\n"
@@ -323,7 +321,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
 
             driver.get("http://localhost:" + primitiveWebServer.getPort() + "?para=%u65E5");
             assertTrue(primitiveWebServer.getRequests().get(0),
-                        primitiveWebServer.getRequests().get(0).contains("para=%u65E5"));
+                        primitiveWebServer.getRequests().get(0).contains(getExpectedAlerts()[0]));
         }
     }
 
@@ -368,7 +366,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -428,7 +426,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -453,7 +451,8 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Sec-Fetch-User: ?1",
                       "Priority: u=0, i"})
     public void formGet() throws Exception {
-        String html = "<html><body><form action='foo' method='get' accept-charset='iso-8859-1'>\n"
+        String html = DOCTYPE_HTML
+            + "<html><body><form action='foo' method='get' accept-charset='iso-8859-1'>\n"
             + "<input name='text1' value='me &amp;amp; you'>\n"
             + "<textarea name='text2'>Hello\nworld!</textarea>\n"
             + "<input type='submit' id='submit'>\n"
@@ -505,10 +504,10 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "sec-ch-ua: §§SEC_USER_AGENT§§",
                       "sec-ch-ua-mobile: ?0",
                       "sec-ch-ua-platform: \"Windows\"",
-                      "Origin: http://localhost:§§PORT§§",
-                      "Content-Type: application/x-www-form-urlencoded",
                       "Upgrade-Insecure-Requests: 1",
+                      "Content-Type: application/x-www-form-urlencoded",
                       "User-Agent: §§USER_AGENT§§",
+                      "Origin: http://localhost:§§PORT§§",
                       "Accept: §§ACCEPT§§",
                       "Sec-Fetch-Site: same-origin",
                       "Sec-Fetch-Mode: navigate",
@@ -527,10 +526,10 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                     "sec-ch-ua: §§SEC_USER_AGENT§§",
                     "sec-ch-ua-mobile: ?0",
                     "sec-ch-ua-platform: \"Windows\"",
-                    "Origin: http://localhost:§§PORT§§",
-                    "Content-Type: application/x-www-form-urlencoded",
                     "Upgrade-Insecure-Requests: 1",
+                    "Content-Type: application/x-www-form-urlencoded",
                     "User-Agent: §§USER_AGENT§§",
+                    "Origin: http://localhost:§§PORT§§",
                     "Accept: §§ACCEPT§§",
                     "Sec-Fetch-Site: same-origin",
                     "Sec-Fetch-Mode: navigate",
@@ -545,7 +544,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Content-Type: application/x-www-form-urlencoded",
                   "Content-Length: 48",
@@ -627,7 +626,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -662,7 +661,8 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "",
                       "text1=me+%26amp%3B+you&text2=Hello%0D%0Aworld%21"})
     public void formPost() throws Exception {
-        String html = "<html><body><form action='foo' method='post' accept-charset='iso-8859-1'>\n"
+        String html = DOCTYPE_HTML
+            + "<html><body><form action='foo' method='post' accept-charset='iso-8859-1'>\n"
             + "<input name='text1' value='me &amp;amp; you'>\n"
             + "<textarea name='text2'>Hello\nworld!</textarea>\n"
             + "<input type='submit' id='submit'>\n"
@@ -743,7 +743,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -803,7 +803,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -828,7 +828,8 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Sec-Fetch-User: ?1",
                       "Priority: u=0, i"})
     public void anchor() throws Exception {
-        String html = "<html><body><a id='my' href='2.html'>Click me</a></body></html>";
+        String html = DOCTYPE_HTML
+                + "<html><body><a id='my' href='2.html'>Click me</a></body></html>";
         html = "HTTP/1.1 200 OK\r\n"
                 + "Content-Length: " + (html.length()) + "\r\n"
                 + "Content-Type: text/html\r\n"
@@ -902,7 +903,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -960,7 +961,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -986,7 +987,8 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Priority: u=0, i"})
     public void locationSetHref() throws Exception {
         final String url = "http://localhost:" + WebTestCase.PORT_PRIMITIVE_SERVER;
-        String html = "<html><body><script>location.href='" + url + "/foo';</script></body></html>";
+        String html = DOCTYPE_HTML
+                + "<html><body><script>location.href='" + url + "/foo';</script></body></html>";
         html = "HTTP/1.1 200 OK\r\n"
                 + "Content-Length: " + (html.length()) + "\r\n"
                 + "Content-Type: text/html\r\n"
@@ -1059,7 +1061,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1117,7 +1119,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1142,7 +1144,8 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Sec-Fetch-User: ?1",
                       "Priority: u=0, i"})
     public void locationSetSearch() throws Exception {
-        String html = "<html><body><script>location.search='newSearch';</script></body></html>";
+        String html = DOCTYPE_HTML
+                + "<html><body><script>location.search='newSearch';</script></body></html>";
         html = "HTTP/1.1 200 OK\r\n"
                 + "Content-Length: " + (html.length()) + "\r\n"
                 + "Content-Type: text/html\r\n"
@@ -1212,7 +1215,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1268,7 +1271,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1293,7 +1296,8 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Sec-Fetch-User: ?1", /* wrong */
                       "Priority: u=0, i"})
     public void loadJavascript() throws Exception {
-        String html = "<html><head> <script src=\"script.js\"></script> </head><body></body></html>";
+        String html = DOCTYPE_HTML
+                + "<html><head> <script src=\"script.js\"></script> </head><body></body></html>";
         html = "HTTP/1.1 200 OK\r\n"
                 + "Content-Length: " + (html.length()) + "\r\n"
                 + "Content-Type: text/html\r\n"
@@ -1363,7 +1367,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br, zstd",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1419,7 +1423,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                   "Host: localhost:§§PORT§§",
                   "User-Agent: §§USER_AGENT§§",
                   "Accept: §§ACCEPT§§",
-                  "Accept-Language: en-US,en;q=0.5",
+                  "Accept-Language: en-US,en;q=0.9",
                   "Accept-Encoding: gzip, deflate, br",
                   "Connection: keep-alive",
                   "Referer: http://localhost:§§PORT§§/",
@@ -1443,12 +1447,13 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                       "Sec-Fetch-Site: same-origin",
                       "Sec-Fetch-User: ?1", /* wrong */
                       "Priority: u=0, i"})
-    // this fails on our CI but i have no idea why
+    // this fails on our CI but I have no idea why
     // seems like the request for downloading the script never reaches the
     // PrimitiveWebServer
-    @NotYetImplemented(value = {}, os = OS.Linux)
+    @DisabledOnOs(OS.LINUX)
     public void loadJavascriptCharset() throws Exception {
-        String html = "<html><head>"
+        String html = DOCTYPE_HTML
+                + "<html><head>"
                 + "<meta http-equiv='Content-Type' content='text/html; charset=GB2312'>"
                 + "<script src=\"script.js?x=\u6211\u662F\u6211\u7684 \u4eb8 Abc\"></script>"
                 + "</head><body></body></html>";
@@ -1460,8 +1465,7 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
         final String hi = "HTTP/1.1 200 OK\r\n"
                 + "Content-Length: 0\r\n"
                 + "Content-Type: text/javascript\r\n"
-                + "\r\n"
-                + "";
+                + "\r\n";
 
         shutDownAll();
         try (PrimitiveWebServer primitiveWebServer = new PrimitiveWebServer(Charset.forName("GB2312"), html, hi)) {
@@ -1479,6 +1483,18 @@ public class HttpWebConnection3Test extends WebDriverTestCase {
                 expectedHeaders[i] = expectedHeaders[i].replaceAll("§§ACCEPT§§",
                         getBrowserVersion().getScriptAcceptHeader());
             }
+
+            // let's try some wait on our CI server
+            final long endTime = System.currentTimeMillis() + Duration.ofSeconds(4).toMillis();
+            while (primitiveWebServer.getRequests().isEmpty()
+                        && System.currentTimeMillis() < endTime) {
+                Thread.sleep(100);
+            }
+
+            if (primitiveWebServer.getRequests().size() < 2) {
+                Assertions.fail("Still no request / request count:" + primitiveWebServer.getRequests().size());
+            }
+
             final String request = primitiveWebServer.getRequests().get(1);
             final String[] headers = request.split("\\r\\n");
             assertEquals(Arrays.asList(expectedHeaders).toString(), Arrays.asList(headers).toString());

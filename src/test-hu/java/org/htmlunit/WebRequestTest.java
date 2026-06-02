@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package org.htmlunit;
 
 import static org.htmlunit.WebTestCase.URL_FIRST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.apache.http.auth.Credentials;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link WebRequest}.
@@ -161,7 +161,7 @@ public class WebRequestTest {
         final URL url = new URL("http://john.smith:secret@localhost");
         final WebRequest request = new WebRequest(url);
         final Credentials credentials = request.getUrlCredentials();
-        assertNotNull("Credentials object is null", credentials);
+        assertNotNull(credentials, "Credentials object is null");
         assertEquals(new BasicUserPrincipal("john.smith"), credentials.getUserPrincipal());
         assertEquals("secret", credentials.getPassword());
     }
@@ -174,7 +174,7 @@ public class WebRequestTest {
         final URL url = new URL("http://john.smith:secret@localhost/../foo.html");
         final WebRequest request = new WebRequest(url);
         final Credentials credentials = request.getUrlCredentials();
-        assertNotNull("Credentials object is null", credentials);
+        assertNotNull(credentials, "Credentials object is null");
         assertEquals(new BasicUserPrincipal("john.smith"), credentials.getUserPrincipal());
         assertEquals("secret", credentials.getPassword());
     }
@@ -187,7 +187,7 @@ public class WebRequestTest {
         final URL url = new URL("http://john.smith:secret@löcälhöst/");
         final WebRequest request = new WebRequest(url);
         final Credentials credentials = request.getUrlCredentials();
-        assertNotNull("Credentials object is null", credentials);
+        assertNotNull(credentials, "Credentials object is null");
         assertEquals(new BasicUserPrincipal("john.smith"), credentials.getUserPrincipal());
         assertEquals("secret", credentials.getPassword());
     }
@@ -340,7 +340,7 @@ public class WebRequestTest {
         request.setDefaultResponseContentCharset(StandardCharsets.US_ASCII);
 
         final byte[] bytes = SerializationUtils.serialize(request);
-        final WebRequest deserialized = (WebRequest) SerializationUtils.deserialize(bytes);
+        final WebRequest deserialized = SerializationUtils.deserialize(bytes);
 
         assertEquals(URL_FIRST, deserialized.getUrl());
         assertEquals(StandardCharsets.UTF_8, deserialized.getCharset());

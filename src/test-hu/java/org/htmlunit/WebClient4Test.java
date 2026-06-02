@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -23,17 +23,15 @@ import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link WebClient} that run with BrowserRunner.
@@ -41,7 +39,6 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class WebClient4Test extends WebServerTestCase {
 
     /**
@@ -91,7 +88,7 @@ public class WebClient4Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put(RedirectServlet307.URL, RedirectServlet307.class);
         servlets.put(RedirectServlet303.URL, RedirectServlet303.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
 
@@ -99,7 +96,7 @@ public class WebClient4Test extends WebServerTestCase {
             client.getPage("http://localhost:" + PORT + RedirectServlet307.URL);
         }
         catch (final Exception e) {
-            assertTrue(e.getMessage(), e.getMessage().contains("Too much redirect"));
+            assertTrue(e.getMessage(), e.getMessage().contains("Too many redirects"));
         }
     }
 
@@ -108,8 +105,8 @@ public class WebClient4Test extends WebServerTestCase {
      */
     public static class RedirectServlet extends HttpServlet {
         private int count_;
-        private int status_;
-        private String location_;
+        private final int status_;
+        private final String location_;
 
         /**
          * Creates a new instance.
@@ -165,7 +162,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void bodyDowloadTime() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/*", ServeBodySlowlyServlet.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final Page page = getWebClient().getPage(URL_FIRST);
         final long loadTime = page.getWebResponse().getLoadTime();
@@ -209,7 +206,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void useProxy() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", UseProxyHeaderServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test");
@@ -230,7 +227,7 @@ public class WebClient4Test extends WebServerTestCase {
             //response.setHeader("Location", "http://www.google.com");
             response.setContentType(MimeType.TEXT_HTML);
             final Writer writer = response.getWriter();
-            writer.write("<html><body>Going anywhere?</body></html>");
+            writer.write(DOCTYPE_HTML + "<html><body>Going anywhere?</body></html>");
         }
     }
 
@@ -243,7 +240,7 @@ public class WebClient4Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test1", NoContentServlet1.class);
         servlets.put("/test2", NoContentServlet2.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test1");
         final HtmlPage page2 = page.getHtmlElementById("submit").click();
@@ -261,7 +258,8 @@ public class WebClient4Test extends WebServerTestCase {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse res) throws IOException {
             res.setContentType(MimeType.TEXT_HTML);
             final Writer writer = res.getWriter();
-            writer.write("<html><body><form action='test2'>\n"
+            writer.write(DOCTYPE_HTML
+                    + "<html><body><form action='test2'>\n"
                     + "<input id='submit' type='submit' value='submit'></input>\n"
                     + "</form></body></html>");
         }
@@ -290,7 +288,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void notModified() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", NotModifiedServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
         final WebClient client = getWebClient();
         final HtmlPage page = client.getPage(URL_FIRST + "test");
         final TextPage page2 = client.getPage(URL_FIRST + "test");
@@ -313,7 +311,7 @@ public class WebClient4Test extends WebServerTestCase {
                 first_ = false;
                 res.setContentType(MimeType.TEXT_HTML);
                 final Writer writer = res.getWriter();
-                writer.write("<html><body>foo</body></html>");
+                writer.write(DOCTYPE_HTML + "<html><body>foo</body></html>");
             }
             else {
                 res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -328,7 +326,7 @@ public class WebClient4Test extends WebServerTestCase {
     public void timeout() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/*", DelayDeliverServlet.class);
-        startWebServer("./", null, servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
         client.getOptions().setTimeout(500);
@@ -353,7 +351,7 @@ public class WebClient4Test extends WebServerTestCase {
      */
     @Test
     public void requestHeaderCookieFromRequest() throws Exception {
-        final String content = "<html></html>";
+        final String content = DOCTYPE_HTML + "<html></html>";
         final MockWebConnection webConnection = new MockWebConnection();
         webConnection.setDefaultResponse(content);
 
@@ -416,7 +414,7 @@ public class WebClient4Test extends WebServerTestCase {
             }
             res.setContentType(MimeType.TEXT_HTML);
             final Writer writer = res.getWriter();
-            writer.write("<html><head><title>hello</title></head><body>foo</body></html>");
+            writer.write(DOCTYPE_HTML + "<html><head><title>hello</title></head><body>foo</body></html>");
         }
     }
 
@@ -428,7 +426,7 @@ public class WebClient4Test extends WebServerTestCase {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test1", RedirectMetaServlet1.class);
         servlets.put("/test2", RedirectMetaServlet2.class);
-        startWebServer("./", new String[0], servlets);
+        startWebServer("./", servlets);
 
         final WebClient client = getWebClient();
 
@@ -436,7 +434,7 @@ public class WebClient4Test extends WebServerTestCase {
             client.getPage(URL_FIRST + "test1");
         }
         catch (final Exception e) {
-            assertTrue(e.getMessage(), e.getMessage().contains("Too much redirect"));
+            assertTrue(e.getMessage(), e.getMessage().contains("Too many redirects"));
         }
     }
 
@@ -451,7 +449,8 @@ public class WebClient4Test extends WebServerTestCase {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse res) throws IOException {
             res.setContentType(MimeType.TEXT_HTML);
             final Writer writer = res.getWriter();
-            writer.write("<html><head>\n"
+            writer.write(DOCTYPE_HTML
+                    + "<html><head>\n"
                     + "  <meta http-equiv='refresh' content='0;URL=test2'>\n"
                     + "</head><body>foo</body></html>");
         }
@@ -468,7 +467,8 @@ public class WebClient4Test extends WebServerTestCase {
         protected void doGet(final HttpServletRequest req, final HttpServletResponse res) throws IOException {
             res.setContentType(MimeType.TEXT_HTML);
             final Writer writer = res.getWriter();
-            writer.write("<html><head>\n"
+            writer.write(DOCTYPE_HTML
+                    + "<html><head>\n"
                     + "  <meta http-equiv='refresh' content='0;URL=test1'>\n"
                     + "</head><body>foo</body></html>");
         }

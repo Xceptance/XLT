@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package org.htmlunit.html;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -34,7 +32,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ronald Brill
  * @author Frank Danek
  */
-@RunWith(BrowserRunner.class)
 public class HtmlOption2Test extends WebDriverTestCase {
 
     /**
@@ -53,8 +50,8 @@ public class HtmlOption2Test extends WebDriverTestCase {
             EDGE = {"option1", "", "Number Three", "Number 4",
                     "option1\nNumber Three\nNumber 4"})
     public void getVisibleText() throws Exception {
-        final String htmlContent
-            = "<html>\n"
+        final String htmlContent = DOCTYPE_HTML
+            + "<html>\n"
             + "<head></head>\n"
             + "<body id='tester'>\n"
             + "  <form>\n"
@@ -91,7 +88,8 @@ public class HtmlOption2Test extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLOptionElement]")
     public void simpleScriptable() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -108,7 +106,7 @@ public class HtmlOption2Test extends WebDriverTestCase {
         final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
             final HtmlPage page = (HtmlPage) getEnclosedPage();
-            assertTrue(HtmlOption.class.isInstance(page.getHtmlElementById("myId")));
+            assertTrue(page.getHtmlElementById("myId") instanceof HtmlOption);
         }
     }
 
@@ -127,7 +125,8 @@ public class HtmlOption2Test extends WebDriverTestCase {
                     FF = {"sDown", "dDown", "sUp", "dUp"},
                     FF_ESR = {"sDown", "dDown", "sUp", "dUp"})
     public void onMouse() throws Exception {
-        final String html = "<html><head><title>foo</title>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
@@ -163,7 +162,8 @@ public class HtmlOption2Test extends WebDriverTestCase {
      */
     @Test
     public void isSelected() throws Exception {
-        final String html = "<html><body>"
+        final String html = DOCTYPE_HTML
+                + "<html><body>"
                 + "  <select multiple><option value='a'>a</option><option value='b'>b</option></select>\n"
                 + "</body></html>";
 
@@ -186,7 +186,8 @@ public class HtmlOption2Test extends WebDriverTestCase {
      */
     @Test
     public void isSelectedJavaScript() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "<script>\n"
                 + "  function test() {\n"
                 + "    var s = document.getElementsByTagName('select').item(0);\n"

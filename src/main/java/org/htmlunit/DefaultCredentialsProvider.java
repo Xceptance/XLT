@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider, Serializ
     /** The {@code null} value represents any host. */
     public static final String ANY_HOST = null;
 
-    /**The {@code -1} value represents any port. */
+    /** The {@code -1} value represents any port. */
     public static final int ANY_PORT = -1;
 
     /** The {@code null} value represents any realm. */
@@ -59,7 +59,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider, Serializ
     private static SocksProxyAuthenticator SocksAuthenticator_;
     private final Map<AuthScopeProxy, Credentials> credentialsMap_ = new HashMap<>();
 
-    // Because this is used for the whole JVM i try to make it as less invasive as possible.
+    // Because this is used for the whole JVM I try to make it as less invasive as possible.
     // But in general this might disturb other application running on the same JVM.
     private static final class SocksProxyAuthenticator extends Authenticator {
         private CredentialsProvider credentialsProvider_;
@@ -292,7 +292,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider, Serializ
 
         @Override
         public boolean equals(final Object obj) {
-            return obj instanceof AuthScopeProxy && authScope_.equals(((AuthScopeProxy) obj).getAuthScope());
+            return obj instanceof AuthScopeProxy asp && authScope_.equals(asp.getAuthScope());
         }
     }
 }

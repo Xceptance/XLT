@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.NativeFunction;
-import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.xpath.xml.utils.PrefixResolver;
 
 /**
  * A special {@link PrefixResolver} for {@link NativeFunction}s.
  *
  * @author Chuck Dumont
+ * @author Ronald Brill
  */
 public class NativeFunctionPrefixResolver implements PrefixResolver {
 
     private final NativeFunction resolverFn_;
-    private final Scriptable scope_;
+    private final VarScope scope_;
 
     /**
      * Constructor.
@@ -35,7 +36,7 @@ public class NativeFunctionPrefixResolver implements PrefixResolver {
      * @param resolverFn the {@link NativeFunction} this resolver is for
      * @param scope the scope
      */
-    public NativeFunctionPrefixResolver(final NativeFunction resolverFn, final Scriptable scope) {
+    public NativeFunctionPrefixResolver(final NativeFunction resolverFn, final VarScope scope) {
         resolverFn_ = resolverFn;
         scope_ = scope;
     }

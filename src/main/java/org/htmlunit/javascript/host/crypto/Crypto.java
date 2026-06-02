@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class Crypto extends HtmlUnitScriptable {
      */
     public Crypto(final Window window) {
         this();
-        setParentScope(window);
+        setParentScope(getTopLevelScope(window.getParentScope()));
         setPrototype(window.getPrototype(Crypto.class));
     }
 
@@ -85,7 +85,8 @@ public class Crypto extends HtmlUnitScriptable {
                     DOMException.QUOTA_EXCEEDED_ERR);
         }
 
-        for (int i = 0; i < array.getByteLength() / array.getBytesPerElement(); i++) {
+        final int length = array.getByteLength() / array.getBytesPerElement();
+        for (int i = 0; i < length; i++) {
             array.put(i, array, RANDOM.nextInt());
         }
         return array;
@@ -98,12 +99,14 @@ public class Crypto extends HtmlUnitScriptable {
     @JsxGetter
     public SubtleCrypto getSubtle() {
         final SubtleCrypto stuble = new SubtleCrypto();
-        final Window window = getWindow();
-        stuble.setParentScope(window);
-        stuble.setPrototype(window.getPrototype(SubtleCrypto.class));
+        stuble.setParentScope(getParentScope());
+        stuble.setPrototype(getWindow().getPrototype(SubtleCrypto.class));
         return stuble;
     }
 
+    /**
+     * @return a v4 UUID generated using a cryptographically secure random number generator
+     */
     @JsxFunction
     public String randomUUID() {
         // Let bytes be a byte sequence of length 16.
@@ -143,6 +146,6 @@ public class Crypto extends HtmlUnitScriptable {
     }
 
     private static String toHex(final byte b) {
-        return String.format("%02X ", b).trim().toLowerCase(Locale.ROOT);
+        return "%02X ".formatted(b).trim().toLowerCase(Locale.ROOT);
     }
 }

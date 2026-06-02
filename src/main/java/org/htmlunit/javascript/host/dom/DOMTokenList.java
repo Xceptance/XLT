@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -112,7 +113,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
     @JsxGetter
     public int getLength() {
         final String value = getValue();
-        if (StringUtils.isBlank(value)) {
+        if (org.htmlunit.util.StringUtils.isBlank(value)) {
             return 0;
         }
 
@@ -145,7 +146,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      * @param function the function
      */
     @JsxFunction
-    public static void add(final Context context, final Scriptable scope,
+    public static void add(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (args.length > 0) {
             final DOMTokenList list = (DOMTokenList) thisObj;
@@ -154,15 +155,15 @@ public class DOMTokenList extends HtmlUnitScriptable {
             for (final Object arg : args) {
                 final String token = JavaScriptEngine.toString(arg);
 
-                if (StringUtils.isEmpty(token)) {
+                if (org.htmlunit.util.StringUtils.isEmptyOrNull(token)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: add() does not support empty tokens",
                             DOMException.SYNTAX_ERR);
                 }
                 if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: add() does not support whitespace chars in tokens",
                             DOMException.INVALID_CHARACTER_ERR);
                 }
@@ -185,7 +186,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      * @param function the function
      */
     @JsxFunction
-    public static void remove(final Context context, final Scriptable scope,
+    public static void remove(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         final DOMTokenList list = (DOMTokenList) thisObj;
 
@@ -200,15 +201,15 @@ public class DOMTokenList extends HtmlUnitScriptable {
             for (final Object arg : args) {
                 final String token = JavaScriptEngine.toString(arg);
 
-                if (StringUtils.isEmpty(token)) {
+                if (org.htmlunit.util.StringUtils.isEmptyOrNull(token)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: remove() does not support empty tokens",
                             DOMException.SYNTAX_ERR);
                 }
                 if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                             "DOMTokenList: remove() does not support whitespace chars in tokens",
                             DOMException.INVALID_CHARACTER_ERR);
                 }
@@ -228,7 +229,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public boolean replace(final String oldToken, final String newToken) {
-        if (StringUtils.isEmpty(oldToken)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(oldToken)) {
             throw JavaScriptEngine.asJavaScriptException(
                     getWindow(),
                     "Empty oldToken not allowed",
@@ -241,7 +242,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
                     DOMException.INVALID_CHARACTER_ERR);
         }
 
-        if (StringUtils.isEmpty(newToken)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(newToken)) {
             throw JavaScriptEngine.asJavaScriptException(
                     getWindow(),
                     "Empty newToken not allowed",
@@ -260,7 +261,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         }
         final List<String> parts = split(value);
         final int pos = parts.indexOf(oldToken);
-        while (pos == -1) {
+        if (pos == -1) {
             return false;
         }
 
@@ -276,7 +277,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public boolean toggle(final String token) {
-        if (StringUtils.isEmpty(token)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(token)) {
             throw JavaScriptEngine.asJavaScriptException(
                     getWindow(),
                     "DOMTokenList: toggle() does not support empty tokens",
@@ -308,11 +309,11 @@ public class DOMTokenList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public boolean contains(final String token) {
-        if (StringUtils.isBlank(token)) {
+        if (org.htmlunit.util.StringUtils.isBlank(token)) {
             return false;
         }
 
-        if (StringUtils.isEmpty(token)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(token)) {
             throw JavaScriptEngine.reportRuntimeError("DOMTokenList: contains() does not support empty tokens");
         }
         if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
@@ -336,7 +337,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         }
 
         final String value = getValue();
-        if (StringUtils.isEmpty(value)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(value)) {
             return null;
         }
 
@@ -365,13 +366,14 @@ public class DOMTokenList extends HtmlUnitScriptable {
         final Object[] normalIds = super.getIds();
 
         final String value = getValue();
-        if (StringUtils.isEmpty(value)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(value)) {
             return normalIds;
         }
 
         final List<String> parts = split(getValue());
         final Object[] ids = new Object[parts.size() + normalIds.length];
-        for (int i = 0; i < parts.size(); i++) {
+        final int size = parts.size();
+        for (int i = 0; i < size; i++) {
             ids[i] = i;
         }
         System.arraycopy(normalIds, 0, ids, parts.size(), normalIds.length);
@@ -404,13 +406,13 @@ public class DOMTokenList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void forEach(final Object callback) {
-        if (!(callback instanceof Function)) {
+        if (!(callback instanceof Function function)) {
             throw JavaScriptEngine.typeError(
                     "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
 
         final String value = getValue();
-        if (StringUtils.isEmpty(value)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(value)) {
             return;
         }
 
@@ -418,11 +420,17 @@ public class DOMTokenList extends HtmlUnitScriptable {
         final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
 
         final ContextAction<Object> contextAction = cx -> {
-            final Function function = (Function) callback;
-            final Scriptable scope = getParentScope();
-            final List<String> parts = split(value);
-            for (int i = 0; i < parts.size(); i++) {
+            final VarScope scope = getParentScope();
+
+            List<String> parts = split(value);
+            final int size = parts.size();
+            int i = 0;
+            while (i < size && i < parts.size()) {
                 function.call(cx, scope, this, new Object[] {parts.get(i), i, this});
+
+                // refresh
+                parts = split(getValue());
+                i++;
             }
             return null;
         };
@@ -452,7 +460,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
     }
 
     private static List<String> split(final String value) {
-        if (StringUtils.isEmpty(value)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(value)) {
             return new ArrayList<>();
         }
 

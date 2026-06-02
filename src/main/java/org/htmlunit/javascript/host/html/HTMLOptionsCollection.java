@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.htmlunit.WebAssert;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.ElementFactory;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
@@ -36,7 +37,7 @@ import org.htmlunit.javascript.host.dom.DOMException;
  * This is the array returned by the "options" property of Select.
  *
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author Bruce Faulkner
@@ -67,7 +68,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * Creates an instance.
      * @param parentScope parent scope
      */
-    public HTMLOptionsCollection(final HtmlUnitScriptable parentScope) {
+    public HTMLOptionsCollection(final VarScope parentScope) {
         super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
@@ -233,8 +234,8 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      *
      * @param newOptionObject the DomNode to insert in the collection
      * @param beforeOptionObject An optional parameter which specifies the index position in the
-     * collection where the element is placed. If no value is given, the method places
-     * the element at the end of the collection.
+     *        collection where the element is placed. If no value is given, the method places
+     *        the element at the end of the collection.
      *
      * @see #put(int, Scriptable, Object)
      */
@@ -254,8 +255,8 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
 
             beforeOption = (HtmlOption) ((HTMLOptionElement) item(index)).getDomNodeOrDie();
         }
-        else if (beforeOptionObject instanceof HTMLOptionElement) {
-            beforeOption = (HtmlOption) ((HTMLOptionElement) beforeOptionObject).getDomNodeOrDie();
+        else if (beforeOptionObject instanceof HTMLOptionElement element) {
+            beforeOption = (HtmlOption) element.getDomNodeOrDie();
             if (beforeOption.getParentNode() != htmlSelect_) {
                 throw JavaScriptEngine.asJavaScriptException(
                         getWindow(),
@@ -279,17 +280,11 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void remove(final int index) {
-        int idx = index;
-        if (idx < 0) {
+        if (index < 0 || index >= getLength()) {
             return;
         }
 
-        idx = Math.max(idx, 0);
-        if (idx >= getLength()) {
-            return;
-        }
-
-        htmlSelect_.removeOption(idx);
+        htmlSelect_.removeOption(index);
     }
 
     /**
@@ -310,6 +305,9 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
         htmlSelect_.setSelectedIndex(index);
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);

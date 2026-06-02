@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link TextRange}.
@@ -27,8 +25,8 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author David Gileadi
  * @author Frank Danek
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class TextRangeTest extends WebDriverTestCase {
 
     /**
@@ -37,7 +35,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void text() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -69,7 +68,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void parentElement() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -93,7 +93,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void collapse() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -125,7 +126,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void select() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -151,7 +153,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void moveEnd() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -184,7 +187,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void moveOutOfBounds_input() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -220,7 +224,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void inRange() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -253,7 +258,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void inRange2() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<form name='f'><input name='q' value=''></form>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -274,7 +280,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void moveToElementText() throws Exception {
-        final String html = "<html><body onload='test()'>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body onload='test()'>\n"
             + "<span id='s1'>abc</span><span id='s2'>xyz</span><span id='s3'>foo</span>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -297,7 +304,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void setEndRange() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<form name='f'><input name='q' value='hello world'></form>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -323,8 +331,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void createRangeParentElement() throws Exception {
-        final String html =
-            "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  try {\n"
@@ -344,8 +352,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void createRangeHtmlText() throws Exception {
-        final String html =
-            "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  try {\n"
@@ -365,8 +373,8 @@ public class TextRangeTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void moveToBookmark() throws Exception {
-        final String html =
-            "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  try {\n"
@@ -385,7 +393,8 @@ public class TextRangeTest extends WebDriverTestCase {
      */
     @Test
     public void compareEndPoints() throws Exception {
-        final String html = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION

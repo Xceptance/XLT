@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 
 /**
  * Support to use polyfills for js features not implemented so far
@@ -38,6 +39,10 @@ public class Polyfill {
     private String source_;
     private Script script_;
 
+    /**
+     * @return the build in fetch polyfill
+     * @throws IOException in case of error
+     */
     public static Polyfill getFetchPolyfill() throws IOException {
         return getPolyfill("fetch/fetch.umd.js");
     }
@@ -60,15 +65,16 @@ public class Polyfill {
      * Compile the script if needed and exec to setup the context.
      *
      * @param context the context
-     * @param scriptable the scriptable
+     * @param scope the scope to execute relative to
+     * @param thisObject the value "this" should be set to
      */
-    public void apply(final Context context, final Scriptable scriptable) {
+    public void apply(final Context context, final VarScope scope, final Scriptable thisObject) {
         if (script_ == null) {
             script_ = context.compileString(source_, url_, 0, null);
         }
 
         if (script_ != null) {
-            script_.exec(context, scriptable);
+            script_.exec(context, scope, thisObject);
         }
     }
 }

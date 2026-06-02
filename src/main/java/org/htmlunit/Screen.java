@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  */
 package org.htmlunit;
 
+import static org.htmlunit.BrowserVersionFeatures.COLOR_DEPHT_32;
+
 import java.io.Serializable;
 
 /**
  * {@code Screen}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ronald Brill
@@ -31,6 +33,8 @@ public class Screen implements Serializable {
     private final int screenHeight_;
     private final int screenWidth_;
 
+    private final int colorDepth_;
+
     /**
      * Creates an instance.
      * @param webClient the client this belongs to
@@ -39,13 +43,20 @@ public class Screen implements Serializable {
         super();
         screenHeight_ = webClient.getOptions().getScreenHeight();
         screenWidth_ =  webClient.getOptions().getScreenWidth();
+
+        if (webClient.getBrowserVersion().hasFeature(COLOR_DEPHT_32)) {
+            colorDepth_ = 32;
+        }
+        else {
+            colorDepth_ = 24;
+        }
     }
 
     /**
      * @return the {@code availHeight} property
      */
     public int getAvailHeight() {
-        return 1040;
+        return 1032;
     }
 
     /**
@@ -105,7 +116,7 @@ public class Screen implements Serializable {
      * @return the {@code colorDepth} property
      */
     public int getColorDepth() {
-        return 24;
+        return colorDepth_;
     }
 
     /**
@@ -180,7 +191,7 @@ public class Screen implements Serializable {
      * @return the {@code pixelDepth} property
      */
     public int getPixelDepth() {
-        return 24;
+        return colorDepth_;
     }
 
     /**

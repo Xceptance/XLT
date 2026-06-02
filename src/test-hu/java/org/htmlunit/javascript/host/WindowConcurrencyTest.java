@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,14 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlDivision;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Window} that use background jobs.
@@ -68,7 +69,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      * Sets up the tests.
      */
     @Override
-    @Before
+    @BeforeEach
     public void before() {
         client_ = new WebClient();
     }
@@ -76,7 +77,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
     /**
      * Tears down the tests.
      */
-    @After
+    @AfterEach
     public void after() {
         client_.close();
     }
@@ -86,11 +87,11 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void setTimeout() throws Exception {
-        final String content
-            = "<html><body><script language='JavaScript'>window.setTimeout('alert(\"Yo!\")',1);\n"
+        final String content = DOCTYPE_HTML
+            + "<html><body><script language='JavaScript'>window.setTimeout('alert(\"Yo!\")',1);\n"
             + "</script></body></html>";
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, content, collectedAlerts);
         assertEquals(0, client_.waitForBackgroundJavaScript(1000));
         assertEquals(new String[] {"Yo!"}, collectedAlerts);
@@ -101,12 +102,13 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void setTimeoutByReference() throws Exception {
-        final String content = "<html><body><script language='JavaScript'>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><body><script language='JavaScript'>\n"
             + "function doTimeout() {alert('Yo!');}\n"
             + "window.setTimeout(doTimeout,1);\n"
             + "</script></body></html>";
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, content, collectedAlerts);
         assertEquals(0, client_.waitForBackgroundJavaScript(1000));
         assertEquals(new String[] {"Yo!"}, collectedAlerts);
@@ -118,8 +120,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void setAndClearInterval() throws Exception {
-        final String content
-            = "<html><body>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<script>\n"
             + "window.setInterval('alert(\"Yo!\")', 500);\n"
             + "function foo() { alert('Yo2'); }\n"
@@ -127,7 +129,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "window.clearInterval(i);\n"
             + "</script></body></html>";
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, content, collectedAlerts);
     }
 
@@ -136,7 +138,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void setIntervalFunctionReference() throws Exception {
-        final String content = "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <title>test</title>\n"
             + "  <script>\n"
@@ -157,7 +160,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "</body>\n"
             + "</html>";
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, content, collectedAlerts);
         assertEquals(0, client_.waitForBackgroundJavaScript(1000));
         assertEquals(Collections.nCopies(3, "blah"), collectedAlerts);
@@ -168,7 +171,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void clearInterval() throws Exception {
-        final String html = "<html><body onload='test()'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body onload='test()'><script>\n"
             + "  var count;\n"
             + "  var id;\n"
             + "  function test() {\n"
@@ -184,7 +188,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "  }\n"
             + "</script></body></html>";
         final String[] expected = {"1"};
-        final List<String> actual = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> actual = Collections.synchronizedList(new ArrayList<>());
         startTimedTest();
         loadPage(client_, html, actual);
         assertEquals(0, client_.waitForBackgroundJavaScript(10_000));
@@ -199,13 +203,14 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void setTimeoutStopped() throws Exception {
-        final String firstContent
-            = "<html><head>\n"
+        final String firstContent = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script language='JavaScript'>window.setTimeout('alert(\"Yo!\")', 10000);</script>\n"
             + "</head><body onload='document.location.replace(\"" + URL_SECOND + "\")'></body></html>";
-        final String secondContent = "<html><head><title>Second</title></head><body></body></html>";
+        final String secondContent = DOCTYPE_HTML
+                + "<html><head><title>Second</title></head><body></body></html>";
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         client_.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
         final MockWebConnection webConnection = new MockWebConnection();
@@ -224,8 +229,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void clearTimeout() throws Exception {
-        final String content =
-              "<html>\n"
+        final String content = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <title>test</title>\n"
             + "  <script>\n"
@@ -241,7 +246,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "<body onload='test()'>\n"
             + "</body>\n"
             + "</html>";
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, content, collectedAlerts);
         client_.waitForBackgroundJavaScript(2000);
         assertEquals(Collections.EMPTY_LIST, collectedAlerts);
@@ -254,7 +259,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void clearTimeout_DoesNotStopExecutingCallback() throws Exception {
-        final String html = "<html><body onload='test()'><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body onload='test()'><script>\n"
             + "  var id;\n"
             + "  function test() {\n"
             + "    id = setTimeout(callback, 1);\n"
@@ -267,7 +273,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "  }\n"
             + "</script><div id='a'></div></body></html>";
         final String[] expected = {"true", "completed"};
-        final List<String> actual = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> actual = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, html, actual);
         client_.waitForBackgroundJavaScript(5000);
         assertEquals(expected, actual);
@@ -281,7 +287,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
     @Test
     public void nestedSetTimeoutAboveMaxPriority() throws Exception {
         final int max = Thread.MAX_PRIORITY + 1;
-        final String content = "<html><body><script language='JavaScript'>\n"
+        final String content = DOCTYPE_HTML
+            + "<html><body><script language='JavaScript'>\n"
             + "var depth = 0;\n"
             + "var maxdepth = " + max + ";\n"
             + "function addAnother() {\n"
@@ -294,7 +301,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "addAnother();\n"
             + "</script></body></html>";
 
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<>());
         loadPage(client_, content, collectedAlerts);
         assertEquals(0, client_.waitForBackgroundJavaScript((max + 1) * 1000));
         assertEquals(Collections.nCopies(max, "ping"), collectedAlerts);
@@ -302,8 +309,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
 
     /**
      * Regression test for bug #693 with clearInterval.
-     * @see <a href="http://sourceforge.net/p/htmlunit/bugs/693/">
-     * bug details</a>
+     * @see <a href="http://sourceforge.net/p/htmlunit/bugs/693/">bug details</a>
      * @throws Exception if the test fails
      */
     @Test
@@ -313,8 +319,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
 
     /**
      * Regression test for bug #2093370 with clearTimeout.
-     * @see <a href="http://sourceforge.net/p/htmlunit/bugs/693/">
-     * bug details</a>
+     * @see <a href="http://sourceforge.net/p/htmlunit/bugs/693/">bug details</a>
      * @throws Exception if the test fails
      */
     @Test
@@ -323,7 +328,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
     }
 
     private void doTestClearX_threadInterrupt(final String x) throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "  function f() {\n"
             + "    alert('started');\n"
             + "    clear" + x + "(window.timeoutId);\n"
@@ -343,7 +349,7 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
         final HtmlPage page = loadPage(client_, html, collectedAlerts);
         final Function mySpecialFunction = new BaseFunction() {
             @Override
-            public Object call(final Context cx, final Scriptable scope,
+            public Object call(final Context cx, final VarScope scope,
                     final Scriptable thisObj, final Object[] args) {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new RuntimeException("My thread is already interrupted");
@@ -364,7 +370,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void verifyCloseStopsJavaScript() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "  function f() {\n"
             + "    alert('Oh no!');\n"
             + "  }\n"
@@ -393,7 +400,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void verifyGoingToNewPageStopsJavaScript() throws Exception {
-        final String html1 = "<html><head><title>foo</title><script>\n"
+        final String html1 = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "  function f() {\n"
             + "    alert('Oh no!');\n"
             + "  }\n"
@@ -427,7 +435,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void setTimeoutOnFrameWindow() throws Exception {
-        final String html = "<html><head><title>foo</title><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><title>foo</title><script>\n"
             + "  function test() {\n"
             + "    frames[0].setTimeout(f, 0);\n"
             + "  }\n"
@@ -459,8 +468,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
      */
     @Test
     public void concurrentModificationException_computedStyles() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function test() {\n"
             + "  getComputedStyle(document.body, null);\n"
             + "}\n"
@@ -468,7 +477,8 @@ public class WindowConcurrencyTest extends SimpleWebTestCase {
             + "<iframe src='foo.html' name='myFrame' id='myFrame'></iframe>\n"
             + "</body></html>";
 
-        final String html2 = "<html><head><script>\n"
+        final String html2 = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + "function forceStyleComputationInParent() {\n"
             + "  var newNode = parent.document.createElement('span');\n"
             + "  parent.document.body.appendChild(newNode);\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class SubnetUtils {
         netmask_ = toInteger(mask);
 
         if ((netmask_ & -netmask_) - 1 != ~netmask_) {
-            throw new IllegalArgumentException(String.format(PARSE_FAIL, mask));
+            throw new IllegalArgumentException(PARSE_FAIL.formatted(mask));
         }
 
         network_ = address_ & netmask_;
@@ -87,7 +87,7 @@ public class SubnetUtils {
         if (matcher.matches()) {
             return matchAddress(matcher);
         }
-        throw new IllegalArgumentException(String.format(PARSE_FAIL, address));
+        throw new IllegalArgumentException(PARSE_FAIL.formatted(address));
     }
 
     private long broadcastLong() {
@@ -108,8 +108,8 @@ public class SubnetUtils {
     }
 
     /**
-     * Tests if the parameter <code>address</code> is in the range of usable endpoint addresses for this subnet. This excludes the network and broadcast
-     * addresses by default. Use {@link SubnetUtils#setInclusiveHostCount(boolean)} to change this.
+     * Tests if the parameter <code>address</code> is in the range of usable endpoint addresses for this subnet.
+     * This excludes the network and broadcast addresses by default.
      *
      * @param address the address to check
      * @return true if it is in range

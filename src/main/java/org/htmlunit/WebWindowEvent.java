@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import java.util.EventObject;
 /**
  * An event that will be fired when a WebWindow changes.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
+ * @author Ronald Brill
  */
 public final class WebWindowEvent extends EventObject {
     private final Page oldPage_;
@@ -169,7 +170,9 @@ public final class WebWindowEvent extends EventObject {
         return builder.toString();
     }
 
-    /** @return the event type */
+    /**
+     * @return the event type
+     */
     public int getEventType() {
         return type_;
     }

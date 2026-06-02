@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_REMOVE_IGNORE_IF_IND
 
 import java.util.List;
 
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -34,7 +37,7 @@ import org.htmlunit.javascript.host.dom.NodeList;
 /**
  * The JavaScript object for {@link HtmlSelect}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -67,7 +70,7 @@ public class HTMLSelectElement extends HTMLElement {
         final HtmlSelect htmlSelect = getDomNodeOrDie();
         htmlSelect.setScriptableObject(this);
         if (optionsArray_ == null) {
-            optionsArray_ = new HTMLOptionsCollection(this);
+            optionsArray_ = new HTMLOptionsCollection(getParentScope());
             optionsArray_.initialize(htmlSelect);
         }
     }
@@ -82,19 +85,38 @@ public class HTMLSelectElement extends HTMLElement {
 
     /**
      * Removes option at the specified index.
-     * @param index the index of the item to remove
+     * @param context the context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
      */
     @JsxFunction
-    public void remove(final int index) {
-        if (index < 0 && getBrowserVersion().hasFeature(JS_SELECT_REMOVE_IGNORE_IF_INDEX_OUTSIDE)) {
-            return;
+    public static void remove(final Context context, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        if (!(thisObj instanceof HTMLSelectElement htmlSelect)) {
+            throw JavaScriptEngine.reportRuntimeError(
+                    "HTMLSelectElement.replace() failed - this is not a HTMLSelectElement");
         }
-        final HTMLOptionsCollection options = getOptions();
-        if (index >= options.getLength() && getBrowserVersion().hasFeature(JS_SELECT_REMOVE_IGNORE_IF_INDEX_OUTSIDE)) {
+
+        if (args.length == 0) {
+            htmlSelect.remove();
             return;
         }
 
-        getOptions().remove(index);
+        final int index = JavaScriptEngine.toInt32(args[0]);
+        if (index < 0
+                && htmlSelect.getBrowserVersion().hasFeature(JS_SELECT_REMOVE_IGNORE_IF_INDEX_OUTSIDE)) {
+            return;
+        }
+
+        final HTMLOptionsCollection options = htmlSelect.getOptions();
+        if (index >= options.getLength()
+                && htmlSelect.getBrowserVersion().hasFeature(JS_SELECT_REMOVE_IGNORE_IF_INDEX_OUTSIDE)) {
+            return;
+        }
+
+        htmlSelect.getOptions().remove(index);
     }
 
     /**
@@ -396,7 +418,7 @@ public class HTMLSelectElement extends HTMLElement {
      * @return whether the element is a candidate for constraint validation
      */
     @JsxGetter
-    public boolean getWillValidate() {
+    public boolean isWillValidate() {
         return getDomNodeOrDie().willValidate();
     }
 
@@ -409,6 +431,9 @@ public class HTMLSelectElement extends HTMLElement {
         getDomNodeOrDie().setCustomValidity(message);
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return getOptions().iterator();

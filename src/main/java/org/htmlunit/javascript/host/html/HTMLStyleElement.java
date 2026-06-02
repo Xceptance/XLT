@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class HTMLStyleElement extends HTMLElement {
         }
 
         final HtmlStyle style = (HtmlStyle) getDomNodeOrDie();
-        sheet_ = new CSSStyleSheet(this, getWindow(), style.getSheet());
+        sheet_ = new CSSStyleSheet(this, getTopLevelScope(getParentScope()), style.getSheet());
 
         return sheet_;
     }

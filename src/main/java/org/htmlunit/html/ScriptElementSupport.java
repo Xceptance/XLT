@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.nio.charset.Charset;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -36,6 +35,7 @@ import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.xml.XmlPage;
 
 /**
@@ -74,7 +74,8 @@ public final class ScriptElementSupport {
             LOG.debug("Script node added: " + element.asXml());
         }
 
-        final WebClient webClient = element.getPage().getWebClient();
+        final SgmlPage page = element.getPage();
+        final WebClient webClient = page.getWebClient();
         if (!webClient.isJavaScriptEngineEnabled()) {
             LOG.debug("Script found but not executed because javascript engine is disabled");
             return;
@@ -83,10 +84,12 @@ public final class ScriptElementSupport {
         final String srcAttrib = script.getScriptSource();
         final boolean hasNoSrcAttrib = ATTRIBUTE_NOT_DEFINED == srcAttrib;
         if (!hasNoSrcAttrib && script.isDeferred()) {
+            // HtmlPage.executeDeferredScriptsIfNeeded() will process these
+            // directly after the load
             return;
         }
 
-        final WebWindow webWindow = element.getPage().getEnclosingWindow();
+        final WebWindow webWindow = page.getEnclosingWindow();
         if (webWindow != null) {
             final StringBuilder description = new StringBuilder()
                     .append("Execution of ")
@@ -96,7 +99,7 @@ public final class ScriptElementSupport {
                 description.append(" (").append(srcAttrib).append(')');
             }
 
-            final PostponedAction action = new PostponedAction(element.getPage(), description.toString()) {
+            final PostponedAction action = new PostponedAction(page, description.toString()) {
                 @Override
                 public void execute() {
                     // see HTMLDocument.setExecutingDynamicExternalPosponed(boolean)
@@ -105,7 +108,7 @@ public final class ScriptElementSupport {
                     if (window != null) {
                         jsDoc = (HTMLDocument) window.getDocument();
                         jsDoc.setExecutingDynamicExternalPosponed(element.getStartLineNumber() == -1
-                                && ATTRIBUTE_NOT_DEFINED != srcAttrib);
+                                && !hasNoSrcAttrib);
                     }
                     try {
                         executeScriptIfNeeded(script, false, false);
@@ -119,12 +122,10 @@ public final class ScriptElementSupport {
             };
 
             final AbstractJavaScriptEngine<?> engine = webClient.getJavaScriptEngine();
-            if (element.hasAttribute("async") && !engine.isScriptRunning()) {
-                final HtmlPage owningPage = element.getHtmlPageOrNull();
-                owningPage.addAfterLoadAction(action);
+            if (element.hasAttribute("async") && !hasNoSrcAttrib) {
+                engine.addPostponedAction(action);
             }
-            else if (element.hasAttribute("async")
-                            || postponed && StringUtils.isBlank(element.getTextContent())) {
+            else if (postponed && !hasNoSrcAttrib) {
                 engine.addPostponedAction(action);
             }
             else {
@@ -293,11 +294,11 @@ public final class ScriptElementSupport {
     public static boolean isJavaScript(String typeAttribute, final String languageAttribute) {
         typeAttribute = typeAttribute.trim();
 
-        if (StringUtils.isNotEmpty(typeAttribute)) {
+        if (!StringUtils.isEmptyOrNull(typeAttribute)) {
             return MimeType.isJavascriptMimeType(typeAttribute);
         }
 
-        if (StringUtils.isNotEmpty(languageAttribute)) {
+        if (!StringUtils.isEmptyOrNull(languageAttribute)) {
             return StringUtils.startsWithIgnoreCase(languageAttribute, "javascript");
         }
         return true;
@@ -306,6 +307,10 @@ public final class ScriptElementSupport {
     private static void executeEvent(final DomElement element, final String type) {
         final EventTarget eventTarget = element.getScriptableObject();
         final Event event = new Event(element, type);
+
+        event.setParentScope(eventTarget.getParentScope());
+        event.setPrototype(eventTarget.getPrototype(event.getClass()));
+
         eventTarget.executeEventLocally(event);
     }
 
@@ -352,8 +357,7 @@ public final class ScriptElementSupport {
         final Iterable<DomNode> textNodes = element.getChildren();
         final StringBuilder scriptCode = new StringBuilder();
         for (final DomNode node : textNodes) {
-            if (node instanceof DomText) {
-                final DomText domText = (DomText) node;
+            if (node instanceof DomText domText) {
                 scriptCode.append(domText.getData());
             }
         }

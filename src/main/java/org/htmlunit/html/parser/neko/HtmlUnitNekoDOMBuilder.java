@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.html.parser.neko;
 
-import static org.htmlunit.BrowserVersionFeatures.HTML_COMMAND_TAG;
 import static org.htmlunit.BrowserVersionFeatures.JS_SCRIPT_IN_TEMPLATE_EXECUTED_ON_ATTACH;
 
 import java.io.IOException;
@@ -24,7 +23,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ObjectInstantiationException;
 import org.htmlunit.WebClient;
@@ -41,6 +39,7 @@ import org.htmlunit.cyberneko.xerces.xni.XMLString;
 import org.htmlunit.cyberneko.xerces.xni.XNIException;
 import org.htmlunit.cyberneko.xerces.xni.parser.XMLInputSource;
 import org.htmlunit.cyberneko.xerces.xni.parser.XMLParserConfiguration;
+import org.htmlunit.html.DomCDataSection;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomDocumentType;
 import org.htmlunit.html.DomElement;
@@ -80,7 +79,7 @@ import org.xml.sax.ext.LexicalHandler;
  * the ContentHandler interface. Thus all parser APIs are kept private. The ContentHandler methods
  * consume SAX events to build the page DOM
  *
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author David K. Taylor
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -97,22 +96,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         implements ContentHandler, LexicalHandler, HTMLTagBalancingListener, HTMLParserDOMBuilder {
 
     // cache Neko Elements for performance and memory efficiency
-    private static final HTMLElements HTMLELEMENTS;
-    private static final HTMLElements HTMLELEMENTS_WITH_CMD;
-
-    static {
-        // continue short code enumeration
-        final short commandShortCode = HTMLElements.UNKNOWN + 1;
-
-        final HTMLElements.Element command = new HTMLElements.Element(commandShortCode, "COMMAND",
-                HTMLElements.Element.EMPTY, new short[] {HTMLElements.BODY, HTMLElements.HEAD}, null);
-
-        HTMLELEMENTS = new HTMLElements();
-
-        final HTMLElements value = new HTMLElements();
-        value.setElement(command);
-        HTMLELEMENTS_WITH_CMD = value;
-    }
+    private static final HTMLElements HTMLELEMENTS = new HTMLElements();
 
     private enum HeadParsed { YES, SYNTHESIZED, NO }
 
@@ -167,9 +151,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * @param url the page's URL
      * @param createdByJavascript if true the (script) tag was created by javascript
      */
-    HtmlUnitNekoDOMBuilder(final HTMLParser htmlParser,
+    HtmlUnitNekoDOMBuilder(final HTMLParser htmlParser, final WebClient webClient,
             final DomNode node, final URL url, final String htmlContent, final boolean createdByJavascript) {
-        super(createConfiguration(node.getPage().getWebClient().getBrowserVersion()));
+        super(createConfiguration(webClient.getBrowserVersion()));
 
         htmlParser_ = htmlParser;
         page_ = (HtmlPage) node.getPage();
@@ -180,7 +164,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
         createdByJavascript_ = createdByJavascript;
 
-        final WebClient webClient = page_.getWebClient();
         final HTMLParserListener listener = webClient.getHTMLParserListener();
         final boolean reportErrors = listener != null;
         if (reportErrors) {
@@ -207,10 +190,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * @return the configuration
      */
     private static XMLParserConfiguration createConfiguration(final BrowserVersion browserVersion) {
-        if (browserVersion.hasFeature(HTML_COMMAND_TAG)) {
-            return new HTMLConfiguration(HTMLELEMENTS_WITH_CMD);
-        }
-        return new HTMLConfiguration(HTMLELEMENTS);
+        // HTMLElements.HTMLElementsWithCache are not thread safe
+        // because the cache is not synchronized
+        // we have to create a new one for each parser run
+        return new HTMLConfiguration(new HTMLElements.HTMLElementsWithCache(HTMLELEMENTS));
     }
 
     /**
@@ -270,10 +253,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             headParsed_ = lastTagWasSynthesized_ ? HeadParsed.SYNTHESIZED : HeadParsed.YES;
         }
 
-        if (namespaceURI != null) {
-            namespaceURI = namespaceURI.trim();
-        }
-
         // If we're adding a body element, keep track of any temporary synthetic ones
         // that we may have had to create earlier (for document.write(), for example).
         HtmlBody oldBody = null;
@@ -285,6 +264,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             }
         }
 
+        if (namespaceURI != null) {
+            namespaceURI = namespaceURI.trim();
+        }
         // Add the new node.
         if (!(page_ instanceof XHtmlPage) && Html.XHTML_NAMESPACE.equals(namespaceURI)) {
             namespaceURI = null;
@@ -295,6 +277,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         if (factory == HtmlUnitNekoHtmlParser.SVG_FACTORY) {
             namespaceURI = Html.SVG_NAMESPACE;
         }
+
         final DomElement newElement = factory.createElementNS(page_, namespaceURI, qName, atts);
         newElement.setStartLocation(locator_.getLineNumber(), locator_.getColumnNumber());
 
@@ -310,8 +293,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         // Forms own elements simply by enclosing source-wise rather than DOM parent-child relationship
         // Forms without a </form> will keep consuming forever
-        if (newElement instanceof HtmlForm) {
-            consumingForm_ = (HtmlForm) newElement;
+        else if (newElement instanceof HtmlForm form) {
+            consumingForm_ = form;
             formEndingIsAdjusting_ = false;
         }
         else if (consumingForm_ != null) {
@@ -324,7 +307,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             }
         }
 
-        // If we had an old synthetic body and we just added a real body element, quietly
+        // If we had an old synthetic body, and we just added a real body element, quietly
         // remove the old body and move its children to the real body element we just added.
         if (oldBody != null) {
             oldBody.quietlyRemoveAndMoveChildrenTo(newElement);
@@ -334,11 +317,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             body_ = (HtmlElement) newElement;
         }
         else if (createdByJavascript_
-                && newElement instanceof ScriptElement
+                && newElement instanceof ScriptElement script
                 && (!insideTemplate_
                         || !page_.getWebClient().getBrowserVersion()
                                 .hasFeature(JS_SCRIPT_IN_TEMPLATE_EXECUTED_ON_ATTACH))) {
-            final ScriptElement script = (ScriptElement) newElement;
             script.markAsCreatedByDomParser();
         }
 
@@ -416,20 +398,28 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         appendChild(currentNode, newElement);
     }
 
-    private DomNode findElementOnStack(final String... searchedElementNames) {
-        DomNode searchedNode = null;
+    private DomNode findElementOnStack(final String searchedElementName) {
         for (final DomNode node : stack_) {
-            if (ArrayUtils.contains(searchedElementNames, node.getNodeName())) {
-                searchedNode = node;
-                break;
+            if (searchedElementName.equals(node.getNodeName())) {
+                return node;
             }
         }
 
-        if (searchedNode == null) {
-            searchedNode = stack_.peek(); // this is surely wrong but at least it won't throw a NPE
+        // this is surely wrong but at least it won't throw a NPE
+        return stack_.peek();
+    }
+
+    private DomNode findElementOnStack(final String... searchedElementNames) {
+        for (final DomNode node : stack_) {
+            for (final String searchedElementName : searchedElementNames) {
+                if (searchedElementName.equals(node.getNodeName())) {
+                    return node;
+                }
+            }
         }
 
-        return searchedNode;
+        // this is surely wrong but at least it won't throw a NPE
+        return stack_.peek();
     }
 
     private static boolean isTableChild(final String nodeName) {
@@ -539,40 +529,36 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         final String textValue = characters_.toString();
         characters_.clear();
 
-        if (org.apache.commons.lang3.StringUtils.isBlank(textValue)) {
+        if (StringUtils.isBlank(textValue)) {
             appendChild(currentNode_, new DomText(page_, textValue));
+            return;
         }
-        else {
-            // malformed HTML: </td>some text</tr> => text comes before the table
-            if (currentNode_ instanceof HtmlTableRow) {
-                final HtmlTableRow row = (HtmlTableRow) currentNode_;
-                final HtmlTable enclosingTable = row.getEnclosingTable();
-                if (enclosingTable != null) { // may be null when called from Range.createContextualFragment
-                    if (enclosingTable.getPreviousSibling() instanceof DomText) {
-                        final DomText domText = (DomText) enclosingTable.getPreviousSibling();
-                        domText.setTextContent(domText.getWholeText() + textValue);
-                    }
-                    else {
-                        enclosingTable.insertBefore(new DomText(page_, textValue));
-                    }
-                }
-            }
-            else if (currentNode_ instanceof HtmlTable) {
-                final HtmlTable enclosingTable = (HtmlTable) currentNode_;
-                if (enclosingTable.getPreviousSibling() instanceof DomText) {
-                    final DomText domText = (DomText) enclosingTable.getPreviousSibling();
+
+        // malformed HTML: </td>some text</tr> => text comes before the table
+        if (currentNode_ instanceof HtmlTableRow row) {
+            final HtmlTable enclosingTable = row.getEnclosingTable();
+            if (enclosingTable != null) { // may be null when called from Range.createContextualFragment
+                if (enclosingTable.getPreviousSibling() instanceof DomText domText) {
                     domText.setTextContent(domText.getWholeText() + textValue);
                 }
                 else {
                     enclosingTable.insertBefore(new DomText(page_, textValue));
                 }
             }
-            else if (currentNode_ instanceof HtmlImage) {
-                currentNode_.getParentNode().appendChild(new DomText(page_, textValue));
+        }
+        else if (currentNode_ instanceof HtmlTable enclosingTable) {
+            if (enclosingTable.getPreviousSibling() instanceof DomText domText) {
+                domText.setTextContent(domText.getWholeText() + textValue);
             }
             else {
-                appendChild(currentNode_, new DomText(page_, textValue));
+                enclosingTable.insertBefore(new DomText(page_, textValue));
             }
+        }
+        else if (currentNode_ instanceof HtmlImage) {
+            currentNode_.getParentNode().appendChild(new DomText(page_, textValue));
+        }
+        else {
+            appendChild(currentNode_, new DomText(page_, textValue));
         }
     }
 
@@ -623,7 +609,11 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     /** {@inheritDoc} */
     @Override
     public void endCDATA() {
-        // nothing to do
+        final String data = characters_.toString();
+        characters_.clear();
+
+        final DomCDataSection cdataSection = new DomCDataSection(page_, data);
+        appendChild(currentNode_, cdataSection);
     }
 
     /** {@inheritDoc} */
@@ -641,7 +631,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     /** {@inheritDoc} */
     @Override
     public void startCDATA() {
-        // nothing to do
+        handleCharacters();
     }
 
     /** {@inheritDoc} */
@@ -722,8 +712,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                 }
                 else if ("html".equalsIgnoreCase(lp)) {
                     final DomNode parent = body_.getParentNode();
-                    if (parent instanceof DomElement) {
-                        copyAttributes((DomElement) parent, attrs);
+                    if (parent instanceof DomElement element) {
+                        copyAttributes(element, attrs);
                     }
                 }
             }
@@ -762,8 +752,8 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     }
 
     private static void appendChild(final DomNode parent, final DomNode child) {
-        if (parent instanceof HtmlTemplate) {
-            ((HtmlTemplate) parent).getContent().appendChild(child);
+        if (parent instanceof HtmlTemplate template) {
+            template.getContent().appendChild(child);
             return;
         }
 

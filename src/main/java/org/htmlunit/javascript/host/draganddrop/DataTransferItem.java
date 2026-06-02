@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class DataTransferItem extends HtmlUnitScriptable {
 
     private final String kind_;
     private final String type_;
-    private Object data_;
+    private final Object data_;
 
     /**
      * Ctor.
@@ -61,10 +61,19 @@ public class DataTransferItem extends HtmlUnitScriptable {
         data_ = data;
     }
 
+    /**
+     * @param data the data
+     * @param type the type
+     * @return a new {@link DataTransferItem}
+     */
     public static DataTransferItem buildStringItem(final CharSequence data, final String type) {
         return new DataTransferItem(KIND_STRING, type, data);
     }
 
+    /**
+     * @param file the file
+     * @return a new {@link DataTransferItem}
+     */
     public static DataTransferItem buildFileItem(final File file) {
         return new DataTransferItem(KIND_FILE, file.getType(), file);
     }
@@ -100,7 +109,7 @@ public class DataTransferItem extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void getAsString(final Object callback) {
-        if (!(callback instanceof Callable)) {
+        if (!(callback instanceof Callable fun)) {
             throw JavaScriptEngine.typeError(
                     "getAsString callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
@@ -109,7 +118,6 @@ public class DataTransferItem extends HtmlUnitScriptable {
             return;
         }
 
-        final Callable fun = (Callable) callback;
         final Object[] args = {data_};
 
         final WebWindow webWindow = getWindow().getWebWindow();

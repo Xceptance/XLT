@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.htmlunit.javascript.host.dom;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomCharacterData;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -111,7 +112,7 @@ public class CharacterData extends Node {
     /**
      * Insert a string into character data.
      * @param offset the position within the first character at which
-     * the string is to be inserted.
+     *        the string is to be inserted.
      * @param arg the string to insert
      */
     @JsxFunction
@@ -122,10 +123,10 @@ public class CharacterData extends Node {
     /**
      * Replace characters of character data with a string.
      * @param offset the position within the first character at which
-     * the string is to be replaced.
+     *        the string is to be replaced.
      * @param count the number of characters to be replaced
      * @param arg the string that replaces the count characters beginning at
-     * the character at offset.
+     *        the character at offset.
      */
     @JsxFunction
     public void replaceData(final int offset, final int count, final String arg) {
@@ -193,7 +194,7 @@ public class CharacterData extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void before(final Context context, final Scriptable scope,
+    public static void before(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args,  final Function function) {
         Node.before(context, thisObj, args, function);
     }
@@ -208,7 +209,7 @@ public class CharacterData extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void after(final Context context, final Scriptable scope,
+    public static void after(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
@@ -222,7 +223,7 @@ public class CharacterData extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceWith(final Context context, final Scriptable scope,
+    public static void replaceWith(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }

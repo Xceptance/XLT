@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Screen}.
@@ -29,14 +27,13 @@ import org.junit.runner.RunWith;
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535868.aspx">MSDN documentation</a>
  * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_window_ref.html">Mozilla documentation</a>
  */
-@RunWith(BrowserRunner.class)
 public class ScreenTest extends WebDriverTestCase {
 
     /**
      * @throws Exception on test failure
      */
     @Test
-    @Alerts({"1040", "1040"})
+    @Alerts({"1032", "1032"})
     public void availHeight() throws Exception {
         testNumericProperty("availHeight");
     }
@@ -81,7 +78,9 @@ public class ScreenTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts({"24", "24"})
+    @Alerts(DEFAULT = {"32", "32"},
+            FF = {"24", "24"},
+            FF_ESR = {"24", "24"})
     public void colorDepth() throws Exception {
         testNumericProperty("colorDepth");
     }
@@ -166,7 +165,9 @@ public class ScreenTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts({"24", "24"})
+    @Alerts(DEFAULT = {"32", "32"},
+            FF = {"24", "24"},
+            FF_ESR = {"24", "24"})
     public void pixelDepth() throws Exception {
         testNumericProperty("pixelDepth");
     }
@@ -208,7 +209,8 @@ public class ScreenTest extends WebDriverTestCase {
     }
 
     private void testBooleanProperty(final String prop) throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
@@ -230,7 +232,8 @@ public class ScreenTest extends WebDriverTestCase {
     }
 
     private void testNumericProperty(final String prop) throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
@@ -257,7 +260,8 @@ public class ScreenTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object ScreenOrientation]", "landscape-primary", "0"})
     public void orientation() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
@@ -284,7 +288,8 @@ public class ScreenTest extends WebDriverTestCase {
             FF = "landscape-primary",
             FF_ESR = "landscape-primary")
     public void mozOrientation() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"
@@ -309,7 +314,8 @@ public class ScreenTest extends WebDriverTestCase {
             FF = "undefined",
             FF_ESR = "undefined")
     public void isExtended() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function doTest() {\n"

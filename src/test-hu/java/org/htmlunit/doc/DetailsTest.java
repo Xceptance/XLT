@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.FrameContentHandler;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpWebConnection;
 import org.htmlunit.MockWebConnection;
@@ -33,13 +32,13 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
 import org.htmlunit.WebServerTestCase;
-import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.http.HttpStatus;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.WebConnectionWrapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the sample code from the documentation to make sure
@@ -98,7 +97,7 @@ public class DetailsTest extends WebServerTestCase {
      */
     @Test
     public void contentBlockingResponse() throws Exception {
-        final byte[] content = new byte[] {};
+        final byte[] content = ArrayUtils.EMPTY_BYTE_ARRAY;
         final List<NameValuePair> headers = new ArrayList<>();
         headers.add(new NameValuePair(HttpHeader.CONTENT_LENGTH, String.valueOf(content.length)));
 
@@ -120,11 +119,11 @@ public class DetailsTest extends WebServerTestCase {
                         final long startTime) throws IOException {
 
                     // check content length header
-                    final int contentLenght = Integer.parseInt(
+                    final int contentLength = Integer.parseInt(
                             httpResponse.getFirstHeader(HttpHeader.CONTENT_LENGTH).getValue());
 
                     // if not too big - done
-                    if (contentLenght < 1_000) {
+                    if (contentLength < 1_000) {
                         return super.downloadResponse(httpMethod, webRequest, httpResponse, startTime);
                     }
 
@@ -139,7 +138,7 @@ public class DetailsTest extends WebServerTestCase {
                     final WebResponse blocked = new WebResponse(data, webRequest, 0L);
                     // if you like to check later on for blocked responses
                     blocked.markAsBlocked("Blocked URL: '" + url.toExternalForm()
-                                + "' content length: " + contentLenght);
+                                + "' content length: " + contentLength);
                     return blocked;
                 }
             });
@@ -158,15 +157,10 @@ public class DetailsTest extends WebServerTestCase {
 
         try (WebClient webClient = new WebClient()) {
             // use our own FrameContentHandler
-            webClient.setFrameContentHandler(new FrameContentHandler() {
-
-                @Override
-                public boolean loadFrameDocument(final BaseFrameElement baseFrameElement) {
-                    final String src = baseFrameElement.getSrcAttribute();
-                    // don't load the content from google
-                    return !src.contains("google");
-                }
-
+            webClient.setFrameContentHandler(baseFrameElement -> {
+                final String src = baseFrameElement.getSrcAttribute();
+                // don't load the content from google
+                return !src.contains("google");
             });
 
             // use the client as usual

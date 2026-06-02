@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,8 @@
 package org.htmlunit.general;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.annotations.StandardsMode;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.AlertsStandards;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the result of the default 'display' style of an element.
@@ -28,12 +24,11 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
-@StandardsMode
 public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
 
     private void test(final String tagName) throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
             + "  function test() {\n"
@@ -378,7 +373,6 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"", "block"})
-    @AlertsStandards(DEFAULT = {"", "block"})
     public void dd() throws Exception {
         test("dd");
     }
@@ -658,6 +652,17 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     @Alerts({"", "block"})
     public void h6() throws Exception {
         test("h6");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlHeadingGroup}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "block"})
+    public void hgroup() throws Exception {
+        test("hgroup");
     }
 
     /**

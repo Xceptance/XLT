@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlOptionGroup}.
  *
  * @author Ahmed Ashour
  * @author Daniel Gredler
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlOptionGroupTest extends SimpleWebTestCase {
 
     /**
@@ -34,7 +32,8 @@ public class HtmlOptionGroupTest extends SimpleWebTestCase {
      */
     @Test
     public void enclosingSelect() throws Exception {
-        final String html = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "</head><body>\n"
             + "  <select>\n"
             + "    <optgroup id='myId' label='my label'>\n"
@@ -54,7 +53,8 @@ public class HtmlOptionGroupTest extends SimpleWebTestCase {
     @Test
     @Alerts({"false", "false", "true", "false", "true", "false", "false", "false"})
     public void disabled() throws Exception {
-        final String html = "<html><body onload='test()'><form name='f'>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body onload='test()'><form name='f'>\n"
             + "  <select name='s' id='s'>\n"
             + "    <optgroup id='g1' label='group 1'>\n"
             + "      <option value='o11' id='o11'>One</option>\n"

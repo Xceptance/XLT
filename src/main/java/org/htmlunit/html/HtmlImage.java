@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
@@ -43,26 +42,27 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
-import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.platform.Platform;
 import org.htmlunit.platform.geom.IntDimension2D;
 import org.htmlunit.platform.image.ImageData;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * Wrapper for the HTML element "img".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Ahmed Ashour
- * @author <a href="mailto:knut.johannes.dahle@gmail.com">Knut Johannes Dahle</a>
+ * @author Knut Johannes Dahle
  * @author Ronald Brill
  * @author Frank Danek
  * @author Carsten Steul
@@ -137,7 +137,7 @@ public class HtmlImage extends HtmlElement {
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
 
         final HtmlPage htmlPage = getHtmlPageOrNull();
-        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+        final String qualifiedNameLC = StringUtils.toRootLowerCase(qualifiedName);
         if (SRC_ATTRIBUTE.equals(qualifiedNameLC) && value != ATTRIBUTE_NOT_DEFINED && htmlPage != null) {
             final String oldValue = getAttributeNS(namespaceURI, qualifiedNameLC);
             if (!oldValue.equals(value)) {
@@ -286,8 +286,10 @@ public class HtmlImage extends HtmlElement {
                     downloadImageIfNeeded();
                     // if the download was a success
                     if (imageWebResponse_.isSuccess()) {
+                        if (imageWebResponse_.getStatusCode() != HttpStatus.NO_CONTENT_204) {
                         loadSuccessful = true; // Trigger the onload handler
                     }
+                }
                 }
                 catch (final IOException e) {
                     if (LOG.isDebugEnabled()) {
@@ -371,7 +373,7 @@ public class HtmlImage extends HtmlElement {
      */
     public String getSrc() {
         final String src = getSrcAttribute();
-        if (org.htmlunit.util.StringUtils.isEmptyString(src)) {
+        if (StringUtils.isEmptyString(src)) {
             return src;
         }
         try {
@@ -548,10 +550,11 @@ public class HtmlImage extends HtmlElement {
 
         final WebClient webClient = getPage().getWebClient();
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
-        if (StringUtils.isEmpty(src)) {
+        if (StringUtils.isEmptyOrNull(src)) {
             return 0;
         }
-        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
+                && StringUtils.isBlank(src)) {
             return 0;
         }
 
@@ -609,10 +612,11 @@ public class HtmlImage extends HtmlElement {
 
         final WebClient webClient = getPage().getWebClient();
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
-        if (StringUtils.isEmpty(src)) {
+        if (StringUtils.isEmptyOrNull(src)) {
             return 0;
         }
-        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
+        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
+                && StringUtils.isBlank(src)) {
             return 0;
         }
 
@@ -693,7 +697,7 @@ public class HtmlImage extends HtmlElement {
             // HTMLIMAGE_BLANK_SRC_AS_EMPTY
             final String src = getSrcAttribute();
 
-            if (!org.htmlunit.util.StringUtils.isEmptyString(src)) {
+            if (!StringUtils.isEmptyString(src)) {
                 final HtmlPage page = (HtmlPage) getPage();
                 final WebClient webClient = page.getWebClient();
                 final BrowserVersion browser = webClient.getBrowserVersion();
@@ -779,8 +783,7 @@ public class HtmlImage extends HtmlElement {
             final HtmlElement doc = ((HtmlPage) getPage()).getDocumentElement();
             final HtmlMap map = doc.getOneHtmlElementByAttribute("map", NAME_ATTRIBUTE, mapName);
             for (final DomElement element : map.getChildElements()) {
-                if (element instanceof HtmlArea) {
-                    final HtmlArea area = (HtmlArea) element;
+                if (element instanceof HtmlArea area) {
                     if (area.containsPoint(Math.max(lastClickX_, 0), Math.max(lastClickY_, 0))) {
                         area.doClickStateUpdate(shiftKey, ctrlKey);
                         return false;
@@ -879,7 +882,7 @@ public class HtmlImage extends HtmlElement {
         if (hasFeature(HTMLIMAGE_BLANK_SRC_AS_EMPTY) && StringUtils.isBlank(src)) {
             return false;
         }
-        if (hasFeature(HTMLIMAGE_EMPTY_SRC_DISPLAY_FALSE) && StringUtils.isEmpty(src)) {
+        if (hasFeature(HTMLIMAGE_EMPTY_SRC_DISPLAY_FALSE) && StringUtils.isEmptyOrNull(src)) {
             return false;
         }
 
@@ -931,14 +934,12 @@ public class HtmlImage extends HtmlElement {
      */
     @Override
     public ScriptResult fireEvent(final Event event) {
-        if (event instanceof MouseEvent) {
-            final MouseEvent mouseEvent = (MouseEvent) event;
-            final HTMLElement scriptableObject = getScriptableObject();
+        if (event instanceof MouseEvent mouseEvent) {
             if (lastClickX_ >= 0) {
-                mouseEvent.setClientX(scriptableObject.getPosX() + lastClickX_);
+                mouseEvent.setClientX(getPosX() + lastClickX_);
             }
             if (lastClickY_ >= 0) {
-                mouseEvent.setClientY(scriptableObject.getPosX() + lastClickY_);
+                mouseEvent.setClientY(getPosX() + lastClickY_);
             }
         }
 

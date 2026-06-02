@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -34,11 +33,12 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.geo.Geolocation;
 import org.htmlunit.javascript.host.media.MediaDevices;
 import org.htmlunit.javascript.host.network.NetworkInformation;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A JavaScript object for {@code Navigator}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -106,22 +106,22 @@ public class Navigator extends HtmlUnitScriptable {
     @JsxGetter
     public Scriptable getLanguages() {
         final String acceptLang = getBrowserVersion().getAcceptLanguageHeader();
-        if (StringUtils.isEmpty(acceptLang)) {
-            return JavaScriptEngine.newArray(this, 0);
+        if (StringUtils.isEmptyOrNull(acceptLang)) {
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final ArrayList<String> res = new ArrayList<>();
-        final String[] parts = org.htmlunit.util.StringUtils.splitAtComma(acceptLang);
+        final String[] parts = StringUtils.splitAtComma(acceptLang);
         for (final String part : parts) {
-            if (!StringUtils.isEmpty(part)) {
+            if (!StringUtils.isEmptyOrNull(part)) {
                 final String lang = StringUtils.substringBefore(part, ";").trim();
-                if (!StringUtils.isEmpty(part)) {
+                if (!StringUtils.isEmptyOrNull(part)) {
                     res.add(lang);
                 }
             }
         }
 
-        return JavaScriptEngine.newArray(this, res.toArray());
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
     }
 
     /**
@@ -198,28 +198,28 @@ public class Navigator extends HtmlUnitScriptable {
             return;
         }
         plugins_ = new PluginArray();
-        plugins_.setParentScope(this);
+        plugins_.setParentScope(getParentScope());
         plugins_.setPrototype(getPrototype(PluginArray.class));
 
         Plugin plugin = new Plugin("PDF Viewer", "Portable Document Format", "internal-pdf-viewer");
-        plugin.setParentScope(this);
+        plugin.setParentScope(getParentScope());
         plugin.setPrototype(getPrototype(Plugin.class));
 
         // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mimeTypes
         // Recent versions of the specification hard-code the returned set of MIME types.
-        // If PDF files can be displayed inline then application/pdf and text/pdf are listed.
-        // Otherwise an empty list is returned.
+        // If PDF files can be displayed inline then application/pdf and text/pdf are listed,
+        // otherwise an empty list is returned.
         mimeTypes_ = new MimeTypeArray();
-        mimeTypes_.setParentScope(this);
+        mimeTypes_.setParentScope(getParentScope());
         mimeTypes_.setPrototype(getPrototype(MimeTypeArray.class));
 
         final MimeType mimeTypeAppPdf = new MimeType("application/pdf", "Portable Document Format", "pdf", plugin);
-        mimeTypeAppPdf.setParentScope(this);
+        mimeTypeAppPdf.setParentScope(getParentScope());
         mimeTypeAppPdf.setPrototype(getPrototype(MimeType.class));
         mimeTypes_.add(mimeTypeAppPdf);
 
         final MimeType mimeTypeTxtPdf = new MimeType("text/pdf", "Portable Document Format", "pdf", plugin);
-        mimeTypeTxtPdf.setParentScope(this);
+        mimeTypeTxtPdf.setParentScope(getParentScope());
         mimeTypeTxtPdf.setPrototype(getPrototype(MimeType.class));
         mimeTypes_.add(mimeTypeTxtPdf);
 
@@ -229,28 +229,28 @@ public class Navigator extends HtmlUnitScriptable {
 
         // all the others
         plugin = new Plugin("Chrome PDF Viewer", "Portable Document Format", "internal-pdf-viewer");
-        plugin.setParentScope(this);
+        plugin.setParentScope(getParentScope());
         plugin.setPrototype(getPrototype(Plugin.class));
         plugin.add(mimeTypeAppPdf);
         plugin.add(mimeTypeTxtPdf);
         plugins_.add(plugin);
 
         plugin = new Plugin("Chromium PDF Viewer", "Portable Document Format", "internal-pdf-viewer");
-        plugin.setParentScope(this);
+        plugin.setParentScope(getParentScope());
         plugin.setPrototype(getPrototype(Plugin.class));
         plugin.add(mimeTypeAppPdf);
         plugin.add(mimeTypeTxtPdf);
         plugins_.add(plugin);
 
         plugin = new Plugin("Microsoft Edge PDF Viewer", "Portable Document Format", "internal-pdf-viewer");
-        plugin.setParentScope(this);
+        plugin.setParentScope(getParentScope());
         plugin.setPrototype(getPrototype(Plugin.class));
         plugin.add(mimeTypeAppPdf);
         plugin.add(mimeTypeTxtPdf);
         plugins_.add(plugin);
 
         plugin = new Plugin("WebKit built-in PDF", "Portable Document Format", "internal-pdf-viewer");
-        plugin.setParentScope(this);
+        plugin.setParentScope(getParentScope());
         plugin.setPrototype(getPrototype(Plugin.class));
         plugin.add(mimeTypeAppPdf);
         plugin.add(mimeTypeTxtPdf);
@@ -292,17 +292,17 @@ public class Navigator extends HtmlUnitScriptable {
     @JsxGetter
     public Geolocation getGeolocation() {
         final Geolocation geolocation = new Geolocation();
-        geolocation.setPrototype(getPrototype(geolocation.getClass()));
         geolocation.setParentScope(getParentScope());
+        geolocation.setPrototype(getPrototype(geolocation.getClass()));
         return geolocation;
     }
 
     /**
      * @return true whether the browser supports inline display
-     * of PDF files when navigating to them
+     *         of PDF files when navigating to them
      */
     @JsxGetter
-    public boolean getPdfViewerEnabled() {
+    public boolean isPdfViewerEnabled() {
         return true;
     }
 

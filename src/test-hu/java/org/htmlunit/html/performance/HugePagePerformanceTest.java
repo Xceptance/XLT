@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ public final class HugePagePerformanceTest {
     private HugePagePerformanceTest() {
     }
 
+    /**
+     * Simple main for the moment.
+     * @param args ignored
+     * @throws IOException in case of error
+     */
     public static void main(final String[] args) throws IOException {
 //        final URL fileURL = WebClient.class.getClassLoader()
 //                .getResource("testfiles/huge-pages/html-standard-2024-10-17.html");

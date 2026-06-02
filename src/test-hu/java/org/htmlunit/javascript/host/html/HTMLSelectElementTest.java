@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,9 @@ import java.util.List;
 
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.BuggyWebDriver;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -32,7 +29,7 @@ import org.openqa.selenium.interactions.Actions;
 /**
  * Tests for {@link HTMLSelectElement}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Marc Guillemot
  * @author Bruce Faulkner
@@ -42,7 +39,6 @@ import org.openqa.selenium.interactions.Actions;
  * @author Frank Danek
  * @author Carsten Steul
  */
-@RunWith(BrowserRunner.class)
 public class HTMLSelectElementTest extends WebDriverTestCase {
 
     /**
@@ -51,8 +47,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "1", "3", "0"})
     public void getSelectedIndex() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -91,8 +86,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "0", "3", "-1"})
     public void getSelectedIndexNothingSelected() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -131,8 +125,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "-1", "0", "-1"})
     public void getSelectedIndexNoOption() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -164,8 +157,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "1", "3", "2"})
     public void setSelectedIndex() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -207,8 +199,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("0")
     public void selectedIndex2() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -237,8 +228,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"-1", "2", "-1", "-1"})
     public void setSelectedIndexInvalidValue() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -279,8 +269,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "value1", "One", "value2", "Two", "value3", "Three"})
     public void getOptions() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -314,8 +303,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"3", "value1", "One", "value2", "Two", "value3", "Three"})
     public void getOptionLabel() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -349,8 +337,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"false", "true", "true", "false"})
     public void getOptionSelected() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -384,8 +371,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("true")
     public void getOptionByIndex() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -414,8 +400,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("One")
     public void getOptionByOptionIndex() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -445,8 +430,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"4", "Four", "value4"})
     public void addOption() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -480,8 +464,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "true", "4", "Four", "value4", "true", "3", "false"})
     public void addOptionSelected() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -526,8 +509,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"4", "Four", "value4"})
     public void addOptionWithAddMethodIndexNull() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -564,8 +546,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"4", "Four", "value4", "Three b", "value3b"})
     public void addOptionWithAddMethodNoSecondParameter() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -605,8 +586,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "test", "testValue"})
     public void addOptionTooEmptySelectWithAddMethodIndexNull() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -957,8 +937,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     }
 
     private void addOptionMethod(final String param, final boolean empty, final boolean multi) throws Exception {
-        String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -1004,8 +983,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1"})
     public void addWithIndexEmptySelect() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -1355,8 +1333,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     }
 
     private void removeOptionMethod(final String param, final boolean empty, final boolean multi) throws Exception {
-        String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -1399,8 +1376,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "Three", "value3"})
     public void removeOption() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1431,8 +1407,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "Three", "value3"})
     public void removeOptionWithRemoveMethod() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1458,14 +1433,110 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     }
 
     /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"9", "Three", "value3", "8", "8", "7", "6",
+             "5", "4", "3", "2", "[object HTMLSelectElement]"})
+    public void removeIndex() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function doTest() {\n"
+            + "  var select = document.form1.select1;\n"
+            + "  select.remove(0);\n"
+            + "  log(select.length);\n"
+            + "  log(select[1].text);\n"
+            + "  log(select[1].value);\n"
+
+            + "  select.remove(4);\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove(-1);\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove(true);\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove(null);\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove(undefined);\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove('one');\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove({});\n"
+            + "  log(select.length);\n"
+
+            + "  select.remove('1');\n"
+            + "  log(select.length);\n"
+
+            + "  log(select);\n"
+            + "}</script></head><body onload='doTest()'>\n"
+            + "<p>hello world</p>\n"
+            + "<form name='form1'>\n"
+            + "  <select name='select1'>\n"
+            + "    <option name='option1' value='value1'>One</option>\n"
+            + "    <option name='option2' value='value2' selected>Two</option>\n"
+            + "    <option name='option3' value='value3'>Three</option>\n"
+            + "    <option name='option4' value='value4'>Three</option>\n"
+            + "    <option name='option5' value='value5'>Three</option>\n"
+            + "    <option name='option6' value='value6'>Three</option>\n"
+            + "    <option name='option7' value='value7'>Three</option>\n"
+            + "    <option name='option8' value='value8'>Three</option>\n"
+            + "    <option name='option9' value='value9'>Three</option>\n"
+            + "    <option name='option10' value='value10'>Three</option>\n"
+            + "  </select>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLSelectElement]", "null"})
+    public void removeSelect() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function doTest() {\n"
+            + "  var select = document.getElementById('select1');\n"
+            + "  select.remove();\n"
+            + "  log(select);\n"
+
+            + "  select = document.getElementById('select1');\n"
+            + "  log(select);\n"
+            + "}</script></head><body onload='doTest()'>\n"
+            + "<p>hello world</p>\n"
+            + "<form name='form1'>\n"
+            + "  <select id='select1'>\n"
+            + "    <option name='option1' value='value1'>One</option>\n"
+            + "    <option name='option2' value='value2' selected>Two</option>\n"
+            + "    <option name='option3' value='value3'>Three</option>\n"
+            + "  </select>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * Method remove on the options collection exists only for IE.
      * @throws Exception if the test fails
      */
     @Test
     @Alerts({"2", "Three", "value3"})
     public void optionsRemoveMethod() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1498,8 +1569,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("0")
     public void clearOptions() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1530,8 +1600,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "2", "", "", "foo", "fooValue"})
     public void increaseOptionsSettingLength() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1566,8 +1635,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"One", "value1"})
     public void optionArrayHasItemMethod() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1596,8 +1664,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"Two", "", "Two", "", ""})
     public void getValue() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1639,8 +1706,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1"})
     public void setValue() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1668,8 +1734,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void optionsDelegateToSelect() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1708,8 +1773,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"2", "b", "3", "c"})
     public void optionsArrayAdd() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1746,8 +1810,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("-1")
     public void selectedIndex() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1868,8 +1931,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     private void defaultSelectedValue(final String size, final boolean multiple)
         throws Exception {
 
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body onload='test()'>\n"
             + "<script>\n"
@@ -1900,8 +1962,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("5")
     public void size() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1925,8 +1986,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "false"})
     public void multiple() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -1962,8 +2022,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      */
     @Test
     public void deselectMultiple() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "  <form name='f'>\n"
@@ -1988,8 +2047,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1"})
     public void selectedIndex_onfocus() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2018,8 +2076,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"o1", "o2"})
     public void value_onfocus() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2048,8 +2105,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"-1", "0", "-1"})
     public void selectedIndex_appendChild() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2078,8 +2134,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"-1", "0", "-1"})
     public void selectedIndex_insertBefore() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2108,8 +2163,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1", "0"})
     public void selectedIndex_insertBeforeExisting() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2143,8 +2197,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"-1", "0", "-1"})
     public void selectedIndex_add() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2176,8 +2229,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"first", "null", "null"})
     public void item() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body>\n"
             + "  <select id='mySelect'>\n"
@@ -2203,8 +2255,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", ""})
     public void value() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2232,8 +2283,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", "one"})
     public void valueByValue() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2261,8 +2311,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", ""})
     public void valueByValueCase() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2290,8 +2339,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", "One"})
     public void valueByText() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2320,8 +2368,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", "One"})
     public void valueByTextTrim() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2349,8 +2396,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", ""})
     public void valueNull() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2379,8 +2425,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"two", "", ""})
     public void valueOther() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2411,8 +2456,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"One", "Two", "One"})
     public void valueAfterReset() throws Exception {
-        final String html =
-            HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -2448,8 +2492,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
             FF_ESR = "mouse overmouse overmouse over")
     public void mouseOver() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + "    function doTest() {\n"
@@ -2483,8 +2527,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
             FF_ESR = "mouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <script>\n"
             + "    function doTest() {\n"
@@ -2516,8 +2560,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "2", "1", "2", "1", "1"})
     public void labels() throws Exception {
-        final String html =
-            "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function test() {\n"
@@ -2553,8 +2597,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -2585,8 +2629,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "[object HTMLOptionElement]", "2"})
     public void addOptionByAssigningViaIndex() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -2614,8 +2658,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"undefined", "[object HTMLOptionElement]", "8"})
     public void addOptionByAssigningViaIndex2() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
@@ -2643,8 +2687,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts("[object HTMLFormElement]")
     public void form() throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<body>\n"
             + "  <form>\n"
             + "    <select id='a'>\n"
@@ -2666,8 +2710,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      */
     @Test
     public void deselectFromMultiple() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<select id='s' multiple>\n"
             + "  <option selected value='one'>One</option>\n"
             + "  <option value='two'>Two</option>\n"
@@ -2695,8 +2739,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      */
     @Test
     public void optionClick() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<select id='s' multiple>\n"
             + "  <option selected value='one'>One</option>\n"
             + "  <option value='two'>Two</option>\n"
@@ -2725,8 +2769,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     // https://github.com/mozilla/geckodriver/issues/584
     public void optionClickActions() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + "<select id='s' multiple>\n"
             + "  <option selected value='one'>One</option>\n"
             + "  <option value='two'>Two</option>\n"
@@ -2755,8 +2799,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLOptionElement]", "[object HTMLOptionElement]", "[object HTMLOptionElement]"})
     public void optionsForOf() throws Exception {
-        final String html =
-              "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -2784,12 +2828,10 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "false", "true"},
-            FF = {"true", "false", "true", "true", "true"},
-            FF_ESR = {"true", "false", "true", "true", "true"})
+    @Alerts({"true", "false", "true", "true", "true"})
     public void willValidate() throws Exception {
-        final String html =
-                "<html><head>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"

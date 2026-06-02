@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,101 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.htmlunit.SgmlPage;
-import org.htmlunit.html.*;
+import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlAbbreviated;
+import org.htmlunit.html.HtmlAcronym;
+import org.htmlunit.html.HtmlAddress;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlAudio;
+import org.htmlunit.html.HtmlBidirectionalOverride;
+import org.htmlunit.html.HtmlBig;
+import org.htmlunit.html.HtmlBlockQuote;
+import org.htmlunit.html.HtmlBody;
+import org.htmlunit.html.HtmlBold;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlCanvas;
+import org.htmlunit.html.HtmlCaption;
+import org.htmlunit.html.HtmlCenter;
+import org.htmlunit.html.HtmlCitation;
+import org.htmlunit.html.HtmlCode;
+import org.htmlunit.html.HtmlDefinition;
+import org.htmlunit.html.HtmlDefinitionDescription;
+import org.htmlunit.html.HtmlDefinitionList;
+import org.htmlunit.html.HtmlDefinitionTerm;
+import org.htmlunit.html.HtmlDeletedText;
+import org.htmlunit.html.HtmlDirectory;
+import org.htmlunit.html.HtmlDivision;
+import org.htmlunit.html.HtmlEmbed;
+import org.htmlunit.html.HtmlEmphasis;
+import org.htmlunit.html.HtmlExample;
+import org.htmlunit.html.HtmlFieldSet;
+import org.htmlunit.html.HtmlFont;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFrame;
+import org.htmlunit.html.HtmlFrameSet;
+import org.htmlunit.html.HtmlHead;
+import org.htmlunit.html.HtmlHeading1;
+import org.htmlunit.html.HtmlHeading2;
+import org.htmlunit.html.HtmlHeading3;
+import org.htmlunit.html.HtmlHeading4;
+import org.htmlunit.html.HtmlHeading5;
+import org.htmlunit.html.HtmlHeading6;
+import org.htmlunit.html.HtmlHeadingGroup;
+import org.htmlunit.html.HtmlHtml;
+import org.htmlunit.html.HtmlInlineFrame;
+import org.htmlunit.html.HtmlInlineQuotation;
+import org.htmlunit.html.HtmlInsertedText;
+import org.htmlunit.html.HtmlItalic;
+import org.htmlunit.html.HtmlKeyboard;
+import org.htmlunit.html.HtmlLabel;
+import org.htmlunit.html.HtmlLegend;
+import org.htmlunit.html.HtmlListItem;
+import org.htmlunit.html.HtmlListing;
+import org.htmlunit.html.HtmlMap;
+import org.htmlunit.html.HtmlMarquee;
+import org.htmlunit.html.HtmlMenu;
+import org.htmlunit.html.HtmlNoBreak;
+import org.htmlunit.html.HtmlNoEmbed;
+import org.htmlunit.html.HtmlNoFrames;
+import org.htmlunit.html.HtmlNoScript;
+import org.htmlunit.html.HtmlObject;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlOptionGroup;
+import org.htmlunit.html.HtmlOrderedList;
+import org.htmlunit.html.HtmlParagraph;
+import org.htmlunit.html.HtmlPlainText;
+import org.htmlunit.html.HtmlPreformattedText;
+import org.htmlunit.html.HtmlS;
+import org.htmlunit.html.HtmlSample;
+import org.htmlunit.html.HtmlScript;
+import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlSmall;
+import org.htmlunit.html.HtmlSource;
+import org.htmlunit.html.HtmlSpan;
+import org.htmlunit.html.HtmlStrike;
+import org.htmlunit.html.HtmlStrong;
+import org.htmlunit.html.HtmlStyle;
+import org.htmlunit.html.HtmlSubscript;
+import org.htmlunit.html.HtmlSuperscript;
+import org.htmlunit.html.HtmlTable;
+import org.htmlunit.html.HtmlTableBody;
+import org.htmlunit.html.HtmlTableColumn;
+import org.htmlunit.html.HtmlTableColumnGroup;
+import org.htmlunit.html.HtmlTableDataCell;
+import org.htmlunit.html.HtmlTableFooter;
+import org.htmlunit.html.HtmlTableHeader;
+import org.htmlunit.html.HtmlTableHeaderCell;
+import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.html.HtmlTeletype;
+import org.htmlunit.html.HtmlTextArea;
+import org.htmlunit.html.HtmlTitle;
+import org.htmlunit.html.HtmlUnderlined;
+import org.htmlunit.html.HtmlUnorderedList;
+import org.htmlunit.html.HtmlVariable;
+import org.htmlunit.html.HtmlVideo;
+import org.htmlunit.html.HtmlWordBreak;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -33,6 +127,7 @@ import org.w3c.dom.NamedNodeMap;
 
 /**
  * A JavaScript object for {@code XMLSerializer}.
+ * see https://w3c.github.io/DOM-Parsing/#the-xmlserializer-interface
  *
  * @author Ahmed Ashour
  * @author Darrell DeBoer
@@ -61,7 +156,7 @@ public class XMLSerializer extends HtmlUnitScriptable {
             HtmlFrame.TAG_NAME, HtmlFrameSet.TAG_NAME, HtmlHeading1.TAG_NAME,
             HtmlHeading2.TAG_NAME, HtmlHeading3.TAG_NAME,
             HtmlHeading4.TAG_NAME, HtmlHeading5.TAG_NAME,
-            HtmlHeading6.TAG_NAME, HtmlHead.TAG_NAME,
+            HtmlHeading6.TAG_NAME, HtmlHead.TAG_NAME, HtmlHeadingGroup.TAG_NAME,
             HtmlHtml.TAG_NAME, HtmlInlineFrame.TAG_NAME,
             HtmlInsertedText.TAG_NAME,
             HtmlItalic.TAG_NAME, HtmlKeyboard.TAG_NAME, HtmlLabel.TAG_NAME,
@@ -118,7 +213,8 @@ public class XMLSerializer extends HtmlUnitScriptable {
             return builder.toString().trim();
         }
 
-        if (root instanceof Document) {
+        final boolean rootIsDocument = root instanceof Document;
+        if (rootIsDocument) {
             root = ((Document) root).getDocumentElement();
         }
 
@@ -129,7 +225,7 @@ public class XMLSerializer extends HtmlUnitScriptable {
             final boolean isHtmlPage = page != null && page.isHtmlPage();
 
             String forcedNamespace = null;
-            if (isHtmlPage) {
+            if (!rootIsDocument && isHtmlPage) {
                 forcedNamespace = "http://www.w3.org/1999/xhtml";
             }
             toXml(1, node, builder, forcedNamespace);
@@ -167,7 +263,8 @@ public class XMLSerializer extends HtmlUnitScriptable {
         }
 
         final NamedNodeMap attributesMap = node.getAttributes();
-        for (int i = 0; i < attributesMap.getLength(); i++) {
+        final int length = attributesMap.getLength();
+        for (int i = 0; i < length; i++) {
             final DomAttr attrib = (DomAttr) attributesMap.item(i);
             builder.append(' ').append(attrib.getQualifiedName())
                    .append("=\"").append(attrib.getValue()).append('"');
@@ -198,7 +295,11 @@ public class XMLSerializer extends HtmlUnitScriptable {
                     break;
             }
         }
-        if (!startTagClosed) {
+
+        if (startTagClosed) {
+            builder.append("</").append(nodeName).append('>');
+        }
+        else {
             final String tagName = StringUtils.toRootLowerCase(nodeName);
             if (NON_EMPTY_TAGS.contains(tagName)) {
                 builder.append("></").append(nodeName).append('>');
@@ -206,9 +307,6 @@ public class XMLSerializer extends HtmlUnitScriptable {
             else {
                 builder.append(optionalPrefix).append("/>");
             }
-        }
-        else {
-            builder.append("</").append(nodeName).append('>');
         }
     }
 

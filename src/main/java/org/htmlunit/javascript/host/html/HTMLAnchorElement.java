@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
@@ -27,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.SgmlPage;
@@ -42,13 +40,14 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * The JavaScript object that represents an anchor.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:gousseff@netscape.net">Alexei Goussev</a>
+ * @author Mike Bowler
+ * @author Alexei Goussev
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -56,6 +55,7 @@ import org.htmlunit.util.UrlUtils;
  * @author Sudhan Moghe
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @JsxClass(domClass = HtmlAnchor.class)
 public class HTMLAnchorElement extends HTMLElement {
@@ -213,7 +213,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getReferrerPolicy() {
         String attrib = getDomNodeOrDie().getAttribute("referrerPolicy");
-        if (StringUtils.isEmpty(attrib)) {
+        if (StringUtils.isEmptyOrNull(attrib)) {
             return "";
         }
         attrib = attrib.toLowerCase(Locale.ROOT);
@@ -241,11 +241,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getSearch() {
         try {
-            final String query = getUrl().getQuery();
-            if (query == null) {
-                return "";
-            }
-            return "?" + query;
+            return HTMLHyperlinkElementUtils.getSearch(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -254,27 +250,14 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the search portion of the link's URL (the portion starting with '?'
-     * and up to but not including any '#')..
+     * and up to but not including any '#').
      * @param search the new search portion of the link's URL
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
      */
     @JsxSetter
     public void setSearch(final String search) throws Exception {
-        final String query;
-        if (search == null
-                || org.htmlunit.util.StringUtils.isEmptyString(search)
-                || org.htmlunit.util.StringUtils.equalsChar('?', search)) {
-            query = null;
-        }
-        else if (search.charAt(0) == '?') {
-            query = search.substring(1);
-        }
-        else {
-            query = search;
-        }
-
-        setUrl(UrlUtils.getUrlWithNewQuery(getUrl(), query));
+        setUrl(HTMLHyperlinkElementUtils.setSearch(getUrl(), search));
     }
 
     /**
@@ -285,11 +268,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getHash() {
         try {
-            final String hash = getUrl().getRef();
-            if (hash == null) {
-                return "";
-            }
-            return "#" + hash;
+            return HTMLHyperlinkElementUtils.getHash(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -304,7 +283,7 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxSetter
     public void setHash(final String hash) throws Exception {
-        setUrl(UrlUtils.getUrlWithNewRef(getUrl(), hash));
+        setUrl(HTMLHyperlinkElementUtils.setHash(getUrl(), hash));
     }
 
     /**
@@ -319,7 +298,7 @@ public class HTMLAnchorElement extends HTMLElement {
             final int port = url.getPort();
             final String host = url.getHost();
 
-            if (port == -1) {
+            if (port == -1 || HTMLHyperlinkElementUtils.isDefaultPort(url.getProtocol(), port)) {
                 return host;
             }
             return host + ":" + port;
@@ -337,19 +316,7 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxSetter
     public void setHost(final String host) throws Exception {
-        final String hostname;
-        final int port;
-        final int index = host.indexOf(':');
-        if (index != -1) {
-            hostname = host.substring(0, index);
-            port = Integer.parseInt(host.substring(index + 1));
-        }
-        else {
-            hostname = host;
-            port = -1;
-        }
-        final URL url = UrlUtils.getUrlWithNewHostAndPort(getUrl(), hostname, port);
-        setUrl(url);
+        setUrl(HTMLHyperlinkElementUtils.setHost(getUrl(), host));
     }
 
     /**
@@ -360,7 +327,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getHostname() {
         try {
-            return UrlUtils.encodeAnchor(getUrl().getHost());
+            return HTMLHyperlinkElementUtils.getHostname(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -380,7 +347,7 @@ public class HTMLAnchorElement extends HTMLElement {
                 setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
             }
         }
-        else if (!StringUtils.isEmpty(hostname)) {
+        else if (!StringUtils.isEmptyOrNull(hostname)) {
             setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
         }
     }
@@ -399,19 +366,12 @@ public class HTMLAnchorElement extends HTMLElement {
                 String href = anchor.getHrefAttribute();
                 if (href.length() > 1 && Character.isLetter(href.charAt(0)) && ':' == href.charAt(1)) {
                     if (browser.hasFeature(JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS)) {
-                        href = StringUtils.capitalize(href);
+                        href = org.apache.commons.lang3.StringUtils.capitalize(href);
                     }
                     if (browser.hasFeature(JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL)) {
                         href = "/" + href;
                     }
                     return href;
-                }
-            }
-            else if (browser.hasFeature(JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL)) {
-                final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
-                final String href = anchor.getHrefAttribute();
-                if (href.length() > 1 && Character.isLetter(href.charAt(0)) && ':' == href.charAt(1)) {
-                    return href.substring(2);
                 }
             }
             return getUrl().getPath();
@@ -433,7 +393,7 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxSetter
     public void setPathname(final String pathname) throws Exception {
-        setUrl(UrlUtils.getUrlWithNewPath(getUrl(), pathname));
+        setUrl(HTMLHyperlinkElementUtils.setPathname(getUrl(), pathname));
     }
 
     /**
@@ -444,8 +404,9 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getPort() {
         try {
-            final int port = getUrl().getPort();
-            if (port == -1) {
+            final URL url = getUrl();
+            final int port = url.getPort();
+            if (port == -1 || HTMLHyperlinkElementUtils.isDefaultPort(url.getProtocol(), port)) {
                 return "";
             }
             return Integer.toString(port);
@@ -463,7 +424,14 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxSetter
     public void setPort(final String port) throws Exception {
-        setUrl(UrlUtils.getUrlWithNewPort(getUrl(), Integer.parseInt(port)));
+        final URL url = getUrl();
+        final int newPort = Integer.parseInt(port);
+        if (HTMLHyperlinkElementUtils.isDefaultPort(url.getProtocol(), newPort)) {
+            setUrl(UrlUtils.getUrlWithNewPort(url, -1));
+        }
+        else {
+            setUrl(UrlUtils.getUrlWithNewPort(url, newPort));
+        }
     }
 
     /**
@@ -502,25 +470,9 @@ public class HTMLAnchorElement extends HTMLElement {
      */
     @JsxSetter
     public void setProtocol(final String protocol) throws Exception {
-        if (protocol.isEmpty()) {
-            return;
-        }
-
-        final String bareProtocol = StringUtils.substringBefore(protocol, ":").trim();
-        if (!UrlUtils.isValidScheme(bareProtocol)) {
-            return;
-        }
-        if (!UrlUtils.isSpecialScheme(bareProtocol)) {
-            return;
-        }
-
-        try {
-            URL url = UrlUtils.getUrlWithNewProtocol(getUrl(), bareProtocol);
-            url = UrlUtils.removeRedundantPort(url);
-            setUrl(url);
-        }
-        catch (final MalformedURLException ignored) {
-            // ignore
+        final URL result = HTMLHyperlinkElementUtils.setProtocol(getUrl(), protocol);
+        if (result != null) {
+            setUrl(result);
         }
     }
 
@@ -660,11 +612,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getUsername() {
         try {
-            final String userInfo = getUrl().getUserInfo();
-            if (userInfo == null) {
-                return "";
-            }
-            return StringUtils.substringBefore(userInfo, ':');
+            return HTMLHyperlinkElementUtils.getUsername(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -699,11 +647,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getPassword() {
         try {
-            final String userName = getUrl().getUserInfo();
-            if (userName == null) {
-                return "";
-            }
-            return StringUtils.substringAfter(userName, ":");
+            return HTMLHyperlinkElementUtils.getPassword(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";

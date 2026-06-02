@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ import java.io.Serializable;
 import java.util.function.Predicate;
 
 import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
@@ -83,10 +85,12 @@ public class StyleSheetList extends HtmlUnitScriptable {
      */
     public StyleSheetList(final Document document) {
         super();
-        setParentScope(document);
+
+        final WebWindow webWindow = document.getWindow().getWebWindow();
+        setParentScope(new WithScope(getTopLevelScope(document.getParentScope()), document));
         setPrototype(getPrototype(getClass()));
 
-        final WebClient webClient = getWindow().getWebWindow().getWebClient();
+        final WebClient webClient = webWindow.getWebClient();
 
         if (webClient.getOptions().isCssEnabled()) {
             nodes_ = new HTMLCollection(document.getDomNodeOrDie(), true);
@@ -107,8 +111,8 @@ public class StyleSheetList extends HtmlUnitScriptable {
                         if (node instanceof HtmlStyle) {
                             return true;
                         }
-                        if (node instanceof HtmlLink) {
-                            return ((HtmlLink) node).isActiveStyleSheetLink();
+                        if (node instanceof HtmlLink link) {
+                            return link.isActiveStyleSheetLink();
                         }
                         return false;
                     });
@@ -156,8 +160,8 @@ public class StyleSheetList extends HtmlUnitScriptable {
             final HTMLElement element = (HTMLElement) nodes_.item(Integer.valueOf(index));
 
             // <style type="text/css"> ... </style>
-            if (element instanceof HTMLStyleElement) {
-                return ((HTMLStyleElement) element).getSheet();
+            if (element instanceof HTMLStyleElement styleElement) {
+                return styleElement.getSheet();
             }
             // <link rel="stylesheet" type="text/css" href="..." />
             return ((HTMLLinkElement) element).getSheet();
