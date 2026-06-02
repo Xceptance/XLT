@@ -1900,6 +1900,12 @@ public class HtmlPage extends SgmlPage {
             else {
                 elements.add(element);
             }
+            // START: Redmine #549
+            if (elements.elements().size() > 1)
+            {
+                notifyIncorrectness(this + ": ID '" + idValue + "' is used by multiple elements");
+            }
+            // END: Redmine #549
         }
 
         final String nameValue = element.getAttribute(DomElement.NAME_ATTRIBUTE);
@@ -1913,12 +1919,6 @@ public class HtmlPage extends SgmlPage {
             else {
                 elements.add(element);
             }
-            // START: Redmine #549
-            if("id".equals(attribute) && elements.elements().size() > 1)
-            {
-                notifyIncorrectness(this + ": ID '" + value + "' is used by multiple elements");
-            }
-            // END: Redmine #549
         }
 
         if (recurse) {

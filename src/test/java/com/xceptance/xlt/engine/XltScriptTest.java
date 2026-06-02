@@ -18,6 +18,7 @@ package com.xceptance.xlt.engine;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,7 +34,13 @@ public class XltScriptTest
         final Script dummy = new Script()
         {
             @Override
-            public Object exec(final Context cx, final Scriptable scope)
+            public Object exec(final Context cx, final VarScope scope)
+            {
+                return null;
+            }
+            
+            @Override
+            public Object exec(Context cx, VarScope scope, Scriptable thisObj)
             {
                 return null;
             }

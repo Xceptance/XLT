@@ -31,7 +31,7 @@ import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlOptionGroup;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPreformattedText;
-import org.htmlunit.javascript.host.ClientRect;
+import org.htmlunit.javascript.host.DOMRect;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.Document;
@@ -121,7 +121,7 @@ public final class HtmlUnitElementUtils
 
     private static boolean consumesSpace(final DomElement element)
     {
-        final ClientRect rectum = ((HTMLElement) element.getScriptableObject()).getBoundingClientRect();
+        final DOMRect rectum = ((HTMLElement) element.getScriptableObject()).getBoundingClientRect();
         if (rectum.getWidth() > 0 && rectum.getHeight() > 0)
         {
             return true;
@@ -176,7 +176,7 @@ public final class HtmlUnitElementUtils
             final String[] q = _getVisibility(l, overflow);
             if (!"visible".equals(q[0]) || !"visible".equals(q[1]))
             {
-                final ClientRect box = ((HTMLElement) l.getScriptableObject()).getBoundingClientRect();
+                final DOMRect box = ((HTMLElement) l.getScriptableObject()).getBoundingClientRect();
                 if (box.getWidth() == 0 || box.getHeight() == 0)
                 {
                     return "hidden";
@@ -581,7 +581,7 @@ public final class HtmlUnitElementUtils
                     };
             }
 
-            final ClientRect rectum = scriptable.getBoundingClientRect();
+            final DOMRect rectum = scriptable.getBoundingClientRect();
             final Document doc = (Document) scriptable.getOwnerDocument();
             final HTMLElement docElement = (HTMLElement) doc.getDocumentElement();
             final HTMLElement bodyElement = (HTMLElement) body.getScriptableObject();
@@ -600,7 +600,7 @@ public final class HtmlUnitElementUtils
 
             return new int[]
                 {
-                    rectum.getLeft() - clientLeft, rectum.getTop() - clientTop
+                    (int) (rectum.getLeft() - clientLeft), (int) (rectum.getTop() - clientTop)
                 };
         }
         finally

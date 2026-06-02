@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@org.junit.Ignore("Expects a SOCKS proxy on port 55555")
+@org.junit.jupiter.api.Disabled("Expects a SOCKS proxy on port 55555")
 public class SocksProxyTest extends WebServerTestCase {
 
     /**

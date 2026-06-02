@@ -2818,7 +2818,7 @@ public class DocumentTest extends WebDriverTestCase {
     /**
      * @throws Exception if the test fails
      */
-    @org.junit.Ignore("Jaxen doesn't support this")
+    @org.junit.jupiter.api.Disabled("Jaxen doesn't support this")
     @Test
     @Alerts("[object HTMLHtmlElement]")
     public void evaluate_caseInsensitiveTagName() throws Exception {

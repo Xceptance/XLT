@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
  * @author Daniel Gredler
  * @author Ronald Brill
  */
-@org.junit.Ignore("Jaxen does not support Namespaces")
+@org.junit.jupiter.api.Disabled("Jaxen does not support Namespaces")
 public class XHtmlPageTest extends SimpleWebTestCase {
 
     /**

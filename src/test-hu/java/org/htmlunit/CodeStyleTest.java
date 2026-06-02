@@ -53,7 +53,7 @@ import org.junitpioneer.jupiter.RetryingTest;
  * @author Sven Strickroth
  * @author Kristof Neirynck
  */
-@org.junit.Ignore
+@org.junit.jupiter.api.Disabled
 public class CodeStyleTest {
 
     private static final Charset SOURCE_ENCODING = StandardCharsets.UTF_8;

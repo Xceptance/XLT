@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@org.junit.Ignore
+@org.junit.jupiter.api.Disabled
 public class NotYetImplementedTest {
 
     private final Set<String> entries_ = new TreeSet<>();

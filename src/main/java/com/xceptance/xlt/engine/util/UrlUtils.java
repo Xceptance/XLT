@@ -17,16 +17,14 @@ package com.xceptance.xlt.engine.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.util.NameValuePair;
-
-import com.xceptance.xlt.common.XltConstants;
 
 /**
  * URL utility methods used in XLT engine.
@@ -241,8 +239,7 @@ public final class UrlUtils
      */
     public static String getUrlEncodedParameters(final List<NameValuePair> parameters)
     {
-        final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(parameters);
-        return URLEncodedUtils.format(httpClientPairs, XltConstants.UTF8_ENCODING);
+        return HttpUtils.toQueryFormFields(parameters, StandardCharsets.UTF_8);
     }
 
     /**

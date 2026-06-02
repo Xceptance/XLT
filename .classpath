@@ -26,7 +26,7 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="target/test-classes" path="src/test-hu/java">
+	<classpathentry excluding="**/*.java" kind="src" output="target/test-classes" path="src/test-hu/java">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>

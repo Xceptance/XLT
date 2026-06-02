@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 10.0.0-beta-1
+#Version 10.0.0-beta-2
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -2431,12 +2431,6 @@ meth public {java.util.SequencedCollection%0} getLast()
 meth public {java.util.SequencedCollection%0} removeFirst()
 meth public {java.util.SequencedCollection%0} removeLast()
 
-CLSS public abstract interface !annotation org.jspecify.annotations.NullMarked
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[MODULE, PACKAGE, TYPE, METHOD, CONSTRUCTOR])
-intf java.lang.annotation.Annotation
-
 CLSS public abstract interface !annotation org.junit.runner.RunWith
  anno 0 java.lang.annotation.Inherited()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
@@ -2458,9 +2452,14 @@ CLSS public abstract interface org.openqa.selenium.HasCapabilities
 meth public abstract org.openqa.selenium.Capabilities getCapabilities()
 
 CLSS public abstract interface org.openqa.selenium.HasDownloads
+innr public static DownloadedFile
+meth public abstract boolean isDownloadsEnabled()
 meth public abstract java.util.List<java.lang.String> getDownloadableFiles()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+meth public abstract java.util.List<org.openqa.selenium.HasDownloads$DownloadedFile> getDownloadedFiles()
 meth public abstract void deleteDownloadableFiles()
 meth public abstract void downloadFile(java.lang.String,java.nio.file.Path) throws java.io.IOException
+meth public static boolean isDownloadsEnabled(org.openqa.selenium.Capabilities)
 meth public void requireDownloadsEnabled(org.openqa.selenium.Capabilities)
 
 CLSS public abstract interface org.openqa.selenium.JavascriptExecutor
@@ -2469,12 +2468,10 @@ CLSS public abstract interface org.openqa.selenium.PrintsPage
 meth public abstract org.openqa.selenium.Pdf print(org.openqa.selenium.print.PrintOptions)
 
 CLSS public abstract interface org.openqa.selenium.SearchContext
- anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public abstract org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
 
 CLSS public abstract interface org.openqa.selenium.TakesScreenshot
- anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract <%0 extends java.lang.Object> {%%0} getScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 
 CLSS public abstract interface org.openqa.selenium.WebDriver
@@ -2490,16 +2487,13 @@ cons public init(org.openqa.selenium.chrome.ChromeDriverService)
 cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
 cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions,org.openqa.selenium.remote.http.ClientConfig)
 cons public init(org.openqa.selenium.chrome.ChromeOptions)
+cons public init(org.openqa.selenium.chrome.ChromeOptions,org.openqa.selenium.remote.http.ClientConfig)
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
 supr org.openqa.selenium.chromium.ChromiumDriver
 hcls ChromeDriverCommandExecutor
 
 CLSS public org.openqa.selenium.chromium.ChromiumDriver
-cons protected init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities,java.lang.String)
-fld protected org.openqa.selenium.chromium.HasCasting casting
-fld protected org.openqa.selenium.chromium.HasCdp cdp
-fld public final static java.util.function.Predicate<java.lang.String> IS_CHROMIUM_BROWSER
 intf org.openqa.selenium.HasAuthentication
 intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.chromium.HasCasting
@@ -2508,42 +2502,8 @@ intf org.openqa.selenium.chromium.HasLaunchApp
 intf org.openqa.selenium.chromium.HasNetworkConditions
 intf org.openqa.selenium.chromium.HasPermissions
 intf org.openqa.selenium.devtools.HasDevTools
-intf org.openqa.selenium.html5.LocationContext
-intf org.openqa.selenium.html5.WebStorage
 intf org.openqa.selenium.logging.HasLogEvents
-meth public !varargs java.lang.Object executeScript(org.openqa.selenium.ScriptKey,java.lang.Object[])
-meth public <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
-meth public java.lang.String getCastIssueMessage()
-meth public java.util.List<java.util.Map<java.lang.String,java.lang.String>> getCastSinks()
-meth public java.util.Map<java.lang.String,java.lang.Object> executeCdpCommand(java.lang.String,java.util.Map<java.lang.String,java.lang.Object>)
-meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
-meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
-meth public java.util.Set<org.openqa.selenium.ScriptKey> getPinnedScripts()
-meth public org.openqa.selenium.Capabilities getCapabilities()
-meth public org.openqa.selenium.ScriptKey pin(java.lang.String)
-meth public org.openqa.selenium.chromium.ChromiumNetworkConditions getNetworkConditions()
-meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.html5.Location location()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public void deleteNetworkConditions()
-meth public void launchApp(java.lang.String)
-meth public void quit()
-meth public void register(java.util.function.Predicate<java.net.URI>,java.util.function.Supplier<org.openqa.selenium.Credentials>)
-meth public void selectCastSink(java.lang.String)
-meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
-meth public void setLocation(org.openqa.selenium.html5.Location)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public void setNetworkConditions(org.openqa.selenium.chromium.ChromiumNetworkConditions)
-meth public void setPermission(java.lang.String,java.lang.String)
-meth public void startDesktopMirroring(java.lang.String)
-meth public void startTabMirroring(java.lang.String)
-meth public void stopCasting(java.lang.String)
-meth public void unpin(org.openqa.selenium.ScriptKey)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,permissions,scriptKeys,webStorage
 
 CLSS public abstract interface org.openqa.selenium.chromium.HasCasting
  anno 0 org.openqa.selenium.Beta()
@@ -2577,10 +2537,6 @@ meth public abstract java.util.Optional<org.openqa.selenium.devtools.DevTools> m
 meth public org.openqa.selenium.devtools.DevTools getDevTools()
 
 CLSS public abstract interface org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
- anno 0 org.openqa.selenium.Beta()
-meth public abstract org.openqa.selenium.federatedcredentialmanagement.FederatedCredentialManagementDialog getFederatedCredentialManagementDialog()
-meth public abstract void resetCooldown()
-meth public abstract void setDelayEnabled(boolean)
 
 CLSS public org.openqa.selenium.firefox.FirefoxDriver
 cons public init()
@@ -2588,12 +2544,12 @@ cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions,org.openqa.selenium.remote.http.ClientConfig)
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
+cons public init(org.openqa.selenium.firefox.FirefoxOptions,org.openqa.selenium.remote.http.ClientConfig)
 innr public final static SystemProperty
 intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.firefox.HasContext
 intf org.openqa.selenium.firefox.HasExtensions
 intf org.openqa.selenium.firefox.HasFullPageScreenshot
-intf org.openqa.selenium.html5.WebStorage
 meth public <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
@@ -2601,10 +2557,6 @@ meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.bidi.BiDi getBiDi()
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
-meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
 meth public void quit()
@@ -2612,7 +2564,7 @@ meth public void setContext(org.openqa.selenium.firefox.FirefoxCommandContext)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void uninstallExtension(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,context,extensions,fullPageScreenshot,webStorage
+hfds LOG,biDi,biDiUri,capabilities,context,extensions,fullPageScreenshot
 hcls FirefoxDriverCommandExecutor
 
 CLSS public abstract interface org.openqa.selenium.firefox.HasContext
@@ -2630,16 +2582,6 @@ CLSS public abstract interface org.openqa.selenium.firefox.HasFullPageScreenshot
  anno 0 org.openqa.selenium.Beta()
 meth public abstract <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 
-CLSS public abstract interface org.openqa.selenium.html5.LocationContext
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public abstract org.openqa.selenium.html5.Location location()
-meth public abstract void setLocation(org.openqa.selenium.html5.Location)
-
-CLSS public abstract interface org.openqa.selenium.html5.WebStorage
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public abstract org.openqa.selenium.html5.LocalStorage getLocalStorage()
-meth public abstract org.openqa.selenium.html5.SessionStorage getSessionStorage()
-
 CLSS public abstract interface org.openqa.selenium.interactions.Interactive
 meth public abstract void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public abstract void resetInputState()
@@ -2647,22 +2589,7 @@ meth public abstract void resetInputState()
 CLSS public abstract interface org.openqa.selenium.logging.HasLogEvents
 meth public abstract <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
 
-CLSS public abstract interface !annotation org.openqa.selenium.remote.Augmentable
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-
 CLSS public org.openqa.selenium.remote.RemoteWebDriver
-cons protected init()
-cons public init(java.net.URL,org.openqa.selenium.Capabilities)
-cons public init(java.net.URL,org.openqa.selenium.Capabilities,boolean)
-cons public init(org.openqa.selenium.Capabilities)
-cons public init(org.openqa.selenium.Capabilities,boolean)
-cons public init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities)
-fld protected org.openqa.selenium.Capabilities capabilities
-innr protected RemoteTargetLocator
-innr protected RemoteWebDriverOptions
-innr public final static !enum When
 intf org.openqa.selenium.HasCapabilities
 intf org.openqa.selenium.HasDownloads
 intf org.openqa.selenium.JavascriptExecutor
@@ -2672,64 +2599,9 @@ intf org.openqa.selenium.WebDriver
 intf org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
 intf org.openqa.selenium.interactions.Interactive
 intf org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
-meth protected org.openqa.selenium.remote.ExecuteMethod getExecuteMethod()
-meth protected org.openqa.selenium.remote.JsonToWebElementConverter getElementConverter()
-meth protected org.openqa.selenium.remote.Response execute(java.lang.String)
-meth protected org.openqa.selenium.remote.Response execute(java.lang.String,java.util.Map<java.lang.String,?>)
-meth protected org.openqa.selenium.remote.Response execute(org.openqa.selenium.remote.CommandPayload)
-meth protected void log(org.openqa.selenium.remote.SessionId,java.lang.String,java.lang.Object,org.openqa.selenium.remote.RemoteWebDriver$When)
-meth protected void setCommandExecutor(org.openqa.selenium.remote.CommandExecutor)
-meth protected void setElementConverter(org.openqa.selenium.remote.JsonToWebElementConverter)
-meth protected void setFoundBy(org.openqa.selenium.SearchContext,org.openqa.selenium.WebElement,java.lang.String,java.lang.String)
-meth protected void setSessionId(java.lang.String)
-meth protected void startSession(org.openqa.selenium.Capabilities)
-meth public !varargs java.lang.Object executeAsyncScript(java.lang.String,java.lang.Object[])
-meth public !varargs java.lang.Object executeScript(java.lang.String,java.lang.Object[])
-meth public <%0 extends java.lang.Object> {%%0} getScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
-meth public java.lang.String getCurrentUrl()
-meth public java.lang.String getPageSource()
-meth public java.lang.String getTitle()
-meth public java.lang.String getWindowHandle()
-meth public java.lang.String toString()
-meth public java.util.List<java.lang.String> getDownloadableFiles()
-meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
-meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.SearchContext,java.util.function.BiFunction<java.lang.String,java.lang.Object,org.openqa.selenium.remote.CommandPayload>,org.openqa.selenium.By)
-meth public java.util.Set<java.lang.String> getWindowHandles()
-meth public org.openqa.selenium.Capabilities getCapabilities()
-meth public org.openqa.selenium.Pdf print(org.openqa.selenium.print.PrintOptions)
-meth public org.openqa.selenium.WebDriver$Navigation navigate()
-meth public org.openqa.selenium.WebDriver$Options manage()
-meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
-meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
-meth public org.openqa.selenium.federatedcredentialmanagement.FederatedCredentialManagementDialog getFederatedCredentialManagementDialog()
-meth public org.openqa.selenium.remote.CommandExecutor getCommandExecutor()
-meth public org.openqa.selenium.remote.ErrorHandler getErrorHandler()
-meth public org.openqa.selenium.remote.FileDetector getFileDetector()
-meth public org.openqa.selenium.remote.Network network()
-meth public org.openqa.selenium.remote.Script script()
-meth public org.openqa.selenium.remote.SessionId getSessionId()
-meth public org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions)
-meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
- anno 0 org.openqa.selenium.Beta()
-meth public void close()
-meth public void deleteDownloadableFiles()
-meth public void downloadFile(java.lang.String,java.nio.file.Path) throws java.io.IOException
-meth public void get(java.lang.String)
-meth public void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
-meth public void quit()
-meth public void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
-meth public void resetCooldown()
-meth public void resetInputState()
-meth public void setDelayEnabled(boolean)
-meth public void setErrorHandler(org.openqa.selenium.remote.ErrorHandler)
-meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
-meth public void setLogLevel(java.util.logging.Level)
 supr java.lang.Object
-hfds LOG,WEBDRIVER_REMOTE_ENABLE_TRACING,converter,elementLocation,errorHandler,executeMethod,executor,fileDetector,level,localLogs,remoteLogs,remoteNetwork,remoteScript,sessionId
-hcls RemoteAlert,RemoteNavigation,RemoteVirtualAuthenticator
 
 CLSS public abstract interface org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
- anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions)
 meth public abstract void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
 
