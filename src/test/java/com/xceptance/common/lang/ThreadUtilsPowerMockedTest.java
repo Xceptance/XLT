@@ -15,13 +15,16 @@
  */
 package com.xceptance.common.lang;
 
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import static org.easymock.EasyMock.expect;
+import static org.powermock.api.easymock.PowerMock.expectLastCall;
+import static org.powermock.api.easymock.PowerMock.mockStatic;
+import static org.powermock.api.easymock.PowerMock.replayAll;
+import static org.powermock.api.easymock.PowerMock.verifyAll;
 
 import org.junit.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * Test the ThreadUtils
@@ -29,6 +32,11 @@ import org.mockito.Mockito;
  * @author Rene Schwietzke
  * @see ThreadUtils
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(
+    {
+        ThreadUtils.class
+    })
 public class ThreadUtilsPowerMockedTest
 {
     /**
@@ -37,14 +45,14 @@ public class ThreadUtilsPowerMockedTest
     @Test
     public final void testSleep() throws InterruptedException
     {
-        try (MockedStatic<ThreadUtils> threadUtilsMock = Mockito.mockStatic(ThreadUtils.class, Mockito.CALLS_REAL_METHODS))
-        {
-            threadUtilsMock.when(() -> ThreadUtils.doSleep(100)).thenReturn(null);
-            
-            ThreadUtils.sleep();
-            
-            threadUtilsMock.verify(() -> ThreadUtils.doSleep(100), times(1));
-        }
+        mockStatic(Thread.class);
+        Thread.sleep(Long.MAX_VALUE);
+        expectLastCall().once();
+        replayAll();
+
+        ThreadUtils.sleep();
+
+        verifyAll();
     }
 
     /**
@@ -55,12 +63,12 @@ public class ThreadUtilsPowerMockedTest
     @Test
     public final void testSleepLong_0() throws InterruptedException
     {
-        try (MockedStatic<ThreadUtils> threadUtilsMock = Mockito.mockStatic(ThreadUtils.class, Mockito.CALLS_REAL_METHODS))
-        {
-            ThreadUtils.sleep(0L);
-            
-            threadUtilsMock.verify(() -> ThreadUtils.doSleep(0), never());
-        }
+        mockStatic(Thread.class);
+        replayAll();
+
+        ThreadUtils.sleep(0L);
+
+        verifyAll();
     }
 
     /**
@@ -71,14 +79,14 @@ public class ThreadUtilsPowerMockedTest
     @Test
     public final void testSleepLong_Exception() throws InterruptedException
     {
-        try (MockedStatic<ThreadUtils> threadUtilsMock = Mockito.mockStatic(ThreadUtils.class, Mockito.CALLS_REAL_METHODS))
-        {
-            threadUtilsMock.when(() -> ThreadUtils.doSleep(10)).thenThrow(new InterruptedException());
-            
-            ThreadUtils.sleep(10);
-            
-            threadUtilsMock.verify(() -> ThreadUtils.doSleep(10), times(1));
-        }
+        mockStatic(Thread.class);
+        Thread.sleep(10L);
+        expectLastCall().andThrow(new InterruptedException());
+        replayAll();
+
+        ThreadUtils.sleep(10L);
+
+        verifyAll();
     }
 
     /**
@@ -89,12 +97,12 @@ public class ThreadUtilsPowerMockedTest
     @Test
     public final void testSleepLong_Negative() throws InterruptedException
     {
-        try (MockedStatic<ThreadUtils> threadUtilsMock = Mockito.mockStatic(ThreadUtils.class, Mockito.CALLS_REAL_METHODS))
-        {
-            ThreadUtils.sleep(-42L);
-            
-            threadUtilsMock.verify(() -> ThreadUtils.doSleep(-42L), never());
-        }
+        mockStatic(Thread.class);
+        replayAll();
+
+        ThreadUtils.sleep(-42L);
+
+        verifyAll();
     }
 
     /**

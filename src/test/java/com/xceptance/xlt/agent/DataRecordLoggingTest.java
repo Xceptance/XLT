@@ -66,6 +66,10 @@ import org.mockito.exceptions.verification.junit.ArgumentsAreDifferent;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.powermock.reflect.Whitebox;
 
 import com.xceptance.common.lang.ThrowableUtils;
@@ -81,6 +85,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.tests.AbstractTestCase;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.DataManagerImpl;
+import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltThreadFactory;
 import com.xceptance.xlt.engine.XltWebClient;
 
@@ -97,7 +102,16 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
  *
  * @author Deniz Altin
  */
-@RunWith(Parameterized.class)
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(Parameterized.class)
+@PrepareForTest(
+    {
+        SessionImpl.class, DataManagerImpl.class, GlobalClock.class, AbstractExecutionTimer.class
+})
+@PowerMockIgnore(
+    {
+        "javax.*", "org.xml.*", "org.w3c.dom.*", "org.apache.commons.vfs2.*"
+})
 public class DataRecordLoggingTest
 {
     /**
@@ -618,7 +632,7 @@ public class DataRecordLoggingTest
      */
     private void mockDataManagerCreation() throws Exception
     {
-        Mockito.whenNew(DataManagerImpl.class).withAnyArguments().thenAnswer(new Answer<DataManagerImpl>()
+        PowerMockito.whenNew(DataManagerImpl.class).withAnyArguments().thenAnswer(new Answer<DataManagerImpl>()
         {
             @Override
             public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
@@ -672,7 +686,7 @@ public class DataRecordLoggingTest
      */
     private static AbstractExecutionTimer dummyExecutionTimer()
     {
-        return Mockito.mock(AbstractExecutionTimer.class);
+        return PowerMockito.mock(AbstractExecutionTimer.class);
     }
 
     private static final String DEFAULT_AGENT_ID = "agentID";
