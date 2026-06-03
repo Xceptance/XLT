@@ -56,7 +56,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <asm.version>9.7.1</asm.version>
         <flexmark.version>0.64.8</flexmark.version>
-        <htmlunit.version>5.0.0</htmlunit.version>
+        <htmlunit.version>5.1.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
         <log4j.version>2.24.3</log4j.version>
@@ -283,8 +283,7 @@
         <dependency>
             <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit-xpath</artifactId>
-<!--            <version>${htmlunit.version}</version>-->
-            <version>5.0.1</version>
+            <version>${htmlunit.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
