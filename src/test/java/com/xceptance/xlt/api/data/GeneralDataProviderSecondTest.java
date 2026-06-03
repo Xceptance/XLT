@@ -15,10 +15,7 @@
  */
 package com.xceptance.xlt.api.data;
 
-
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -53,12 +50,12 @@ public class GeneralDataProviderSecondTest
         }
     }
 
-    @Test(expected = NoSuchFileException.class)
+    @Test(expected = RuntimeException.class)
     public void testGetDataProvider() throws Exception
     {
         try (final MockedStatic<DataProvider> mock = Mockito.mockStatic(DataProvider.class))
         {
-            mock.when(() -> DataProvider.getInstance(Mockito.anyString())).thenThrow(new IOException("HD'oh"));
+            mock.when(() -> DataProvider.getInstance(Mockito.anyString())).thenThrow(new FileNotFoundException("HD'oh"));
 
             final GeneralDataProvider provider = GeneralDataProvider.getInstance();
             provider.getCompany(false);

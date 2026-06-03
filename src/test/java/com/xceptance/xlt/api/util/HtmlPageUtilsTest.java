@@ -1497,10 +1497,7 @@ public class HtmlPageUtilsTest
         final HtmlForm form = Mockito.mock(HtmlForm.class);
         final HtmlInput input = Mockito.mock(HtmlInput.class);
 
-        Mockito.doReturn(Arrays.asList(new HtmlInput[]
-            {
-                input
-            })).when(form).getInputsByName("anyName");
+        Mockito.doReturn(input).when(form).getInputByName("anyName");
         Mockito.doThrow(new TestException()).when(input).setValue("anyValue");
 
         HtmlPageUtils.setInputValue(form, "anyName", "anyValue");
