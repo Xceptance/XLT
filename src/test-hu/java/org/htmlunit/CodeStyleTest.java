@@ -661,11 +661,11 @@ public class CodeStyleTest {
     }
 
     /**
-     * Returns array of String of the alerts which are in the specified index.
+     * Returns a list of String's of the alerts which are in the specified index.
      *
      * @param lines the list of strings
      * @param alertsIndex the index in which the \@Alerts is defined
-     * @return array of alert strings
+     * @return list of alert strings
      */
     public static List<String> alertsToList(final List<String> lines, final int alertsIndex) {
         return alertsToList(lines, alertsIndex, false);
@@ -786,7 +786,7 @@ public class CodeStyleTest {
                             list.add(',' + expressions[i]);
                         }
                         currentToken.setLength(0);
-                        currentToken.append(',' + expressions[expressions.length - 1]);
+                        currentToken.append(',').append(expressions[expressions.length - 1]);
                     }
                     else {
                         currentToken.append(token);
