@@ -120,7 +120,7 @@
             ],
             "messages" : {
                 "success" : "Agent CPU usage is within limits",
-                "fail" : "Agent CPU usage might have influenced the result, apply caution",
+                "fail" : "Agent CPU usage might have influenced the result, apply caution"
             },
             "points" : 0
         },
@@ -135,11 +135,11 @@
                     "selector" : "max(//agents/agent/totalCpuUsage/max)",
                     "condition" : "< 95",
                     "comment" : "Check the max to avoid influencing the test result"
-                },
+                }
             ],
             "messages" : {
                 "success" : "Agent CPU usage is within limits",
-                "fail" : "Max CPU usage was too high for a moment",
+                "fail" : "Max CPU usage was too high for a moment"
             },
             "points" : 0
         },
@@ -155,11 +155,11 @@
                     "selector" : "count(//agents/agent/totalCpuUsage/mean[number() < 25])",
                     "condition" : "= 0",
                     "comment" : "Check the mean to avoid consuming too little"
-                },
+                }
             ],
             "messages" : {
                 "success" : "All agents seem to be utilized well enough",
-                "fail" : "You might have too many ",
+                "fail" : "You might have too many "
             },
             "points" : 0
         },
@@ -176,7 +176,7 @@
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 0
         },
@@ -192,16 +192,16 @@
             "checks" : [
                 {
                     "selectorId" : "homepageP95",
-                    "condition" : "<= 100",
+                    "condition" : "<= 100"
                 },
                 {
                     "selectorId" : "homepageP99",
-                    "condition" : "<= 250",
-                },
+                    "condition" : "<= 250"
+                }
             ],
             "messages" : {
                 "success" : "A+",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 12
         },
@@ -215,16 +215,16 @@
             "checks" : [
                 {
                     "selectorId" : "homepageP95",
-                    "condition" : "<= 250",
+                    "condition" : "<= 250"
                 },
                 {
                     "selectorId" : "homepageP99",
-                    "condition" : "<= 750",
-                },
+                    "condition" : "<= 750"
+                }
             ],
             "messages" : {
                 "success" : "A",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 11
         },
@@ -238,16 +238,16 @@
             "checks" : [
                 {
                     "selectorId" : "homepageP95",
-                    "condition" : "<= 500",
+                    "condition" : "<= 500"
                 },
                 {
                     "selectorId" : "homepageP99",
-                    "condition" : "<= 1500",
-                },
+                    "condition" : "<= 1500"
+                }
             ],
             "messages" : {
                 "success" : "B",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 10
         },
@@ -261,16 +261,16 @@
             "checks" : [
                 {
                     "selectorId" : "homepageP95",
-                    "condition" : "<= 1000",
+                    "condition" : "<= 1000"
                 },
                 {
                     "selectorId" : "homepageP99",
-                    "condition" : "<= 3000",
-                },
+                    "condition" : "<= 3000"
+                }
             ],
             "messages" : {
                 "success" : "C",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 6
         },
@@ -284,16 +284,16 @@
             "checks" : [
                 {
                     "selectorId" : "homepageP95",
-                    "condition" : "<= 2000",
+                    "condition" : "<= 2000"
                 },
                 {
                     "selectorId" : "homepageP99",
-                    "condition" : "<= 7000",
-                },
+                    "condition" : "<= 7000"
+                }
             ],
             "messages" : {
                 "success" : "D",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 2
         },
@@ -307,16 +307,16 @@
             "checks" : [
                 {
                     "selectorId" : "homepageP95",
-                    "condition" : "> 2000",
+                    "condition" : "> 2000"
                 },
                 {
                     "selectorId" : "homepageP99",
-                    "condition" : "> 7000",
-                },
+                    "condition" : "> 7000"
+                }
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 0
         },
@@ -332,16 +332,16 @@
             "checks" : [
                 {
                     "selectorId" : "catalogP95",
-                    "condition" : "<= 100",
+                    "condition" : "<= 100"
                 },
                 {
                     "selectorId" : "catalogP99",
-                    "condition" : "<= 250",
-                },
+                    "condition" : "<= 250"
+                }
             ],
             "messages" : {
                 "success" : "A+",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 12
         },
@@ -355,16 +355,16 @@
             "checks" : [
                 {
                     "selectorId" : "catalogP95",
-                    "condition" : "<= 250",
+                    "condition" : "<= 250"
                 },
                 {
                     "selectorId" : "catalogP99",
-                    "condition" : "<= 750",
-                },
+                    "condition" : "<= 750"
+                }
             ],
             "messages" : {
                 "success" : "A",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 11
         },
@@ -378,16 +378,16 @@
             "checks" : [
                 {
                     "selectorId" : "catalogP95",
-                    "condition" : "<= 500",
+                    "condition" : "<= 500"
                 },
                 {
                     "selectorId" : "catalogP99",
-                    "condition" : "<= 1500",
-                },
+                    "condition" : "<= 1500"
+                }
             ],
             "messages" : {
                 "success" : "B",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 10
         },
@@ -401,16 +401,16 @@
             "checks" : [
                 {
                     "selectorId" : "catalogP95",
-                    "condition" : "<= 1000",
+                    "condition" : "<= 1000"
                 },
                 {
                     "selectorId" : "catalogP99",
-                    "condition" : "<= 3000",
-                },
+                    "condition" : "<= 3000"
+                }
             ],
             "messages" : {
                 "success" : "C",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 6
         },
@@ -424,16 +424,16 @@
             "checks" : [
                 {
                     "selectorId" : "catalogP95",
-                    "condition" : "<= 2000",
+                    "condition" : "<= 2000"
                 },
                 {
                     "selectorId" : "catalogP99",
-                    "condition" : "<= 7000",
-                },
+                    "condition" : "<= 7000"
+                }
             ],
             "messages" : {
                 "success" : "D",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 2
         },
@@ -447,16 +447,16 @@
             "checks" : [
                 {
                     "selectorId" : "catalogP95",
-                    "condition" : "> 2000",
+                    "condition" : "> 2000"
                 },
                 {
                     "selectorId" : "catalogP99",
-                    "condition" : "> 7000",
-                },
+                    "condition" : "> 7000"
+                }
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 0
         },
@@ -472,16 +472,16 @@
             "checks" : [
                 {
                     "selectorId" : "cartP95",
-                    "condition" : "<= 100",
+                    "condition" : "<= 100"
                 },
                 {
                     "selectorId" : "cartP99",
-                    "condition" : "<= 250",
-                },
+                    "condition" : "<= 250"
+                }
             ],
             "messages" : {
                 "success" : "A+",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 12
         },
@@ -495,16 +495,16 @@
             "checks" : [
                 {
                     "selectorId" : "cartP95",
-                    "condition" : "<= 250",
+                    "condition" : "<= 250"
                 },
                 {
                     "selectorId" : "cartP99",
-                    "condition" : "<= 750",
-                },
+                    "condition" : "<= 750"
+                }
             ],
             "messages" : {
                 "success" : "A",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 11
         },
@@ -518,16 +518,16 @@
             "checks" : [
                 {
                     "selectorId" : "cartP95",
-                    "condition" : "<= 500",
+                    "condition" : "<= 500"
                 },
                 {
                     "selectorId" : "cartP99",
-                    "condition" : "<= 1500",
-                },
+                    "condition" : "<= 1500"
+                }
             ],
             "messages" : {
                 "success" : "B",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 10
         },
@@ -541,16 +541,16 @@
             "checks" : [
                 {
                     "selectorId" : "cartP95",
-                    "condition" : "<= 1000",
+                    "condition" : "<= 1000"
                 },
                 {
                     "selectorId" : "cartP99",
-                    "condition" : "<= 3000",
-                },
+                    "condition" : "<= 3000"
+                }
             ],
             "messages" : {
                 "success" : "C",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 6
         },
@@ -564,16 +564,16 @@
             "checks" : [
                 {
                     "selectorId" : "cartP95",
-                    "condition" : "<= 2000",
+                    "condition" : "<= 2000"
                 },
                 {
                     "selectorId" : "cartP99",
-                    "condition" : "<= 7000",
-                },
+                    "condition" : "<= 7000"
+                }
             ],
             "messages" : {
                 "success" : "D",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 2
         },
@@ -587,16 +587,16 @@
             "checks" : [
                 {
                     "selectorId" : "cartP95",
-                    "condition" : "> 2000",
+                    "condition" : "> 2000"
                 },
                 {
                     "selectorId" : "cartP99",
-                    "condition" : "> 7000",
-                },
+                    "condition" : "> 7000"
+                }
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 0
         },
@@ -611,16 +611,16 @@
             "checks" : [
                 {
                     "selectorId" : "accountP95",
-                    "condition" : "<= 100",
+                    "condition" : "<= 100"
                 },
                 {
                     "selectorId" : "accountP99",
-                    "condition" : "<= 250",
-                },
+                    "condition" : "<= 250"
+                }
             ],
             "messages" : {
                 "success" : "A+",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 12
         },
@@ -634,16 +634,16 @@
             "checks" : [
                 {
                     "selectorId" : "accountP95",
-                    "condition" : "<= 250",
+                    "condition" : "<= 250"
                 },
                 {
                     "selectorId" : "accountP99",
-                    "condition" : "<= 750",
-                },
+                    "condition" : "<= 750"
+                }
             ],
             "messages" : {
                 "success" : "A",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 11
         },
@@ -657,16 +657,16 @@
             "checks" : [
                 {
                     "selectorId" : "accountP95",
-                    "condition" : "<= 500",
+                    "condition" : "<= 500"
                 },
                 {
                     "selectorId" : "accountP99",
-                    "condition" : "<= 1500",
-                },
+                    "condition" : "<= 1500"
+                }
             ],
             "messages" : {
                 "success" : "B",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 10
         },
@@ -680,16 +680,16 @@
             "checks" : [
                 {
                     "selectorId" : "accountP95",
-                    "condition" : "<= 1000",
+                    "condition" : "<= 1000"
                 },
                 {
                     "selectorId" : "accountP99",
-                    "condition" : "<= 3000",
-                },
+                    "condition" : "<= 3000"
+                }
             ],
             "messages" : {
                 "success" : "C",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 6
         },
@@ -703,16 +703,16 @@
             "checks" : [
                 {
                     "selectorId" : "accountP95",
-                    "condition" : "<= 2000",
+                    "condition" : "<= 2000"
                 },
                 {
                     "selectorId" : "accountP99",
-                    "condition" : "<= 7000",
-                },
+                    "condition" : "<= 7000"
+                }
             ],
             "messages" : {
                 "success" : "D",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 2
         },
@@ -726,16 +726,16 @@
             "checks" : [
                 {
                     "selectorId" : "accountP95",
-                    "condition" : "> 2000",
+                    "condition" : "> 2000"
                 },
                 {
                     "selectorId" : "accountP99",
-                    "condition" : "> 7000",
-                },
+                    "condition" : "> 7000"
+                }
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 0
         },
@@ -750,16 +750,16 @@
             "checks" : [
                 {
                     "selectorId" : "checkoutP95",
-                    "condition" : "<= 100",
+                    "condition" : "<= 100"
                 },
                 {
                     "selectorId" : "checkoutP99",
-                    "condition" : "<= 250",
-                },
+                    "condition" : "<= 250"
+                }
             ],
             "messages" : {
                 "success" : "A+",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 12
         },
@@ -773,16 +773,16 @@
             "checks" : [
                 {
                     "selectorId" : "checkoutP95",
-                    "condition" : "<= 250",
+                    "condition" : "<= 250"
                 },
                 {
                     "selectorId" : "checkoutP99",
-                    "condition" : "<= 750",
-                },
+                    "condition" : "<= 750"
+                }
             ],
             "messages" : {
                 "success" : "A",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 11
         },
@@ -796,16 +796,16 @@
             "checks" : [
                 {
                     "selectorId" : "checkoutP95",
-                    "condition" : "<= 500",
+                    "condition" : "<= 500"
                 },
                 {
                     "selectorId" : "checkoutP99",
-                    "condition" : "<= 1500",
-                },
+                    "condition" : "<= 1500"
+                }
             ],
             "messages" : {
                 "success" : "B",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 10
         },
@@ -819,16 +819,16 @@
             "checks" : [
                 {
                     "selectorId" : "checkoutP95",
-                    "condition" : "<= 1000",
+                    "condition" : "<= 1000"
                 },
                 {
                     "selectorId" : "checkoutP99",
-                    "condition" : "<= 3000",
-                },
+                    "condition" : "<= 3000"
+                }
             ],
             "messages" : {
                 "success" : "C",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 6
         },
@@ -842,16 +842,16 @@
             "checks" : [
                 {
                     "selectorId" : "checkoutP95",
-                    "condition" : "<= 2000",
+                    "condition" : "<= 2000"
                 },
                 {
                     "selectorId" : "checkoutP99",
-                    "condition" : "<= 7000",
-                },
+                    "condition" : "<= 7000"
+                }
             ],
             "messages" : {
                 "success" : "D",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 2
         },
@@ -865,16 +865,16 @@
             "checks" : [
                 {
                     "selectorId" : "checkoutP95",
-                    "condition" : "> 2000",
+                    "condition" : "> 2000"
                 },
                 {
                     "selectorId" : "checkoutP99",
-                    "condition" : "> 7000",
-                },
+                    "condition" : "> 7000"
+                }
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 0
         },
@@ -890,16 +890,16 @@
             "checks" : [
                 {
                     "selectorId" : "orderP95",
-                    "condition" : "<= 100",
+                    "condition" : "<= 100"
                 },
                 {
                     "selectorId" : "orderP99",
-                    "condition" : "<= 250",
-                },
+                    "condition" : "<= 250"
+                }
             ],
             "messages" : {
                 "success" : "A+",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 12
         },
@@ -913,16 +913,16 @@
             "checks" : [
                 {
                     "selectorId" : "orderP95",
-                    "condition" : "<= 250",
+                    "condition" : "<= 250"
                 },
                 {
                     "selectorId" : "orderP99",
-                    "condition" : "<= 750",
-                },
+                    "condition" : "<= 750"
+                }
             ],
             "messages" : {
                 "success" : "A",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 11
         },
@@ -936,16 +936,16 @@
             "checks" : [
                 {
                     "selectorId" : "orderP95",
-                    "condition" : "<= 500",
+                    "condition" : "<= 500"
                 },
                 {
                     "selectorId" : "orderP99",
-                    "condition" : "<= 1500",
-                },
+                    "condition" : "<= 1500"
+                }
             ],
             "messages" : {
                 "success" : "B",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 10
         },
@@ -959,16 +959,16 @@
             "checks" : [
                 {
                     "selectorId" : "orderP95",
-                    "condition" : "<= 1000",
+                    "condition" : "<= 1000"
                 },
                 {
                     "selectorId" : "orderP99",
-                    "condition" : "<= 3000",
-                },
+                    "condition" : "<= 3000"
+                }
             ],
             "messages" : {
                 "success" : "C",
-                "fail" : "",
+                "fail" : ""
             },
             "points" : 6
         },
@@ -982,16 +982,16 @@
             "checks" : [
                 {
                     "selectorId" : "orderP95",
-                    "condition" : "<= 2000",
+                    "condition" : "<= 2000"
                 },
                 {
                     "selectorId" : "orderP99",
-                    "condition" : "<= 7000",
-                },
+                    "condition" : "<= 7000"
+                }
             ],
             "messages" : {
                 "success" : "D",
-                "fail" : "a",
+                "fail" : "a"
             },
             "points" : 2
         },
@@ -1005,16 +1005,16 @@
             "checks" : [
                 {
                     "selectorId" : "orderP95",
-                    "condition" : "> 2000",
+                    "condition" : "> 2000"
                 },
                 {
                     "selectorId" : "orderP99",
-                    "condition" : "> 7000",
-                },
+                    "condition" : "> 7000"
+                }
             ],
             "messages" : {
                 "success" : "F",
-                "fail" : "a",
+                "fail" : "a"
             },
             "points" : 0
         },
@@ -1030,12 +1030,12 @@
             "checks" : [
                 {
                     "selectorId" : "orderErrors",
-                    "condition" : "< 1.0 ",
-                },
+                    "condition" : "< 1.0 "
+                }
             ],
             "messages" : {
                 "success" : "Order failure rate is ok",
-                "fail" : "Too many orders failed",
+                "fail" : "Too many orders failed"
             },
             "points" : 5
         },
@@ -1050,12 +1050,12 @@
             "checks" : [
                 {
                     "selectorId" : "requestErrors",
-                    "condition" : "< 0.5 ",
-                },
+                    "condition" : "< 0.5 "
+                }
             ],
             "messages" : {
                 "success" : "Request failure rate is ok",
-                "fail" : "Too many requests failed",
+                "fail" : "Too many requests failed"
             },
             "points" : 5
         },
@@ -1070,12 +1070,12 @@
             "checks" : [
                 {
                     "selectorId" : "actionErrors",
-                    "condition" : "< 0.5 ",
-                },
+                    "condition" : "< 0.5 "
+                }
             ],
             "messages" : {
                 "success" : "Action failure rate is ok",
-                "fail" : "Too many actions failed",
+                "fail" : "Too many actions failed"
             },
             "points" : 5
         },
@@ -1090,15 +1090,15 @@
             "checks" : [
                 {
                     "selectorId" : "transactionErrors",
-                    "condition" : "< 1.0 ",
-                },
+                    "condition" : "< 1.0 "
+                }
             ],
             "messages" : {
                 "success" : "Transaction failure rate is ok",
-                "fail" : "Too many transactions failed",
+                "fail" : "Too many transactions failed"
             },
             "points" : 5
-        },
+        }
     ],
 
     "groups" : [
@@ -1112,8 +1112,8 @@
             "rules" : ["baseCpuCheck", "critialCpuCheck", "wastingResources"],
             "messages" : {
                 "success" : "All CPU metrics are ok",
-                "fail" : "Verify the test setup, because some CPU metrics are off",
-            },
+                "fail" : "Verify the test setup, because some CPU metrics are off"
+            }
         },
         {
             "id" : "Homepage",
@@ -1125,8 +1125,8 @@
             "rules" : ["homepageAplus", "homepageA", "homepageB", "homepageC", "homepageD", "homepageF", "fallThroughF"],
             "messages" : {
                 "success" : "Homepage Success",
-                "fail" : "Homepage fail",
-            },
+                "fail" : "Homepage fail"
+            }
         },
         {
             "id" : "Catalog",
@@ -1135,7 +1135,7 @@
             "description" : "Rates the catalog",
             "failsTest" : false,
             "mode" : "firstPassed",
-            "rules" : ["catalogAplus", "catalogA", "catalogB", "catalogC", "catalogD", "catalogF", "fallThroughF"],
+            "rules" : ["catalogAplus", "catalogA", "catalogB", "catalogC", "catalogD", "catalogF", "fallThroughF"]
         },
         {
             "id" : "Cart",
@@ -1144,7 +1144,7 @@
             "description" : "Rates the cart",
             "failsTest" : false,
             "mode" : "firstPassed",
-            "rules" : ["cartAplus", "cartA", "cartB", "cartC", "cartD", "cartF", "fallThroughF"],
+            "rules" : ["cartAplus", "cartA", "cartB", "cartC", "cartD", "cartF", "fallThroughF"]
         },
         {
             "id" : "Account",
@@ -1153,7 +1153,7 @@
             "description" : "Rates the account",
             "failsTest" : false,
             "mode" : "firstPassed",
-            "rules" : ["accountAplus", "accountA", "accountB", "accountC", "accountD", "accountF", "fallThroughF"],
+            "rules" : ["accountAplus", "accountA", "accountB", "accountC", "accountD", "accountF", "fallThroughF"]
         },        {
             "id" : "Checkout",
             "enabled": true,
@@ -1161,7 +1161,7 @@
             "description" : "Rates the checkout",
             "failsTest" : false,
             "mode" : "firstPassed",
-            "rules" : ["checkoutAplus", "checkoutA", "checkoutB", "checkoutC", "checkoutD", "checkoutF", "fallThroughF"],
+            "rules" : ["checkoutAplus", "checkoutA", "checkoutB", "checkoutC", "checkoutD", "checkoutF", "fallThroughF"]
         },
         {
             "id" : "Order",
@@ -1170,7 +1170,7 @@
             "description" : "Rates the ordering",
             "failsTest" : false,
             "mode" : "firstPassed",
-            "rules" : ["orderAplus", "orderA", "orderB", "orderC", "orderD", "orderF", "fallThroughF"],
+            "rules" : ["orderAplus", "orderA", "orderB", "orderC", "orderD", "orderF", "fallThroughF"]
         },
         {
             "id" : "Errors",
@@ -1182,9 +1182,9 @@
             "rules" : ["requestErrorsRule", "actionErrorsRule", "transactionErrorsRule", "orderErrorsRule"],
             "messages" : {
                 "success" : "Error rates seem low enough",
-                "fail" : "Too many errors in some sectors",
-            },
-        },
+                "fail" : "Too many errors in some sectors"
+            }
+        }
     ],
 
     "ratings" : [
