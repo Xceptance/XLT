@@ -98,7 +98,7 @@ public class Scorecard
 
         /**
          * Returns the first error message for backward compatibility.
-         * 
+         *
          * @return the first error message or null if no errors
          */
         public String getError()
@@ -354,7 +354,7 @@ public class Scorecard
         Group(final GroupDefinition definition)
         {
             this.definition = Objects.requireNonNull(definition, "Group definition must not be null");
-            this.id = definition.getId();
+            id = definition.getId();
         }
 
         public GroupDefinition getDefinition()
@@ -419,7 +419,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = true;
+            testFailed = true;
         }
 
         public boolean isEnabled()
@@ -467,7 +467,7 @@ public class Scorecard
             this.definition = Objects.requireNonNull(definition, "Rule definition must not be null");
             this.groupEnabled = groupEnabled;
 
-            this.id = definition.getId();
+            id = definition.getId();
         }
 
         public String getId()
@@ -537,7 +537,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = true;
+            testFailed = true;
         }
 
         @XStreamAlias("check")
@@ -564,7 +564,7 @@ public class Scorecard
                 this.definition = Objects.requireNonNull(definition, "Check definition must not be null");
                 this.ruleEnabled = ruleEnabled;
 
-                this.index = definition.getIndex();
+                index = definition.getIndex();
             }
 
             public int getIndex()

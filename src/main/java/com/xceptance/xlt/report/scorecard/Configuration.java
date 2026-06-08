@@ -191,7 +191,7 @@ public class Configuration
 
     /**
      * Performs any validation that can be done only after setting up the configuration is complete.
-     * 
+     *
      * @throws ValidationException
      *             in case of validation errors
      */

@@ -47,8 +47,9 @@ public enum Status
     }
 
     /**
-     * Returns the negated status of this status (PASSED &rarr; FAILED; FAILED &rarr; PASSED; SKIPPED and ERROR stay as is).
-     * 
+     * Returns the negated status of this status (PASSED &rarr; FAILED; FAILED &rarr; PASSED; SKIPPED and ERROR stay as
+     * is).
+     *
      * @return this status negated
      */
     public Status negate()
@@ -67,19 +68,19 @@ public enum Status
     public static class StatusConverter implements SingleValueConverter
     {
         @Override
-        public boolean canConvert(@SuppressWarnings("rawtypes") Class type)
+        public boolean canConvert(@SuppressWarnings("rawtypes") final Class type)
         {
             return type == Status.class;
         }
 
         @Override
-        public String toString(Object obj)
+        public String toString(final Object obj)
         {
             return ((Status) obj).name();
         }
 
         @Override
-        public Object fromString(String str)
+        public Object fromString(final String str)
         {
             if ("NOTPASSED".equalsIgnoreCase(str))
             {

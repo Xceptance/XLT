@@ -116,7 +116,7 @@ public class RuleDefinition
         return negateResult;
     }
 
-    public void setNegateResult(boolean negateResult)
+    public void setNegateResult(final boolean negateResult)
     {
         this.negateResult = negateResult;
     }
@@ -341,19 +341,19 @@ public class RuleDefinition
     {
         @SuppressWarnings("rawtypes")
         @Override
-        public boolean canConvert(Class type)
+        public boolean canConvert(final Class type)
         {
             return type == String.class;
         }
 
         @Override
-        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context)
+        public void marshal(final Object source, final HierarchicalStreamWriter writer, final MarshallingContext context)
         {
             writer.addAttribute("ref-id", Objects.toString(source));
         }
 
         @Override
-        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context)
+        public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context)
         {
             return null;
         }

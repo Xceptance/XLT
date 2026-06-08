@@ -44,11 +44,11 @@ public class Evaluator
 
         if (fileName.endsWith(".groovy"))
         {
-            this.delegate = new GroovyEvaluator(configFile, processor);
+            delegate = new GroovyEvaluator(configFile, processor);
         }
         else
         {
-            this.delegate = new JsonEvaluator(configFile, processor);
+            delegate = new JsonEvaluator(configFile, processor);
         }
     }
 
@@ -56,7 +56,7 @@ public class Evaluator
      * Evaluates the given XML file.
      *
      * @param documentFile
-     *                         the XML file to evaluate
+     *            the XML file to evaluate
      * @return resulting scorecard
      */
     public Scorecard evaluate(final File documentFile)
@@ -68,11 +68,11 @@ public class Evaluator
      * Writes the given scorecard as serialized XML to the given output file.
      *
      * @param scorecard
-     *                       the scorecard to be written
+     *            the scorecard to be written
      * @param outputFile
-     *                       the target output file
+     *            the target output file
      * @throws IOException
-     *                         thrown upon failure to write to given file
+     *             thrown upon failure to write to given file
      */
     public void writeScorecardToFile(final Scorecard scorecard, final File outputFile) throws IOException
     {
@@ -86,11 +86,11 @@ public class Evaluator
      * Writes the given scorecard as serialized XML to the given destination writer.
      *
      * @param scorecard
-     *                      the scorecard to be written
+     *            the scorecard to be written
      * @param writer
-     *                      the destination to write serialized XML to
+     *            the destination to write serialized XML to
      * @throws IOException
-     *                         thrown if scorecard could not be written
+     *             thrown if scorecard could not be written
      */
     public void writeScorecard(final Scorecard scorecard, final Writer writer) throws IOException
     {

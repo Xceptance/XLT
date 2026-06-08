@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.xlt.report.scorecard;
 
 import java.io.File;
@@ -42,11 +57,11 @@ public abstract class AbstractEvaluator
      * Writes the given scorecard as serialized XML to the given destination writer.
      *
      * @param scorecard
-     *                      the scorecard to be written
+     *            the scorecard to be written
      * @param writer
-     *                      the destination to write serialized XML to
+     *            the destination to write serialized XML to
      * @throws IOException
-     *                         thrown if scorecard could not be written
+     *             thrown if scorecard could not be written
      */
     public void writeScorecard(final Scorecard scorecard, final Writer writer) throws IOException
     {
@@ -59,14 +74,6 @@ public abstract class AbstractEvaluator
         xstream.aliasSystemAttribute(null, "class");
         xstream.setMode(XStream.NO_REFERENCES);
 
-        // Important for backward compatibility/consistency
-        xstream.alias("scorecard", Scorecard.class);
-        xstream.alias("outcome", Scorecard.Result.class);
-        xstream.alias("error", Scorecard.Error.class);
-        xstream.alias("group", Scorecard.Group.class);
-        xstream.alias("rule", Scorecard.Rule.class);
-        xstream.alias("check", Scorecard.Rule.Check.class);
-
         // let XStream do its job
         xstream.toXML(scorecard, writer);
     }
@@ -75,9 +82,9 @@ public abstract class AbstractEvaluator
      * Returns the ratio in percent rounded to one decimal place.
      *
      * @param numerator
-     *                        the numerator value
+     *            the numerator value
      * @param denominator
-     *                        the denominator value
+     *            the denominator value
      * @return given ratio in percent
      */
     protected static double getPercentage(final int numerator, final int denominator)
@@ -89,9 +96,9 @@ public abstract class AbstractEvaluator
      * Formats the given value using the specified formatter string.
      *
      * @param value
-     *                      the value to format
+     *            the value to format
      * @param formatter
-     *                      the Java string formatter syntax
+     *            the Java string formatter syntax
      * @return the formatted value
      */
     protected String formatValue(final String value, final String formatter)
@@ -133,9 +140,9 @@ public abstract class AbstractEvaluator
      * Checks if the given sequence starts with any of the provided search strings.
      *
      * @param sequence
-     *                          the sequence to check
+     *            the sequence to check
      * @param searchStrings
-     *                          the search strings to look for
+     *            the search strings to look for
      * @return <code>true</code> if the sequence starts with any of the search strings, <code>false</code> otherwise
      */
     protected boolean startsWithAny(final String sequence, final String... searchStrings)
@@ -158,7 +165,7 @@ public abstract class AbstractEvaluator
      * message, and points accordingly.
      *
      * @param rule
-     *                 the rule to conclude
+     *            the rule to conclude
      */
     protected void conclude(final Scorecard.Rule rule)
     {
@@ -215,7 +222,7 @@ public abstract class AbstractEvaluator
      * message, points, and determines if the test should fail.
      *
      * @param group
-     *                  the group to conclude
+     *            the group to conclude
      * @return true if the test should fail due to this group's evaluation
      */
     protected boolean conclude(final Scorecard.Group group)
@@ -347,7 +354,7 @@ public abstract class AbstractEvaluator
      *            function to lookup selector definitions by ID
      */
     protected void evaluateRule(final Scorecard.Rule rule, final XPathCompiler compiler, final XdmNode document,
-                              final Function<String, SelectorDefinition> selectorLookup)
+                                final Function<String, SelectorDefinition> selectorLookup)
     {
         for (final RuleDefinition.Check check : rule.getDefinition().getChecks())
         {
