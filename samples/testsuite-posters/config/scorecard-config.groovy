@@ -1,204 +1,401 @@
-import com.xceptance.xlt.report.scorecard.builder.ScorecardBuilder
+import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder
 
 /**
  * XLT Scorecard Configuration (Groovy DSL)
- * 
- * This file replaces the legacy JSON/YAML scorecards with a powerful, programmable Groovy DSL.
- * It demonstrates how to use the 'metrics' helper object to avoid raw XPath strings,
- * how to use loops to generate repetitive rules, and how to use modern features like 'excludeName'.
+ *
+ * Equivalent configuration migrated from scorecard-config.json.
  */
 
-//
-// 1. Define Categories and Limits
-//
-// Instead of copy-pasting rules for every page type (which made the YAML massive), 
-// we define the pages and their matching regular expressions in a Map. 
-// We can then loop over this map to generate everything dynamically.
-def pages = [
-    Homepage: "^Homepage",
-    Catalog:  "^(SelectTopCategory|SelectCategory|ProductDetailView)",
-    Account:  "^(Login|Logout|Register|GoToRegistrationForm|GoToSignIn)",
-    Cart:     "^(AddToCart|ViewCart)",
-    
-    // For Checkout, we want to match checkout steps but NOT the final PlaceOrder step.
-    // We will use the 'excludeName' parameter in the metrics helper for this later.
-    Checkout: "^(StartCheckout|EnterShippingAddress|EnterBillingAddress|EnterPaymentMethod)",
-    
-    Order:    "^PlaceOrder"
-]
-
-// Grading criteria for each page type. The 'points' represent the weight of the grade.
+// Define categories and grades to dynamically generate the repetitive page rules
+def pages = ['homepage', 'catalog', 'cart', 'account', 'checkout', 'order']
 def grades = [
-    Aplus: [p95: 100,  p99: 250,  points: 12],
-    A:     [p95: 250,  p99: 750,  points: 11],
-    B:     [p95: 500,  p99: 1500, points: 10],
-    C:     [p95: 1000, p99: 3000, points: 6],
-    D:     [p95: 2000, p99: 7000, points: 2],
-    F:     [p95: 2001, p99: 7001, points: 0] // F starts above D
+    [id: 'Aplus', name: 'A+', p95: 100, p99: 250, points: 12, enabled: true, failsTest: false],
+    [id: 'A',     name: 'A',  p95: 250, p99: 750, points: 11, enabled: true, failsTest: false],
+    [id: 'B',     name: 'B',  p95: 500, p99: 1500, points: 10, enabled: true, failsTest: false],
+    [id: 'C',     name: 'C',  p95: 1000, p99: 3000, points: 6,  enabled: true, failsTest: false],
+    [id: 'D',     name: 'D',  p95: 2000, p99: 7000, points: 2,  enabled: true, failsTest: false],
+    [id: 'F',     name: 'F',  p95: 2000, p99: 7000, points: 0,  enabled: false, failsTest: true]
 ]
 
-//
-// 2. Define Selectors
-//
+// 1. Selectors
 builder.selectors {
-    
-    // Dynamically generate P95 and P99 selectors for every page category.
-    pages.each { pageName, regex ->
-        
-        // P95 selector
-        selector {
-            id "${pageName.toLowerCase()}P95"
-            
-            // Example of using the modern metrics helper!
-            // If the category is 'Checkout', we explicitly exclude the PlaceOrder transaction.
-            if (pageName == 'Checkout') {
-                expression metrics.requestP95(name: regex, excludeName: "^PlaceOrder")
-            } else {
-                expression metrics.requestP95(regex)
-            }
-        }
-        
-        // P99 selector
-        selector {
-            id "${pageName.toLowerCase()}P99"
-            
-            if (pageName == 'Checkout') {
-                expression metrics.requestP99(name: regex, excludeName: "^PlaceOrder")
-            } else {
-                expression metrics.requestP99(regex)
-            }
-        }
+    // Get us the max of all P95 of homepage like requests
+    selector {
+        id 'homepageP95'
+        expression metrics.requestP95(label: 'homepage')
     }
-    
-    // Global Error Metrics
-    // Using the built-in summary helpers
-    selector { id 'transactionErrors'; expression metrics.globalErrorPercentage('transactions') }
-    selector { id 'actionErrors';      expression metrics.globalErrorPercentage('actions') }
-    selector { id 'requestErrors';     expression metrics.globalErrorPercentage('requests') }
-    
-    // Example of using the HTTP Error metrics helper
-    selector { id 'http5xxErrors';     expression metrics.httpErrorCount('5..') }
-    
-    // Agent CPU usage
-    selector { id 'agentCpuMax';       expression metrics.agentCpuMax() }
+    // Get us the max of all P99 of homepage like requests
+    selector {
+        id 'homepageP99'
+        expression metrics.requestP99(label: 'homepage')
+    }
+    // Get us the max of all P95 of catalog like requests
+    selector {
+        id 'catalogP95'
+        expression metrics.requestP95(label: 'catalog')
+    }
+    // Get us the max of all P99 of catalog like requests
+    selector {
+        id 'catalogP99'
+        expression metrics.requestP99(label: 'catalog')
+    }
+    // Get us the max of all P95 of account like requests
+    selector {
+        id 'accountP95'
+        expression metrics.requestP95(label: 'account')
+    }
+    // Get us the max of all P99 of account like requests
+    selector {
+        id 'accountP99'
+        expression metrics.requestP99(label: 'account')
+    }
+    // Get us the max of all P95 of cart like requests
+    selector {
+        id 'cartP95'
+        expression metrics.requestP95(label: 'cart')
+    }
+    // Get us the max of all P99 of cart like requests
+    selector {
+        id 'cartP99'
+        expression metrics.requestP99(label: 'cart')
+    }
+    // Get us the max of all P95 of checkout like requests and have enough samples to consider it.
+    selector {
+        id 'checkoutP95'
+        expression "max(//requests/request[labels = 'checkout' and count > 50]/percentiles/p95)"
+    }
+    // Get us the max of all P99 of checkout like requests and have enough samples to consider it.
+    selector {
+        id 'checkoutP99'
+        expression "max(//requests/request[labels = 'checkout' and count > 50]/percentiles/p99)"
+    }
+    // Get us the max of all P95 of order like requests
+    selector {
+        id 'orderP95'
+        expression metrics.requestP95(label: 'order')
+    }
+    // Get us the max of all P99 of order like requests
+    selector {
+        id 'orderP99'
+        expression metrics.requestP99(label: 'order')
+    }
+    // Get us the order count
+    selector {
+        id 'orderCount'
+        expression "max(//requests/request[labels = 'order']/count)"
+    }
+    // Get us the order percentage errors
+    selector {
+        id 'orderErrors'
+        expression "sum(//actions/action[labels = 'order']/errorPercentage)"
+    }
+    // Get transaction error percentage
+    selector {
+        id 'transactionErrors'
+        expression metrics.globalErrorPercentage('transactions')
+    }
+    // Get action errors
+    selector {
+        id 'actionErrors'
+        expression metrics.globalErrorPercentage('actions')
+    }
+    // Get requests errors
+    selector {
+        id 'requestErrors'
+        expression metrics.globalErrorPercentage('requests')
+    }
 }
 
-//
-// 3. Define Rules
-//
+// 2. Rules
 builder.rules {
-    
-    // Generate tiered grading rules for each Page
-    pages.each { pageName, regex ->
-        grades.each { gradeName, limits ->
-            rule {
-                id "${pageName.toLowerCase()}${gradeName}"
-                name "${pageName} ${gradeName}"
-                enabled true
-                points limits.points
-                checks {
-                    check {
-                        selectorId "${pageName.toLowerCase()}P95"
-                        
-                        // The 'F' grade acts as our absolute failure threshold.
-                        if (gradeName == 'F') {
-                            isGreaterThan grades.D.p95
-                        } else {
-                            isLessThanOrEqualTo limits.p95
-                        }
-                    }
-                    check {
-                        selectorId "${pageName.toLowerCase()}P99"
-                        
-                        if (gradeName == 'F') {
-                            isGreaterThan grades.D.p99
-                        } else {
-                            isLessThanOrEqualTo limits.p99
-                        }
-                    }
-                }
-                messages {
-                    success "${gradeName}"
-                }
-                
-                // If performance hits the F grade, we immediately fail the load test.
-                if (gradeName == 'F') {
-                    enabled false // Just informational in this demo, but you could enable it!
-                    failsTest true
-                }
+    // Agent CPU and wasting rules
+    rule {
+        id 'baseCpuCheck'
+        name 'Agent CPU Usage'
+        description 'Verify that the CPU usage of agents is low enough'
+        failsTest false
+        enabled true
+        points 0
+        checks {
+            check {
+                selector 'count(//agents/agent/totalCpuUsage/mean[number() > 60])'
+                isEqualTo 0
             }
         }
-    }
-    
-    // Global Health Rules
-    rule {
-        id 'agentCpuRule'
-        name 'Agent CPU Usage'
-        failsTest true
-        checks {
-            check { selectorId 'agentCpuMax'; isLessThan 95 }
+        messages {
+            success 'Agent CPU usage is within limits'
+            fail 'Agent CPU usage might have influenced the result, apply caution'
         }
     }
-    
-    // HTTP Error Rule
+
     rule {
-        id 'httpErrorRule'
-        name 'Zero 5xx Errors'
+        id 'critialCpuCheck'
+        name 'Max Agent CPU Usage'
+        description 'Verify that the CPU usage was never too high'
         failsTest true
+        enabled true
+        points 0
         checks {
-            check { selectorId 'http5xxErrors'; isEqualTo 0 }
+            check {
+                selector 'max(//agents/agent/totalCpuUsage/max)'
+                isLessThan 95
+            }
+        }
+        messages {
+            success 'Agent CPU usage is within limits'
+            fail 'Max CPU usage was too high for a moment'
         }
     }
-    
-    // Fallback rule used to force a group failure if no valid grades are achieved
+
+    rule {
+        id 'wastingResources'
+        name 'Agent Wasting'
+        description 'Check that we use our machines wisely'
+        failsTest false
+        enabled true
+        negateResult false
+        points 0
+        checks {
+            check {
+                selector 'count(//agents/agent/totalCpuUsage/mean[number() < 25])'
+                isEqualTo 0
+            }
+        }
+        messages {
+            success 'All agents seem to be utilized well enough'
+            fail 'You might have too many '
+        }
+    }
+
     rule {
         id 'fallThroughF'
         name 'F'
+        description 'F'
         failsTest true
-        failsOn 'PASSED' // A rule with no checks always passes. failsOn='PASSED' inverts it to a failure.
-        checks {} 
-    }
-}
-
-//
-// 4. Define Groups
-//
-builder.groups {
-    
-    // Generate a 'firstPassed' group for each Page category.
-    // The rules evaluate top-down (A+ -> F). The first one that passes determines the points.
-    pages.each { pageName, regex ->
-        group {
-            id pageName
-            name "${pageName} Rating"
-            mode 'firstPassed'
-            
-            // Build the prioritized list of rule IDs (e.g., [homepageAplus, homepageA, ...])
-            def ruleList = grades.keySet().collect { "${pageName.toLowerCase()}${it}" }
-            ruleList << 'fallThroughF' // Catch-all failure
-            
-            rules(ruleList)
+        failsOn 'PASSED'
+        enabled true
+        negateResult false
+        points 0
+        checks {
+        }
+        messages {
+            success 'F'
+            fail ''
         }
     }
-    
-    // Infrastructure checks
-    group {
-        id 'Infrastructure'
-        mode 'allPassed'
-        rules(['agentCpuRule', 'httpErrorRule'])
+
+    // Generate repetitive page rules dynamically
+    pages.each { page ->
+        grades.each { grade ->
+            rule {
+                id "${page}${grade.id}"
+                name "${page.capitalize()} ${grade.name}"
+
+                if (grade.id == 'F') {
+                    if (page == 'homepage') {
+                        description "Homepage F rating criteria, this is for information only, we don't need that here, rather we have a generic F."
+                    } else {
+                        description "${page.capitalize()} F rating criteria, just for information, a generic F rule wil catch it all."
+                    }
+                } else {
+                    description "${page.capitalize()} ${grade.name} rating criteria"
+                }
+
+                failsTest grade.failsTest
+                enabled grade.enabled
+                negateResult false
+
+                checks {
+                    check {
+                        selectorId "${page}P95"
+                        if (grade.id == 'F') {
+                            isGreaterThan grade.p95
+                        } else {
+                            isLessThanOrEqualTo grade.p95
+                        }
+                    }
+                    check {
+                        selectorId "${page}P99"
+                        if (grade.id == 'F') {
+                            isGreaterThan grade.p99
+                        } else {
+                            isLessThanOrEqualTo grade.p99
+                        }
+                    }
+                }
+
+                messages {
+                    success grade.name
+                    fail ''
+                }
+                points grade.points
+            }
+        }
+    }
+
+    // Error rules
+    rule {
+        id 'orderErrorsRule'
+        name 'Order Errors'
+        description 'Ensure that only few orders failed'
+        failsTest true
+        enabled true
+        failsOn 'NOTPASSED'
+        negateResult false
+        checks {
+            check {
+                selectorId 'orderErrors'
+                isLessThan 1.0
+            }
+        }
+        messages {
+            success 'Order failure rate is ok'
+            fail 'Too many orders failed'
+        }
+        points 5
+    }
+
+    rule {
+        id 'requestErrorsRule'
+        name 'Request Errors'
+        description 'Request error rate'
+        failsTest true
+        enabled true
+        failsOn 'NOTPASSED'
+        negateResult false
+        checks {
+            check {
+                selectorId 'requestErrors'
+                isLessThan 0.5
+            }
+        }
+        messages {
+            success 'Request failure rate is ok'
+            fail 'Too many requests failed'
+        }
+        points 5
+    }
+
+    rule {
+        id 'actionErrorsRule'
+        name 'Action Errors'
+        description 'Action error rate'
+        failsTest true
+        enabled true
+        failsOn 'NOTPASSED'
+        negateResult false
+        checks {
+            check {
+                selectorId 'actionErrors'
+                isLessThan 0.5
+            }
+        }
+        messages {
+            success 'Action failure rate is ok'
+            fail 'Too many actions failed'
+        }
+        points 5
+    }
+
+    rule {
+        id 'transactionErrorsRule'
+        name 'Transaction Errors'
+        description 'Transaction error rate'
+        failsTest true
+        enabled true
+        failsOn 'NOTPASSED'
+        negateResult false
+        checks {
+            check {
+                selectorId 'transactionErrors'
+                isLessThan 1.0
+            }
+        }
+        messages {
+            success 'Transaction failure rate is ok'
+            fail 'Too many transactions failed'
+        }
+        points 5
     }
 }
 
-//
-// 5. Define Overall Ratings
-//
-builder.ratings {
-    rating { id 'A'; value 100.0; description "Excellent performance across the board." }
-    rating { id 'B'; value 90.0 }
-    rating { id 'C'; value 80.0 }
-    rating { id 'D'; value 60.0 }
-    rating { id 'F'; value 50.0; failsTest true }
+// 3. Groups
+builder.groups {
+    group {
+        id 'CPUs'
+        name 'Agent CPU Usage'
+        description 'Verify that the CPU usage of agents is ok'
+        failsTest true
+        mode 'allPassed'
+        enabled true
+        rules(['baseCpuCheck', 'critialCpuCheck', 'wastingResources'])
+        messages {
+            success 'All CPU metrics are ok'
+            fail 'Verify the test setup, because some CPU metrics are off'
+        }
+    }
+
+    // Dynamic page groups
+    pages.each { page ->
+        group {
+            id page.capitalize()
+            enabled true
+            name "${page.capitalize()} Rating"
+            description (page == 'order' ? 'Rates the ordering' : "Rates the ${page}")
+            failsTest false
+            mode 'firstPassed'
+            rules(["${page}Aplus", "${page}A", "${page}B", "${page}C", "${page}D", "${page}F", 'fallThroughF'])
+            if (page == 'homepage') {
+                messages {
+                    success 'Homepage Success'
+                    fail 'Homepage fail'
+                }
+            }
+        }
+    }
+
+    group {
+        id 'Errors'
+        enabled true
+        name 'Error Check'
+        description 'Error occurrences'
+        failsTest true
+        mode 'allPassed'
+        rules(['requestErrorsRule', 'actionErrorsRule', 'transactionErrorsRule', 'orderErrorsRule'])
+        messages {
+            success 'Error rates seem low enough'
+            fail 'Too many errors in some sectors'
+        }
+    }
 }
 
-// Return the builder to let the Evaluator build the configuration
+// 4. Ratings
+builder.ratings {
+    rating {
+        id 'poor'
+        name 'Poor'
+        enabled true
+        description 'Load test performed poorly'
+        value 50.0
+        failsTest false
+    }
+    rating {
+        id 'ok'
+        name 'Ok'
+        enabled true
+        description 'Load test result likely valid'
+        value 80.0
+        failsTest false
+    }
+    rating {
+        id 'success'
+        name 'Success'
+        enabled true
+        description 'Load test performed nicely'
+        value 100.0
+        failsTest false
+    }
+}
+
+// Return builder
 builder
