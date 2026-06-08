@@ -11,6 +11,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 import com.xceptance.xlt.report.scorecard.groovy.GroovySecurityUtils;
 import com.xceptance.xlt.report.scorecard.groovy.MetricsHelper;
+import com.xceptance.xlt.report.scorecard.groovy.ScorecardData;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardLogger;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardProperties;
 import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder;

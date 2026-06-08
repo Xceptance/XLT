@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.scorecard;
+package com.xceptance.xlt.report.scorecard.groovy;
 
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.xceptance.xlt.report.scorecard.GroovyEvaluator;
 
 import net.sf.saxon.s9api.Processor;
 

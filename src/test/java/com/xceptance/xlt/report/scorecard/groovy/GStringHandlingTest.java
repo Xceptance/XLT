@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.scorecard;
+package com.xceptance.xlt.report.scorecard.groovy;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,10 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.xceptance.xlt.report.scorecard.Configuration;
+import com.xceptance.xlt.report.scorecard.GroovyEvaluator;
+import com.xceptance.xlt.report.scorecard.ValidationException;
 
 import net.sf.saxon.s9api.Processor;
 
