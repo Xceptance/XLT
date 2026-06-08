@@ -9,24 +9,26 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * XStream converter for java.util.Properties that avoids security issues with the default converter.
+ * XStream converter for {@link java.util.Properties} that avoids security issues with the default converter. It doesn't
+ * use reflection so we don't need to open the java.util package for inspection. On the downside, this converter is not
+ * able to stream any default properties, but this is often not needed.
  * 
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
- * @since 10.0.1
+ * @since 10.0.0
  */
-public class SafePropertiesConverter implements Converter 
+public class SafePropertiesConverter implements Converter
 {
     @Override
-    public boolean canConvert(Class type) 
+    public boolean canConvert(Class type)
     {
         return Properties.class.isAssignableFrom(type);
     }
 
     @Override
-    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) 
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context)
     {
         Properties properties = (Properties) source;
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) 
+        for (Map.Entry<Object, Object> entry : properties.entrySet())
         {
             writer.startNode("property");
             writer.addAttribute("name", entry.getKey().toString());
@@ -36,11 +38,11 @@ public class SafePropertiesConverter implements Converter
     }
 
     @Override
-    public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) 
+    public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context)
     {
         Properties properties = new Properties();
-        
-        while (reader.hasMoreChildren()) 
+
+        while (reader.hasMoreChildren())
         {
             reader.moveDown();
             String name = reader.getAttribute("name");
