@@ -75,7 +75,7 @@ public class MetricsHelperTest
     }
 
     @Test
-    public void testLegacyStringMethodsViaReflection() throws Exception
+    public void testGeneralStringMethodsViaReflection() throws Exception
     {
         // To achieve high coverage without massive boilerplate, we dynamically invoke
         // all methods that take a single String regex (e.g., requestP95(String), actionMean(String)).
