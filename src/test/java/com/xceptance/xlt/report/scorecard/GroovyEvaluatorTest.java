@@ -38,10 +38,6 @@ public class GroovyEvaluatorTest
     public void testParseConfigurationGroovyValues() throws Exception
     {
         final var groovy = """
-            import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder
-
-            def builder = new ScorecardBuilder()
-
             builder.selectors {
                 selector {
                     id 'sel1'
@@ -71,8 +67,6 @@ public class GroovyEvaluatorTest
                     rules(['rule1'])
                 }
             }
-
-            return builder.build()
             """;
 
         final var tempFile = Files.createTempFile("scorecard-config", ".groovy").toFile();
@@ -110,10 +104,6 @@ public class GroovyEvaluatorTest
                     rules(['rule1'])
                 }
             }
-
-            // implicitly returns builder? No, we likely need to return builder.build() or just configuration
-            // current impl expects return value to be Configuration or ScorecardBuilder
-            return builder;
             """;
 
         final var tempFile = Files.createTempFile("scorecard-config-binder", ".groovy").toFile();
@@ -174,7 +164,6 @@ public class GroovyEvaluatorTest
                     rules(['rule1'])
                 }
             }
-            return builder
             """;
 
         final var tempFile = Files.createTempFile("scorecard-whitelist", ".groovy").toFile();
@@ -213,8 +202,6 @@ public class GroovyEvaluatorTest
                     rules(['rule1'])
                 }
             }
-
-            return builder
             """;
 
         final var tempFile = Files.createTempFile("scorecard-formatter", ".groovy").toFile();
@@ -256,8 +243,6 @@ public class GroovyEvaluatorTest
                     rules(['rule1'])
                 }
             }
-
-            return builder
             """;
 
         final var tempFile = Files.createTempFile("scorecard-manual", ".groovy").toFile();
@@ -297,7 +282,14 @@ public class GroovyEvaluatorTest
                     }
                 }
             }
-            return builder
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
             """;
 
         final var tempFile = Files.createTempFile("scorecard-logging", ".groovy").toFile();
@@ -383,7 +375,6 @@ public class GroovyEvaluatorTest
                 rating { id 'B'; value 80.0 }
                 rating { id 'F'; value 0.0; active true; failsTest true }
             }
-            return builder
             """;
 
         final var tempFile = Files.createTempFile("scorecard-active-rating", ".groovy").toFile();

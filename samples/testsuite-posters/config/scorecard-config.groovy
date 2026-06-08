@@ -1,5 +1,3 @@
-import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder
-
 /**
  * XLT Scorecard Configuration (Groovy DSL)
  *
@@ -17,7 +15,10 @@ def grades = [
     [id: 'F',     name: 'F',  p95: 2000, p99: 7000, points: 0,  enabled: false, failsTest: true]
 ]
 
+// ----------------------------------------------------------------------------
 // 1. Selectors
+// ----------------------------------------------------------------------------
+
 builder.selectors {
     // Get us the max of all P95 of homepage like requests
     selector {
@@ -106,7 +107,10 @@ builder.selectors {
     }
 }
 
+// ----------------------------------------------------------------------------
 // 2. Rules
+// ----------------------------------------------------------------------------
+
 builder.rules {
     // Agent CPU and wasting rules
     rule {
@@ -319,7 +323,10 @@ builder.rules {
     }
 }
 
+// ----------------------------------------------------------------------------
 // 3. Groups
+// ----------------------------------------------------------------------------
+
 builder.groups {
     group {
         id 'CPUs'
@@ -369,7 +376,10 @@ builder.groups {
     }
 }
 
+// ----------------------------------------------------------------------------
 // 4. Ratings
+// ----------------------------------------------------------------------------
+
 builder.ratings {
     rating {
         id 'poor'
@@ -396,6 +406,3 @@ builder.ratings {
         failsTest false
     }
 }
-
-// Return builder
-builder
