@@ -211,62 +211,44 @@ public class GroovyEvaluator extends AbstractEvaluator
                     }
                 }
             }
+        }
 
-            // do not "overwrite" any previous error
-            if (StringUtils.isBlank(result.getError()))
-            {
-                // collect error messages from erroneous groups/rules and join them with two new-line characters
-                final String errorMessagesJoined = erroneousGroups.stream().flatMap(g -> g.getRules().stream())
-                                                                  .filter(r -> r.getStatus().isError() &&
-                                                                               StringUtils.isNotBlank(r.getMessage()))
-                                                                  .map(r -> String.format("Error evaluating rule '%s': %s", r.getId(),
-                                                                                          r.getMessage()))
-                                                                  .collect(Collectors.joining("\n\n"));
-                if (StringUtils.isNotBlank(errorMessagesJoined))
-                {
-                    result.addError(errorMessagesJoined, logText);
-                }
-            }
+        // set overall number of achieved and achievable points
+        result.setPoints(points);
+        result.setTotalPoints(totalPoints);
+
+        String rating = null;
+
+        // check for manually active ratings first
+        final RatingDefinition activeRating = config.getRatings().stream().filter(r -> r.isActive() && r.isEnabled()).findFirst()
+                                                    .orElse(null);
+
+        if (activeRating != null)
+        {
+            // manual rating selection - use the first active rating
+            rating = activeRating.getId();
+            testFailed = testFailed || activeRating.isFailsTest();
+            result.setPointsPercentage(null);  // Points percentage meaningless for manual
         }
         else
         {
-            // set overall number of achieved and achievable points
-            result.setPoints(points);
-            result.setTotalPoints(totalPoints);
-
-            String rating = null;
-
-            // check for manually active ratings first
-            final RatingDefinition activeRating = config.getRatings().stream().filter(r -> r.isActive() && r.isEnabled()).findFirst()
-                                                        .orElse(null);
-
-            if (activeRating != null)
+            // auto-calculate rating based on points percentage
+            final double pointsPercentage = getPercentage(points, totalPoints);
+            for (final RatingDefinition ratingDef : config.getRatings())
             {
-                // manual rating selection - use the first active rating
-                rating = activeRating.getId();
-                testFailed = testFailed || activeRating.isFailsTest();
-                result.setPointsPercentage(null);  // Points percentage meaningless for manual
-            }
-            else
-            {
-                // auto-calculate rating based on points percentage
-                final double pointsPercentage = getPercentage(points, totalPoints);
-                for (final RatingDefinition ratingDef : config.getRatings())
+                if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
                 {
-                    if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
-                    {
-                        rating = ratingDef.getId();
-                        testFailed = testFailed || ratingDef.isFailsTest();
-                        break;
-                    }
+                    rating = ratingDef.getId();
+                    testFailed = testFailed || ratingDef.isFailsTest();
+                    break;
                 }
-                result.setPointsPercentage(pointsPercentage);
             }
-
-            // set final values
-            result.setTestFailed(testFailed);
-            result.setRating(rating);
+            result.setPointsPercentage(pointsPercentage);
         }
+
+        // set final values
+        result.setTestFailed(testFailed);
+        result.setRating(rating);
 
         return scorecard;
     }

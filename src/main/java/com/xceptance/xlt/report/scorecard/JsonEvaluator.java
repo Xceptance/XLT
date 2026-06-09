@@ -173,48 +173,43 @@ public class JsonEvaluator extends AbstractEvaluator
         // determine if evaluation failed due to erroneous groups
         if (!erroneousGroups.isEmpty())
         {
-            // do not "overwrite" any previous error
-            if (StringUtils.isBlank(result.getError()))
+            // collect issues from erroneous rules
+            for (final Scorecard.Group g : erroneousGroups)
             {
-                // collect error messages from erroneous groups/rules and join them with two new-line characters
-                final String errorMessagesJoined = erroneousGroups.stream().flatMap(g -> g.getRules().stream())
-                                                                  .filter(r -> r.getStatus().isError() &&
-                                                                               StringUtils.isNotBlank(r.getMessage()))
-                                                                  .map(r -> String.format("Error evaluating rule '%s': %s", r.getId(),
-                                                                                          r.getMessage()))
-                                                                  .collect(Collectors.joining("\n\n"));
-                if (StringUtils.isNotBlank(errorMessagesJoined))
+                for (final Scorecard.Rule r : g.getRules())
                 {
-                    result.addError(errorMessagesJoined, null);
+                    if (r.getStatus().isError() && StringUtils.isNotBlank(r.getMessage()))
+                    {
+                        final String location = String.format("group '%s' / rule '%s'", g.getId(), r.getId());
+                        result.addIssue(new Scorecard.Issue("ERROR", r.getMessage(), location));
+                    }
                 }
             }
         }
-        else
+
+        // set overall number of achieved and achievable points
+        result.setPoints(points);
+        result.setTotalPoints(totalPoints);
+
+        // compute final score
+        final double pointsPercentage = getPercentage(points, totalPoints);
+
+        // determine the test's rating and whether it has failed
+        String rating = null;
+        for (final RatingDefinition ratingDef : config.getRatings())
         {
-            // set overall number of achieved and achievable points
-            result.setPoints(points);
-            result.setTotalPoints(totalPoints);
-
-            // compute final score
-            final double pointsPercentage = getPercentage(points, totalPoints);
-
-            // determine the test's rating and whether it has failed
-            String rating = null;
-            for (final RatingDefinition ratingDef : config.getRatings())
+            if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
             {
-                if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
-                {
-                    rating = ratingDef.getId();
-                    testFailed = testFailed || ratingDef.isFailsTest();
-                    break;
-                }
+                rating = ratingDef.getId();
+                testFailed = testFailed || ratingDef.isFailsTest();
+                break;
             }
-
-            // set final values
-            result.setTestFailed(testFailed);
-            result.setPointsPercentage(pointsPercentage);
-            result.setRating(rating);
         }
+
+        // set final values
+        result.setTestFailed(testFailed);
+        result.setPointsPercentage(pointsPercentage);
+        result.setRating(rating);
 
         return scorecard;
     }
