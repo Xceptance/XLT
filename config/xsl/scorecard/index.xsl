@@ -22,6 +22,7 @@
 <xsl:include href="sections/rules.xsl" />
 <xsl:include href="sections/rule-checks.xsl" />
 <xsl:include href="sections/groups.xsl" />
+<xsl:include href="sections/issues.xsl" />
 
 <xsl:param name="productName" />
 <xsl:param name="productVersion" />
@@ -66,6 +67,28 @@
     }
     #scorecard-ratings .inactive, #scorecard-rules .inactive {
         color: #5f5f5f;
+    }
+
+    .scorecard-issues-hint {
+        margin: 1rem 1rem 0 1rem;
+        padding: 0.75rem 1rem;
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 4px;
+        color: #856404;
+        font-size: 0.95rem;
+    }
+    .scorecard-issues-hint a {
+        color: #533f03;
+        text-decoration: underline;
+        font-weight: bold;
+    }
+    .scorecard-issues-hint a:hover {
+        color: #000;
+    }
+    .scorecard-issues-hint .warning-icon {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
     }
     </style>
 </head>
@@ -113,6 +136,12 @@
                 <xsl:with-param name="definitions" select="./configuration/rules/rule" />
                 <xsl:with-param name="results" select="./outcome/groups/group/rules" />
             </xsl:call-template>
+
+            <xsl:if test="count(./outcome/issues/issue) &gt; 0">
+                <xsl:call-template name="issues">
+                    <xsl:with-param name="issues" select="./outcome/issues/issue" />
+                </xsl:call-template>
+            </xsl:if>
 
         </div> <!-- /data-content -->
 

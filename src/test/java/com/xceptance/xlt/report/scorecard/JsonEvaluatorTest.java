@@ -232,6 +232,7 @@ public class JsonEvaluatorTest
                 {
                     manualCheck
                 });
+            ruleDef.setEnabled(true);
             var groupDef = new GroupDefinition("G1", "Group 1", List.of("rule1"));
             groupDef.setEnabled(true);
             groupDef.setMode(GroupDefinition.Mode.allPassed);
@@ -310,6 +311,67 @@ public class JsonEvaluatorTest
 
             // Test can still fail due to rule with failsTest=true
             Assert.assertTrue(scorecard.result.isTestFailed());
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
+
+    @Test
+    public void testJsonIssueLogging() throws Exception
+    {
+        var json = """
+            {
+              "version": 2,
+              "selectors": [
+                {
+                  "id": "sel1",
+                  "expression": "//nonexistent/path"
+                }
+              ],
+              "rules": [
+                {
+                  "id": "rule1",
+                  "checks": [
+                    {
+                      "selectorId": "sel1",
+                      "condition": "exists"
+                    }
+                  ]
+                }
+              ],
+              "groups": [
+                {
+                  "id": "G1",
+                  "rules": ["rule1"]
+                }
+              ]
+            }
+            """;
+
+        var xml = "<root><count>5</count></root>";
+
+        var tempFile = Files.createTempFile("scorecard-config-issue", ".json").toFile();
+        var xmlFile = Files.createTempFile("scorecard-data-issue", ".xml").toFile();
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, json, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(xmlFile, xml, StandardCharsets.UTF_8);
+
+            var evaluator = new TestStaticEvaluator(tempFile);
+            var scorecard = evaluator.evaluate(xmlFile);
+
+            Assert.assertNotNull("Scorecard result should not be null", scorecard.result);
+            final var issues = scorecard.result.getIssues();
+            Assert.assertTrue("Should have at least one issue logged", issues.size() > 0);
+            Assert.assertTrue("Rule evaluation errors should NOT be added to global errors in JSON evaluator", scorecard.result.getErrors().isEmpty());
+
+            final var firstIssue = issues.get(0);
+            Assert.assertEquals("ERROR", firstIssue.getSeverity());
+            Assert.assertTrue("Message should mention selector", firstIssue.getMessage().contains("No item found"));
+            Assert.assertTrue("Location should mention rule1", firstIssue.getLocation().contains("rule1"));
         }
         finally
         {
