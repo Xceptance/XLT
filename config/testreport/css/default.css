@@ -1217,7 +1217,7 @@ table * {
         }
         /* Truncate long text in tables (esp. request names), 
            but only on a screen where alternative ways to show the full text (tooltip, etc.) are available. */
-        @media screen 
+        @media screen and (min-width: 1024px) and (hover: hover) 
         {
             table td .trunc-cell
             {
