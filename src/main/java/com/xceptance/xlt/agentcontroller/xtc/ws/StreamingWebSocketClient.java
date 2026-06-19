@@ -22,10 +22,16 @@ import java.nio.ByteBuffer;
 
 import javax.net.ssl.SSLSocketFactory;
 
+import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.xceptance.common.lang.ReflectionUtils;
 
 /**
  * A {@link WebSocketClient} that opens a standard web socket connection, but exposes it as a {@link StreamingWebSocket}
@@ -37,6 +43,8 @@ public class StreamingWebSocketClient extends WebSocketClient
 
     private final StreamingWebSocket socket;
 
+    private int framesReceived;
+
     public StreamingWebSocketClient(final String host, final int port, final SSLSocketFactory sslSocketFactory)
         throws URISyntaxException, IOException, InterruptedException
     {
@@ -44,7 +52,11 @@ public class StreamingWebSocketClient extends WebSocketClient
 
         setSocketFactory(sslSocketFactory);
 
-        socket = new StreamingWebSocket(this);
+        // disable sending out ping frames and waiting for pongs (the relay will control this)
+        setConnectionLostTimeout(0);
+
+        final WebSocketImpl webSocketImpl = ReflectionUtils.readInstanceField(this, "engine");
+        socket = new StreamingWebSocket(webSocketImpl);
 
         connectBlocking();
     }
@@ -57,13 +69,14 @@ public class StreamingWebSocketClient extends WebSocketClient
     @Override
     public void onOpen(final ServerHandshake handshakedata)
     {
-        log.debug("Web socket opened");
+        log.trace("Web socket opened");
     }
 
     @Override
     public void onMessage(final ByteBuffer bytes)
     {
-        log.debug("Received binary message with {} bytes", bytes.remaining());
+        framesReceived++;
+        log.trace("Received binary message: frame #{} with {} bytes", framesReceived, bytes.remaining());
 
         socket.handleIncomingData(bytes);
     }
@@ -71,7 +84,7 @@ public class StreamingWebSocketClient extends WebSocketClient
     @Override
     public void onMessage(final String message)
     {
-        log.debug("Received text message: {}", message);
+        log.trace("Received text message: {}", message);
 
         throw new UnsupportedOperationException("Unexpected text message received: " + message);
     }
@@ -79,14 +92,37 @@ public class StreamingWebSocketClient extends WebSocketClient
     @Override
     public void onClose(final int code, final String reason, final boolean remote)
     {
-        log.debug("Web socket closed (code: {}, reason: {}, remote: {})", code, reason, remote);
+        if (code == CloseFrame.NORMAL)
+        {
+            log.trace("Web socket closed normally (code: {}, reason: '{}', remote: {})", code, reason, remote);
+        }
+        else
+        {
+            log.error("Web socket closed due to issues (code: {}, reason: '{}', remote: {})", code, reason, remote);
+        }
 
-        socket.handleClose();
+        socket.close();
     }
 
     @Override
     public void onError(final Exception ex)
     {
-        log.error("Websocket error: {}", ex.toString());
+        log.error("Web socket error: {}", ex.toString());
+    }
+
+    @Override
+    public void onWebsocketPing(WebSocket conn, Framedata f)
+    {
+        super.onWebsocketPing(conn, f);
+
+        log.trace("Ping received");
+    }
+
+    @Override
+    public void onWebsocketPong(WebSocket conn, Framedata f)
+    {
+        super.onWebsocketPong(conn, f);
+
+        log.trace("Pong received");
     }
 }
