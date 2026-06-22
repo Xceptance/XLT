@@ -44,7 +44,7 @@ class WebSocketOutputStream extends OutputStream
     @Override
     public void close() throws IOException
     {
-        log.debug("Closing web socket output stream: {} frames/{} bytes sent", framesSent, bytesSent);
+        log.trace("Closing web socket output stream: {} frames/{} bytes sent", framesSent, bytesSent);
     }
 
     @Override
@@ -53,7 +53,7 @@ class WebSocketOutputStream extends OutputStream
         int queueSize;
         while ((queueSize = webSocket.outQueue.size()) > 0)
         {
-            log.debug("Flushing web socket output stream: {} frames left", queueSize);
+            log.trace("Flushing web socket output stream: {} frames left", queueSize);
             sleep(10L);
         }
 
