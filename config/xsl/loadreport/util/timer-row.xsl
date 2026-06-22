@@ -14,12 +14,16 @@
                         <a>
                             <xsl:attribute name="href">#chart-<xsl:value-of select="$gid" /></xsl:attribute>
                             <xsl:attribute name="data-id">tableEntry-<xsl:value-of select="$gid" /></xsl:attribute>
-                            <xsl:attribute name="title"><xsl:value-of select="normalize-space(name)" /></xsl:attribute>
-                            <xsl:if test="count(urls) &gt; 0">
-                                <!-- title and class only for requests with urls -->
-                                <xsl:attribute name="data-rel">#url-listing-<xsl:value-of select="$gid" /></xsl:attribute>
-                                <xsl:attribute name="class">cluetip</xsl:attribute>
-                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="count(urls) &gt; 0">
+                                    <!-- title and class only for requests with urls -->
+                                    <xsl:attribute name="data-rel">#url-listing-<xsl:value-of select="$gid" /></xsl:attribute>
+                                    <xsl:attribute name="class">cluetip</xsl:attribute>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="title"><xsl:value-of select="normalize-space(name)" /></xsl:attribute>
+                                </xsl:otherwise>
+                            </xsl:choose>
                             <xsl:value-of select="name" />
                         </a>
                     </span>
@@ -28,8 +32,7 @@
                 <xsl:if test="count(urls) &gt; 0">
                     <div id="url-listing-{$gid}" class="cluetip-data">
                         <h4>
-                            <xsl:value-of select="format-number(urls/total, '#,##0')" />
-                            <xsl:text> distinct URL(s)**</xsl:text>
+                            <xsl:value-of select="name" />
                         </h4>
                         <ul class="urls">
                             <xsl:for-each select="urls/list/string">
