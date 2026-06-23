@@ -10,6 +10,7 @@
         <!-- Min width set because we cannot handle our data size on a smartphone display -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="generator" content="XLT" />
+        <meta name="renderer" content="xslt" />
 
         <xsl:variable name="normProjName" select="normalize-space($projectName)"/>
 
@@ -28,8 +29,8 @@
             <xsl:value-of select="$title" />
         </title>
 
-        <link href="css/default.css" type="text/css" rel="stylesheet"/>
-        <link href="css/print.css" type="text/css" rel="stylesheet" media="print"/>
+        <link href="css/default.css" rel="stylesheet"/>
+        <link href="css/print.css" rel="stylesheet" media="print"/>
 
         <script src="js/jquery-3.6.4.min.js"/>
         <script src="js/jquery.hoverIntent-1.10.2.min.js"/>
@@ -42,16 +43,16 @@
         <link rel="icon" href="images/favicon.png" sizes="any" />
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
         
-        <style type="text/css">
+        <style>
             .chart-group .chart img, .chart-group .echart {
-                width: <xsl:value-of select="configuration/chartWidth" />px;
-                height: <xsl:value-of select="configuration/chartHeight" />px;
+                width: <xsl:value-of select="/testreport/configuration/chartWidth" />px;
+                height: <xsl:value-of select="/testreport/configuration/chartHeight" />px;
             }
             #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
-                height: <xsl:value-of select="configuration/chartHeight * 1.5" />px;
+                height: <xsl:value-of select="/testreport/configuration/chartHeight * 1.5" />px;
             }
             #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
-                height: <xsl:value-of select="configuration/chartHeight * 2.3" />px;
+                height: <xsl:value-of select="/testreport/configuration/chartHeight * 2.3" />px;
             }
         </style>
 

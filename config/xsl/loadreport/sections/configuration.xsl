@@ -26,7 +26,7 @@
                         </tfoot>
                         <tbody>
                             <xsl:for-each select="$rootNode/properties/property">
-                                <xsl:sort select="@name"/>
+                                <xsl:sort select="@name" lang="en" case-order="lower-first" />
                                 <tr>
                                     <td class="key">
                                         <xsl:value-of select="@name"/>

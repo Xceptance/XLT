@@ -1,0 +1,72 @@
+2026-02-16T17:16:51.094019741Z main DEBUG Apache Log4j Core 2.24 initializing configuration XmlConfiguration[location=/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml, lastModified=2026-02-16T17:16:44.832Z]
+2026-02-16T17:16:51.096893942Z main DEBUG PluginManager 'Core' found 131 plugins
+2026-02-16T17:16:51.097124387Z main DEBUG PluginManager 'Level' found 0 plugins
+2026-02-16T17:16:51.102428537Z main DEBUG PluginManager 'Lookup' found 16 plugins
+2026-02-16T17:16:51.104078003Z main DEBUG Building Plugin[name=layout, class=org.apache.logging.log4j.core.layout.PatternLayout].
+2026-02-16T17:16:51.117855642Z main DEBUG PluginManager 'TypeConverter' found 26 plugins
+2026-02-16T17:16:51.137687690Z main DEBUG PatternLayout$Builder(pattern="[%d{yyyy/MM/dd-HH:mm:ss,SSS}] %-5p [%t] %c - %m%n", PatternSelector=null, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Replace=null, charset="null", alwaysWriteExceptions="null", disableAnsi="null", noConsoleNoAnsi="null", header="null", footer="null")
+2026-02-16T17:16:51.138152755Z main DEBUG PluginManager 'Converter' found 45 plugins
+2026-02-16T17:16:51.142982042Z main DEBUG Building Plugin[name=SizeBasedTriggeringPolicy, class=org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy].
+2026-02-16T17:16:51.150381856Z main DEBUG createPolicy(size="10 MB")
+2026-02-16T17:16:51.152394766Z main DEBUG Building Plugin[name=Policies, class=org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy].
+2026-02-16T17:16:51.153051765Z main DEBUG createPolicy(={SizeBasedTriggeringPolicy(size=10485760)})
+2026-02-16T17:16:51.153497249Z main DEBUG Building Plugin[name=DefaultRolloverStrategy, class=org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy].
+2026-02-16T17:16:51.158256840Z main DEBUG DefaultRolloverStrategy$Builder(max="9", min="null", fileIndex="null", compressionLevel="null", ={}, stopCustomActionsOnError="null", tempCompressedFilePattern="null", Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml))
+2026-02-16T17:16:51.158559451Z main DEBUG Building Plugin[name=appender, class=org.apache.logging.log4j.core.appender.RollingFileAppender].
+2026-02-16T17:16:51.169692910Z main DEBUG RollingFileAppender$Builder(fileName="/mnt/xlt/ac/agent/ac0003_us-west1_00/results/agent.log", filePattern="/mnt/xlt/ac/agent/ac0003_us-west1_00/results/agent-%i.log", append="null", locking="null", Policies(CompositeTriggeringPolicy(policies=[SizeBasedTriggeringPolicy(size=10485760)])), DefaultRolloverStrategy(DefaultRolloverStrategy(min=1, max=9, useMax=true)), advertise="null", advertiseUri="null", createOnDemand="null", filePermissions="null", fileOwner="null", fileGroup="null", bufferedIo="null", bufferSize="null", immediateFlush="null", ignoreExceptions="null", PatternLayout([%d{yyyy/MM/dd-HH:mm:ss,SSS}] %-5p [%t] %c - %m%n), name="File", Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null, ={})
+2026-02-16T17:16:51.173548604Z main DEBUG Returning file creation time for /mnt/xlt/ac/agent/ac0003_us-west1_00/results/agent.log
+2026-02-16T17:16:51.173783577Z main DEBUG Starting RollingFileManager /mnt/xlt/ac/agent/ac0003_us-west1_00/results/agent.log
+2026-02-16T17:16:51.176362025Z main DEBUG PluginManager 'FileConverter' found 2 plugins
+2026-02-16T17:16:51.179663904Z main DEBUG Setting prev file time to 2026-02-16T17:16:51.168+0000
+2026-02-16T17:16:51.179917551Z main DEBUG Initializing triggering policy CompositeTriggeringPolicy(policies=[SizeBasedTriggeringPolicy(size=10485760)])
+2026-02-16T17:16:51.180074918Z main DEBUG Initializing triggering policy SizeBasedTriggeringPolicy(size=10485760)
+2026-02-16T17:16:51.180254084Z main DEBUG Building Plugin[name=Appenders, class=org.apache.logging.log4j.core.config.AppendersPlugin].
+2026-02-16T17:16:51.180624082Z main DEBUG createAppenders(={File})
+2026-02-16T17:16:51.180991803Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.185815571Z main DEBUG LoggerConfig$Builder(additivity="null", level="OFF", levelAndRefs="null", name="org.htmlunit.IncorrectnessListenerImpl", includeLocation="null", ={}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.187789657Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.188426370Z main DEBUG LoggerConfig$Builder(additivity="null", level="OFF", levelAndRefs="null", name="org.htmlunit.DefaultCssErrorHandler", includeLocation="null", ={}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.188807522Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.189336162Z main DEBUG LoggerConfig$Builder(additivity="null", level="OFF", levelAndRefs="null", name="org.htmlunit.javascript.StrictErrorReporter", includeLocation="null", ={}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.189677114Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.190217688Z main DEBUG LoggerConfig$Builder(additivity="null", level="OFF", levelAndRefs="null", name="org.htmlunit.javascript.host.css.CSSRule", includeLocation="null", ={}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.190540865Z main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2026-02-16T17:16:51.191140083Z main DEBUG createAppenderRef(ref="File", level="null", Filter=null)
+2026-02-16T17:16:51.193122890Z main DEBUG Building Plugin[name=Root, class=org.apache.logging.log4j.core.config.LoggerConfig$RootLogger].
+2026-02-16T17:16:51.196416845Z main DEBUG LoggerConfig$RootLogger$Builder(additivity="null", level="ERROR", levelAndRefs="null", includeLocation="null", ={File}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.196909421Z main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2026-02-16T17:16:51.197360545Z main DEBUG createAppenderRef(ref="File", level="null", Filter=null)
+2026-02-16T17:16:51.197559894Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.198116586Z main DEBUG LoggerConfig$Builder(additivity="false", level="ERROR", levelAndRefs="null", name="runtime", includeLocation="null", ={File}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.198464970Z main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2026-02-16T17:16:51.198865668Z main DEBUG createAppenderRef(ref="File", level="null", Filter=null)
+2026-02-16T17:16:51.199055246Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.199561572Z main DEBUG LoggerConfig$Builder(additivity="false", level="ERROR", levelAndRefs="null", name="com.xceptance", includeLocation="null", ={File}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.199863836Z main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2026-02-16T17:16:51.200249491Z main DEBUG createAppenderRef(ref="File", level="null", Filter=null)
+2026-02-16T17:16:51.200435125Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.200925837Z main DEBUG LoggerConfig$Builder(additivity="false", level="ERROR", levelAndRefs="null", name="org.htmlunit", includeLocation="null", ={File}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.201230493Z main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2026-02-16T17:16:51.201657182Z main DEBUG createAppenderRef(ref="File", level="null", Filter=null)
+2026-02-16T17:16:51.202400147Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.202892357Z main DEBUG LoggerConfig$Builder(additivity="false", level="ERROR", levelAndRefs="null", name="org.apache.http", includeLocation="null", ={File}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.203190030Z main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2026-02-16T17:16:51.203651597Z main DEBUG createAppenderRef(ref="File", level="null", Filter=null)
+2026-02-16T17:16:51.203833381Z main DEBUG Building Plugin[name=Logger, class=org.apache.logging.log4j.core.config.LoggerConfig].
+2026-02-16T17:16:51.204452646Z main DEBUG LoggerConfig$Builder(additivity="false", level="ERROR", levelAndRefs="null", name="org.apache.http.wire", includeLocation="null", ={File}, ={}, Configuration(/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml), Filter=null)
+2026-02-16T17:16:51.204773629Z main DEBUG Building Plugin[name=Loggers, class=org.apache.logging.log4j.core.config.LoggersPlugin].
+2026-02-16T17:16:51.205532175Z main DEBUG createLoggers(={org.htmlunit.IncorrectnessListenerImpl, org.htmlunit.DefaultCssErrorHandler, org.htmlunit.javascript.StrictErrorReporter, org.htmlunit.javascript.host.css.CSSRule, root, runtime, com.xceptance, org.htmlunit, org.apache.http, org.apache.http.wire})
+2026-02-16T17:16:51.206574555Z main DEBUG Configuration XmlConfiguration[location=/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml, lastModified=2026-02-16T17:16:44.832Z] initialized
+2026-02-16T17:16:51.206792322Z main INFO Starting configuration XmlConfiguration[location=/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml, lastModified=2026-02-16T17:16:44.832Z]...
+2026-02-16T17:16:51.206956909Z main INFO Start watching for changes to /mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml every 0 seconds
+2026-02-16T17:16:51.207188398Z main INFO Configuration XmlConfiguration[location=/mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml, lastModified=2026-02-16T17:16:44.832Z] started.
+2026-02-16T17:16:51.209745670Z main INFO Stopping configuration org.apache.logging.log4j.core.config.DefaultConfiguration@5ad851c9...
+2026-02-16T17:16:51.210098375Z main DEBUG Shutting down OutputStreamManager SYSTEM_OUT.false.false-1
+2026-02-16T17:16:51.210322116Z main DEBUG OutputStream closed
+2026-02-16T17:16:51.210505537Z main DEBUG Shut down OutputStreamManager SYSTEM_OUT.false.false-1, all resources released: true
+2026-02-16T17:16:51.210689821Z main DEBUG Appender DefaultConsole-1 stopped with status true
+2026-02-16T17:16:51.210896666Z main INFO Configuration org.apache.logging.log4j.core.config.DefaultConfiguration@5ad851c9 stopped.
+2026-02-16T17:16:51.213760963Z main DEBUG org.apache.logging.log4j.core.util.SystemClock supports precise timestamps.
+2026-02-16T17:16:51.214289651Z main DEBUG Reconfiguration complete for context[name=c387f44] at URI /mnt/xlt/ac/agent/ac0003_us-west1_00/config/log4j2.xml (org.apache.logging.log4j.core.LoggerContext@4b741d6d) with optional ClassLoader: null
+2026-02-16T17:16:51.214526977Z main DEBUG Shutdown hook enabled. Registering a new one.
+2026-02-16T17:16:51.215256367Z main DEBUG LoggerContext[name=c387f44, org.apache.logging.log4j.core.LoggerContext@4b741d6d] started OK.

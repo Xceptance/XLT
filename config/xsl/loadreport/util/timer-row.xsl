@@ -294,7 +294,7 @@
 			<xsl:choose>
 				<xsl:when test="$runtime &gt; $targetAverage">
 					<xsl:variable name="percent"
-						select="floor(($runtime - $targetAverage) * (100 div ($targetTo - $targetAverage)) )" />
+						select="floor((($runtime - $targetAverage) * (100 div ($targetTo - $targetAverage))) + 0.00001)" />
 					<xsl:choose>
 						<xsl:when test="$percent &gt;= 100">
 							<xsl:call-template name="extendClass">
@@ -322,7 +322,7 @@
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:variable name="percent"
-						select="floor(($runtime - $targetAverage) * (100 div ($targetFrom - $targetAverage)))" />
+						select="floor((($runtime - $targetAverage) * (100 div ($targetFrom - $targetAverage))) + 0.00001)" />
 					<xsl:choose>
 						<xsl:when test="$percent &gt;= 100">
 							<xsl:call-template name="extendClass">

@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
@@ -245,10 +246,14 @@ public class ReportGenerator
                                final boolean fromTimeRel, final boolean toTimeRel)
         throws Exception
     {
+        ReportLogCapture logCapture = null;
         try
         {
             // clean/create output directory first
             ensureOutputDirAndClean(this.outputDir);
+
+            // start capturing log output to report.log
+            logCapture = ReportLogCapture.start(outputDir, config.getReportLoggingLevel());
 
             for (final Class<? extends ReportProvider> c : config.getReportProviderClasses())
             {
@@ -296,6 +301,11 @@ public class ReportGenerator
         finally
         {
             ConcurrentUsersTable.getInstance().clear();
+
+            if (logCapture != null)
+            {
+                logCapture.stop();
+            }
         }
     }
 
@@ -638,25 +648,8 @@ public class ReportGenerator
 
         // copy the report's static resources
         final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
-        FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), false);
-
-        // get the configured output and style sheet file names
-        final List<File> outputFiles = new ArrayList<File>();
-        final List<File> styleSheetFiles = new ArrayList<File>();
-
-        // create the files from the file names
-        final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
-        final List<String> outputFileNames = config.getOutputFileNames();
-
-        for (int i = 0; i < styleSheetFileNames.size(); i++)
-        {
-            final File outputFile = new File(outputDir, outputFileNames.get(i));
-            outputFiles.add(outputFile);
-
-            final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.LOAD_REPORT_XSL_PATH),
-                                                 styleSheetFileNames.get(i));
-            styleSheetFiles.add(styleSheetFile);
-        }
+        final IOFileFilter ftlFilter = FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".ftl"));
+        FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.and(FileFilterUtils.makeSVNAware(null), ftlFilter), false);
 
         // create some dynamic parameters
         final HashMap<String, Object> parameters = new HashMap<String, Object>();
@@ -665,8 +658,9 @@ public class ReportGenerator
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
         parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
 
-        // transform the report
-        final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+        // get the configured rendering engine
+        final String engine = config.getRenderingEngine();
+        final ReportRenderer renderer = ReportRendererFactory.createRenderer(engine, config);
 
         final long start = TimerUtils.get().getStartTime();
 
@@ -678,7 +672,7 @@ public class ReportGenerator
             TaskManager.getInstance().setMaximumThreadCount(1);
 
             TaskManager.getInstance().startProgress("Creating");
-            reportTransformer.run(inputXmlFile, outputDir);
+            renderer.render(inputXmlFile, outputDir, parameters);
 
         }
         finally
@@ -719,22 +713,31 @@ public class ReportGenerator
             targetDir.copyFrom(inputDir, Selectors.SELECT_ALL);
         }
 
-        final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
-
-        // evaluate test if desired
-        final File scorecardXml = evaluateReport(xmlReport);
-
-        // create the report's Scorecard HTML (if evaluation took place)
-        if (scorecardXml != null)
+        // start capturing log output to report.log
+        final ReportLogCapture logCapture = ReportLogCapture.start(outputDir, config.getReportLoggingLevel());
+        try
         {
-            transformScorecard(scorecardXml);
+            final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
+
+            // evaluate test if desired
+            final File scorecardXml = evaluateReport(xmlReport);
+
+            // create the report's Scorecard HTML (if evaluation took place)
+            if (scorecardXml != null)
+            {
+                transformScorecard(scorecardXml);
+            }
+
+            // output the path to the report either as file path (Win) or as clickable file URL
+            final File reportFile = new File(outputDir, "index.html");
+            final String reportPath = ReportUtils.toString(reportFile);
+
+            XltLogger.reportLogger.info("Report: {}", reportPath);
         }
-
-        // output the path to the report either as file path (Win) or as clickable file URL
-        final File reportFile = new File(outputDir, "index.html");
-        final String reportPath = ReportUtils.toString(reportFile);
-
-        XltLogger.reportLogger.info("Report: {}", reportPath);
+        finally
+        {
+            logCapture.stop();
+        }
     }
 
     /**
@@ -829,12 +832,12 @@ public class ReportGenerator
     }
 
     /**
-     * Transform the given scorecard XML file using the XSL stylesheet
-     * {@value XltConstants#SCORECARD_REPORT_XSL_FILENAME} that is expected to reside in report generator's
-     * configuration sub-directory {@value XltConstants#SCORECARD_REPORT_XSL_PATH}
+     * Transform the given scorecard XML file using the configured rendering engine.
+     * For XSLT, uses the stylesheet at {@value XltConstants#SCORECARD_REPORT_XSL_PATH}/{@value XltConstants#SCORECARD_REPORT_XSL_FILENAME}.
+     * For FreeMarker, uses the template 'sections/scorecard.ftl'.
      *
      * @param inputXmlFile
-     *            the scorecard XMLfile to transform
+     *            the scorecard XML file to transform
      * @throws Exception
      *             thrown when transformation failed for any reason
      */
@@ -843,8 +846,6 @@ public class ReportGenerator
         XltLogger.reportLogger.info(Console.horizontalBar());
         XltLogger.reportLogger.info(Console.startSection("Creating Scorecard..."));
 
-        final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_XSL_PATH),
-                                             XltConstants.SCORECARD_REPORT_XSL_FILENAME);
         final File outputFile = new File(outputDir, XltConstants.SCORECARD_REPORT_HTML_FILENAME);
 
         // determine the name of the project from configuration
@@ -874,27 +875,45 @@ public class ReportGenerator
         }
 
         // create some dynamic parameters
-        final Map<String, Object> parameters = Map.of("productName", ProductInformation.getProductInformation().getProductName(),
-                                                      "productVersion", ProductInformation.getProductInformation().getVersion(),
-                                                      "productUrl", ProductInformation.getProductInformation().getProductURL(),
-                                                      "projectName", projectName, "scorecardPresent", Boolean.TRUE, "xtcOrganization",
-                                                      organization, "xtcProject", project, "xtcLoadTestId", loadTestId, "xtcResultId",
-                                                      resultId, "xtcReportId", reportId);
+        final HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+        parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+        parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+        parameters.put("projectName", projectName);
+        parameters.put("scorecardPresent", Boolean.TRUE);
+        parameters.put("xtcOrganization", organization);
+        parameters.put("xtcProject", project);
+        parameters.put("xtcLoadTestId", loadTestId);
+        parameters.put("xtcResultId", resultId);
+        parameters.put("xtcReportId", reportId);
 
-        // transform the report
-        final ReportTransformer reportTransformer = new ReportTransformer(List.of(outputFile), List.of(styleSheetFile), parameters);
+        // get the configured rendering engine and determine the template/stylesheet to use
+        final String engine = config.getRenderingEngine();
+        final ReportRenderer renderer = ReportRendererFactory.createRenderer(engine, config);
+
+        final String templateOrStyleSheet;
+        if (ReportRendererFactory.ENGINE_FREEMARKER.equalsIgnoreCase(engine))
+        {
+            // FreeMarker templates are resolved relative to the configured template directory
+            templateOrStyleSheet = XltConstants.SCORECARD_REPORT_FTL_FILENAME;
+        }
+        else
+        {
+            // XSLT: use the full path to the scorecard stylesheet
+            final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_XSL_PATH),
+                                                 XltConstants.SCORECARD_REPORT_XSL_FILENAME);
+            templateOrStyleSheet = styleSheetFile.getAbsolutePath();
+        }
 
         final long start = TimerUtils.get().getStartTime();
 
         try
         {
-
             // ok, we want to avoid high memory usage
             TaskManager.getInstance().setMaximumThreadCount(1);
 
             TaskManager.getInstance().startProgress("Creating");
-            reportTransformer.run(inputXmlFile, outputDir);
-
+            renderer.render(inputXmlFile, outputFile, templateOrStyleSheet, parameters);
         }
         finally
         {

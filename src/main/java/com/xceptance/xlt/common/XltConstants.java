@@ -508,6 +508,16 @@ public final class XltConstants
     public static final String SCORECARD_REPORT_XSL_PATH = "xsl/scorecard";
 
     /**
+     * The path of the directory with all FTL files for scorecard rendering.
+     */
+    public static final String SCORECARD_REPORT_FTL_PATH = "report-templates/";
+
+    /**
+     * The path of the directory with all FTL files for scorecard rendering.
+     */
+    public static final String SCORECARD_REPORT_FTL_FILENAME = "scorecard.ftl";
+
+    /**
      * The name of the XSL file for rendering the scorecard report page.
      */
     public static final String SCORECARD_REPORT_XSL_FILENAME = "index.xsl";

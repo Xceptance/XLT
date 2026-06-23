@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="generator" content="XLT">
+      <title>XLT Report - Slowest Requests</title>
+      <link href="css/default.css" type="text/css" rel="stylesheet">
+      <link href="css/print.css" type="text/css" rel="stylesheet" media="print"><script src="js/jquery-3.6.4.min.js"></script><script src="js/jquery.hoverIntent-1.10.2.min.js"></script><script src="js/jquery.scrollTo-2.1.3.min.js"></script><script src="js/tabs.js"></script><script src="js/table.js"></script><script src="js/crosshair.js"></script><script src="js/echarts-6.0.0.min.js"></script><link rel="icon" href="images/favicon.png" sizes="any">
+      <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+      <style type="text/css">
+            .chart-group .chart img, .chart-group .echart {
+                width: 900px;
+                height: 300px;
+            }
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
+                height: 450px;
+            }
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
+                height: 690px;
+            }
+        </style>
+   </head>
+   <body id="loadtestreport">
+      <div id="container">
+         <div id="content">
+            <nav><input class="hamburger-btn" type="checkbox" id="hamburger-btn"><label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label><ul class="nav-menu">
+                  <li><a href="index.html">Overview</a><ul>
+                        <li><a href="index.html#load-profile">Load Profile</a></li>
+                        <li><a href="index.html#comment">Test Comment</a></li>
+                        <li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#agents">Agent Summary</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+                        <li><a href="index.html#network">Network</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="transactions.html">Transactions</a></li>
+                  <li><a href="actions.html">Actions</a></li>
+                  <li><a href="requests.html">Requests</a><ul>
+                        <li><a href="slowest-requests.html">Slowest Requests</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="network.html">Network</a><ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#ip-addresses">IP Addresses</a></li>
+                        <li><a href="network.html#http-request-methods">HTTP Request Methods</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="page-load-timings.html">Page Load Timings</a></li>
+                  <li><a href="web-vitals.html">Web Vitals</a></li>
+                  <li><a href="custom-timers.html">Custom Timers</a></li>
+                  <li><a href="custom-values.html">Custom Data</a><ul>
+                        <li><a href="custom-values.html#custom-values-summary">Custom Values</a></li>
+                        <li><a href="custom-values.html#custom-data-logs-summary">Custom Data Logs</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="external.html">External Data</a></li>
+                  <li><a href="errors.html">Errors</a><ul>
+                        <li><a href="errors.html#request-errors">Request Errors</a></li>
+                        <li><a href="errors.html#transaction-error-overview">Transaction Error Overview</a></li>
+                        <li><a href="errors.html#transaction-error-details">Transaction Error Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="events.html">Events</a><ul>
+                        <li><a href="events.html#event-overview">Overview</a></li>
+                        <li><a href="events.html#event-details">Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="agents.html">Agents</a></li>
+                  <li><a href="configuration.html">Configuration</a><ul>
+                        <li><a href="configuration.html#load-profile">Load Profile</a></li>
+                        <li><a href="configuration.html#configuration">Load Test Settings</a></li>
+                        <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
+                     </ul>
+                  </li>
+               </ul>
+            </nav>
+            <header id="header">
+               <div class="brand"><img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo"></div>
+               <div class="title">
+                  <h1>Performance Test Report</h1>
+                  <div>
+                     <div class="ltinfo"><span class="key">Organization:</span><span class="value">xc</span></div>
+                     <div class="ltinfo"><span class="key">Project:</span><span class="value">advanced-posters</span></div>
+                     <div class="ltinfo"><span class="key">Load Test:</span><span class="value">#98</span></div>
+                     <div class="ltinfo"><span class="key">Result:</span><span class="value">–</span></div>
+                     <div class="ltinfo"><span class="key">Report:</span><span class="value">–</span></div>
+                  </div>
+               </div>
+            </header>
+            <div id="data-content">
+               <div class="section" id="slowest-requests-summary">
+                  <h2>Slowest Requests</h2>
+                  <div id="progressmeter">
+                     <p>Loading...</p>
+                     <div class="loader"></div>
+                  </div>
+                  <div class="content hidden">
+                     <div class="description">
+                        <p>
+                           This section lists the requests with the slowest runtime recorded during the test
+                           run.
+                           <span id="more-slowest-requestsd156e1-show" onclick="$('#more-slowest-requestsd156e1').show();$('#more-slowest-requestsd156e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-slowest-requestsd156e1-hide" onclick="$('#more-slowest-requestsd156e1').hide();$('#more-slowest-requestsd156e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                        <div id="more-slowest-requestsd156e1" class="more">
+                           <h3>Overview</h3>
+                           <p>
+                              The table lists the requests with the slowest overall runtime matching the following
+                              criteria (as configured
+                              in the reportgenerator.properties):
+                              
+                              <ul>
+                                 <li>Request runtime must be between 3,000 ms and
+                                    600,000 ms to be listed.</li>
+                                 <li>A maximum of 20 requests per
+                                    request name are listed.</li>
+                                 <li>A total maximum of 500 requests are listed.</li>
+                              </ul>
+                           </p>
+                           <p>
+                              Each row in the table displays the data for one individual request. The request names
+                              are derived from
+                              the action names and may have been modified using request filter and transformation
+                              rules. When hovering
+                              over the request name, a pop-up will show further request information if available
+                              (e.g. the URL, HTTP method,
+                              or form data).
+                              </p>
+                           <h3>Baseline</h3>
+                           <p>
+                              The Baseline columns show the mean and p95 runtimes across all requests with the respective
+                              name to allow
+                              easy comparison with the runtime of the respective slow requests. These are the same
+                              mean and p95 values
+                              displayed in the Requests section.
+                              </p>
+                           <h3>Bandwidth</h3>
+                           <p>
+                              The Bandwidth columns show the incoming and outgoing bandwidth per request. XLT measures
+                              on socket level. Thus,
+                              actual incoming and outgoing data is recorded. XLT does not analyze or modify that
+                              data when taking the
+                              measurements.
+                              </p>
+                           <p>
+                              The Bytes Sent column comprises all data sent out of the application including overhead
+                              such as HTTP(S)
+                              headers and SSL protocol data. The Bytes Received column includes all received data
+                              and the connected
+                              overhead. As the data is measured right above the socket level and before it gets
+                              decoded by the
+                              application, any compressed traffic is measured as seen by the network layer. The
+                              data size you see is not
+                              the expanded data as seen by the DOM parser.
+                              </p>
+                           <h3>Network Timing</h3>
+                           <p>
+                              The Network Timing columns display all low-level network timing data that has been
+                              measured on socket level.
+                              The following measurement points are shown:
+                              </p>
+                           <ul>
+                              <li>
+                                 Connect Time: Time needed to establish a connection to the other system. Note that
+                                 when you use
+                                 keep-alive semantics during testing, the connect time will mainly be 0 except for
+                                 the first request of a
+                                 transaction.
+                                 </li>
+                              <li>
+                                 Send Time: Time needed to send the request to the other system. Depending on the payload
+                                 and the network
+                                 speed, this data often amounts to zero or very small values.
+                                 </li>
+                              <li>
+                                 Server Busy Time: Time spent waiting from sending the last bytes to receiving the
+                                 first bytes.
+                                 </li>
+                              <li>
+                                 Receive Time: Time spent receiving data from the first to the last bytes received.
+                                 </li>
+                              <li>
+                                 Time to First Bytes: Total time from the connection start until the first bytes are
+                                 received. Includes
+                                 Connect, Send, Server Busy, and Receive Time.
+                                 </li>
+                              <li>
+                                 Time to Last Bytes: Total time from the connection start until the last bytes are
+                                 received. This is the
+                                 time needed to connect, send, and receive data. Often it is called network runtime.
+                                 In contrast, the
+                                 request runtime includes the network runtime and the application time needed to process
+                                 header and
+                                 protocol information and transfer the data from socket level to the application level.
+                                 </li>
+                           </ul>
+                           <h3>Request Details</h3>
+                           <p>
+                              The Request Details columns show the HTTP response code and the start date and time
+                              of the request.
+                              </p>
+                           <h3>IP Addresses</h3>
+                           <p>
+                              The IP Addresses columns show the IP address used to perform the request, as well
+                              as all IP addresses
+                              reported by the DNS (if the information is available). If more than one address was
+                              reported, hover
+                              over the field to see a list of all the IP addresses.
+                              </p>
+                        </div>
+                     </div>
+                     <table class="c-tab-content table-autosort:1 table-autosort-order:desc">
+                        <thead>
+                           <tr>
+                              <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">Request Name<br><form><input class="filter" placeholder="Enter filter substrings" title=""><button class="clear-input" type="clear" title="Click to clear">✕</button></form>
+                              </th>
+                              <th rowspan="2" class="table-sortable:numeric" id="sortByRuntime" title="Request Runtime">Runtime [ms]</th>
+                              <th colspan="2" class="colgroup1">Baseline [ms]</th>
+                              <th colspan="2">Bandwidth [Bytes]</th>
+                              <th colspan="7" class="colgroup1">Network Timing [ms]</th>
+                              <th colspan="2">Request Details</th>
+                              <th colspan="2" class="colgroup1">IP Addresses</th>
+                           </tr>
+                           <tr>
+                              <th class="table-sortable:numeric colgroup1" id="sortByMean" title="Base Mean Runtime">Mean</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByP95" title="Base P95 Runtime">P95</th>
+                              <th class="table-sortable:numeric" id="sortByBytesSent" title="Bytes Sent">Sent</th>
+                              <th class="table-sortable:numeric" id="sortByBytesReceived" title="Bytes Received">Received</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByDnsTime" title="DNS Time">DNS</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByConnectTime" title="Connect Time">Connect</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortBySendTime" title="Send Time">Send</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByServerBusyTime" title="Server Busy Time">Server</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByReceiveTime" title="Receive Time">Receive</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByTimeToFirstBytes" title="Time To First Bytes">TTFB</th>
+                              <th class="table-sortable:numeric colgroup1" id="sortByTimeToLastBytes" title="Time To Last Bytes">TTLB</th>
+                              <th class="table-sortable:numeric" id="sortByResponseCode" title="Response Code">Response</th>
+                              <th class="table-sortable:alphanumeric" id="sortByTime" title="Request Start Time">Time</th>
+                              <th class="table-sortable:alphanumeric colgroup1" id="sortByUsedIpAddress" title="Used IP Address">Used</th>
+                              <th class="table-sortable:alphanumeric colgroup1" id="sortByReportedIpAddresses" title="IP Addresses Reported By DNS">Reported</th>
+                           </tr>
+                        </thead>
+                        <tfoot>
+                           <td></td>
+                           <td></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td></td>
+                           <td></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                           <td></td>
+                           <td></td>
+                           <td class="colgroup1"></td>
+                           <td class="colgroup1"></td>
+                        </tfoot>
+                        <tbody>
+                           <tr>
+                              <td class="no-data" colspan="17">No data available</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               Copyright (c) 2005-2025 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br>
+               Created with
+               <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">9.2.2</span></a></footer>
+         </div>
+      </div><script type="text/javascript" src="js/xlt.js"></script></body>
+</html>

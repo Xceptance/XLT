@@ -285,7 +285,7 @@
 						<xsl:choose>
 							<xsl:when test="count($rootNode/error) > 0">
 								<xsl:for-each select="$rootNode/error">
-									<xsl:sort select="count" order="descending" data-type="number" />
+									<xsl:sort select="format-number(count, '000000000000')" order="descending" />
 									<xsl:sort select="detailChartID != 0" order="descending" />
 									<tr>
 										<td class="value number count">

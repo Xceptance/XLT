@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testreport>
+  <testReport1>
+    <name>Baseline</name>
+    <general>
+      <startTime>2026-02-16 10:00:00.000 CET</startTime>
+      <endTime>2026-02-16 11:00:00.000 CET</endTime>
+      <hits>1000</hits>
+    </general>
+    <loadProfile/>
+    <comments/>
+  </testReport1>
+  <testReport2>
+    <name>Measurement</name>
+    <general>
+      <startTime>2026-02-16 12:00:00.000 CET</startTime>
+      <endTime>2026-02-16 13:00:00.000 CET</endTime>
+      <hits>1100</hits>
+    </general>
+    <loadProfile/>
+    <comments/>
+  </testReport2>
+  <transactions>
+    <transaction>
+      <name>T1</name>
+      <baseline>
+        <count>100</count>
+        <mean>500</mean>
+      </baseline>
+      <measurement>
+        <count>110</count>
+        <mean>450</mean>
+      </measurement>
+      <diff>
+        <count>10</count>
+        <mean>-50</mean>
+      </diff>
+    </transaction>
+  </transactions>
+  <summary>
+    <transactions>
+      <baseline>
+        <count>100</count>
+        <mean>500</mean>
+      </baseline>
+      <measurement>
+        <count>110</count>
+        <mean>450</mean>
+      </measurement>
+      <diff>
+        <count>10</count>
+        <mean>-50</mean>
+      </diff>
+    </transactions>
+  </summary>
+</testreport>
