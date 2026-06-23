@@ -28,6 +28,12 @@ import org.slf4j.LoggerFactory;
  */
 class WebSocketOutputStream extends OutputStream
 {
+    /**
+     * The maximum number of frames in the web socket out queue. New data frames can be placed in the queue only if the
+     * current queue size is lower. This way we allow ping/pong control frames to slip in and be sent out in time.
+     */
+    private static final int BACKPRESSURE_THRESHOLD = 50;
+
     static final Logger log = LoggerFactory.getLogger(WebSocketOutputStream.class);
 
     private final WebSocketImpl webSocket;
@@ -78,7 +84,7 @@ class WebSocketOutputStream extends OutputStream
     @Override
     public void write(final byte[] b, final int off, final int len)
     {
-        while (webSocket.outQueue.size() > 50)
+        while (webSocket.outQueue.size() >= BACKPRESSURE_THRESHOLD)
         {
             sleep(10L);
         }
@@ -95,7 +101,7 @@ class WebSocketOutputStream extends OutputStream
     {
         try
         {
-            Thread.sleep(10);
+            Thread.sleep(millis);
         }
         catch (final InterruptedException ex)
         {

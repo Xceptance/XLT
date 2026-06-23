@@ -52,9 +52,6 @@ public class StreamingWebSocketClient extends WebSocketClient
 
         setSocketFactory(sslSocketFactory);
 
-        // disable sending out ping frames and waiting for pongs (the relay will control this)
-        setConnectionLostTimeout(0);
-
         final WebSocketImpl webSocketImpl = ReflectionUtils.readInstanceField(this, "engine");
         socket = new StreamingWebSocket(webSocketImpl);
 
@@ -111,18 +108,24 @@ public class StreamingWebSocketClient extends WebSocketClient
     }
 
     @Override
-    public void onWebsocketPing(WebSocket conn, Framedata f)
+    public void onWebsocketPing(final WebSocket webSocket, final Framedata f)
     {
-        super.onWebsocketPing(conn, f);
+        super.onWebsocketPing(webSocket, f);
 
-        log.trace("Ping received");
+        if (log.isTraceEnabled())
+        {
+            log.trace("Received ping from '{}'", webSocket.getRemoteSocketAddress().getHostString());
+        }
     }
 
     @Override
-    public void onWebsocketPong(WebSocket conn, Framedata f)
+    public void onWebsocketPong(final WebSocket webSocket, final Framedata f)
     {
-        super.onWebsocketPong(conn, f);
+        super.onWebsocketPong(webSocket, f);
 
-        log.trace("Pong received");
+        if (log.isTraceEnabled())
+        {
+            log.trace("Received pong from '{}'", webSocket.getRemoteSocketAddress().getHostString());
+        }
     }
 }
