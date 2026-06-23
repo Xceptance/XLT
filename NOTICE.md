@@ -135,6 +135,12 @@ google-api-services-compute
   * Homepage: https://developers.google.com/api-client-library/java/
   * More information in folder: doc/3rd-party-licenses/google-api-services-compute
 
+groovy
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/apache/groovy
+  * More information in folder: doc/3rd-party-licenses/groovy
+
 hessian
 
   * License: Apache License 2.0
