@@ -60,7 +60,6 @@
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
         <log4j.version>2.24.3</log4j.version>
-        <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.29.0</selenium.version>
         <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
         <otel.version>1.46.0</otel.version>
@@ -507,7 +506,7 @@
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
         </dependency>
-        <!-- byte-buddy is used by Selenium, Mockito and PowerMock. Ensure that the highest version wins. -->
+        <!-- byte-buddy is used by Selenium and Mockito. Ensure that the highest version wins. -->
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
@@ -640,7 +639,7 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
         </dependency>
-        <!-- javassist is used by Checkstyle, Powermock, and Reflections. Use latest version for Java 21 support. -->
+        <!-- javassist is used by Checkstyle and Reflections. Use latest version for Java 21 support. -->
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
@@ -675,38 +674,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- ATTENTION: Used versions of mocking frameworks EasyMock and Mockito needs to be supported by PowerMock. -->
         <!-- Mockito -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.3</version> <!-- Last supported version of PowerMock 2.x.x -->
-            <scope>test</scope>
-        </dependency>
-        <!-- Easymock -->
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>4.0.1</version> <!-- Last supported version of PowerMock 2.x.x -->
-            <scope>test</scope>
-        </dependency>
-        <!-- Powermock -->
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-easymock</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
+            <version>5.23.0</version>
             <scope>test</scope>
         </dependency>
         <!-- PMD -->
