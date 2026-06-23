@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>10.0.0-beta-3</version>
+    <version>10.0.0-beta-4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -64,6 +64,13 @@
         <selenium.version>4.29.0</selenium.version>
         <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
         <otel.version>1.46.0</otel.version>
+        <!-- plugin versions -->
+        <license-maven-plugin.version>4.1</license-maven-plugin.version>
+        <dependency-check-maven.version>12.1.0</dependency-check-maven.version>
+        <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+        <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+        <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2026 ${project.organization.name}</copyright>
     </properties>
 
@@ -74,7 +81,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>4.1</version>
+                <version>${license-maven-plugin.version}</version>
                 <configuration>
                     <licenseSets>
                         <licenseSet>
@@ -109,7 +116,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>12.1.0</version>
+                <version>${dependency-check-maven.version}</version>
                 <configuration>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                 </configuration>
@@ -127,7 +134,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>${maven-antrun-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>copy-main-artifact</id>
@@ -148,7 +155,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>3.6.1</version>
+                        <version>${build-helper-maven-plugin.version}</version>
                         <configuration>
                             <artifacts>
                                 <artifact>
@@ -178,7 +185,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -192,7 +199,7 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.7.0</version>
+                        <version>${central-publishing-maven-plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
