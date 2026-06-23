@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.io.Serializable;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Symbol;
+import org.htmlunit.corejs.javascript.SymbolScriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 
 /**
  * Wrapper for a {@link Function} delegating all calls to the wrapped instance.
@@ -26,8 +29,9 @@ import org.htmlunit.corejs.javascript.Scriptable;
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
-public class FunctionWrapper implements Function, Serializable {
+public class FunctionWrapper implements Function, SymbolScriptable, Serializable {
     private final Function wrapped_;
 
     /**
@@ -42,7 +46,7 @@ public class FunctionWrapper implements Function, Serializable {
      * {@inheritDoc}
      */
     @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
+    public Object call(final Context cx, final VarScope scope, final Scriptable thisObj, final Object[] args) {
         return wrapped_.call(cx, scope, thisObj, args);
     }
 
@@ -58,7 +62,7 @@ public class FunctionWrapper implements Function, Serializable {
      * {@inheritDoc}
      */
     @Override
-    public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
+    public Scriptable construct(final Context cx, final VarScope scope, final Object[] args) {
         return wrapped_.construct(cx, scope, args);
     }
 
@@ -82,6 +86,14 @@ public class FunctionWrapper implements Function, Serializable {
      * {@inheritDoc}
      */
     @Override
+    public Object get(final Symbol key, final Scriptable start) {
+        return ((SymbolScriptable) wrapped_).get(key, start);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean has(final String name, final Scriptable start) {
         return wrapped_.has(name, start);
     }
@@ -92,6 +104,14 @@ public class FunctionWrapper implements Function, Serializable {
     @Override
     public boolean has(final int index, final Scriptable start) {
         return wrapped_.has(index, start);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean has(final Symbol key, final Scriptable start) {
+        return ((SymbolScriptable) wrapped_).has(key, start);
     }
 
     /**
@@ -114,6 +134,14 @@ public class FunctionWrapper implements Function, Serializable {
      * {@inheritDoc}
      */
     @Override
+    public void put(final Symbol key, final Scriptable start, final Object value) {
+        ((SymbolScriptable) wrapped_).put(key, wrapped_, value);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void delete(final String name) {
         wrapped_.delete(name);
     }
@@ -124,6 +152,14 @@ public class FunctionWrapper implements Function, Serializable {
     @Override
     public void delete(final int index) {
         wrapped_.delete(index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void delete(final Symbol key) {
+        ((SymbolScriptable) wrapped_).delete(key);
     }
 
     /**
@@ -146,7 +182,7 @@ public class FunctionWrapper implements Function, Serializable {
      * {@inheritDoc}
      */
     @Override
-    public Scriptable getParentScope() {
+    public VarScope getParentScope() {
         return wrapped_.getParentScope();
     }
 
@@ -154,8 +190,8 @@ public class FunctionWrapper implements Function, Serializable {
      * {@inheritDoc}
      */
     @Override
-    public void setParentScope(final Scriptable parent) {
-        wrapped_.setParentScope(parent);
+    public void setParentScope(final VarScope scope) {
+        wrapped_.setParentScope(scope);
     }
 
     /**

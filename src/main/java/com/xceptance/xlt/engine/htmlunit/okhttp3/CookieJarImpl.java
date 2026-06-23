@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.htmlunit.CookieManager;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 
 import okhttp3.Cookie.Builder;
 import okhttp3.CookieJar;

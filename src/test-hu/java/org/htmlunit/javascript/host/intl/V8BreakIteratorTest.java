@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host.intl;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link V8BreakIterator}.
@@ -30,7 +27,6 @@ import org.junit.runner.RunWith;
  * @see <a href="https://code.google.com/p/v8/source/browse#svn%2Ftrunk%2Ftest%2Fintl%2Fbreak-iterator">
  *          https://code.google.com/p/v8/source/browse#svn%2Ftrunk%2Ftest%2Fintl%2Fbreak-iterator</a>
  */
-@RunWith(BrowserRunner.class)
 public class V8BreakIteratorTest extends WebDriverTestCase {
 
     private static final String LINE_ = "line";
@@ -45,13 +41,39 @@ public class V8BreakIteratorTest extends WebDriverTestCase {
             CHROME = "true",
             EDGE = "true")
     public void v8BreakIterator() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    if (window.Intl && window.Intl.v8BreakIterator) {\n"
                 + "      var iterator = Intl.v8BreakIterator('en');\n"
+                + "      log(iterator instanceof Intl.v8BreakIterator);\n"
+                + "    } else { log('no support'); }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "no support",
+            CHROME = "true",
+            EDGE = "true")
+    public void v8BreakIterator2() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    if (window.Intl && window.Intl.v8BreakIterator) {\n"
+                + "      var iterator = Intl.v8BreakIterator('de-DE');\n"
                 + "      log(iterator instanceof Intl.v8BreakIterator);\n"
                 + "    } else { log('no support'); }\n"
                 + "  }\n"
@@ -129,7 +151,7 @@ public class V8BreakIteratorTest extends WebDriverTestCase {
      * @param type can be null
      */
     private void test(final String language, final String type, final String text) throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -174,7 +196,7 @@ public class V8BreakIteratorTest extends WebDriverTestCase {
             CHROME = "en-US",
             EDGE = "en-US")
     public void defaultLocale() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

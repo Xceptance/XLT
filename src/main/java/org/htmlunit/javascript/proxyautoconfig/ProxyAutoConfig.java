@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import org.htmlunit.util.SubnetUtils;
  * Provides an implementation of Proxy Auto-Config (PAC).
  *
  * @see <a href=
- * "https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file">
- * Proxy Auto-Configuration (PAC) file</a>
+ *     "https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file">
+ *     Proxy Auto-Configuration (PAC) file</a>
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
@@ -73,7 +73,7 @@ public final class ProxyAutoConfig extends HtmlUnitScriptable {
      * @param host the hostname from the URL
      * @param hostdom fully qualified hostname to match against
      * @return true if the hostname matches exactly the specified hostname,
-     * or if there is no domain name part in the hostname, but the unqualified hostname matches.
+     *         or if there is no domain name part in the hostname, but the unqualified hostname matches.
      */
     @JsxFunction
     public static boolean localHostOrDomainIs(final String host, final String hostdom) {
@@ -93,10 +93,10 @@ public final class ProxyAutoConfig extends HtmlUnitScriptable {
     /**
      * Returns true if the IP address of the host matches the specified IP address pattern.
      * @param host a DNS hostname, or IP address.
-     * If a hostname is passed, it will be resolved into an IP address by this function.
+     *        If a hostname is passed, it will be resolved into an IP address by this function.
      * @param pattern an IP address pattern in the dot-separated format
      * @param mask mask for the IP address pattern informing which parts of the IP address should be matched against.
-     * 0 means ignore, 255 means match
+     *        0 means ignore, 255 means match
      * @return true if the IP address of the host matches the specified IP address pattern.
      */
     @JsxFunction

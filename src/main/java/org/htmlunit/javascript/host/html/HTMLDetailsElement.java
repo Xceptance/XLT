@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 
 import org.htmlunit.html.HtmlDetails;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -67,7 +63,7 @@ public class HTMLDetailsElement extends HTMLElement {
      * Returns the {@code name} property.
      * @return the {@code name} property
      */
-    @JsxGetter({CHROME, EDGE, FF})
+    @JsxGetter
     @Override
     public String getName() {
         return super.getName();

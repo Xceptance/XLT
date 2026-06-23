@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,10 @@ public class MediaDevices extends EventTarget {
         super.jsConstructor();
     }
 
+    /**
+     * @return a {@link NativePromise} that resolves to a {@link DOMException} because HtmlUnit
+     *         does not support media streaming
+     */
     @JsxFunction
     public NativePromise getUserMedia() {
         return setupRejectedPromise(() ->

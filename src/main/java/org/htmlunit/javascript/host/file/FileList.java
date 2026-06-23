@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.htmlunit.javascript.host.file;
 import java.util.ArrayList;
 
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -59,8 +60,8 @@ public class FileList extends HtmlUnitScriptable {
         super();
         files_ = new ArrayList<>();
 
-        for (int i = 0; i < array.length; i++) {
-            files_.add(new File(array[i].getAbsolutePath()));
+        for (final java.io.File f : array) {
+            files_.add(new File(f.getAbsolutePath()));
         }
     }
 
@@ -77,11 +78,11 @@ public class FileList extends HtmlUnitScriptable {
      * {@inheritDoc}
      */
     @Override
-    public void setParentScope(final Scriptable m) {
-        super.setParentScope(m);
+    public void setParentScope(final VarScope scope) {
+        super.setParentScope(scope);
         if (files_ != null) {
             for (final File file : files_) {
-                file.setParentScope(m);
+                file.setParentScope(scope);
                 file.setPrototype(getPrototype(file.getClass()));
             }
         }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.htmlunit.html;
 
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,12 +26,12 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebServerTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.platform.image.ImageData;
 import org.htmlunit.platform.image.ImageIOImageData;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HtmlImage}.
@@ -42,17 +40,17 @@ import org.junit.runner.RunWith;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Lukas Botsch
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HtmlImageDownloadTest extends WebServerTestCase {
-    private static final String BASE_FILE_PATH = "src/test-hu/resources/org/htmlunit/html";
 
     /**
-     * Constructor.
-     * @throws Exception if an exception occurs
+     * Starts the web server prior to test execution.
+     * @throws Exception if an error occurs
      */
-    public HtmlImageDownloadTest() throws Exception {
-        startWebServer(BASE_FILE_PATH);
+    @BeforeEach
+    public void setUp() throws Exception {
+        startWebServer("src/test-hu/resources/org/htmlunit/html");
     }
 
     /**
@@ -105,7 +103,7 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
         htmlImage.setAttribute("src", url);
         try {
             htmlImage.getImageData();
-            fail("it was not an image!");
+            Assertions.fail("it was not an image!");
         }
         catch (final IOException expected) {
         }
@@ -158,7 +156,7 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
      * {@inheritDoc}
      */
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         Thread.sleep(100);
         super.tearDown();

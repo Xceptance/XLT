@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package org.htmlunit.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,15 +43,19 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link OrderedFastHashMap}.
  *
-* @author Ren&eacute; Schwietzke
+ * @author Ren&eacute; Schwietzke
+ * @author Ronald Brill
  */
 public class OrderedFastHashMapTest {
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void ctr() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -63,6 +67,9 @@ public class OrderedFastHashMapTest {
         assertNull(m.get("test"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void simplePut() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -78,6 +85,9 @@ public class OrderedFastHashMapTest {
         assertEquals("V", m.getEntry(0).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void allowAnEmptyStart() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(0);
@@ -96,6 +106,9 @@ public class OrderedFastHashMapTest {
         assertEquals("V", m.getEntry(0).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void simpleMultiPut() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -126,6 +139,9 @@ public class OrderedFastHashMapTest {
         t.accept("z", 5);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAgainDoesNotChangeOrder() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -150,6 +166,9 @@ public class OrderedFastHashMapTest {
         t.accept("Z", 3);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void getDoesNotChangeOrder() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -174,11 +193,14 @@ public class OrderedFastHashMapTest {
         t.accept("Z", 3);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void growSmall() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(3);
         for (int i = 0; i < 10; i++) {
-            m.add(String.valueOf(i), "V" + String.valueOf(i));
+            m.add(String.valueOf(i), "V" + i);
         }
 
         final BiConsumer<String, Integer> t = (k, index) -> {
@@ -191,6 +213,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void growBig() {
         final List<String> keys = new ArrayList<>();
@@ -219,6 +244,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keys() {
         final OrderedFastHashMap<String, Integer> f = new OrderedFastHashMap<>(3);
@@ -261,6 +289,9 @@ public class OrderedFastHashMapTest {
         assertNull(f.get("unknown"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void values() {
         final OrderedFastHashMap<String, Integer> f = new OrderedFastHashMap<>(3);
@@ -291,6 +322,9 @@ public class OrderedFastHashMapTest {
         assertTrue(v2.contains(5));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void remove_simple_only_one() {
         final OrderedFastHashMap<String, String> m1 = new OrderedFastHashMap<>();
@@ -300,6 +334,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m1.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void remove_simple_first() {
         // remove first
@@ -311,6 +348,9 @@ public class OrderedFastHashMapTest {
         assertEquals(1, m1.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void remove_simple_from_the_middle() {
         // remove the one in the middle
@@ -326,6 +366,9 @@ public class OrderedFastHashMapTest {
         assertEquals("c", m1.getKey(1));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void remove_simple_unknown() {
         // remove unknown
@@ -335,6 +378,9 @@ public class OrderedFastHashMapTest {
         assertNull(m1.remove("a"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void remove_complex() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(3);
@@ -374,6 +420,9 @@ public class OrderedFastHashMapTest {
         t.accept("b", 4);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeRandomlyToEmpty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(15);
@@ -395,12 +444,15 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeTryingToCoverEdges_Last() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         for (int i = 0; i < 200; i++) {
             // we add two, but immediately remove the last again
-            m.put(String.valueOf(i), "V" + String.valueOf(i));
+            m.put(String.valueOf(i), "V" + i);
             m.put(String.valueOf(i + 1), "any");
             assertEquals("any", m.remove(String.valueOf(i + 1)));
         }
@@ -417,12 +469,15 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeTryingToCoverEdges_First() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         for (int i = 0; i < 4000; i = i + 2) {
             m.put(String.valueOf(i), "any");
-            m.put(String.valueOf(i + 1), "V" + String.valueOf(i + 1));
+            m.put(String.valueOf(i + 1), "V" + (i + 1));
             assertEquals("any", m.remove(String.valueOf(i)));
         }
 
@@ -438,13 +493,16 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeTryingToCoverEdges_Middle() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         for (int i = 0; i < 3 * 1972; i = i + 3) {
-            m.put(String.valueOf(i), "V" + String.valueOf(i));
+            m.put(String.valueOf(i), "V" + i);
             m.put(String.valueOf(i + 1), "any");
-            m.put(String.valueOf(i + 2), "V" + String.valueOf(i + 2));
+            m.put(String.valueOf(i + 2), "V" + (i + 2));
             assertEquals("any", m.remove(String.valueOf(i + 1)));
         }
 
@@ -461,6 +519,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeByIndex_first() {
         final OrderedFastHashMap<String, Integer> m = new OrderedFastHashMap<>();
@@ -474,6 +535,9 @@ public class OrderedFastHashMapTest {
         assertEquals(2, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeByIndex_second() {
         final OrderedFastHashMap<String, Integer> m = new OrderedFastHashMap<>();
@@ -487,6 +551,9 @@ public class OrderedFastHashMapTest {
         assertEquals(2, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeByIndex_last() {
         final OrderedFastHashMap<String, Integer> m = new OrderedFastHashMap<>();
@@ -500,6 +567,9 @@ public class OrderedFastHashMapTest {
         assertEquals(2, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeByIndex_middle_to_empty() {
         final OrderedFastHashMap<String, Integer> m = new OrderedFastHashMap<>();
@@ -513,6 +583,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void clear() {
         final OrderedFastHashMap<String, Integer> m = new OrderedFastHashMap<>();
@@ -548,6 +621,9 @@ public class OrderedFastHashMapTest {
         assertEquals(Integer.valueOf(3), m.get("c"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeLast() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -586,6 +662,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeFirst_Empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -593,6 +672,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeFirst_One() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -601,6 +683,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeFirst_Two() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -612,6 +697,9 @@ public class OrderedFastHashMapTest {
         assertEquals("Va", m.getValue(0));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void removeFirst_WithGrowth() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(3);
@@ -656,6 +744,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void addFirst_to_empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -666,6 +757,9 @@ public class OrderedFastHashMapTest {
     }
 
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void addFirst_twice() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -678,6 +772,9 @@ public class OrderedFastHashMapTest {
         assertEquals("2", m.getValue(0));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void addFirst__second_to_normal_added() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -690,6 +787,9 @@ public class OrderedFastHashMapTest {
         assertEquals("2", m.getValue(0));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void addLast_to_empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -699,6 +799,9 @@ public class OrderedFastHashMapTest {
         assertEquals("1", m.getValue(0));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void addLast_twice() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -711,6 +814,9 @@ public class OrderedFastHashMapTest {
         assertEquals("2", m.getValue(1));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void addLast_to_normally_added() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -723,12 +829,18 @@ public class OrderedFastHashMapTest {
         assertEquals("2", m.getValue(1));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_Empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         assertFalse(m.containsKey("akey"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_True_single() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -736,6 +848,9 @@ public class OrderedFastHashMapTest {
         assertTrue(m.containsKey("akey"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_True_many() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -747,6 +862,9 @@ public class OrderedFastHashMapTest {
         assertTrue(m.containsKey(new String("akey2")));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_True_content_based() {
         // same hash and different content
@@ -760,6 +878,9 @@ public class OrderedFastHashMapTest {
         assertTrue(m.containsKey(new MockKey<>(10, "akey1")));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_False_single() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -767,6 +888,9 @@ public class OrderedFastHashMapTest {
         assertFalse(m.containsKey("akey1"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_False_many() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -776,6 +900,9 @@ public class OrderedFastHashMapTest {
         assertFalse(m.containsKey("akey"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsKey_False_content_based() {
         // same hash but different content
@@ -791,12 +918,18 @@ public class OrderedFastHashMapTest {
         assertFalse(m.containsKey(new MockKey<>(112, "akey4")));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsValue_Empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         assertFalse(m.containsValue("avalue"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsValue_True_single() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -804,6 +937,9 @@ public class OrderedFastHashMapTest {
         assertTrue(m.containsValue("any"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsValue_True_content_based() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -818,6 +954,9 @@ public class OrderedFastHashMapTest {
         assertTrue(m.containsValue(new String("any3")));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsValue_False_single() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -825,6 +964,9 @@ public class OrderedFastHashMapTest {
         assertFalse(m.containsValue("asdf"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void containsValue_False_many() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -842,18 +984,27 @@ public class OrderedFastHashMapTest {
         assertFalse(m.containsValue("any7"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void isEmpty_empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
         assertTrue(m.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void isEmpty_size_zero() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(0);
         assertTrue(m.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void isEmpty_false() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -861,6 +1012,9 @@ public class OrderedFastHashMapTest {
         assertFalse(m.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void isEmpty_after_clear() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -869,6 +1023,9 @@ public class OrderedFastHashMapTest {
         assertTrue(m.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entry() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -906,6 +1063,9 @@ public class OrderedFastHashMapTest {
         assertThrows(UnsupportedOperationException.class, () -> e.setValue("foo"));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -914,6 +1074,9 @@ public class OrderedFastHashMapTest {
         assertTrue(set.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_zero_size() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(0);
@@ -922,6 +1085,9 @@ public class OrderedFastHashMapTest {
         assertTrue(set.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -948,6 +1114,9 @@ public class OrderedFastHashMapTest {
         assertFalse(set.contains(e3));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_large() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -969,6 +1138,9 @@ public class OrderedFastHashMapTest {
         assertThrows(NoSuchElementException.class, () -> iter.next());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_toArray_empty() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -984,6 +1156,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_toArray_zero_sized() {
         final Map<String, String> m = new OrderedFastHashMap<>(0);
@@ -999,6 +1174,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_toArray_normal() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -1019,6 +1197,9 @@ public class OrderedFastHashMapTest {
         assertEquals("V1", set.toArray(new Map.Entry[1])[0].getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_toArray_get_same_back() {
         // ensure we get our array back when it is sufficiently sized
@@ -1035,6 +1216,9 @@ public class OrderedFastHashMapTest {
         assertSame(array2, set.toArray(array2));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void entrySet_toArray_large() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -1053,6 +1237,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_empty() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -1061,6 +1248,9 @@ public class OrderedFastHashMapTest {
         assertTrue(set.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_size_zero() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>(0);
@@ -1069,6 +1259,9 @@ public class OrderedFastHashMapTest {
         assertTrue(set.isEmpty());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_one() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -1081,6 +1274,9 @@ public class OrderedFastHashMapTest {
         assertEquals("K1", e1);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_large() {
         final OrderedFastHashMap<String, String> m = new OrderedFastHashMap<>();
@@ -1102,6 +1298,9 @@ public class OrderedFastHashMapTest {
         assertThrows(NoSuchElementException.class, () -> iter.next());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_toArray_empty() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -1117,6 +1316,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_toArray_one() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -1131,6 +1333,9 @@ public class OrderedFastHashMapTest {
         assertEquals("K1", set.toArray(new String[1])[0]);
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_toArray_same_array() {
         // ensure we get our array back when it is sufficiently sized
@@ -1147,6 +1352,9 @@ public class OrderedFastHashMapTest {
         assertSame(array2, set.toArray(array2));
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void keySet_toArray_many() {
         final Map<String, String> m = new OrderedFastHashMap<>();
@@ -1162,6 +1370,9 @@ public class OrderedFastHashMapTest {
         }
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_cannot_add_self() {
         // we cannot add ourselves!
@@ -1172,6 +1383,9 @@ public class OrderedFastHashMapTest {
         assertEquals("Cannot add myself", thrown.getMessage());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_empty() {
         // empty
@@ -1181,6 +1395,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_target_empty() {
         // target empty
@@ -1201,6 +1418,9 @@ public class OrderedFastHashMapTest {
         assertFalse(iter.hasNext());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_source_empty() {
         // src empty
@@ -1219,6 +1439,9 @@ public class OrderedFastHashMapTest {
         assertFalse(iter.hasNext());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_target_not_empty() {
         // target not empty
@@ -1248,6 +1471,9 @@ public class OrderedFastHashMapTest {
         assertFalse(iter.hasNext());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_same_type_not_same_object() {
         // same type but not same map
@@ -1272,6 +1498,9 @@ public class OrderedFastHashMapTest {
         assertFalse(iter.hasNext());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void putAll_to_another_map() {
         // I can be added to other Map.putAll
@@ -1281,37 +1510,28 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void collision() {
         final OrderedFastHashMap<MockKey<String>, String> f = new OrderedFastHashMap<>(13);
-        IntStream.range(0, 15).forEach(i -> {
-            f.put(new MockKey<>(12, "k" + i), "v" + i);
-        });
+        IntStream.range(0, 15).forEach(i -> f.put(new MockKey<>(12, "k" + i), "v" + i));
 
         assertEquals(15, f.size());
 
-        IntStream.range(0, 15).forEach(i -> {
-            assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i)));
-        });
+        IntStream.range(0, 15).forEach(i -> assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i))));
 
         // round 2
-        IntStream.range(0, 20).forEach(i -> {
-            f.put(new MockKey<>(12, "k" + i), "v" + i);
-        });
+        IntStream.range(0, 20).forEach(i -> f.put(new MockKey<>(12, "k" + i), "v" + i));
 
         assertEquals(20, f.size());
 
-        IntStream.range(0, 20).forEach(i -> {
-            assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i)));
-        });
+        IntStream.range(0, 20).forEach(i -> assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i))));
 
         // round 3
-        IntStream.range(0, 10).forEach(i -> {
-            assertEquals("v" + i, f.remove(new MockKey<>(12, "k" + i)));
-        });
-        IntStream.range(10, 20).forEach(i -> {
-            assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i)));
-        });
+        IntStream.range(0, 10).forEach(i -> assertEquals("v" + i, f.remove(new MockKey<>(12, "k" + i))));
+        IntStream.range(10, 20).forEach(i -> assertEquals("v" + i, f.get(new MockKey<>(12, "k" + i))));
     }
 
     /**
@@ -1411,6 +1631,9 @@ public class OrderedFastHashMapTest {
         assertEquals(0, m.values().size());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_empty() {
         // can reverse empty without exception
@@ -1418,6 +1641,9 @@ public class OrderedFastHashMapTest {
         m.reverse();
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_zero_sized() {
         // can reverse 0 sized map
@@ -1425,6 +1651,9 @@ public class OrderedFastHashMapTest {
         m.reverse();
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_one() {
         // reverse one entry map
@@ -1435,6 +1664,9 @@ public class OrderedFastHashMapTest {
         assertEquals("v0", m.getEntry(0).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_two() {
         // reverse two entries map
@@ -1448,6 +1680,9 @@ public class OrderedFastHashMapTest {
         assertEquals("v0", m.getEntry(1).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_three() {
         // reverse three entries map
@@ -1464,6 +1699,9 @@ public class OrderedFastHashMapTest {
         assertEquals("v0", m.getEntry(2).getValue());
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_many_odd() {
         // many entries, odd
@@ -1478,6 +1716,9 @@ public class OrderedFastHashMapTest {
         });
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
     @Test
     public void reverse_many_even() {
         // many entries, even
@@ -1496,8 +1737,8 @@ public class OrderedFastHashMapTest {
      * Test serialization, should work out of the box, just to
      * ensure nobody removes that.
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException in case of error
+     * @throws ClassNotFoundException in case of error
      */
     @Test
     public void serializable() throws IOException, ClassNotFoundException {
@@ -1525,8 +1766,8 @@ public class OrderedFastHashMapTest {
      * Test serialization, should work out of the box, just to
      * ensure nobody removes that.
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException in case of error
+     * @throws ClassNotFoundException in case of error
      */
     @Test
     public void serializable_notEmpty() throws IOException, ClassNotFoundException {

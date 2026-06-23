@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class NamedNodeMap extends HtmlUnitScriptable {
      */
     public NamedNodeMap(final DomElement element) {
         super();
-        setParentScope(element.getScriptableObject());
+        setParentScope(element.getScriptableObject().getParentScope());
         setPrototype(getPrototype(getClass()));
 
         attributes_ = element.getAttributes();
@@ -225,6 +225,9 @@ public class NamedNodeMap extends HtmlUnitScriptable {
         return index >= 0 && index < getLength();
     }
 
+    /**
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);

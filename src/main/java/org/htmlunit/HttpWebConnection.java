@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,7 @@ public class HttpWebConnection implements WebConnection {
                 // come out of connections and throw a ConnectionPoolTimeoutException.
                 // => best solution, discard the HttpClient instance.
                 synchronized (httpClientBuilder_) {
-                    httpClientBuilder_.remove(Thread.currentThread());
+                httpClientBuilder_.remove(Thread.currentThread());
                 }
                 throw e;
             }
@@ -300,12 +300,11 @@ public class HttpWebConnection implements WebConnection {
         // this has to be in sync with org.htmlunit.WebRequest.getRequestParameters()
 
         // POST, PUT, PATCH, DELETE, OPTIONS
-        if ((httpMethod instanceof HttpEntityEnclosingRequest)
-                && (httpMethod instanceof HttpPost
+        if (httpMethod instanceof HttpPost
                         || httpMethod instanceof HttpPut
                         || httpMethod instanceof HttpPatch
                         || httpMethod instanceof org.htmlunit.httpclient.HttpDelete
-                        || httpMethod instanceof org.htmlunit.httpclient.HttpOptions)) {
+                || httpMethod instanceof org.htmlunit.httpclient.HttpOptions) {
 
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
@@ -359,8 +358,8 @@ public class HttpWebConnection implements WebConnection {
                 builder.setCharset(c);
 
                 for (final NameValuePair pair : webRequest.getRequestParameters()) {
-                    if (pair instanceof KeyDataPair) {
-                        buildFilePart((KeyDataPair) pair, builder);
+                    if (pair instanceof KeyDataPair dataPair) {
+                        buildFilePart(dataPair, builder);
                     }
                     else {
                         builder.addTextBody(pair.getName(), pair.getValue(),
@@ -425,8 +424,7 @@ public class HttpWebConnection implements WebConnection {
 
     private static Charset getCharset(final Charset charset, final List<NameValuePair> pairs) {
         for (final NameValuePair pair : pairs) {
-            if (pair instanceof KeyDataPair) {
-                final KeyDataPair pairWithFile = (KeyDataPair) pair;
+            if (pair instanceof KeyDataPair pairWithFile) {
                 if (pairWithFile.getData() == null && pairWithFile.getFile() != null) {
                     final String fileName = pairWithFile.getFile().getName();
                     final int length = fileName.length();
@@ -488,43 +486,16 @@ public class HttpWebConnection implements WebConnection {
      * @return a new HttpClient HTTP method based on the specified parameters
      */
     protected HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri) {
-        final HttpRequestBase method;
-        switch (submitMethod) {
-            case GET:
-                method = new HttpGet(uri);
-                break;
-
-            case POST:
-                method = new HttpPost(uri);
-                break;
-
-            case PUT:
-                method = new HttpPut(uri);
-                break;
-
-            case DELETE:
-                method = new org.htmlunit.httpclient.HttpDelete(uri);
-                break;
-
-            case OPTIONS:
-                method = new org.htmlunit.httpclient.HttpOptions(uri);
-                break;
-
-            case HEAD:
-                method = new HttpHead(uri);
-                break;
-
-            case TRACE:
-                method = new HttpTrace(uri);
-                break;
-
-            case PATCH:
-                method = new HttpPatch(uri);
-                break;
-
-            default:
-                throw new IllegalStateException("Submit method not yet supported: " + submitMethod);
-        }
+        final HttpRequestBase method = switch (submitMethod) {
+            case GET -> new HttpGet(uri);
+            case POST -> new HttpPost(uri);
+            case PUT -> new HttpPut(uri);
+            case DELETE -> new org.htmlunit.httpclient.HttpDelete(uri);
+            case OPTIONS -> new org.htmlunit.httpclient.HttpOptions(uri);
+            case HEAD -> new HttpHead(uri);
+            case TRACE -> new HttpTrace(uri);
+            case PATCH -> new HttpPatch(uri);
+        };
         return method;
     }
 
@@ -537,24 +508,24 @@ public class HttpWebConnection implements WebConnection {
         final Thread currentThread = Thread.currentThread();
 
         synchronized (httpClientBuilder_) {
-            HttpClientBuilder builder = httpClientBuilder_.get(currentThread);
-            if (builder == null) {
-                builder = createHttpClientBuilder();
+        HttpClientBuilder builder = httpClientBuilder_.get(currentThread);
+        if (builder == null) {
+            builder = createHttpClientBuilder();
 
-                // this factory is required later
-                // to be sure this is done, we do it outside the createHttpClient() call
-                final RegistryBuilder<CookieSpecProvider> registeryBuilder
-                    = RegistryBuilder.<CookieSpecProvider>create()
-                                .register(HACKED_COOKIE_POLICY, htmlUnitCookieSpecProvider_);
-                builder.setDefaultCookieSpecRegistry(registeryBuilder.build());
+            // this factory is required later
+            // to be sure this is done, we do it outside the createHttpClient() call
+            final RegistryBuilder<CookieSpecProvider> registeryBuilder
+                = RegistryBuilder.<CookieSpecProvider>create()
+                            .register(HACKED_COOKIE_POLICY, htmlUnitCookieSpecProvider_);
+            builder.setDefaultCookieSpecRegistry(registeryBuilder.build());
 
-                builder.setDefaultCookieStore(new HtmlUnitCookieStore(webClient_.getCookieManager()));
-                builder.setUserAgent(webClient_.getBrowserVersion().getUserAgent());
-                httpClientBuilder_.put(currentThread, builder);
-            }
-
-            return builder;
+            builder.setDefaultCookieStore(new HtmlUnitCookieStore(webClient_.getCookieManager()));
+            builder.setUserAgent(webClient_.getBrowserVersion().getUserAgent());
+            httpClientBuilder_.put(currentThread, builder);
         }
+
+        return builder;
+    }
     }
 
     /**
@@ -827,7 +798,7 @@ public class HttpWebConnection implements WebConnection {
     /**
      * Constructs an appropriate WebResponse.
      * May be overridden by subclasses to return a specialized WebResponse.
-     * @param responseData Data that was send back
+     * @param responseData Data that was sent back
      * @param webRequest the request used to get this response
      * @param loadTime How long the response took to be sent
      * @return the new WebResponse
@@ -1295,7 +1266,7 @@ public class HttpWebConnection implements WebConnection {
     @Override
     public void close() {
         synchronized (httpClientBuilder_) {
-            httpClientBuilder_.clear();
+        httpClientBuilder_.clear();
         }
         sharedAuthCache_.clear();
         httpClientContextByThread_.clear();

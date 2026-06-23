@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,25 +26,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Tests for {@link FormData}.
@@ -55,7 +53,6 @@ import org.openqa.selenium.WebDriver;
  * @author Thorsten Wendelmuth
  * @author Lai Quang Duong
  */
-@RunWith(BrowserRunner.class)
 public class FormDataTest extends WebDriverTestCase {
 
     /**
@@ -65,8 +62,7 @@ public class FormDataTest extends WebDriverTestCase {
     @Alerts({"function", "function", "function", "function", "function", "function",
              "function", "function", "function", "function"})
     public void functions() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
@@ -94,8 +90,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void empty() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
             + "  try {\n"
@@ -136,8 +131,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void append() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
             + "  try {\n"
@@ -198,8 +192,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void appendFile() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -332,8 +325,7 @@ public class FormDataTest extends WebDriverTestCase {
     }
 
     private String appendFile(final String extension, final String name) throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -392,8 +384,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void appendInMemoryFile() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -448,8 +439,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void appendBlob() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -505,8 +495,7 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"myKey", "myKey1"})
     public void delete() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
             + "  try {\n"
@@ -558,8 +547,7 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"myValue", "null", "null", "null", "null"})
     public void get() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -603,15 +591,14 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"myValue,myValue2", "", "", "", ""})
     public void getAll() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  try {\n"
             + "    var formData = new FormData();\n"
-            + "    if (!formData.get) { log('no getAll'); return; }\n"
+            + "    if (!formData.getAll) { log('no getAll'); return; }\n"
 
             + "    formData.append('myKey', 'myValue');\n"
             + "    formData.append('myKey', 'myValue2');\n"
@@ -648,8 +635,7 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "false"})
     public void has() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -689,8 +675,7 @@ public class FormDataTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "no set",
             FF = "")
     public void set() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><title>foo</title><script>\n"
             + "function test() {\n"
             + "  try {\n"
@@ -754,8 +739,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void setInMemoryFile() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -810,8 +794,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void setBlob() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -866,8 +849,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void fromForm() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -943,8 +925,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void fromFormAndAppend() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -1001,8 +982,7 @@ public class FormDataTest extends WebDriverTestCase {
      */
     @Test
     public void fromFormChangeBeforeSend() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head><title>foo</title>\n"
             + "<script>\n"
@@ -1132,8 +1112,8 @@ public class FormDataTest extends WebDriverTestCase {
     }
 
     private void enctype(final String enctype) throws Exception {
-        final String html
-            = "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1160,7 +1140,7 @@ public class FormDataTest extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse("<html><title>Response</title></html>");
 
         final WebDriver driver = loadPage2(html);
-        verifyTitle2(driver, new String[] {});
+        verifyTitle2(driver, ArrayUtils.EMPTY_STRING_ARRAY);
 
         driver.findElement(By.id("testBtn")).click();
         String headerValue = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
@@ -1179,18 +1159,13 @@ public class FormDataTest extends WebDriverTestCase {
     @Alerts({"function keys() { [native code] }", "[object FormData Iterator]",
              "key1", "key2", "key1", "undefined", "true"})
     public void keys() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function test() {\n"
             + "      var formData = new FormData();\n"
-
-            + "      if (!formData.forEach) {\n"
-            + "        log('no keys');\n"
-            + "        return;"
-            + "      }\n"
 
             + "      formData.append('key1', 'val1');\n"
             + "      formData.append('key2', undefined);\n"
@@ -1223,46 +1198,100 @@ public class FormDataTest extends WebDriverTestCase {
     }
 
     /**
+     * Checks if the iterator works correctly.
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"function values() { [native code] }", "[object FormData Iterator]",
-             "val1", "undefined", "val3", "val4", "true"})
-    public void values() throws Exception {
-        final String html =
-            "<html>\n"
-            + "<head>\n"
-            + "  <script>\n"
+    @Alerts({"false", "function keys() { [native code] }",
+             "[object FormData Iterator]", "done", "value",
+             "myKey", "myKey2", "myKey"})
+    @HtmlUnitNYI(
+            CHROME = {"false", "function keys() { [native code] }",
+                      "[object FormData Iterator]", "value", "done",
+                      "myKey", "myKey2", "myKey"},
+            EDGE = {"false", "function keys() { [native code] }",
+                    "[object FormData Iterator]", "value", "done",
+                    "myKey", "myKey2", "myKey"},
+            FF = {"false", "function keys() { [native code] }",
+                  "[object FormData Iterator]", "value", "done",
+                  "myKey", "myKey2", "myKey"},
+            FF_ESR = {"false", "function keys() { [native code] }",
+                      "[object FormData Iterator]", "value", "done",
+                      "myKey", "myKey2", "myKey"})
+    public void keysIterator() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
-            + "    function test() {\n"
-            + "      var formData = new FormData();\n"
+            + "function test() {\n"
+            + "  var formData = new FormData();\n"
 
-            + "      if (!formData.forEach) {\n"
-            + "        log('no values');\n"
-            + "        return;"
-            + "      }\n"
+            + "  formData.append('myKey', 'myValue');\n"
+            + "  formData.append('myKey2', '');\n"
+            + "  formData.append('myKey', 'myvalue2');\n"
 
-            + "      formData.append('key1', 'val1');\n"
-            + "      formData.append('key2', undefined);\n"
-            + "      formData.append('key1', 'val3');\n"
-            + "      formData.append(undefined, 'val4');\n"
+            + "  log(formData[Symbol.iterator] === formData.keys);\n"
 
-            + "      log(formData.values);\n"
-            + "      var iter = formData.values();\n"
-            + "      log(iter);\n"
+            + "  log(formData.keys);\n"
+            + "  var iterator = formData.keys();\n"
+            + "  log(iterator);\n"
 
-            + "      var entry = iter.next().value;\n"
-            + "      log(entry);\n"
-            + "      entry = iter.next().value;\n"
-            + "      log(entry);\n"
-            + "      entry = iter.next().value;\n"
-            + "      log(entry);\n"
-            + "      entry = iter.next().value;\n"
-            + "      log(entry);\n"
+            + "  var nextItem = iterator.next();\n"
+            + "  for (var x in nextItem) {\n"
+            + "    log(x);\n"
+            + "  }\n"
 
-            + "      log(iter.next().done);\n"
-            + "    }\n"
-            + "  </script>\n"
+            + "  while (nextItem.done == false) {\n"
+            + "    log(nextItem.value);\n"
+            + "    nextItem = iterator.next();\n"
+            + "  }\n"
+
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", "function values() { [native code] }", "[object FormData Iterator]",
+             "val1", "undefined", "val3", "val4", "true"})
+    public void valuesIterator() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var formData = new FormData();\n"
+
+            + "  formData.append('key1', 'val1');\n"
+            + "  formData.append('key2', undefined);\n"
+            + "  formData.append('key1', 'val3');\n"
+            + "  formData.append(undefined, 'val4');\n"
+
+            + "  log(formData[Symbol.iterator] === formData.values);\n"
+
+            + "  log(formData.values);\n"
+            + "  var iter = formData.values();\n"
+            + "  log(iter);\n"
+
+            + "  var entry = iter.next().value;\n"
+            + "  log(entry);\n"
+            + "  entry = iter.next().value;\n"
+            + "  log(entry);\n"
+            + "  entry = iter.next().value;\n"
+            + "  log(entry);\n"
+            + "  entry = iter.next().value;\n"
+            + "  log(entry);\n"
+
+            + "  log(iter.next().done);\n"
+            + "}\n"
+            + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "</body>\n"
@@ -1277,18 +1306,13 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"val1", "undefined", "val3", "val4"})
     public void valuesForOf() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
             + LOG_TITLE_FUNCTION
             + "    function test() {\n"
             + "      var formData = new FormData();\n"
-
-            + "      if (!formData.forEach) {\n"
-            + "        log('no values');\n"
-            + "        return;"
-            + "      }\n"
 
             + "      formData.append('key1', 'val1');\n"
             + "      formData.append('key2', undefined);\n"
@@ -1316,18 +1340,13 @@ public class FormDataTest extends WebDriverTestCase {
              "key1-val1", "key3-val3",
              "key2-val2", "key3-val3"})
     public void forEach() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+                + "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
                 + LOG_TITLE_FUNCTION
                 + "    function test() {\n"
                 + "      var formData = new FormData();\n"
-
-                + "      if (!formData.forEach) {\n"
-                + "        log('no forEach');\n"
-                + "        return;"
-                + "      }\n"
 
                 + "      formData.append('key1', 'val1');\n"
                 + "      formData.append('key2', 'val2');\n"
@@ -1364,17 +1383,12 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
     public void entries_forOf() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var formData = new FormData();\n"
-            + "  if (!formData.get) {\n"
-            + "    log('no entries');\n"
-            + "    return;"
-            + "  }\n"
 
             + "  formData.append('myKey', 'myValue');\n"
             + "  formData.append('myKey2', '');\n"
@@ -1398,36 +1412,36 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"true", "[object FormData Iterator]", "done", "value",
+    @Alerts({"true", "function entries() { [native code] }",
+             "[object FormData Iterator]", "done", "value",
              "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
-    @HtmlUnitNYI(CHROME = {"true", "[object FormData Iterator]", "value", "done",
-                           "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            EDGE = {"true", "[object FormData Iterator]", "value", "done",
+    @HtmlUnitNYI(
+            CHROME = {"true", "function entries() { [native code] }",
+                      "[object FormData Iterator]", "value", "done",
+                      "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
+            EDGE = {"true", "function entries() { [native code] }",
+                    "[object FormData Iterator]", "value", "done",
                     "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            FF = {"true", "[object FormData Iterator]", "value", "done",
+            FF = {"true", "function entries() { [native code] }",
+                  "[object FormData Iterator]", "value", "done",
                   "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            FF_ESR = {"true", "[object FormData Iterator]", "value", "done",
+            FF_ESR = {"true", "function entries() { [native code] }",
+                      "[object FormData Iterator]", "value", "done",
                       "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
     public void entriesIterator() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var formData = new FormData();\n"
-            + "  if (!formData.get) {\n"
-            + "    log('no entries');\n"
-            + "    return;"
-            + "  }\n"
 
             + "  formData.append('myKey', 'myValue');\n"
             + "  formData.append('myKey2', '');\n"
             + "  formData.append('myKey', 'myvalue2');\n"
 
-            + "  if (typeof Symbol != 'undefined') {\n"
-            + "    log(formData[Symbol.iterator] === formData.entries);\n"
-            + "  }\n"
+            + "  log(formData[Symbol.iterator] === formData.entries);\n"
 
+            + "  log(formData.entries);\n"
             + "  var iterator = formData.entries();\n"
             + "  log(iterator);\n"
 
@@ -1436,7 +1450,7 @@ public class FormDataTest extends WebDriverTestCase {
             + "    log(x);\n"
             + "  }\n"
 
-            + "  while (nextItem.done == false) {\n"
+            + "  while (!nextItem.done) {\n"
             + "    log(nextItem.value[0]);\n"
             + "    log(nextItem.value[1]);\n"
             + "    nextItem = iterator.next();\n"
@@ -1457,8 +1471,7 @@ public class FormDataTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "false", "true", "false"})
     public void fromFormDisabled() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

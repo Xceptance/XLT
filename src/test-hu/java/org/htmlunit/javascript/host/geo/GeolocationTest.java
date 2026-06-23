@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@ import java.util.Map;
 
 import org.htmlunit.WebClientOptions;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -36,7 +34,6 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  * @author Ronald Brill
  * @author cd alexndr
  */
-@RunWith(BrowserRunner.class)
 public class GeolocationTest extends WebDriverTestCase {
 
     /**
@@ -45,8 +42,8 @@ public class GeolocationTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -65,8 +62,8 @@ public class GeolocationTest extends WebDriverTestCase {
     @Test
     @Alerts("[object Geolocation]")
     public void navigatorGeolocation() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
@@ -87,8 +84,8 @@ public class GeolocationTest extends WebDriverTestCase {
              "Longitude: 7.654321",
              "Accuracy: 0.1234"})
     public void getCurrentPosition() throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function success(pos) {\n"
             + "    const crd = pos.coords;\n"

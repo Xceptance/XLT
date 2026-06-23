@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,18 @@ import java.util.TimeZone;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DateTimeFormat}.
  *
  * @author Ronald Brill
  * @author Ahmed Ashour
+ * @author Lai Quang Duong
  */
-@RunWith(BrowserRunner.class)
 public class DateTimeFormatTest extends WebDriverTestCase {
 
     /**
@@ -51,7 +48,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
             FF_ESR = {"zh-CN", "undefined", "undefined", "America/New_York", "undefined", "undefined", "undefined",
                       "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void resolvedOptionsValues() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -87,7 +84,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Test
     @Alerts("[object Object]")
     public void resolvedOptions() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -111,7 +108,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Alerts({"true", "12/19/2013"})
     @BuggyWebDriver(FF = {"true", "12/20/2013"}, FF_ESR = {"true", "12/20/2013"})
     public void dateTimeFormat() throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -196,7 +193,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     }
 
     private void dateTimeFormat(final String tz) throws Exception {
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
                 + "<html><head>\n"
                 + "<script>\n"
                 + LOG_TITLE_FUNCTION
@@ -233,8 +230,8 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Alerts("America/New_York")
     @BuggyWebDriver(FF = "Europe/Berlin", FF_ESR = "Europe/Berlin")
     public void timeZone() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  log(Intl.DateTimeFormat().resolvedOptions().timeZone);\n"
@@ -272,7 +269,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Etc/GMT+5",
+    @Alerts(DEFAULT = "America/Panama",
             FF = "EST",
             FF_ESR = "EST")
     @BuggyWebDriver(FF = "Europe/Berlin", FF_ESR = "Europe/Berlin")
@@ -324,8 +321,8 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     }
 
     private void timeZone(final String tz) throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  log(Intl.DateTimeFormat().resolvedOptions().timeZone);\n"
@@ -353,8 +350,8 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     @Test
     @Alerts("en-US")
     public void locale() throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  log(Intl.DateTimeFormat().resolvedOptions().locale);\n"
@@ -416,8 +413,8 @@ public class DateTimeFormatTest extends WebDriverTestCase {
     }
 
     private void locale(final String language) throws Exception {
-        final String html
-            = "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  log(Intl.DateTimeFormat().resolvedOptions().locale);\n"
@@ -437,5 +434,28 @@ public class DateTimeFormatTest extends WebDriverTestCase {
         finally {
             shutDownAll();
         }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"en", "en,ja", ""})
+    public void supportedLocalesOf() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    log(Intl.DateTimeFormat.supportedLocalesOf('en'));\n"
+                + "    log(Intl.DateTimeFormat.supportedLocalesOf(['en', 'xx-YY', 'ja']));\n"
+                + "    log(Intl.DateTimeFormat.supportedLocalesOf([]));\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

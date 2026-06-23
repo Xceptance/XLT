@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  */
 package org.htmlunit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link NicelyResynchronizingAjaxController}.
  *
- * @author <a href="mailto:nnk@google.com">Nick Kralevich</a>
+ * @author Nick Kralevich
+ * @author Ronald Brill
  */
 public class NicelyResynchronizingAjaxControllerTest extends WebServerTestCase {
 

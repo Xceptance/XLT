@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,15 @@
  */
 package org.htmlunit;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collections;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.http.HttpStatus;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link FailingHttpStatusCodeException}.
@@ -32,7 +30,6 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public final class FailingHttpStatusCodeExceptionTest extends SimpleWebTestCase {
 
     /**
@@ -48,7 +45,7 @@ public final class FailingHttpStatusCodeExceptionTest extends SimpleWebTestCase 
         assertEquals(webResponse, e.getResponse());
         assertEquals(webResponse.getStatusMessage(), e.getStatusMessage());
         assertEquals(webResponse.getStatusCode(), e.getStatusCode());
-        assertTrue("message doesn't contain failing url", e.getMessage().indexOf(URL_FIRST.toExternalForm()) > -1);
+        assertTrue("message doesn't contain failing url", e.getMessage().contains(URL_FIRST.toExternalForm()));
     }
 
     /**
@@ -74,7 +71,8 @@ public final class FailingHttpStatusCodeExceptionTest extends SimpleWebTestCase 
      */
     @Test
     public void failureByClickLink() throws Exception {
-        final String html = "<html><body><a href='doesntExist'>go</a></body></html>";
+        final String html = DOCTYPE_HTML
+                + "<html><body><a href='doesntExist'>go</a></body></html>";
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
         final WebClient client = getWebClientWithMockWebConnection();
@@ -94,7 +92,8 @@ public final class FailingHttpStatusCodeExceptionTest extends SimpleWebTestCase 
      */
     @Test
     public void failureBySubmit() throws Exception {
-        final String html = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+                + "<html><body>\n"
                 + "<form name='form1' method='get' action='foo.html'>\n"
                 + "  <input name='button' type='submit' id='mySubmit'/>\n"
                 + "</form>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class Selection extends HtmlUnitScriptable {
 
     /**
      * @return a string currently being represented by the selection object,
-     * i.e. the currently selected text.
+     *         i.e. the currently selected text.
      */
     @JsxFunction(functionName = "toString")
     public String jsToString() {
@@ -209,7 +209,7 @@ public class Selection extends HtmlUnitScriptable {
         }
         final SimpleRange range = ranges.get(index);
         final Range jsRange = new Range(range);
-        jsRange.setParentScope(getWindow());
+        jsRange.setParentScope(getParentScope());
         jsRange.setPrototype(getPrototype(Range.class));
 
         return jsRange;

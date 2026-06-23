@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  */
 public final class XPathHelper {
 
-    private static final ThreadLocal<Boolean> PROCESS_XPATH_ = new ThreadLocal<Boolean>() {
+    private static final ThreadLocal<Boolean> PROCESS_XPATH_ = new ThreadLocal<>() {
         @Override
         protected synchronized Boolean initialValue() {
             return Boolean.FALSE;
@@ -102,6 +102,14 @@ public final class XPathHelper {
         }
     }
 
+    /**
+     * @param <T> the type of nodes expected
+     * @param node the start node
+     * @param xpath the {@link XPathAdapter} to search for
+     * @param prefixResolver the {@link PrefixResolver} to be used
+     * @return a list of nodes matching the given xpath
+     * @throws TransformerException in case of error
+     */
     public static <T> List<T> getByXPath(final Node node, final XPathAdapter xpath,
             final PrefixResolver prefixResolver) throws TransformerException {
         final List<T> list = new ArrayList<>();
@@ -114,7 +122,8 @@ public final class XPathHelper {
 
             if (result instanceof XNodeSet) {
                 final NodeList nodelist = result.nodelist();
-                for (int i = 0; i < nodelist.getLength(); i++) {
+                final int length = nodelist.getLength();
+                for (int i = 0; i < length; i++) {
                     list.add((T) nodelist.item(i));
                 }
             }
@@ -128,7 +137,7 @@ public final class XPathHelper {
                 list.add((T) result.str());
             }
             else {
-                throw new RuntimeException("Unproccessed " + result.getClass().getName());
+                throw new RuntimeException("Unprocessed " + result.getClass().getName());
             }
         }
         finally {

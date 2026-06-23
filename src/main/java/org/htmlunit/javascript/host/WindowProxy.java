@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebWindow;
-import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptableProxy;
 
 /**
  * Proxy for a {@link Window} script object.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
 public class WindowProxy extends HtmlUnitScriptableProxy<Window> {
 
@@ -49,7 +50,7 @@ public class WindowProxy extends HtmlUnitScriptableProxy<Window> {
      * @param parent the new parent scope
      */
     @Override
-    public void setParentScope(final Scriptable parent) {
+    public void setParentScope(final VarScope parent) {
         // nothing as the window is the top level scope and its parent scope should stay null
     }
 }

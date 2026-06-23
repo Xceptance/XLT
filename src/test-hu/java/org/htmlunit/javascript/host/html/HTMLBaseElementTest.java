@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link HTMLBaseElement}.
  *
  * @author Daniel Gredler
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class HTMLBaseElementTest extends WebDriverTestCase {
 
     /**
@@ -35,8 +33,8 @@ public class HTMLBaseElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"http://www.foo.com/images/", "§§URL§§", "", "_blank"})
     public void hrefAndTarget() throws Exception {
-        final String html =
-            "<html>\n"
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
             + "  <head>\n"
             + "    <base id='b1' href='http://www.foo.com/images/' />\n"
             + "    <base id='b2' target='_blank' />\n"
@@ -63,7 +61,7 @@ public class HTMLBaseElementTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object HTMLBaseElement]", "function HTMLBaseElement() { [native code] }"})
     public void type() throws Exception {
-        final String html = ""
+        final String html = DOCTYPE_HTML
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION

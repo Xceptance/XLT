@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -71,7 +70,7 @@ public class NodeList extends AbstractList implements Callable {
      *
      * @param domNode the {@link DomNode}
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of parentScope changes (attribute added, modified or removed)
      */
     public NodeList(final DomNode domNode, final boolean attributeChangeSensitive) {
         super(domNode, attributeChangeSensitive, null);
@@ -90,11 +89,11 @@ public class NodeList extends AbstractList implements Callable {
      * Creates an instance.
      * @param parentScope the parent scope
      */
-    NodeList(final ScriptableObject parentScope) {
+    NodeList(final VarScope parentScope) {
         super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
-        setExternalArrayData(this);
+        setExternalArrayData(parentScope, this);
     }
 
     /**
@@ -104,7 +103,7 @@ public class NodeList extends AbstractList implements Callable {
      * @param elements the elements
      * @return an empty collection
      */
-    public static NodeList staticNodeList(final HtmlUnitScriptable parentScope, final List<DomNode> elements) {
+    public static NodeList staticNodeList(final VarScope parentScope, final List<DomNode> elements) {
         return new NodeList(parentScope) {
             @Override
             public List<DomNode> getElements() {
@@ -147,22 +146,32 @@ public class NodeList extends AbstractList implements Callable {
      */
     @JsxFunction
     public void forEach(final Object callback) {
-        if (!(callback instanceof Function)) {
+        if (!(callback instanceof Function function)) {
             throw JavaScriptEngine.typeError(
                     "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
 
-        final List<DomNode> nodes = getElements();
+        if (getElements().isEmpty()) {
+            return;
+        }
 
         final WebClient client = getWindow().getWebWindow().getWebClient();
         final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
 
         final ContextAction<Object> contextAction = cx -> {
-            final Function function = (Function) callback;
-            final Scriptable scope = getParentScope();
-            for (int i = 0; i < nodes.size(); i++) {
+            final VarScope scope = getParentScope();
+
+            List<DomNode> nodes = getElements();
+            final int size = nodes.size();
+            int i = 0;
+            while (i < size && i < nodes.size()) {
                 function.call(cx, scope, this, new Object[] {nodes.get(i).getScriptableObject(), i, this});
+
+                // refresh
+                nodes = getElements();
+                i++;
             }
+
             return null;
         };
         cf.call(contextAction);
@@ -197,7 +206,7 @@ public class NodeList extends AbstractList implements Callable {
      * {@inheritDoc}
      */
     @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
+    public Object call(final Context cx, final VarScope scope, final Scriptable thisObj, final Object[] args) {
         if (args.length == 0) {
             throw JavaScriptEngine.reportRuntimeError("Zero arguments; need an index or a key.");
         }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.general.ElementPropertiesTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Generates HTML file with all <tt>NotYetImplemented</tt> methods.
@@ -33,10 +33,10 @@ import org.junit.Test;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@org.junit.Ignore
+@org.junit.jupiter.api.Disabled
 public class NotYetImplementedTest {
 
-    private Set<String> entries_ = new TreeSet<>();
+    private final Set<String> entries_ = new TreeSet<>();
 
     /**
      * @throws Exception if the test fails
@@ -123,13 +123,13 @@ public class NotYetImplementedTest {
                         browser += "EDGE";
                     }
                     if (nyiString.contains("FF_ESR = ")) {
-                        if (browser.length() > 0) {
+                        if (!browser.isEmpty()) {
                             browser += ", ";
                         }
                         browser += "FF_ESR";
                     }
                     if (nyiString.contains("FF = ")) {
-                        if (browser.length() > 0) {
+                        if (!browser.isEmpty()) {
                             browser += ", ";
                         }
                         browser += "FF";
@@ -165,7 +165,7 @@ public class NotYetImplementedTest {
                 break;
             }
             if (start != -1) {
-                if (builder.length() != 0) {
+                if (!builder.isEmpty()) {
                     builder.append(' ');
                 }
                 builder.append(line, start, line.length() - (end ? 2 : 0));
@@ -234,7 +234,7 @@ public class NotYetImplementedTest {
                 builder.append("</td>\n");
                 lastFile = file;
             }
-            builder.append("    <td>").append(Integer.toString(count++)).append("</td>\n");
+            builder.append("    <td>").append(count++).append("</td>\n");
 
             builder.append("    <td><a target='_blank' href='https://github.com/HtmlUnit/htmlunit/blob/master/")
                     .append(file)
@@ -270,7 +270,7 @@ public class NotYetImplementedTest {
         final StringBuilder overview = new StringBuilder();
         overview.append("<table class='bottomBorder'>\n");
         overview.append("  <tr>\n");
-        overview.append("    <td class='numeric'>").append(Integer.toString(count)).append("</td>\n");
+        overview.append("    <td class='numeric'>").append(count).append("</td>\n");
         overview.append("    <td>methods marked as NotYetImplemented</td>\n");
         overview.append("  </tr>\n");
 
@@ -285,7 +285,7 @@ public class NotYetImplementedTest {
         overview.append("  </tr>\n");
 
         overview.append("  <tr>\n");
-        overview.append("    <td class='numeric'>").append(Integer.toString(countChrome)).append("</td>\n");
+        overview.append("    <td class='numeric'>").append(countChrome).append("</td>\n");
         overview.append("    <td>for Chrome</td>\n");
         overview.append("  </tr>\n");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.host.css.CSSStyleRule;
 import org.htmlunit.javascript.host.css.CSSStyleSheet;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.junit.annotation.HtmlUnitNYI;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that {@code typeof} host class is correct.
@@ -31,17 +29,16 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author cd alexndr
  */
-@RunWith(BrowserRunner.class)
 public class HostTypeOfTest extends WebDriverTestCase {
 
     private void test(final String className) throws Exception {
-        final String html =
-            "<html><head><script>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
             + "      log(typeof " + className + ");\n"
-            + "    } catch(e) {logEx(e)}\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -934,26 +931,6 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("undefined")
-    public void clientRect() throws Exception {
-        test("ClientRect");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("undefined")
-    public void clientRectList() throws Exception {
-        test("ClientRectList");
-    }
-
-    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -1166,10 +1143,21 @@ public class HostTypeOfTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "undefined",
-            FF = "function",
             FF_ESR = "function")
     public void css2Properties() throws Exception {
         test("CSS2Properties");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.css.CSSStyleDeclaration}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            FF = "function")
+    public void cssStyleProperties() throws Exception {
+        test("CSSStyleProperties");
     }
 
     /**
@@ -1179,8 +1167,10 @@ public class HostTypeOfTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "undefined",
-            FF = "function")
-    @HtmlUnitNYI(FF = "undefined")
+            FF = "function",
+            FF_ESR = "function")
+    @HtmlUnitNYI(FF = "undefined",
+            FF_ESR = "undefined")
     public void cssPageDescriptors() throws Exception {
         test("CSSPageDescriptors");
     }
@@ -1909,7 +1899,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.ClientRect}.
+     * Test {@link org.htmlunit.javascript.host.DOMRect}.
      *
      * @throws Exception if an error occurs
      */
@@ -4365,8 +4355,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -5440,9 +5429,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            FF = "function",
-            FF_ESR = "function")
+    @Alerts("undefined")
     public void mutationEvent() throws Exception {
         test("MutationEvent");
     }
@@ -5517,7 +5504,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     * Test {@link org.htmlunit.javascript.host.dom.NativeXPathNSResolver}.
      *
      * @throws Exception if an error occurs
      */
@@ -7118,7 +7105,9 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("undefined")
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function",
+            EDGE = "function")
     public void speechGrammar() throws Exception {
         test("SpeechGrammar");
     }
@@ -7127,7 +7116,9 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("undefined")
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function",
+            EDGE = "function")
     public void speechGrammarList() throws Exception {
         test("SpeechGrammarList");
     }
@@ -7136,7 +7127,9 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("undefined")
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function",
+            EDGE = "function")
     public void speechRecognition() throws Exception {
         test("SpeechRecognition");
     }
@@ -7163,7 +7156,9 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("undefined")
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function",
+            EDGE = "function")
     public void speechRecognitionErrorEvent() throws Exception {
         test("SpeechRecognitionErrorEvent");
     }
@@ -7172,7 +7167,9 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("undefined")
+    @Alerts(DEFAULT = "undefined",
+            CHROME = "function",
+            EDGE = "function")
     public void speechRecognitionEvent() throws Exception {
         test("SpeechRecognitionEvent");
     }
@@ -8907,8 +8904,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            FF_ESR = "undefined")
+    @Alerts("function")
     public void textEvent() throws Exception {
         test("TextEvent");
     }
@@ -10183,7 +10179,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.javascript.host.dom.XPathNSResolver}.
+     * Test {@link org.htmlunit.javascript.host.dom.NativeXPathNSResolver}.
      *
      * @throws Exception if an error occurs
      */
@@ -10244,5 +10240,14 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts("function")
     public void abortSignal() throws Exception {
         test("AbortSignal");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("undefined")
+    public void global() throws Exception {
+        test("global");
     }
 }

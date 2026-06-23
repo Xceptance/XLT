@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
@@ -184,7 +184,7 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
 
     /**
      * Path to the directory to be used for storing the response content in a
-     * temporary file. The specified directory is created if if doesn't exist.
+     * temporary file. The specified directory is created if it doesn't exist.
      * <p>
      * property: <b>webdriver.htmlunit.tempFileDirectory</b><br>
      * type: {@link File}<br>
@@ -756,7 +756,7 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
      * <p>
      * property: <b>webdriver.htmlunit.webSocketMaxTextMessageSize</b><br>
      * type: {@code int}<br>
-     * default: -1 {use default size)
+     * default: -1 (use default size)
      */
     WEB_SOCKET_MAX_TEXT_MESSAGE_SIZE(optWebSocketMaxTextMessageSize, int.class, -1) {
         @Override
@@ -771,30 +771,11 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
     },
 
     /**
-     * Sets the WebSocket {@code maxTextMessageBufferSize}.
-     * <p>
-     * property: <b>webdriver.htmlunit.webSocketMaxTextMessageBufferSize</b><br>
-     * type: {@code int}<br>
-     * default: -1 {use default size)
-     */
-    WEB_SOCKET_MAX_TEXT_MESSAGE_BUFFER_SIZE(optWebSocketMaxTextMessageBufferSize, int.class, -1) {
-        @Override
-        public void insert(final WebClientOptions options, final Object value) {
-            options.setWebSocketMaxTextMessageBufferSize(TypeCodec.decodeInt(value));
-        }
-
-        @Override
-        public Object obtain(final WebClientOptions options) {
-            return options.getWebSocketMaxTextMessageBufferSize();
-        }
-    },
-
-    /**
      * Sets the WebSocket {@code maxBinaryMessageSize}.
      * <p>
      * property: <b>webdriver.htmlunit.webSocketMaxBinaryMessageSize</b><br>
      * type: {@code int}<br>
-     * default: -1 {use default size)
+     * default: -1 (use default size)
      */
     WEB_SOCKET_MAX_BINARY_MESSAGE_SIZE(optWebSocketMaxBinaryMessageSize, int.class, -1) {
         @Override
@@ -805,25 +786,6 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
         @Override
         public Object obtain(final WebClientOptions options) {
             return options.getWebSocketMaxBinaryMessageSize();
-        }
-    },
-
-    /**
-     * Sets the WebSocket {@code maxBinaryMessageBufferSize}.
-     * <p>
-     * property: <b>webdriver.htmlunit.webSocketMaxBinaryMessageBufferSize</b><br>
-     * type: {@code int}<br>
-     * default: -1 {use default size)
-     */
-    WEB_SOCKET_MAX_BINARY_MESSAGE_BUFFER_SIZE(optWebSocketMaxBinaryMessageBufferSize, int.class, -1) {
-        @Override
-        public void insert(final WebClientOptions options, final Object value) {
-            options.setWebSocketMaxBinaryMessageBufferSize(TypeCodec.decodeInt(value));
-        }
-
-        @Override
-        public Object obtain(final WebClientOptions options) {
-            return options.getWebSocketMaxBinaryMessageBufferSize();
         }
     },
 

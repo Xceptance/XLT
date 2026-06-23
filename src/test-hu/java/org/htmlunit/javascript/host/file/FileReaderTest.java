@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,12 @@ package org.htmlunit.javascript.host.file;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.html.HtmlPageTest;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -34,8 +30,8 @@ import org.openqa.selenium.WebDriver;
  *
  * @author Ronald Brill
  * @author Ahmed Ashour
+ * @author Lai Quang Duong
  */
-@RunWith(BrowserRunner.class)
 public class FileReaderTest extends WebDriverTestCase {
 
     /**
@@ -44,8 +40,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("0")
     public void ctorReadyState() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -72,8 +67,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("data:text/plain;base64,SHRtbFVuaXQ=")
     public void readAsDataURL_file() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -121,8 +115,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("data:application/octet-stream;base64,SHRtbFVuaXRpcyBncmVhdA==")
     public void readAsDataURL_inMemoryFile() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<head>\n"
@@ -149,8 +142,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("data:application/octet-stream;base64,SHRtbFVuaXRpcyBncmVhdA==")
     public void readAsDataURL_blob() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -179,8 +171,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("data:text/plain;base64,SHRtbFVuaXRpcyBncmVhdA==")
     public void readAsDataURL_blobMimeType() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -209,8 +200,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("data:unknown;base64,SHRtbFVuaXRpcyBncmVhdA==")
     public void readAsDataURL_blobMimeTypeUnknown() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -243,8 +233,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Alerts("data:application/octet-stream;base64,"
                 + "Niii65mOV9yO6adjkXdWd+zTIXFcOWwumIGlIFRqQ05seTG+J2dx0KcD")
     private void readAsDataURLUnknown() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -285,8 +274,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("#data:image/png;base64,")
     public void readAsDataURLEmptyImage() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -327,8 +315,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object ArrayBuffer]", "8"})
     public void readAsArrayBuffer() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -376,8 +363,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object ArrayBuffer]", "128"})
     public void readAsArrayBufferUnknown() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -419,8 +405,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts({"[object ArrayBuffer]", "0"})
     public void readAsArrayBufferEmptyImage() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "<script>\n"
@@ -462,8 +447,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("Html \u00dcnit")
     public void readAsText() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -510,8 +494,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("Html \u00dcnit")
     public void readAsTextEncodingNull() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -558,8 +541,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("Html \u00dcnit")
     public void readAsTextEncodingUndefined() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -606,8 +588,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("Html \u00dcnit")
     public void readAsTextEncodingUnknown() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -654,8 +635,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("Html \u00dcnit")
     public void readAsTextUtf8() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -702,8 +682,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("Html \u00dcnit")
     public void readAsTextIso88591() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -730,7 +709,7 @@ public class FileReaderTest extends WebDriverTestCase {
 
         final File tstFile = File.createTempFile("HtmlUnitReadAsTextTest", ".txt");
         try {
-            FileUtils.write(tstFile, "Html \u00dcnit", Charset.forName("ISO-8859-1"));
+            FileUtils.write(tstFile, "Html \u00dcnit", StandardCharsets.ISO_8859_1);
 
             final String path = tstFile.getCanonicalPath();
             driver.findElement(By.name("fileupload")).sendKeys(path);
@@ -750,8 +729,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts({"", "0"})
     public void readAsTextEmpty() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -799,8 +777,7 @@ public class FileReaderTest extends WebDriverTestCase {
     @Test
     @Alerts("HtmlUnit")
     public void readAsText_blob() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"
@@ -826,10 +803,100 @@ public class FileReaderTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts({"loadstart", "progress", "load", "loadend"})
+    public void readAsTextEventLifecycle() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var blob = new Blob(['HtmlUnit'], {type : 'text/plain'});\n"
+            + "      var reader = new FileReader();\n"
+            + "      reader.addEventListener('loadstart', function() { log('loadstart'); });\n"
+            + "      reader.addEventListener('progress', function() { log('progress'); });\n"
+            + "      reader.addEventListener('load', function() { log('load'); });\n"
+            + "      reader.addEventListener('loadend', function() { log('loadend'); });\n"
+            + "      reader.readAsText(blob);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "8", "8"})
+    public void readAsDataURLProgressEventProperties() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var blob = new Blob(['HtmlUnit']);\n"
+            + "      var reader = new FileReader();\n"
+            + "      reader.addEventListener('load', function(e) {\n"
+            + "        log(e.lengthComputable);\n"
+            + "        log(e.loaded);\n"
+            + "        log(e.total);\n"
+            + "      });\n"
+            + "      reader.readAsDataURL(blob);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"loadstart", "progress", "[object ArrayBuffer]", "8", "loadend"})
+    public void readAsArrayBufferPropertyHandlers() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var blob = new Blob(['HtmlUnit'], {type : 'text/html'});\n"
+            + "      var reader = new FileReader();\n"
+            + "      reader.onloadstart = function() { log('loadstart'); };\n"
+            + "      reader.onprogress = function() { log('progress'); };\n"
+            + "      reader.onloadend = function() { log('loadend'); };\n"
+            + "      reader.onload = function() {\n"
+            + "        log(reader.result);\n"
+            + "        log(reader.result.byteLength);\n"
+            + "      };\n"
+            + "      reader.readAsArrayBuffer(blob);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts({"[object ArrayBuffer]", "8"})
     public void readAsArrayBuffer_blob() throws Exception {
-        final String html
-            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+        final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<head>\n"
             + "  <script>\n"

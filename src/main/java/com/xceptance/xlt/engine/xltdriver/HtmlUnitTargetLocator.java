@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -43,14 +43,29 @@ import org.openqa.selenium.WindowType;
 import org.openqa.selenium.WrapsElement;
 
 /**
- * HtmlUnit target locator.
+ * Provides target–location functionality for {@link HtmlUnitDriver}, allowing
+ * navigation to frames, windows, alerts, and other browser contexts.
+ * <p>
+ * This implementation backs the {@link WebDriver.TargetLocator} interface
+ * for HtmlUnit-based drivers.
  *
  * @author Martin Bartoš
  * @author Ronald Brill
  */
 public class HtmlUnitTargetLocator implements WebDriver.TargetLocator {
+    /**
+     * The owning {@link HtmlUnitDriver} instance used to perform target
+     * resolution and context switching operations.
+     */
     private final HtmlUnitDriver driver_;
 
+    /**
+     * Creates a new {@link HtmlUnitTargetLocator} bound to the specified
+     * {@link HtmlUnitDriver}.
+     *
+     * @param driver the driver instance for which this target locator will
+     *               perform context switching; must not be {@code null}
+     */
     public HtmlUnitTargetLocator(final HtmlUnitDriver driver) {
         driver_ = driver;
     }

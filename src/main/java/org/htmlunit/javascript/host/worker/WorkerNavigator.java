@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -28,6 +27,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.network.NetworkInformation;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A JavaScript object for WorkerNavigator.
@@ -111,22 +111,22 @@ public class WorkerNavigator extends HtmlUnitScriptable {
     @JsxGetter
     public Scriptable getLanguages() {
         final String acceptLang = getBrowserVersion().getAcceptLanguageHeader();
-        if (StringUtils.isEmpty(acceptLang)) {
-            return JavaScriptEngine.newArray(this, 0);
+        if (StringUtils.isEmptyOrNull(acceptLang)) {
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final ArrayList<String> res = new ArrayList<>();
-        final String[] parts = org.htmlunit.util.StringUtils.splitAtComma(acceptLang);
+        final String[] parts = StringUtils.splitAtComma(acceptLang);
         for (final String part : parts) {
-            if (!StringUtils.isEmpty(part)) {
+            if (!StringUtils.isEmptyOrNull(part)) {
                 final String lang = StringUtils.substringBefore(part, ";").trim();
-                if (!StringUtils.isEmpty(part)) {
+                if (!StringUtils.isEmptyOrNull(part)) {
                     res.add(lang);
                 }
             }
         }
 
-        return JavaScriptEngine.newArray(this, res.toArray());
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
     }
 
     /**

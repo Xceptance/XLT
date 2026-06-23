@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
+import static org.htmlunit.BrowserVersionFeatures.EVENT_SCROLL_UIEVENT;
 import static org.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_THROWS_FOR_DETACHED;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
@@ -23,6 +24,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,10 +38,15 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.ElementCssStyleDeclaration;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomCDataSection;
 import org.htmlunit.html.DomCharacterData;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomElement;
@@ -63,6 +70,7 @@ import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventHandler;
+import org.htmlunit.javascript.host.event.UIEvent;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLElement.ProxyDomNode;
@@ -117,12 +125,13 @@ public class Element extends Node {
     public void setDomNode(final DomNode domNode) {
         super.setDomNode(domNode);
 
-        setParentScope(getWindow().getDocument());
+        final Window window = getWindow();
+        setParentScope(new WithScope(getTopLevelScope(getParentScope()), window.getDocument()));
         // CSSStyleDeclaration uses the parent scope
         style_ = new CSSStyleDeclaration(this, new ElementCssStyleDeclaration(getDomNodeOrDie()));
 
         // Convert JavaScript snippets defined in the attribute map to executable event handlers.
-        //Should be called only on construction.
+        // Should be called only on construction.
         final DomElement htmlElt = (DomElement) domNode;
         for (final DomAttr attr : htmlElt.getAttributesMap().values()) {
             final String eventName = StringUtils.toRootLowerCase(attr.getName());
@@ -139,8 +148,11 @@ public class Element extends Node {
      */
     protected void createEventHandler(final String eventName, final String attrValue) {
         final DomElement htmlElt = getDomNodeOrDie();
+
         // TODO: check that it is an "allowed" event for the browser, and take care to the case
         final BaseFunction eventHandler = new EventHandler(htmlElt, eventName, attrValue);
+        eventHandler.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), "Function"));
+
         setEventHandler(eventName, eventHandler);
     }
 
@@ -168,7 +180,7 @@ public class Element extends Node {
     }
 
     /**
-     * Creates the JS object for the property attributes. This object will the be cached.
+     * Creates the JS object for the property attributes. This object will be cached.
      * @return the JS object
      */
     protected NamedNodeMap createAttributesObject() {
@@ -333,9 +345,9 @@ public class Element extends Node {
      * @return an object that specifies the bounds of a collection of TextRectangle objects
      */
     @JsxFunction
-    public ClientRect getBoundingClientRect() {
-        final ClientRect textRectangle = new ClientRect(1, 1, 1, 1);
-        textRectangle.setParentScope(getWindow());
+    public DOMRect getBoundingClientRect() {
+        final DOMRect textRectangle = new DOMRect(1, 1, 0, 0);
+        textRectangle.setParentScope(getTopLevelScope(getParentScope()));
         textRectangle.setPrototype(getPrototype(textRectangle.getClass()));
         return textRectangle;
     }
@@ -506,7 +518,7 @@ public class Element extends Node {
     @JsxFunction
     public NodeList querySelectorAll(final String selectors) {
         try {
-            return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
+            return NodeList.staticNodeList(getParentScope(), getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
@@ -629,7 +641,7 @@ public class Element extends Node {
                     }
                     String classAttribute = ((HtmlElement) node).getAttributeDirect("class");
                     if (ATTRIBUTE_NOT_DEFINED == classAttribute) {
-                        return false; // probably better performance as most of elements won't have a class attribute
+                        return false; // probably better performance as most elements won't have a class attribute
                     }
 
                     classAttribute = " " + classAttribute + " ";
@@ -650,20 +662,40 @@ public class Element extends Node {
      * @return a collection of rectangles that describes the layout of the contents
      */
     @JsxFunction
-    public ClientRectList getClientRects() {
-        final Window w = getWindow();
-        final ClientRectList rectList = new ClientRectList();
-        rectList.setParentScope(w);
+    public DOMRectList getClientRects() {
+        final TopLevel topScope = getTopLevelScope(getParentScope());
+        final DOMRectList rectList = new DOMRectList();
+        rectList.setParentScope(topScope);
         rectList.setPrototype(getPrototype(rectList.getClass()));
 
         if (!isDisplayNone() && getDomNodeOrDie().isAttachedToPage()) {
-            final ClientRect rect = new ClientRect(0, 0, 1, 1);
-            rect.setParentScope(w);
+            final DOMRect rect = new DOMRect(0, 0, 1, 1);
+            rect.setParentScope(topScope);
             rect.setPrototype(getPrototype(rect.getClass()));
             rectList.add(rect);
         }
 
         return rectList;
+    }
+
+    /**
+     * @return the attribute names of the element as an Array of strings.
+     *     If the element has no attributes it returns an empty array.
+     */
+    @JsxFunction
+    public Scriptable getAttributeNames() {
+        final org.w3c.dom.NamedNodeMap attributes = getDomNodeOrDie().getAttributes();
+
+        if (attributes.getLength() == 0) {
+            return JavaScriptEngine.newArray(getParentScope(), 0);
+        }
+
+        final ArrayList<String> res = new ArrayList<>();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            res.add(attributes.item(i).getNodeName());
+        }
+
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
     }
 
     /**
@@ -694,8 +726,7 @@ public class Element extends Node {
      */
     @JsxFunction
     public Node insertAdjacentElement(final String where, final Object insertedElement) {
-        if (insertedElement instanceof Node) {
-            final Node insertedElementNode = (Node) insertedElement;
+        if (insertedElement instanceof Node insertedElementNode) {
             final DomNode childNode = insertedElementNode.getDomNodeOrDie();
             final Object[] values = getInsertAdjacentLocation(where);
             final DomNode node = (DomNode) values[0];
@@ -753,7 +784,7 @@ public class Element extends Node {
         // compute the where and how the new nodes should be added
         if (POSITION_AFTER_BEGIN.equalsIgnoreCase(where)) {
             if (currentNode.getFirstChild() == null) {
-                // new nodes should appended to the children of current node
+                // new nodes should append to the children of current node
                 node = currentNode;
                 append = true;
             }
@@ -769,13 +800,13 @@ public class Element extends Node {
             append = false;
         }
         else if (POSITION_BEFORE_END.equalsIgnoreCase(where)) {
-            // new nodes should appended to the children of current node
+            // new nodes should append to the children of current node
             node = currentNode;
             append = true;
         }
         else if (POSITION_AFTER_END.equalsIgnoreCase(where)) {
             if (currentNode.getNextSibling() == null) {
-                // new nodes should appended to the children of parent node
+                // new nodes should append to the children of parent node
                 node = currentNode.getParentNode();
                 append = true;
             }
@@ -820,6 +851,21 @@ public class Element extends Node {
     }
 
     /**
+     * Moves a given Node inside the invoking node as a direct child, before a given reference node.
+     *
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF})
+    public static void moveBefore(final Context context, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.moveBefore(context, scope, thisObj, args, function);
+    }
+
+    /**
      * Parses the specified HTML source code, appending the resulting content at the specified target location.
      * @param target the node indicating the position at which the parsed content should be placed
      * @param source the HTML code extract to parse
@@ -839,7 +885,7 @@ public class Element extends Node {
      * The {@code getHTML} function.
      * @return the contents of this node as HTML
      */
-    @JsxFunction({CHROME, EDGE, FF})
+    @JsxFunction
     public String getHTML() {
         // ignore the params because we have no shadow dom support so far
         return getInnerHTML();
@@ -980,8 +1026,7 @@ public class Element extends Node {
      * @param html flag
      */
     protected final void printChildren(final StringBuilder builder, final DomNode node, final boolean html) {
-        if (node instanceof HtmlTemplate) {
-            final HtmlTemplate template = (HtmlTemplate) node;
+        if (node instanceof HtmlTemplate template) {
 
             for (final DomNode child : template.getContent().getChildren()) {
                 printNode(builder, child, html);
@@ -1001,6 +1046,9 @@ public class Element extends Node {
                 final String s = PRINT_NODE_PATTERN.matcher(node.getNodeValue()).replaceAll(" ");
                 builder.append("<!--").append(s).append("-->");
             }
+        }
+        else if (node instanceof DomCDataSection) {
+            builder.append("<![CDATA[").append(node.getNodeValue()).append("]]>");
         }
         else if (node instanceof DomCharacterData) {
             // Remove whitespace sequences, possibly escape XML characters.
@@ -1039,8 +1087,7 @@ public class Element extends Node {
             }
         }
         else {
-            if (node instanceof HtmlElement) {
-                final HtmlElement element = (HtmlElement) node;
+            if (node instanceof HtmlElement element) {
                 if (StringUtils.equalsChar('p', element.getTagName())) {
                     int i = builder.length() - 1;
                     while (i >= 0 && Character.isWhitespace(builder.charAt(i))) {
@@ -1230,8 +1277,32 @@ public class Element extends Node {
         setScrollLeft(getScrollLeft() + xOff);
         setScrollTop(getScrollTop() + yOff);
 
-        final Event event = new Event(this, Event.TYPE_SCROLL);
-        fireEvent(event);
+        fireScrollEvent(this);
+    }
+
+    private void fireScrollEvent(final Node node) {
+        final Event event;
+        if (getBrowserVersion().hasFeature(EVENT_SCROLL_UIEVENT)) {
+            event = new UIEvent(node, Event.TYPE_SCROLL);
+        }
+        else {
+            event = new Event(node, Event.TYPE_SCROLL);
+            event.setCancelable(false);
+        }
+        event.setBubbles(false);
+        node.fireEvent(event);
+    }
+
+    private void fireScrollEvent(final Window window) {
+        final Event event;
+        if (getBrowserVersion().hasFeature(EVENT_SCROLL_UIEVENT)) {
+            event = new UIEvent(window.getDocument(), Event.TYPE_SCROLL);
+        }
+        else {
+            event = new Event(window.getDocument(), Event.TYPE_SCROLL);
+            event.setCancelable(false);
+        }
+        window.fireEvent(event);
     }
 
     /**
@@ -1265,8 +1336,7 @@ public class Element extends Node {
         setScrollLeft(xOff);
         setScrollTop(yOff);
 
-        final Event event = new Event(this, Event.TYPE_SCROLL);
-        fireEvent(event);
+        fireScrollEvent(this);
     }
 
     /**
@@ -1276,7 +1346,19 @@ public class Element extends Node {
      */
     @JsxFunction
     public void scrollIntoView() {
-        /* do nothing at the moment */
+        // do nothing at the moment, only trigger the scroll event
+
+        // we do not really handle scrollable elements (we are headless)
+        // we trigger the event for the whole parent tree (to inform all)
+        Node parent = getParent();
+        while (parent != null) {
+            if (parent instanceof HTMLElement) {
+                fireScrollEvent(parent);
+            }
+
+            parent = parent.getParent();
+        }
+        fireScrollEvent(getWindow());
     }
 
     /**
@@ -1451,7 +1533,7 @@ public class Element extends Node {
     /**
      * Mock for the moment.
      * @param retargetToElement if true, all events are targeted directly to this element;
-     * if false, events can also fire at descendants of this element
+     *        if false, events can also fire at descendants of this element
      */
     @JsxFunction({FF, FF_ESR})
     public void setCapture(final boolean retargetToElement) {
@@ -1476,7 +1558,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void before(final Context context, final Scriptable scope,
+    public static void before(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
     }
@@ -1491,7 +1573,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void after(final Context context, final Scriptable scope,
+    public static void after(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
@@ -1505,7 +1587,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceWith(final Context context, final Scriptable scope,
+    public static void replaceWith(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }
@@ -1520,7 +1602,7 @@ public class Element extends Node {
      * @return the value
      */
     @JsxFunction
-    public static boolean matches(final Context context, final Scriptable scope,
+    public static boolean matches(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1533,7 +1615,7 @@ public class Element extends Node {
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
-                    (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                    (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                     "An invalid or illegal selector was specified (selector: '"
                             + selectorString + "' error: " + e.getMessage() + ").",
                     DOMException.SYNTAX_ERR);
@@ -1550,7 +1632,7 @@ public class Element extends Node {
      * @return the value
      */
     @JsxFunction({FF, FF_ESR})
-    public static boolean mozMatchesSelector(final Context context, final Scriptable scope,
+    public static boolean mozMatchesSelector(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
@@ -1565,13 +1647,23 @@ public class Element extends Node {
      * @return the value
      */
     @JsxFunction
-    public static boolean webkitMatchesSelector(final Context context, final Scriptable scope,
+    public static boolean webkitMatchesSelector(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
 
+    /**
+     * Traverses the element and its parents (heading toward the document root) until it finds a node
+     * that matches the specified CSS selector.
+     * @param context the context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     * @return the found element or null
+     */
     @JsxFunction
-    public static Element closest(final Context context, final Scriptable scope,
+    public static Element closest(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1604,8 +1696,8 @@ public class Element extends Node {
      * removes attribute with <code>name</code>.
      *
      * @param name the name of the attribute to be toggled.
-     * The attribute name is automatically converted to all lower-case when toggleAttribute()
-     * is called on an HTML element in an HTML document.
+     *        The attribute name is automatically converted to all lower-case when toggleAttribute()
+     *        is called on an HTML element in an HTML document.
      * @param force if true, the toggleAttribute method adds an attribute named name
      * @return true if attribute name is eventually present, and false otherwise
      * @see <a href=
@@ -1632,6 +1724,7 @@ public class Element extends Node {
     /**
      * Inserts a set of Node objects or string objects after the last child of the Element.
      * String objects are inserted as equivalent Text nodes.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1639,7 +1732,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void append(final Context context, final Scriptable scope,
+    public static void append(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1651,6 +1744,7 @@ public class Element extends Node {
     /**
      * Inserts a set of Node objects or string objects before the first child of the Element.
      * String objects are inserted as equivalent Text nodes.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1658,7 +1752,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void prepend(final Context context, final Scriptable scope,
+    public static void prepend(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1670,6 +1764,7 @@ public class Element extends Node {
     /**
      * Replaces the existing children of a Node with a specified new set of children.
      * These can be string or Node objects.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1677,7 +1772,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceChildren(final Context context, final Scriptable scope,
+    public static void replaceChildren(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");

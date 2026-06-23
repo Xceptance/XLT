@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package org.htmlunit;
-
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +36,14 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 /**
  * Test of coding style for issues which cannot be detected by Checkstyle.
@@ -52,21 +53,21 @@ import org.junit.Test;
  * @author Sven Strickroth
  * @author Kristof Neirynck
  */
-@org.junit.Ignore
+@org.junit.jupiter.api.Disabled
 public class CodeStyleTest {
 
     private static final Charset SOURCE_ENCODING = StandardCharsets.UTF_8;
     private static final Pattern LEADING_WHITESPACE = Pattern.compile("^\\s+");
     private static final Pattern LOG_STATIC_STRING =
                                     Pattern.compile("^\\s*LOG\\.[a-z]+\\(\"[^\"]*\"(, [a-zA-Z_]+)?\\);");
-    private List<String> failures_ = new ArrayList<>();
+    private final List<String> failures_ = new ArrayList<>();
     private String title_ = "unknown";
 
     /**
      * After.
-     * @throws IOException
+     * @throws IOException in case of error
      */
-    @After
+    @AfterEach
     public void after() throws IOException {
         final StringBuilder sb = new StringBuilder();
         for (final String error : failures_) {
@@ -79,10 +80,10 @@ public class CodeStyleTest {
 
         final int errorsNumber = failures_.size();
         if (errorsNumber == 1) {
-            fail(title_ + " error: " + sb);
+            Assertions.fail(title_ + " error: " + sb);
         }
         else if (errorsNumber > 1) {
-            fail(title_ + " " + errorsNumber + " errors: " + sb);
+            Assertions.fail(title_ + " " + errorsNumber + " errors: " + sb);
         }
     }
 
@@ -99,6 +100,7 @@ public class CodeStyleTest {
         final List<File> files = new ArrayList<>();
         addAll(new File("src/main"), files);
         addAll(new File("src/test"), files);
+
         final List<String> classNames = getClassNames(files);
         process(files, classNames);
         // for (final String className : classNames) {
@@ -129,6 +131,7 @@ public class CodeStyleTest {
             for (final File child : children) {
                 if (child.isDirectory()
                         && !".git".equals(child.getName())
+                        && !"brotli".equals(child.getName())
                         && !("test".equals(dir.getName()) && "resources".equals(child.getName()))) {
                     addAll(child, files);
                 }
@@ -140,8 +143,15 @@ public class CodeStyleTest {
     }
 
     private void process(final List<File> files, final List<String> classNames) throws IOException {
+        final String excludeQuercus = "org" + File.separatorChar + "htmlunit" + File.separatorChar + "util" + File.separatorChar + "quercus" + File.separatorChar +  "servlet";
+
         for (final File file : files) {
             final String relativePath = file.getAbsolutePath().substring(new File(".").getAbsolutePath().length() - 1);
+
+            if (relativePath.contains(excludeQuercus)) {
+                continue;
+            }
+
             if (file.getName().endsWith(".java")) {
                 final List<String> lines = FileUtils.readLines(file, SOURCE_ENCODING);
                 openingCurlyBracket(lines, relativePath);
@@ -152,7 +162,6 @@ public class CodeStyleTest {
                 methodLastLine(lines, relativePath);
                 lineBetweenMethods(lines, relativePath);
                 runWith(lines, relativePath);
-                vs85aspx(lines, relativePath);
                 deprecated(lines, relativePath);
                 staticJSMethod(lines, relativePath);
                 singleAlert(lines, relativePath);
@@ -163,6 +172,10 @@ public class CodeStyleTest {
                 classNameUsed(lines, classNames, relativePath);
                 spaces(lines, relativePath);
                 indentation(lines, relativePath);
+                if (!"package-info.java".equals(file.getName())) {
+                    authorTagAtLeastOne(lines, relativePath);
+                    authorTagNoDuplicates(lines, relativePath);
+                }
             }
         }
     }
@@ -429,21 +442,6 @@ public class CodeStyleTest {
     }
 
     /**
-     * Verifies that no "(VS.85).aspx" token exists (which is sometimes used in MSDN documentation).
-     */
-    private void vs85aspx(final List<String> lines, final String relativePath) {
-        if (!relativePath.contains("CodeStyleTest")) {
-            int i = 0;
-            for (final String line : lines) {
-                if (line.contains("(VS.85).aspx")) {
-                    addFailure(relativePath, i + 1, "Please remove \"(VS.85)\" from the URL");
-                }
-                i++;
-            }
-        }
-    }
-
-    /**
      * Verifies that deprecated tag is followed by "As of " or "since ", and '@Deprecated' annotation follows.
      */
     private void deprecated(final List<String> lines, final String relativePath) {
@@ -663,11 +661,11 @@ public class CodeStyleTest {
     }
 
     /**
-     * Returns array of String of the alerts which are in the specified index.
+     * Returns a list of String's of the alerts which are in the specified index.
      *
      * @param lines the list of strings
      * @param alertsIndex the index in which the \@Alerts is defined
-     * @return array of alert strings
+     * @return list of alert strings
      */
     public static List<String> alertsToList(final List<String> lines, final int alertsIndex) {
         return alertsToList(lines, alertsIndex, false);
@@ -684,7 +682,7 @@ public class CodeStyleTest {
         final StringBuilder alerts = new StringBuilder();
         for (int i = alertsIndex;; i++) {
             final String line = lines.get(i);
-            if (alerts.length() != 0) {
+            if (!alerts.isEmpty()) {
                 alerts.append('\n');
             }
             if (line.startsWith("    @Alerts(")) {
@@ -757,17 +755,17 @@ public class CodeStyleTest {
             boolean startsWithBraces = false;
             for (final String token : string.split("(?<!\\\\)\"")) {
                 insideString = !insideString;
-                if (currentToken.length() != 0) {
+                if (!currentToken.isEmpty()) {
                     currentToken.append('"');
                 }
                 else {
-                    startsWithBraces = token.toString().contains("{");
+                    startsWithBraces = token.contains("{");
                 }
 
                 if (!insideString && token.startsWith(",") && !startsWithBraces) {
                     list.add(currentToken.toString());
                     currentToken.setLength(0);
-                    startsWithBraces = token.toString().contains("{");
+                    startsWithBraces = token.contains("{");
                 }
 
                 if (!insideString && token.contains("}")) {
@@ -781,21 +779,21 @@ public class CodeStyleTest {
                     if (!insideString && token.contains(",") && !startsWithBraces) {
                         final String[] expressions = token.split(",");
                         currentToken.append(expressions[0]);
-                        if (currentToken.length() != 0) {
+                        if (!currentToken.isEmpty()) {
                             list.add(currentToken.toString());
                         }
                         for (int i = 1; i < expressions.length - 1; i++) {
                             list.add(',' + expressions[i]);
                         }
                         currentToken.setLength(0);
-                        currentToken.append(',' + expressions[expressions.length - 1]);
+                        currentToken.append(',').append(expressions[expressions.length - 1]);
                     }
                     else {
                         currentToken.append(token);
                     }
                 }
             }
-            if (currentToken.length() != 0) {
+            if (!currentToken.isEmpty()) {
                 if (!currentToken.toString().contains("\"")) {
                     currentToken.insert(0, '"');
                 }
@@ -831,6 +829,37 @@ public class CodeStyleTest {
                 break;
 
             default:
+        }
+    }
+
+    /**
+     * Checks that the file contains at least one {@code @author} tag.
+     */
+    private void authorTagAtLeastOne(final List<String> lines, final String path) {
+        final boolean hasAuthor = lines.stream()
+                .anyMatch(line -> line.trim().startsWith("* @author"));
+        if (!hasAuthor) {
+            addFailure(path, 0, "Missing @author tag");
+        }
+    }
+
+    /**
+     * Checks that the file contains no duplicate {@code @author} tags
+     * (same author name listed more than once).
+     */
+    private void authorTagNoDuplicates(final List<String> lines, final String path) {
+        final List<String> authors = new ArrayList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            final String trimmed = lines.get(i).trim();
+            if (trimmed.startsWith("* @author")) {
+                final String author = trimmed.substring("* @author".length()).trim();
+                if (authors.contains(author)) {
+                    addFailure(path, i + 1, "Duplicate @author tag: " + author);
+                }
+                else {
+                    authors.add(author);
+                }
+            }
         }
     }
 
@@ -924,11 +953,13 @@ public class CodeStyleTest {
                             if (ctor.getParameterTypes().length == 0) {
                                 for (final Method method : clazz.getDeclaredMethods()) {
                                     if (Modifier.isPublic(method.getModifiers())
-                                            && method.getAnnotation(Before.class) == null
-                                            && method.getAnnotation(BeforeClass.class) == null
-                                            && method.getAnnotation(After.class) == null
-                                            && method.getAnnotation(AfterClass.class) == null
+                                            && method.getAnnotation(BeforeEach.class) == null
+                                            && method.getAnnotation(BeforeAll.class) == null
+                                            && method.getAnnotation(AfterEach.class) == null
+                                            && method.getAnnotation(AfterAll.class) == null
                                             && method.getAnnotation(Test.class) == null
+                                            && method.getAnnotation(RepeatedTest.class) == null
+                                            && method.getAnnotation(RetryingTest.class) == null
                                             && method.getReturnType() == Void.TYPE
                                             && method.getParameterTypes().length == 0) {
                                         final List<String> lines = FileUtils.readLines(file, SOURCE_ENCODING);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,14 @@
  */
 package org.htmlunit.javascript.host.dom;
 
+import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
+
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
@@ -38,7 +43,7 @@ import org.htmlunit.javascript.host.html.HTMLCollection;
  * @author Ronald Brill
  *
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-core.html#ID-B63ED1A3">
- * W3C Dom Level 1</a>
+ *     W3C Dom Level 1</a>
  */
 @JsxClass(domClass = DomDocumentFragment.class)
 public class DocumentFragment extends Node {
@@ -66,7 +71,7 @@ public class DocumentFragment extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void append(final Context context, final Scriptable scope,
+    public static void append(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.append(context, thisObj, args, function);
     }
@@ -81,7 +86,7 @@ public class DocumentFragment extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void prepend(final Context context, final Scriptable scope,
+    public static void prepend(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.prepend(context, thisObj, args, function);
     }
@@ -96,9 +101,24 @@ public class DocumentFragment extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceChildren(final Context context, final Scriptable scope,
+    public static void replaceChildren(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceChildren(context, thisObj, args, function);
+    }
+
+    /**
+     * Moves a given Node inside the invoking node as a direct child, before a given reference node.
+     *
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF})
+    public static void moveBefore(final Context context, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.moveBefore(context, scope, thisObj, args, function);
     }
 
     /**
@@ -111,7 +131,7 @@ public class DocumentFragment extends Node {
     @JsxFunction
     public NodeList querySelectorAll(final String selectors) {
         try {
-            return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
+            return NodeList.staticNodeList(getParentScope(), getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"

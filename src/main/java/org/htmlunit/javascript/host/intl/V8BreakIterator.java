@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,23 @@ import java.util.Locale;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
-import org.htmlunit.javascript.RecursiveFunctionObject;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.javascript.host.Window;
 
 /**
  * A JavaScript object for {@code V8BreakIterator}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 @JsxClass(value = {CHROME, EDGE}, className = "v8BreakIterator")
 public class V8BreakIterator extends HtmlUnitScriptable {
@@ -56,18 +57,18 @@ public class V8BreakIterator extends HtmlUnitScriptable {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+    public static Scriptable jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
-        Locale locale = new Locale("en", "US");
+        Locale locale = new Locale.Builder().setLanguage("en").setRegion("US").build();
         if (args.length != 0) {
             final Object locales = args[0];
-            if (locales instanceof NativeArray) {
-                if (((NativeArray) locales).getLength() != 0) {
-                    locale = new Locale(((NativeArray) locales).get(0).toString());
+            if (locales instanceof NativeArray array) {
+                if (array.getLength() != 0) {
+                    locale = new Locale.Builder().setLanguageTag(array.get(0).toString()).build();
                 }
             }
             else if (locales instanceof String) {
-                locale = new Locale(locales.toString());
+                locale = new Locale.Builder().setLanguageTag(locales.toString()).build();
             }
             else if (!JavaScriptEngine.isUndefined(locales)) {
                 throw JavaScriptEngine.throwAsScriptRuntimeEx(
@@ -78,8 +79,8 @@ public class V8BreakIterator extends HtmlUnitScriptable {
         final V8BreakIterator iterator = new V8BreakIterator();
         if (args.length > 1) {
             final Object types = args[1];
-            if (types instanceof NativeObject) {
-                final Object obj = ((NativeObject) types).get("type", (NativeObject) types);
+            if (types instanceof NativeObject object) {
+                final Object obj = object.get("type", object);
                 if ("character".equals(obj)) {
                     iterator.breakIterator_ = BreakIterator.getCharacterInstance(locale);
                     iterator.typeAlwaysNone_ = true;
@@ -98,9 +99,8 @@ public class V8BreakIterator extends HtmlUnitScriptable {
             iterator.breakIterator_ = BreakIterator.getWordInstance(locale);
         }
 
-        final Window window = getWindow(ctorObj);
-        iterator.setParentScope(window);
-        iterator.setPrototype(((RecursiveFunctionObject) ctorObj).getClassPrototype());
+        iterator.setParentScope(getTopLevelScope(scope));
+        iterator.setPrototype(((FunctionObject) ctorObj).getClassPrototype());
         return iterator;
     }
 
@@ -109,7 +109,10 @@ public class V8BreakIterator extends HtmlUnitScriptable {
      */
     @Override
     public Object getDefaultValue(final Class<?> hint) {
-        return getClassName();
+        if (String.class.equals(hint) || hint == null) {
+            return "[object Object]";
+        }
+        return super.getDefaultValue(hint);
     }
 
     /**

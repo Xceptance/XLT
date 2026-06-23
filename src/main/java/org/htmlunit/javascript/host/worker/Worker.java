@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -49,10 +50,11 @@ public class Worker extends EventTarget {
         workerScope_ = null;
     }
 
-    private Worker(final Context cx, final Window owningWindow, final String url,
-                       final Scriptable options) throws Exception {
+    private Worker(final Context cx, final VarScope scope,
+                    final Window owningWindow, final String url,
+                    final Scriptable options) throws Exception {
         super();
-        setParentScope(owningWindow);
+        setParentScope(scope);
         setPrototype(getPrototype(getClass()));
 
         final WebClient webClient = getWindow().getWebWindow().getWebClient();
@@ -76,7 +78,7 @@ public class Worker extends EventTarget {
      * @throws Exception in case of problem
      */
     @JsxConstructor
-    public static Worker jsConstructor(final Context cx, final Scriptable scope,
+    public static Worker jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) throws Exception {
         if (args.length < 1 || args.length > 2) {
             throw JavaScriptEngine.reportRuntimeError(
@@ -85,10 +87,10 @@ public class Worker extends EventTarget {
 
         final String url = JavaScriptEngine.toString(args[0]);
         Scriptable options = null;
-        if (args.length > 1 && args[1] instanceof Scriptable) {
-            options = (Scriptable) args[1];
+        if (args.length > 1 && args[1] instanceof Scriptable scriptable) {
+            options = scriptable;
         }
-        return new Worker(cx, getWindow(ctorObj), url, options);
+        return new Worker(cx, scope, getWindow(ctorObj), url, options);
     }
 
     /**

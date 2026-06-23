@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ import java.net.URL;
 import java.util.Collections;
 
 import org.htmlunit.HttpMethod;
-import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
 import org.htmlunit.http.HttpStatus;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link AttachmentHandler}.
@@ -40,14 +39,10 @@ public class AttachmentHandlerTest {
         final WebResponseData data = new WebResponseData("HtmlUnit".getBytes(),
                 HttpStatus.OK_200, HttpStatus.OK_200_MSG, Collections.emptyList());
         final WebResponse response = new WebResponse(data, new URL("http://test.com"), HttpMethod.GET, 1000);
-        final AttachmentHandler attachmentHandler = new AttachmentHandler() {
-
-            @Override
-            public void handleAttachment(final Page page, final String attachmentFilename) {
-                // mock
-            }
+        final AttachmentHandler attachmentHandler = (page, attachmentFilename) -> {
+            // mock
         };
 
-        Assert.assertFalse(attachmentHandler.isAttachment(response));
+        Assertions.assertFalse(attachmentHandler.isAttachment(response));
     }
 }

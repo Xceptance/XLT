@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
@@ -32,8 +32,8 @@ import java.util.Objects;
 import java.util.TimeZone;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.ProxyConfig;
 import org.htmlunit.BrowserVersion.BrowserVersionBuilder;
+import org.htmlunit.ProxyConfig;
 import org.openqa.selenium.json.Json;
 import org.openqa.selenium.json.TypeToken;
 
@@ -382,7 +382,12 @@ final class TypeCodec {
             seed = BrowserVersion.EDGE;
         }
         else if (name.startsWith("FF")) {
-            seed = (code == 128) ? BrowserVersion.FIREFOX_ESR : BrowserVersion.FIREFOX;
+            if (code == BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric()) {
+                seed = BrowserVersion.FIREFOX_ESR;
+            }
+            else {
+                seed = BrowserVersion.FIREFOX;
+            }
         }
         else {
             throw new IllegalArgumentException(

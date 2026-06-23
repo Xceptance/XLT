@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import org.htmlunit.javascript.host.dom.Document;
  * (i.e. <code>document.write("&lt;span id='mySpan'/&gt;"); document.getElementById("mySpan").tagName;</code>
  * can't work with a filter).
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author David K. Taylor
  * @author Ahmed Ashour
@@ -72,7 +72,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code charset}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getCharsetAttribute() {
         return getAttributeDirect("charset");
@@ -92,7 +92,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code type}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getTypeAttribute() {
         return getAttributeDirect(TYPE_ATTRIBUTE);
@@ -104,7 +104,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code language}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getLanguageAttribute() {
         return getAttributeDirect("language");
@@ -116,7 +116,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code src}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getSrcAttribute() {
         return getSrcAttributeNormalized();
@@ -152,7 +152,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code defer}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getDeferAttribute() {
         return getAttributeDirect("defer");
@@ -223,8 +223,7 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
         final Iterable<DomNode> textNodes = getChildren();
         final StringBuilder scriptCode = new StringBuilder();
         for (final DomNode node : textNodes) {
-            if (node instanceof DomText) {
-                final DomText domText = (DomText) node;
+            if (node instanceof DomText domText) {
                 scriptCode.append(domText.getData());
             }
         }
@@ -245,16 +244,16 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
      * {@inheritDoc}
      */
     @Override
-    protected void printChildrenAsXml(final String indent, final PrintWriter printWriter) {
+    protected boolean printChildrenAsXml(final String indent, final boolean tagBefore, final PrintWriter printWriter) {
         final DomCharacterData textNode = (DomCharacterData) getFirstChild();
         if (textNode == null) {
-            return;
+            return tagBefore;
         }
 
         final String data = textNode.getData();
+        printWriter.print("\r\n");
         if (data.contains("//<![CDATA[")) {
             printWriter.print(data);
-            printWriter.print("\r\n");
         }
         else {
             printWriter.print("//<![CDATA[");
@@ -262,8 +261,8 @@ public class HtmlScript extends HtmlElement implements ScriptElement {
             printWriter.print(data);
             printWriter.print("\r\n");
             printWriter.print("//]]>");
-            printWriter.print("\r\n");
         }
+        return true;
     }
 
     /**

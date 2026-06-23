@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -50,11 +51,11 @@ import org.htmlunit.javascript.host.html.HTMLHtmlElement;
  * The JavaScript object {@code Node} which is the base class for all DOM
  * objects. This will typically wrap an instance of {@link DomNode}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Barnaby Court
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author Christian Sell
+ * @author George Murnock
  * @author Chris Erskine
  * @author Bruce Faulkner
  * @author Ahmed Ashour
@@ -64,75 +65,111 @@ import org.htmlunit.javascript.host.html.HTMLHtmlElement;
 @JsxClass
 public class Node extends EventTarget {
 
-    /** @see org.w3c.dom.Node#ELEMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#ELEMENT_NODE
+     */
     @JsxConstant
     public static final int ELEMENT_NODE = org.w3c.dom.Node.ELEMENT_NODE;
 
-    /** @see org.w3c.dom.Node#ATTRIBUTE_NODE */
+    /**
+     * @see org.w3c.dom.Node#ATTRIBUTE_NODE
+     */
     @JsxConstant
     public static final int ATTRIBUTE_NODE = org.w3c.dom.Node.ATTRIBUTE_NODE;
 
-    /** @see org.w3c.dom.Node#TEXT_NODE */
+    /**
+     * @see org.w3c.dom.Node#TEXT_NODE
+     */
     @JsxConstant
     public static final int TEXT_NODE = org.w3c.dom.Node.TEXT_NODE;
 
-    /** @see org.w3c.dom.Node#CDATA_SECTION_NODE */
+    /**
+     * @see org.w3c.dom.Node#CDATA_SECTION_NODE
+     */
     @JsxConstant
     public static final int CDATA_SECTION_NODE = org.w3c.dom.Node.CDATA_SECTION_NODE;
 
-    /** @see org.w3c.dom.Node#ENTITY_REFERENCE_NODE */
+    /**
+     * @see org.w3c.dom.Node#ENTITY_REFERENCE_NODE
+     */
     @JsxConstant
     public static final int ENTITY_REFERENCE_NODE = org.w3c.dom.Node.ENTITY_REFERENCE_NODE;
 
-    /** @see org.w3c.dom.Node#ENTITY_NODE */
+    /**
+     * @see org.w3c.dom.Node#ENTITY_NODE
+     */
     @JsxConstant
     public static final int ENTITY_NODE = org.w3c.dom.Node.ENTITY_NODE;
 
-    /** @see org.w3c.dom.Node#PROCESSING_INSTRUCTION_NODE */
+    /**
+     * @see org.w3c.dom.Node#PROCESSING_INSTRUCTION_NODE
+     */
     @JsxConstant
     public static final int PROCESSING_INSTRUCTION_NODE = org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE;
 
-    /** @see org.w3c.dom.Node#COMMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#COMMENT_NODE
+     */
     @JsxConstant
     public static final int COMMENT_NODE = org.w3c.dom.Node.COMMENT_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_NODE
+     */
     @JsxConstant
     public static final int DOCUMENT_NODE = org.w3c.dom.Node.DOCUMENT_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_TYPE_NODE */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_TYPE_NODE
+     */
     @JsxConstant
     public static final int DOCUMENT_TYPE_NODE = org.w3c.dom.Node.DOCUMENT_TYPE_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_FRAGMENT_NODE */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_FRAGMENT_NODE
+     */
     @JsxConstant
     public static final int DOCUMENT_FRAGMENT_NODE = org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE;
 
-    /** @see org.w3c.dom.Node#NOTATION_NODE */
+    /**
+     * @see org.w3c.dom.Node#NOTATION_NODE
+     */
     @JsxConstant
     public static final int NOTATION_NODE = org.w3c.dom.Node.NOTATION_NODE;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_DISCONNECTED */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_DISCONNECTED
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_DISCONNECTED = org.w3c.dom.Node.DOCUMENT_POSITION_DISCONNECTED;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_PRECEDING */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_PRECEDING
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_PRECEDING = org.w3c.dom.Node.DOCUMENT_POSITION_PRECEDING;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_FOLLOWING */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_FOLLOWING
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_FOLLOWING = org.w3c.dom.Node.DOCUMENT_POSITION_FOLLOWING;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINS */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINS
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_CONTAINS = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINS;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINED_BY */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINED_BY
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_CONTAINED_BY = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINED_BY;
 
-    /** @see org.w3c.dom.Node#DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC */
+    /**
+     * @see org.w3c.dom.Node#DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+     */
     @JsxConstant
     public static final int DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
         = org.w3c.dom.Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
@@ -192,8 +229,7 @@ public class Node extends EventTarget {
      */
     @JsxFunction
     public Node appendChild(final Object childObject) {
-        if (childObject instanceof Node) {
-            final Node childNode = (Node) childObject;
+        if (childObject instanceof Node childNode) {
 
             // is the node allowed here?
             if (!isNodeInsertable(childNode)) {
@@ -232,8 +268,7 @@ public class Node extends EventTarget {
      * 'onload' handler is triggered.
      */
     private static void initInlineFrameIfNeeded(final DomNode childDomNode) {
-        if (childDomNode instanceof HtmlInlineFrame) {
-            final HtmlInlineFrame frame = (HtmlInlineFrame) childDomNode;
+        if (childDomNode instanceof HtmlInlineFrame frame) {
             if (DomElement.ATTRIBUTE_NOT_DEFINED == frame.getSrcAttribute()) {
                 frame.loadInnerPage();
             }
@@ -251,7 +286,7 @@ public class Node extends EventTarget {
      * @return the newly added child node
      */
     @JsxFunction
-    public static Node insertBefore(final Context context, final Scriptable scope,
+    public static Node insertBefore(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return ((Node) thisObj).insertBeforeImpl(args);
     }
@@ -277,8 +312,7 @@ public class Node extends EventTarget {
             refChildObject = JavaScriptEngine.UNDEFINED;
         }
 
-        if (newChildObject instanceof Node) {
-            final Node newChild = (Node) newChildObject;
+        if (newChildObject instanceof Node newChild) {
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
@@ -289,8 +323,7 @@ public class Node extends EventTarget {
             }
 
             final DomNode newChildNode = newChild.getDomNodeOrDie();
-            if (newChildNode instanceof DomDocumentFragment) {
-                final DomDocumentFragment fragment = (DomDocumentFragment) newChildNode;
+            if (newChildNode instanceof DomDocumentFragment fragment) {
                 for (final DomNode child : fragment.getChildren()) {
                     if (!isNodeInsertable(child.getScriptableObject())) {
                         throw JavaScriptEngine.asJavaScriptException(
@@ -360,12 +393,11 @@ public class Node extends EventTarget {
      */
     @JsxFunction
     public Node removeChild(final Object childObject) {
-        if (!(childObject instanceof Node)) {
+        if (!(childObject instanceof Node childObjectNode)) {
             return null;
         }
 
         // Get XML node for the DOM node passed in
-        final Node childObjectNode = (Node) childObject;
         final DomNode childDomNode = childObjectNode.getDomNodeOrDie();
 
         if (!getDomNodeOrDie().isAncestorOf(childDomNode)) {
@@ -388,8 +420,7 @@ public class Node extends EventTarget {
      */
     @JsxFunction
     public Node replaceChild(final Object newChildObject, final Object oldChildObject) {
-        if (newChildObject instanceof DocumentFragment) {
-            final DocumentFragment fragment = (DocumentFragment) newChildObject;
+        if (newChildObject instanceof DocumentFragment fragment) {
             Node firstNode = null;
 
             final Node oldChildNode = (Node) oldChildObject;
@@ -410,8 +441,7 @@ public class Node extends EventTarget {
             return oldChildNode;
         }
 
-        if (newChildObject instanceof Node && oldChildObject instanceof Node) {
-            final Node newChild = (Node) newChildObject;
+        if (newChildObject instanceof Node newChild && oldChildObject instanceof Node oldChildNode) {
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
@@ -423,7 +453,6 @@ public class Node extends EventTarget {
 
             // Get XML nodes for the DOM nodes passed in
             final DomNode newChildDomNode = newChild.getDomNodeOrDie();
-            final Node oldChildNode = (Node) oldChildObject;
             final DomNode oldChildDomNode = oldChildNode.getDomNodeOrDie();
 
             // Replace the old child with the new child.
@@ -433,6 +462,51 @@ public class Node extends EventTarget {
         }
 
         return null;
+    }
+
+    /**
+     * Moves a given Node inside the invoking node as a direct child, before a given reference node.
+     *
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     */
+    public static void moveBefore(final Context context, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        if (args.length < 2) {
+            throw JavaScriptEngine.typeError(
+                    "Failed to execute 'moveBefore' on 'Element': 2 arguments required, but only 0 present.");
+        }
+
+        final Object movedNodeObject = args[0];
+        if (!(movedNodeObject instanceof Node)) {
+            throw JavaScriptEngine.typeError(
+                    "Failed to execute 'moveBefore' on 'Element': parameter 1 is not of type 'Node'.");
+        }
+        final Object referenceNodeObject = args[1];
+        if (referenceNodeObject != null && !(referenceNodeObject instanceof Node)) {
+            throw JavaScriptEngine.typeError(
+                    "Failed to execute 'moveBefore' on 'Element': parameter 2 is not of type 'Node'.");
+        }
+
+        final Node node = (Node) thisObj;
+        try {
+            if (referenceNodeObject == null) {
+                node.getDomNodeOrDie().moveBefore(((Node) movedNodeObject).getDomNodeOrDie(), null);
+                return;
+            }
+
+            node.getDomNodeOrDie().moveBefore(
+                    ((Node) movedNodeObject).getDomNodeOrDie(), ((Node) referenceNodeObject).getDomNodeOrDie());
+        }
+        catch (final org.w3c.dom.DOMException e) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    node.getWindow(),
+                    "Failed to execute 'moveChild' on '" + node + ": " + e.getMessage(),
+                    e.code);
+        }
     }
 
     /**
@@ -461,12 +535,15 @@ public class Node extends EventTarget {
             return true;
         }
 
+        if (other == null) {
+            return false;
+        }
+
         if (!getClassName().equals(other.getClassName())) {
             return false;
         }
 
-        if (this instanceof DocumentType) {
-            final DocumentType docType = (DocumentType) this;
+        if (this instanceof DocumentType docType) {
             final DocumentType otherDocType = (DocumentType) other;
             if (!Objects.equals(docType.getName(), otherDocType.getName())
                     || !Objects.equals(docType.getPublicId(), otherDocType.getPublicId())
@@ -475,8 +552,7 @@ public class Node extends EventTarget {
             }
 
         }
-        else if (this instanceof Element) {
-            final Element element = (Element) this;
+        else if (this instanceof Element element) {
             final Element otherElement = (Element) other;
             if (!Objects.equals(element.getNodeName(), otherElement.getNodeName())
                     || !Objects.equals(element.getPrefix(), otherElement.getPrefix())
@@ -515,8 +591,7 @@ public class Node extends EventTarget {
             }
 
         }
-        else if (this instanceof Attr) {
-            final Attr attr = (Attr) this;
+        else if (this instanceof Attr attr) {
             final Attr otherAttr = (Attr) other;
             if (!Objects.equals(attr.getName(), otherAttr.getName())
                     || !Objects.equals(attr.getLocalName(), otherAttr.getLocalName())
@@ -525,8 +600,7 @@ public class Node extends EventTarget {
             }
 
         }
-        else if (this instanceof ProcessingInstruction) {
-            final ProcessingInstruction instruction = (ProcessingInstruction) this;
+        else if (this instanceof ProcessingInstruction instruction) {
             final ProcessingInstruction otherInstruction = (ProcessingInstruction) other;
             if (!Objects.equals(instruction.getTarget(), otherInstruction.getTarget())
                     || !Objects.equals(instruction.getData(), otherInstruction.getData())) {
@@ -550,7 +624,7 @@ public class Node extends EventTarget {
             }
 
             final int length = childNodes.getLength();
-            final int otherLength = childNodes.getLength();
+            final int otherLength = otherChildNodes.getLength();
             if (length != otherLength) {
                 return false;
             }
@@ -580,7 +654,7 @@ public class Node extends EventTarget {
      */
     @JsxFunction
     public boolean isSameNode(final Object other) {
-        return other == this;
+        return this == other;
     }
 
     /**
@@ -595,8 +669,8 @@ public class Node extends EventTarget {
     /**
      * @param namespace string containing the namespace to look the prefix up
      * @return a string containing the prefix for a given namespace URI,
-     * if present, and null if not. When multiple prefixes are possible,
-     * the first prefix is returned.
+     *         if present, and null if not. When multiple prefixes are possible,
+     *         the first prefix is returned.
      */
     @JsxFunction
     public String lookupPrefix(final String namespace) {
@@ -648,7 +722,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code nextSibling} for the node that
      * contains the current node.
      * @return the next sibling node or null if the current node has
-     * no next sibling.
+     *         no next sibling.
      */
     @JsxGetter
     public Node getNextSibling() {
@@ -659,7 +733,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code previousSibling} for the node that
      * contains the current node.
      * @return the previous sibling node or null if the current node has
-     * no previous sibling.
+     *         no previous sibling.
      */
     @JsxGetter
     public Node getPreviousSibling() {
@@ -670,7 +744,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code firstChild} for the node that
      * contains the current node.
      * @return the first child node or null if the current node has
-     * no children.
+     *         no children.
      */
     @JsxGetter
     public Node getFirstChild() {
@@ -681,7 +755,7 @@ public class Node extends EventTarget {
      * Gets the JavaScript property {@code lastChild} for the node that
      * contains the current node.
      * @return the last child node or null if the current node has
-     * no children.
+     *         no children.
      */
     @JsxGetter
     public Node getLastChild() {
@@ -804,11 +878,11 @@ public class Node extends EventTarget {
             return false;
         }
 
-        if (!(element instanceof Node)) {
+        if (!(element instanceof Node parent)) {
             throw JavaScriptEngine.reportRuntimeError("Could not convert JavaScript argument arg 0");
         }
 
-        for (Node parent = (Node) element; parent != null; parent = parent.getParentElement()) {
+        for ( ; parent != null; parent = parent.getParentElement()) {
             if (this == parent) {
                 return true;
             }
@@ -863,8 +937,8 @@ public class Node extends EventTarget {
      */
     protected int getChildElementCount() {
         final DomNode domNode = getDomNodeOrDie();
-        if (domNode instanceof DomElement) {
-            return ((DomElement) domNode).getChildElementCount();
+        if (domNode instanceof DomElement element) {
+            return element.getChildElementCount();
         }
 
         int counter = 0;
@@ -885,8 +959,8 @@ public class Node extends EventTarget {
      */
     protected Element getFirstElementChild() {
         final DomNode domNode = getDomNodeOrDie();
-        if (domNode instanceof DomElement) {
-            final DomElement child = ((DomElement) domNode).getFirstElementChild();
+        if (domNode instanceof DomElement element) {
+            final DomElement child = element.getFirstElementChild();
             if (child != null) {
                 return child.getScriptableObject();
             }
@@ -896,8 +970,8 @@ public class Node extends EventTarget {
         for (final DomNode child : domNode.getChildren()) {
             if (child != null) {
                 final HtmlUnitScriptable scriptable = child.getScriptableObject();
-                if (scriptable instanceof Element) {
-                    return (Element) scriptable;
+                if (scriptable instanceof Element element) {
+                    return element;
                 }
             }
         }
@@ -921,8 +995,8 @@ public class Node extends EventTarget {
         Element result = null;
         for (final DomNode child : domNode.getChildren()) {
             final HtmlUnitScriptable scriptable = child.getScriptableObject();
-            if (scriptable instanceof Element) {
-                result = (Element) scriptable;
+            if (scriptable instanceof Element element) {
+                result = element;
             }
         }
         return result;
@@ -985,11 +1059,10 @@ public class Node extends EventTarget {
      */
     protected static void append(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        if (!(thisObj instanceof Node)) {
+        if (!(thisObj instanceof Node thisNode)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
-        final Node thisNode = (Node) thisObj;
         final DomNode thisDomNode = thisNode.getDomNodeOrDie();
 
         for (final Object arg : args) {
@@ -1008,11 +1081,10 @@ public class Node extends EventTarget {
      */
     protected static void prepend(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        if (!(thisObj instanceof Node)) {
+        if (!(thisObj instanceof Node thisNode)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
-        final Node thisNode = (Node) thisObj;
         final DomNode thisDomNode = thisNode.getDomNodeOrDie();
         final DomNode firstChild = thisDomNode.getFirstChild();
 
@@ -1038,11 +1110,10 @@ public class Node extends EventTarget {
      */
     protected static void replaceChildren(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        if (!(thisObj instanceof Node)) {
+        if (!(thisObj instanceof Node thisNode)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
-        final Node thisNode = (Node) thisObj;
         final DomNode thisDomNode = thisNode.getDomNodeOrDie();
         thisDomNode.removeAllChildren();
 
@@ -1053,8 +1124,8 @@ public class Node extends EventTarget {
     }
 
     private static Node toNodeOrTextNode(final Node thisObj, final Object obj) {
-        if (obj instanceof Node) {
-            return (Node) obj;
+        if (obj instanceof Node node) {
+            return node;
         }
         return (Node)
                 ((HTMLDocument) thisObj.getOwnerDocument()).createTextNode(JavaScriptEngine.toString(obj));

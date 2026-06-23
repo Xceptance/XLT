@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package org.htmlunit.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebResponse;
 
 /**
  * @author Anton Demydenko
  * @author Lai Quang Duong
+ * @author Ronald Brill
  */
 public final class HeaderUtils {
 
@@ -110,10 +110,10 @@ public final class HeaderUtils {
      */
     public static boolean containsMaxAgeOrSMaxage(final WebResponse response) {
         final String cacheControl = response.getResponseHeaderValue(HttpHeader.CACHE_CONTROL);
-        if (StringUtils.contains(cacheControl, CACHE_CONTROL_MAX_AGE)) {
+        if (StringUtils.containsIgnoreCase(cacheControl, CACHE_CONTROL_MAX_AGE)) {
             return true;
         }
-        return StringUtils.contains(cacheControl, CACHE_CONTROL_S_MAXAGE);
+        return StringUtils.containsIgnoreCase(cacheControl, CACHE_CONTROL_S_MAXAGE);
     }
 
     /**
@@ -153,6 +153,6 @@ public final class HeaderUtils {
 
     private static boolean containsCacheControlValue(final WebResponse response, final String value) {
         final String cacheControl = response.getResponseHeaderValue(HttpHeader.CACHE_CONTROL);
-        return StringUtils.contains(cacheControl, value);
+        return StringUtils.containsIgnoreCase(cacheControl, value);
     }
 }

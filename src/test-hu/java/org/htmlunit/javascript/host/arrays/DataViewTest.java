@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 package org.htmlunit.javascript.host.arrays;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for DataView.
@@ -27,7 +25,6 @@ import org.junit.runner.RunWith;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class DataViewTest extends WebDriverTestCase {
 
     /**
@@ -36,8 +33,8 @@ public class DataViewTest extends WebDriverTestCase {
     @Test
     @Alerts({"22", "3.1415927410125732"})
     public void arrayConstruction() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -64,8 +61,8 @@ public class DataViewTest extends WebDriverTestCase {
                 "0", "0", "0", "0", "64", "9",
                 "33", "-5", "84", "68", "45", "24"})
     public void endian() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -94,8 +91,8 @@ public class DataViewTest extends WebDriverTestCase {
     @Test
     @Alerts({"1234", "0", "4", "-46", "0", "0", "0"})
     public void uint16() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
@@ -120,8 +117,8 @@ public class DataViewTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void nullConstructor() throws Exception {
-        final String html
-            = "<html><head>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"

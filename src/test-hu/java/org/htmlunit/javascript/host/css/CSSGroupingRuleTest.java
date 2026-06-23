@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,14 @@
 package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.annotation.Alerts;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CSSGroupingRule}.
  *
  * @author Ronald Brill
  */
-@RunWith(BrowserRunner.class)
 public class CSSGroupingRuleTest extends WebDriverTestCase {
 
     /**
@@ -34,8 +31,8 @@ public class CSSGroupingRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("TypeError")
     public void ctor() throws Exception {
-        final String html
-            = "<html><body>\n"
+        final String html = DOCTYPE_HTML
+            + "<html><body>\n"
             + LOG_TEXTAREA
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION

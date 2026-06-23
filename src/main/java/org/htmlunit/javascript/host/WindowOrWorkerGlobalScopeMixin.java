@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,13 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
+import org.htmlunit.util.StringUtils;
 
 /**
  * The implementation of {@code WindowOrWorkerGlobalScope}
@@ -35,6 +38,7 @@ import org.htmlunit.javascript.background.JavaScriptJob;
  *
  * @author Ronald Brill
  * @author Rural Hunter
+ * @author Lai Quang Duong
  */
 public final class WindowOrWorkerGlobalScopeMixin {
 
@@ -53,27 +57,27 @@ public final class WindowOrWorkerGlobalScopeMixin {
     /**
      * Decodes a string of data which has been encoded using base-64 encoding.
      * @param encodedData the encoded string
-     * @param scriptable the HtmlUnitScriptable scope
+     * @param scriptable the HtmlUnitScriptable
      * @return the decoded value
      */
     public static String atob(final String encodedData, final HtmlUnitScriptable scriptable) {
-        final int l = encodedData.length();
-        for (int i = 0; i < l; i++) {
-            if (encodedData.charAt(i) > 255) {
-                throw JavaScriptEngine.asJavaScriptException(
-                        scriptable,
-                        "Function atob supports only latin1 characters",
-                        org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
-            }
+        final String withoutWhitespace = StringUtils.replaceChars(encodedData, " \t\r\n\u000c", "");
+        final byte[] bytes = withoutWhitespace.getBytes(StandardCharsets.ISO_8859_1);
+        try {
+            return new String(Base64.getDecoder().decode(bytes), StandardCharsets.ISO_8859_1);
         }
-        final byte[] bytes = encodedData.getBytes(StandardCharsets.ISO_8859_1);
-        return new String(Base64.getDecoder().decode(bytes), StandardCharsets.ISO_8859_1);
+        catch (final IllegalArgumentException e) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    scriptable,
+                    "Failed to execute atob(): " + e.getMessage(),
+                    org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
+        }
     }
 
     /**
      * Creates a base-64 encoded ASCII string from a string of binary data.
      * @param stringToEncode string to encode
-     * @param scriptable the HtmlUnitScriptable scope
+     * @param scriptable the HtmlUnitScriptable
      * @return the encoded string
      */
     public static String btoa(final String stringToEncode, final HtmlUnitScriptable scriptable) {
@@ -86,8 +90,17 @@ public final class WindowOrWorkerGlobalScopeMixin {
                         org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
             }
         }
+
         final byte[] bytes = stringToEncode.getBytes(StandardCharsets.ISO_8859_1);
-        return new String(Base64.getEncoder().encode(bytes), StandardCharsets.UTF_8);
+        try {
+            return new String(Base64.getEncoder().encode(bytes), StandardCharsets.UTF_8);
+        }
+        catch (final IllegalArgumentException e) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    scriptable,
+                    "Failed to execute btoa(): " + e.getMessage(),
+                    org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
+        }
     }
 
     /**
@@ -96,7 +109,7 @@ public final class WindowOrWorkerGlobalScopeMixin {
      * and does not contain an other page than the one that originated the setTimeout.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      *
      * @param context the JavaScript context
      * @param thisObj the scriptable
@@ -121,7 +134,7 @@ public final class WindowOrWorkerGlobalScopeMixin {
      * Sets a chunk of JavaScript to be invoked each time a specified number of milliseconds has elapsed.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      * @param context the JavaScript context
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
@@ -141,6 +154,38 @@ public final class WindowOrWorkerGlobalScopeMixin {
         return setTimeoutIntervalImpl((Window) thisObj, args[0], timeout, false, params);
     }
 
+    /**
+     * Queues a microtask to be executed.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask">
+     *     MDN web docs</a>
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @return undefined
+     */
+    public static Object queueMicrotask(final Scriptable thisObj, final Object[] args) {
+        if (args.length < 1) {
+            throw JavaScriptEngine.typeError("At least 1 argument required");
+        }
+        if (!(args[0] instanceof Function)) {
+            throw JavaScriptEngine.typeError("Argument 1 is not callable");
+        }
+
+        final Function callback = (Function) args[0];
+        final VarScope scope = ScriptableObject.getTopLevelScope(thisObj.getParentScope());
+        final Context cx = Context.getCurrentContext();
+        cx.enqueueMicrotask(() -> {
+            try {
+                callback.call(cx, scope, thisObj, JavaScriptEngine.EMPTY_ARGS);
+            }
+            catch (final Exception e) {
+                // uncaught exception in a microtask must not prevent remaining microtasks from running.
+            }
+        });
+
+        return JavaScriptEngine.UNDEFINED;
+    }
+
     private static int setTimeoutIntervalImpl(final Window window, final Object code,
             int timeout, final boolean isTimeout, final Object[] params) {
         if (timeout < MIN_TIMER_DELAY) {
@@ -154,8 +199,7 @@ public final class WindowOrWorkerGlobalScopeMixin {
             period = timeout;
         }
 
-        if (code instanceof String) {
-            final String s = (String) code;
+        if (code instanceof String s) {
             final String description = "window.set"
                                         + (isTimeout ? "Timeout" : "Interval")
                                         + "(" + s + ", " + timeout + ")";
@@ -164,11 +208,10 @@ public final class WindowOrWorkerGlobalScopeMixin {
             return webWindow.getJobManager().addJob(job, page);
         }
 
-        if (code instanceof Function) {
-            final Function f = (Function) code;
+        if (code instanceof Function f) {
             final String functionName;
-            if (f instanceof FunctionObject) {
-                functionName = ((FunctionObject) f).getFunctionName();
+            if (f instanceof FunctionObject object) {
+                functionName = object.getFunctionName();
             }
             else {
                 functionName = String.valueOf(f); // can this happen?
