@@ -1215,6 +1215,22 @@ table * {
             padding-top: 10px;
             padding-left: 25px;
         }
+        /* Truncate long text in tables (esp. request names), 
+           but only on a screen where alternative ways to show the full text (tooltip, etc.) are available. */
+        @media screen and (min-width: 1024px) and (hover: hover) 
+        {
+            table td .trunc-cell
+            {
+                display: grid;
+                min-width: 0; 
+            }
+                table td .trunc-cell .trunc-text
+                {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+        }
 
     table th input.filter
     {
