@@ -61,9 +61,6 @@ builder.ratings {
     rating { id 'Fail'; value 99.99; failsTest true }
     rating { id 'Pass'; value 100.0 }
 }
-
-// 4. Return the builder
-builder
 ```
 
 ---
@@ -138,7 +135,7 @@ builder.groups {
 ```
 
 ### 3.3 Ratings
-Ratings determine the final outcome of the load test by summing up all achieved points from all groups and dividing by the total achievable points to calculate a percentage. 
+Ratings determine the final outcome of the load test by summing up all achieved points from all groups and dividing by the total achievable points to calculate a percentage.
 
 The engine processes your ratings in the exact order they are defined. The **first rating** whose `value` is greater than or equal to the achieved percentage is selected as the final rating. This means `value` acts as the **upper limit**.
 
@@ -297,8 +294,6 @@ builder.ratings {
     rating { id 'B'; value 90.0 }
     rating { id 'F'; value 50.0; failsTest true }
 }
-
-builder
 ```
 
 ---
