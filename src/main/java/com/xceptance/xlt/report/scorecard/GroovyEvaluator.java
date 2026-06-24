@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -96,37 +95,25 @@ public class GroovyEvaluator extends AbstractEvaluator
         final CompilerConfiguration config = new CompilerConfiguration();
         config.addCompilationCustomizers(GroovySecurityUtils.createSecureCustomizer());
 
+        final ScorecardBuilder builder = new ScorecardBuilder();
+        final ScorecardLogger logger = new ScorecardLogger();
+
         binding = new Binding();
         binding.setVariable("xpath", new ScorecardData(document, compiler));
         binding.setVariable("properties", new ScorecardProperties());
-        binding.setVariable("builder", new ScorecardBuilder());
+        binding.setVariable("builder", builder);
         binding.setVariable("metrics", new MetricsHelper());
-
-        final ScorecardLogger logger = new ScorecardLogger();
         binding.setVariable("log", logger);
 
         final GroovyShell shell = new GroovyShell(binding, config);
 
         try
         {
-            final Object result = shell.evaluate(configFile);
-            if (result instanceof Configuration)
-            {
-                return (Configuration) result;
-            }
-            if (result instanceof ScorecardBuilder)
-            {
-                return ((ScorecardBuilder) result).build();
-            }
+            // populate the builder
+            shell.evaluate(configFile);
 
-            // Fallback: check if 'builder' variable was used
-            final Object builderVar = binding.getVariable("builder");
-            if (builderVar instanceof ScorecardBuilder)
-            {
-                return ((ScorecardBuilder) builderVar).build();
-            }
-
-            throw new ValidationException("Groovy script must return a Configuration object or ScorecardBuilder, or use the 'builder' binding.");
+            // let the builder create the configuration
+            return builder.build();
         }
         catch (final Exception e)
         {
@@ -192,9 +179,6 @@ public class GroovyEvaluator extends AbstractEvaluator
             // add group result to scorecard result
             result.addGroup(group);
         }
-
-        final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
-        final String logText = (logger != null && !logger.getLogs().isEmpty()) ? String.join("\n", logger.getLogs()) : null;
 
         // determine if evaluation failed due to erroneous groups
         if (!erroneousGroups.isEmpty())
