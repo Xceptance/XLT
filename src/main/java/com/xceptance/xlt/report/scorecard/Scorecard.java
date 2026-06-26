@@ -30,6 +30,12 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
+/**
+ * Represents a scorecard and its evaluation results.
+ *
+ * @author AI-generated: Antigravity
+ * @author Xceptance GmbH 2026
+ */
 @XStreamAlias("scorecard")
 public class Scorecard
 {
@@ -159,14 +165,6 @@ public class Scorecard
             errors.add(new Error(message, log));
         }
 
-        void updateFirstErrorLog(final String log)
-        {
-            if (errors != null && !errors.isEmpty())
-            {
-                final Error firstError = errors.get(0);
-                firstError.setLog(log);
-            }
-        }
 
         public Integer getPoints()
         {

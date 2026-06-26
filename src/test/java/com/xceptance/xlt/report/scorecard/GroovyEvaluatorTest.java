@@ -32,6 +32,12 @@ import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 
+/**
+ * Test the GroovyEvaluator.
+ *
+ * @author AI-generated: Antigravity
+ * @author Xceptance GmbH 2026
+ */
 public class GroovyEvaluatorTest
 {
     @Test
@@ -341,13 +347,16 @@ public class GroovyEvaluatorTest
             final var scorecard = evaluator.evaluate(xmlFile);
             final List<Scorecard.LogEntry> logs = scorecard.result.getLogs();
 
-            // Should have 2 logs: "Before error" and then the error log with stacktrace
-            Assert.assertTrue(logs.size() >= 2);
+            // Verify script-level logs (only "Before error" should be recorded)
+            Assert.assertEquals(1, logs.size());
             Assert.assertEquals("INFO", logs.get(0).getLevel());
             Assert.assertEquals("Before error", logs.get(0).getMessage());
-            Assert.assertEquals("ERROR", logs.get(1).getLevel());
-            Assert.assertTrue(logs.get(1).getMessage().startsWith("Failed to evaluate Groovy configuration"));
-            Assert.assertTrue(logs.get(1).getMessage().contains("java.lang.RuntimeException: Hard failure"));
+
+            // Verify framework-level crash details are correctly populated in errors
+            final List<Scorecard.Error> errors = scorecard.result.getErrors();
+            Assert.assertEquals(1, errors.size());
+            Assert.assertTrue(errors.get(0).getMessage().contains("Failed to evaluate Groovy configuration"));
+            Assert.assertTrue(errors.get(0).getLog().contains("java.lang.RuntimeException: Hard failure"));
         }
         finally
         {

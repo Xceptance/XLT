@@ -43,6 +43,9 @@ import net.sf.saxon.s9api.XdmNode;
 
 /**
  * Evaluator for Groovy-based scorecard configurations.
+ *
+ * @author AI-generated: Antigravity
+ * @author Xceptance GmbH 2026
  */
 public class GroovyEvaluator extends AbstractEvaluator
 {
@@ -71,21 +74,13 @@ public class GroovyEvaluator extends AbstractEvaluator
             scorecard = Scorecard.error(ex);
         }
 
-        // If we have an error and logs, bundle them together
+        // Copy any recorded script logs to the result
         if (binding != null && scorecard != null)
         {
             final ScorecardLogger logger = (ScorecardLogger) binding.getVariable("log");
             if (logger != null && !logger.getLogs().isEmpty())
             {
-                // Copy logs to the result for test access
                 scorecard.result.setLogs(logger.getLogs());
-
-                // If there's already an error, update it with the log
-                if (!scorecard.result.getErrors().isEmpty())
-                {
-                    final String logText = logger.getLogs().stream().map(LogEntry::toString).collect(Collectors.joining("\n"));
-                    scorecard.result.updateFirstErrorLog(logText);
-                }
             }
         }
 
@@ -120,7 +115,6 @@ public class GroovyEvaluator extends AbstractEvaluator
         }
         catch (final Exception e)
         {
-            logger.error("Failed to evaluate Groovy configuration", e);
             throw new ValidationException("Failed to evaluate Groovy configuration: " + e.getMessage(), e);
         }
     }
