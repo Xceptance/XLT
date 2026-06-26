@@ -72,6 +72,37 @@ public class Scorecard
         }
     }
 
+    @XStreamAlias("log")
+    public static class LogEntry
+    {
+        @XStreamAsAttribute
+        private final String level;
+
+        private final String message;
+
+        public LogEntry(final String level, final String message)
+        {
+            this.level = level;
+            this.message = message;
+        }
+
+        public String getLevel()
+        {
+            return level;
+        }
+
+        public String getMessage()
+        {
+            return message;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("[%s] %s", level, message);
+        }
+    }
+
     public static class Result
     {
         @XStreamAsAttribute
@@ -93,8 +124,8 @@ public class Scorecard
 
         private String rating;
 
-        @XStreamImplicit(itemFieldName = "log")
-        private List<String> logs;
+        @XStreamAlias("logs")
+        private List<LogEntry> logs;
 
         /**
          * Returns the first error message for backward compatibility.
@@ -211,7 +242,7 @@ public class Scorecard
          *
          * @return unmodifiable list of log messages, or empty list if none
          */
-        public List<String> getLogs()
+        public List<LogEntry> getLogs()
         {
             if (logs == null)
             {
@@ -226,7 +257,7 @@ public class Scorecard
          * @param logs
          *            list of log messages
          */
-        void setLogs(final List<String> logs)
+        void setLogs(final List<LogEntry> logs)
         {
             this.logs = logs != null ? new LinkedList<>(logs) : null;
         }

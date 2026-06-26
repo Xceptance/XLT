@@ -187,4 +187,76 @@ public class IssueLoggingTest
             FileUtils.deleteQuietly(xmlFile);
         }
     }
+
+    @Test
+    public void testLogXmlSerialization() throws Exception
+    {
+        final var groovy = """
+            log.info("My info log")
+            log.warn("My warn log")
+
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    name 'Test Rule'
+                    checks {
+                        check {
+                            selector '//nonexistent/path'
+                            condition 'exists'
+                        }
+                    }
+                }
+            }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
+
+            return builder
+            """;
+
+        final var tempFile = Files.createTempFile("scorecard-log-xml-test", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("test-report", ".xml").toFile();
+
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+
+            final var xmlContent = """
+                <?xml version="1.0"?>
+                <testreport>
+                    <summary>
+                        <transactions>
+                            <errorPercentage>0.0</errorPercentage>
+                        </transactions>
+                    </summary>
+                </testreport>
+                """;
+            FileUtils.writeStringToFile(xmlFile, xmlContent, StandardCharsets.UTF_8);
+
+            final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
+            final var scorecard = evaluator.evaluate(xmlFile);
+
+            final var writer = new StringWriter();
+            evaluator.writeScorecard(scorecard, writer);
+            final var xml = writer.toString();
+
+            // Verify XML contains logs with level attribute and parent <logs> element
+            Assert.assertTrue("XML should contain <logs> element", xml.contains("<logs>"));
+            Assert.assertTrue("XML should contain <log> elements", xml.contains("<log "));
+            Assert.assertTrue("XML should contain level=\"INFO\" attribute", xml.contains("level=\"INFO\""));
+            Assert.assertTrue("XML should contain level=\"WARN\" attribute", xml.contains("level=\"WARN\""));
+            Assert.assertTrue("XML should contain log messages", xml.contains("My info log"));
+            Assert.assertTrue("XML should contain log messages", xml.contains("My warn log"));
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
 }

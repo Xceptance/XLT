@@ -303,12 +303,15 @@ public class GroovyEvaluatorTest
             final var evaluator = new GroovyEvaluator(tempFile, proc);
 
             final var scorecard = evaluator.evaluate(xmlFile);
-            final List<String> logs = scorecard.result.getLogs();
+            final List<Scorecard.LogEntry> logs = scorecard.result.getLogs();
 
             Assert.assertEquals(3, logs.size());
-            Assert.assertEquals("[INFO] Info message", logs.get(0));
-            Assert.assertEquals("[WARN] Warn message", logs.get(1));
-            Assert.assertEquals("[ERROR] Error message", logs.get(2));
+            Assert.assertEquals("INFO", logs.get(0).getLevel());
+            Assert.assertEquals("Info message", logs.get(0).getMessage());
+            Assert.assertEquals("WARN", logs.get(1).getLevel());
+            Assert.assertEquals("Warn message", logs.get(1).getMessage());
+            Assert.assertEquals("ERROR", logs.get(2).getLevel());
+            Assert.assertEquals("Error message", logs.get(2).getMessage());
         }
         finally
         {
@@ -336,13 +339,15 @@ public class GroovyEvaluatorTest
             final var evaluator = new GroovyEvaluator(tempFile, proc);
 
             final var scorecard = evaluator.evaluate(xmlFile);
-            final List<String> logs = scorecard.result.getLogs();
+            final List<Scorecard.LogEntry> logs = scorecard.result.getLogs();
 
             // Should have 2 logs: "Before error" and then the error log with stacktrace
             Assert.assertTrue(logs.size() >= 2);
-            Assert.assertEquals("[INFO] Before error", logs.get(0));
-            Assert.assertTrue(logs.get(1).startsWith("[ERROR] Failed to evaluate Groovy configuration"));
-            Assert.assertTrue(logs.get(1).contains("java.lang.RuntimeException: Hard failure"));
+            Assert.assertEquals("INFO", logs.get(0).getLevel());
+            Assert.assertEquals("Before error", logs.get(0).getMessage());
+            Assert.assertEquals("ERROR", logs.get(1).getLevel());
+            Assert.assertTrue(logs.get(1).getMessage().startsWith("Failed to evaluate Groovy configuration"));
+            Assert.assertTrue(logs.get(1).getMessage().contains("java.lang.RuntimeException: Hard failure"));
         }
         finally
         {

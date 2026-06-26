@@ -21,26 +21,28 @@ import java.util.List;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import com.xceptance.xlt.report.scorecard.Scorecard.LogEntry;
+
 /**
  * Simple logger to be used within Groovy scorecard scripts.
  */
 public class ScorecardLogger
 {
-    private final List<String> logs = new ArrayList<>();
+    private final List<LogEntry> logs = new ArrayList<>();
 
     public void info(final String message)
     {
-        logs.add("[INFO] " + message);
+        logs.add(new LogEntry("INFO", message));
     }
 
     public void warn(final String message)
     {
-        logs.add("[WARN] " + message);
+        logs.add(new LogEntry("WARN", message));
     }
 
     public void error(final String message)
     {
-        logs.add("[ERROR] " + message);
+        logs.add(new LogEntry("ERROR", message));
     }
 
     public void error(final Throwable t)
@@ -50,16 +52,16 @@ public class ScorecardLogger
 
     public void error(final String message, final Throwable t)
     {
-        final StringBuilder sb = new StringBuilder("[ERROR] ");
+        final StringBuilder sb = new StringBuilder();
         if (message != null)
         {
             sb.append(message).append("\n");
         }
         sb.append(ExceptionUtils.getStackTrace(t));
-        logs.add(sb.toString().trim());
+        logs.add(new LogEntry("ERROR", sb.toString().trim()));
     }
 
-    public List<String> getLogs()
+    public List<LogEntry> getLogs()
     {
         return Collections.unmodifiableList(logs);
     }

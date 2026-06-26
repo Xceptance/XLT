@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
+import com.xceptance.xlt.report.scorecard.Scorecard.LogEntry;
 import com.xceptance.xlt.report.scorecard.groovy.GroovySecurityUtils;
 import com.xceptance.xlt.report.scorecard.groovy.MetricsHelper;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardData;
@@ -80,7 +83,7 @@ public class GroovyEvaluator extends AbstractEvaluator
                 // If there's already an error, update it with the log
                 if (!scorecard.result.getErrors().isEmpty())
                 {
-                    final String logText = String.join("\n", logger.getLogs());
+                    final String logText = logger.getLogs().stream().map(LogEntry::toString).collect(Collectors.joining("\n"));
                     scorecard.result.updateFirstErrorLog(logText);
                 }
             }

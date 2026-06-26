@@ -26,6 +26,7 @@ import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.extended.ToAttributedValueConverter;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
 
@@ -73,6 +74,7 @@ public abstract class AbstractEvaluator
         xstream.autodetectAnnotations(true);
         xstream.aliasSystemAttribute(null, "class");
         xstream.setMode(XStream.NO_REFERENCES);
+        xstream.registerConverter(new ToAttributedValueConverter(Scorecard.LogEntry.class, xstream.getMapper(), xstream.getReflectionProvider(), xstream.getConverterLookup(), "message"));
 
         // let XStream do its job
         xstream.toXML(scorecard, writer);

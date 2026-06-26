@@ -23,6 +23,7 @@
 <xsl:include href="sections/rule-checks.xsl" />
 <xsl:include href="sections/groups.xsl" />
 <xsl:include href="sections/issues.xsl" />
+<xsl:include href="sections/logs.xsl" />
 
 <xsl:param name="productName" />
 <xsl:param name="productVersion" />
@@ -140,6 +141,12 @@
             <xsl:if test="count(./outcome/issues/issue) &gt; 0">
                 <xsl:call-template name="issues">
                     <xsl:with-param name="issues" select="./outcome/issues/issue" />
+                </xsl:call-template>
+            </xsl:if>
+
+            <xsl:if test="count(./outcome/logs/log) &gt; 0">
+                <xsl:call-template name="logs">
+                    <xsl:with-param name="logs" select="./outcome/logs/log" />
                 </xsl:call-template>
             </xsl:if>
 
