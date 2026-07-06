@@ -15,17 +15,80 @@
  */
 package com.xceptance.xlt.report.scorecard.groovy;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
+
+// TODO: Merge this with com.xceptance.common.util.PropertyGroovySecurityUtils; at least share more stuff.
 
 /**
  * Utility to provide secure Groovy configuration.
  */
 public class GroovySecurityUtils
 {
+    /**
+     * Type-name prefixes whose construction is blocked in scripts.
+     * <p>
+     * This list is checked by the custom {@link SecureASTCustomizer.ExpressionChecker} against every
+     * {@link ConstructorCallExpression} found in the AST. Note that {@code setDisallowedReceiversClasses} only covers
+     * <em>method calls</em> on an existing receiver; it does not intercept {@code new Foo(...)} constructor
+     * expressions, so both mechanisms are needed.
+     * </p>
+     */
+    private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = List.of("java.io.", "java.nio.", "java.net.", "java.lang.Runtime",
+                                                                             "java.lang.ProcessBuilder", "java.lang.Thread",
+                                                                             "java.lang.ClassLoader",
+                                                                             // Groovy scripting infrastructure — block GroovyShell inception
+                                                                             "groovy.lang.", "org.codehaus.groovy.");
 
+    /**
+     * The list of packages star-imports are allowed for.
+     */
+    private static final List<String> ALLOWED_STAR_IMPORT_PACKAGES = List.of("java.util", "java.math", "java.text");
+
+    /**
+     * The list of dangerous classes for which method calls are blocked if the class is the explicit receiver (e.g.
+     * Runtime.getRuntime().exec(...), System.exit(...)).
+     */
+    @SuppressWarnings("rawtypes")
+    private static final List<Class> DISALLOWED_RECEIVERS_CLASSES = List.of(
+                                                                            // System and runtime
+                                                                            System.class, Runtime.class, ProcessBuilder.class, Thread.class,
+                                                                            ClassLoader.class,
+                                                                            // Reflection
+                                                                            Class.class,
+                                                                            // File I/O
+                                                                            java.io.File.class, java.io.FileReader.class,
+                                                                            java.io.FileWriter.class, java.io.FileInputStream.class,
+                                                                            java.io.FileOutputStream.class, java.io.RandomAccessFile.class,
+                                                                            // Network
+                                                                            java.net.URL.class, java.net.URI.class, java.net.Socket.class,
+                                                                            java.net.ServerSocket.class, java.net.HttpURLConnection.class);
+
+    /**
+     * Creates a secure AST customizer for property Groovy evaluation.
+     * <p>
+     * Allows safe imports for mathematical and collection operations while blocking dangerous classes and operations.
+     * </p>
+     * <p>
+     * Two complementary mechanisms are used:
+     * <ol>
+     * <li><b>Constructor check</b> — a custom {@link SecureASTCustomizer.ExpressionChecker} rejects
+     * {@code new dangerous.Type(...)} expressions for packages listed in {@link #BLOCKED_CONSTRUCTOR_PREFIXES}.</li>
+     * <li><b>Receiver check</b> — {@code setDisallowedReceiversClasses} rejects method calls where a dangerous class is
+     * the explicit receiver (e.g. {@code Runtime.getRuntime().exec(...)}).</li>
+     * </ol>
+     * {@code setIndirectImportCheckEnabled} is intentionally left at its default ({@code false}). When enabled it
+     * inspects every method-call receiver's static type and rejects anything not on the imports whitelist — including
+     * {@code java.lang.Object}, which is the compile-time type of all Groovy binding variables ({@code props},
+     * {@code ctx}, etc.), causing false positives for legitimate property access.
+     * </p>
+     *
+     * @return configured SecureASTCustomizer
+     */
     public static SecureASTCustomizer createSecureCustomizer()
     {
         SecureASTCustomizer secure = new SecureASTCustomizer();
@@ -33,20 +96,51 @@ public class GroovySecurityUtils
         // Disallow closures? No, we need them for data building.
         secure.setClosuresAllowed(true);
 
-        // Imports
-        List<String> starImports = Arrays.asList("java.util", "java.math", "java.text", "com.xceptance.xlt.report.scorecard.groovy.builder",
-                                                 "com.xceptance.xlt.report.scorecard",
-                                                 "com.xceptance.xlt.report.scorecard.groovy.ScorecardLogger");
-        secure.setStarImportsWhitelist(starImports);
+        // Allow star-imports from safe packages only
+        secure.setAllowedStarImports(ALLOWED_STAR_IMPORT_PACKAGES);
 
-        // allow static imports if needed, for now none
+        // Block constructor calls to dangerous types (e.g. new java.io.File(...), new java.net.URL(...)).
+        // setDisallowedReceiversClasses does NOT cover ConstructorCallExpression, so we need a separate check.
+        //
+        // Additionally block method calls by name that are known Groovy GDK escape vectors.
+        // 'execute' is added by DefaultGroovyMethods to String/String[] at runtime and calls Runtime.exec()
+        // 'getClass' and '.class' allow bypassing the receiver checker by getting Class<?> dynamically.
+        final Set<String> blockedMethodNames = Set.of("execute", "getClass");
 
-        // Tokens - Block Threading, System, etc.
-        // Actually, token restriction is tricky. Better to restrict Types/Receivers.
+        secure.addExpressionCheckers(expr -> {
+            if (expr instanceof ConstructorCallExpression)
+            {
+                final String typeName = expr.getType().getName();
+                for (final String prefix : BLOCKED_CONSTRUCTOR_PREFIXES)
+                {
+                    if (typeName.startsWith(prefix))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (expr instanceof MethodCallExpression)
+            {
+                final String methodName = ((MethodCallExpression) expr).getMethodAsString();
+                if (methodName != null && blockedMethodNames.contains(methodName))
+                {
+                    return false;
+                }
+            }
+            else if (expr instanceof org.codehaus.groovy.ast.expr.PropertyExpression)
+            {
+                final String propertyName = ((org.codehaus.groovy.ast.expr.PropertyExpression) expr).getPropertyAsString();
+                if ("class".equals(propertyName))
+                {
+                    return false;
+                }
+            }
+            return true;
+        });
 
-        // Block dangerous classes via package restriction mechanism implies we whitelist expected types.
-        // But whitelisting types is very restrictive.
-        // Let's use checking of imports + receivers if possible, or simple Disallowed implementations.
+        // Block method calls where a dangerous class is the explicit receiver
+        // (e.g. Runtime.getRuntime().exec(...), System.exit(...))
+        secure.setDisallowedReceiversClasses(DISALLOWED_RECEIVERS_CLASSES);
 
         return secure;
     }
