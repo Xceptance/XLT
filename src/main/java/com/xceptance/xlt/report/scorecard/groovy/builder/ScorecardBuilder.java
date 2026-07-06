@@ -63,6 +63,9 @@ import groovy.lang.DelegatesTo;
  */
 public class ScorecardBuilder
 {
+    /** The scorecard configuration schema version */
+    private int version = 1;
+
     /** Builder for the selectors {} section */
     private final SelectorsBuilder selectorsBuilder = new SelectorsBuilder();
 
@@ -77,18 +80,13 @@ public class ScorecardBuilder
 
     /**
      * Sets the configuration version number.
-     * <p>
-     * Currently this value is consumed but not stored, as the Configuration handles versioning implicitly. Future
-     * versions may use this for backwards compatibility.
-     * </p>
      *
      * @param version
      *            the configuration schema version
      */
     public void version(int version)
     {
-        // Version is consumed for forward compatibility but not currently used.
-        // Future schema changes may require version-specific parsing logic.
+        this.version = version;
     }
 
     /**
@@ -172,7 +170,7 @@ public class ScorecardBuilder
      */
     public Configuration build() throws ValidationException
     {
-        final Configuration config = new Configuration();
+        final Configuration config = new Configuration(version);
 
         final SelectorDefinition[] selectorArr = selectorsBuilder.build();
         if (selectorArr != null)

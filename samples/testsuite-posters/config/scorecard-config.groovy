@@ -4,6 +4,9 @@
  * Equivalent configuration migrated from scorecard-config.json.
  */
 
+// The scorecard configuration schema version used.
+builder.version 2
+
 // Define categories and grades to dynamically generate the repetitive page rules
 def pages = ['homepage', 'catalog', 'cart', 'account', 'checkout', 'order']
 def grades = [
@@ -167,7 +170,7 @@ builder.rules {
         }
         messages {
             success 'All agents seem to be utilized well enough'
-            fail 'You might have too many '
+            fail 'You might have too many agents'
         }
     }
 
@@ -184,7 +187,6 @@ builder.rules {
         }
         messages {
             success 'F'
-            fail ''
         }
     }
 
@@ -230,7 +232,6 @@ builder.rules {
 
                 messages {
                     success grade.name
-                    fail ''
                 }
                 points grade.points
             }

@@ -152,7 +152,7 @@
       ],
       "messages": {
         "success": "All agents seem to be utilized well enough",
-        "fail": "You might have too many "
+        "fail": "You might have too many agents"
       },
       "points": 0
     },
@@ -1078,7 +1078,7 @@
       "checks": [
         {
           "selectorId": "transactionErrors",
-          "condition": "< 1.0 "
+          "condition": "< 1.0"
         }
       ],
       "messages": {

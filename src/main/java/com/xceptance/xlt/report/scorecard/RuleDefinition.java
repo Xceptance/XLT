@@ -289,7 +289,7 @@ public class RuleDefinition
         final int rulePoints = jsonObject.optInt("points");
 
         final String failsOnStr = StringUtils.trimToNull(jsonObject.optString("failsOn"));
-        final TestFailTrigger failsOn = EnumUtils.getEnumIgnoreCase(TestFailTrigger.class, failsOnStr);
+        final TestFailTrigger failsOn = EnumUtils.getEnumIgnoreCase(TestFailTrigger.class, failsOnStr, TestFailTrigger.NOTPASSED);
 
         final LinkedList<Check> checkList = new LinkedList<>();
         if (checks != null)

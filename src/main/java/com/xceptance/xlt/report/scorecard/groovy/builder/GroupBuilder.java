@@ -83,10 +83,9 @@ public class GroupBuilder
     private boolean failsTest = false;
 
     /**
-     * Defines when the group triggers a test failure. Default is PASSED (group causes failure when it passes). Can be set
-     * to NOTPASSED for groups that must pass.
+     * Defines when the group triggers a test failure. Default is NOTPASSED.
      */
-    private TestFailTrigger testFailTrigger = TestFailTrigger.PASSED;
+    private TestFailTrigger testFailTrigger = TestFailTrigger.NOTPASSED;
 
     /**
      * Evaluation mode determining how points are calculated. Valid values: allPassed, firstPassed, lastPassed
