@@ -65,6 +65,11 @@ public enum Status
         return this;
     }
 
+    /**
+     * Value converter for status strings. It takes special precautions to convert also the legacy string value
+     * "NOTPASSED" back to {@link Status#FAILED}. Needed only if older scorecard.xml files are ever read and parsed to
+     * Java objects.
+     */
     public static class StatusConverter implements SingleValueConverter
     {
         @Override
