@@ -200,15 +200,15 @@ public class GroovyEvaluator extends AbstractEvaluator
 
         String rating = null;
 
-        // check for manually active ratings first
-        final RatingDefinition activeRating = config.getRatings().stream().filter(r -> r.isActive() && r.isEnabled()).findFirst()
+        // check for manually forced ratings first
+        final RatingDefinition forcedRating = config.getRatings().stream().filter(r -> r.isForced() && r.isEnabled()).findFirst()
                                                     .orElse(null);
 
-        if (activeRating != null)
+        if (forcedRating != null)
         {
-            // manual rating selection - use the first active rating
-            rating = activeRating.getId();
-            testFailed = testFailed || activeRating.isFailsTest();
+            // manual rating selection - use the first forced rating
+            rating = forcedRating.getId();
+            testFailed = testFailed || forcedRating.isFailsTest();
             result.setPointsPercentage(null);  // Points percentage meaningless for manual
         }
         else

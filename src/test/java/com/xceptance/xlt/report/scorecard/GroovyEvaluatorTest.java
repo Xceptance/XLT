@@ -366,7 +366,7 @@ public class GroovyEvaluatorTest
     }
 
     @Test
-    public void testManualRatingActive() throws Exception
+    public void testManualRatingForced() throws Exception
     {
         final var groovy = """
             builder.selectors {
@@ -387,11 +387,11 @@ public class GroovyEvaluatorTest
             builder.ratings {
                 rating { id 'A'; value 100.0 }
                 rating { id 'B'; value 80.0 }
-                rating { id 'F'; value 0.0; active true; failsTest true }
+                rating { id 'F'; value 0.0; forced true; failsTest true }
             }
             """;
 
-        final var tempFile = Files.createTempFile("scorecard-active-rating", ".groovy").toFile();
+        final var tempFile = Files.createTempFile("scorecard-forced-rating", ".groovy").toFile();
         final var xmlFile = Files.createTempFile("dummy", ".xml").toFile();
         try
         {
@@ -403,7 +403,7 @@ public class GroovyEvaluatorTest
 
             final var scorecard = evaluator.evaluate(xmlFile);
 
-            // Despite perfect score (rule passes), rating should be 'F' because it's marked active
+            // Despite perfect score (rule passes), rating should be 'F' because it's marked forced
             Assert.assertEquals("F", scorecard.result.getRating());
             Assert.assertTrue(scorecard.result.isTestFailed());
             // Points percentage should be null for manual rating

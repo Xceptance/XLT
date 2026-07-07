@@ -175,13 +175,13 @@ public class Configuration
     }
 
     /**
-     * Checks if any rating is manually marked as active.
+     * Checks if any rating is manually marked as forced.
      *
-     * @return true if at least one rating has active=true
+     * @return true if at least one rating has forced=true
      */
-    public boolean hasActiveRating()
+    public boolean hasForcedRating()
     {
-        return ratings.values().stream().anyMatch(RatingDefinition::isActive);
+        return ratings.values().stream().anyMatch(RatingDefinition::isForced);
     }
 
     public int getVersion()

@@ -44,10 +44,10 @@ public class RatingDefinition
     private final boolean failsTest;
 
     @XStreamAsAttribute
-    private final boolean active;
+    private final boolean forced;
 
     public RatingDefinition(final String id, final String name, final String description, final double value, final boolean enabled,
-                            final boolean failsTest, final boolean active)
+                            final boolean failsTest, final boolean forced)
     {
         this.id = Objects.requireNonNull(id, "Rating ID must not be null");
         this.name = name;
@@ -55,7 +55,7 @@ public class RatingDefinition
         this.description = description;
         this.enabled = enabled;
         this.failsTest = failsTest;
-        this.active = active;
+        this.forced = forced;
     }
 
     public String getId()
@@ -89,13 +89,13 @@ public class RatingDefinition
     }
 
     /**
-     * Returns whether this rating is manually activated.
+     * Returns whether this rating is manually forced.
      *
      * @return true if this rating is manually selected, bypassing point-based evaluation
      */
-    public boolean isActive()
+    public boolean isForced()
     {
-        return active;
+        return forced;
     }
 
     static RatingDefinition fromJSON(final JSONObject jsonObject) throws ValidationException

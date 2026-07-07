@@ -38,11 +38,12 @@ public class GroovySecurityUtils
      * expressions, so both mechanisms are needed.
      * </p>
      */
-    private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = List.of("java.io.", "java.nio.", "java.net.", "java.lang.Runtime",
-                                                                             "java.lang.ProcessBuilder", "java.lang.Thread",
-                                                                             "java.lang.ClassLoader",
+    private static final List<String> BLOCKED_CONSTRUCTOR_PREFIXES = List.of("java.io.", "java.nio.", "java.net.",
                                                                              // Groovy scripting infrastructure — block GroovyShell inception
                                                                              "groovy.lang.", "org.codehaus.groovy.");
+
+    private static final Set<String> BLOCKED_CONSTRUCTOR_CLASSES = Set.of("java.lang.Runtime", "java.lang.ProcessBuilder",
+                                                                          "java.lang.Thread", "java.lang.ClassLoader");
 
     /**
      * The list of packages star-imports are allowed for.
@@ -111,6 +112,10 @@ public class GroovySecurityUtils
             if (expr instanceof ConstructorCallExpression)
             {
                 final String typeName = expr.getType().getName();
+                if (BLOCKED_CONSTRUCTOR_CLASSES.contains(typeName))
+                {
+                    return false;
+                }
                 for (final String prefix : BLOCKED_CONSTRUCTOR_PREFIXES)
                 {
                     if (typeName.startsWith(prefix))

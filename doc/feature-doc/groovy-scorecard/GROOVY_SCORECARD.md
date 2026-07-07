@@ -223,10 +223,20 @@ check {
 ```
 
 **Manual Rating Selection:**
+
+You can manually force a rating. This is especially useful for conditionally overriding the scorecard outcome when infrastructure limits are exceeded (for example, if the load generator agents were overloaded, rendering the performance measurements unreliable):
+
 ```groovy
+// Retrieve CPU utilization from agent statistics using XPath
+def maxCpuStr = xpath.get("max(//agents/agent/totalCpuUsage/max)")
+def maxCpu = maxCpuStr ? Double.parseDouble(maxCpuStr) : 0.0
+
+// Conditionally force the rating to 'F' if max CPU exceeded 90%
+def isOverloaded = maxCpu > 90.0
+
 builder.ratings {
     rating { id 'A'; value 100.0 }
-    rating { id 'F'; value 0.0; active true; failsTest true }  // Always force an F
+    rating { id 'F'; value 0.0; forced isOverloaded; failsTest true }
 }
 ```
 
@@ -348,4 +358,4 @@ builder.ratings {
   * `value (double)`: Maximum percentage for this rating.
   * `failsTest (boolean)`: If this rating is achieved, test fails.
   * `enabled (boolean)`: Default true.
-  * `active (boolean)`: Manually select this rating, bypassing point-based calculation. Default false.
+  * `forced (boolean)`: Manually select this rating, bypassing point-based calculation. Default false.
