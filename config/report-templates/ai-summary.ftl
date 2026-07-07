@@ -164,7 +164,8 @@ No errors recorded.
 <#if err.trace?has_content>
 <#assign traceText = v(err.trace)>
 <#if traceText?has_content && traceText != "-">
-- **Stack Trace**:
+
+### Stack Trace 
 ```
 ${(traceText?length gt 1000)?then(traceText?substring(0, 1000) + "...", traceText)}
 ```
