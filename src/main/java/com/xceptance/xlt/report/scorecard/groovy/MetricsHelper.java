@@ -1129,8 +1129,38 @@ public final class MetricsHelper
      * @param threshold the threshold value
      * @return the constructed XPath expression
      */
-    public final String agentCpuMeanHigh(final Number threshold)
+    public final String agentCountCpuMeanAbove(final Number threshold)
     {
         return "count(//agents/agent/totalCpuUsage/mean[number() > " + threshold + "])";
+    }
+
+    /**
+     * Counts the total number of agents.
+     * 
+     * @return the constructed XPath expression
+     */
+    public final String agentCount()
+    {
+        return "count(//agents/agent)";
+    }
+
+    /**
+     * Counts how many agents had transaction errors.
+     * 
+     * @return the constructed XPath expression
+     */
+    public final String agentCountWithErrors()
+    {
+        return "count(//agents/agent[transactionErrors > 0])";
+    }
+
+    /**
+     * Sums the total transaction errors across all agents.
+     * 
+     * @return the constructed XPath expression
+     */
+    public final String agentTransactionErrorsTotal()
+    {
+        return "/testreport/summary/agents/transactionErrors";
     }
 }

@@ -112,4 +112,14 @@ public class MetricsHelperTest
             }
         }
     }
+
+    @Test
+    public void testAgentHelpers()
+    {
+        Assert.assertEquals("max(//agents/agent/totalCpuUsage/max)", metrics.agentCpuMax());
+        Assert.assertEquals("count(//agents/agent/totalCpuUsage/mean[number() > 80])", metrics.agentCountCpuMeanAbove(80));
+        Assert.assertEquals("count(//agents/agent)", metrics.agentCount());
+        Assert.assertEquals("count(//agents/agent[transactionErrors > 0])", metrics.agentCountWithErrors());
+        Assert.assertEquals("/testreport/summary/agents/transactionErrors", metrics.agentTransactionErrorsTotal());
+    }
 }
