@@ -26,42 +26,42 @@ builder.selectors {
     // Get us the max of all P95 of homepage like requests
     selector {
         id 'homepageP95'
-        expression metrics.requestP95(label: 'homepage')
+        expression selectors.requestP95(label: 'homepage')
     }
     // Get us the max of all P99 of homepage like requests
     selector {
         id 'homepageP99'
-        expression metrics.requestP99(label: 'homepage')
+        expression selectors.requestP99(label: 'homepage')
     }
     // Get us the max of all P95 of catalog like requests
     selector {
         id 'catalogP95'
-        expression metrics.requestP95(label: 'catalog')
+        expression selectors.requestP95(label: 'catalog')
     }
     // Get us the max of all P99 of catalog like requests
     selector {
         id 'catalogP99'
-        expression metrics.requestP99(label: 'catalog')
+        expression selectors.requestP99(label: 'catalog')
     }
     // Get us the max of all P95 of account like requests
     selector {
         id 'accountP95'
-        expression metrics.requestP95(label: 'account')
+        expression selectors.requestP95(label: 'account')
     }
     // Get us the max of all P99 of account like requests
     selector {
         id 'accountP99'
-        expression metrics.requestP99(label: 'account')
+        expression selectors.requestP99(label: 'account')
     }
     // Get us the max of all P95 of cart like requests
     selector {
         id 'cartP95'
-        expression metrics.requestP95(label: 'cart')
+        expression selectors.requestP95(label: 'cart')
     }
     // Get us the max of all P99 of cart like requests
     selector {
         id 'cartP99'
-        expression metrics.requestP99(label: 'cart')
+        expression selectors.requestP99(label: 'cart')
     }
     // Get us the max of all P95 of checkout like requests and have enough samples to consider it.
     selector {
@@ -76,12 +76,12 @@ builder.selectors {
     // Get us the max of all P95 of order like requests
     selector {
         id 'orderP95'
-        expression metrics.requestP95(label: 'order')
+        expression selectors.requestP95(label: 'order')
     }
     // Get us the max of all P99 of order like requests
     selector {
         id 'orderP99'
-        expression metrics.requestP99(label: 'order')
+        expression selectors.requestP99(label: 'order')
     }
     // Get us the order count
     selector {
@@ -96,17 +96,17 @@ builder.selectors {
     // Get transaction error percentage
     selector {
         id 'transactionErrors'
-        expression metrics.globalErrorPercentage('transactions')
+        expression selectors.globalErrorPercentage('transactions')
     }
     // Get action errors
     selector {
         id 'actionErrors'
-        expression metrics.globalErrorPercentage('actions')
+        expression selectors.globalErrorPercentage('actions')
     }
     // Get requests errors
     selector {
         id 'requestErrors'
-        expression metrics.globalErrorPercentage('requests')
+        expression selectors.globalErrorPercentage('requests')
     }
 }
 

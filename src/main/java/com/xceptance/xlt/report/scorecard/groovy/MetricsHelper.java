@@ -16,7 +16,7 @@
 package com.xceptance.xlt.report.scorecard.groovy;
 
 /**
- * A helper class injected into the Groovy scorecard script as 'metrics'.
+ * A helper class injected into the Groovy scorecard script as 'selectors'.
  * It provides a fluent way to generate XPath selector strings for the most common
  * XLT test report metrics, avoiding the need for test engineers to write raw XPath.
  */

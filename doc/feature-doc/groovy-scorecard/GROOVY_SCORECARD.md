@@ -7,9 +7,9 @@ The Groovy Scorecard feature allows you to define complex, dynamic scorecard con
 When your `.groovy` scorecard script executes, it runs inside a secured sandbox with several pre-injected "bindings" (variables) ready for you to use:
 
 * `builder`: The core `ScorecardBuilder` used to define your rules, groups, and ratings.
-* `metrics`: A helper object that generates complex XPath strings for standard report metrics automatically.
+* `selectors`: A helper object that generates complex XPath strings for standard report metrics automatically.
 * `properties`: Access to your XLT test properties.
-* `xpath`: A tool to query the live `testreport.xml` data during script execution.
+* `data`: A tool to query the live `testreport.xml` data during script execution.
 * `log`: A logger for debugging your script.
 
 At the very end of your script, you must return the `builder` object so the engine can evaluate it.
@@ -35,8 +35,8 @@ builder.rules {
         points 10
         checks {
             check {
-                // Use the metrics helper to get the P95 for the Homepage
-                selector metrics.requestP95('^Homepage')
+                // Use the selectors helper to get the P95 for the Homepage
+                selector selectors.requestP95('^Homepage')
                 isLessThanOrEqualTo 500
             }
         }
@@ -79,7 +79,7 @@ builder.rules {
         points 5
         checks {
             check {
-                selector metrics.agentCpuMax()
+                selector selectors.agentCpuMax()
                 isLessThan 90
             }
         }
@@ -89,9 +89,9 @@ builder.rules {
 
 **Fluent Assertions:** You must use one of the following methods to evaluate the selector's value: `isLessThan(value)`, `isLessThanOrEqualTo(value)`, `isGreaterThan(value)`, `isGreaterThanOrEqualTo(value)`, `isEqualTo(value)`, `isNotEqualTo(value)`, or `matchesRegex(pattern)`.
 
-**The `metrics` Helper:** Writing raw XPath is tedious. The `metrics` object abstracts this away using named parameters:
-* `metrics.requestP95('^Homepage')` (legacy shorthand: matches by regex against the name)
-* `metrics.requestP95(name: '^Homepage')` (explicit regex match against name)
+**The `selectors` Helper:** Writing raw XPath is tedious. The `selectors` object abstracts this away using named parameters:
+* `selectors.requestP95('^Homepage')` (legacy shorthand: matches by regex against the name)
+* `selectors.requestP95(name: '^Homepage')` (explicit regex match against name)
 
 **Label Selection:**
 If your test run makes use of labels to group requests, you can use the built-in named parameters to match by label instead of by name regex:
@@ -100,24 +100,24 @@ This performs an exact match on the label property rather than a regex over the 
 
 **Excluding Elements:**
 You can compute metrics across all elements *except* those matching a specific regex by using the `excludeName` or `excludeLabel` parameters. This is useful for finding worst-case metrics excluding known outliers:
-*   `metrics.requestP95(excludeName: '^OrderSubmit')`
+*   `selectors.requestP95(excludeName: '^OrderSubmit')`
 
 You can freely combine these constraints:
-*   `metrics.requestP95(name: '^Homepage', excludeLabel: 'cached')`
+*   `selectors.requestP95(name: '^Homepage', excludeLabel: 'cached')`
 
 Similarly, these helpers are available for **transactions**, **actions** and **customTimers**:
 *   `transactionP95(name: '...Regex')`, `transactionP95(label: '...Label')`, `transactionCount(label: '...')`, `actionErrorPercentage(label: '...')`, etc.
 
 **Global Summaries & Errors:**
 You can retrieve pre-computed global totals and specialized error metrics directly:
-*   `metrics.globalCountPerHour('transactions')` (or 'requests', 'actions')
-*   `metrics.globalErrorPercentage('requests')`
-*   `metrics.httpErrorCount('5..')` (Counts all HTTP 500–599 errors by analyzing `//responseCodes/responseCode`)
-*   `metrics.httpErrorCount('404|400')` (Counts specific HTTP errors)
+*   `selectors.globalCountPerHour('transactions')` (or 'requests', 'actions')
+*   `selectors.globalErrorPercentage('requests')`
+*   `selectors.httpErrorCount('5..')` (Counts all HTTP 500–599 errors by analyzing `//responseCodes/responseCode`)
+*   `selectors.httpErrorCount('404|400')` (Counts specific HTTP errors)
 
 **Per-Hour Calculation Wrapper:**
-If you need a per-hour rate for an absolute metric (like HTTP errors), wrap it with `metrics.perHour(...)`:
-*   `metrics.perHour(metrics.httpErrorCount('5..'))` (Yields the number of 5xx errors per hour of test duration)
+If you need a per-hour rate for an absolute metric (like HTTP errors), wrap it with `selectors.perHour(...)`:
+*   `selectors.perHour(selectors.httpErrorCount('5..'))` (Yields the number of 5xx errors per hour of test duration)
 
 ### 3.2 Groups
 Groups logically organize your rules. A group calculates its achieved points based on its `mode`:
@@ -158,7 +158,7 @@ If you use the same selector across multiple rules, you can define it once in th
 builder.selectors {
     selector {
         id 'homepage_p95'
-        expression metrics.requestP95('^Homepage')
+        expression selectors.requestP95('^Homepage')
     }
 }
 
@@ -176,14 +176,14 @@ builder.rules {
 ```
 
 ### 4.2 Dynamic Rules via XPath & Properties
-Because this is Groovy, you can use loops and live data to generate rules dynamically. The `xpath` binding allows you to query the `testreport.xml` while the configuration is being built!
+Because this is Groovy, you can use loops and live data to generate rules dynamically. The `data` binding allows you to query the `testreport.xml` while the configuration is being built!
 
 ```groovy
 // Read a property from project.properties
 def defaultLimit = properties.getInt('scorecard.limit.default', 800)
 
 // Get a list of all request names that actually occurred in this specific test
-def allRequests = xpath.getList('//requests/request/name')
+def allRequests = data.getList('//requests/request/name')
 
 builder.rules {
     allRequests.each { reqName ->
@@ -191,7 +191,7 @@ builder.rules {
             id "req_${reqName}"
             checks {
                 check {
-                    selector metrics.requestP95(reqName)
+                    selector selectors.requestP95(reqName)
                     isLessThan defaultLimit
                 }
             }
@@ -205,7 +205,7 @@ You can optionally format the raw values retrieved by the selector using Java st
 
 ```groovy
 check {
-    selector metrics.requestMean('^Homepage')
+    selector selectors.requestMean('^Homepage')
     isLessThan 1000
     formatter '%,.2f ms' // Formats 1234.5678 as 1,234.57 ms in the report
 }
@@ -228,7 +228,7 @@ You can manually force a rating. This is especially useful for conditionally ove
 
 ```groovy
 // Retrieve CPU utilization from agent statistics using XPath
-def maxCpuStr = xpath.get("max(//agents/agent/totalCpuUsage/max)")
+def maxCpuStr = data.get("max(//agents/agent/totalCpuUsage/max)")
 def maxCpu = maxCpuStr ? Double.parseDouble(maxCpuStr) : 0.0
 
 // Conditionally force the rating to 'F' if max CPU exceeded 90%
@@ -265,7 +265,7 @@ This example demonstrates how to dynamically fetch critical requests from the re
 
 ```groovy
 // 1. Fetch live data and properties
-def criticalRequests = xpath.getList("//requests/request[importance='high']/name")
+def criticalRequests = data.getList("//requests/request[importance='high']/name")
 def defaultLimit = properties.getInt('scorecard.limit.default', 800)
 
 log.info("Found ${criticalRequests.size()} critical requests to evaluate.")
@@ -280,7 +280,7 @@ builder.rules {
             failsTest true
             checks {
                 check {
-                    selector metrics.requestP95(reqName)
+                    selector selectors.requestP95(reqName)
                     isLessThan defaultLimit
                 }
             }
@@ -313,7 +313,7 @@ builder.ratings {
 ### `selectors`
 * `selector { ... }`
   * `id (String)`: Unique identifier.
-  * `expression (String)`: The XPath expression (e.g., `metrics.requestP95('...')`).
+  * `expression (String)`: The XPath expression (e.g., `selectors.requestP95('...')`).
 
 ### `rules`
 * `rule { ... }`

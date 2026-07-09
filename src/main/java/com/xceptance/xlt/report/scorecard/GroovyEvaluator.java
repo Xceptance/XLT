@@ -97,10 +97,10 @@ public class GroovyEvaluator extends AbstractEvaluator
         final ScorecardLogger logger = new ScorecardLogger();
 
         binding = new Binding();
-        binding.setVariable("xpath", new ScorecardData(document, compiler));
+        binding.setVariable("data", new ScorecardData(document, compiler));
         binding.setVariable("properties", new ScorecardProperties());
         binding.setVariable("builder", builder);
-        binding.setVariable("metrics", new MetricsHelper());
+        binding.setVariable("selectors", new MetricsHelper());
         binding.setVariable("log", logger);
 
         final GroovyShell shell = new GroovyShell(binding, config);
