@@ -24,7 +24,7 @@ import java.util.Map;
  * It provides a fluent way to generate XPath selector strings for the most common
  * XLT test report metrics, avoiding the need for test engineers to write raw XPath.
  */
-public final class MetricsHelper
+public final class SelectorsHelper
 {
     /**
      * Escapes single quotes in the regex to prevent XPath injection/syntax errors.

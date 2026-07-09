@@ -27,7 +27,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 import com.xceptance.xlt.report.scorecard.Scorecard.LogEntry;
 import com.xceptance.xlt.report.scorecard.groovy.GroovySecurityUtils;
-import com.xceptance.xlt.report.scorecard.groovy.MetricsHelper;
+import com.xceptance.xlt.report.scorecard.groovy.SelectorsHelper;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardData;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardLogger;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardProperties;
@@ -100,7 +100,7 @@ public class GroovyEvaluator extends AbstractEvaluator
         binding.setVariable("data", new ScorecardData(document, compiler));
         binding.setVariable("properties", new ScorecardProperties());
         binding.setVariable("builder", builder);
-        binding.setVariable("selectors", new MetricsHelper());
+        binding.setVariable("selectors", new SelectorsHelper());
         binding.setVariable("log", logger);
 
         final GroovyShell shell = new GroovyShell(binding, config);

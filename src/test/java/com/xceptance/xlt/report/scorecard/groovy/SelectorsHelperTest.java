@@ -22,9 +22,9 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class MetricsHelperTest
+public class SelectorsHelperTest
 {
-    private final MetricsHelper metrics = new MetricsHelper();
+    private final SelectorsHelper metrics = new SelectorsHelper();
 
     @Test
     public void testGlobalCountPerHour()
@@ -94,7 +94,7 @@ public class MetricsHelperTest
     {
         // To achieve high coverage without massive boilerplate, we dynamically invoke
         // all methods that take a single String regex (e.g., requestP95(String), actionMean(String)).
-        Method[] methods = MetricsHelper.class.getDeclaredMethods();
+        Method[] methods = SelectorsHelper.class.getDeclaredMethods();
         for (Method method : methods)
         {
             String name = method.getName();

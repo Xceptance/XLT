@@ -18,7 +18,7 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 | **Tiered Grading** | ✅ `firstPassed` mode (A+→F) | ❌ Binary pass/fail | ❌ Binary pass/fail | ⚠️ Warn + Fail only | ❌ Binary | ❌ Binary | ❌ Binary |
 | **Weighted Scoring** | ✅ Points per rule, percentage rating | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **Group Modes** | ✅ `allPassed`, `firstPassed`, `lastPassed` | ❌ Flat list | ❌ Flat list | ❌ Flat list | ❌ Flat list | ❌ Per-transaction SLAs | ❌ |
-| **Helper API** | ✅ `metrics.*` (typed, composable) | ✅ Fluent DSL | ✅ Metric selectors | ⚠️ Fixed KPI names | ❌ Raw strings | ❌ GUI picks | ❌ Raw stats |
+| **Helper API** | ✅ `selectors.*` (typed, composable) | ✅ Fluent DSL | ✅ Metric selectors | ⚠️ Fixed KPI names | ❌ Raw strings | ❌ GUI picks | ❌ Raw stats |
 | **Abort on Fail** | ❌ Post-run only | ❌ Post-run only | ✅ `abortOnFail` | ✅ Real-time alerts | ❌ | ⚠️ Interval SLAs | ❌ |
 | **CI/CD Exit Code** | ✅ `failsTest` → non-zero exit | ✅ Automatic | ✅ Automatic | ✅ Automatic | ⚠️ Requires parsing | ✅ SLA status | ⚠️ Manual `sys.exit()` |
 | **HTML Report** | ✅ Embedded scorecard section | ✅ Assertion summary | ✅ Threshold summary | ✅ SLA tab | ❌ Requires plugins | ✅ Summary report | ❌ |
@@ -36,7 +36,7 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 
 **Strengths:**
 - The **tiered grading system** (`firstPassed` mode with A+ → F) is genuinely unique in the load testing space. No competitor offers this. It transforms a binary "did we pass?" into a nuanced "how well did we perform?", which is exactly how performance budgets work in practice.
-- The `excludeName` filter is a real power feature. Every project has that one slow checkout endpoint that you *know* is slow and don't want polluting your "all requests P95" gate. Being able to write `metrics.requestP95(excludeName: '^PlaceOrder')` instead of a 200-character XPath is excellent.
+- The `excludeName` filter is a real power feature. Every project has that one slow checkout endpoint that you *know* is slow and don't want polluting your "all requests P95" gate. Being able to write `selectors.requestP95(excludeName: '^PlaceOrder')` instead of a 200-character XPath is excellent.
 - The `httpErrorCount('5..')` regex approach is elegant. Being able to write `httpErrorCount('50[23]')` to catch only Bad Gateway and Service Unavailable is very precise.
 
 **Concerns:**
@@ -71,11 +71,11 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 **Overall Rating: ⭐⭐⭐⭐⭐ (5/5)**
 
 **Strengths:**
-- The `metrics.*` helper API is the crown jewel. Compare the developer experience:
+- The `selectors.*` helper API is the crown jewel. Compare the developer experience:
 
   ```groovy
   // XLT Scorecard (today)
-  expression metrics.requestP95(excludeName: '^PlaceOrder')
+  expression selectors.requestP95(excludeName: '^PlaceOrder')
 
   // What it would look like without the helper
   expression "max(//requests/request[not(matches(name, '^PlaceOrder'))]/percentiles/p95)"
@@ -88,8 +88,8 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 - The `formatter` property on checks (`'%,.0f tx/h'`) is a thoughtful touch for report readability.
 
 **Concerns:**
-- **IDE support.** There's no Groovy LSP completion for the DSL methods. The `metrics.*` methods won't autocomplete in IntelliJ unless the user adds the XLT JAR to their IDE classpath. A `.gdsl` descriptor file would fix this.
-- **Error messages on typos.** If I write `metrics.requestP95(exludeName: '^PlaceOrder')` (typo in `excludeName`), the map-based API silently ignores the unknown key and throws "Must provide at least one parameter." The error should say which keys are valid.
+- **IDE support.** There's no Groovy LSP completion for the DSL methods. The `selectors.*` methods won't autocomplete in IntelliJ unless the user adds the XLT JAR to their IDE classpath. A `.gdsl` descriptor file would fix this.
+- **Error messages on typos.** If I write `selectors.requestP95(exludeName: '^PlaceOrder')` (typo in `excludeName`), the map-based API silently ignores the unknown key and throws "Must provide at least one parameter." The error should say which keys are valid.
 
 **Recommendation:** Ship a `.gdsl` file for IntelliJ autocompletion and validate map keys to produce helpful error messages on typos.
 
@@ -125,8 +125,8 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 
 **Strengths:**
 - **Highly structured DSL.** The `builder.selectors { ... }`, `builder.rules { ... }`, `builder.groups { ... }`, `builder.ratings { ... }` pattern is extremely predictable. An AI agent can generate scorecards from natural language requirements with high reliability because the structure is rigid.
-- **`metrics.*` methods are self-documenting.** An AI doesn't need to know XPath internals to generate `metrics.requestP95(excludeName: '^PlaceOrder')`. The method name IS the documentation.
-- **Composability.** The `perHour()` wrapper means I can compose arbitrary expressions without needing to understand the underlying XML structure. I can generate `metrics.perHour(metrics.httpErrorCount('5..'))` from the prompt "give me 5xx errors per hour."
+- **`selectors.*` methods are self-documenting.** An AI doesn't need to know XPath internals to generate `selectors.requestP95(excludeName: '^PlaceOrder')`. The method name IS the documentation.
+- **Composability.** The `perHour()` wrapper means I can compose arbitrary expressions without needing to understand the underlying XML structure. I can generate `selectors.perHour(selectors.httpErrorCount('5..'))` from the prompt "give me 5xx errors per hour."
 - **Map-based parameters are LLM-friendly.** Named parameters like `name:`, `excludeName:`, `label:` are much easier for an LLM to generate correctly than positional arguments or XPath fragments.
 
 **Concerns:**
@@ -142,16 +142,16 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 **Overall Rating: ⭐⭐⭐⭐ (4/5)**
 
 **Strengths:**
-- **Clean separation of concerns.** The `MetricsHelper` generates XPath strings; the `Evaluator` executes them. This means the helper is purely functional and easily testable (as proven by the reflection-based test achieving 65% coverage).
+- **Clean separation of concerns.** The `SelectorsHelper` generates XPath strings; the `Evaluator` executes them. This means the helper is purely functional and easily testable (as proven by the reflection-based test achieving 65% coverage).
 - **Backward compatibility.** Supporting YAML, JSON, and Groovy simultaneously is well-architected. The Groovy DSL doesn't break existing users.
 - **The `aggregateValue` engine** with its condition builder pattern is extensible. Adding new filter types (e.g., `minCount:`, `maxErrors:`) only requires adding a few lines to the condition builder.
 
 **Concerns:**
-- **XPath 2.0 dependency.** The entire metrics engine is built on XPath 2.0 (`matches()`, `replace()`). This couples the scorecard tightly to the XML report format. If XLT ever moves to a different report format (JSON, Parquet, database), the entire `MetricsHelper` needs rewriting.
+- **XPath 2.0 dependency.** The entire metrics engine is built on XPath 2.0 (`matches()`, `replace()`). This couples the scorecard tightly to the XML report format. If XLT ever moves to a different report format (JSON, Parquet, database), the entire `SelectorsHelper` needs rewriting.
 - **No caching of XPath evaluations.** If a scorecard defines 50 selectors, each one triggers a fresh XPath evaluation against the full XML document. For very large reports (100k+ requests), this could be slow.
 - **`escapeRegex` scope.** The helper escapes user regex for XPath safety, but it's unclear if all injection vectors are covered. A malicious or malformed regex in a Groovy config could potentially cause XPath injection.
 
-**Recommendation:** Consider an abstraction layer between the `MetricsHelper` and the XML evaluation engine, so the helper generates query descriptors rather than raw XPath strings. This would make format migration feasible.
+**Recommendation:** Consider an abstraction layer between the `SelectorsHelper` and the XML evaluation engine, so the helper generates query descriptors rather than raw XPath strings. This would make format migration feasible.
 
 ---
 
@@ -160,20 +160,20 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 **Overall Rating: ⭐⭐⭐⭐ (4/5)**
 
 **Strengths:**
-- **Immediate productivity.** As someone who already knows XLT's transaction/request naming conventions, the `metrics.*` API feels like it was built for me. I can write `metrics.transactionCount('^TOrder')` without thinking about XML structure. The cognitive load to create a basic scorecard is near zero.
+- **Immediate productivity.** As someone who already knows XLT's transaction/request naming conventions, the `selectors.*` API feels like it was built for me. I can write `selectors.transactionCount('^TOrder')` without thinking about XML structure. The cognitive load to create a basic scorecard is near zero.
 - **Variables and constants at the top.** The pattern of defining `TX_ORDER`, `REQ_ORDER_SUBMIT`, and `P95_LIMIT` as variables at the top of the file is a huge win for maintainability. When a test suite renames transactions (e.g., `TOrder` → `TGuestOrder`), I change one line, not twenty.
 - **The quality-gates example is copy-paste ready.** For 90% of my projects, I can take `scorecard-quality-gates.groovy`, change three regex patterns and two threshold numbers, and I'm done. That's exactly the right level of effort for a production scorecard.
 - **`failsTest true` on every rule is the right default for gates.** In my experience, the most common use case is hard pass/fail, not grading. The quality-gates example models this perfectly.
 
 **Concerns:**
-- **Discovery of available `metrics.*` methods.** There's no quick-reference card. I know `requestP95()` exists, but does `requestP99_9()` exist? What about `transactionCountPerHour()`? I find myself reading `MetricsHelper.java` source code to discover what's available. A cheat sheet in `GROOVY_SCORECARD.md` listing every method signature would save me time.
-- **The `selector` → `selectorId` indirection is verbose for simple cases.** For a quality-gate scorecard where every selector is used exactly once, having to define it in `selectors {}` and then reference it by ID in `rules {}` feels like unnecessary ceremony. An inline variant like `check { selector metrics.requestP95(...); isLessThan 500 }` would cut the file size in half for simple scorecards.
+- **Discovery of available `selectors.*` methods.** There's no quick-reference card. I know `requestP95()` exists, but does `requestP99_9()` exist? What about `transactionCountPerHour()`? I find myself reading `SelectorsHelper.java` source code to discover what's available. A cheat sheet in `GROOVY_SCORECARD.md` listing every method signature would save me time.
+- **The `selector` → `selectorId` indirection is verbose for simple cases.** For a quality-gate scorecard where every selector is used exactly once, having to define it in `selectors {}` and then reference it by ID in `rules {}` feels like unnecessary ceremony. An inline variant like `check { selector selectors.requestP95(...); isLessThan 500 }` or similar. would cut the file size in half for simple scorecards.
 - **`globalCountPerHour('transactions')` — magic string.** The parameter `'transactions'` is a raw string that maps to an XML element name. If I misspell it as `'transaction'` (singular), I get a silent `NaN` or 0 instead of a helpful error. This has bitten me before with XPath-based APIs.
 - **Where do I put the scorecard file?** The property-based activation (`com.xceptance.xlt.scorecard.config`) works, but the path resolution rules are unclear. Is it relative to the config directory? The project root? An absolute path? I've had colleagues waste time debugging "file not found" errors because of this ambiguity.
 - **No way to test locally.** After writing a scorecard, I can only validate it by running a full report generation against a real `testreport.xml`. There's no lightweight `xlt-scorecard-check my-config.groovy sample-report.xml` CLI tool. For iterating on a config, I have to wait for the full report pipeline, which is slow.
 
 **Wish List:**
-1. **Method cheat sheet** in the documentation — every `metrics.*` method with signature and example output
+1. **Method cheat sheet** in the documentation — every `selectors.*` method with signature and example output
 2. **Inline selector shorthand** for simple one-shot rules
 3. **Enum or constants** for `globalCountPerHour()` / `globalErrorPercentage()` type parameters instead of magic strings
 4. **Standalone validation CLI** — parse and dry-run a scorecard against a sample report without the full XLT report pipeline
@@ -187,7 +187,7 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 |:---|:---|:---|
 | **Performance Engineer** | ⭐⭐⭐⭐½ | Tiered grading is unique; needs trend comparison and abort-on-fail |
 | **DevOps/CI-CD** | ⭐⭐⭐⭐ | `failsTest` is clean; needs structured JSON/JUnit output |
-| **Developer Experience** | ⭐⭐⭐⭐⭐ | `metrics.*` API is best-in-class; IDE completion would perfect it |
+| **Developer Experience** | ⭐⭐⭐⭐⭐ | `selectors.*` API is best-in-class; IDE completion would perfect it |
 | **Product Manager** | ⭐⭐⭐⭐ | Strong differentiator; needs trend visualization |
 | **AI Agent** | ⭐⭐⭐⭐⭐ | Highly structured and composable; needs validation mode |
 | **Framework Architect** | ⭐⭐⭐⭐ | Clean design; XPath coupling is a long-term risk |
@@ -197,7 +197,7 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 1. **Weighted, tiered scoring** — no competitor has this
 2. **Exclusion filters** (`excludeName`, `excludeLabel`) — no competitor has this
 3. **Programmable config** with loops, variables, and closures — only Gatling (Scala) and k6 (JS) come close, but neither has the scoring model
-4. **`metrics.*` helper API** — abstracts XPath completely; the cleanest helper API in the space
+4. **`selectors.*` helper API** — abstracts XPath completely; the cleanest helper API in the space
 
 ### What XLT Should Consider Adding
 1. **Real-time abort** (`abortOnFail`) for long-running tests
@@ -205,4 +205,4 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 3. **JUnit XML / structured JSON output** for CI/CD dashboards
 4. **IntelliJ `.gdsl` file** for IDE autocompletion
 5. **Config validation mode** (`--validate-only`) for pre-flight checks
-6. **Map key validation** in `MetricsHelper` to catch typos like `exludeName`
+6. **Map key validation** in `SelectorsHelper` to catch typos like `exludeName`

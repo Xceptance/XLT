@@ -119,6 +119,14 @@ You can retrieve pre-computed global totals and specialized error metrics direct
 If you need a per-hour rate for an absolute metric (like HTTP errors), wrap it with `selectors.perHour(...)`:
 *   `selectors.perHour(selectors.httpErrorCount('5..'))` (Yields the number of 5xx errors per hour of test duration)
 
+**Agent Helpers:**
+You can retrieve CPU and error metrics for the load generator agents:
+*   `selectors.agentCpuMax()` (XPath expression for the maximum CPU usage across all agents)
+*   `selectors.agentCountCpuMeanAbove(threshold)` (XPath expression counting how many agents had a mean CPU usage above the threshold)
+*   `selectors.agentCount()` (XPath expression counting the total number of agents used)
+*   `selectors.agentCountWithErrors()` (XPath expression counting how many agents had transaction errors)
+*   `selectors.agentTransactionErrorsTotal()` (XPath expression for the pre-computed total of transaction errors across all agents)
+
 ### 3.2 Groups
 Groups logically organize your rules. A group calculates its achieved points based on its `mode`:
 * `allPassed`: The standard mode. The group's achieved points are the sum of all passed rules. The group's total achievable points are the sum of all rules.
