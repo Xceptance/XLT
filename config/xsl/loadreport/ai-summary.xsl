@@ -32,6 +32,7 @@ version: "<xsl:value-of select="configuration/version/version" />"
 
         </xsl:if>
 
+        <!-- Project -->
         <xsl:if test="configuration/projectName != ''">
 # Project
 
@@ -41,6 +42,7 @@ name: "<xsl:value-of select="configuration/projectName" />"
 
         </xsl:if>
 
+        <!-- Comments -->
         <xsl:if test="configuration/comments/string">
 # Comments
 
@@ -50,12 +52,13 @@ name: "<xsl:value-of select="configuration/projectName" />"
 
         </xsl:if>
 
-        <xsl:if test="configuration/testCases/testCase">
+        <!-- Load Profile -->
+        <xsl:if test="configuration/loadProfile/testCase">
 # Load Profile
 
 | Test Case | Users | Iterations | Measurement [s] | Ramp-Up [s] | Shutdown [s] |
 | --- | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="configuration/testCases/testCase">| <xsl:choose><xsl:when test="userName != ''"><xsl:value-of select="userName" /></xsl:when><xsl:otherwise><xsl:value-of select="testCaseClassName" /></xsl:otherwise></xsl:choose> | <xsl:value-of select="numberOfUsers" /> | <xsl:value-of select="numberOfIterations" /> | <xsl:value-of select="measurementPeriod" /> | <xsl:value-of select="rampUpPeriod" /> | <xsl:value-of select="shutdownPeriod" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+<xsl:for-each select="configuration/loadProfile/testCase">| <xsl:choose><xsl:when test="userName != ''"><xsl:value-of select="userName" /></xsl:when><xsl:otherwise><xsl:value-of select="testCaseClassName" /></xsl:otherwise></xsl:choose> | <xsl:value-of select="numberOfUsers" /> | <xsl:value-of select="numberOfIterations" /> | <xsl:value-of select="measurementPeriod" /> | <xsl:value-of select="rampUpPeriod" /> | <xsl:value-of select="shutdownPeriod" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
         </xsl:if>
 
         <!-- Transactions -->
@@ -111,6 +114,7 @@ name: "<xsl:value-of select="configuration/projectName" />"
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 <xsl:for-each select="customValues/*">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="standardDeviation" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
         </xsl:if>
+
         <!-- Errors -->
 # Errors
         <xsl:choose>

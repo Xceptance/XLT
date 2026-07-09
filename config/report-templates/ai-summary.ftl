@@ -36,6 +36,7 @@ version: "${v(cfg.version[0].version)}"
 ```
 
 </#if>
+<#-- ===== Project ===== -->
 <#if cfg.projectName?has_content>
 <#assign pn = v(cfg.projectName)>
 <#if pn != "">
@@ -46,6 +47,7 @@ name: "${pn}"
 ```
 
 </#if>
+<#-- ===== Comments ===== -->
 </#if>
 <#if cfg.comments?has_content && cfg.comments[0].string?has_content>
 # Comments
@@ -55,12 +57,13 @@ name: "${pn}"
 </#list>
 
 </#if>
-<#if cfg.testCases?has_content && cfg.testCases[0].testCase?has_content>
+<#-- ===== Load Profile ===== -->
+<#if cfg.loadProfile?has_content && cfg.loadProfile[0].testCase?has_content>
 # Load Profile
 
 | Test Case | Users | Iterations | Measurement [s] | Ramp-Up [s] | Shutdown [s] |
 | --- | ---: | ---: | ---: | ---: | ---: |
-<#list cfg.testCases[0].testCase as tc>
+<#list cfg.loadProfile[0].testCase as tc>
 | ${v(tc.userName!tc.testCaseClassName)} | ${v(tc.numberOfUsers)} | ${v(tc.numberOfIterations)} | ${v(tc.measurementPeriod)} | ${v(tc.rampUpPeriod)} | ${v(tc.shutdownPeriod)} |
 </#list>
 
