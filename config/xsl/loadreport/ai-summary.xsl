@@ -1,250 +1,172 @@
-<?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="text" encoding="UTF-8" />
+    <xsl:strip-space elements="*" />
 
-<xsl:output method="text" 
-            omit-xml-declaration="yes"
-            encoding="UTF-8"
-             />
-
-<xsl:strip-space elements="*"/>
-
-<xsl:template name="timer-table">
-<xsl:param name="rootNode"/>
-| Name | Count | Count/s | Errors | Error% | Min | Max | Mean | Median | Dev |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="$rootNode/*">| <xsl:value-of select="name"/> | <xsl:value-of select="count"/> | <xsl:value-of select="countPerSecond"/> | <xsl:value-of select="errors"/> | <xsl:value-of select="errorPercentage"/> | <xsl:value-of select="min"/> | <xsl:value-of select="max"/> | <xsl:value-of select="mean"/> | <xsl:value-of select="median"/> | <xsl:value-of select="deviation"/> |
-</xsl:for-each>
-</xsl:template>
-
-
-
-<xsl:template match="/testreport">
-
-<xsl:comment>
+    <!--
     AI Summary Template — generates ai-summary.md
     Hybrid YAML+Markdown format optimized for LLM token efficiency.
-</xsl:comment>
-
-
-<xsl:comment>===== Test Metadata =====</xsl:comment>
-
+    -->
+    <xsl:template match="/testreport">
+        <xsl:if test="general">
 # Test Metadata
 
 ```yaml
-startTime: <xsl:value-of select="general/startTime"/>
-endTime: <xsl:value-of select="general/startTime"/>
-duration: <xsl:value-of select="general/duration"/>
-bytesSent: <xsl:value-of select="general/bytesSent"/>
-bytesReceived: <xsl:value-of select="general/bytesReceived"/>
-hits: <xsl:value-of select="general/hits"/>
+startTime: "<xsl:value-of select="general/startTime" />"
+endTime: "<xsl:value-of select="general/endTime" />"
+duration: <xsl:value-of select="general/duration" />
+bytesSent: <xsl:value-of select="general/bytesSent" />
+bytesReceived: <xsl:value-of select="general/bytesReceived" />
+hits: <xsl:value-of select="general/hits" />
 ```
+        </xsl:if>
 
-<xsl:comment>===== Configuration =====</xsl:comment>
-
+        <!-- Configuration -->
+        <xsl:if test="configuration/version">
 # XLT Version
 
 ```yaml
-product: <xsl:value-of select="configuration/version/productName"/>
-version: <xsl:value-of select="configuration/version/version"/>
+product: "<xsl:value-of select="configuration/version/productName" />"
+version: "<xsl:value-of select="configuration/version/version" />"
 ```
+        </xsl:if>
 
-<xsl:comment>===== Project =====</xsl:comment>
-
-<xsl:if test="configuration/projectName">
+        <!-- Project -->
+        <xsl:if test="configuration/projectName != ''">
 # Project
 
 ```yaml
-name: <xsl:value-of select="configuration/projectName"/>
+name: "<xsl:value-of select="configuration/projectName" />"
 ```
-</xsl:if>
+        </xsl:if>
 
-
-<xsl:comment>===== Comments =====</xsl:comment>
-
-<xsl:if test="configuration/comments/string">
+        <!-- Comments -->
+        <xsl:if test="configuration/comments/string">
 # Comments
+            <xsl:for-each select="configuration/comments/string">
+- <xsl:value-of select="." />
+            </xsl:for-each>
+        </xsl:if>
 
-<xsl:for-each select="configuration/comments/string">- <xsl:value-of select="."/>
-</xsl:for-each>
-</xsl:if>
-
-
-<xsl:comment>===== Load Profile =====</xsl:comment>
-
-<xsl:if test="configuration/loadProfile/testCase">
+        <!-- Load Profile -->
+        <xsl:if test="configuration/loadProfile/testCase">
 # Load Profile
 
 | Test Case | Users | Iterations | Measurement [s] | Ramp-Up [s] | Shutdown [s] |
 | --- | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="configuration/loadProfile/testCase">| <xsl:value-of select="userName"/> | <xsl:value-of select="numberOfUsers"/> | <xsl:value-of select="numberOfIterations"/> | <xsl:value-of select="measurementPeriod"/> | <xsl:value-of select="measurementPeriod"/> | <xsl:value-of select="shutdownPeriod"/> |
-</xsl:for-each>
-</xsl:if>
+<xsl:for-each select="configuration/loadProfile/testCase">| <xsl:choose><xsl:when test="userName != ''"><xsl:value-of select="userName" /></xsl:when><xsl:otherwise><xsl:value-of select="testCaseClassName" /></xsl:otherwise></xsl:choose> | <xsl:value-of select="numberOfUsers" /> | <xsl:value-of select="numberOfIterations" /> | <xsl:value-of select="measurementPeriod" /> | <xsl:value-of select="rampUpPeriod" /> | <xsl:value-of select="shutdownPeriod" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        </xsl:if>
 
-
-<xsl:comment>===== Transactions =====</xsl:comment>
-
-<xsl:if test="transactions/*">
+        <!-- Transactions -->
+        <xsl:if test="transactions/*">
 # Transactions
 
 <xsl:call-template name="timer-table">
-    <xsl:with-param name="rootNode" select="transactions"/>
+    <xsl:with-param name="elements" select="transactions/*" />
 </xsl:call-template>
-</xsl:if>
+        </xsl:if>
 
-
-<xsl:comment>===== Actions =====</xsl:comment>
-
-<xsl:if test="actions/*">
+        <!-- Actions -->
+        <xsl:if test="actions/*">
 # Actions
 
 <xsl:call-template name="timer-table">
-    <xsl:with-param name="rootNode" select="actions"/>
+    <xsl:with-param name="elements" select="actions/*" />
 </xsl:call-template>
-</xsl:if>
+        </xsl:if>
 
-<xsl:comment>===== Requests =====</xsl:comment>
-
-<xsl:if test="requests/*">
+        <!-- Requests -->
+        <xsl:if test="requests/*">
 # Requests
 
-| Name | Count | Count/s | Errors | Error% | Min | Max | Mean | Median | Dev | DNS | Connect | Send | ServerBusy | Receive | TTFB | BytesSent | BytesRecv |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="requests/request">
-<xsl:text>| </xsl:text>
-<xsl:value-of select="name"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="count"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="countPerSecond"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="errors"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="errorPercentage"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="min"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="max"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="median"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="deviation"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="dnsTime/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="connectTime/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="sendTime/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="serverBusyTime/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="receiveTime/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="timeToFirstBytes/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="bytesSent/mean"/>
-<xsl:text> | </xsl:text>
-<xsl:value-of select="bytesReceived/mean"/>
-<xsl:text> |&#xa;</xsl:text>
-</xsl:for-each>
-</xsl:if>
+| Name | Count | Count/s | Errors | Error% | Min | Max | Mean | Median | Dev | <xsl:for-each select="requests/*[1]/percentiles/*">P<xsl:value-of select="substring-after(name(), 'p')" /> | </xsl:for-each>DNS | Connect | Send | ServerBusy | Receive | TTFB | BytesSent | BytesRecv |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | <xsl:for-each select="requests/*[1]/percentiles/*">---: | </xsl:for-each>---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+<xsl:for-each select="requests/*">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="errors" /> | <xsl:value-of select="errorPercentage" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="median" /> | <xsl:value-of select="deviation" /> | <xsl:for-each select="percentiles/*"><xsl:value-of select="." /> | </xsl:for-each><xsl:value-of select="dnsTime/mean" /> | <xsl:value-of select="connectTime/mean" /> | <xsl:value-of select="sendTime/mean" /> | <xsl:value-of select="serverBusyTime/mean" /> | <xsl:value-of select="receiveTime/mean" /> | <xsl:value-of select="timeToFirstBytes/mean" /> | <xsl:value-of select="bytesSent/mean" /> | <xsl:value-of select="bytesReceived/mean" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        </xsl:if>
 
-
-<xsl:comment>===== Page Load Timings =====</xsl:comment>
-
-<xsl:if test="pageLoadTimings/*">
-# Page Load Timings 
+        <!-- Page Load Timings -->
+        <xsl:if test="pageLoadTimings/*">
+# Page Load Timings
 
 <xsl:call-template name="timer-table">
-    <xsl:with-param name="rootNode" select="pageLoadTimings"/>
+    <xsl:with-param name="elements" select="pageLoadTimings/*" />
 </xsl:call-template>
-</xsl:if>
+        </xsl:if>
 
-<xsl:comment>===== Custom Timers =====</xsl:comment>
-
-<xsl:if test="customTimers/*">
-# Custom Timers 
+        <!-- Custom Timers -->
+        <xsl:if test="customTimers/*">
+# Custom Timers
 
 <xsl:call-template name="timer-table">
-    <xsl:with-param name="rootNode" select="customTimers"/>
+    <xsl:with-param name="elements" select="customTimers/*" />
 </xsl:call-template>
-</xsl:if>
-
-
-<xsl:comment>===== Custom Values =====</xsl:comment>
-
-<xsl:if test="customValues/*">
-# Custom Values 
+        </xsl:if>
+        
+        <!-- Custom Values -->
+        <xsl:if test="customValues/*">
+# Custom Values
 
 | Name | Count | Count/s | Min | Max | Mean | StdDev |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="customValues/customValue">| <xsl:value-of select="name"/> | <xsl:value-of select="count"/> | <xsl:value-of select="countPerSecond"/> | <xsl:value-of select="min"/> | <xsl:value-of select="max"/> | <xsl:value-of select="mean"/> | <xsl:value-of select="standardDeviation"/> |
-</xsl:for-each>
-</xsl:if>
+<xsl:for-each select="customValues/*">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="standardDeviation" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        </xsl:if>
 
-
-<xsl:comment>===== Errors =====</xsl:comment>
-
+        <!-- Errors -->
 # Errors
+        <xsl:choose>
+            <xsl:when test="errors/error">
+                <xsl:for-each select="errors/error">
+## Error: <xsl:value-of select="message" />
 
-<xsl:choose>
-<xsl:when test="errors/error">
-<xsl:for-each select="errors/error">
-## Error: <xsl:value-of select="message"/>
+- **Test Case**: <xsl:value-of select="testCaseName" />
+- **Action**: <xsl:choose><xsl:when test="actionName != ''"><xsl:value-of select="actionName" /></xsl:when><xsl:otherwise>n/a</xsl:otherwise></xsl:choose>
+- **Count**: <xsl:value-of select="count" />
+                    <xsl:if test="trace != ''">
 
-- **Test Case**: <xsl:value-of select="testCaseName"/>
-- **Action**: <xsl:value-of select="actionName"/>
-- **Count**: <xsl:value-of select="count"/>
-<xsl:if test="trace">
-- **Stack Trace**:
+### Stack Trace
 ```
-<xsl:value-of select="trace"/>
+<xsl:value-of select="substring(trace, 1, 1000)" /><xsl:if test="string-length(trace) > 1000">...</xsl:if>
 ```
-</xsl:if>
-</xsl:for-each>
-</xsl:when>
-<xsl:otherwise>
+                    </xsl:if>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
 No errors recorded.
-</xsl:otherwise>
-</xsl:choose>
+            </xsl:otherwise>
+        </xsl:choose>
 
-
-<xsl:comment>===== Events =====</xsl:comment>
-
-<xsl:if test="events/event">
+        <!-- Events -->
+        <xsl:if test="events/event">
 # Events
 
 | Test Case | Event Name | Count |
 | --- | --- | ---: |
-<xsl:for-each select="events/event">| <xsl:value-of select="testCaseName"/> | <xsl:value-of select="name"/> | <xsl:value-of select="totalCount"/> |
-</xsl:for-each>
-</xsl:if>
+<xsl:for-each select="events/event">| <xsl:choose><xsl:when test="testCaseName != ''"><xsl:value-of select="testCaseName" /></xsl:when><xsl:otherwise>n/a</xsl:otherwise></xsl:choose> | <xsl:value-of select="name" /> | <xsl:value-of select="totalCount" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        </xsl:if>
 
-
-<xsl:comment>===== Agents =====</xsl:comment>
-
-<xsl:if test="agents/*">
+        <!-- Agents -->
+        <xsl:if test="agents/agent">
 # Agents
 
 | Agent | Transactions | Errors | Error% | CPU% (Mean) |
 | --- | ---: | ---: | ---: | ---: |
-<xsl:for-each select="agents/agent">| <xsl:value-of select="name"/> | <xsl:value-of select="transactions"/> | <xsl:value-of select="transactionErrors"/> | <xsl:value-of select="transactionErrorPercentage"/> | <xsl:value-of select="cpuUsage/mean"/> |
-</xsl:for-each>
-</xsl:if>
+<xsl:for-each select="agents/agent">| <xsl:value-of select="name" /> | <xsl:value-of select="transactions" /> | <xsl:value-of select="transactionErrors" /> | <xsl:value-of select="transactionErrorPercentage" /> | <xsl:value-of select="cpuUsage/mean" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        </xsl:if>
 
-
-<xsl:comment>===== Web Vitals =====</xsl:comment>
-
-<xsl:if test="webVitalsList/*">
+        <!-- Web Vitals -->
+        <xsl:if test="webVitalsList/webVitals">
 # Web Vitals
 
 | Action | CLS Score | CLS Rating | FCP Score | FCP Rating | LCP Score | LCP Rating | INP Score | INP Rating | TTFB Score | TTFB Rating |
 | --- | ---: | --- | ---: | --- | ---: | --- | ---: | --- | ---: | --- |
-<xsl:for-each select="webVitalsList/webVitals">| <xsl:value-of select="name"/> | <xsl:value-of select="cls/score"/> | <xsl:value-of select="cls/rating"/> | <xsl:value-of select="fcp/score"/> | <xsl:value-of select="fcp/rating"/> | | <xsl:value-of select="lcp/score"/> | <xsl:value-of select="lcp/rating"/> | <xsl:value-of select="inp/score"/> | <xsl:value-of select="inp/rating"/> | <xsl:value-of select="ttfb/score"/> | <xsl:value-of select="ttfb/rating"/> |
-</xsl:for-each>
-</xsl:if>
+<xsl:for-each select="webVitalsList/webVitals">| <xsl:value-of select="name" /> | <xsl:value-of select="cls/score" /> | <xsl:value-of select="cls/rating" /> | <xsl:value-of select="fcp/score" /> | <xsl:value-of select="fcp/rating" /> | <xsl:value-of select="lcp/score" /> | <xsl:value-of select="lcp/rating" /> | <xsl:value-of select="inp/score" /> | <xsl:value-of select="inp/rating" /> | <xsl:value-of select="ttfb/score" /> | <xsl:value-of select="ttfb/rating" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        </xsl:if>
+    </xsl:template>
 
-</xsl:template>
-
+    <xsl:template name="timer-table">
+        <xsl:param name="elements" />
+| Name | Count | Count/s | Errors | Error% | Min | Max | Mean | Median | Dev | <xsl:for-each select="$elements[1]/percentiles/*">P<xsl:value-of select="substring-after(name(), 'p')" /> | </xsl:for-each>
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | <xsl:for-each select="$elements[1]/percentiles/*">---: | </xsl:for-each><xsl:text>&#10;</xsl:text>
+<xsl:for-each select="$elements">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="errors" /> | <xsl:value-of select="errorPercentage" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="median" /> | <xsl:value-of select="deviation" /> | <xsl:for-each select="percentiles/*"><xsl:value-of select="." /> | </xsl:for-each><xsl:text>&#10;</xsl:text></xsl:for-each>
+    </xsl:template>
+    
 </xsl:stylesheet>
