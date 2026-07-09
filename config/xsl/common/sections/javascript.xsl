@@ -3,7 +3,7 @@
 
     <xsl:template name="javascript">
 
-        <script type="text/javascript" src="js/xlt.js"></script>
+        <script src="js/xlt.js"></script>
 
     </xsl:template>
 

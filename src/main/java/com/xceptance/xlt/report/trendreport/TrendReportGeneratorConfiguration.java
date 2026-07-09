@@ -25,10 +25,13 @@ import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
+import com.xceptance.xlt.report.RendererConfiguration;
+import com.xceptance.xlt.report.ReportRendererFactory;
+
 /**
  * The trend report generator's configuration.
  */
-public class TrendReportGeneratorConfiguration extends AbstractConfiguration
+public class TrendReportGeneratorConfiguration extends AbstractConfiguration implements RendererConfiguration
 {
     private static final String PROP_PREFIX = XltConstants.XLT_PACKAGE_PATH + ".trendreportgenerator.";
 
@@ -50,6 +53,10 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
 
     private static final String PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX = ".outputFileName";
 
+    private static final String PROP_TRANSFORMATIONS_TEMPLATE_FILE_SUFFIX = ".templateFileName";
+
+    private static final String PROP_RENDERING_ENGINE = PROP_PREFIX + "renderingEngine";
+
     private final int chartsHeight;
 
     private final int chartsWidth;
@@ -65,6 +72,8 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
     private final List<String> styleSheetFileNames;
 
     private final List<String> outputFileNames;
+
+    private final List<String> templateFileNames;
 
     private final int threadCount;
 
@@ -92,8 +101,9 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
         // load the transformation configuration
         outputFileNames = new ArrayList<String>();
         styleSheetFileNames = new ArrayList<String>();
+        templateFileNames = new ArrayList<String>();
 
-        readTransformations(outputFileNames, styleSheetFileNames);
+        readTransformations(outputFileNames, styleSheetFileNames, templateFileNames);
     }
 
     /**
@@ -187,6 +197,34 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getTemplateFileNames()
+    {
+        return templateFileNames;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public File getXsltStyleSheetRootDirectory()
+    {
+        return new File(getConfigDirectory(), XltConstants.TREND_REPORT_XSL_PATH);
+    }
+
+    /**
+     * Returns the rendering engine to be used.
+     *
+     * @return the rendering engine
+     */
+    public String getRenderingEngine()
+    {
+        return getStringProperty(PROP_RENDERING_ENGINE, ReportRendererFactory.ENGINE_FREEMARKER);
+    }
+
+    /**
      * Reads the transformation configurations. The style sheet file names and output file names for each transformation
      * are added to the respective lists passed as parameters.
      * 
@@ -194,8 +232,11 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
      *            the list of output file names
      * @param styleSheetFileNames
      *            the list of style sheet file names
+     * @param templateFileNames
+     *            the list of template file names
      */
-    private void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames)
+    private void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames,
+                                     final List<String> templateFileNames)
     {
         final Set<String> keys = getPropertyKeyFragment(PROP_TRANSFORMATIONS_PREFIX);
         for (final String key : keys)
@@ -203,10 +244,12 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
             final String propertyPrefix = PROP_TRANSFORMATIONS_PREFIX + key;
 
             final File outputFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX);
-            final File styleSheetFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX);
+            final String styleSheetFileName = getStringProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX, null);
+            final String templateFileName = getStringProperty(propertyPrefix + PROP_TRANSFORMATIONS_TEMPLATE_FILE_SUFFIX, null);
 
             outputFileNames.add(outputFile.getPath());
-            styleSheetFileNames.add(styleSheetFile.getPath());
+            styleSheetFileNames.add(styleSheetFileName);
+            templateFileNames.add(templateFileName);
         }
     }
 }

@@ -1,0 +1,233 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="generator" content="XLT">
+      <title>XLT Report - Errors</title>
+      <link href="css/default.css" type="text/css" rel="stylesheet">
+      <link href="css/print.css" type="text/css" rel="stylesheet" media="print"><script src="js/jquery-3.6.4.min.js"></script><script src="js/jquery.hoverIntent-1.10.2.min.js"></script><script src="js/jquery.scrollTo-2.1.3.min.js"></script><script src="js/tabs.js"></script><script src="js/table.js"></script><script src="js/crosshair.js"></script><script src="js/echarts-6.0.0.min.js"></script><link rel="icon" href="images/favicon.png" sizes="any">
+      <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+      <style type="text/css">
+            .chart-group .chart img, .chart-group .echart {
+                width: 900px;
+                height: 300px;
+            }
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
+                height: 450px;
+            }
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
+                height: 690px;
+            }
+        </style>
+   </head>
+   <body id="loadtestreport">
+      <div id="container">
+         <div id="content">
+            <nav><input class="hamburger-btn" type="checkbox" id="hamburger-btn"><label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label><ul class="nav-menu">
+                  <li><a href="index.html">Overview</a><ul>
+                        <li><a href="index.html#load-profile">Load Profile</a></li>
+                        <li><a href="index.html#comment">Test Comment</a></li>
+                        <li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#agents">Agent Summary</a></li>
+                        <li><a href="index.html#summary">Performance Summary</a></li>
+                        <li><a href="index.html#network">Network</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="transactions.html">Transactions</a></li>
+                  <li><a href="actions.html">Actions</a></li>
+                  <li><a href="requests.html">Requests</a><ul>
+                        <li><a href="slowest-requests.html">Slowest Requests</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="network.html">Network</a><ul>
+                        <li><a href="network.html#network">Network</a></li>
+                        <li><a href="network.html#hosts">Hosts</a></li>
+                        <li><a href="network.html#ip-addresses">IP Addresses</a></li>
+                        <li><a href="network.html#http-request-methods">HTTP Request Methods</a></li>
+                        <li><a href="network.html#http-response-codes">HTTP Response Codes</a></li>
+                        <li><a href="network.html#content-types">Content Types</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="page-load-timings.html">Page Load Timings</a></li>
+                  <li><a href="web-vitals.html">Web Vitals</a></li>
+                  <li><a href="custom-timers.html">Custom Timers</a></li>
+                  <li><a href="custom-values.html">Custom Data</a><ul>
+                        <li><a href="custom-values.html#custom-values-summary">Custom Values</a></li>
+                        <li><a href="custom-values.html#custom-data-logs-summary">Custom Data Logs</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="external.html">External Data</a></li>
+                  <li><a href="errors.html">Errors</a><ul>
+                        <li><a href="errors.html#request-errors">Request Errors</a></li>
+                        <li><a href="errors.html#transaction-error-overview">Transaction Error Overview</a></li>
+                        <li><a href="errors.html#transaction-error-details">Transaction Error Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="events.html">Events</a><ul>
+                        <li><a href="events.html#event-overview">Overview</a></li>
+                        <li><a href="events.html#event-details">Details</a></li>
+                     </ul>
+                  </li>
+                  <li><a href="agents.html">Agents</a></li>
+                  <li><a href="configuration.html">Configuration</a><ul>
+                        <li><a href="configuration.html#load-profile">Load Profile</a></li>
+                        <li><a href="configuration.html#configuration">Load Test Settings</a></li>
+                        <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
+                     </ul>
+                  </li>
+               </ul>
+            </nav>
+            <header id="header">
+               <div class="brand"><img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo"></div>
+               <div class="title">
+                  <h1>Performance Test Report</h1>
+                  <div>
+                     <div class="ltinfo"><span class="key">Organization:</span><span class="value">xc</span></div>
+                     <div class="ltinfo"><span class="key">Project:</span><span class="value">advanced-posters</span></div>
+                     <div class="ltinfo"><span class="key">Load Test:</span><span class="value">#98</span></div>
+                     <div class="ltinfo"><span class="key">Result:</span><span class="value">–</span></div>
+                     <div class="ltinfo"><span class="key">Report:</span><span class="value">–</span></div>
+                  </div>
+               </div>
+            </header>
+            <div id="data-content">
+               <div class="section" id="error-summary">
+                  <h2>Errors</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           This section lists all errors that occurred during the load test. The data listed
+                           here helps you identify
+                           application errors or test problems.
+                           <span id="more-errorsd1277e1-show" onclick="$('#more-errorsd1277e1').show();$('#more-errorsd1277e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-errorsd1277e1-hide" onclick="$('#more-errorsd1277e1').hide();$('#more-errorsd1277e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                        <div id="more-errorsd1277e1" class="more">
+                           <p>
+                              Errors are hard failures in the flow of testing. They stop the current execution of
+                              the test case (or
+                              transaction), log an error, and eventually move on to the next test execution if scheduled
+                              to do so.
+                              </p>
+                           <p>
+                              Errors can occur on transaction, action, or request level. Errors on the request level
+                              are counted on action
+                              level as well. Action level errors are also counted as transaction errors. A connection
+                              reset, for instance,
+                              counts as request error and causes the action to fail (counted). As a result, the
+                              transaction fails as well
+                              which again is counted and logged.
+                              </p>
+                           <p>
+                              The Overview section below lists the error message and the count. It ignores the stack
+                              trace to sum up common
+                              problems without relating them to the test case. The Details section beneath lists
+                              the full stack trace next
+                              to the test case and the directory in which you can find the data dump for further
+                              analysis.
+                              </p>
+                        </div>
+                     </div>
+                     <div class="data">
+                        <div class="charts">
+                           <div class="chart"><img src="charts/Errors.webp" alt="Errors"></div>
+                        </div>
+                        <h3 id="request-errors">Request Errors</h3>
+                        <div class="description">
+                           <p>
+                              							This section displays the request errors grouped by response
+                              							code.
+                              							<span id="more-requestErrorChartsd1277e1-show" onclick="$('#more-requestErrorChartsd1277e1').show();$('#more-requestErrorChartsd1277e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-requestErrorChartsd1277e1-hide" onclick="$('#more-requestErrorChartsd1277e1').hide();$('#more-requestErrorChartsd1277e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                           <div id="more-requestErrorChartsd1277e1" class="more">
+                              <p>
+                                 								The chart creation can be configured by setting the
+                                 								corresponding report generator properties. (See
+                                 								<b>reportgenerator.properties</b>
+                                 								file for more details)
+                                 							</p>
+                           </div>
+                        </div>
+                        <p class="no-data">
+                           								No such data has been collected.
+                           							</p>
+                        <h3 id="transaction-error-overview">Transaction Error Overview</h3>
+                        <table class="table-autosort:1 table-autosort-order:desc">
+                           <thead>
+                              <tr>
+                                 <th class="table-sortable:alphanumeric" id="sortByErrorOverviewMsg">Error Message</th>
+                                 <th class="table-sortable:numeric" id="sortByErrorOverviewCount">Count</th>
+                                 <th class="table-sortable:numeric" id="sortByErrorOverviewPercentage">Percentage</th>
+                              </tr>
+                           </thead>
+                           <tfoot>
+                              <tr>
+                                 <td></td>
+                                 <td></td>
+                                 <td></td>
+                              </tr>
+                           </tfoot>
+                           <tbody>
+                              <tr>
+                                 <td class="no-data" colspan="3">No data available</td>
+                              </tr>
+                           </tbody>
+                        </table>
+                        <div class="description">
+                           <p><span id="more-transactionOverviewd1277e1-show" onclick="$('#more-transactionOverviewd1277e1').show();$('#more-transactionOverviewd1277e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-transactionOverviewd1277e1-hide" onclick="$('#more-transactionOverviewd1277e1').hide();$('#more-transactionOverviewd1277e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                           <div id="more-transactionOverviewd1277e1" class="more">
+                              <p>
+                                 								The chart limit can be set or disabled by setting the
+                                 								corresponding report generator properties. (See
+                                 								<b>reportgenerator.properties</b>
+                                 								file for more details)
+                                 							</p>
+                           </div>
+                        </div>
+                        <p class="no-data">
+                           								No such data has been collected.
+                           							</p>
+                        <h3 id="transaction-error-details">Transaction Error Details</h3>
+                        <div class="description">
+                           <p><span id="more-transactionDetailsd1277e1-show" onclick="$('#more-transactionDetailsd1277e1').show();$('#more-transactionDetailsd1277e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-transactionDetailsd1277e1-hide" onclick="$('#more-transactionDetailsd1277e1').hide();$('#more-transactionDetailsd1277e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                           <div id="more-transactionDetailsd1277e1" class="more">
+                              <p>
+                                 								The chart limit can be set or disabled by setting the
+                                 								corresponding report generator properties. (See
+                                 								<b>reportgenerator.properties</b>
+                                 								file for more details)
+                                 							</p>
+                           </div>
+                        </div>
+                        <table class="table-autosort:0 table-autosort-order:desc error-table">
+                           <thead>
+                              <tr>
+                                 <th class="table-sortable:numeric" id="sortByErrorDetailCount">Count</th>
+                                 <th class="table-sortable:alphanumeric" id="sortByErrorDetailTestCase">Test Case</th>
+                                 <th class="table-sortable:alphanumeric" id="sortByErrorDetailAction">Action</th>
+                                 <th>Directory</th>
+                                 <th class="table-sortable:alphanumeric" id="sortByErrorDetailInformation">Error Information</th>
+                              </tr>
+                           </thead>
+                           <tfoot>
+                              <tr>
+                                 <td></td>
+                                 <td></td>
+                                 <td></td>
+                                 <td></td>
+                                 <td></td>
+                              </tr>
+                           </tfoot>
+                           <tr>
+                              <td class="no-data" colspan="5">No data available</td>
+                           </tr>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               Copyright (c) 2005-2025 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br>
+               Created with
+               <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">9.2.2</span></a></footer>
+         </div>
+      </div><script type="text/javascript" src="js/xlt.js"></script></body>
+</html>

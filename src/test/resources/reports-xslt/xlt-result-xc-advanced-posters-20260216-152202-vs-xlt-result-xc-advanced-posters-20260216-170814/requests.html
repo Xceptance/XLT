@@ -1,0 +1,1338 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="generator" content="XLT">
+      <title>XLT Performance Comparison Report - Requests</title>
+      <link href="css/default.css" type="text/css" rel="stylesheet">
+      <link href="css/print.css" type="text/css" rel="stylesheet" media="print"><script src="js/jquery-3.6.4.min.js"></script><script src="js/jquery.hoverIntent-1.10.2.min.js"></script><script src="js/jquery.scrollTo-2.1.3.min.js"></script><script src="js/tabs.js"></script><script src="js/table.js"></script><script src="js/crosshair.js"></script><script src="js/echarts-6.0.0.min.js"></script><link rel="icon" href="images/favicon.png" sizes="any">
+      <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+      <style type="text/css">
+            .chart-group .chart img, .chart-group .echart {
+                width: px;
+                height: px;
+            }
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
+                height: NaNpx;
+            }
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
+                height: NaNpx;
+            }
+        </style>
+   </head>
+   <body id="diffreport">
+      <div id="container">
+         <div id="content">
+            <nav><input class="hamburger-btn" type="checkbox" id="hamburger-btn"><label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label><ul class="nav-menu">
+                  <li><a href="index.html">Overview</a></li>
+                  <li><a href="transactions.html">Transactions</a></li>
+                  <li><a href="actions.html">Actions</a></li>
+                  <li><a href="requests.html">Requests</a></li>
+                  <li><a href="page-load-timings.html">Page Load Timings</a></li>
+                  <li><a href="web-vitals.html">Web Vitals</a></li>
+                  <li><a href="custom-timers.html">Custom Timers</a></li>
+                  <li><a href="custom-values.html">Custom Values</a></li>
+               </ul>
+            </nav>
+            <header id="header">
+               <div class="brand"><img src="images/xlt-logo.svg" class="logo" alt="The XLT tool logo"></div>
+               <div class="title">
+                  <h1>Performance Comparison Report</h1>
+                  <h2 class="ltinfo hide-on-scroll">
+                     Created with
+                     <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">9.2.2</span></a></h2>
+                  <div class="ltinfo show-on-scroll">Performance Comparison Report</div>
+               </div>
+            </header>
+            <div id="data-content">
+               <div class="section" id="request-summary">
+                  <h2>Requests</h2>
+                  <div class="content">
+                     <div class="description">
+                        <p>
+                           The request section is the most important statistical section when testing web applications.
+                           <span id="more-requestd163e1-show" onclick="$('#more-requestd163e1').show();$('#more-requestd163e1-hide').show(); $(this).hide();" class="link more-show">More...</span><span id="more-requestd163e1-hide" onclick="$('#more-requestd163e1').hide();$('#more-requestd163e1-show').show(); $(this).hide();" class="link more-hide">Hide...</span></p>
+                        <div id="more-requestd163e1" class="more">
+                           <p>
+                              	            It directly reflects the loading time of pages or page components. Each
+                              row holds the 
+                              	            data of one specific request. Its name is defined within the test case
+                              as timer name. 
+                              	            The <em>Count</em> section of the table shows the total number of executions 
+                              	            (<em>Total</em>), the calculated executions per seconds (<em>1/s</em>) and per minute 
+                              	            (<em>1/min</em>), as well as projections or calculations of the executions per hour 
+                              	            (<em>1/h</em>) and day (<em>1/d</em>). The <em>Error</em> section shows the total number 
+                              	            (<em>Total</em>) of errors that occurred during loading of the page or page component. 
+                              	            The error count does not include errors detected during the postvalidation
+                              of the data 
+                              	            received. Typical error situations are http-response codes such as 404
+                              and 505, timeouts, 
+                              	            or connection resets.
+                              	        </p>
+                           <p>
+                              	            The runtime section of the table shows the median, the arithmetic mean,
+                              and the minimum 
+                              	            and maximum runtime encountered, as well as the standard deviation of
+                              all data within 
+                              	            that series. The runtime segmentation section shows several runtime segments
+                              and the 
+                              	            number of requests within the segment's definition.
+                              	        </p>
+                           <p>
+                              	            If the runtime of the test case is shorter than a displayed time period--for
+                              example if 
+                              	            the test runtime was 30 minutes and the time period is in hours--the
+                              numbers are a linear 
+                              	            projection. That means they show a possible outcome of a longer test
+                              run, assuming load 
+                              	            and application behavior remain the same.
+                              	        </p>
+                           <p>*) numbers might be projected</p>
+                           <p>**) Numbers are estimated using <a href="https://en.wikipedia.org/wiki/HyperLogLog">HyperLogLog</a> and can be off by up to 0.5%, but only for distinct counts larger than 100,000. A
+                              difference of up to 2%
+                              can occur for distinct counts larger than 1,000,000.</p>
+                        </div>
+                     </div>
+                     <div id="tabletabbies" class="c-tabs">
+                        <ul class="c-tabs-nav">
+                           <li class="c-tabs-nav-link c-is-active"><a href="#Overview">Overview</a></li>
+                           <li class="c-tabs-nav-link"><a href="#Bandwidth">Bandwidth</a></li>
+                        </ul>
+                        <div id="Overview" class="c-tab c-is-active">
+                           <h4 class="print">Overview</h4>
+                           <table class="table-autosort:0">
+                              <thead>
+                                 <tr>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">Request Name<br><input class="filter" placeholder="Enter filter substrings" title=""><button class="clear-input" type="clear" title="Click to clear">✕</button></th>
+                                    <th colspan="5">Count</th>
+                                    <th class="colgroup1">Errors</th>
+                                    <th colspan="4">Runtime [ms]</th>
+                                    <th colspan="4" class="colgroup1">Runtime Percentiles [ms]</th>
+                                 </tr>
+                                 <tr>
+                                    <th class="table-sortable:numeric" id="sortByCountDistinct">Distinct**</th>
+                                    <th class="table-sortable:numeric" id="sortByCountTotal">Total</th>
+                                    <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric" id="sortByCountPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByErrorsTotal">Total</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean of the data series." id="sortByRuntimeMean">Mean</th>
+                                    <th class="table-sortable:numeric" title="The smallest value of the data series." id="sortByRuntimeMin">Min.</th>
+                                    <th class="table-sortable:numeric" title="The largest value of the data series." id="sortByRuntimeMax">Max.</th>
+                                    <th class="table-sortable:numeric" title="The standard deviation of all data within this data series." id="sortByRuntimeDev">Dev.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series." id="sortByPercentileP50">P50</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series." id="sortByPercentileP95">P95</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series." id="sortByPercentileP99">P99</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series." id="sortByPercentileP99.9">P99.9</th>
+                                 </tr>
+                              </thead>
+                              <tfoot>
+                                 <tr class="totals">
+                                    <td class="key">Totals (28 entries)</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="21,744 -&gt; 21,101 (-643)" class="value number n3 colorized">-2.96%</td>
+                                    <td title="36.2 -&gt; 35.2 (-1.0)" class="value number n3 colorized">-2.80%</td>
+                                    <td title="2,174.4 -&gt; 2,113.6 (-60.8)" class="value number n3 colorized">-2.80%</td>
+                                    <td title="130,464 -&gt; 126,817 (-3,647)" class="value number n3 colorized">-2.80%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="35 -&gt; 35 (+0)" class="value number n2 colorized">+1.10%</td>
+                                    <td title="1 -&gt; 2 (+1)" class="value number n100 colorized">+100.00%</td>
+                                    <td title="391 -&gt; 411 (+20)" class="value number n6 colorized">+5.12%</td>
+                                    <td title="32 -&gt; 31 (-0)" class="value number p1 colorized">-0.96%</td>
+                                    <td title="30 -&gt; 30 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="60 -&gt; 70 (+10)" class="value number n17 colorized">+16.67%</td>
+                                    <td title="150 -&gt; 150 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="260 -&gt; 260 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr class="totals filtered" style="display: none;"></tr>
+                              </tfoot>
+                              <tbody>
+                                 <tr>
+                                    <td class="key">
+                                       AddToCart_US
+                                       </td>
+                                    <td title="100 -&gt; 100 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="2,335 -&gt; 2,253 (-82)" class="value number n4 colorized">-3.51%</td>
+                                    <td title="3.9 -&gt; 3.8 (-0.1)" class="value number n4 colorized">-3.37%</td>
+                                    <td title="233.5 -&gt; 225.7 (-7.8)" class="value number n4 colorized">-3.35%</td>
+                                    <td title="14,010 -&gt; 13,541 (-469)" class="value number n4 colorized">-3.35%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (+0)" class="value number n2 colorized">+1.27%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="137 -&gt; 77 (-60)" class="value number p44 colorized">-43.80%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p3 colorized">-2.05%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="90 -&gt; 70 (-20)" class="value number p23 colorized">-22.22%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CheckoutPayment_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="199 -&gt; 191 (-8)" class="value number n5 colorized">-4.02%</td>
+                                    <td title="0.3 -&gt; 0.3 (-0.0)" class="value number n4 colorized">-3.92%</td>
+                                    <td title="19.9 -&gt; 19.1 (-0.8)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="1,194 -&gt; 1,148 (-46)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (+0)" class="value number n1 colorized">+0.25%</td>
+                                    <td title="3 -&gt; 3 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="59 -&gt; 66 (+7)" class="value number n12 colorized">+11.86%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.59%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 60 (+10)" class="value number n20 colorized">+20.00%</td>
+                                    <td title="50 -&gt; 60 (+10)" class="value number n20 colorized">+20.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CheckoutPayment_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="199 -&gt; 191 (-8)" class="value number n5 colorized">-4.02%</td>
+                                    <td title="0.3 -&gt; 0.3 (-0.0)" class="value number n4 colorized">-3.92%</td>
+                                    <td title="19.9 -&gt; 19.1 (-0.8)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="1,194 -&gt; 1,148 (-46)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="30 -&gt; 30 (+0)" class="value number n2 colorized">+1.26%</td>
+                                    <td title="3 -&gt; 4 (+1)" class="value number n34 colorized">+33.33%</td>
+                                    <td title="72 -&gt; 87 (+15)" class="value number n21 colorized">+20.83%</td>
+                                    <td title="18 -&gt; 19 (+0)" class="value number n3 colorized">+2.62%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="60 -&gt; 70 (+10)" class="value number n17 colorized">+16.67%</td>
+                                    <td title="70 -&gt; 80 (+10)" class="value number n15 colorized">+14.29%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CheckoutPlaceOrder_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="95 -&gt; 97 (+2)" class="value number p3 colorized">+2.11%</td>
+                                    <td title="0.2 -&gt; 0.2 (+0.0)" class="value number p3 colorized">+2.53%</td>
+                                    <td title="9.5 -&gt; 9.7 (+0.2)" class="value number p3 colorized">+2.27%</td>
+                                    <td title="570 -&gt; 583 (+13)" class="value number p3 colorized">+2.28%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 30 (+1)" class="value number n4 colorized">+3.40%</td>
+                                    <td title="3 -&gt; 3 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="59 -&gt; 75 (+16)" class="value number n28 colorized">+27.12%</td>
+                                    <td title="18 -&gt; 18 (+0)" class="value number n1 colorized">+0.51%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 70 (+20)" class="value number n40 colorized">+40.00%</td>
+                                    <td title="50 -&gt; 70 (+20)" class="value number n40 colorized">+40.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CheckoutPlaceOrder_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="95 -&gt; 97 (+2)" class="value number p3 colorized">+2.11%</td>
+                                    <td title="0.2 -&gt; 0.2 (+0.0)" class="value number p3 colorized">+2.53%</td>
+                                    <td title="9.5 -&gt; 9.7 (+0.2)" class="value number p3 colorized">+2.27%</td>
+                                    <td title="570 -&gt; 583 (+13)" class="value number p3 colorized">+2.28%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="28 -&gt; 29 (+1)" class="value number n4 colorized">+3.56%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="53 -&gt; 52 (-1)" class="value number p2 colorized">-1.89%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.94%</td>
+                                    <td title="20 -&gt; 30 (+10)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CheckoutShippingAddress_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="199 -&gt; 191 (-8)" class="value number n5 colorized">-4.02%</td>
+                                    <td title="0.3 -&gt; 0.3 (-0.0)" class="value number n4 colorized">-3.92%</td>
+                                    <td title="19.9 -&gt; 19.1 (-0.8)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="1,194 -&gt; 1,148 (-46)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="28 -&gt; 28 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="55 -&gt; 56 (+1)" class="value number n2 colorized">+1.82%</td>
+                                    <td title="18 -&gt; 18 (-1)" class="value number p4 colorized">-3.13%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CheckoutShippingAddress_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="199 -&gt; 191 (-8)" class="value number n5 colorized">-4.02%</td>
+                                    <td title="0.3 -&gt; 0.3 (-0.0)" class="value number n4 colorized">-3.92%</td>
+                                    <td title="19.9 -&gt; 19.1 (-0.8)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="1,194 -&gt; 1,148 (-46)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="28 -&gt; 28 (-0)" class="value number p1 colorized">-0.69%</td>
+                                    <td title="2 -&gt; 2 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="77 -&gt; 70 (-7)" class="value number p10 colorized">-9.09%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.98%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="70 -&gt; 50 (-20)" class="value number p29 colorized">-28.57%</td>
+                                    <td title="70 -&gt; 70 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Checkout_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="199 -&gt; 191 (-8)" class="value number n5 colorized">-4.02%</td>
+                                    <td title="0.3 -&gt; 0.3 (-0.0)" class="value number n4 colorized">-3.92%</td>
+                                    <td title="19.9 -&gt; 19.1 (-0.8)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="1,194 -&gt; 1,148 (-46)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (-0)" class="value number p1 colorized">-0.52%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="55 -&gt; 70 (+15)" class="value number n28 colorized">+27.27%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.31%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 70 (+20)" class="value number n40 colorized">+40.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Checkout_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="199 -&gt; 191 (-8)" class="value number n5 colorized">-4.02%</td>
+                                    <td title="0.3 -&gt; 0.3 (-0.0)" class="value number n4 colorized">-3.92%</td>
+                                    <td title="19.9 -&gt; 19.1 (-0.8)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="1,194 -&gt; 1,148 (-46)" class="value number n4 colorized">-3.86%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="27 -&gt; 27 (-0)" class="value number p1 colorized">-0.76%</td>
+                                    <td title="1 -&gt; 2 (+1)" class="value number n100 colorized">+100.00%</td>
+                                    <td title="59 -&gt; 61 (+2)" class="value number n4 colorized">+3.39%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.64%</td>
+                                    <td title="20 -&gt; 10 (-10)" class="value number p50 colorized">-50.00%</td>
+                                    <td title="40 -&gt; 40 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 60 (+10)" class="value number n20 colorized">+20.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       ClickACategory_US
+                                       </td>
+                                    <td title="13 -&gt; 13 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="2,181 -&gt; 2,181 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="3.6 -&gt; 3.6 (+0.0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="218.1 -&gt; 218.5 (+0.4)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="13,086 -&gt; 13,108 (+22)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="30 -&gt; 30 (+0)" class="value number n2 colorized">+1.32%</td>
+                                    <td title="3 -&gt; 4 (+1)" class="value number n34 colorized">+33.33%</td>
+                                    <td title="81 -&gt; 100 (+19)" class="value number n24 colorized">+23.46%</td>
+                                    <td title="18 -&gt; 19 (+0)" class="value number n2 colorized">+1.99%</td>
+                                    <td title="20 -&gt; 30 (+10)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 60 (+10)" class="value number n20 colorized">+20.00%</td>
+                                    <td title="70 -&gt; 90 (+20)" class="value number n29 colorized">+28.57%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       ClickATopCategory_US
+                                       </td>
+                                    <td title="4 -&gt; 4 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="596 -&gt; 528 (-68)" class="value number n12 colorized">-11.41%</td>
+                                    <td title="1.0 -&gt; 0.9 (-0.1)" class="value number n12 colorized">-11.28%</td>
+                                    <td title="59.6 -&gt; 52.9 (-6.7)" class="value number n12 colorized">-11.26%</td>
+                                    <td title="3,576 -&gt; 3,173 (-403)" class="value number n12 colorized">-11.26%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="30 -&gt; 30 (+0)" class="value number n1 colorized">+0.20%</td>
+                                    <td title="3 -&gt; 4 (+1)" class="value number n34 colorized">+33.33%</td>
+                                    <td title="75 -&gt; 73 (-2)" class="value number p3 colorized">-2.67%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p1 colorized">-0.78%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="70 -&gt; 70 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       ClickProductDetails_US
+                                       </td>
+                                    <td title="100 -&gt; 100 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="4,194 -&gt; 4,062 (-132)" class="value number n4 colorized">-3.15%</td>
+                                    <td title="7.0 -&gt; 6.8 (-0.2)" class="value number n3 colorized">-2.99%</td>
+                                    <td title="419.4 -&gt; 406.9 (-12.5)" class="value number n3 colorized">-2.99%</td>
+                                    <td title="25,164 -&gt; 24,413 (-751)" class="value number n3 colorized">-2.99%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (+0)" class="value number n1 colorized">+0.43%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="91 -&gt; 411 (+320)" class="value number n100 colorized">+351.65%</td>
+                                    <td title="18 -&gt; 19 (+1)" class="value number n5 colorized">+4.73%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="70 -&gt; 80 (+10)" class="value number n15 colorized">+14.29%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       ContinueShoppingPage_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="95 -&gt; 97 (+2)" class="value number p3 colorized">+2.11%</td>
+                                    <td title="0.2 -&gt; 0.2 (+0.0)" class="value number p3 colorized">+2.53%</td>
+                                    <td title="9.5 -&gt; 9.7 (+0.2)" class="value number p3 colorized">+2.27%</td>
+                                    <td title="570 -&gt; 583 (+13)" class="value number p3 colorized">+2.28%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="30 -&gt; 31 (+1)" class="value number n4 colorized">+3.09%</td>
+                                    <td title="4 -&gt; 5 (+1)" class="value number n25 colorized">+25.00%</td>
+                                    <td title="57 -&gt; 54 (-3)" class="value number p6 colorized">-5.26%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p3 colorized">-2.29%</td>
+                                    <td title="20 -&gt; 30 (+10)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CreateAccount_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="133 -&gt; 133 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="0.2 -&gt; 0.2 (0.0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="13.3 -&gt; 13.3 (+0.0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="798 -&gt; 799 (+1)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 28 (-0)" class="value number p1 colorized">-0.32%</td>
+                                    <td title="3 -&gt; 3 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="56 -&gt; 51 (-5)" class="value number p9 colorized">-8.93%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.13%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       CreateAccount_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="133 -&gt; 133 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="0.2 -&gt; 0.2 (0.0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="13.3 -&gt; 13.3 (+0.0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="798 -&gt; 799 (+1)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="151 -&gt; 140 (-12)" class="value number p8 colorized">-7.70%</td>
+                                    <td title="98 -&gt; 96 (-2)" class="value number p3 colorized">-2.04%</td>
+                                    <td title="299 -&gt; 201 (-98)" class="value number p33 colorized">-32.78%</td>
+                                    <td title="32 -&gt; 21 (-11)" class="value number p34 colorized">-33.32%</td>
+                                    <td title="140 -&gt; 130 (-10)" class="value number p8 colorized">-7.14%</td>
+                                    <td title="210 -&gt; 170 (-40)" class="value number p20 colorized">-19.05%</td>
+                                    <td title="270 -&gt; 180 (-90)" class="value number p34 colorized">-33.33%</td>
+                                    <td title="290 -&gt; 200 (-90)" class="value number p32 colorized">-31.03%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       GoToCreateAccount_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="133 -&gt; 133 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="0.2 -&gt; 0.2 (0.0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="13.3 -&gt; 13.3 (+0.0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="798 -&gt; 799 (+1)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (-0)" class="value number p2 colorized">-1.14%</td>
+                                    <td title="3 -&gt; 3 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="64 -&gt; 73 (+9)" class="value number n15 colorized">+14.06%</td>
+                                    <td title="18 -&gt; 19 (+0)" class="value number n1 colorized">+0.99%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 70 (+20)" class="value number n40 colorized">+40.00%</td>
+                                    <td title="60 -&gt; 70 (+10)" class="value number n17 colorized">+16.67%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       GoToMyAccount_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="17 -&gt; 17 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="0.0 -&gt; 0.0 (0.0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="1.7 -&gt; 1.7 (+0.0)" class="value number p1 colorized">+0.18%</td>
+                                    <td title="102 -&gt; 102 (+0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="3 -&gt; 4 (+1)" class="value number n34 colorized">+33.33%</td>
+                                    <td title="51 -&gt; 51 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="18 -&gt; 18 (+0)" class="value number n2 colorized">+1.76%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Homepage_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="1,552 -&gt; 1,552 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="2.6 -&gt; 2.6 (+0.0)" class="value number p1 colorized">+0.15%</td>
+                                    <td title="155.2 -&gt; 155.5 (+0.3)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="9,312 -&gt; 9,328 (+16)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="31 -&gt; 31 (+0)" class="value number n1 colorized">+0.33%</td>
+                                    <td title="4 -&gt; 4 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="92 -&gt; 110 (+18)" class="value number n20 colorized">+19.57%</td>
+                                    <td title="20 -&gt; 19 (-0)" class="value number p2 colorized">-1.69%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="60 -&gt; 60 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="80 -&gt; 100 (+20)" class="value number n25 colorized">+25.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Homepage_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="1,553 -&gt; 1,553 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="2.6 -&gt; 2.6 (+0.0)" class="value number p1 colorized">+0.19%</td>
+                                    <td title="155.3 -&gt; 155.6 (+0.3)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="9,318 -&gt; 9,334 (+16)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="89 -&gt; 89 (-0)" class="value number p1 colorized">-0.16%</td>
+                                    <td title="7 -&gt; 8 (+1)" class="value number n15 colorized">+14.29%</td>
+                                    <td title="391 -&gt; 349 (-42)" class="value number p11 colorized">-10.74%</td>
+                                    <td title="63 -&gt; 63 (-0)" class="value number p1 colorized">-0.48%</td>
+                                    <td title="60 -&gt; 60 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="150 -&gt; 160 (+10)" class="value number n7 colorized">+6.67%</td>
+                                    <td title="260 -&gt; 270 (+10)" class="value number n4 colorized">+3.85%</td>
+                                    <td title="380 -&gt; 340 (-40)" class="value number p11 colorized">-10.53%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Login_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="133 -&gt; 133 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="0.2 -&gt; 0.2 (0.0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="13.3 -&gt; 13.3 (+0.0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="798 -&gt; 799 (+1)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 29 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="3 -&gt; 3 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="59 -&gt; 70 (+11)" class="value number n19 colorized">+18.64%</td>
+                                    <td title="18 -&gt; 18 (+0)" class="value number n2 colorized">+1.57%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 70 (+20)" class="value number n40 colorized">+40.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Login_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="133 -&gt; 133 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="0.2 -&gt; 0.2 (0.0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="13.3 -&gt; 13.3 (+0.0)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="798 -&gt; 799 (+1)" class="value number p1 colorized">+0.17%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="146 -&gt; 140 (-7)" class="value number p5 colorized">-4.54%</td>
+                                    <td title="99 -&gt; 95 (-4)" class="value number p5 colorized">-4.04%</td>
+                                    <td title="282 -&gt; 235 (-47)" class="value number p17 colorized">-16.67%</td>
+                                    <td title="28 -&gt; 26 (-2)" class="value number p6 colorized">-5.54%</td>
+                                    <td title="140 -&gt; 130 (-10)" class="value number p8 colorized">-7.14%</td>
+                                    <td title="190 -&gt; 180 (-10)" class="value number p6 colorized">-5.26%</td>
+                                    <td title="220 -&gt; 200 (-20)" class="value number p10 colorized">-9.09%</td>
+                                    <td title="280 -&gt; 230 (-50)" class="value number p18 colorized">-17.86%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Logout_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="113 -&gt; 108 (-5)" class="value number n5 colorized">-4.42%</td>
+                                    <td title="0.2 -&gt; 0.2 (-0.0)" class="value number n5 colorized">-4.26%</td>
+                                    <td title="11.3 -&gt; 10.8 (-0.5)" class="value number n5 colorized">-4.27%</td>
+                                    <td title="678 -&gt; 649 (-29)" class="value number n5 colorized">-4.27%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="32 -&gt; 32 (+1)" class="value number n2 colorized">+1.84%</td>
+                                    <td title="4 -&gt; 5 (+1)" class="value number n25 colorized">+25.00%</td>
+                                    <td title="62 -&gt; 79 (+17)" class="value number n28 colorized">+27.42%</td>
+                                    <td title="18 -&gt; 18 (-1)" class="value number p4 colorized">-3.73%</td>
+                                    <td title="40 -&gt; 35 (-5)" class="value number p13 colorized">-12.50%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="60 -&gt; 70 (+10)" class="value number n17 colorized">+16.67%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Logout_US [303]
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="113 -&gt; 108 (-5)" class="value number n5 colorized">-4.42%</td>
+                                    <td title="0.2 -&gt; 0.2 (-0.0)" class="value number n5 colorized">-4.26%</td>
+                                    <td title="11.3 -&gt; 10.8 (-0.5)" class="value number n5 colorized">-4.27%</td>
+                                    <td title="678 -&gt; 649 (-29)" class="value number n5 colorized">-4.27%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="27 -&gt; 28 (+0)" class="value number n2 colorized">+1.32%</td>
+                                    <td title="1 -&gt; 2 (+1)" class="value number n100 colorized">+100.00%</td>
+                                    <td title="61 -&gt; 53 (-8)" class="value number p14 colorized">-13.11%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p3 colorized">-2.48%</td>
+                                    <td title="30 -&gt; 25 (-5)" class="value number p17 colorized">-16.67%</td>
+                                    <td title="40 -&gt; 40 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="60 -&gt; 50 (-10)" class="value number p17 colorized">-16.67%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Search_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="2,450 -&gt; 2,320 (-130)" class="value number n6 colorized">-5.31%</td>
+                                    <td title="4.1 -&gt; 3.9 (-0.2)" class="value number n6 colorized">-5.14%</td>
+                                    <td title="245.0 -&gt; 232.4 (-12.6)" class="value number n6 colorized">-5.15%</td>
+                                    <td title="14,700 -&gt; 13,943 (-757)" class="value number n6 colorized">-5.15%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="28 -&gt; 29 (+1)" class="value number n3 colorized">+2.45%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="84 -&gt; 78 (-6)" class="value number p8 colorized">-7.14%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p1 colorized">-0.72%</td>
+                                    <td title="20 -&gt; 25 (+5)" class="value number n25 colorized">+25.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="70 -&gt; 70 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Search_US [303]
+                                       </td>
+                                    <td title="780 -&gt; 799 (+19)" class="value number p3 colorized">+2.44%</td>
+                                    <td title="2,450 -&gt; 2,320 (-130)" class="value number n6 colorized">-5.31%</td>
+                                    <td title="4.1 -&gt; 3.9 (-0.2)" class="value number n6 colorized">-5.14%</td>
+                                    <td title="245.0 -&gt; 232.4 (-12.6)" class="value number n6 colorized">-5.15%</td>
+                                    <td title="14,700 -&gt; 13,943 (-757)" class="value number n6 colorized">-5.15%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="27 -&gt; 27 (+1)" class="value number n3 colorized">+2.32%</td>
+                                    <td title="1 -&gt; 2 (+1)" class="value number n100 colorized">+100.00%</td>
+                                    <td title="94 -&gt; 74 (-20)" class="value number p22 colorized">-21.28%</td>
+                                    <td title="18 -&gt; 18 (-0)" class="value number p2 colorized">-1.75%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="40 -&gt; 40 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="70 -&gt; 60 (-10)" class="value number p15 colorized">-14.29%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Search_USNoHits
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="290 -&gt; 296 (+6)" class="value number p3 colorized">+2.07%</td>
+                                    <td title="0.5 -&gt; 0.5 (+0.0)" class="value number p3 colorized">+2.28%</td>
+                                    <td title="29.0 -&gt; 29.6 (+0.6)" class="value number p3 colorized">+2.24%</td>
+                                    <td title="1,740 -&gt; 1,779 (+39)" class="value number p3 colorized">+2.24%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="28 -&gt; 29 (+2)" class="value number n6 colorized">+5.55%</td>
+                                    <td title="2 -&gt; 3 (+1)" class="value number n50 colorized">+50.00%</td>
+                                    <td title="56 -&gt; 102 (+46)" class="value number n83 colorized">+82.14%</td>
+                                    <td title="19 -&gt; 18 (-0)" class="value number p3 colorized">-2.22%</td>
+                                    <td title="30 -&gt; 20 (-10)" class="value number p34 colorized">-33.33%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 60 (+10)" class="value number n20 colorized">+20.00%</td>
+                                    <td title="50 -&gt; 100 (+50)" class="value number n100 colorized">+100.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       Search_USNoHits [303]
+                                       </td>
+                                    <td title="290 -&gt; 296 (+6)" class="value number p3 colorized">+2.07%</td>
+                                    <td title="290 -&gt; 296 (+6)" class="value number p3 colorized">+2.07%</td>
+                                    <td title="0.5 -&gt; 0.5 (+0.0)" class="value number p3 colorized">+2.28%</td>
+                                    <td title="29.0 -&gt; 29.6 (+0.6)" class="value number p3 colorized">+2.24%</td>
+                                    <td title="1,740 -&gt; 1,779 (+39)" class="value number p3 colorized">+2.24%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="27 -&gt; 28 (+1)" class="value number n5 colorized">+4.99%</td>
+                                    <td title="1 -&gt; 2 (+1)" class="value number n100 colorized">+100.00%</td>
+                                    <td title="53 -&gt; 74 (+21)" class="value number n40 colorized">+39.62%</td>
+                                    <td title="19 -&gt; 18 (-1)" class="value number p4 colorized">-3.20%</td>
+                                    <td title="30 -&gt; 20 (-10)" class="value number p34 colorized">-33.33%</td>
+                                    <td title="40 -&gt; 40 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 60 (+10)" class="value number n20 colorized">+20.00%</td>
+                                    <td title="50 -&gt; 70 (+20)" class="value number n40 colorized">+40.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key">
+                                       ViewCart_US
+                                       </td>
+                                    <td title="1 -&gt; 1 (0)" class="value number p0 colorized">0.00%</td>
+                                    <td title="1,466 -&gt; 1,405 (-61)" class="value number n5 colorized">-4.16%</td>
+                                    <td title="2.4 -&gt; 2.3 (-0.1)" class="value number n4 colorized">-3.97%</td>
+                                    <td title="146.6 -&gt; 140.7 (-5.9)" class="value number n5 colorized">-4.00%</td>
+                                    <td title="8,796 -&gt; 8,444 (-352)" class="value number n5 colorized">-4.00%</td>
+                                    <td title="0 -&gt; 0 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="29 -&gt; 30 (+0)" class="value number n1 colorized">+0.56%</td>
+                                    <td title="3 -&gt; 3 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="190 -&gt; 75 (-115)" class="value number p61 colorized">-60.53%</td>
+                                    <td title="19 -&gt; 18 (-1)" class="value number p7 colorized">-6.74%</td>
+                                    <td title="20 -&gt; 20 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="50 -&gt; 50 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="60 -&gt; 50 (-10)" class="value number p17 colorized">-16.67%</td>
+                                    <td title="110 -&gt; 70 (-40)" class="value number p37 colorized">-36.36%</td>
+                                 </tr>
+                              </tbody>
+                           </table>
+                        </div>
+                        <div id="Bandwidth" class="c-tab">
+                           <h4 class="print">Bandwidth</h4>
+                           <table class="c-tab-content table-autosort:0">
+                              <thead>
+                                 <tr>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">Request Name<br><input class="filter" placeholder="Enter filter substrings" title=""><button class="clear-input" type="clear" title="Click to clear">✕</button></th>
+                                    <th colspan="8">Bytes Sent</th>
+                                    <th colspan="8" class="colgroup1">Bytes Received</th>
+                                 </tr>
+                                 <tr>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentTotal">Total</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByBandwidthSentMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMax">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedTotal">Total</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByBandwidthReceivedMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMax">Max.</th>
+                                 </tr>
+                              </thead>
+                              <tfoot>
+                                 <tr class="totals">
+                                    <td class="key colgroup1">Totals (28 entries)</td>
+                                    <td title="19,082,243 -&gt; 18,520,023 (-562,220)" class="value number p3 colorized">-2.95%</td>
+                                    <td title="31,804 -&gt; 30,918 (-886)" class="value number p3 colorized">-2.78%</td>
+                                    <td title="1,908,224 -&gt; 1,855,094 (-53,130)" class="value number p3 colorized">-2.78%</td>
+                                    <td title="114,493,458 -&gt; 111,305,647 (-3,187,811)" class="value number p3 colorized">-2.78%</td>
+                                    <td title="2,747,842,992 -&gt; 2,671,335,538 (-76,507,454)" class="value number p3 colorized">-2.78%</td>
+                                    <td title="878 -&gt; 878 (+0)" class="value number n1 colorized">+0.01%</td>
+                                    <td title="531 -&gt; 531 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,322 -&gt; 1,328 (+6)" class="value number n1 colorized">+0.45%</td>
+                                    <td title="83,072,307 -&gt; 80,739,521 (-2,332,786)" class="value number p3 colorized">-2.81%</td>
+                                    <td title="138,454 -&gt; 134,791 (-3,663)" class="value number p3 colorized">-2.65%</td>
+                                    <td title="8,307,231 -&gt; 8,087,431 (-219,800)" class="value number p3 colorized">-2.65%</td>
+                                    <td title="498,433,842 -&gt; 485,245,869 (-13,187,973)" class="value number p3 colorized">-2.65%</td>
+                                    <td title="11,962,412,208 -&gt; 11,645,900,859 (-316,511,349)" class="value number p3 colorized">-2.65%</td>
+                                    <td title="3,820 -&gt; 3,826 (+6)" class="value number n1 colorized">+0.15%</td>
+                                    <td title="332 -&gt; 332 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="7,010 -&gt; 7,008 (-2)" class="value number p1 colorized">-0.03%</td>
+                                 </tr>
+                                 <tr class="totals filtered" style="display: none;"></tr>
+                              </tfoot>
+                              <tbody>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       AddToCart_US
+                                       </td>
+                                    <td title="2,028,822 -&gt; 1,958,163 (-70,659)" class="value number p4 colorized">-3.48%</td>
+                                    <td title="3,381 -&gt; 3,269 (-112)" class="value number p4 colorized">-3.32%</td>
+                                    <td title="202,882 -&gt; 196,143 (-6,739)" class="value number p4 colorized">-3.32%</td>
+                                    <td title="12,172,932 -&gt; 11,768,592 (-404,340)" class="value number p4 colorized">-3.32%</td>
+                                    <td title="292,150,368 -&gt; 282,446,216 (-9,704,152)" class="value number p4 colorized">-3.32%</td>
+                                    <td title="869 -&gt; 869 (+0)" class="value number n1 colorized">+0.03%</td>
+                                    <td title="856 -&gt; 856 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="903 -&gt; 903 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,541,597 -&gt; 1,487,584 (-54,013)" class="value number p4 colorized">-3.50%</td>
+                                    <td title="2,569 -&gt; 2,483 (-86)" class="value number p4 colorized">-3.34%</td>
+                                    <td title="154,160 -&gt; 149,007 (-5,153)" class="value number p4 colorized">-3.34%</td>
+                                    <td title="9,249,582 -&gt; 8,940,405 (-309,177)" class="value number p4 colorized">-3.34%</td>
+                                    <td title="221,989,968 -&gt; 214,569,712 (-7,420,256)" class="value number p4 colorized">-3.34%</td>
+                                    <td title="660 -&gt; 660 (+0)" class="value number n1 colorized">+0.01%</td>
+                                    <td title="641 -&gt; 641 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="685 -&gt; 684 (-1)" class="value number p1 colorized">-0.15%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CheckoutPayment_US
+                                       </td>
+                                    <td title="223,587 -&gt; 214,555 (-9,032)" class="value number p5 colorized">-4.04%</td>
+                                    <td title="373 -&gt; 358 (-14)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="22,359 -&gt; 21,491 (-867)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="1,341,522 -&gt; 1,289,479 (-52,043)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="32,196,528 -&gt; 30,947,499 (-1,249,029)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="1,124 -&gt; 1,123 (-0)" class="value number p1 colorized">-0.02%</td>
+                                    <td title="1,096 -&gt; 1,098 (+2)" class="value number n1 colorized">+0.18%</td>
+                                    <td title="1,153 -&gt; 1,152 (-1)" class="value number p1 colorized">-0.09%</td>
+                                    <td title="926,706 -&gt; 889,888 (-36,818)" class="value number p4 colorized">-3.97%</td>
+                                    <td title="1,545 -&gt; 1,486 (-59)" class="value number p4 colorized">-3.81%</td>
+                                    <td title="92,671 -&gt; 89,137 (-3,533)" class="value number p4 colorized">-3.81%</td>
+                                    <td title="5,560,236 -&gt; 5,348,242 (-211,994)" class="value number p4 colorized">-3.81%</td>
+                                    <td title="133,445,664 -&gt; 128,357,802 (-5,087,862)" class="value number p4 colorized">-3.81%</td>
+                                    <td title="4,657 -&gt; 4,659 (+2)" class="value number n1 colorized">+0.05%</td>
+                                    <td title="4,310 -&gt; 4,319 (+9)" class="value number n1 colorized">+0.21%</td>
+                                    <td title="5,138 -&gt; 5,141 (+3)" class="value number n1 colorized">+0.06%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CheckoutPayment_US [303]
+                                       </td>
+                                    <td title="250,070 -&gt; 240,018 (-10,052)" class="value number p5 colorized">-4.02%</td>
+                                    <td title="417 -&gt; 401 (-16)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="25,007 -&gt; 24,042 (-965)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="1,500,420 -&gt; 1,442,512 (-57,908)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="36,010,080 -&gt; 34,620,292 (-1,389,788)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="1,257 -&gt; 1,257 (+0)" class="value number n1 colorized">+0.00%</td>
+                                    <td title="1,222 -&gt; 1,226 (+4)" class="value number n1 colorized">+0.33%</td>
+                                    <td title="1,294 -&gt; 1,292 (-2)" class="value number p1 colorized">-0.15%</td>
+                                    <td title="165,678 -&gt; 158,974 (-6,704)" class="value number p5 colorized">-4.05%</td>
+                                    <td title="276 -&gt; 265 (-11)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="16,568 -&gt; 15,924 (-644)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="994,068 -&gt; 955,436 (-38,632)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="23,857,632 -&gt; 22,930,473 (-927,159)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="833 -&gt; 832 (-0)" class="value number p1 colorized">-0.03%</td>
+                                    <td title="805 -&gt; 807 (+2)" class="value number n1 colorized">+0.25%</td>
+                                    <td title="862 -&gt; 861 (-1)" class="value number p1 colorized">-0.12%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CheckoutPlaceOrder_US
+                                       </td>
+                                    <td title="103,735 -&gt; 106,023 (+2,288)" class="value number n3 colorized">+2.21%</td>
+                                    <td title="173 -&gt; 177 (+4)" class="value number n3 colorized">+2.38%</td>
+                                    <td title="10,374 -&gt; 10,620 (+246)" class="value number n3 colorized">+2.38%</td>
+                                    <td title="622,410 -&gt; 637,200 (+14,790)" class="value number n3 colorized">+2.38%</td>
+                                    <td title="14,937,840 -&gt; 15,292,800 (+354,960)" class="value number n3 colorized">+2.38%</td>
+                                    <td title="1,092 -&gt; 1,093 (+1)" class="value number n1 colorized">+0.10%</td>
+                                    <td title="1,066 -&gt; 1,069 (+3)" class="value number n1 colorized">+0.28%</td>
+                                    <td title="1,122 -&gt; 1,121 (-1)" class="value number p1 colorized">-0.09%</td>
+                                    <td title="454,851 -&gt; 464,573 (+9,722)" class="value number n3 colorized">+2.14%</td>
+                                    <td title="758 -&gt; 776 (+17)" class="value number n3 colorized">+2.31%</td>
+                                    <td title="45,485 -&gt; 46,535 (+1,050)" class="value number n3 colorized">+2.31%</td>
+                                    <td title="2,729,106 -&gt; 2,792,091 (+62,985)" class="value number n3 colorized">+2.31%</td>
+                                    <td title="65,498,544 -&gt; 67,010,196 (+1,511,652)" class="value number n3 colorized">+2.31%</td>
+                                    <td title="4,788 -&gt; 4,789 (+2)" class="value number n1 colorized">+0.03%</td>
+                                    <td title="4,753 -&gt; 4,756 (+3)" class="value number n1 colorized">+0.06%</td>
+                                    <td title="4,830 -&gt; 4,829 (-1)" class="value number p1 colorized">-0.02%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CheckoutPlaceOrder_US [303]
+                                       </td>
+                                    <td title="112,475 -&gt; 114,947 (+2,472)" class="value number n3 colorized">+2.20%</td>
+                                    <td title="187 -&gt; 192 (+4)" class="value number n3 colorized">+2.37%</td>
+                                    <td title="11,248 -&gt; 11,514 (+266)" class="value number n3 colorized">+2.37%</td>
+                                    <td title="674,850 -&gt; 690,833 (+15,983)" class="value number n3 colorized">+2.37%</td>
+                                    <td title="16,196,400 -&gt; 16,580,001 (+383,601)" class="value number n3 colorized">+2.37%</td>
+                                    <td title="1,184 -&gt; 1,185 (+1)" class="value number n1 colorized">+0.09%</td>
+                                    <td title="1,158 -&gt; 1,161 (+3)" class="value number n1 colorized">+0.26%</td>
+                                    <td title="1,214 -&gt; 1,213 (-1)" class="value number p1 colorized">-0.08%</td>
+                                    <td title="78,180 -&gt; 79,930 (+1,750)" class="value number n3 colorized">+2.24%</td>
+                                    <td title="130 -&gt; 133 (+3)" class="value number n3 colorized">+2.41%</td>
+                                    <td title="7,818 -&gt; 8,006 (+188)" class="value number n3 colorized">+2.41%</td>
+                                    <td title="469,080 -&gt; 480,381 (+11,301)" class="value number n3 colorized">+2.41%</td>
+                                    <td title="11,257,920 -&gt; 11,529,135 (+271,215)" class="value number n3 colorized">+2.41%</td>
+                                    <td title="823 -&gt; 824 (+1)" class="value number n1 colorized">+0.13%</td>
+                                    <td title="797 -&gt; 800 (+3)" class="value number n1 colorized">+0.38%</td>
+                                    <td title="853 -&gt; 852 (-1)" class="value number p1 colorized">-0.12%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CheckoutShippingAddress_US
+                                       </td>
+                                    <td title="215,826 -&gt; 207,106 (-8,720)" class="value number p5 colorized">-4.04%</td>
+                                    <td title="360 -&gt; 346 (-14)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="21,583 -&gt; 20,745 (-837)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="1,294,956 -&gt; 1,244,711 (-50,245)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="31,078,944 -&gt; 29,873,052 (-1,205,892)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="1,085 -&gt; 1,084 (-0)" class="value number p1 colorized">-0.02%</td>
+                                    <td title="1,057 -&gt; 1,059 (+2)" class="value number n1 colorized">+0.19%</td>
+                                    <td title="1,114 -&gt; 1,113 (-1)" class="value number p1 colorized">-0.09%</td>
+                                    <td title="734,620 -&gt; 705,028 (-29,592)" class="value number p5 colorized">-4.03%</td>
+                                    <td title="1,224 -&gt; 1,177 (-47)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="73,462 -&gt; 70,621 (-2,841)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="4,407,720 -&gt; 4,237,230 (-170,490)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="105,785,280 -&gt; 101,693,521 (-4,091,759)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="3,692 -&gt; 3,691 (-0)" class="value number p1 colorized">-0.01%</td>
+                                    <td title="3,677 -&gt; 3,677 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="3,712 -&gt; 3,710 (-2)" class="value number p1 colorized">-0.05%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CheckoutShippingAddress_US [303]
+                                       </td>
+                                    <td title="221,199 -&gt; 212,263 (-8,936)" class="value number p5 colorized">-4.04%</td>
+                                    <td title="369 -&gt; 354 (-14)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="22,120 -&gt; 21,262 (-858)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="1,327,194 -&gt; 1,275,704 (-51,490)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="31,852,656 -&gt; 30,616,900 (-1,235,756)" class="value number p4 colorized">-3.88%</td>
+                                    <td title="1,112 -&gt; 1,111 (-0)" class="value number p1 colorized">-0.02%</td>
+                                    <td title="1,084 -&gt; 1,086 (+2)" class="value number n1 colorized">+0.18%</td>
+                                    <td title="1,141 -&gt; 1,140 (-1)" class="value number p1 colorized">-0.09%</td>
+                                    <td title="157,519 -&gt; 151,143 (-6,376)" class="value number p5 colorized">-4.05%</td>
+                                    <td title="263 -&gt; 252 (-10)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="15,752 -&gt; 15,140 (-612)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="945,114 -&gt; 908,372 (-36,742)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="22,682,736 -&gt; 21,800,927 (-881,809)" class="value number p4 colorized">-3.89%</td>
+                                    <td title="792 -&gt; 791 (-0)" class="value number p1 colorized">-0.03%</td>
+                                    <td title="764 -&gt; 766 (+2)" class="value number n1 colorized">+0.26%</td>
+                                    <td title="821 -&gt; 820 (-1)" class="value number p1 colorized">-0.12%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Checkout_US
+                                       </td>
+                                    <td title="166,259 -&gt; 159,487 (-6,772)" class="value number p5 colorized">-4.07%</td>
+                                    <td title="277 -&gt; 266 (-11)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="16,626 -&gt; 15,975 (-651)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="997,554 -&gt; 958,520 (-39,034)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="23,941,296 -&gt; 23,004,469 (-936,827)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="835 -&gt; 835 (-0)" class="value number p1 colorized">-0.06%</td>
+                                    <td title="815 -&gt; 815 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="857 -&gt; 857 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="790,020 -&gt; 758,191 (-31,829)" class="value number p5 colorized">-4.03%</td>
+                                    <td title="1,317 -&gt; 1,266 (-51)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="79,002 -&gt; 75,946 (-3,056)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="4,740,120 -&gt; 4,556,741 (-183,379)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="113,762,880 -&gt; 109,361,774 (-4,401,106)" class="value number p4 colorized">-3.87%</td>
+                                    <td title="3,970 -&gt; 3,970 (-0)" class="value number p1 colorized">-0.01%</td>
+                                    <td title="3,956 -&gt; 3,956 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="3,988 -&gt; 3,988 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Checkout_US [303]
+                                       </td>
+                                    <td title="160,687 -&gt; 154,139 (-6,548)" class="value number p5 colorized">-4.08%</td>
+                                    <td title="268 -&gt; 257 (-10)" class="value number p4 colorized">-3.92%</td>
+                                    <td title="16,069 -&gt; 15,440 (-629)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="964,122 -&gt; 926,378 (-37,744)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="23,138,928 -&gt; 22,233,071 (-905,857)" class="value number p4 colorized">-3.91%</td>
+                                    <td title="807 -&gt; 807 (-0)" class="value number p1 colorized">-0.06%</td>
+                                    <td title="787 -&gt; 787 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="829 -&gt; 829 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="66,068 -&gt; 63,412 (-2,656)" class="value number p5 colorized">-4.02%</td>
+                                    <td title="110 -&gt; 106 (-4)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="6,607 -&gt; 6,352 (-255)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="396,408 -&gt; 381,107 (-15,301)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="9,513,792 -&gt; 9,146,572 (-367,220)" class="value number p4 colorized">-3.86%</td>
+                                    <td title="332 -&gt; 332 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="332 -&gt; 332 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="332 -&gt; 332 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       ClickACategory_US
+                                       </td>
+                                    <td title="1,849,640 -&gt; 1,851,225 (+1,585)" class="value number n1 colorized">+0.09%</td>
+                                    <td title="3,083 -&gt; 3,091 (+8)" class="value number n1 colorized">+0.25%</td>
+                                    <td title="184,964 -&gt; 185,432 (+468)" class="value number n1 colorized">+0.25%</td>
+                                    <td title="11,097,840 -&gt; 11,125,893 (+28,053)" class="value number n1 colorized">+0.25%</td>
+                                    <td title="266,348,160 -&gt; 267,021,436 (+673,276)" class="value number n1 colorized">+0.25%</td>
+                                    <td title="848 -&gt; 849 (+1)" class="value number n1 colorized">+0.09%</td>
+                                    <td title="818 -&gt; 818 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="915 -&gt; 915 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="13,325,939 -&gt; 13,303,286 (-22,653)" class="value number p1 colorized">-0.17%</td>
+                                    <td title="22,210 -&gt; 22,209 (-1)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="1,332,594 -&gt; 1,332,550 (-44)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="79,955,634 -&gt; 79,952,971 (-2,663)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="1,918,935,216 -&gt; 1,918,871,303 (-63,913)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="6,110 -&gt; 6,100 (-10)" class="value number p1 colorized">-0.17%</td>
+                                    <td title="5,323 -&gt; 5,323 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="6,649 -&gt; 6,648 (-1)" class="value number p1 colorized">-0.02%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       ClickATopCategory_US
+                                       </td>
+                                    <td title="507,116 -&gt; 450,264 (-56,852)" class="value number p12 colorized">-11.21%</td>
+                                    <td title="845 -&gt; 752 (-94)" class="value number p12 colorized">-11.06%</td>
+                                    <td title="50,712 -&gt; 45,102 (-5,610)" class="value number p12 colorized">-11.06%</td>
+                                    <td title="3,042,696 -&gt; 2,706,094 (-336,602)" class="value number p12 colorized">-11.06%</td>
+                                    <td title="73,024,704 -&gt; 64,946,260 (-8,078,444)" class="value number p12 colorized">-11.06%</td>
+                                    <td title="851 -&gt; 853 (+2)" class="value number n1 colorized">+0.22%</td>
+                                    <td title="821 -&gt; 821 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="916 -&gt; 916 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="3,686,435 -&gt; 3,265,657 (-420,778)" class="value number p12 colorized">-11.41%</td>
+                                    <td title="6,144 -&gt; 5,452 (-692)" class="value number p12 colorized">-11.27%</td>
+                                    <td title="368,644 -&gt; 327,111 (-41,533)" class="value number p12 colorized">-11.27%</td>
+                                    <td title="22,118,610 -&gt; 19,626,653 (-2,491,957)" class="value number p12 colorized">-11.27%</td>
+                                    <td title="530,846,640 -&gt; 471,039,674 (-59,806,966)" class="value number p12 colorized">-11.27%</td>
+                                    <td title="6,185 -&gt; 6,185 (-0)" class="value number p1 colorized">-0.01%</td>
+                                    <td title="5,947 -&gt; 5,947 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="6,654 -&gt; 6,673 (+19)" class="value number n1 colorized">+0.29%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       ClickProductDetails_US
+                                       </td>
+                                    <td title="3,687,484 -&gt; 3,572,050 (-115,434)" class="value number p4 colorized">-3.13%</td>
+                                    <td title="6,146 -&gt; 5,963 (-182)" class="value number p3 colorized">-2.97%</td>
+                                    <td title="368,748 -&gt; 357,801 (-10,947)" class="value number p3 colorized">-2.97%</td>
+                                    <td title="22,124,904 -&gt; 21,468,080 (-656,824)" class="value number p3 colorized">-2.97%</td>
+                                    <td title="530,997,696 -&gt; 515,233,923 (-15,763,773)" class="value number p3 colorized">-2.97%</td>
+                                    <td title="879 -&gt; 879 (+0)" class="value number n1 colorized">+0.02%</td>
+                                    <td title="868 -&gt; 868 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="915 -&gt; 915 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="20,126,910 -&gt; 19,480,639 (-646,271)" class="value number p4 colorized">-3.21%</td>
+                                    <td title="33,545 -&gt; 32,522 (-1,023)" class="value number p4 colorized">-3.05%</td>
+                                    <td title="2,012,691 -&gt; 1,951,316 (-61,375)" class="value number p4 colorized">-3.05%</td>
+                                    <td title="120,761,460 -&gt; 117,078,966 (-3,682,494)" class="value number p4 colorized">-3.05%</td>
+                                    <td title="2,898,275,040 -&gt; 2,809,895,175 (-88,379,865)" class="value number p4 colorized">-3.05%</td>
+                                    <td title="4,799 -&gt; 4,796 (-3)" class="value number p1 colorized">-0.07%</td>
+                                    <td title="4,528 -&gt; 4,528 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="5,186 -&gt; 5,208 (+22)" class="value number n1 colorized">+0.42%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       ContinueShoppingPage_US
+                                       </td>
+                                    <td title="95,280 -&gt; 97,390 (+2,110)" class="value number n3 colorized">+2.21%</td>
+                                    <td title="159 -&gt; 163 (+4)" class="value number n3 colorized">+2.39%</td>
+                                    <td title="9,528 -&gt; 9,755 (+227)" class="value number n3 colorized">+2.39%</td>
+                                    <td title="571,680 -&gt; 585,316 (+13,636)" class="value number n3 colorized">+2.39%</td>
+                                    <td title="13,720,320 -&gt; 14,047,573 (+327,253)" class="value number n3 colorized">+2.39%</td>
+                                    <td title="1,003 -&gt; 1,004 (+1)" class="value number n1 colorized">+0.11%</td>
+                                    <td title="977 -&gt; 980 (+3)" class="value number n1 colorized">+0.31%</td>
+                                    <td title="1,033 -&gt; 1,032 (-1)" class="value number p1 colorized">-0.10%</td>
+                                    <td title="592,205 -&gt; 604,711 (+12,506)" class="value number n3 colorized">+2.11%</td>
+                                    <td title="987 -&gt; 1,010 (+23)" class="value number n3 colorized">+2.28%</td>
+                                    <td title="59,220 -&gt; 60,572 (+1,352)" class="value number n3 colorized">+2.28%</td>
+                                    <td title="3,553,230 -&gt; 3,634,323 (+81,093)" class="value number n3 colorized">+2.28%</td>
+                                    <td title="85,277,520 -&gt; 87,223,757 (+1,946,237)" class="value number n3 colorized">+2.28%</td>
+                                    <td title="6,234 -&gt; 6,234 (+0)" class="value number n1 colorized">+0.01%</td>
+                                    <td title="6,224 -&gt; 6,224 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="6,247 -&gt; 6,247 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CreateAccount_US
+                                       </td>
+                                    <td title="126,084 -&gt; 126,084 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="210 -&gt; 210 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="12,608 -&gt; 12,629 (+21)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="756,504 -&gt; 757,767 (+1,263)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="18,156,096 -&gt; 18,186,407 (+30,311)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="948 -&gt; 948 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="948 -&gt; 948 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="948 -&gt; 948 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="604,086 -&gt; 604,086 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,007 -&gt; 1,008 (+2)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="60,409 -&gt; 60,509 (+101)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="3,624,516 -&gt; 3,630,567 (+6,051)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="86,988,384 -&gt; 87,133,607 (+145,223)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="4,542 -&gt; 4,542 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,542 -&gt; 4,542 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,542 -&gt; 4,542 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       CreateAccount_US [303]
+                                       </td>
+                                    <td title="136,477 -&gt; 136,479 (+2)" class="value number n1 colorized">+0.00%</td>
+                                    <td title="227 -&gt; 228 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="13,648 -&gt; 13,671 (+23)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="818,862 -&gt; 820,241 (+1,379)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="19,652,688 -&gt; 19,685,786 (+33,098)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="1,026 -&gt; 1,026 (+0)" class="value number n1 colorized">+0.00%</td>
+                                    <td title="1,020 -&gt; 1,021 (+1)" class="value number n1 colorized">+0.10%</td>
+                                    <td title="1,034 -&gt; 1,037 (+3)" class="value number n1 colorized">+0.29%</td>
+                                    <td title="63,042 -&gt; 63,042 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="105 -&gt; 105 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="6,304 -&gt; 6,315 (+11)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="378,252 -&gt; 378,883 (+631)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="9,078,048 -&gt; 9,093,203 (+15,155)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="474 -&gt; 474 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="474 -&gt; 474 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="474 -&gt; 474 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       GoToCreateAccount_US
+                                       </td>
+                                    <td title="104,538 -&gt; 104,538 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="174 -&gt; 175 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="10,454 -&gt; 10,471 (+17)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="627,228 -&gt; 628,275 (+1,047)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="15,053,472 -&gt; 15,078,603 (+25,131)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="786 -&gt; 786 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="786 -&gt; 786 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="786 -&gt; 786 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="550,620 -&gt; 550,620 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="918 -&gt; 919 (+2)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="55,062 -&gt; 55,154 (+92)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="3,303,720 -&gt; 3,309,235 (+5,515)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="79,289,280 -&gt; 79,421,649 (+132,369)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="4,140 -&gt; 4,140 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,140 -&gt; 4,140 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,140 -&gt; 4,140 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       GoToMyAccount_US
+                                       </td>
+                                    <td title="14,399 -&gt; 14,399 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="24 -&gt; 24 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="1,440 -&gt; 1,442 (+2)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="86,394 -&gt; 86,538 (+144)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="2,073,456 -&gt; 2,076,918 (+3,462)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="847 -&gt; 847 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="847 -&gt; 847 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="847 -&gt; 847 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="71,621 -&gt; 71,621 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="119 -&gt; 120 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="7,162 -&gt; 7,174 (+12)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="429,726 -&gt; 430,443 (+717)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="10,313,424 -&gt; 10,330,642 (+17,218)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="4,213 -&gt; 4,213 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,211 -&gt; 4,212 (+1)" class="value number n1 colorized">+0.02%</td>
+                                    <td title="4,216 -&gt; 4,215 (-1)" class="value number p1 colorized">-0.02%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Homepage_US
+                                       </td>
+                                    <td title="824,112 -&gt; 824,112 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,374 -&gt; 1,376 (+2)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="82,411 -&gt; 82,549 (+138)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="4,944,672 -&gt; 4,952,927 (+8,255)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="118,672,128 -&gt; 118,870,245 (+198,117)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="531 -&gt; 531 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="531 -&gt; 531 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="531 -&gt; 531 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="10,331,664 -&gt; 10,331,664 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="17,219 -&gt; 17,248 (+29)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="1,033,166 -&gt; 1,034,891 (+1,725)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="61,989,984 -&gt; 62,093,473 (+103,489)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="1,487,759,616 -&gt; 1,490,243,355 (+2,483,739)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="6,657 -&gt; 6,657 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="6,657 -&gt; 6,657 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="6,657 -&gt; 6,657 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Homepage_US [303]
+                                       </td>
+                                    <td title="1,669,475 -&gt; 1,669,475 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="2,782 -&gt; 2,787 (+5)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="166,948 -&gt; 167,226 (+279)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="10,016,850 -&gt; 10,033,573 (+16,723)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="240,404,400 -&gt; 240,805,743 (+401,343)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="1,075 -&gt; 1,075 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,075 -&gt; 1,075 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,075 -&gt; 1,075 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,686,520 -&gt; 4,686,304 (-216)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="7,811 -&gt; 7,824 (+13)" class="value number n1 colorized">+0.16%</td>
+                                    <td title="468,652 -&gt; 469,413 (+761)" class="value number n1 colorized">+0.16%</td>
+                                    <td title="28,119,120 -&gt; 28,164,765 (+45,645)" class="value number n1 colorized">+0.16%</td>
+                                    <td title="674,858,880 -&gt; 675,954,367 (+1,095,487)" class="value number n1 colorized">+0.16%</td>
+                                    <td title="3,018 -&gt; 3,018 (-0)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="3,017 -&gt; 3,016 (-1)" class="value number p1 colorized">-0.03%</td>
+                                    <td title="3,019 -&gt; 3,019 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Login_US
+                                       </td>
+                                    <td title="127,547 -&gt; 127,547 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="213 -&gt; 213 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="12,755 -&gt; 12,776 (+21)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="765,282 -&gt; 766,560 (+1,278)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="18,366,768 -&gt; 18,397,430 (+30,662)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="959 -&gt; 959 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="959 -&gt; 959 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="959 -&gt; 959 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="602,893 -&gt; 602,891 (-2)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="1,005 -&gt; 1,006 (+2)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="60,289 -&gt; 60,390 (+100)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="3,617,358 -&gt; 3,623,385 (+6,027)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="86,816,592 -&gt; 86,961,239 (+144,647)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="4,533 -&gt; 4,533 (-0)" class="value number p1 colorized">-0.00%</td>
+                                    <td title="4,530 -&gt; 4,530 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="4,536 -&gt; 4,536 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Login_US [303]
+                                       </td>
+                                    <td title="128,212 -&gt; 128,212 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="214 -&gt; 214 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="12,821 -&gt; 12,843 (+21)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="769,272 -&gt; 770,556 (+1,284)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="18,462,528 -&gt; 18,493,350 (+30,822)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="964 -&gt; 964 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="964 -&gt; 964 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="964 -&gt; 964 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="93,233 -&gt; 93,233 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="155 -&gt; 156 (+0)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="9,323 -&gt; 9,339 (+16)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="559,398 -&gt; 560,332 (+934)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="13,425,552 -&gt; 13,447,965 (+22,413)" class="value number n1 colorized">+0.17%</td>
+                                    <td title="701 -&gt; 701 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="701 -&gt; 701 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="701 -&gt; 701 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Logout_US
+                                       </td>
+                                    <td title="113,547 -&gt; 107,930 (-5,617)" class="value number p5 colorized">-4.95%</td>
+                                    <td title="189 -&gt; 180 (-9)" class="value number p5 colorized">-4.79%</td>
+                                    <td title="11,355 -&gt; 10,811 (-544)" class="value number p5 colorized">-4.79%</td>
+                                    <td title="681,282 -&gt; 648,661 (-32,621)" class="value number p5 colorized">-4.79%</td>
+                                    <td title="16,350,768 -&gt; 15,567,866 (-782,902)" class="value number p5 colorized">-4.79%</td>
+                                    <td title="1,005 -&gt; 999 (-5)" class="value number p1 colorized">-0.55%</td>
+                                    <td title="763 -&gt; 763 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,083 -&gt; 1,081 (-2)" class="value number p1 colorized">-0.18%</td>
+                                    <td title="785,355 -&gt; 750,171 (-35,184)" class="value number p5 colorized">-4.48%</td>
+                                    <td title="1,309 -&gt; 1,252 (-57)" class="value number p5 colorized">-4.32%</td>
+                                    <td title="78,536 -&gt; 75,142 (-3,393)" class="value number p5 colorized">-4.32%</td>
+                                    <td title="4,712,130 -&gt; 4,508,540 (-203,590)" class="value number p5 colorized">-4.32%</td>
+                                    <td title="113,091,120 -&gt; 108,204,966 (-4,886,154)" class="value number p5 colorized">-4.32%</td>
+                                    <td title="6,950 -&gt; 6,946 (-4)" class="value number p1 colorized">-0.06%</td>
+                                    <td title="6,767 -&gt; 6,767 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="7,010 -&gt; 7,008 (-2)" class="value number p1 colorized">-0.03%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Logout_US [303]
+                                       </td>
+                                    <td title="114,726 -&gt; 109,114 (-5,612)" class="value number p5 colorized">-4.89%</td>
+                                    <td title="191 -&gt; 182 (-9)" class="value number p5 colorized">-4.73%</td>
+                                    <td title="11,473 -&gt; 10,930 (-543)" class="value number p5 colorized">-4.73%</td>
+                                    <td title="688,356 -&gt; 655,777 (-32,579)" class="value number p5 colorized">-4.73%</td>
+                                    <td title="16,520,544 -&gt; 15,738,647 (-781,897)" class="value number p5 colorized">-4.73%</td>
+                                    <td title="1,015 -&gt; 1,010 (-5)" class="value number p1 colorized">-0.49%</td>
+                                    <td title="838 -&gt; 838 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,082 -&gt; 1,080 (-2)" class="value number p1 colorized">-0.18%</td>
+                                    <td title="88,995 -&gt; 84,576 (-4,419)" class="value number p5 colorized">-4.97%</td>
+                                    <td title="148 -&gt; 141 (-7)" class="value number p5 colorized">-4.81%</td>
+                                    <td title="8,900 -&gt; 8,472 (-428)" class="value number p5 colorized">-4.81%</td>
+                                    <td title="533,970 -&gt; 508,303 (-25,667)" class="value number p5 colorized">-4.81%</td>
+                                    <td title="12,815,280 -&gt; 12,199,276 (-616,004)" class="value number p5 colorized">-4.81%</td>
+                                    <td title="788 -&gt; 783 (-4)" class="value number p1 colorized">-0.57%</td>
+                                    <td title="551 -&gt; 551 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="857 -&gt; 855 (-2)" class="value number p1 colorized">-0.23%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Search_US
+                                       </td>
+                                    <td title="2,230,816 -&gt; 2,112,081 (-118,735)" class="value number p6 colorized">-5.32%</td>
+                                    <td title="3,718 -&gt; 3,526 (-192)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="223,082 -&gt; 211,561 (-11,521)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="13,384,896 -&gt; 12,693,642 (-691,254)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="321,237,504 -&gt; 304,647,410 (-16,590,094)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="911 -&gt; 910 (-0)" class="value number p1 colorized">-0.02%</td>
+                                    <td title="883 -&gt; 883 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="978 -&gt; 978 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="11,890,769 -&gt; 11,239,752 (-651,017)" class="value number p6 colorized">-5.47%</td>
+                                    <td title="19,818 -&gt; 18,764 (-1,054)" class="value number p6 colorized">-5.32%</td>
+                                    <td title="1,189,077 -&gt; 1,125,852 (-63,225)" class="value number p6 colorized">-5.32%</td>
+                                    <td title="71,344,614 -&gt; 67,551,097 (-3,793,517)" class="value number p6 colorized">-5.32%</td>
+                                    <td title="1,712,270,736 -&gt; 1,621,226,332 (-91,044,404)" class="value number p6 colorized">-5.32%</td>
+                                    <td title="4,853 -&gt; 4,845 (-9)" class="value number p1 colorized">-0.18%</td>
+                                    <td title="4,652 -&gt; 4,652 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="5,178 -&gt; 5,195 (+17)" class="value number n1 colorized">+0.33%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Search_US [303]
+                                       </td>
+                                    <td title="2,063,218 -&gt; 1,953,530 (-109,688)" class="value number p6 colorized">-5.32%</td>
+                                    <td title="3,439 -&gt; 3,261 (-177)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="206,322 -&gt; 195,679 (-10,643)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="12,379,308 -&gt; 11,740,748 (-638,560)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="297,103,392 -&gt; 281,777,950 (-15,325,442)" class="value number p6 colorized">-5.16%</td>
+                                    <td title="842 -&gt; 842 (-0)" class="value number p1 colorized">-0.01%</td>
+                                    <td title="811 -&gt; 811 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="916 -&gt; 917 (+1)" class="value number n1 colorized">+0.11%</td>
+                                    <td title="1,139,250 -&gt; 1,078,800 (-60,450)" class="value number p6 colorized">-5.31%</td>
+                                    <td title="1,899 -&gt; 1,801 (-98)" class="value number p6 colorized">-5.15%</td>
+                                    <td title="113,925 -&gt; 108,060 (-5,865)" class="value number p6 colorized">-5.15%</td>
+                                    <td title="6,835,500 -&gt; 6,483,606 (-351,894)" class="value number p6 colorized">-5.15%</td>
+                                    <td title="164,052,000 -&gt; 155,606,544 (-8,445,456)" class="value number p6 colorized">-5.15%</td>
+                                    <td title="465 -&gt; 465 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="465 -&gt; 465 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="465 -&gt; 465 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Search_USNoHits
+                                       </td>
+                                    <td title="263,641 -&gt; 269,177 (+5,536)" class="value number n3 colorized">+2.10%</td>
+                                    <td title="439 -&gt; 449 (+10)" class="value number n3 colorized">+2.27%</td>
+                                    <td title="26,364 -&gt; 26,963 (+599)" class="value number n3 colorized">+2.27%</td>
+                                    <td title="1,581,846 -&gt; 1,617,758 (+35,912)" class="value number n3 colorized">+2.27%</td>
+                                    <td title="37,964,304 -&gt; 38,826,198 (+861,894)" class="value number n3 colorized">+2.27%</td>
+                                    <td title="909 -&gt; 909 (+0)" class="value number n1 colorized">+0.03%</td>
+                                    <td title="883 -&gt; 883 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="978 -&gt; 978 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="1,406,689 -&gt; 1,433,174 (+26,485)" class="value number n2 colorized">+1.88%</td>
+                                    <td title="2,344 -&gt; 2,393 (+48)" class="value number n3 colorized">+2.05%</td>
+                                    <td title="140,669 -&gt; 143,557 (+2,888)" class="value number n3 colorized">+2.05%</td>
+                                    <td title="8,440,134 -&gt; 8,613,400 (+173,266)" class="value number n3 colorized">+2.05%</td>
+                                    <td title="202,563,216 -&gt; 206,721,592 (+4,158,376)" class="value number n3 colorized">+2.05%</td>
+                                    <td title="4,851 -&gt; 4,842 (-9)" class="value number p1 colorized">-0.18%</td>
+                                    <td title="4,652 -&gt; 4,652 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="5,178 -&gt; 5,187 (+9)" class="value number n1 colorized">+0.17%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       Search_USNoHits [303]
+                                       </td>
+                                    <td title="336,628 -&gt; 343,671 (+7,043)" class="value number n3 colorized">+2.09%</td>
+                                    <td title="561 -&gt; 574 (+13)" class="value number n3 colorized">+2.26%</td>
+                                    <td title="33,663 -&gt; 34,424 (+762)" class="value number n3 colorized">+2.26%</td>
+                                    <td title="2,019,768 -&gt; 2,065,468 (+45,700)" class="value number n3 colorized">+2.26%</td>
+                                    <td title="48,474,432 -&gt; 49,571,243 (+1,096,811)" class="value number n3 colorized">+2.26%</td>
+                                    <td title="1,161 -&gt; 1,161 (+0)" class="value number n1 colorized">+0.02%</td>
+                                    <td title="1,031 -&gt; 1,022 (-9)" class="value number p1 colorized">-0.87%</td>
+                                    <td title="1,322 -&gt; 1,328 (+6)" class="value number n1 colorized">+0.45%</td>
+                                    <td title="134,850 -&gt; 137,640 (+2,790)" class="value number n3 colorized">+2.07%</td>
+                                    <td title="225 -&gt; 230 (+5)" class="value number n3 colorized">+2.24%</td>
+                                    <td title="13,485 -&gt; 13,787 (+302)" class="value number n3 colorized">+2.24%</td>
+                                    <td title="809,100 -&gt; 827,219 (+18,119)" class="value number n3 colorized">+2.24%</td>
+                                    <td title="19,418,400 -&gt; 19,853,249 (+434,849)" class="value number n3 colorized">+2.24%</td>
+                                    <td title="465 -&gt; 465 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="465 -&gt; 465 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="465 -&gt; 465 (0)" class="value number n0 colorized">0.00%</td>
+                                 </tr>
+                                 <tr>
+                                    <td class="key colgroup1 forcewordbreak">
+                                       ViewCart_US
+                                       </td>
+                                    <td title="1,206,643 -&gt; 1,156,044 (-50,599)" class="value number p5 colorized">-4.19%</td>
+                                    <td title="2,011 -&gt; 1,930 (-81)" class="value number p5 colorized">-4.03%</td>
+                                    <td title="120,664 -&gt; 115,797 (-4,867)" class="value number p5 colorized">-4.03%</td>
+                                    <td title="7,239,858 -&gt; 6,947,844 (-292,014)" class="value number p5 colorized">-4.03%</td>
+                                    <td title="173,756,592 -&gt; 166,748,250 (-7,008,342)" class="value number p5 colorized">-4.03%</td>
+                                    <td title="823 -&gt; 823 (-0)" class="value number p1 colorized">-0.03%</td>
+                                    <td title="787 -&gt; 787 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="873 -&gt; 873 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="7,975,992 -&gt; 7,598,931 (-377,061)" class="value number p5 colorized">-4.73%</td>
+                                    <td title="13,293 -&gt; 12,686 (-607)" class="value number p5 colorized">-4.57%</td>
+                                    <td title="797,599 -&gt; 761,162 (-36,437)" class="value number p5 colorized">-4.57%</td>
+                                    <td title="47,855,952 -&gt; 45,669,702 (-2,186,250)" class="value number p5 colorized">-4.57%</td>
+                                    <td title="1,148,542,848 -&gt; 1,096,072,852 (-52,469,996)" class="value number p5 colorized">-4.57%</td>
+                                    <td title="5,441 -&gt; 5,408 (-32)" class="value number p1 colorized">-0.59%</td>
+                                    <td title="3,959 -&gt; 3,959 (0)" class="value number n0 colorized">0.00%</td>
+                                    <td title="6,776 -&gt; 6,820 (+44)" class="value number n1 colorized">+0.65%</td>
+                                 </tr>
+                              </tbody>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <footer>
+               Copyright (c) 2005-2025 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br>
+               Created with
+               <a href="http://www.xceptance-loadtest.com/?source=TestReport"><span class="productname">Xceptance LoadTest</span><span class="productversion">9.2.2</span></a></footer>
+         </div>
+      </div><script type="text/javascript" src="js/xlt.js"></script></body>
+</html>

@@ -46,7 +46,7 @@
     </xsl:call-template>
 
     <!-- Custom CSS for this page only -->
-    <style type="text/css">
+    <style>
     /* No auto-stripe for table rows, use CSS class to derive color for row stripes. */
     table.no-auto-stripe tr.odd td {
         background-color: #f9f9fc;

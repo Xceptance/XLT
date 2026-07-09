@@ -11,7 +11,6 @@
 
     <!-- Basic Page Needs -->
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>${title}</title>
 
     <!-- Mobile Specific Meta -->
@@ -20,11 +19,6 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/materialize.css">
     <link rel="stylesheet" href="css/custom.css">
-    
-
-    <!--[if lt IE 9]>
-        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
 
     <!-- Favicons -->
     <link rel="shortcut icon" href="images/favicon.ico">

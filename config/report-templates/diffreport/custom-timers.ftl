@@ -1,0 +1,56 @@
+<#import "../common/sections/head.ftl" as head>
+<#import "../common/sections/header.ftl" as header>
+<#import "../common/sections/footer.ftl" as footer>
+<#import "../common/sections/javascript.ftl" as javascript>
+<#import "navigation.ftl" as navigation>
+<#import "descriptions.ftl" as descriptions>
+<#import "util/timer-section.ftl" as timerSection>
+
+<#compress>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <@head.head title="XLT Performance Comparison Report - Custom Timers" projectName=projectName configuration=report.testreport.configuration />
+</head>
+<body id="diffreport">
+<div id="container">
+    <div id="content">
+        <@header.header navNamespace=navigation title="Performance Comparison Report" productName=productName productVersion=productVersion productUrl=productUrl projectName=projectName />
+
+        <div id="data-content">
+
+            <!--
+                ************************************
+                * Custom Timers
+                ************************************
+            -->
+            <div class="section" id="custom-timer-summary">
+                <@descriptions.headline_custom_timer_summary />
+
+                <div class="content">
+                    <@descriptions.description_custom_timer_summary />
+
+                    <#if (report.testreport.customTimers?size > 0)>
+                    <@timerSection.render 
+                        elements=report.testreport.customTimers?children
+                        summaryElement=report.testreport.summary.customTimers
+                        tableRowHeader="Custom Timer Name"
+                        type="custom" />
+                    <#else>
+                    <p>No data available.</p>
+                    </#if>
+                </div>
+            </div>
+
+        </div> <!-- data-content -->
+
+        <@footer.footer productName=productName productVersion=productVersion productUrl=productUrl />
+    </div> <!-- content -->
+</div> <!-- container -->    
+
+<@javascript.javascript />
+
+</body>
+</html>
+
+</#compress>

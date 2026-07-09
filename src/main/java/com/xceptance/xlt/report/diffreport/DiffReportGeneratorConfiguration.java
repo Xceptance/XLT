@@ -27,10 +27,13 @@ import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.util.ElementSpecification;
 import com.xceptance.xlt.report.util.ReportUtils;
 
+import com.xceptance.xlt.report.RendererConfiguration;
+import com.xceptance.xlt.report.ReportRendererFactory;
+
 /**
  *
  */
-public class DiffReportGeneratorConfiguration extends AbstractConfiguration
+public class DiffReportGeneratorConfiguration extends AbstractConfiguration implements RendererConfiguration
 {
     private static final String PROP_PREFIX = XltConstants.XLT_PACKAGE_PATH + ".diffreportgenerator.";
 
@@ -42,6 +45,10 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
 
     private static final String PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX = ".outputFileName";
 
+    private static final String PROP_TRANSFORMATIONS_TEMPLATE_FILE_SUFFIX = ".templateFileName";
+
+    private static final String PROP_RENDERING_ENGINE = PROP_PREFIX + "renderingEngine";
+
     private final File configDirectory;
 
     private final File homeDirectory;
@@ -49,6 +56,8 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     private final File reportsRootDirectory;
     
     private final List<String> styleSheetFileNames;
+
+    private final List<String> templateFileNames;
 
     private final List<String> outputFileNames;
 
@@ -70,8 +79,9 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         // load the transformation configuration
         outputFileNames = new ArrayList<String>();
         styleSheetFileNames = new ArrayList<String>();
-        
-        readTransformations(outputFileNames, styleSheetFileNames);
+        templateFileNames = new ArrayList<String>();
+
+        readTransformations(outputFileNames, styleSheetFileNames, templateFileNames);
 
     }
 
@@ -155,6 +165,34 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     {
         return styleSheetFileNames;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getTemplateFileNames()
+    {
+        return templateFileNames;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public File getXsltStyleSheetRootDirectory()
+    {
+        return new File(getConfigDirectory(), XltConstants.DIFF_REPORT_XSL_PATH);
+    }
+
+    /**
+     * Returns the rendering engine to be used.
+     *
+     * @return the rendering engine
+     */
+    public String getRenderingEngine()
+    {
+        return getStringProperty(PROP_RENDERING_ENGINE, ReportRendererFactory.ENGINE_FREEMARKER);
+    }
     
     /**
      * Reads the transformation configurations. The style sheet file names and output file names for each transformation
@@ -164,8 +202,11 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
      *            the list of output file names
      * @param styleSheetFileNames
      *            the list of style sheet file names
+     * @param templateFileNames
+     *            the list of template file names
      */
-    public void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames)
+    public void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames,
+                                    final List<String> templateFileNames)
     {
         final Set<String> keys = getPropertyKeyFragment(PROP_TRANSFORMATIONS_PREFIX);
         for (final String key : keys)
@@ -173,10 +214,12 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
             final String propertyPrefix = PROP_TRANSFORMATIONS_PREFIX + key;
 
             final File outputFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX);
-            final File styleSheetFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX);
+            final String styleSheetFileName = getStringProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX, null);
+            final String templateFileName = getStringProperty(propertyPrefix + PROP_TRANSFORMATIONS_TEMPLATE_FILE_SUFFIX, null);
 
             outputFileNames.add(outputFile.getPath());
-            styleSheetFileNames.add(styleSheetFile.getPath());
+            styleSheetFileNames.add(styleSheetFileName);
+            templateFileNames.add(templateFileName);
         }
     }
 }

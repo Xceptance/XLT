@@ -1,0 +1,85 @@
+{
+    "comment": "Minimal scorecard config for integration testing",
+    "version": 2,
+
+    "selectors": [
+        {
+            "id": "errorRate",
+            "expression": "/testreport/summary/transactions/errorPercentage"
+        },
+        {
+            "id": "maxRuntime",
+            "expression": "max(//transactions/transaction/percentiles/p95)"
+        }
+    ],
+
+    "ratings": [
+        {
+            "id": "excellent",
+            "name": "Excellent",
+            "value": 90
+        },
+        {
+            "id": "acceptable",
+            "name": "Acceptable",
+            "value": 50
+        },
+        {
+            "id": "poor",
+            "name": "Poor",
+            "value": 0
+        }
+    ],
+
+    "rules": [
+        {
+            "id": "lowErrors",
+            "name": "Low Error Rate",
+            "enabled": true,
+            "failsTest": false,
+            "points": 50,
+            "checks": [
+                {
+                    "selectorId": "errorRate",
+                    "condition": "<= 5.0"
+                }
+            ],
+            "messages": {
+                "success": "Error rate is acceptable",
+                "fail": "Error rate is too high"
+            }
+        },
+        {
+            "id": "fastRuntime",
+            "name": "Fast Runtime",
+            "enabled": true,
+            "failsTest": false,
+            "points": 50,
+            "checks": [
+                {
+                    "selectorId": "maxRuntime",
+                    "condition": "<= 10000"
+                }
+            ],
+            "messages": {
+                "success": "Runtime is fast",
+                "fail": "Runtime is slow"
+            }
+        }
+    ],
+
+    "groups": [
+        {
+            "id": "quality",
+            "name": "Quality Check",
+            "enabled": true,
+            "failsTest": false,
+            "mode": "allPassed",
+            "rules": ["lowErrors", "fastRuntime"],
+            "messages": {
+                "success": "All quality checks passed",
+                "fail": "Some quality checks failed"
+            }
+        }
+    ]
+}
