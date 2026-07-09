@@ -63,6 +63,11 @@ public class RequestInfo implements Comparable<RequestInfo>
     public String formDataEncoding;
 
     /**
+     * Whether the request was served from the browser cache.
+     */
+    public boolean cached;
+
+    /**
      * Request timings (used for HAR export).
      */
     public transient TimingInfo timings;

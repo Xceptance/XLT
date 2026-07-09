@@ -399,6 +399,9 @@
 
             const nameElement = document.createElement("span");
             nameElement.classList.add("name", htmlEncode(contentTypeClass), htmlEncode(request.requestMethod), htmlEncode(protocolClass));
+            if (request.cached) {
+                nameElement.classList.add("contentTypeCached");
+            }
             nameElement.innerHTML = htmlEncode(name);
 
             // attach listeners at action's name
@@ -585,7 +588,11 @@
                 forEachElement(queryAll("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.setAttribute('disabled', ''));
 
                 // check if we have no response
-                if (requestData._noContent) {
+                if (requestData.cached) {
+                    setText(requestText, "Response body not stored for cached requests");
+                    show(requestText);
+                }
+                else if (requestData._noContent) {
                     setText(requestText);
                     show(requestText);
                 }
@@ -683,7 +690,11 @@
 
             // update the response information tab
             setText(getElementById("protocol"), requestData.protocol);
-            setText(getElementById("status"), parseStatusLine(requestData.status));
+            let statusText = parseStatusLine(requestData.status);
+            if (requestData.cached) {
+                statusText += " (from cache)";
+            }
+            setText(getElementById("status"), statusText);
             setText(getElementById("loadtime"), `${requestData.loadTime} ms`);
 
             populateKeyValueTable(getElementById("responseheaders"), requestData.responseHeaders);

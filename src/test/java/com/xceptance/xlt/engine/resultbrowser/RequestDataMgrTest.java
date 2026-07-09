@@ -102,6 +102,41 @@ public class RequestDataMgrTest extends AbstractXLTTestCase
     }
 
     /**
+     * Tests the implementation of {@link RequestDataMgr#generateTransaction()} for a cached request.
+     *
+     * @throws Throwable
+     */
+    @Test
+    public void testGenerateTransaction_CachedRequest() throws Throwable
+    {
+        final URL url = new URL("http://localhost/");
+        final WebResponse response = new StringWebResponse(XltConstants.EMPTYSTRING, url);
+        final WebRequest settings = new WebRequest(url);
+
+        final RequestData requestData = new RequestData();
+        requestData.setCached(true);
+
+        instance.requestDumped("AnyFile", new Request("AnyName", settings, response, requestData));
+
+        final Object transaction = instance.generateTransaction();
+        Assert.assertNotNull(transaction);
+
+        final List<?> actions = (List<?>) getField("actions", transaction);
+        Assert.assertNotNull(actions);
+        Assert.assertEquals(1, actions.size());
+
+        final Object action = actions.get(0);
+        Assert.assertNotNull(action);
+
+        final List<?> requests = (List<?>) getField("requests", action);
+        Assert.assertNotNull(requests);
+        Assert.assertEquals(1, requests.size());
+
+        final Object request = requests.get(0);
+        Assert.assertEquals(Boolean.TRUE, getField("cached", request));
+    }
+
+    /**
      * Tests the implementation of {@link RequestDataMgr#requestDumped(String, Request)}.
      */
     @Test

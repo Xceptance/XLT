@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.util.NameValuePair;
 
 import com.xceptance.common.util.ProductInformation;
+import com.xceptance.xlt.engine.har.model.HarCache;
+import com.xceptance.xlt.engine.har.model.HarCacheRequest;
 import com.xceptance.xlt.engine.har.model.HarContent;
 import com.xceptance.xlt.engine.har.model.HarCreator;
 import com.xceptance.xlt.engine.har.model.HarEntry;
@@ -137,9 +139,15 @@ class HarExporter
                 entryBuilder.withPageref(pageId);
                 entryBuilder.withTime(req.loadTime);
                 entryBuilder.withStartedDateTime(new Date(req.startTime));
-                entryBuilder.withTimings(requestTimings(req.timings));
-                entryBuilder.withRequest(request(req));
-                entryBuilder.withResponse(response(req));
+                entryBuilder.withTimings(this.requestTimings(req.timings));
+                entryBuilder.withRequest(this.request(req));
+                entryBuilder.withResponse(this.response(req));
+
+                if (req.cached)
+                {
+                    final HarCacheRequest cacheReq = new HarCacheRequest.Builder().withHitCount(1).build();
+                    entryBuilder.withCache(new HarCache.Builder().withBeforeRequest(cacheReq).build());
+                }
 
                 entries.add(entryBuilder.build());
             }
@@ -152,7 +160,7 @@ class HarExporter
 
         }
 
-        return new HarLog("1.2", creator(), null, pages, entries, null);
+        return new HarLog("1.2", this.creator(), null, pages, entries, null);
     }
 
     private HarCreator creator()
