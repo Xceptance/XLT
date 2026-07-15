@@ -28,7 +28,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Represents a scorecard and its evaluation results.
@@ -125,46 +124,32 @@ public class Scorecard
 
         private List<Group> groups;
 
-        @XStreamImplicit(itemFieldName = "error")
-        private List<Error> errors;
-
         private String rating;
 
-        @XStreamAlias("logs")
+        private Error error;
+
+        private List<Issue> issues;
+
         private List<LogEntry> logs;
 
-        /**
-         * Returns the first error message for backward compatibility.
-         *
-         * @return the first error message or null if no errors
-         */
-        public String getError()
+        public String getErrorMessage()
         {
-            if (errors == null || errors.isEmpty())
+            if (error == null)
             {
                 return null;
             }
-            return errors.get(0).getMessage();
+            return error.getMessage();
         }
 
-        public List<Error> getErrors()
+        public Error getError()
         {
-            if (errors == null)
-            {
-                return Collections.emptyList();
-            }
-            return Collections.unmodifiableList(errors);
+            return error;
         }
 
-        void addError(final String message, final String log)
+        void setError(final Error error)
         {
-            if (errors == null)
-            {
-                errors = new LinkedList<>();
-            }
-            errors.add(new Error(message, log));
+            this.error = error;
         }
-
 
         public Integer getPoints()
         {
@@ -260,9 +245,6 @@ public class Scorecard
             this.logs = logs != null ? new LinkedList<>(logs) : null;
         }
 
-        @XStreamAlias("issues")
-        private List<Issue> issues;
-
         /**
          * Returns the issues collected during scorecard evaluation.
          *
@@ -345,7 +327,7 @@ public class Scorecard
         final Scorecard r = new Scorecard(null);
         final String errMsg = ExceptionUtils.stream(t).map(Throwable::getMessage).collect(Collectors.joining(" -> "));
         final String stackTrace = ExceptionUtils.getStackTrace(t);
-        r.result.addError(errMsg, stackTrace);
+        r.result.setError(new Error(errMsg, stackTrace));
         return r;
     }
 

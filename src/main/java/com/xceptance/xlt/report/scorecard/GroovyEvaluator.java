@@ -20,17 +20,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
-import com.xceptance.xlt.report.scorecard.Scorecard.LogEntry;
 import com.xceptance.xlt.report.scorecard.groovy.GroovySecurityUtils;
-import com.xceptance.xlt.report.scorecard.groovy.SelectorsHelper;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardData;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardLogger;
 import com.xceptance.xlt.report.scorecard.groovy.ScorecardProperties;
+import com.xceptance.xlt.report.scorecard.groovy.SelectorsHelper;
 import com.xceptance.xlt.report.scorecard.groovy.builder.ScorecardBuilder;
 
 import groovy.lang.Binding;

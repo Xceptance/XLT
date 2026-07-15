@@ -809,7 +809,7 @@ public class ReportGenerator
                 final Evaluator evaluator = new Evaluator(scorecardConfigFile);
                 final Scorecard outcome = evaluator.evaluate(reportXMLFile);
 
-                final String error = outcome.result.getError();
+                final String error = outcome.result.getErrorMessage();
                 if (StringUtils.isNotBlank(error))
                 {
                     XltLogger.reportLogger.error("{}: {}", errMessage, error);

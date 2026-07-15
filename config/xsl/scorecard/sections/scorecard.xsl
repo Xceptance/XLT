@@ -4,7 +4,7 @@
 <xsl:template name="scorecard">
     <xsl:param name="rootNode" />
 
-    <xsl:variable name="error" select="$rootNode/error[1]" />
+    <xsl:variable name="error" select="$rootNode/error" />
     <xsl:variable name="ratingId" select="$rootNode/rating" />
     <xsl:variable name="config" select="$rootNode/preceding-sibling::configuration" />
     <xsl:variable name="ratingDefinition" select="$config/ratings/rating[@id=$ratingId]" />
