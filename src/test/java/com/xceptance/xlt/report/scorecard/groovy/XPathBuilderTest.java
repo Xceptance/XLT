@@ -22,9 +22,9 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SelectorsHelperTest
+public class XPathBuilderTest
 {
-    private final SelectorsHelper metrics = new SelectorsHelper();
+    private final XPathBuilder metrics = new XPathBuilder();
 
     @Test
     public void testGlobalCountPerHour()
@@ -47,7 +47,7 @@ public class SelectorsHelperTest
     public void testPerHour()
     {
         Assert.assertEquals("((sum(//some/path)) div (number(/testreport/general/duration) div 3600))",
-                            metrics.perHour("sum(//some/path)"));
+                             metrics.perHour("sum(//some/path)"));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class SelectorsHelperTest
         // Note: Map keys are processed in a specific order in aggregateValue:
         // name, excludeName, label, excludeLabel
         Assert.assertEquals("max(//requests/request[matches(name, '^Homepage') and not(matches(name, '^Homepage_Static')) and labels = 'critical' and labels != 'cached']/percentiles/p95)",
-                            metrics.requestP95(args));
+                             metrics.requestP95(args));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -94,7 +94,7 @@ public class SelectorsHelperTest
     {
         // To achieve high coverage without massive boilerplate, we dynamically invoke
         // all methods that take a single String regex (e.g., requestP95(String), actionMean(String)).
-        Method[] methods = SelectorsHelper.class.getDeclaredMethods();
+        Method[] methods = XPathBuilder.class.getDeclaredMethods();
         for (Method method : methods)
         {
             String name = method.getName();

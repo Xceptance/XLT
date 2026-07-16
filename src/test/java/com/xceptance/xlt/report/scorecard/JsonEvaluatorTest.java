@@ -366,7 +366,7 @@ public class JsonEvaluatorTest
             Assert.assertNotNull("Scorecard result should not be null", scorecard.result);
             final var issues = scorecard.result.getIssues();
             Assert.assertTrue("Should have at least one issue logged", issues.size() > 0);
-            Assert.assertTrue("Rule evaluation errors should NOT be added to global errors in JSON evaluator", scorecard.result.getErrors().isEmpty());
+            Assert.assertNull("Rule evaluation errors should NOT be added to global errors in JSON evaluator", scorecard.result.getError());
 
             final var firstIssue = issues.get(0);
             Assert.assertEquals("ERROR", firstIssue.getSeverity());

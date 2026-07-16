@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A helper class injected into the Groovy scorecard script as 'selectors'.
+ * A helper class injected into the Groovy scorecard script as 'xpathBuilder'.
  * It provides a fluent way to generate XPath selector strings for the most common
  * XLT test report metrics, avoiding the need for test engineers to write raw XPath.
  */
-public final class SelectorsHelper
+public final class XPathBuilder
 {
     /**
      * Escapes single quotes in the regex to prevent XPath injection/syntax errors.

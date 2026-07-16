@@ -353,10 +353,10 @@ public class GroovyEvaluatorTest
             Assert.assertEquals("Before error", logs.get(0).getMessage());
 
             // Verify framework-level crash details are correctly populated in errors
-            final List<Scorecard.Error> errors = scorecard.result.getErrors();
-            Assert.assertEquals(1, errors.size());
-            Assert.assertTrue(errors.get(0).getMessage().contains("Failed to evaluate Groovy configuration"));
-            Assert.assertTrue(errors.get(0).getLog().contains("java.lang.RuntimeException: Hard failure"));
+            final Scorecard.Error error = scorecard.result.getError();
+            Assert.assertNotNull(error);
+            Assert.assertTrue(error.getMessage().contains("Failed to evaluate Groovy configuration"));
+            Assert.assertTrue(error.getLog().contains("java.lang.RuntimeException: Hard failure"));
         }
         finally
         {

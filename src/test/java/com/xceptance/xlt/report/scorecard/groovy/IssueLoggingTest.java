@@ -89,7 +89,7 @@ public class IssueLoggingTest
             Assert.assertNotNull("Scorecard result should not be null", scorecard.result);
             final var issues = scorecard.result.getIssues();
             Assert.assertTrue("Should have at least one issue logged", issues.size() > 0);
-            Assert.assertTrue("Rule evaluation errors should NOT be added to global errors", scorecard.result.getErrors().isEmpty());
+            Assert.assertNull("Rule evaluation errors should NOT be added to global errors", scorecard.result.getError());
 
             // Verify issue details
             final var firstIssue = issues.get(0);
@@ -167,7 +167,7 @@ public class IssueLoggingTest
             final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
             final var scorecard = evaluator.evaluate(xmlFile);
 
-            Assert.assertTrue("Rule evaluation errors should NOT be added to global errors", scorecard.result.getErrors().isEmpty());
+            Assert.assertNull("Rule evaluation errors should NOT be added to global errors", scorecard.result.getError());
 
             // Serialize to XML
             final var writer = new StringWriter();

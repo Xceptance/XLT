@@ -7,7 +7,7 @@ The Groovy Scorecard feature allows you to define complex, dynamic scorecard con
 When your `.groovy` scorecard script executes, it runs inside a secured sandbox with several pre-injected "bindings" (variables) ready for you to use:
 
 * `builder`: The core `ScorecardBuilder` used to define your rules, groups, and ratings.
-* `selectors`: A helper object that generates complex XPath strings for standard report metrics automatically.
+* `xpathBuilder`: A helper object that generates complex XPath strings for standard report metrics automatically.
 * `properties`: Access to your XLT test properties.
 * `data`: A tool to query the live `testreport.xml` data during script execution.
 * `log`: A logger for debugging your script.
@@ -35,8 +35,8 @@ builder.rules {
         points 10
         checks {
             check {
-                // Use the selectors helper to get the P95 for the Homepage
-                selector selectors.requestP95('^Homepage')
+                // Use the xpathBuilder helper to get the P95 for the Homepage
+                selector xpathBuilder.requestP95('^Homepage')
                 isLessThanOrEqualTo 500
             }
         }
@@ -79,7 +79,7 @@ builder.rules {
         points 5
         checks {
             check {
-                selector selectors.agentCpuMax()
+                selector xpathBuilder.agentCpuMax()
                 isLessThan 90
             }
         }
@@ -89,9 +89,9 @@ builder.rules {
 
 **Fluent Assertions:** You must use one of the following methods to evaluate the selector's value: `isLessThan(value)`, `isLessThanOrEqualTo(value)`, `isGreaterThan(value)`, `isGreaterThanOrEqualTo(value)`, `isEqualTo(value)`, `isNotEqualTo(value)`, or `matchesRegex(pattern)`.
 
-**The `selectors` Helper:** Writing raw XPath is tedious. The `selectors` object abstracts this away using named parameters:
-* `selectors.requestP95('^Homepage')` (legacy shorthand: matches by regex against the name)
-* `selectors.requestP95(name: '^Homepage')` (explicit regex match against name)
+**The `xpathBuilder` Helper:** Writing raw XPath is tedious. The `xpathBuilder` object abstracts this away using named parameters:
+* `xpathBuilder.requestP95('^Homepage')` (legacy shorthand: matches by regex against the name)
+* `xpathBuilder.requestP95(name: '^Homepage')` (explicit regex match against name)
 
 **Label Selection:**
 If your test run makes use of labels to group requests, you can use the built-in named parameters to match by label instead of by name regex:
@@ -100,32 +100,32 @@ This performs an exact match on the label property rather than a regex over the 
 
 **Excluding Elements:**
 You can compute metrics across all elements *except* those matching a specific regex by using the `excludeName` or `excludeLabel` parameters. This is useful for finding worst-case metrics excluding known outliers:
-*   `selectors.requestP95(excludeName: '^OrderSubmit')`
+*   `xpathBuilder.requestP95(excludeName: '^OrderSubmit')`
 
 You can freely combine these constraints:
-*   `selectors.requestP95(name: '^Homepage', excludeLabel: 'cached')`
+*   `xpathBuilder.requestP95(name: '^Homepage', excludeLabel: 'cached')`
 
 Similarly, these helpers are available for **transactions**, **actions** and **customTimers**:
 *   `transactionP95(name: '...Regex')`, `transactionP95(label: '...Label')`, `transactionCount(label: '...')`, `actionErrorPercentage(label: '...')`, etc.
 
 **Global Summaries & Errors:**
 You can retrieve pre-computed global totals and specialized error metrics directly:
-*   `selectors.globalCountPerHour('transactions')` (or 'requests', 'actions')
-*   `selectors.globalErrorPercentage('requests')`
-*   `selectors.httpErrorCount('5..')` (Counts all HTTP 500–599 errors by analyzing `//responseCodes/responseCode`)
-*   `selectors.httpErrorCount('404|400')` (Counts specific HTTP errors)
+*   `xpathBuilder.globalCountPerHour('transactions')` (or 'requests', 'actions')
+*   `xpathBuilder.globalErrorPercentage('requests')`
+*   `xpathBuilder.httpErrorCount('5..')` (Counts all HTTP 500–599 errors by analyzing `//responseCodes/responseCode`)
+*   `xpathBuilder.httpErrorCount('404|400')` (Counts specific HTTP errors)
 
 **Per-Hour Calculation Wrapper:**
-If you need a per-hour rate for an absolute metric (like HTTP errors), wrap it with `selectors.perHour(...)`:
-*   `selectors.perHour(selectors.httpErrorCount('5..'))` (Yields the number of 5xx errors per hour of test duration)
+If you need a per-hour rate for an absolute metric (like HTTP errors), wrap it with `xpathBuilder.perHour(...)`:
+*   `xpathBuilder.perHour(xpathBuilder.httpErrorCount('5..'))` (Yields the number of 5xx errors per hour of test duration)
 
 **Agent Helpers:**
 You can retrieve CPU and error metrics for the load generator agents:
-*   `selectors.agentCpuMax()` (XPath expression for the maximum CPU usage across all agents)
-*   `selectors.agentCountCpuMeanAbove(threshold)` (XPath expression counting how many agents had a mean CPU usage above the threshold)
-*   `selectors.agentCount()` (XPath expression counting the total number of agents used)
-*   `selectors.agentCountWithErrors()` (XPath expression counting how many agents had transaction errors)
-*   `selectors.agentTransactionErrorsTotal()` (XPath expression for the pre-computed total of transaction errors across all agents)
+*   `xpathBuilder.agentCpuMax()` (XPath expression for the maximum CPU usage across all agents)
+*   `xpathBuilder.agentCountCpuMeanAbove(threshold)` (XPath expression counting how many agents had a mean CPU usage above the threshold)
+*   `xpathBuilder.agentCount()` (XPath expression counting the total number of agents used)
+*   `xpathBuilder.agentCountWithErrors()` (XPath expression counting how many agents had transaction errors)
+*   `xpathBuilder.agentTransactionErrorsTotal()` (XPath expression for the pre-computed total of transaction errors across all agents)
 
 ### 3.2 Groups
 Groups logically organize your rules. A group calculates its achieved points based on its `mode`:
@@ -166,7 +166,7 @@ If you use the same selector across multiple rules, you can define it once in th
 builder.selectors {
     selector {
         id 'homepage_p95'
-        expression selectors.requestP95('^Homepage')
+        expression xpathBuilder.requestP95('^Homepage')
     }
 }
 
@@ -199,7 +199,7 @@ builder.rules {
             id "req_${reqName}"
             checks {
                 check {
-                    selector selectors.requestP95(reqName)
+                    selector xpathBuilder.requestP95(reqName)
                     isLessThan defaultLimit
                 }
             }
@@ -213,7 +213,7 @@ You can optionally format the raw values retrieved by the selector using Java st
 
 ```groovy
 check {
-    selector selectors.requestMean('^Homepage')
+    selector xpathBuilder.requestMean('^Homepage')
     isLessThan 1000
     formatter '%,.2f ms' // Formats 1234.5678 as 1,234.57 ms in the report
 }
@@ -288,7 +288,7 @@ builder.rules {
             failsTest true
             checks {
                 check {
-                    selector selectors.requestP95(reqName)
+                    selector xpathBuilder.requestP95(reqName)
                     isLessThan defaultLimit
                 }
             }
@@ -321,7 +321,7 @@ builder.ratings {
 ### `selectors`
 * `selector { ... }`
   * `id (String)`: Unique identifier.
-  * `expression (String)`: The XPath expression (e.g., `selectors.requestP95('...')`).
+  * `expression (String)`: The XPath expression (e.g., `xpathBuilder.requestP95('...')`).
 
 ### `rules`
 * `rule { ... }`

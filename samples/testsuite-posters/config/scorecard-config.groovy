@@ -26,42 +26,42 @@ builder.selectors {
     // Get us the max of all P95 of homepage like requests
     selector {
         id 'homepageP95'
-        expression selectors.requestP95(label: 'homepage')
+        expression xpathBuilder.requestP95(label: 'homepage')
     }
     // Get us the max of all P99 of homepage like requests
     selector {
         id 'homepageP99'
-        expression selectors.requestP99(label: 'homepage')
+        expression xpathBuilder.requestP99(label: 'homepage')
     }
     // Get us the max of all P95 of catalog like requests
     selector {
         id 'catalogP95'
-        expression selectors.requestP95(label: 'catalog')
+        expression xpathBuilder.requestP95(label: 'catalog')
     }
     // Get us the max of all P99 of catalog like requests
     selector {
         id 'catalogP99'
-        expression selectors.requestP99(label: 'catalog')
+        expression xpathBuilder.requestP99(label: 'catalog')
     }
     // Get us the max of all P95 of account like requests
     selector {
         id 'accountP95'
-        expression selectors.requestP95(label: 'account')
+        expression xpathBuilder.requestP95(label: 'account')
     }
     // Get us the max of all P99 of account like requests
     selector {
         id 'accountP99'
-        expression selectors.requestP99(label: 'account')
+        expression xpathBuilder.requestP99(label: 'account')
     }
     // Get us the max of all P95 of cart like requests
     selector {
         id 'cartP95'
-        expression selectors.requestP95(label: 'cart')
+        expression xpathBuilder.requestP95(label: 'cart')
     }
     // Get us the max of all P99 of cart like requests
     selector {
         id 'cartP99'
-        expression selectors.requestP99(label: 'cart')
+        expression xpathBuilder.requestP99(label: 'cart')
     }
     // Get us the max of all P95 of checkout like requests and have enough samples to consider it.
     selector {
@@ -76,12 +76,12 @@ builder.selectors {
     // Get us the max of all P95 of order like requests
     selector {
         id 'orderP95'
-        expression selectors.requestP95(label: 'order')
+        expression xpathBuilder.requestP95(label: 'order')
     }
     // Get us the max of all P99 of order like requests
     selector {
         id 'orderP99'
-        expression selectors.requestP99(label: 'order')
+        expression xpathBuilder.requestP99(label: 'order')
     }
     // Get us the order count
     selector {
@@ -96,17 +96,17 @@ builder.selectors {
     // Get transaction error percentage
     selector {
         id 'transactionErrors'
-        expression selectors.globalErrorPercentage('transactions')
+        expression xpathBuilder.globalErrorPercentage('transactions')
     }
     // Get action errors
     selector {
         id 'actionErrors'
-        expression selectors.globalErrorPercentage('actions')
+        expression xpathBuilder.globalErrorPercentage('actions')
     }
     // Get requests errors
     selector {
         id 'requestErrors'
-        expression selectors.globalErrorPercentage('requests')
+        expression xpathBuilder.globalErrorPercentage('requests')
     }
 }
 
