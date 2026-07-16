@@ -351,6 +351,15 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>5.0.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-compute</artifactId>
         </dependency>

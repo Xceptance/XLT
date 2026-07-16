@@ -1,0 +1,492 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.xceptance.xlt.report.scorecard;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.extended.ToAttributedValueConverter;
+import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
+
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.s9api.XdmValue;
+
+/**
+ * Base class for scorecard evaluators.
+ */
+public abstract class AbstractEvaluator
+{
+    protected final File configFile;
+
+    protected final Processor processor;
+
+    protected AbstractEvaluator(final File configFile, final Processor processor)
+    {
+        this.configFile = Objects.requireNonNull(configFile);
+        this.processor = Objects.requireNonNull(processor);
+    }
+
+    public abstract Scorecard evaluate(final File documentFile);
+
+    /**
+     * Writes the given scorecard as serialized XML to the given destination writer.
+     *
+     * @param scorecard
+     *            the scorecard to be written
+     * @param writer
+     *            the destination to write serialized XML to
+     * @throws IOException
+     *             thrown if scorecard could not be written
+     */
+    public void writeScorecard(final Scorecard scorecard, final Writer writer) throws IOException
+    {
+        // writer the XML preamble
+        writer.write(XltConstants.XML_HEADER);
+
+        // create and configure XStream instance
+        final XStream xstream = new XStream(new SanitizingDomDriver());
+        xstream.autodetectAnnotations(true);
+        xstream.aliasSystemAttribute(null, "class");
+        xstream.setMode(XStream.NO_REFERENCES);
+        xstream.registerConverter(new ToAttributedValueConverter(Scorecard.LogEntry.class, xstream.getMapper(), xstream.getReflectionProvider(), xstream.getConverterLookup(), "message"));
+
+        // let XStream do its job
+        xstream.toXML(scorecard, writer);
+    }
+
+    /**
+     * Returns the ratio in percent rounded to one decimal place.
+     *
+     * @param numerator
+     *            the numerator value
+     * @param denominator
+     *            the denominator value
+     * @return given ratio in percent
+     */
+    protected static double getPercentage(final int numerator, final int denominator)
+    {
+        return denominator > 0 ? (Math.round((numerator * 1000.0) / denominator) / 10.0) : 0.0;
+    }
+
+    /**
+     * Formats the given value using the specified formatter string.
+     *
+     * @param value
+     *            the value to format
+     * @param formatter
+     *            the Java string formatter syntax
+     * @return the formatted value
+     */
+    protected String formatValue(final String value, final String formatter)
+    {
+        if (value == null || formatter == null)
+        {
+            return value;
+        }
+
+        try
+        {
+            // try to parse as double first
+            try
+            {
+                return String.format(java.util.Locale.US, formatter, Double.valueOf(value));
+            }
+            catch (final NumberFormatException e1)
+            {
+                // try to parse as long
+                try
+                {
+                    return String.format(java.util.Locale.US, formatter, Long.valueOf(value));
+                }
+                catch (final NumberFormatException e2)
+                {
+                    // continue as string
+                    return String.format(java.util.Locale.US, formatter, value);
+                }
+            }
+        }
+        catch (final Exception e)
+        {
+            // fallback to original value on formatting error
+            return value;
+        }
+    }
+
+    /**
+     * Checks if the given sequence starts with any of the provided search strings.
+     *
+     * @param sequence
+     *            the sequence to check
+     * @param searchStrings
+     *            the search strings to look for
+     * @return <code>true</code> if the sequence starts with any of the search strings, <code>false</code> otherwise
+     */
+    protected boolean startsWithAny(final String sequence, final String... searchStrings)
+    {
+        if (sequence != null && searchStrings != null)
+        {
+            for (final String searchString : searchStrings)
+            {
+                if (sequence.startsWith(searchString))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Concludes the evaluation of a rule by determining its final status based on its checks. Sets the rule's status,
+     * message, and points accordingly.
+     *
+     * @param rule
+     *            the rule to conclude
+     */
+    protected void conclude(final Scorecard.Rule rule)
+    {
+        // nothing to do for disabled rules
+        if (!rule.isEnabled())
+        {
+            return;
+        }
+
+        Status lastStatus = Status.PASSED;
+        // loop through rule's checks
+        for (final Scorecard.Rule.Check c : rule.getChecks())
+        {
+            final Status checkStatus = c.getStatus();
+            // ignore skipped checks
+            if (checkStatus.isSkipped())
+            {
+                continue;
+            }
+
+            // remember most recent check status that doesn't indicate a passed check
+            // or just the very first check status if all checks did pass
+            if (!checkStatus.isPassed())
+            {
+                lastStatus = checkStatus;
+                // encountered erroneous check -> set rule message to the check's error message and stop looping
+                if (checkStatus.isError())
+                {
+                    rule.setMessage(String.format("[Check #%d] %s", c.getIndex(), c.getErrorMessage()));
+                    break;
+                }
+            }
+        }
+
+        // negate rule status if desired
+        if (rule.getDefinition().isNegateResult())
+        {
+            lastStatus = lastStatus.negate();
+        }
+        rule.setStatus(lastStatus);
+        if (lastStatus.isPassed())
+        {
+            rule.setMessage(rule.getDefinition().getSuccessMessage());
+            rule.setPoints(rule.getDefinition().getPoints());
+        }
+        else if (lastStatus.isFailed())
+        {
+            rule.setMessage(rule.getDefinition().getFailMessage());
+        }
+    }
+
+    /**
+     * Concludes the evaluation of a group by determining its final status based on its rules. Sets the group's status,
+     * message, points, and determines if the test should fail.
+     *
+     * @param group
+     *            the group to conclude
+     * @return true if the test should fail due to this group's evaluation
+     */
+    protected boolean conclude(final Scorecard.Group group)
+    {
+        // nothing to do for disabled groups
+        if (!group.isEnabled())
+        {
+            return false;
+        }
+
+        Scorecard.Rule firstMatch = null, lastMatch = null;
+        int maxPoints = 0, sumPointsTotal = 0, sumPointsMatching = 0;
+        boolean somePassed = false, someFailed = false, someError = false;
+
+        final List<Scorecard.Rule> rules = group.getRules();
+        for (final Scorecard.Rule rule : rules)
+        {
+            if (!rule.getDefinition().isEnabled())
+            {
+                continue;
+            }
+
+            final int pointsAchieved = rule.getPoints();
+            final int rulePoints = rule.getDefinition().getPoints();
+            final Status ruleStatus = rule.getStatus();
+
+            if (ruleStatus.isError())
+            {
+                someError = true;
+                break;
+            }
+
+            maxPoints = Math.max(maxPoints, rulePoints);
+            sumPointsTotal += rulePoints;
+
+            if (ruleStatus.isPassed())
+            {
+                somePassed = true;
+                if (firstMatch == null)
+                {
+                    firstMatch = rule;
+                }
+                lastMatch = rule;
+                sumPointsMatching += pointsAchieved;
+            }
+            else if (ruleStatus.isFailed())
+            {
+                someFailed = true;
+            }
+        }
+
+        if (someError)
+        {
+            group.setStatus(Status.ERROR);
+            group.setPoints(0);
+            group.setTotalPoints(0);
+            return false;
+        }
+
+        final int points, totalPoints;
+        final Status groupStatus;
+        final List<Scorecard.Rule> rulesThatMayFailTest;
+        final GroupDefinition.Mode mode = group.getDefinition().getMode();
+
+        if (mode == GroupDefinition.Mode.allPassed)
+        {
+            groupStatus = someFailed ? Status.FAILED : somePassed ? Status.PASSED : Status.SKIPPED;
+            points = sumPointsMatching;
+            totalPoints = sumPointsTotal;
+            rulesThatMayFailTest = rules;
+        }
+        else if (mode == GroupDefinition.Mode.firstPassed || mode == GroupDefinition.Mode.lastPassed)
+        {
+            final Scorecard.Rule triggerRule = (mode == GroupDefinition.Mode.firstPassed) ? firstMatch : lastMatch;
+            final int idx = triggerRule != null ? rules.indexOf(triggerRule) : -1;
+
+            groupStatus = somePassed ? Status.PASSED : someFailed ? Status.FAILED : Status.SKIPPED;
+            points = triggerRule != null ? triggerRule.getPoints() : 0;
+            totalPoints = maxPoints;
+            rulesThatMayFailTest = idx < 0 ? rules : rules.subList(0, idx + 1);
+        }
+        else
+        {
+            groupStatus = Status.ERROR;
+            points = 0;
+            totalPoints = 0;
+            rulesThatMayFailTest = Collections.emptyList();
+        }
+
+        boolean testFailed = rulesThatMayFailTest.stream().filter((rule) -> {
+            final boolean ruleFailedTest = rule.mayFailTest();
+            if (ruleFailedTest)
+            {
+                rule.setTestFailed();
+            }
+            return ruleFailedTest;
+        }).count() > 0L;
+
+        if (group.mayFailTest())
+        {
+            group.setTestFailed();
+            testFailed = true;
+        }
+
+        group.setStatus(groupStatus);
+        group.setPoints(points);
+        group.setTotalPoints(totalPoints);
+
+        final String groupMessage = groupStatus.isPassed() ? group.getDefinition().getSuccessMessage()
+                                                           : groupStatus.isFailed() ? group.getDefinition().getFailMessage() : null;
+        if (groupMessage != null)
+        {
+            group.setMessage(groupMessage);
+        }
+
+        return testFailed;
+    }
+
+    /**
+     * Evaluates a single rule by processing all its checks and determining the final rule status.
+     *
+     * @param rule
+     *            the rule to evaluate
+     * @param compiler
+     *            the XPath compiler
+     * @param document
+     *            the document to evaluate against
+     * @param selectorLookup
+     *            function to lookup selector definitions by ID
+     */
+    protected void evaluateRule(final Scorecard.Rule rule, final XPathCompiler compiler, final XdmNode document,
+                                final Function<String, SelectorDefinition> selectorLookup)
+    {
+        for (final RuleDefinition.Check check : rule.getDefinition().getChecks())
+        {
+            final Scorecard.Rule.Check ruleCheck = new Scorecard.Rule.Check(check, rule.isEnabled());
+            if (ruleCheck.isEnabled())
+            {
+                evaluateRuleCheck(ruleCheck, compiler, document, selectorLookup);
+            }
+            rule.addCheck(ruleCheck);
+        }
+        conclude(rule);
+    }
+
+    /**
+     * Evaluates a single check within a rule.
+     *
+     * @param check
+     *            the check to evaluate
+     * @param compiler
+     *            the XPath compiler
+     * @param document
+     *            the document to evaluate against
+     * @param selectorLookup
+     *            function to lookup selector definitions by ID
+     */
+    private void evaluateRuleCheck(final Scorecard.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
+                                   final Function<String, SelectorDefinition> selectorLookup)
+    {
+        // check for manually set status first
+        final Status manualStatus = check.getDefinition().getManualStatus();
+        if (manualStatus != null)
+        {
+            check.setStatus(manualStatus);
+            check.setErrorMessage(check.getDefinition().getManualErrorMessage());
+            if (check.getDefinition().isDisplayValue())
+            {
+                check.setValue(formatValue(check.getDefinition().getManualValue(), check.getDefinition().getFormatter()));
+                check.setRawValue(check.getDefinition().getManualValue());
+            }
+            return;
+        }
+
+        // pick the right selector (specified directly or referenced by ID)
+        final String selector;
+        final String selectorId = check.getDefinition().getSelectorId();
+        if (selectorId != null)
+        {
+            selector = selectorLookup.apply(selectorId).getExpression();
+        }
+        else
+        {
+            selector = check.getDefinition().getSelector();
+        }
+
+        Status status = Status.FAILED;
+        String message = null, value = null;
+        try
+        {
+            final XdmValue result = compiler.evaluate(selector, document);
+            if (result.isEmpty())
+            {
+                status = Status.ERROR;
+                message = "No item found for selector '" + selector + "'";
+            }
+            else if (result.size() > 1)
+            {
+                status = Status.ERROR;
+                message = "Selector must match a single item but found " + result.size() + " items instead";
+            }
+            else
+            {
+                final XdmItem node = result.itemAt(0);
+                if (!(node.isAtomicValue() || node.isNode()))
+                {
+                    status = Status.ERROR;
+                    message = "Selected item is neither a node nor an atomic value";
+                }
+                else
+                {
+                    value = node.getStringValue();
+                    final boolean matches = evaluateConditionSafe(check.getDefinition().getCondition(), compiler, node);
+                    if (matches)
+                    {
+                        status = Status.PASSED;
+                    }
+                }
+            }
+        }
+        catch (final SaxonApiException sae)
+        {
+            status = Status.ERROR;
+            message = sae.getMessage();
+        }
+        check.setStatus(status);
+        check.setErrorMessage(message);
+        if (check.getDefinition().isDisplayValue())
+        {
+            check.setValue(formatValue(value, check.getDefinition().getFormatter()));
+            check.setRawValue(value);
+        }
+    }
+
+    /**
+     * Safely evaluates a condition expression against a context value. If the expression starts with a comparison
+     * operator, it prepends '.' to make it a valid XPath.
+     *
+     * @param condition
+     *            the condition expression
+     * @param compiler
+     *            the XPath compiler
+     * @param contextValue
+     *            the context value to evaluate against
+     * @return true if the condition evaluates to true, false otherwise
+     */
+    private boolean evaluateConditionSafe(final String condition, final XPathCompiler compiler, final XdmValue contextValue)
+    {
+        // strip any leading/trailing whitespace
+        String expr = StringUtils.strip(condition);
+        // if expression starts with a comparison operator, put a '.' in front of it
+        if (startsWithAny(expr, "=", "<", ">", "!="))
+        {
+            expr = ". " + expr;
+        }
+        try
+        {
+            return contextValue.select(compiler.compile(expr).asStep()).asAtomic().getBooleanValue();
+        }
+        catch (final Exception e)
+        {
+            return false;
+        }
+    }
+}
