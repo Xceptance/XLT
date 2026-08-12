@@ -67,7 +67,7 @@
             <xsl:if test="$scorecardPresent">
                 <li><a href="scorecard.html">Scorecard</a></li>
             </xsl:if>
-            <li><a href="ai-summary.md">AI Data</a></li>
+            <li><a href="ai-data.md">AI Data</a></li>
         </ul>
     </nav>
     </xsl:template>

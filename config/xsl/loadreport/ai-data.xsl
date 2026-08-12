@@ -3,7 +3,7 @@
     <xsl:strip-space elements="*" />
 
     <!--
-    AI Summary Template — generates ai-summary.md
+    AI Summary Template — generates ai-data.md
     Hybrid YAML+Markdown format optimized for LLM token efficiency.
     -->
     <xsl:template match="/testreport">
