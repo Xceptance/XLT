@@ -29,7 +29,7 @@
                             <tbody>
                                 <xsl:for-each select="$elements">
                                     <xsl:element name="tr">
-                                        <xsl:if test="not(@id = $active and @enabled = 'true')">
+                                        <xsl:if test="not($active and @id = $active and @enabled = 'true')">
                                             <xsl:attribute name="class" select="'inactive'" />
                                         </xsl:if>
                                         <!-- Rating Name/ID -->

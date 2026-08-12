@@ -55,6 +55,11 @@ public class Configuration
     @XStreamConverter(value = MappedValuesConverter.class)
     private final Map<String, RatingDefinition> ratings = new LinkedHashMap<>();
 
+    public Configuration()
+    {
+        this(1);
+    }
+
     public Configuration(final int version)
     {
         this.version = Math.max(1, version);
@@ -83,7 +88,7 @@ public class Configuration
         return Collections.unmodifiableCollection(selectors.values());
     }
 
-    void addRule(final RuleDefinition rule) throws ValidationException
+    public void addRule(final RuleDefinition rule) throws ValidationException
     {
         final String ruleId = rule.getId();
         validateId(ruleId);
@@ -114,7 +119,7 @@ public class Configuration
         return rules.get(ruleId);
     }
 
-    void addGroup(final GroupDefinition group) throws ValidationException
+    public void addGroup(final GroupDefinition group) throws ValidationException
     {
         final String groupId = group.getId();
         validateId(groupId);
@@ -145,7 +150,7 @@ public class Configuration
         return Collections.unmodifiableCollection(groups.values());
     }
 
-    void addRating(final RatingDefinition rating) throws ValidationException
+    public void addRating(final RatingDefinition rating) throws ValidationException
     {
         final String ratingId = rating.getId();
         validateId(ratingId);
@@ -165,12 +170,42 @@ public class Configuration
 
     public Collection<RatingDefinition> getRatings()
     {
-        return Collections.unmodifiableCollection(ratings.values());
+        // sort ratings by value ascending
+        return ratings.values().stream().sorted((r1, r2) -> Double.compare(r1.getValue(), r2.getValue())).collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if any rating is manually marked as forced.
+     *
+     * @return true if at least one rating has forced=true
+     */
+    public boolean hasForcedRating()
+    {
+        return ratings.values().stream().anyMatch(RatingDefinition::isForced);
     }
 
     public int getVersion()
     {
         return version;
+    }
+
+    /**
+     * Performs any validation that can be done only after setting up the configuration is complete.
+     *
+     * @throws ValidationException
+     *             in case of validation errors
+     */
+    public void validate() throws ValidationException
+    {
+        if (!rules.values().stream().anyMatch(RuleDefinition::isEnabled))
+        {
+            throw new ValidationException("Configuration must contain at least one enabled rule");
+        }
+
+        if (!groups.values().stream().anyMatch((groupDef) -> groupDef.isEnabled() && !groupDef.getRuleIds().isEmpty()))
+        {
+            throw new ValidationException("Configuration must contain at least one enabled and non-empty group");
+        }
     }
 
     private void validateId(final String id) throws ValidationException
@@ -266,15 +301,7 @@ public class Configuration
             }
         }
 
-        if (!config.rules.values().stream().anyMatch(RuleDefinition::isEnabled))
-        {
-            throw new ValidationException("Configuration must contain at least one enabled rule");
-        }
-
-        if (!config.groups.values().stream().anyMatch((groupDef) -> groupDef.isEnabled() && !groupDef.getRuleIds().isEmpty()))
-        {
-            throw new ValidationException("Configuration must contain at least one enabled and non-empty group");
-        }
+        config.validate();
 
         return config;
     }

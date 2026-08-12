@@ -1,0 +1,262 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.xceptance.xlt.report.scorecard.groovy;
+
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.xceptance.xlt.report.scorecard.GroovyEvaluator;
+
+import net.sf.saxon.s9api.Processor;
+
+/**
+ * Test for issue logging functionality.
+ */
+public class IssueLoggingTest
+{
+    @Test
+    public void testIssueLogging() throws Exception
+    {
+        // Create a Groovy config with an intentional XPath error
+        final var groovy = """
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    name 'Test Rule'
+                    checks {
+                        check {
+                            selector '//nonexistent/path'
+                            condition 'exists'
+                        }
+                    }
+                }
+            }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
+
+            return builder
+            """;
+
+        final var tempFile = Files.createTempFile("scorecard-issue-test", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("test-report", ".xml").toFile();
+
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+
+            // Create a simple XML document for evaluation
+            final var xmlContent = """
+                <?xml version="1.0"?>
+                <testreport>
+                    <summary>
+                        <transactions>
+                            <errorPercentage>0.0</errorPercentage>
+                        </transactions>
+                    </summary>
+                </testreport>
+                """;
+            FileUtils.writeStringToFile(xmlFile, xmlContent, StandardCharsets.UTF_8);
+
+            // Evaluate the scorecard
+            final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
+            final var scorecard = evaluator.evaluate(xmlFile);
+
+            // Verify that issues were collected
+            Assert.assertNotNull("Scorecard result should not be null", scorecard.result);
+            final var issues = scorecard.result.getIssues();
+            Assert.assertTrue("Should have at least one issue logged", issues.size() > 0);
+            Assert.assertNull("Rule evaluation errors should NOT be added to global errors", scorecard.result.getError());
+
+            // Verify issue details
+            final var firstIssue = issues.get(0);
+            Assert.assertEquals("ERROR", firstIssue.getSeverity());
+            Assert.assertTrue("Message should mention selector", firstIssue.getMessage().contains("No item found"));
+            Assert.assertTrue("Location should mention rule1", firstIssue.getLocation().contains("rule1"));
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
+
+    @Test
+    public void testIssueXmlSerialization() throws Exception
+    {
+        // Create a Groovy config with multiple intentional errors
+        final var groovy = """
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    name 'Test Rule 1'
+                    checks {
+                        check {
+                            selector '//nonexistent/path1'
+                            condition 'exists'
+                        }
+                    }
+                }
+                rule {
+                    id 'rule2'
+                    name 'Test Rule 2'
+                    checks {
+                        check {
+                            selector '//nonexistent/path2'
+                            condition 'exists'
+                        }
+                    }
+                }
+            }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1', 'rule2'])
+                }
+            }
+
+            return builder
+            """;
+
+        final var tempFile = Files.createTempFile("scorecard-xml-test", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("test-report", ".xml").toFile();
+
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+
+            // Create a simple XML document
+            final var xmlContent = """
+                <?xml version="1.0"?>
+                <testreport>
+                    <summary>
+                        <transactions>
+                            <errorPercentage>0.0</errorPercentage>
+                        </transactions>
+                    </summary>
+                </testreport>
+                """;
+            FileUtils.writeStringToFile(xmlFile, xmlContent, StandardCharsets.UTF_8);
+
+            // Evaluate the scorecard
+            final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
+            final var scorecard = evaluator.evaluate(xmlFile);
+
+            Assert.assertNull("Rule evaluation errors should NOT be added to global errors", scorecard.result.getError());
+
+            // Serialize to XML
+            final var writer = new StringWriter();
+            evaluator.writeScorecard(scorecard, writer);
+            final var xml = writer.toString();
+
+            // Verify XML contains issues
+            Assert.assertTrue("XML should contain <issues> element", xml.contains("<issues>"));
+            Assert.assertTrue("XML should contain <issue> elements", xml.contains("<issue "));
+            Assert.assertTrue("XML should contain severity attribute", xml.contains("severity=\"ERROR\""));
+            Assert.assertTrue("XML should contain location", xml.contains("<location>"));
+            Assert.assertTrue("XML should contain message", xml.contains("<message>"));
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
+
+    @Test
+    public void testLogXmlSerialization() throws Exception
+    {
+        final var groovy = """
+            log.info("My info log")
+            log.warn("My warn log")
+
+            builder.rules {
+                rule {
+                    id 'rule1'
+                    name 'Test Rule'
+                    checks {
+                        check {
+                            selector '//nonexistent/path'
+                            condition 'exists'
+                        }
+                    }
+                }
+            }
+
+            builder.groups {
+                group {
+                    id 'G1'
+                    name 'Group 1'
+                    rules(['rule1'])
+                }
+            }
+
+            return builder
+            """;
+
+        final var tempFile = Files.createTempFile("scorecard-log-xml-test", ".groovy").toFile();
+        final var xmlFile = Files.createTempFile("test-report", ".xml").toFile();
+
+        try
+        {
+            FileUtils.writeStringToFile(tempFile, groovy, StandardCharsets.UTF_8);
+
+            final var xmlContent = """
+                <?xml version="1.0"?>
+                <testreport>
+                    <summary>
+                        <transactions>
+                            <errorPercentage>0.0</errorPercentage>
+                        </transactions>
+                    </summary>
+                </testreport>
+                """;
+            FileUtils.writeStringToFile(xmlFile, xmlContent, StandardCharsets.UTF_8);
+
+            final var evaluator = new GroovyEvaluator(tempFile, new Processor(false));
+            final var scorecard = evaluator.evaluate(xmlFile);
+
+            final var writer = new StringWriter();
+            evaluator.writeScorecard(scorecard, writer);
+            final var xml = writer.toString();
+
+            // Verify XML contains logs with level attribute and parent <logs> element
+            Assert.assertTrue("XML should contain <logs> element", xml.contains("<logs>"));
+            Assert.assertTrue("XML should contain <log> elements", xml.contains("<log "));
+            Assert.assertTrue("XML should contain level=\"INFO\" attribute", xml.contains("level=\"INFO\""));
+            Assert.assertTrue("XML should contain level=\"WARN\" attribute", xml.contains("level=\"WARN\""));
+            Assert.assertTrue("XML should contain log messages", xml.contains("My info log"));
+            Assert.assertTrue("XML should contain log messages", xml.contains("My warn log"));
+        }
+        finally
+        {
+            FileUtils.deleteQuietly(tempFile);
+            FileUtils.deleteQuietly(xmlFile);
+        }
+    }
+}
