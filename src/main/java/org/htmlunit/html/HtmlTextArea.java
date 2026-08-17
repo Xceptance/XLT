@@ -24,7 +24,6 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.StringUtils;
-import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "textarea".
@@ -44,11 +43,27 @@ import org.w3c.dom.Node;
  * @author Lai Quang Duong
  */
 public class HtmlTextArea extends HtmlElement implements DisabledElement, SubmittableElement,
-                LabelableElement, SelectableTextInput, ValidatableElement {
+                LabelableElement, SelectableTextInput, ValidatableHtmlElement {
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "textarea";
 
     private String defaultValue_;
+
+    /**
+     * The element's raw value (spec term), decoupled from the DOM child nodes
+     * once {@link #isValueDirty_} is {@code true}. Mirrors {@code HtmlInput}'s
+     * dirty-value-flag model rather than reading/writing child text nodes directly.
+     */
+    private String rawValue_;
+
+    /**
+     * The dirty value flag (spec term). While {@code false}, the raw value tracks
+     * the element's child text content automatically. Once {@code true} (set by
+     * the {@code value} setter, or by a user edit/type), child mutations no
+     * longer affect the raw value until {@link #reset()} clears the flag again.
+     */
+    private boolean isValueDirty_;
+
     private String valueAtFocus_;
     private String customValidity_;
 
@@ -74,7 +89,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      */
     private void initDefaultValue() {
         if (defaultValue_ == null) {
-            defaultValue_ = readValue();
+            defaultValue_ = computeValueFromChildText();
         }
     }
 
@@ -92,15 +107,36 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
 
     /**
      * Returns the value that would be displayed in the text area.
+     * This is the element's "raw value" (spec term). While the dirty value
+     * flag is {@code false}, this is always computed fresh from the current
+     * child text content -- deliberately NOT cached and re-synced via
+     * mutation hooks, since that approach cannot reliably catch every way the
+     * children can change (e.g. a child {@code DomText}'s {@code data} being
+     * reassigned directly bypasses any hook on this element). Once the dirty
+     * flag becomes {@code true} (via {@link #setText(String)} or typing), the
+     * value is held in {@link #rawValue_} and is fully decoupled from the
+     * children until {@link #reset()} clears the flag again.
      *
      * @return the text
      */
     @Override
     public final String getText() {
-        return readValue();
+        if (isValueDirty_) {
+            return rawValue_;
+        }
+        return computeValueFromChildText();
     }
 
-    private String readValue() {
+    /**
+     * Computes what the raw value would be purely from the current child text
+     * content -- i.e. the spec's "child text content" used both for the initial/
+     * reset raw value and for {@code defaultValue}. Renamed from the old
+     * {@code readValue()}.
+     *
+     * @return the concatenated child text content, with a single leading newline
+     *     stripped per the HTML parsing algorithm
+     */
+    private String computeValueFromChildText() {
         final StringBuilder builder = new StringBuilder();
         for (final DomNode node : getChildren()) {
             if (node instanceof DomText text) {
@@ -115,10 +151,14 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
     }
 
     /**
-     * Sets the new value of this text area.
+     * Sets the new value of this text area. Per spec, this sets the raw value
+     * directly and marks the dirty flag -- it must NOT touch the DOM child
+     * nodes at all, and no subsequent child mutation may affect this value
+     * again until {@link #reset()}.
      * <p>
      * Note that this acts like 'pasting' the text, but to simulate characters entry
      * you should use {@link #type(String)}.
+     * </p>
      *
      * @param newValue the new value
      */
@@ -130,32 +170,16 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
     }
 
     private void setTextInternal(final String newValue) {
-        initDefaultValue();
-        DomNode child = getFirstChild();
-        if (child == null) {
-            final DomText newChild = new DomText(getPage(), newValue);
-            appendChild(newChild);
-        }
-        else {
-            DomNode next = child.getNextSibling();
-            while (next != null && !(next instanceof DomText)) {
-                child = next;
-                next = child.getNextSibling();
-            }
+        final String oldValue = getText();
 
-            if (next == null) {
-                removeChild(child);
-                final DomText newChild = new DomText(getPage(), newValue);
-                appendChild(newChild);
-            }
-            else {
-                ((DomText) next).setData(newValue);
-            }
-        }
+        rawValue_ = newValue;
+        isValueDirty_ = true;
 
-        final int pos = newValue.length();
-        setSelectionStart(pos);
-        setSelectionEnd(pos);
+        if (!newValue.equals(oldValue)) {
+            final int pos = newValue.length();
+            setSelectionStart(pos);
+            setSelectionEnd(pos);
+        }
     }
 
     /**
@@ -171,16 +195,40 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
 
     /**
      * {@inheritDoc}
+     * Per the spec's reset algorithm for textarea elements: clears the dirty
+     * value flag. Once clear, {@link #getText()} automatically recomputes from
+     * the CURRENT child text content (not the page's originally-parsed text,
+     * and not {@link #defaultValue_} -- those can differ from the live
+     * children if the children were mutated while the dirty flag was
+     * {@code true}). Deliberately does not call {@link #setText(String)} /
+     * fire the onchange handler: a form reset fires a {@code reset} event,
+     * not a {@code change} event.
      * @see SubmittableElement#reset()
      */
     @Override
     public void reset() {
-        initDefaultValue();
-        setText(defaultValue_);
+        final String oldValue = getText();
+
+        isValueDirty_ = false;
+
+        final String newValue = computeValueFromChildText();
+        if (!newValue.equals(oldValue)) {
+            final int pos = newValue.length();
+            setSelectionStart(pos);
+            setSelectionEnd(pos);
+        }
     }
 
     /**
      * {@inheritDoc}
+     * Per spec, {@code defaultValue} is specified in terms of the element's
+     * child text content -- setting it mutates the children (here, via the
+     * same node-replacement helper the old {@code setTextInternal()} used).
+     * Since {@link #getText()} recomputes directly from the current children
+     * whenever the dirty flag is {@code false}, {@code value} is automatically
+     * updated as a side effect ONLY while still clean -- exactly matching
+     * observed real-browser behavior (replacing the old, less precise "if
+     * value still equals old default value" equality check).
      * @see SubmittableElement#setDefaultValue(String)
      */
     @Override
@@ -190,11 +238,43 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
             defaultValue = "";
         }
 
-        // for FF, if value is still default value, change value too
-        if (getText().equals(getDefaultValue())) {
-            setTextInternal(defaultValue);
-        }
+        replaceChildTextContent(defaultValue);
         defaultValue_ = defaultValue;
+    }
+
+    /**
+     * Replaces this element's child text content with {@code newText}, reusing
+     * an existing text-node child in place where possible rather than always
+     * removing and recreating one (avoids unnecessary DOM node identity churn).
+     * Used only for mutating the DOM representation (e.g. from
+     * {@link #setDefaultValue(String)}) -- NOT for the {@code value}
+     * setter, which must not touch the children at all.
+     *
+     * @param newText the new child text content
+     */
+    private void replaceChildTextContent(final String newText) {
+        DomNode child = getFirstChild();
+        if (child == null) {
+            appendChild(new DomText(getPage(), newText));
+        }
+        else if (child instanceof DomText) {
+            ((DomText) child).setData(newText);
+        }
+        else {
+            DomNode next = child.getNextSibling();
+            while (next != null && !(next instanceof DomText)) {
+                child = next;
+                next = child.getNextSibling();
+            }
+
+            if (next == null) {
+                removeChild(child);
+                appendChild(new DomText(getPage(), newText));
+            }
+            else {
+                ((DomText) next).setData(newText);
+            }
+        }
     }
 
     /**
@@ -208,7 +288,8 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
     }
 
     /**
-     * {@inheritDoc} This implementation is empty; only checkboxes and radio buttons
+     * {@inheritDoc}
+     * This implementation is empty; only check boxes and radio buttons
      * really care what the default checked value is.
      * @see SubmittableElement#setDefaultChecked(boolean)
      * @see HtmlRadioButtonInput#setDefaultChecked(boolean)
@@ -268,27 +349,6 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      * {@inheritDoc}
      */
     @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        Node node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement element
-                    && element.isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public final String getDisabledAttribute() {
         return getAttributeDirect(ATTRIBUTE_DISABLED);
     }
@@ -301,7 +361,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      * @return the value of the attribute {@code readonly} or an empty string if that attribute isn't defined
      */
     public final String getReadOnlyAttribute() {
-        return getAttributeDirect("readonly");
+        return getAttributeDirect(ATTRIBUTE_READONLY);
     }
 
     /**
@@ -422,7 +482,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      * {@inheritDoc}
      */
     @Override
-    protected boolean printXml(final String indent, final boolean tagBefore, final PrintWriter printWriter) {
+    protected boolean printXml(final String indent, final boolean indentBefore, final PrintWriter printWriter) {
         printWriter.print(indent + "<");
         printOpeningTagContentAsXml(printWriter);
 
@@ -492,10 +552,10 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      */
     public void setReadOnly(final boolean isReadOnly) {
         if (isReadOnly) {
-            setAttribute("readOnly", "readOnly");
+            setAttribute(ATTRIBUTE_READONLY, "");
         }
         else {
-            removeAttribute("readOnly");
+            removeAttribute(ATTRIBUTE_READONLY);
         }
     }
 
@@ -504,7 +564,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      * @return {@code true} if this element is read only
      */
     public boolean isReadOnly() {
-        return hasAttribute("readOnly");
+        return hasAttribute(ATTRIBUTE_READONLY);
     }
 
     /**
@@ -568,6 +628,14 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
     @Override
     public boolean willValidate() {
         return !isDisabled() && !isReadOnly();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCustomValidity() {
+        return customValidity_;
     }
 
     /**

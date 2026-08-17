@@ -680,8 +680,8 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "621",
-            EDGE = "631",
+    @Alerts(CHROME = "617",
+            EDGE = "629",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "0",
@@ -698,8 +698,8 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "621",
-            EDGE = "631",
+    @Alerts(DEFAULT = "617",
+            EDGE = "629",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "18",
@@ -846,10 +846,6 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("154")
-    @HtmlUnitNYI(CHROME = "18",
-            EDGE = "18",
-            FF = "18",
-            FF_ESR = "18")
     public void iframe() throws Exception {
         test("iframe");
     }

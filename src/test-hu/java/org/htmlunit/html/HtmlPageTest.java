@@ -71,6 +71,7 @@ import org.w3c.dom.NodeList;
  * @author Frank Danek
  * @author Ronald Brill
  * @author Lai Quang Duong
+ * @author Ronny Shapiro
  */
 public class HtmlPageTest extends SimpleWebTestCase {
 
@@ -941,7 +942,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void asXml() throws Exception {
@@ -960,7 +961,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
 
     /**
      * Tests that the generated XML is valid as HTML code too.
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void asXmlValidHtmlOutput() throws Exception {
@@ -989,7 +990,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void asXml2() throws Exception {
@@ -1044,11 +1045,9 @@ public class HtmlPageTest extends SimpleWebTestCase {
         final String expected = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\r\n"
                 + "<html>\r\n"
                 + "  <head/>\r\n"
-                + "  <body>\r\n"
-                + "    <noscript>"
-                            + "&lt;p&gt;&lt;strong&gt;your browser does not support JavaScript&lt;/strong&gt;&lt;/p&gt;"
-                            + "</noscript>\r\n"
-                + "  </body>\r\n"
+                + "  <body><noscript>"
+                + "&lt;p&gt;&lt;strong&gt;your browser does not support JavaScript&lt;/strong&gt;&lt;/p&gt;"
+                + "</noscript></body>\r\n"
                 + "</html>";
 
         final HtmlPage page = loadPage(html);
@@ -1056,7 +1055,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception if the test fails
+     * @throws Exception if the test fails
      */
     @Test
     public void getElementsById() throws Exception {
@@ -1083,7 +1082,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception if the test fails
+     * @throws Exception if the test fails
      */
     @Test
     public void getElementsByName() throws Exception {
@@ -1104,7 +1103,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception if the test fails
+     * @throws Exception if the test fails
      */
     @Test
     public void getElementByName() throws Exception {
@@ -1122,7 +1121,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception if the test fails
+     * @throws Exception if the test fails
      */
     @Test
     public void getElementByNameNotfound() throws Exception {
@@ -1137,7 +1136,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception if the test fails
+     * @throws Exception if the test fails
      */
     @Test
     public void getHtmlElementsByIdAndOrName() throws Exception {
@@ -1161,7 +1160,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
 
     /**
      * Regression test for bug #287.
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void getHtmlElementByIdAfterRemove() throws Exception {
@@ -1199,7 +1198,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     /**
      * Test getHtmlElementById() when 2 elements have the same id and the first one
      * is removed.
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void getHtmlElementById_idTwice() throws Exception {
@@ -1784,7 +1783,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     /**
      * Regression test for asNormalizedText() which would blow up.
      *
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void asNormalizedText() throws Exception {
@@ -1839,7 +1838,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     /**
      * HtmlPage.getReadyState() should give the same information than the document element.
      * @see <a href="http://sourceforge.net/p/htmlunit/bugs/402/">402</a>
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void readyState() throws Exception {
@@ -1854,7 +1853,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void cloneNode() throws Exception {
@@ -1871,7 +1870,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void cloneHtmlPageWithFrame() throws Exception {
@@ -1925,7 +1924,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void addAutoCloseable() throws Exception {
@@ -1938,7 +1937,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void addAutoCloseableNull() throws Exception {
@@ -1949,7 +1948,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void getBaseUrl() throws Exception {

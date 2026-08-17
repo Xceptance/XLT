@@ -14,29 +14,49 @@
  */
 package org.htmlunit.javascript.host;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.JS_NAVIGATOR_DO_NOT_TRACK_UNSPECIFIED;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpHeader;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.WebClient;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebRequest.HttpHint;
+import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.host.file.Blob;
 import org.htmlunit.javascript.host.geo.Geolocation;
 import org.htmlunit.javascript.host.media.MediaDevices;
 import org.htmlunit.javascript.host.network.NetworkInformation;
+// TODO verify actual package - not visible from XMLHttpRequest.java's import list,
+// which suggests it may already share a package with XMLHttpRequest rather than
+// living here; adjust this import (and the FormData branch below) accordingly.
+import org.htmlunit.javascript.host.xml.FormData;
 import org.htmlunit.util.StringUtils;
+import org.htmlunit.util.UrlUtils;
 
 /**
- * A JavaScript object for {@code Navigator}.
+ * JavaScript host object for {@code Navigator}.
  *
  * @author Mike Bowler
  * @author Daniel Gredler
@@ -46,17 +66,19 @@ import org.htmlunit.util.StringUtils;
  * @author Frank Danek
  * @author Ronald Brill
  *
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms535867.aspx">MSDN documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator">MDN Documentation</a>
  */
 @JsxClass
 public class Navigator extends HtmlUnitScriptable {
+
+    private static final Log LOG = LogFactory.getLog(Navigator.class);
 
     private PluginArray plugins_;
     private MimeTypeArray mimeTypes_;
     private MediaDevices mediaDevices_;
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -65,6 +87,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code appCodeName} property.
+     *
      * @return the {@code appCodeName} property
      */
     @JsxGetter
@@ -74,6 +97,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code appName} property.
+     *
      * @return the {@code appName} property
      */
     @JsxGetter
@@ -83,6 +107,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code appVersion} property.
+     *
      * @return the {@code appVersion} property
      */
     @JsxGetter
@@ -92,7 +117,8 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the language of the browser.
-     * @return the language
+     *
+     * @return the browser language
      */
     @JsxGetter
     public String getLanguage() {
@@ -100,8 +126,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the language of the browser.
-     * @return the language
+     * Returns the preferred languages of the browser as an array.
+     *
+     * @return the languages array
      */
     @JsxGetter
     public Scriptable getLanguages() {
@@ -126,6 +153,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code cookieEnabled} property.
+     *
      * @return the {@code cookieEnabled} property
      */
     @JsxGetter
@@ -135,6 +163,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code onLine} property.
+     *
      * @return the {@code onLine} property
      */
     @JsxGetter
@@ -144,6 +173,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code platform} property.
+     *
      * @return the {@code platform} property
      */
     @JsxGetter
@@ -153,6 +183,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code product} property.
+     *
      * @return the {@code product} property
      */
     @JsxGetter
@@ -162,8 +193,9 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the build number of the current browser.
-     * @see <a href="https://developer.mozilla.org/en/navigator.productSub">Mozilla Doc</a>
-     * @return false
+     *
+     * @return the {@code productSub} property
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/productSub">MDN Documentation</a>
      */
     @JsxGetter
     public String getProductSub() {
@@ -171,8 +203,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the property {@code userAgent}.
-     * @return the property {@code userAgent}
+     * Returns the {@code userAgent} property.
+     *
+     * @return the {@code userAgent} property
      */
     @JsxGetter
     public String getUserAgent() {
@@ -180,8 +213,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns an empty array because HtmlUnit does not support embedded objects.
-     * @return an empty array
+     * Returns the list of browser plugins.
+     *
+     * @return the {@code plugins} array
      */
     @JsxGetter
     public PluginArray getPlugins() {
@@ -259,6 +293,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code mimeTypes} property.
+     *
      * @return the {@code mimeTypes} property
      */
     @JsxGetter
@@ -268,8 +303,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Indicates if Java is enabled.
-     * @return false
+     * Returns whether Java is enabled. Always returns {@code false}.
+     *
+     * @return {@code false}
      */
     @JsxFunction
     public boolean javaEnabled() {
@@ -277,8 +313,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns {@code false} always as data tainting support is not enabled in HtmlUnit.
-     * @return false
+     * Returns {@code false} as data tainting support is not enabled in HtmlUnit.
+     *
+     * @return {@code false}
      */
     @JsxFunction({FF, FF_ESR})
     public boolean taintEnabled() {
@@ -287,6 +324,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code geolocation} property.
+     *
      * @return the {@code geolocation} property
      */
     @JsxGetter
@@ -298,8 +336,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * @return true whether the browser supports inline display
-     *         of PDF files when navigating to them
+     * Returns whether the browser supports inline display of PDF files when navigating to them.
+     *
+     * @return {@code true} if inline PDF viewing is supported
      */
     @JsxGetter
     public boolean isPdfViewerEnabled() {
@@ -308,6 +347,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code buildID} property.
+     *
      * @return the {@code buildID} property
      */
     @JsxGetter({FF, FF_ESR})
@@ -317,6 +357,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code vendor} property.
+     *
      * @return the {@code vendor} property
      */
     @JsxGetter
@@ -326,6 +367,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code vendorSub} property.
+     *
      * @return the {@code vendorSub} property
      */
     @JsxGetter
@@ -335,6 +377,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code doNotTrack} property.
+     *
      * @return the {@code doNotTrack} property
      */
     @JsxGetter
@@ -351,6 +394,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code oscpu} property.
+     *
      * @return the {@code oscpu} property
      */
     @JsxGetter({FF, FF_ESR})
@@ -360,6 +404,7 @@ public class Navigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code connection} property.
+     *
      * @return the {@code connection} property
      */
     @JsxGetter({CHROME, EDGE})
@@ -371,8 +416,9 @@ public class Navigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the {@code mimeTypes} property.
-     * @return the {@code mimeTypes} property
+     * Returns the {@code mediaDevices} property.
+     *
+     * @return the {@code mediaDevices} property
      */
     @JsxGetter
     public MediaDevices getMediaDevices() {
@@ -382,5 +428,118 @@ public class Navigator extends HtmlUnitScriptable {
             mediaDevices_.setParentScope(getParentScope());
         }
         return mediaDevices_;
+    }
+
+    /**
+     * The {@code sendBeacon()} method.
+     * <p>
+     * Note: real browsers queue the beacon and return immediately, continuing to
+     * attempt delivery even after the page unloads. This implementation instead sends
+     * the request synchronously (mirroring how {@code HyperlinkElementSupport} already
+     * handles hyperlink-auditing/{@code ping} requests and swallows any network error,
+     * since there is no caller left to report it to by the time
+     * a real browser would encounter it either.
+     * </p>
+     *
+     * @param url the URL to send the data to
+     * @param data the data to send; USVString, {@link Blob}, {@link URLSearchParams},
+     *             {@code FormData}, and ArrayBufferView are supported, per spec
+     * @return {@code true} if the browser successfully queued the data for transfer,
+     *         {@code false} otherwise (e.g. the URL could not be resolved)
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon">
+     *      MDN Documentation</a>
+     */
+    @JsxFunction
+    public boolean sendBeacon(final String url, final Object data) {
+        final Window window = getWindow();
+        final WebWindow webWindow = window.getWebWindow();
+        final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
+        final URL pageUrl = page.getUrl();
+
+        final URL targetUrl;
+        try {
+            targetUrl = page.getFullyQualifiedUrl(url);
+        }
+        catch (final MalformedURLException e) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("sendBeacon(): invalid url '" + url + "'", e);
+            }
+            return false;
+        }
+
+        final WebRequest request = new WebRequest(targetUrl, HttpMethod.POST);
+
+        // a beacon is always a POST, so per Fetch's "Origin header" rules this is
+        // added unconditionally, same as HyperlinkElementSupport's ping request
+        try {
+            request.setRefererHeader(pageUrl);
+            request.setAdditionalHeader(HttpHeader.ORIGIN,
+                    UrlUtils.getUrlWithProtocolAndAuthority(pageUrl).toExternalForm());
+        }
+        catch (final MalformedURLException e) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("sendBeacon(): invalid origin url '" + pageUrl + "'", e);
+            }
+        }
+
+        // Sec-Fetch-* support (https://www.w3.org/TR/fetch-metadata/): a beacon has no
+        // destination and is always no-cors, matching hyperlink-auditing (ping) requests.
+        request.setFetchDestination(WebRequest.FetchDestination.EMPTY);
+        request.setFetchModeOverride(WebRequest.FetchMode.NO_CORS);
+        request.setRequestingUrl(pageUrl);
+
+        fillRequestBody(request, data);
+
+        final WebClient webClient = webWindow.getWebClient();
+        try {
+            webClient.loadWebResponse(request);
+        }
+        catch (final IOException e) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("sendBeacon(): request failed", e);
+            }
+            // per spec this still returns true - queuing succeeded even if delivery didn't
+        }
+        return true;
+    }
+
+    /**
+     * Fills in the request body for {@link #sendBeacon(String, Object)}, dispatching on
+     * the data's type the same way {@code XMLHttpRequest#prepareRequestContent} does for
+     * the body types the Beacon spec actually allows (unlike XHR, this excludes
+     * {@code Document} types).
+     *
+     * @param request the request to fill in
+     * @param data the data passed to {@code sendBeacon()}, possibly {@code null}/undefined
+     */
+    private static void fillRequestBody(final WebRequest request, final Object data) {
+        if (data == null || JavaScriptEngine.isUndefined(data)) {
+            return;
+        }
+
+        if (data instanceof FormData formData) {
+            formData.fillRequest(request);
+        }
+        else if (data instanceof URLSearchParams params) {
+            params.fillRequest(request);
+            request.setCharset(UTF_8);
+            request.addHint(HttpHint.IncludeCharsetInContentTypeHeader);
+        }
+        else if (data instanceof Blob blob) {
+            blob.fillRequest(request);
+        }
+        else if (data instanceof NativeArrayBufferView view) {
+            request.setRequestBody(new String(view.getBuffer().getBuffer(), UTF_8));
+            request.setEncodingType(null);
+        }
+        else {
+            final String body = JavaScriptEngine.toString(data);
+            if (!body.isEmpty()) {
+                request.setRequestBody(body);
+                request.setEncodingType(FormEncodingType.TEXT_PLAIN);
+                request.setCharset(UTF_8);
+                request.addHint(HttpHint.IncludeCharsetInContentTypeHeader);
+            }
+        }
     }
 }

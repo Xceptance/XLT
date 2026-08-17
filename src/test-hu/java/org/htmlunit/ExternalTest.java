@@ -51,15 +51,15 @@ public class ExternalTest {
     static final String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static final String CHROME_DRIVER_ = "148.0.7778";
+    static final String CHROME_DRIVER_ = "150.0.7871";
     static final String CHROME_DRIVER_URL_ =
             "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json";
 
-    static final String EDGE_DRIVER_ = "148.0.3967";
+    static final String EDGE_DRIVER_ = "150.0.4078";
     static final String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static final String GECKO_DRIVER_ = "0.36.0";
+    static final String GECKO_DRIVER_ = "0.37.1";
     static final String GECKO_DRIVER_URL_ = "https://github.com/mozilla/geckodriver/releases/latest";
 
     /**
@@ -89,21 +89,69 @@ public class ExternalTest {
             final Pattern ignorePattern = Pattern.compile("" + model.getProperties().get("maven.version.ignore"));
 
             final List<String> wrongVersions = new LinkedList<>();
+
+            // Dependencies
             for (var dep : model.getDependencies()) {
-                String version = dep.getVersion();
-                if (version.startsWith("${")) {
-                    version = "" + model.getProperties().get(version.substring(2, version.length() - 1));
+                checkVersion(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(),
+                        model, ignorePattern, wrongVersions);
+            }
+
+            // Plugins declared directly under <build><plugins>
+            if (model.getBuild() != null) {
+                if (model.getBuild().getPlugins() != null) {
+                    for (var plugin : model.getBuild().getPlugins()) {
+                        checkVersion(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(),
+                                model, ignorePattern, wrongVersions);
+
+                        // NEW: check dependencies declared inside the plugin itself
+                        if (plugin.getDependencies() != null) {
+                            for (var dep : plugin.getDependencies()) {
+                                checkVersion(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(),
+                                        model, ignorePattern, wrongVersions);
+                            }
+                        }
+                    }
                 }
-                try {
-                    assertVersion(dep.getGroupId(), dep.getArtifactId(), version, ignorePattern);
-                }
-                catch (final AssertionError e) {
-                    wrongVersions.add(e.getMessage());
+
+                if (model.getBuild().getPluginManagement() != null
+                        && model.getBuild().getPluginManagement().getPlugins() != null) {
+                    for (var plugin : model.getBuild().getPluginManagement().getPlugins()) {
+                        checkVersion(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(),
+                                model, ignorePattern, wrongVersions);
+
+                        // NEW
+                        if (plugin.getDependencies() != null) {
+                            for (var dep : plugin.getDependencies()) {
+                                checkVersion(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(),
+                                        model, ignorePattern, wrongVersions);
+                            }
+                        }
+                    }
                 }
             }
+
             if (!wrongVersions.isEmpty()) {
                 Assertions.fail(String.join("\n ", wrongVersions));
             }
+        }
+    }
+
+    private static void checkVersion(String groupId, String artifactId, String rawVersion,
+                            Model model, Pattern ignorePattern, List<String> wrongVersions) throws Exception {
+        if (rawVersion == null) {
+            // e.g. version inherited from a parent/BOM - nothing to resolve locally
+            return;
+        }
+
+        String version = rawVersion;
+        if (version.startsWith("${")) {
+            version = "" + model.getProperties().get(version.substring(2, version.length() - 1));
+        }
+
+        try {
+            assertVersion(groupId, artifactId, version, ignorePattern);
+        } catch (final AssertionError e) {
+            wrongVersions.add(e.getMessage());
         }
     }
 
@@ -270,7 +318,16 @@ public class ExternalTest {
             final String version, final Pattern ignorePattern) {
         // version > 3.12.0 does not work with our site.xml and also not with a refactored one
         if ("maven-site-plugin".equals(artifactId)
-                && (version.startsWith("3.12.1") || version.startsWith("3.20.") || version.startsWith("3.21."))) {
+                && (version.startsWith("3.12.1")
+                        || version.startsWith("3.20.")
+                        || version.startsWith("3.21.")
+                        || version.startsWith("3.22."))) {
+            return true;
+        }
+
+        // spotbugs 13 requires jdk 21
+        if ("checkstyle".equals(artifactId)
+                && (version.startsWith("13."))) {
             return true;
         }
 

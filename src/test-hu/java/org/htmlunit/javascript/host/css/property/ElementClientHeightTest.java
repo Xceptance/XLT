@@ -664,8 +664,8 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "621",
-            EDGE = "631",
+    @Alerts(CHROME = "617",
+            EDGE = "629",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "0",
@@ -682,8 +682,8 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "621",
-            EDGE = "631",
+    @Alerts(CHROME = "617",
+            EDGE = "629",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "18",
@@ -814,8 +814,8 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "621",
-            EDGE = "631",
+    @Alerts(CHROME = "617",
+            EDGE = "629",
             FF = "674",
             FF_ESR = "674")
     @HtmlUnitNYI(CHROME = "605",
@@ -833,10 +833,10 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("150")
-    @HtmlUnitNYI(CHROME = "18",
-            EDGE = "18",
-            FF = "18",
-            FF_ESR = "18")
+    @HtmlUnitNYI(CHROME = "154",
+            EDGE = "154",
+            FF = "154",
+            FF_ESR = "154")
     public void iframe() throws Exception {
         loadPageVerifyTitle2(test("iframe"));
     }

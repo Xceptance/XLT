@@ -17,19 +17,13 @@ package org.htmlunit.html;
 import static org.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_BLOCK;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebRequest;
-import org.htmlunit.WebWindow;
 import org.htmlunit.javascript.host.event.Event;
-import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.geometry.Circle2D;
 import org.htmlunit.util.geometry.Polygon2D;
@@ -47,7 +41,7 @@ import org.htmlunit.util.geometry.Shape2D;
  * @author Frank Danek
  * @author Ronald Brill
  */
-public class HtmlArea extends HtmlElement {
+public class HtmlArea extends HtmlElement implements HyperlinkElement {
     private static final Log LOG = LogFactory.getLog(HtmlArea.class);
 
     /** The HTML tag represented by this element. */
@@ -74,30 +68,7 @@ public class HtmlArea extends HtmlElement {
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        final HtmlPage enclosingPage = (HtmlPage) getPage();
-        final WebClient webClient = enclosingPage.getWebClient();
-
-        final String href = getHrefAttribute().trim();
-        if (!href.isEmpty()) {
-            final HtmlPage page = (HtmlPage) getPage();
-            if (StringUtils.startsWithIgnoreCase(href, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
-                page.executeJavaScript(
-                    href, "javascript url", getStartLineNumber());
-                return false;
-            }
-            final URL url;
-            try {
-                url = enclosingPage.getFullyQualifiedUrl(getHrefAttribute());
-            }
-            catch (final MalformedURLException e) {
-                throw new IllegalStateException(
-                        "Not a valid url: " + getHrefAttribute(), e);
-            }
-            final WebRequest request = new WebRequest(url, page.getCharset(), page.getUrl());
-            final WebWindow webWindow = enclosingPage.getEnclosingWindow();
-            final String target = enclosingPage.getResolvedTarget(getTargetAttribute());
-            webClient.getPage(webClient.openTargetWindow(webWindow, target, WebClient.TARGET_SELF), request);
-        }
+        HyperlinkElementSupport.doClickStateUpdate(this, shiftKey, ctrlKey, "");
         return false;
     }
 
@@ -130,6 +101,7 @@ public class HtmlArea extends HtmlElement {
      *
      * @return the value of the attribute {@code href} or an empty string if that attribute isn't defined
      */
+    @Override
     public final String getHrefAttribute() {
         return getAttributeDirect("href");
     }
@@ -207,8 +179,41 @@ public class HtmlArea extends HtmlElement {
      *
      * @return the value of the attribute {@code target} or an empty string if that attribute isn't defined
      */
+    @Override
     public final String getTargetAttribute() {
         return getAttributeDirect("target");
+    }
+
+    /**
+     * Returns the value of the attribute {@code rel}. Refer to the
+     * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
+     * documentation for details on the use of this attribute.
+     *
+     * @return the value of the attribute {@code rel} or an empty string if that attribute isn't defined
+     */
+    @Override
+    public final String getRelAttribute() {
+        return getAttributeDirect("rel");
+    }
+
+    /**
+     * Returns the value of the attribute {@code ping} or an empty string if that attribute isn't defined.
+     *
+     * @return the value of the attribute {@code ping} or an empty string if that attribute isn't defined
+     */
+    @Override
+    public final String getPingAttribute() {
+        return getAttributeDirect("ping");
+    }
+
+    /**
+     * Returns the value of the attribute {@code download} or an empty string if that attribute isn't defined.
+     *
+     * @return the value of the attribute {@code download} or an empty string if that attribute isn't defined
+     */
+    @Override
+    public final String getDownloadAttribute() {
+        return getAttributeDirect("download");
     }
 
     /**
@@ -332,10 +337,16 @@ public class HtmlArea extends HtmlElement {
 
         try {
             if (coords.length > 1) {
-                final Polygon2D path = new Polygon2D(Double.parseDouble(coords[0]), Double.parseDouble(coords[1]));
+                double x = Double.parseDouble(coords[0].trim());
+                double y = Double.parseDouble(coords[1].trim());
+
+                final Polygon2D path = new Polygon2D(x, y);
 
                 for (int i = 2; i + 1 < coords.length; i += 2) {
-                    path.lineTo(Double.parseDouble(coords[i]), Double.parseDouble(coords[i + 1]));
+                    x = Double.parseDouble(coords[i].trim());
+                    y = Double.parseDouble(coords[i + 1].trim());
+
+                    path.lineTo(x, y);
                 }
                 return path;
             }

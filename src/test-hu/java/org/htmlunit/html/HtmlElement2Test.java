@@ -169,16 +169,14 @@ public class HtmlElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("something")
-    @BuggyWebDriver(FF = "",
-            FF_ESR = "")
+    @Alerts("")
     @HtmlUnitNYI(CHROME = "initialsomething",
             EDGE = "initialsomething",
             FF = "initialsomething",
             FF_ESR = "initialsomething")
     //TODO: fails because of HTMLElement.getContentEditable doesn't detect DomElement.ATTRIBUTE_VALUE_EMPTY
     // this could be a general attribute issue
-    public void contentEditable() throws Exception {
+    public void contentEditableBody() throws Exception {
         final String html = DOCTYPE_HTML
             + "<html>\n"
             + "<body contentEditable><p>initial</p></body>\n"
@@ -189,6 +187,110 @@ public class HtmlElement2Test extends WebDriverTestCase {
         body.clear();
         body.sendKeys("something");
         assertEquals(getExpectedAlerts()[0], body.getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("")
+    @HtmlUnitNYI(CHROME = "something",
+            EDGE = "something",
+            FF = "something",
+            FF_ESR = "something")
+    public void contentEditableTrueBody() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<body contentEditable='true'><p>initial</p></body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement body = driver.findElement(By.xpath("//body"));
+        body.clear();
+        body.sendKeys("something");
+        assertEquals(getExpectedAlerts()[0], body.getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("")
+    @HtmlUnitNYI(CHROME = "something",
+            EDGE = "something",
+            FF = "something",
+            FF_ESR = "something")
+    public void contentEditablePlaintextBody() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<body contentEditable='plaintext-only'><p>initial</p></body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement body = driver.findElement(By.xpath("//body"));
+        body.clear();
+        body.sendKeys("something");
+        assertEquals(getExpectedAlerts()[0], body.getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("something")
+    @HtmlUnitNYI(CHROME = "initialsomething",
+            EDGE = "initialsomething",
+            FF = "initialsomething",
+            FF_ESR = "initialsomething")
+    //TODO: fails because of HTMLElement.getContentEditable doesn't detect DomElement.ATTRIBUTE_VALUE_EMPTY
+    // this could be a general attribute issue
+    public void contentEditableDiv() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<body><div id='t' contentEditable><p>initial</p></div></body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement body = driver.findElement(By.id("t"));
+        body.clear();
+        body.sendKeys("something");
+        assertEquals(getExpectedAlerts()[0], body.getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("something")
+    public void contentEditableTrueDiv() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<body><div id='t' contentEditable='true'><p>initial</p></div></body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement div = driver.findElement(By.id("t"));
+        div.clear();
+        div.sendKeys("something");
+        assertEquals(getExpectedAlerts()[0], div.getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("something")
+    public void contentEditablePlaintextDiv() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html>\n"
+            + "<body><div id='t' contentEditable='plaintext-only'><p>initial</p></div></body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement div = driver.findElement(By.id("t"));
+        div.clear();
+        div.sendKeys("something");
+        assertEquals(getExpectedAlerts()[0], div.getText());
     }
 
     /**

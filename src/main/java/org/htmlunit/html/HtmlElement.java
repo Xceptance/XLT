@@ -150,6 +150,8 @@ public abstract class HtmlElement extends DomElement {
     protected static final String ATTRIBUTE_CHECKED = "checked";
     /** Constant 'hidden'. */
     protected static final String ATTRIBUTE_HIDDEN = "hidden";
+    /** Constant 'readonly'. */
+    protected static final String ATTRIBUTE_READONLY = "readonly";
 
     /** The listeners which are to be notified of attribute changes. */
     private final List<HtmlAttributeChangeListener> attributeListeners_ = new ArrayList<>();
@@ -199,7 +201,7 @@ public abstract class HtmlElement extends DomElement {
         final HtmlPage htmlPage = getHtmlPageOrNull();
 
         // TODO: Clean up; this is a hack for HtmlElement living within an XmlPage.
-        if (null == htmlPage) {
+        if (htmlPage == null) {
             super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
                     notifyMutationObservers);
             return;
@@ -295,7 +297,7 @@ public abstract class HtmlElement extends DomElement {
         final HtmlPage htmlPage = getHtmlPageOrNull();
 
         // TODO: Clean up; this is a hack for HtmlElement living within an XmlPage.
-        if (null == htmlPage) {
+        if (htmlPage == null) {
             return super.setAttributeNode(attribute);
         }
 
@@ -339,7 +341,7 @@ public abstract class HtmlElement extends DomElement {
         final HtmlPage htmlPage = getHtmlPageOrNull();
 
         // TODO: Clean up; this is a hack for HtmlElement living within an XmlPage.
-        if (null == htmlPage) {
+        if (htmlPage == null) {
             super.removeAttribute(attributeName);
             return;
         }
@@ -368,6 +370,7 @@ public abstract class HtmlElement extends DomElement {
      * <p>
      * Note that this method recursively calls this element's parent's
      * {@link #fireHtmlAttributeAdded(HtmlAttributeChangeEvent)} method.
+     * </p>
      *
      * @param event the event
      * @see #addHtmlAttributeChangeListener(HtmlAttributeChangeListener)
@@ -386,6 +389,7 @@ public abstract class HtmlElement extends DomElement {
      * <p>
      * Note that this method recursively calls this element's parent's
      * {@link #fireHtmlAttributeReplaced(HtmlAttributeChangeEvent)} method.
+     * </p>
      *
      * @param event the event
      * @see #addHtmlAttributeChangeListener(HtmlAttributeChangeListener)
@@ -404,6 +408,7 @@ public abstract class HtmlElement extends DomElement {
      * <p>
      * Note that this method recursively calls this element's parent's
      * {@link #fireHtmlAttributeRemoved(HtmlAttributeChangeEvent)} method.
+     * </p>
      *
      * @param event the event
      * @see #addHtmlAttributeChangeListener(HtmlAttributeChangeListener)
@@ -421,6 +426,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns the same value as returned by {@link #getTagName()}.
+     *
      * @return the same value as returned by {@link #getTagName()}
      */
     @Override
@@ -516,7 +523,7 @@ public abstract class HtmlElement extends DomElement {
      * Simulates typing the specified text while this element has focus.
      * Note that for some elements, typing '\n' submits the enclosed form.
      * @param text the text you with to simulate typing
-     * @exception IOException If an IO error occurs
+     * @throws IOException If an IO error occurs
      */
     public void type(final String text) throws IOException {
         for (final char ch : text.toCharArray()) {
@@ -532,7 +539,7 @@ public abstract class HtmlElement extends DomElement {
      *
      * @param c the character you wish to simulate typing
      * @return the page that occupies this window after typing
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public Page type(final char c) throws IOException {
         return type(c, true);
@@ -547,7 +554,7 @@ public abstract class HtmlElement extends DomElement {
      * @param c the character you wish to simulate typing
      * @param lastType is this the last character to type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     private Page type(final char c, final boolean lastType)
         throws IOException {
@@ -642,6 +649,7 @@ public abstract class HtmlElement extends DomElement {
      * submits the enclosed form.
      * <p>
      * An example of predefined values is {@link KeyboardEvent#DOM_VK_PAGE_DOWN}.
+     * </p>
      *
      * @param keyCode the key code to simulate typing
      * @return the page that occupies this window after typing
@@ -659,7 +667,7 @@ public abstract class HtmlElement extends DomElement {
      *
      * @param keyboard the keyboard
      * @return the page that occupies this window after typing
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public Page type(final Keyboard keyboard) throws IOException {
         Page page = null;
@@ -817,6 +825,7 @@ public abstract class HtmlElement extends DomElement {
      * Performs the effective type action, called after the keyPress event and before the keyUp event.
      * <p>
      * An example of predefined values is {@link KeyboardEvent#DOM_VK_PAGE_DOWN}.
+     * </p>
      *
      * @param keyCode the key code wish to simulate typing
      * @param lastType is this the last to type
@@ -1234,6 +1243,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns the value of the 'hidden' attribute or an empty string if not set.
+     *
      * @return the value of the 'hidden' attribute or an empty string if not set.
      */
     public String getHidden() {
@@ -1241,6 +1252,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns true if the hidden attribute is set.
+     *
      * @return true if the hidden attribute is set.
      */
     public boolean isHidden() {
@@ -1423,6 +1436,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns the true if the required attribute is set.
+     *
      * @return the true if the required attribute is set
      */
     public boolean isRequired() {
@@ -1430,6 +1445,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns the true if the required attribute is supported and set.
+     *
      * @return the true if the required attribute is supported and set
      */
     public boolean isOptional() {
@@ -1498,6 +1515,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns this element's top offset, which is the calculated left position of this.
+     *
      * @return this element's top offset, which is the calculated left position of this
      *         element relative to the <code>offsetParent</code>.
      */
@@ -1546,6 +1565,8 @@ public abstract class HtmlElement extends DomElement {
     }
 
     /**
+     * Returns this element's left offset, which is the calculated left position of this.
+     *
      * @return this element's left offset, which is the calculated left position of this
      *         element relative to the <code>offsetParent</code>.
      */

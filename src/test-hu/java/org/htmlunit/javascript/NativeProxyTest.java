@@ -16,7 +16,6 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.annotation.Alerts;
-import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,10 +27,6 @@ public class NativeProxyTest extends WebDriverTestCase {
 
     @Test
     @Alerts("correct")
-    @HtmlUnitNYI(CHROME = "wrong",
-            EDGE = "wrong",
-            FF = "wrong",
-            FF_ESR = "wrong")
     public void getTrapReceivesCorrectReceiverWhenDifferentFromProxy() throws Exception {
         final String html = DOCTYPE_HTML
                 + "<html></head>\n"
@@ -102,10 +97,6 @@ public class NativeProxyTest extends WebDriverTestCase {
 
     @Test
     @Alerts("correct")
-    @HtmlUnitNYI(CHROME = "wrong",
-            EDGE = "wrong",
-            FF = "wrong",
-            FF_ESR = "wrong")
     public void getTrapReceivesCorrectReceiverWithIndexKey() throws Exception {
         final String html = DOCTYPE_HTML
                 + "<html></head>\n"
@@ -133,10 +124,6 @@ public class NativeProxyTest extends WebDriverTestCase {
 
     @Test
     @Alerts("correct")
-    @HtmlUnitNYI(CHROME = "wrong",
-            EDGE = "wrong",
-            FF = "wrong",
-            FF_ESR = "wrong")
     public void getTrapReceivesCorrectReceiverWithSymbolKey() throws Exception {
         final String html = DOCTYPE_HTML
                 + "<html></head>\n"
@@ -156,6 +143,131 @@ public class NativeProxyTest extends WebDriverTestCase {
                 + "    }\n"
                 + "  });\n"
                 + "  Reflect.get(proxy, sym, otherReceiver);\n"
+                + "  log('' + res);\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts("correct")
+    public void setTrapReceivesCorrectReceiverWhenDifferentFromProxy() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html></head>\n"
+                + "<body>"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  var res = [];\n"
+                + "  var target = {};\n"
+                + "  var otherReceiver = { label: 'other' };\n"
+                + "  var proxy = new Proxy(target, {\n"
+                + "    set: function(t, prop, value, receiver) {\n"
+                + "      res.push(receiver === otherReceiver ? 'correct' : 'wrong');\n"
+                + "      return true;\n"
+                + "    }\n"
+                + "  });\n"
+                + "  Reflect.set(proxy, 'p', 1, otherReceiver);\n"
+                + "  log('' + res);\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts("true")
+    public void setTrapReceivesProxyAsReceiverWhenNoExplicitReceiverGiven() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html></head>\n"
+                + "<body>"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  var target = {};\n"
+                + "  var proxy = new Proxy(target, {\n"
+                + "    set: function(t, prop, value, receiver) {\n"
+                + "      return receiver === proxy;\n"
+                + "    }\n"
+                + "  });\n"
+                + "  log('' + Reflect.set(proxy, 'p', 1));\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts("proxy")
+    public void setTrapReceiverIsProxyForDirectPropertyWrite() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html></head>\n"
+                + "<body>"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  var res = [];\n"
+                + "  var target = {};\n"
+                + "  var proxy = new Proxy(target, {\n"
+                + "    set: function(t, prop, value, receiver) {\n"
+                + "      res.push(receiver === proxy ? 'proxy' : 'other');\n"
+                + "      return true;\n"
+                + "    }\n"
+                + "  });\n"
+                + "  proxy.p = 1;\n"
+                + "  log('' + res);\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts("correct")
+    public void setTrapReceivesCorrectReceiverWithIndexKey() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html></head>\n"
+                + "<body>"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  var res = [];\n"
+                + "  var target = [];\n"
+                + "  var otherReceiver = { label: 'other' };\n"
+                + "  var proxy = new Proxy(target, {\n"
+                + "    set: function(t, prop, value, receiver) {\n"
+                + "      if (prop === '0') {\n"
+                + "        res.push(receiver === otherReceiver ? 'correct' : 'wrong');\n"
+                + "      }\n"
+                + "      return true;\n"
+                + "    }\n"
+                + "  });\n"
+                + "  Reflect.set(proxy, 0, 42, otherReceiver);\n"
+                + "  log('' + res);\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts("correct")
+    public void setTrapReceivesCorrectReceiverWithSymbolKey() throws Exception {
+        final String html = DOCTYPE_HTML
+                + "<html></head>\n"
+                + "<body>"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  var res = [];\n"
+                + "  var sym = Symbol('test');\n"
+                + "  var target = {};\n"
+                + "  var otherReceiver = { label: 'other' };\n"
+                + "  var proxy = new Proxy(target, {\n"
+                + "    set: function(t, prop, value, receiver) {\n"
+                + "      if (prop === sym) {\n"
+                + "        res.push(receiver === otherReceiver ? 'correct' : 'wrong');\n"
+                + "      }\n"
+                + "      return true;\n"
+                + "    }\n"
+                + "  });\n"
+                + "  Reflect.set(proxy, sym, 42, otherReceiver);\n"
                 + "  log('' + res);\n"
                 + "</script>\n"
                 + "</body></html>";

@@ -88,7 +88,7 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}§")
+    @Alerts("[0-9a-f]{8}\\-[0-9a-f]{4}\\-4[0-9a-f]{3}\\-[89ab][0-9a-f]{3}\\-[0-9a-f]{12}§")
     public void randomUUID() throws Exception {
         final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
@@ -139,6 +139,25 @@ public class CryptoTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(window.crypto.subtle);\n"
+            + "}\n"
+            + "catch(e) { logEx(e); }\n"
+            + "</script></head></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void subtleSingleton() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "try {\n"
+            + "  let s = window.crypto.subtle;\n"
+            + "  log(window.crypto.subtle === s);\n"
             + "}\n"
             + "catch(e) { logEx(e); }\n"
             + "</script></head></html>";

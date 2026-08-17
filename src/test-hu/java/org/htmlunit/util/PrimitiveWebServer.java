@@ -27,6 +27,7 @@ import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -46,10 +47,11 @@ public class PrimitiveWebServer implements Closeable {
 
     private final int port_;
     private final String firstResponse_;
+    private final String secondResponse_;
     private final String otherResponse_;
     private ServerSocket server_;
     private Charset charset_ = StandardCharsets.ISO_8859_1;
-    private final List<String> requests_ = new ArrayList<>();
+    private final List<String> requests_ = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Constructs a new SimpleWebServer.
@@ -61,8 +63,38 @@ public class PrimitiveWebServer implements Closeable {
      */
     public PrimitiveWebServer(final Charset charset, final String firstResponse, final String otherResponse)
             throws Exception {
-        port_ = WebTestCase.PORT_PRIMITIVE_SERVER;
+        this(charset, firstResponse, null, otherResponse);
+    }
+
+    /**
+     * Constructs a new SimpleWebServer.
+     *
+     * @param charset the charset
+     * @param firstResponse the first response, must contain the full response (to start with "HTTP/1.1 200 OK")
+     * @param secondResponse the second response, must contain the full response (to start with "HTTP/1.1 200 OK") or null if not used
+     * @param otherResponse the subsequent response, must contain the full response (to start with "HTTP/1.1 200 OK")
+     * @throws Exception in case of error
+     */
+    public PrimitiveWebServer(final Charset charset, final String firstResponse, final String secondResponse, final String otherResponse)
+            throws Exception {
+        this(WebTestCase.PORT_PRIMITIVE_SERVER, charset, firstResponse, secondResponse, otherResponse);
+    }
+
+    /**
+     * Constructs a new SimpleWebServer.
+     *
+     * @param port the port
+     * @param charset the charset
+     * @param firstResponse the first response, must contain the full response (to start with "HTTP/1.1 200 OK")
+     * @param secondResponse the second response, must contain the full response (to start with "HTTP/1.1 200 OK") or null if not used
+     * @param otherResponse the subsequent response, must contain the full response (to start with "HTTP/1.1 200 OK")
+     * @throws Exception in case of error
+     */
+    public PrimitiveWebServer(final int port, final Charset charset, final String firstResponse, final String secondResponse, final String otherResponse)
+            throws Exception {
+        port_ = port;
         firstResponse_ = firstResponse;
+        secondResponse_ = secondResponse;
         otherResponse_ = otherResponse;
         if (charset != null) {
             charset_ = charset;
@@ -95,60 +127,64 @@ public class PrimitiveWebServer implements Closeable {
         }
 
         new Thread(() -> {
-            boolean first = true;
+            int responseCount = 0;
             try {
                 while (true) {
-                    final Socket socket = server_.accept();
-                    final InputStream in = socket.getInputStream();
-                    final CharArrayWriter writer = new CharArrayWriter();
+                    try (final Socket socket = server_.accept()) {
+                        final InputStream in = socket.getInputStream();
+                        final CharArrayWriter writer = new CharArrayWriter();
 
-                    String requestString = writer.toString();
-                    int i;
+                        String requestString = writer.toString();
+                        int i;
 
-                    while ((i = in.read()) != -1) {
-                        writer.append((char) i);
-                        requestString = writer.toString();
+                        while ((i = in.read()) != -1) {
+                            writer.append((char) i);
+                            requestString = writer.toString();
 
-                        if (i == '\n' && requestString.endsWith("\r\n\r\n")) {
-                            break;
+                            if (i == '\n' && requestString.endsWith("\r\n\r\n")) {
+                                break;
+                            }
                         }
-                    }
-                    final int contentLengthPos = StringUtils.indexOfIgnoreCase(requestString, HttpHeader.CONTENT_LENGTH);
-                    if (contentLengthPos > -1) {
-                        final int endPos = requestString.indexOf('\n', contentLengthPos + 16);
-                        final String toParse = requestString.substring(contentLengthPos + 16, endPos);
-                        final int contentLength = Integer.parseInt(toParse.trim());
+                        final int contentLengthPos = StringUtils.indexOfIgnoreCase(requestString, HttpHeader.CONTENT_LENGTH);
+                        if (contentLengthPos > -1) {
+                            final int endPos = requestString.indexOf('\n', contentLengthPos + 16);
+                            final String toParse = requestString.substring(contentLengthPos + 16, endPos);
+                            final int contentLength = Integer.parseInt(toParse.trim());
 
-                        if (contentLength > 0) {
-                            final byte[] charArray = new byte[contentLength];
-                            IOUtils.read(in, charArray, 0, contentLength);
-                            requestString += new String(charArray);
+                            if (contentLength > 0) {
+                                final byte[] charArray = new byte[contentLength];
+                                IOUtils.readFully(in, charArray);
+                                requestString += new String(charArray);
+                            }
                         }
-                    }
 
-                    final String response;
-                    if (requestString.isEmpty()
-                            || requestString.contains("/favicon.ico")) {
-                        response = "HTTP/1.1 404 Not Found\r\n"
-                                + "Content-Length: 0\r\n"
-                                + "Connection: close\r\n"
-                                + "\r\n";
-                    }
-                    else {
-                        requests_.add(requestString);
-                        if (first || otherResponse_ == null) {
-                            response = firstResponse_;
+                        final String response;
+                        if (requestString.isEmpty()
+                                || requestString.contains("/favicon.ico")) {
+                            response = "HTTP/1.1 404 Not Found\r\n"
+                                    + "Content-Length: 0\r\n"
+                                    + "Connection: close\r\n"
+                                    + "\r\n";
                         }
                         else {
-                            response = otherResponse_;
+                            requests_.add(requestString);
+                            if (responseCount == 0 || otherResponse_ == null) {
+                                response = firstResponse_;
+                            }
+                            else if (responseCount == 1 && secondResponse_ != null) {
+                                response = secondResponse_;
+                            }
+                            else {
+                                response = otherResponse_;
+                            }
+                            responseCount++;
                         }
-                        first = false;
-                    }
 
-                    try (OutputStream out = socket.getOutputStream()) {
+                        final OutputStream out = socket.getOutputStream();
                         final int headPos = response.indexOf("\r\n\r\n");
                         out.write(response.substring(0, headPos + 4).getBytes(StandardCharsets.US_ASCII));
                         out.write(response.substring(headPos + 4).getBytes(charset_));
+                        out.flush();
                     }
                 }
             }

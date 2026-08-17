@@ -67,6 +67,8 @@ import org.htmlunit.javascript.host.dom.DOMException;
  * @author Ronald Brill
  * @author Atsushi Nakagawa
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto">MDN Documentation</a>
  */
 @JsxClass
 public class SubtleCrypto extends HtmlUnitScriptable {
@@ -92,6 +94,8 @@ public class SubtleCrypto extends HtmlUnitScriptable {
     );
 
     /**
+     * The recognized cryptographic key usages.
+     *
      * @see <a href="https://w3c.github.io/webcrypto/#dfn-RecognizedKeyUsage">RecognizedKeyUsage</a>
      */
     private static final Set<String> RECOGNIZED_KEY_USAGES = Collections.unmodifiableSet(
@@ -99,6 +103,8 @@ public class SubtleCrypto extends HtmlUnitScriptable {
                     "deriveKey", "deriveBits", "wrapKey", "unwrapKey")));
 
     /**
+     * The valid authentication tag lengths for AES-GCM, in bits.
+     *
      * @see <a href="https://w3c.github.io/webcrypto/#aes-gcm-operations">AES-GCM encrypt, step 6</a>
      */
     private static final Set<Integer> VALID_AES_GCM_TAG_LENGTHS = Set.of(32, 64, 96, 104, 112, 120, 128);
@@ -555,7 +561,7 @@ public class SubtleCrypto extends HtmlUnitScriptable {
                 }
                 case "HMAC": {
                     final HmacKeyAlgorithm hmacParams = HmacKeyAlgorithm.from(keyGenParams);
-                    final List<String> usages = resolveKeyUsages("HMAC", keyUsages);
+                    final List<String> usages = resolveKeyUsages(algorithm, keyUsages);
                     if (usages.isEmpty()) {
                         throw new IllegalArgumentException("An invalid or illegal string was specified");
                     }

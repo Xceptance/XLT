@@ -34,7 +34,7 @@ import org.w3c.dom.DOMException;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSGroupingRule">MDN doc</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSGroupingRule">MDN Documentation</a>
  */
 @JsxClass
 public class CSSGroupingRule extends CSSRule {
@@ -177,7 +177,7 @@ public class CSSGroupingRule extends CSSRule {
             }
 
             final CSSRule cssRule = CSSRule.create(getParentStyleSheet(), rule);
-            if (null == cssRule) {
+            if (cssRule == null) {
                 cssRulesIndexFix_.add(pos);
             }
             else {

@@ -63,9 +63,9 @@ public class WebResponse implements Serializable {
     private String blockReason_;
 
     /**
-     * Constructs with all data.
+     * Constructs a web response.
      *
-     * @param responseData      Data that was send back
+     * @param responseData      the response data
      * @param url               Where this response came from
      * @param requestMethod     the method used to get this response
      * @param loadTime          How long the response took to be sent
@@ -76,9 +76,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Constructs with all data.
+     * Constructs a web response.
      *
-     * @param responseData      Data that was send back
+     * @param responseData      the response data
      * @param request           the request used to get this response
      * @param loadTime          How long the response took to be sent
      */
@@ -98,7 +98,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the response headers as a list of {@link NameValuePair}s.
+     * Returns the response headers.
      * @return the response headers as a list of {@link NameValuePair}s
      */
     public List<NameValuePair> getResponseHeaders() {
@@ -120,7 +120,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the status code that was returned by the server.
+     * Returns the HTTP status code.
      * @return the status code that was returned by the server
      */
     public int getStatusCode() {
@@ -128,7 +128,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the status message that was returned from the server.
+     * Returns the HTTP status message.
      * @return the status message that was returned from the server
      */
     public String getStatusMessage() {
@@ -136,7 +136,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the content type returned from the server, e.g. "text/html".
+     * Returns the response content type.
      * @return the content type returned from the server, e.g. "text/html"
      */
     public String getContentType() {
@@ -182,6 +182,7 @@ public class WebResponse implements Serializable {
      * charset based on the type of the content. As a last resort, this method returns the
      * value of {@link org.htmlunit.WebRequest#getDefaultResponseContentCharset()} which is
      * {@link java.nio.charset.StandardCharsets#UTF_8} by default.
+     * </p>
      * @return the content charset for this response
      */
     public Charset getContentCharset() {
@@ -234,9 +235,11 @@ public class WebResponse implements Serializable {
      * Returns whether the charset of the previous call to {@link #getContentCharset()} was "tentative".
      * <p>
      * A charset is classed as "tentative" if its detection is prone to false positive/negatives.
+     * </p>
      * <p>
      * For example, HTML meta-tag sniffing can be fooled by text that looks-like-a-meta-tag inside
      * JavaScript code (false positive) or if the meta-tag is after the first 1024 bytes (false negative).
+     * </p>
      * @return {@code true} if the charset of the previous call to {@link #getContentCharset()} was
      *         "tentative".
      * @see <a href="https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence">
@@ -342,7 +345,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the 2xx
+     * Returns whether the response has a successful HTTP status code.
+     *
+     * @return {@code true} if the status code is in the 2xx range
      */
     public boolean isSuccess() {
         final int statusCode = getStatusCode();
@@ -350,7 +355,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the 2xx or 305
+     * Returns whether the response has a successful HTTP status code.
+     *
+     * @return {@code true} if the status code is in the 2xx range or 305
      */
     public boolean isSuccessOrUseProxy() {
         final int statusCode = getStatusCode();
@@ -359,7 +366,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the 2xx or 305
+     * Returns whether the response has a successful HTTP status code.
+     *
+     * @return {@code true} if the status code is in the 2xx range or 305
      */
     public boolean isSuccessOrUseProxyOrNotModified() {
         final int statusCode = getStatusCode();
@@ -369,13 +378,17 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the request was blocked
+     * Returns whether the request was blocked.
+     *
+     * @return {@code true} if the request was blocked
      */
     public boolean wasBlocked() {
         return wasBlocked_;
     }
 
     /**
+     * Returns the reason for blocking or null.
+     *
      * @return the reason for blocking or null
      */
     public String getBlockReason() {

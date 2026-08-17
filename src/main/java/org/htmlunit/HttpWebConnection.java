@@ -14,6 +14,9 @@
  */
 package org.htmlunit;
 
+import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
+import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_PRIORITY;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -108,6 +111,7 @@ import org.htmlunit.httpclient.HtmlUnitCookieSpecProvider;
 import org.htmlunit.httpclient.HtmlUnitCookieStore;
 import org.htmlunit.httpclient.HtmlUnitRedirectStrategie;
 import org.htmlunit.httpclient.HtmlUnitSSLConnectionSocketFactory;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.httpclient.SocksConnectionSocketFactory;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
@@ -463,8 +467,7 @@ public class HttpWebConnection implements WebConnection {
                 filename = pairWithFile.getValue();
             }
 
-            builder.addBinaryBody(pairWithFile.getName(), new ByteArrayInputStream(data),
-                    contentType, filename);
+            builder.addBinaryBody(pairWithFile.getName(), data, contentType, filename);
             return;
         }
 
@@ -809,19 +812,164 @@ public class HttpWebConnection implements WebConnection {
         return new WebResponse(responseData, webRequest, loadTime);
     }
 
+    /**
+     * Returns the {@code Sec-Fetch-Mode} value to use for this request: the explicit
+     * override set on the request if any, otherwise the default mode implied by its
+     * {@link WebRequest.FetchDestination}.
+     * @param webRequest the request
+     * @return the {@code Sec-Fetch-Mode} header value
+     */
+    private static String computeSecFetchMode(final WebRequest webRequest) {
+        final WebRequest.FetchMode override = webRequest.getFetchModeOverride();
+        if (override != null) {
+            return override.getValue();
+        }
+        return defaultFetchModeFor(webRequest.getFetchDestination()).getValue();
+    }
+
+    /**
+     * The default {@link WebRequest.FetchMode} implied by a given
+     * {@link WebRequest.FetchDestination}, absent an explicit override.
+     * @param destination the destination
+     * @return the default mode for that destination
+     */
+    private static WebRequest.FetchMode defaultFetchModeFor(final WebRequest.FetchDestination destination) {
+        switch (destination) {
+            case DOCUMENT:
+            case IFRAME:
+            case FRAME:
+                return WebRequest.FetchMode.NAVIGATE;
+
+            // fonts are always fetched in CORS mode regardless of crossorigin attribute;
+            // XHR/fetch() default to CORS mode too (fetch() can override to no-cors/same-origin,
+            // via WebRequest.setFetchModeOverride)
+            case FONT:
+            case MANIFEST:
+            case EMPTY:
+                return WebRequest.FetchMode.CORS;
+
+            // workers can never be cross-origin
+            case WORKER:
+            case SHARED_WORKER:
+            case SERVICE_WORKER:
+                return WebRequest.FetchMode.SAME_ORIGIN;
+
+            case WEBSOCKET:
+                return WebRequest.FetchMode.WEBSOCKET;
+
+            // image, script, style, object, embed, audio, video, track, report
+            default:
+                return WebRequest.FetchMode.NO_CORS;
+        }
+    }
+
+    /**
+     * Computes the {@code Sec-Fetch-Site} value for this request by comparing the
+     * request's {@link WebRequest#getRequestingUrl() initiator} against the target
+     * URL.
+     * @param webRequest the request
+     * @param targetUrl the target URL (passed separately since callers already have it)
+     * @return one of {@code none}, {@code same-origin}, {@code same-site} or {@code cross-site}
+     */
+    private static String computeSecFetchSite(final WebRequest webRequest, final URL targetUrl) {
+        final URL requestingUrl = webRequest.getRequestingUrl();
+        if (requestingUrl == null) {
+            // no initiator - e.g. a typed URL, bookmark, or other browser-chrome-initiated navigation
+            return "none";
+        }
+        if (isSameOrigin(requestingUrl, targetUrl)) {
+            return "same-origin";
+        }
+        if (isSameSite(requestingUrl, targetUrl)) {
+            return "same-site";
+        }
+        return "cross-site";
+    }
+
+    private static boolean isSameOrigin(final URL a, final URL b) {
+        return a.getProtocol().equals(b.getProtocol())
+                && a.getHost().equalsIgnoreCase(b.getHost())
+                && effectivePort(a) == effectivePort(b);
+    }
+
+    private static int effectivePort(final URL url) {
+        final int port = url.getPort();
+        return port == -1 ? url.getDefaultPort() : port;
+    }
+
+    /**
+     * Same-site comparison per the Fetch Metadata / HTML "same site" algorithm: same
+     * scheme and same registrable domain (eTLD+1), ignoring port and subdomain.
+     *
+     * @param a first URL
+     * @param b second URL
+     * @return whether both URLs are considered "same-site"
+     */
+    private static boolean isSameSite(final URL a, final URL b) {
+        if (!a.getProtocol().equals(b.getProtocol())) {
+            return false;
+        }
+
+        final String registrableDomainA = HttpClientConverter.registrableDomain(a.getHost());
+        final String registrableDomainB = HttpClientConverter.registrableDomain(b.getHost());
+
+        // both are normalized and in lower case
+        return registrableDomainA.equals(registrableDomainB);
+    }
+
+    /**
+     * Returns whether the given URL is a "potentially trustworthy origin" as defined by
+     * the Secure Contexts spec, which gates whether {@code Sec-Fetch-*} headers (and
+     * {@code Upgrade-Insecure-Requests}) are sent at all. Note that {@code localhost}
+     * and loopback addresses are considered trustworthy even over plain HTTP.
+     * @param url the target URL
+     * @return whether the origin is potentially trustworthy
+     */
+    private static boolean isPotentiallyTrustworthy(final URL url) {
+        final String protocol = url.getProtocol();
+        if ("https".equals(protocol) || "wss".equals(protocol) || "file".equals(protocol)) {
+            return true;
+        }
+        if (!"http".equals(protocol) && !"ws".equals(protocol)) {
+            // be conservative for schemes not explicitly handled here (e.g. about:, data:, blob:
+            // callers should special-case these before reaching HTTP request construction)
+            return false;
+        }
+
+        final String host = url.getHost();
+        return "localhost".equalsIgnoreCase(host)
+                || host.toLowerCase(java.util.Locale.ROOT).endsWith(".localhost")
+                || "127.0.0.1".equals(host)
+                || host.startsWith("127.")
+                || "::1".equals(host)
+                || "[::1]".equals(host);
+    }
+
     private List<HttpRequestInterceptor> getHttpRequestInterceptors(final WebRequest webRequest) {
         final List<HttpRequestInterceptor> list = new ArrayList<>();
-        final Map<String, String> requestHeaders = webRequest.getAdditionalHeaders();
+        final Map<String, String> requestHeaders = new HashMap<>(webRequest.getAdditionalHeaders());
         final URL url = webRequest.getUrl();
         final StringBuilder host = new StringBuilder(url.getHost());
+
+        final BrowserVersion browserVersion = webClient_.getBrowserVersion();
 
         final int port = url.getPort();
         if (port > 0 && port != url.getDefaultPort()) {
             host.append(':').append(port);
         }
 
+        // Both Sec-Fetch-* (https://www.w3.org/TR/fetch-metadata/) and Client Hints
+        // (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA) are
+        // only sent to potentially-trustworthy target origins; computed once up front.
+        final boolean isSecureContext = isPotentiallyTrustworthy(url);
+
+        // computed unconditionally: also drives Upgrade-Insecure-Requests below,
+        // which is not gated by origin trustworthiness the way Sec-Fetch-*/Client
+        // Hints are
+        final String secFetchMode = computeSecFetchMode(webRequest);
+
         // make sure the headers are added in the right order
-        final String[] headerNames = webClient_.getBrowserVersion().getHeaderNamesOrdered();
+        final String[] headerNames = browserVersion.getHeaderNamesOrdered();
         for (final String header : headerNames) {
             if (HttpHeader.HOST.equals(header)) {
                 list.add(new HostHeaderHttpRequestInterceptor(host.toString()));
@@ -829,86 +977,154 @@ public class HttpWebConnection implements WebConnection {
             else if (HttpHeader.USER_AGENT.equals(header)) {
                 String headerValue = webRequest.getAdditionalHeader(HttpHeader.USER_AGENT);
                 if (headerValue == null) {
-                    headerValue = webClient_.getBrowserVersion().getUserAgent();
+                    headerValue = browserVersion.getUserAgent();
                 }
                 list.add(new UserAgentHeaderHttpRequestInterceptor(headerValue));
+                requestHeaders.remove(HttpHeader.USER_AGENT);
             }
             else if (HttpHeader.ACCEPT.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.ACCEPT);
                 if (headerValue != null) {
                     list.add(new AcceptHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.ACCEPT);
                 }
             }
             else if (HttpHeader.ACCEPT_LANGUAGE.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.ACCEPT_LANGUAGE);
                 if (headerValue != null) {
                     list.add(new AcceptLanguageHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.ACCEPT_LANGUAGE);
                 }
             }
             else if (HttpHeader.ACCEPT_ENCODING.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.ACCEPT_ENCODING);
                 if (headerValue != null) {
                     list.add(new AcceptEncodingHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.ACCEPT_ENCODING);
                 }
             }
             else if (HttpHeader.SEC_FETCH_DEST.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_FETCH_DEST);
                 if (headerValue != null) {
                     list.add(new SecFetchDestHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.SEC_FETCH_DEST);
+                }
+                else if (isSecureContext) {
+                    list.add(new SecFetchDestHeaderHttpRequestInterceptor(webRequest.getFetchDestination().getValue()));
                 }
             }
             else if (HttpHeader.SEC_FETCH_MODE.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_FETCH_MODE);
                 if (headerValue != null) {
                     list.add(new SecFetchModeHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.SEC_FETCH_MODE);
+                }
+                else if (isSecureContext) {
+                    list.add(new SecFetchModeHeaderHttpRequestInterceptor(secFetchMode));
                 }
             }
             else if (HttpHeader.SEC_FETCH_SITE.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_FETCH_SITE);
                 if (headerValue != null) {
                     list.add(new SecFetchSiteHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.SEC_FETCH_SITE);
+                }
+                else if (isSecureContext) {
+                    list.add(new SecFetchSiteHeaderHttpRequestInterceptor(computeSecFetchSite(webRequest, url)));
                 }
             }
             else if (HttpHeader.SEC_FETCH_USER.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_FETCH_USER);
                 if (headerValue != null) {
                     list.add(new SecFetchUserHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.SEC_FETCH_USER);
+                }
+
+                // Per spec, sent only for navigations backed by real user activation;
+                // real browsers omit it entirely otherwise (never send "?0").
+                else if (isSecureContext
+                        && WebRequest.FetchMode.NAVIGATE.getValue().equals(secFetchMode)
+                        && webRequest.isUserActivation()) {
+                    list.add(new SecFetchUserHeaderHttpRequestInterceptor("?1"));
                 }
             }
             else if (HttpHeader.SEC_CH_UA.equals(header)) {
-                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA);
-                if (headerValue != null) {
-                    list.add(new SecClientHintUserAgentHeaderHttpRequestInterceptor(headerValue));
+                // Client Hints require a secure context, same as Sec-Fetch-*
+                // (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA)
+                if (isSecureContext) {
+                    String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA);
+                    if (headerValue != null) {
+                        list.add(new SecClientHintUserAgentHeaderHttpRequestInterceptor(headerValue));
+                        requestHeaders.remove(HttpHeader.SEC_CH_UA);
+                    }
+                    else {
+                        if (browserVersion.hasFeature(HTTP_HEADER_CH_UA)) {
+                            headerValue = browserVersion.getSecClientHintUserAgentHeader();
+                            list.add(new SecClientHintUserAgentHeaderHttpRequestInterceptor(headerValue));
+                        }
+                    }
                 }
             }
             else if (HttpHeader.SEC_CH_UA_MOBILE.equals(header)) {
-                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE);
-                if (headerValue != null) {
-                    list.add(new SecClientHintUserAgentMobileHeaderHttpRequestInterceptor(headerValue));
+                if (isSecureContext) {
+                    final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE);
+                    if (headerValue != null) {
+                        list.add(new SecClientHintUserAgentMobileHeaderHttpRequestInterceptor(headerValue));
+                        requestHeaders.remove(HttpHeader.SEC_CH_UA_MOBILE);
+                    }
+                    else {
+                        if (browserVersion.hasFeature(HTTP_HEADER_CH_UA)) {
+                            list.add(new SecClientHintUserAgentMobileHeaderHttpRequestInterceptor("?0"));
+                        }
+                    }
                 }
             }
             else if (HttpHeader.SEC_CH_UA_PLATFORM.equals(header)) {
-                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM);
-                if (headerValue != null) {
-                    list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
+                if (isSecureContext) {
+                    String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM);
+                    if (headerValue != null) {
+                        list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
+                        requestHeaders.remove(HttpHeader.SEC_CH_UA_PLATFORM);
+                    }
+                    else {
+                        if (browserVersion.hasFeature(HTTP_HEADER_CH_UA)) {
+                            headerValue = browserVersion.getSecClientHintUserAgentPlatformHeader();
+                            list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
+                        }
+                    }
                 }
             }
             else if (HttpHeader.PRIORITY.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.PRIORITY);
                 if (headerValue != null) {
                     list.add(new PriorityHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.PRIORITY);
+                }
+                else {
+                    if (browserVersion.hasFeature(HTTP_HEADER_PRIORITY)) {
+                        list.add(new PriorityHeaderHttpRequestInterceptor("u=0, i"));
+                    }
                 }
             }
             else if (HttpHeader.UPGRADE_INSECURE_REQUESTS.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS);
                 if (headerValue != null) {
                     list.add(new UpgradeInsecureRequestHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.UPGRADE_INSECURE_REQUESTS);
+                }
+
+                // Real browsers only send this for navigations (top-level, iframe, frame),
+                // never for subresource fetches (image/script/style/xhr/...).
+                else if (WebRequest.FetchMode.NAVIGATE.getValue().equals(secFetchMode)
+                            && HttpMethod.OPTIONS != webRequest.getHttpMethod()) {
+                    list.add(new UpgradeInsecureRequestHeaderHttpRequestInterceptor("1"));
                 }
             }
             else if (HttpHeader.REFERER.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.REFERER);
                 if (headerValue != null) {
                     list.add(new RefererHeaderHttpRequestInterceptor(headerValue));
+                    requestHeaders.remove(HttpHeader.REFERER);
                 }
             }
             else if (HttpHeader.CONNECTION.equals(header)) {

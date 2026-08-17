@@ -253,7 +253,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
     @Override
     public URL getUrl() {
         final WebResponse wr = getWebResponse();
-        if (null == wr) {
+        if (wr == null) {
             return UrlUtils.URL_ABOUT_BLANK;
         }
         return getWebResponse().getWebRequest().getUrl();
@@ -362,7 +362,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
      * @param entityReferenceExpansion The value of this flag determines
      *        whether entity reference nodes are expanded.
      * @return The newly created <code>NodeIterator</code>.
-     * @exception DOMException
+     * @throws DOMException
      *            NOT_SUPPORTED_ERR: Raised if the specified <code>root</code> is <code>null</code>.
      */
     public DomNodeIterator createNodeIterator(final Node root, final int whatToShow, final NodeFilter filter,
@@ -407,14 +407,18 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
     }
 
     /**
-     * @return whether or not this is currently printing
+     * Returns whether this page is currently being printed.
+     *
+     * @return {@code true} if this page is currently being printed
      */
     public boolean isPrinting() {
         return printing_;
     }
 
     /**
-     * @param printing the printing state to set
+     * Sets whether this page is currently being printed.
+     *
+     * @param printing {@code true} if this page is currently being printed
      */
     public void setPrinting(final boolean printing) {
         printing_ = printing;
@@ -429,21 +433,26 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
     }
 
     /**
-     * @return true if at least one domChangeListener was registered.
+     * Returns whether any DOM change listeners have been registered.
+     *
+     * @return {@code true} if at least one DOM change listener has been registered
      */
     public boolean isDomChangeListenerInUse() {
         return domChangeListenerInUse_;
     }
 
     /**
-     * Informs about the use of a characterDataChangeListener.
+     * Marks that a character data change listener has been registered.
      */
     public void characterDataChangeListenerAdded() {
         characterDataChangeListenerInUse_ = true;
     }
 
     /**
-     * @return true if at least one characterDataChangeListener was registered.
+     * Returns whether any character data change listeners have been registered.
+     *
+     * @return {@code true} if at least one character data change listener has
+     *         been registered
      */
     public boolean isCharacterDataChangeListenerInUse() {
         return characterDataChangeListenerInUse_;

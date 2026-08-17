@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
@@ -56,6 +55,8 @@ import org.htmlunit.util.UrlUtils;
  * @author Daniel Gredler
  * @author Ronald Brill
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlAnchor.class)
 public class HTMLAnchorElement extends HTMLElement {
@@ -115,8 +116,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the name property.
-     * @param name name attribute value
+     * Sets the {@code name} property.
+     * @param name the {@code name} property value
      */
     @JsxSetter
     @Override
@@ -125,8 +126,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the name property of this link.
-     * @return the name property
+     * Returns the value of this link's {@code name} property.
+     * @return the value of this link's {@code name} property
      */
     @JsxGetter
     @Override
@@ -135,8 +136,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the target property of this link.
-     * @param target target attribute value
+     * Sets the {@code target} property of this link.
+     * @param target the {@code target} property value
      */
     @JsxSetter
     public void setTarget(final String target) {
@@ -144,8 +145,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the target property of this link.
-     * @return the href property
+     * Returns the value of this link's {@code target} property.
+     * @return the value of this link's {@code target} property
      */
     @JsxGetter
     public String getTarget() {
@@ -171,8 +172,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the rel property.
-     * @param rel rel attribute value
+     * Sets the {@code rel} property.
+     * @param rel the {@code rel} property value
      */
     @JsxSetter
     public void setRel(final String rel) {
@@ -180,8 +181,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rel property.
-     * @return the rel property
+     * Returns the value of this link's {@code rel} property.
+     * @return the value of this link's {@code rel} property
      */
     @JsxGetter
     public String getRel() {
@@ -189,8 +190,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rev property.
-     * @return the rev property
+     * Returns the value of this link's {@code rev} property.
+     * @return the value of this link's {@code rev} property
      */
     @JsxGetter
     public String getRev() {
@@ -198,8 +199,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the rev property.
-     * @param rel rev attribute value
+     * Sets the {@code rev} property.
+     * @param rel the {@code rev} property value
      */
     @JsxSetter
     public void setRev(final String rel) {
@@ -207,8 +208,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rev property.
-     * @return the referrerPolicy property
+     * Returns the value of this link's {@code referrerPolicy} property.
+     * @return the value of this link's {@code referrerPolicy} property
      */
     @JsxGetter
     public String getReferrerPolicy() {
@@ -224,8 +225,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the rev property.
-     * @param referrerPolicy referrerPolicy attribute value
+     * Sets the {@code referrerPolicy} property.
+     * @param referrerPolicy the {@code referrerPolicy} property value
      */
     @JsxSetter
     public void setReferrerPolicy(final String referrerPolicy) {
@@ -236,7 +237,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the search portion of the link's URL (the portion starting with
      * '?' and up to but not including any '#').
      * @return the search portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/search">MDN Documentation</a>
      */
     @JsxGetter
     public String getSearch() {
@@ -253,7 +254,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * and up to but not including any '#').
      * @param search the new search portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/search">MDN Documentation</a>
      */
     @JsxSetter
     public void setSearch(final String search) throws Exception {
@@ -263,7 +264,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * Returns the hash portion of the link's URL (the portion following the '#', including the '#').
      * @return the hash portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hash">MDN Documentation</a>
      */
     @JsxGetter
     public String getHash() {
@@ -279,7 +280,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the hash portion of the link's URL (the portion following the '#').
      * @param hash the new hash portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hash">MDN Documentation</a>
      */
     @JsxSetter
     public void setHash(final String hash) throws Exception {
@@ -289,7 +290,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * Returns the host portion of the link's URL (the '[hostname]:[port]' portion).
      * @return the host portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533784.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/host">MDN Documentation</a>
      */
     @JsxGetter
     public String getHost() {
@@ -312,7 +313,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the host portion of the link's URL (the '[hostname]:[port]' portion).
      * @param host the new host portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533784.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/host">MDN Documentation</a>
      */
     @JsxSetter
     public void setHost(final String host) throws Exception {
@@ -322,7 +323,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * Returns the hostname portion of the link's URL.
      * @return the hostname portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533785.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hostname">MDN Documentation</a>
      */
     @JsxGetter
     public String getHostname() {
@@ -338,24 +339,37 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the hostname portion of the link's URL.
      * @param hostname the new hostname portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533785.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hostname">MDN Documentation</a>
      */
     @JsxSetter
-    public void setHostname(final String hostname) throws Exception {
-        if (getBrowserVersion().hasFeature(JS_ANCHOR_HOSTNAME_IGNORE_BLANK)) {
-            if (!StringUtils.isBlank(hostname)) {
-                setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
+    public void setHostname(String hostname) throws Exception {
+        if (hostname != null) {
+            if (hostname.indexOf(' ') > -1) {
+                return;
+            }
+
+            final int idx = hostname.indexOf('#');
+            if (idx > -1) {
+                hostname = hostname.substring(0, idx);
             }
         }
-        else if (!StringUtils.isEmptyOrNull(hostname)) {
+
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(hostname)) {
+            return;
+        }
+
+        try {
             setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
+        }
+        catch (final MalformedURLException  e) {
+            // do nothing
         }
     }
 
     /**
      * Returns the pathname portion of the link's URL.
      * @return the pathname portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534332.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/pathname">MDN Documentation</a>
      */
     @JsxGetter
     public String getPathname() {
@@ -389,7 +403,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the pathname portion of the link's URL.
      * @param pathname the new pathname portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534332.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/pathname">MDN Documentation</a>
      */
     @JsxSetter
     public void setPathname(final String pathname) throws Exception {
@@ -399,7 +413,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * Returns the port portion of the link's URL.
      * @return the port portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534342.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/port">MDN Documentation</a>
      */
     @JsxGetter
     public String getPort() {
@@ -420,7 +434,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the port portion of the link's URL.
      * @param port the new port portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534342.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/port">MDN Documentation</a>
      */
     @JsxSetter
     public void setPort(final String port) throws Exception {
@@ -437,7 +451,7 @@ public class HTMLAnchorElement extends HTMLElement {
     /**
      * Returns the protocol portion of the link's URL, including the trailing ':'.
      * @return the protocol portion of the link's URL, including the trailing ':'
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534353.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/protocol">MDN Documentation</a>
      */
     @JsxGetter
     public String getProtocol() {
@@ -466,7 +480,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the protocol portion of the link's URL.
      * @param protocol the new protocol portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534353.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/protocol">MDN Documentation</a>
      */
     @JsxSetter
     public void setProtocol(final String protocol) throws Exception {
@@ -477,7 +491,7 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Calls for instance for implicit conversion to string.
+     * Called, for instance, for implicit conversion to a string.
      * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
      * @param hint the type hint
      * @return the default value
@@ -562,7 +576,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code coords} attribute.
-     * @param coords {@code coords} attribute
+     * @param coords the {@code coords} attribute value
      */
     @JsxSetter
     public void setCoords(final String coords) {
@@ -580,7 +594,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code hreflang} attribute.
-     * @param hreflang {@code hreflang} attribute
+     * @param hreflang the {@code hreflang} attribute value
      */
     @JsxSetter
     public void setHreflang(final String hreflang) {
@@ -621,7 +635,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code username} attribute.
-     * @param username {@code username} attribute
+     * @param username the {@code username} attribute value
      */
     @JsxSetter
     public void setUsername(final String username) {
@@ -656,7 +670,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code password} attribute.
-     * @param password {@code password} attribute
+     * @param password the {@code password} attribute value
      */
     @JsxSetter
     public void setPassword(final String password) {
@@ -686,7 +700,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code download} attribute.
-     * @param download {@code download} attribute
+     * @param download the {@code download} attribute value
      */
     @JsxSetter
     public void setDownload(final String download) {
@@ -704,7 +718,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code ping} attribute.
-     * @param ping {@code ping} attribute
+     * @param ping the {@code ping} attribute value
      */
     @JsxSetter
     public void setPing(final String ping) {
@@ -722,7 +736,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code shape} attribute.
-     * @param shape {@code shape} attribute
+     * @param shape the {@code shape} attribute value
      */
     @JsxSetter
     public void setShape(final String shape) {
@@ -740,7 +754,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code type} attribute.
-     * @param type {@code type} attribute
+     * @param type the {@code type} attribute value
      */
     @JsxSetter
     public void setType(final String type) {
@@ -757,8 +771,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the relList property.
-     * @param rel attribute value
+     * Sets the {@code relList} attribute.
+     * @param rel the {@code relList} attribute value
      */
     @JsxSetter
     public void setRelList(final Object rel) {

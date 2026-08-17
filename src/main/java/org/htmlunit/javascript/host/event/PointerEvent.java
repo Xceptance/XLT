@@ -33,7 +33,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 /**
  * JavaScript object representing a {@code PointerEvent}.
  * @see <a href="http://www.w3.org/TR/pointerevents/">W3C Spec</a>
- * @see <a href="http://msdn.microsoft.com/en-us/library/ie/hh772103.aspx">MSDN</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent">MDN</a>
  *
  * @author Frank Danek
  * @author Ahmed Ashour
@@ -48,6 +48,8 @@ public class PointerEvent extends MouseEvent {
     private double pressure_;
     private int tiltX_;
     private int tiltY_;
+    private double altitudeAngle_;
+    private double azimuthAngle_;
     private String pointerType_ = "";
     private boolean isPrimary_;
 
@@ -75,6 +77,8 @@ public class PointerEvent extends MouseEvent {
         event.setBubbles(false);
         event.setCancelable(false);
 
+        event.altitudeAngle_ = Math.PI / 2d;
+
         if (args.length != 0) {
             event.setType(JavaScriptEngine.toString(args[0]));
             event.width_ = 1;
@@ -93,6 +97,11 @@ public class PointerEvent extends MouseEvent {
             event.tiltY_ = (int) getValue(object, "tiltY", event.tiltY_);
             event.pointerType_ = (String) getValue(object, "pointerType", event.pointerType_);
             event.isPrimary_ = (boolean) getValue(object, "isPrimary", event.isPrimary_);
+
+            if (object.has("tiltX", object) || object.has("tiltY", object)) {
+                event.altitudeAngle_ = 1.4105561004354874;
+                event.azimuthAngle_ = 0.8628261898537035;
+            }
         }
         return event;
     }
@@ -142,7 +151,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pointerId
+     * Returns the pointer identifier.
+     *
+     * @return the pointer identifier
      */
     @JsxGetter
     public long getPointerId() {
@@ -150,7 +161,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the width
+     * Returns the pointer contact width.
+     *
+     * @return the pointer contact width
      */
     @JsxGetter
     public long getWidth() {
@@ -158,7 +171,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the height
+     * Returns the pointer contact height.
+     *
+     * @return the pointer contact height
      */
     @JsxGetter
     public long getHeight() {
@@ -166,7 +181,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pressure
+     * Returns the normalized pointer pressure.
+     *
+     * @return the normalized pointer pressure
      */
     @JsxGetter
     public double getPressure() {
@@ -174,7 +191,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the tiltX
+     * Returns the pointer tilt along the X axis.
+     *
+     * @return the pointer tilt along the X axis
      */
     @JsxGetter
     public long getTiltX() {
@@ -182,7 +201,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the tiltY
+     * Returns the pointer tilt along the Y axis.
+     *
+     * @return the pointer tilt along the Y axis
      */
     @JsxGetter
     public long getTiltY() {
@@ -190,7 +211,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pointerType
+     * Returns the pointer type.
+     *
+     * @return the pointer type
      */
     @JsxGetter
     public String getPointerType() {
@@ -198,7 +221,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the isPrimary
+     * Returns whether this is the primary pointer.
+     *
+     * @return whether this is the primary pointer
      */
     @JsxGetter(propertyName = "isPrimary")
     public boolean isPrimary_js() {
@@ -206,24 +231,30 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pointerType
+     * Returns the pointer altitude angle.
+     *
+     * @return the pointer altitude angle
      */
     @JsxGetter
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     public double getAltitudeAngle() {
-        return 1.5707963267948966;
+        return altitudeAngle_;
     }
 
     /**
-     * @return the pointerType
+     * Returns the pointer azimuth angle.
+     *
+     * @return the pointer azimuth angle
      */
     @JsxGetter
     public double getAzimuthAngle() {
-        return 0d;
+        return azimuthAngle_;
     }
 
     /**
-     * @return the persistentDeviceId
+     * Returns the persistent device identifier.
+     *
+     * @return the persistent device identifier
      */
     @JsxGetter({CHROME, EDGE, FF})
     public double getPersistentDeviceId() {

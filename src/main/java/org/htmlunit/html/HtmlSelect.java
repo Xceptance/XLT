@@ -16,6 +16,7 @@ package org.htmlunit.html;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,12 +46,12 @@ import org.w3c.dom.Node;
  * @author Lai Quang Duong
  */
 public class HtmlSelect extends HtmlElement implements DisabledElement, SubmittableElement,
-                LabelableElement, ValidatableElement {
+                LabelableElement, ValidatableHtmlElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "select";
 
-    /** What is the index of the HtmlOption which was last selected. */
+    /** The index of the HtmlOption which was last selected. */
     private int lastSelectedIndex_ = -1;
     private String customValidity_;
 
@@ -70,7 +71,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * If we were given an invalid <code>size</code> attribute, normalize it.
      * Then set a default selected option if none was specified and the size is 1 or less
      * and this isn't a multiple selection input.
-     * @param postponed whether to use {@link org.htmlunit.javascript.PostponedAction} or no
+     * @param postponed unused in this implementation; kept to satisfy the overridden signature,
+     *     see {@link org.htmlunit.javascript.PostponedAction}
      */
     @Override
     public void onAllChildrenAddedToPage(final boolean postponed) {
@@ -79,12 +81,10 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
         try {
             size = Integer.parseInt(getSizeAttribute());
             if (size < 0) {
-                removeAttribute("size");
                 size = 0;
             }
         }
         catch (final NumberFormatException e) {
-            removeAttribute("size");
             size = 0;
         }
 
@@ -115,7 +115,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * conditions can occur if the element is in single select mode:</p>
      * <ul>
      *   <li>if multiple options are erroneously selected, the last one is returned</li>
-     *   <li>if no options are selected, the first one is returned</li>
+     *   <li>if no options are selected, an empty list is returned</li>
      * </ul>
      *
      * @return the currently selected options
@@ -189,11 +189,12 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * Remove an option at the given index.
+     * Remove an option at the given index. This is a no-op (no exception thrown)
+     * if no option exists at the given index.
      * @param index the index of the option to remove
      */
     public void removeOption(final int index) {
-        final ChildElementsIterator iterator = new ChildElementsIterator(this);
+        final Iterator<HtmlElement> iterator = getHtmlElementDescendants().iterator();
         int i = 0;
         while (iterator.hasNext()) {
             final DomElement element = iterator.next();
@@ -209,27 +210,29 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * Replace an option at the given index with a new option.
+     * Replace an option at the given index with a new option. This is a no-op
+     * (no exception thrown) if no option exists at the given index.
      * @param index the index of the option to remove
      * @param newOption the new option to replace to indexed option
      */
     public void replaceOption(final int index, final HtmlOption newOption) {
-        final ChildElementsIterator iterator = new ChildElementsIterator(this);
+        final Iterator<HtmlElement> iterator = getHtmlElementDescendants().iterator();
         int i = 0;
         while (iterator.hasNext()) {
             final DomElement element = iterator.next();
             if (element instanceof HtmlOption) {
                 if (i == index) {
                     element.replace(newOption);
+
+                    if (newOption.isSelected() && !isMultipleSelectEnabled()) {
+                        setOnlySelected(newOption, true);
+                    }
                     ensureSelectedIndex();
+
                     return;
                 }
                 i++;
             }
-        }
-
-        if (newOption.isSelected()) {
-            setSelectedAttribute(newOption, true);
         }
     }
 
@@ -245,6 +248,9 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
 
     /**
      * {@inheritDoc}
+     * If the appended node is a selected {@link HtmlOption}, this select's
+     * selection state (and any related deselection of sibling options) is
+     * updated accordingly.
      */
     @Override
     public DomNode appendChild(final Node node) {
@@ -262,10 +268,11 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * is single-select, then calling this method will deselect all other options.
      * <p>
      * Only options that are actually in the document may be selected.
+     * </p>
      *
-     * @param isSelected true if the option is to become selected
-     * @param optionValue the value of the option that is to change
      * @param <P> the page type
+     * @param optionValue the value of the option that is to change
+     * @param isSelected true if the option is to become selected
      * @return the page contained in the current window as returned
      *         by {@link org.htmlunit.WebClient#getCurrentWindow()}
      */
@@ -280,11 +287,12 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * is single-select, then calling this method will deselect all other options.
      * <p>
      * Only options that are actually in the document may be selected.
+     * </p>
      *
-     * @param isSelected true if the option is to become selected
-     * @param optionValue the value of the option that is to change
-     * @param invokeOnFocus whether to set focus or not.
      * @param <P> the page type
+     * @param optionValue the value of the option that is to change
+     * @param isSelected true if the option is to become selected
+     * @param invokeOnFocus whether to set focus or not.
      * @return the page contained in the current window as returned
      *         by {@link org.htmlunit.WebClient#getCurrentWindow()}
      */
@@ -308,10 +316,11 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * is single-select, then calling this method will deselect all other options.
      * <p>
      * Only options that are actually in the document may be selected.
+     * </p>
      *
-     * @param isSelected true if the option is to become selected
-     * @param selectedOption the value of the option that is to change
      * @param <P> the page type
+     * @param selectedOption the option that is to change
+     * @param isSelected true if the option is to become selected
      * @return the page contained in the current window as returned
      *         by {@link org.htmlunit.WebClient#getCurrentWindow()}
      */
@@ -326,14 +335,15 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * is single-select, then calling this method will deselect all other options.
      * <p>
      * Only options that are actually in the document may be selected.
+     * </p>
      *
+     * @param <P> the page type
+     * @param selectedOption the option that is to change
      * @param isSelected true if the option is to become selected
-     * @param selectedOption the value of the option that is to change
      * @param invokeOnFocus whether to set focus or not.
      * @param shiftKey {@code true} if SHIFT is pressed
      * @param ctrlKey {@code true} if CTRL is pressed
      * @param isClick is mouse clicked
-     * @param <P> the page type
      * @return the page contained in the current window as returned
      *         by {@link org.htmlunit.WebClient#getCurrentWindow()}
      */
@@ -413,7 +423,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * Indicates if this select is submittable
+     * Indicates if this select is submittable.
      * @return {@code false} if not
      */
     boolean isValidForSubmission() {
@@ -492,7 +502,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      *
      * @param value the value to search by
      * @return the {@link HtmlOption} object that corresponds to the specified value
-     * @exception ElementNotFoundException If a particular element could not be found in the DOM model
+     * @throws ElementNotFoundException If a particular element could not be found in the DOM model
      */
     public HtmlOption getOptionByValue(final String value) throws ElementNotFoundException {
         WebAssert.notNull(VALUE_ATTRIBUTE, value);
@@ -509,7 +519,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      *
      * @param text the text to search by
      * @return the {@link HtmlOption} object that has the specified text
-     * @exception ElementNotFoundException If a particular element could not be found in the DOM model
+     * @throws ElementNotFoundException If a particular element could not be found in the DOM model
      */
     public HtmlOption getOptionByText(final String text) throws ElementNotFoundException {
         WebAssert.notNull("text", text);
@@ -543,20 +553,28 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * @return the size or 1 if not defined or not convertable to int
+     * Returns the size or 0 if not defined or not convertable to int.
+     * NOTE: this currently diverges from the HTML specification, which defines
+     * the default {@code size} IDL value as 1 for a single select and 4 for a
+     * multiple select.
+     *
+     * @return the size or 0 if not defined or not convertable to int
      */
     public final int getSize() {
-        int size = 0;
         final String sizeAttribute = getSizeAttribute();
         if (ATTRIBUTE_NOT_DEFINED != sizeAttribute && ATTRIBUTE_VALUE_EMPTY != sizeAttribute) {
             try {
-                size = Integer.parseInt(sizeAttribute);
+                final int size = Integer.parseInt(getSizeAttribute());
+                if (size < 0) {
+                    return 0;
+                }
+                return size;
             }
-            catch (final Exception ignored) {
+            catch (final NumberFormatException ignored) {
                 // silently ignore
             }
         }
-        return size;
+        return 0;
     }
 
     /**
@@ -575,35 +593,6 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     @Override
     public final String getDisabledAttribute() {
         return getAttributeDirect(ATTRIBUTE_DISABLED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        Node node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement element
-                    && element.isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns {@code true} if this element is read only.
-     * @return {@code true} if this element is read only
-     */
-    public boolean isReadOnly() {
-        return hasAttribute("readOnly");
     }
 
     /**
@@ -668,7 +657,9 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * Sets the value of the {@code selectedIndex} property.
+     * Sets the value of the {@code selectedIndex} property. Any previously selected
+     * options are always deselected first; if {@code index} is negative or is out of
+     * range for the current number of options, the result is that nothing is selected.
      * @param index the new value
      */
     public void setSelectedIndex(final int index) {
@@ -705,7 +696,9 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
      * @param option the option to search for
-     * @return the index of the provided option or zero if not found
+     * @return the index of the provided option or zero if not found. CAUTION: this is
+     *     ambiguous with an option that is genuinely found at index zero; callers cannot
+     *     distinguish "not found" from "found as the first option" from the return value alone
      */
     public int indexOf(final HtmlOption option) {
         if (option == null) {
@@ -714,10 +707,12 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
 
         int index = 0;
         for (final HtmlElement element : getHtmlElementDescendants()) {
-            if (option == element) {
-                return index;
+            if (element instanceof HtmlOption) {
+                if (option == element) {
+                    return index;
+                }
+                index++;
             }
-            index++;
         }
         return 0;
     }
@@ -736,6 +731,14 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     @Override
     public boolean willValidate() {
         return !isDisabled();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCustomValidity() {
+        return customValidity_;
     }
 
     /**
@@ -762,6 +765,9 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
         return !StringUtils.isEmptyOrNull(customValidity_);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isValidValidityState() {
         return !isCustomErrorValidityState()
@@ -773,7 +779,33 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean isValueMissingValidityState() {
-        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_REQUIRED)
-                && getSelectedOptions().isEmpty();
+        if (ATTRIBUTE_NOT_DEFINED == getAttributeDirect(ATTRIBUTE_REQUIRED)) {
+            return false;
+        }
+
+        final List<HtmlOption> selected = getSelectedOptions();
+        if (selected.isEmpty()) {
+            return true;
+        }
+
+        // per spec, this only applies to single-selection selects; a multi-select
+        // or size>1 select with at least one option selected is never "missing"
+        if (!isMultipleSelectEnabled() && getSize() <= 1) {
+            final List<HtmlOption> options = getOptions();
+            return !options.isEmpty()
+                    && selected.size() == 1
+                    && selected.get(0) == options.get(0)
+                    && selected.get(0).getValueAttribute().isEmpty();
+        }
+
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getValueMissingMessage() {
+        return "Please select an item in the list.";
     }
 }

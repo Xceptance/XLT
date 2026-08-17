@@ -26,7 +26,7 @@ import org.htmlunit.util.StringUtils;
  * @author Frank Danek
  * @author Lai Quang Duong
  */
-public class HtmlOutput extends HtmlElement implements LabelableElement, ValidatableElement {
+public class HtmlOutput extends HtmlElement implements LabelableElement, ValidatableHtmlElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "output";
@@ -59,6 +59,14 @@ public class HtmlOutput extends HtmlElement implements LabelableElement, Validat
     @Override
     public boolean willValidate() {
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCustomValidity() {
+        return customValidity_;
     }
 
     /**
