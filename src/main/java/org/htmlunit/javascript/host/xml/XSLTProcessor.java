@@ -54,10 +54,13 @@ import org.htmlunit.xml.XmlPage;
 import org.w3c.dom.NodeList;
 
 /**
- * A JavaScript object for {@code XSLTProcessor}.
+ * JavaScript host object for {@code XSLTProcessor}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author MatrixNeoKozak (matrixneo2026@tutamail.com)
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/XSLTProcessor">MDN Documentation</a>
  */
 @JsxClass
 public class XSLTProcessor extends HtmlUnitScriptable {
@@ -66,7 +69,7 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     private final Map<String, Object> parameters_ = new HashMap<>();
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -74,12 +77,12 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     }
 
     /**
-     * Imports the specified stylesheet into this XSLTProcessor for transformations. The specified node
-     * may be either a document node or an element node. If it is a document node, then the document can
-     * contain either a XSLT stylesheet or a LRE stylesheet. If it is an element node, it must be the
-     * xsl:stylesheet (or xsl:transform) element of an XSLT stylesheet.
+     * Imports the specified stylesheet into this {@code XSLTProcessor} for transformations.
+     * The specified node may be either a document node or an element node. If it is a document node,
+     * then the document can contain either an XSLT stylesheet or an LRE stylesheet. If it is an element
+     * node, it must be the {@code xsl:stylesheet} (or {@code xsl:transform}) element of an XSLT stylesheet.
      *
-     * @param style the root-node of an XSLT stylesheet (may be a document node or an element node)
+     * @param style the root node of an XSLT stylesheet (may be a document node or an element node)
      */
     @JsxFunction
     public void importStylesheet(final Node style) {
@@ -87,11 +90,11 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the node source applying the stylesheet given by the importStylesheet() function.
-     * The owner document of the output node owns the returned document fragment.
+     * Transforms the given source node by applying the stylesheet imported via {@link #importStylesheet}.
+     * The owner document of the output node owns the returned document.
      *
      * @param source the node to be transformed
-     * @return the result of the transformation
+     * @return the transformation result as an {@link XMLDocument}
      */
     @JsxFunction
     public XMLDocument transformToDocument(final Node source) {
@@ -113,7 +116,10 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     }
 
     /**
-     * @return {@link Node} or {@link String}
+     * Performs the XSLT transformation and returns either a {@link Node} or a {@link String}.
+     *
+     * @param source the node to transform
+     * @return the transformation result
      */
     private Object transform(final Node source) {
         try {
@@ -129,6 +135,18 @@ public class XSLTProcessor extends HtmlUnitScriptable {
             // which sets a number of processing limits on the processors. Conversely, by default,
             // the JDK turns off FSP for transformers and XPath, which enables extension functions for XSLT and XPath.
             transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            try {
+                transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            }
+            catch (final IllegalArgumentException ignored) {
+                // ignore
+            }
+            try {
+                transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            }
+            catch (final IllegalArgumentException ignored) {
+                // ignore
+            }
 
             final SgmlPage page = sourceDomNode.getPage();
             if (page != null && page.getWebClient().getBrowserVersion()
@@ -191,6 +209,12 @@ public class XSLTProcessor extends HtmlUnitScriptable {
             }
 
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            try {
+                factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            }
+            catch (final javax.xml.parsers.ParserConfigurationException ignored) {
+                // ignore
+            }
             final org.w3c.dom.Document containerDocument = factory.newDocumentBuilder().newDocument();
             final org.w3c.dom.Element containerElement = containerDocument.createElement("container");
             containerDocument.appendChild(containerElement);
@@ -225,11 +249,12 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the node source applying the stylesheet given by the importStylesheet() function.
-     * The owner document of the output node owns the returned document fragment.
+     * Transforms the given source node by applying the imported stylesheet and appends
+     * the result as children of the given output document fragment.
+     *
      * @param source the node to be transformed
-     * @param output This document is used to generate the output
-     * @return the result of the transformation
+     * @param output the {@link Document} whose owner document is used to generate the output
+     * @return the transformation result as a {@link DocumentFragment}
      */
     @JsxFunction
     public DocumentFragment transformToFragment(final Node source, final Object output) {
@@ -259,9 +284,10 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets a parameter to be used in subsequent transformations with this nsIXSLTProcessor.
-     * If the parameter doesn't exist in the stylesheet the parameter will be ignored.
-     * @param namespaceURI the namespaceURI of the XSLT parameter
+     * Sets a parameter to be used in subsequent transformations with this {@code XSLTProcessor}.
+     * If the parameter does not exist in the stylesheet it will be ignored.
+     *
+     * @param namespaceURI the namespace URI of the XSLT parameter
      * @param localName the local name of the XSLT parameter
      * @param value the new value of the XSLT parameter
      */
@@ -271,10 +297,11 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets a parameter if previously set by setParameter. Returns null otherwise.
-     * @param namespaceURI the namespaceURI of the XSLT parameter
+     * Returns a parameter previously set by {@link #setParameter}, or {@code null} if not set.
+     *
+     * @param namespaceURI the namespace URI of the XSLT parameter
      * @param localName the local name of the XSLT parameter
-     * @return the value of the XSLT parameter
+     * @return the value of the XSLT parameter, or {@code null} if not found
      */
     @JsxFunction
     public Object getParameter(final String namespaceURI, final String localName) {

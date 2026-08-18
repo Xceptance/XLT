@@ -68,11 +68,121 @@ public class WebRequest implements Serializable {
         BlockCookies
     }
 
+    /**
+     * The destination of a request, as defined by the Fetch spec
+     * (<a href="https://fetch.spec.whatwg.org/#concept-request-destination">
+     * https://fetch.spec.whatwg.org/#concept-request-destination</a>).
+     * <p>
+     * This is used to compute the value of the {@code Sec-Fetch-Dest} request
+     * header (see <a href="https://www.w3.org/TR/fetch-metadata/">
+     * https://www.w3.org/TR/fetch-metadata/</a>) and also determines the default
+     * {@link FetchMode} to be used, unless explicitly overridden via
+     * {@link #setFetchModeOverride(FetchMode)}.
+     * </p>
+     */
+    public enum FetchDestination {
+        /** A top-level document, e.g. loaded by the address bar, a link, or a form submission. */
+        DOCUMENT("document"),
+        /** A nested browsing context of type {@code <iframe>}. */
+        IFRAME("iframe"),
+        /** A nested browsing context of type {@code <frame>}. */
+        FRAME("frame"),
+        /** An {@code <object>} element. */
+        OBJECT("object"),
+        /** An {@code <embed>} element. */
+        EMBED("embed"),
+        /** An image, e.g. {@code <img>}, a CSS background-image, or a favicon. */
+        IMAGE("image"),
+        /** A classic or module script, e.g. {@code <script src>}. */
+        SCRIPT("script"),
+        /** A stylesheet, e.g. {@code <link rel=stylesheet>} or a CSS {@code @import}. */
+        STYLE("style"),
+        /** A font resource, e.g. loaded via {@code @font-face}. */
+        FONT("font"),
+        /** An {@code <audio>} resource. */
+        AUDIO("audio"),
+        /** A {@code <video>} resource. */
+        VIDEO("video"),
+        /** A {@code <track>} resource. */
+        TRACK("track"),
+        /** A dedicated worker script. */
+        WORKER("worker"),
+        /** A shared worker script. */
+        SHARED_WORKER("sharedworker"),
+        /** A service worker script. */
+        SERVICE_WORKER("serviceworker"),
+        /** A web app manifest, e.g. {@code <link rel=manifest>}. */
+        MANIFEST("manifest"),
+        /** A reporting endpoint request. */
+        REPORT("report"),
+        /** A WebSocket handshake request. */
+        WEBSOCKET("websocket"),
+        /** No specific destination, e.g. {@code XMLHttpRequest} or {@code fetch()}. */
+        EMPTY("empty");
+
+        private final String value_;
+
+        FetchDestination(final String value) {
+            value_ = value;
+        }
+
+        /**
+         * Returns the value to be used for the {@code Sec-Fetch-Dest} header.
+         *
+         * @return the value to be used for the {@code Sec-Fetch-Dest} header
+         */
+        public String getValue() {
+            return value_;
+        }
+    }
+
+    /**
+     * The mode of a request, as defined by the Fetch spec
+     * (<a href="https://fetch.spec.whatwg.org/#concept-request-mode">
+     * https://fetch.spec.whatwg.org/#concept-request-mode</a>).
+     * <p>
+     * This is used to compute the value of the {@code Sec-Fetch-Mode} request
+     * header. Most {@link FetchDestination}s imply a fixed mode; this only needs
+     * to be set explicitly to override that default - e.g. for a {@code fetch()}
+     * call using an explicit {@code mode} option, or a subresource request using
+     * the {@code crossorigin} attribute.
+     * </p>
+     */
+    public enum FetchMode {
+        /** Same-origin requests, e.g. worker scripts, or {@code fetch()} with {@code mode: 'same-origin'}. */
+        SAME_ORIGIN("same-origin"),
+        /** Subresource requests without CORS, e.g. {@code <img>} without {@code crossorigin}. */
+        NO_CORS("no-cors"),
+        /** CORS-enabled requests, e.g. {@code XMLHttpRequest}, {@code fetch()} default, or module scripts. */
+        CORS("cors"),
+        /** Navigations, e.g. top-level document loads, {@code <iframe>}/{@code <frame>} loads. */
+        NAVIGATE("navigate"),
+        /** WebSocket handshake requests. */
+        WEBSOCKET("websocket");
+
+        private final String value_;
+
+        FetchMode(final String value) {
+            value_ = value;
+        }
+
+        /**
+         * Returns the value to be used for the {@code Sec-Fetch-Mode} header.
+         *
+         * @return the value to be used for the {@code Sec-Fetch-Mode} header
+         */
+        public String getValue() {
+            return value_;
+        }
+    }
+
     private static final Pattern DOT_PATTERN = Pattern.compile("/\\./");
     private static final Pattern DOT_DOT_PATTERN = Pattern.compile("/(?!\\.\\.)[^/]*/\\.\\./");
     private static final Pattern REMOVE_DOTS_PATTERN = Pattern.compile("^/(\\.\\.?/)*");
 
-    private String url_; // String instead of java.net.URL because "about:blank" URLs don't serialize correctly
+    // String instead of java.net.URL because "about:blank" URLs don't serialize correctly
+    private String url_;
+
     private String proxyHost_;
     private int proxyPort_;
     private String proxyScheme_;
@@ -90,75 +200,30 @@ public class WebRequest implements Serializable {
     // private transient Charset defaultResponseContentCharset_ = StandardCharsets.UTF_8;
     private transient Charset defaultResponseContentCharset_ = StandardCharsets.ISO_8859_1;
 
-    /* These two are mutually exclusive; additionally, requestBody_ should only be set for POST requests. */
+    /*
+     * These two are mutually exclusive; additionally, requestBody_ should only be
+     * set for POST requests.
+     */
     private List<NameValuePair> requestParameters_ = Collections.emptyList();
     private String requestBody_;
 
-    // HA - start
-    private URL originalURL;
+    // Sec-Fetch-* support; see https://www.w3.org/TR/fetch-metadata/
+    private FetchDestination fetchDestination_ = FetchDestination.EMPTY;
+    private FetchMode fetchModeOverride_;
+    private boolean userActivation_;
 
-    public URL getOriginalURL()
-    {
-        return originalURL;
-    }
-
-    public void setOriginalURL(URL url)
-    {
-        if (url != null && url.getPath().length() == 0)
-        {
-            try
-            {
-                String file = "/" + url.getFile();
-                if (url.getRef() != null)
-                {
-                    file += '#' + url.getRef();
-                }
-                url = new URL(url.getProtocol(), url.getHost(), url.getPort(), file);
-            }
-            catch (final Exception e)
-            {
-                throw new RuntimeException("WebRequestSettings: Can not set URL: " + url.toExternalForm());
-            }
-        }
-        originalURL = url;
-
-    }
-
-    public boolean isRedirected()
-    {
-        return getOriginalURL() != null;
-    }
-    
-    // #1414 start
-    private boolean isXHR_;
-    public void setXHR()
-    {
-        isXHR_ = true;
-    }
-    public boolean isXHR()
-    {
-        return isXHR_;
-    }
-    // #1414 end
-
-    // #1432 start
-    private boolean isDocumentRequest_;
-    public void setDocumentRequest()
-    {
-        isDocumentRequest_ = true;
-    }
-    public boolean isDocumentRequest()
-    {
-        return isDocumentRequest_;
-    }
-    // end
-
-    // HA - end
+    // String instead of java.net.URL for the same serialization reason as url_ above;
+    // null means "no initiator" (e.g. a browser-chrome-initiated navigation), which
+    // maps to Sec-Fetch-Site: none.
+    private String requestingUrl_;
 
     /**
+     * Creates or updates this object..
+     *
      * Instantiates a {@link WebRequest} for the specified URL.
-     * @param url the target URL
-     * @param acceptHeader the accept header to use
+     *
+     * @param url                  the target URL
+     * @param acceptHeader         the accept header to use
      * @param acceptEncodingHeader the accept encoding header to use
      */
     public WebRequest(final URL url, final String acceptHeader, final String acceptEncodingHeader) {
@@ -170,12 +235,20 @@ public class WebRequest implements Serializable {
             setAdditionalHeader(HttpHeader.ACCEPT_ENCODING, acceptEncodingHeader);
         }
         timeout_ = -1;
+
+        // for backward compatibility
+        setFetchDestination(FetchDestination.DOCUMENT);
+        setFetchModeOverride(FetchMode.NAVIGATE);
+        setUserActivation(true);
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Instantiates a {@link WebRequest} for the specified URL.
-     * @param url the target URL
-     * @param charset the charset to use
+     *
+     * @param url        the target URL
+     * @param charset    the charset to use
      * @param refererUrl the url be used by the referer header
      */
     public WebRequest(final URL url, final Charset charset, final URL refererUrl) {
@@ -185,6 +258,8 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Returns a new request for about:blank.
+     *
      * @return a new request for about:blank
      */
     public static WebRequest newAboutBlankRequest() {
@@ -192,7 +267,10 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Instantiates a {@link WebRequest} for the specified URL.
+     *
      * @param url the target URL
      */
     public WebRequest(final URL url) {
@@ -200,8 +278,12 @@ public class WebRequest implements Serializable {
     }
 
     /**
-     * Instantiates a {@link WebRequest} for the specified URL using the specified HTTP submit method.
-     * @param url the target URL
+     * Creates or updates this object..
+     *
+     * Instantiates a {@link WebRequest} for the specified URL using the specified
+     * HTTP submit method.
+     *
+     * @param url          the target URL
      * @param submitMethod the HTTP submit method to use
      */
     public WebRequest(final URL url, final HttpMethod submitMethod) {
@@ -211,6 +293,9 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the target URL.
+     *
+     * Returns the target URL.
+     *
      * @return the target URL
      */
     public URL getUrl() {
@@ -218,8 +303,11 @@ public class WebRequest implements Serializable {
     }
 
     /**
-     * Sets the target URL. The URL may be simplified if needed (for instance eliminating
-     * irrelevant path portions like "/./").
+     * Creates or updates this object.
+     *
+     * Sets the target URL. The URL may be simplified if needed (for instance
+     * eliminating irrelevant path portions like "/./").
+     *
      * @param url the target URL
      */
     public void setUrl(URL url) {
@@ -272,12 +360,10 @@ public class WebRequest implements Serializable {
     }
 
     /*
-     * Strip a URL string of "/./" and "/../" occurrences.
-     * <p>
-     * One trick here is to repeatedly create new matchers on a given
-     * pattern, so that we can see whether it needs to be re-applied;
-     * unfortunately .replaceAll() doesn't re-process its own output,
-     * so if we create a new match with a replacement, it is missed.
+     * Strip a URL string of "/./" and "/../" occurrences. <p> One trick here is to
+     * repeatedly create new matchers on a given pattern, so that we can see whether
+     * it needs to be re-applied; unfortunately .replaceAll() doesn't re-process its
+     * own output, so if we create a new match with a replacement, it is missed.
      */
     private static String removeDots(final String path) {
         String newPath = path;
@@ -314,6 +400,9 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the proxy host to use.
+     *
+     * Returns the proxy host to use.
+     *
      * @return the proxy host to use
      */
     public String getProxyHost() {
@@ -321,7 +410,10 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object.
+     *
      * Sets the proxy host to use.
+     *
      * @param proxyHost the proxy host to use
      */
     public void setProxyHost(final String proxyHost) {
@@ -330,6 +422,9 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the proxy port to use.
+     *
+     * Returns the proxy port to use.
+     *
      * @return the proxy port to use
      */
     public int getProxyPort() {
@@ -337,7 +432,10 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object.
+     *
      * Sets the proxy port to use.
+     *
      * @param proxyPort the proxy port to use
      */
     public void setProxyPort(final int proxyPort) {
@@ -346,6 +444,9 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the proxy scheme to use.
+     *
+     * Returns the proxy scheme to use.
+     *
      * @return the proxy scheme to use
      */
     public String getProxyScheme() {
@@ -353,8 +454,12 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the proxy scheme to use.
+     *
      * @param proxyScheme the proxy scheme to use
+     *
      */
     public void setProxyScheme(final String proxyScheme) {
         proxyScheme_ = proxyScheme;
@@ -362,30 +467,45 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns whether SOCKS proxy or not.
+     *
+     * Returns whether SOCKS proxy or not.
+     *
      * @return whether SOCKS proxy or not
+     *
      */
     public boolean isSocksProxy() {
         return isSocksProxy_;
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets whether SOCKS proxy or not.
+     *
      * @param isSocksProxy whether SOCKS proxy or not
+     *
      */
     public void setSocksProxy(final boolean isSocksProxy) {
         isSocksProxy_ = isSocksProxy;
     }
 
     /**
+     * Returns the timeout to use.
+     *
      * @return the timeout to use
+     *
      */
     public int getTimeout() {
         return timeout_;
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the timeout to use.
+     *
      * @param timeout the timeout to use
+     *
      */
     public void setTimeout(final int timeout) {
         timeout_ = timeout;
@@ -393,22 +513,33 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the form encoding type to use.
+     *
+     * Returns the form encoding type to use.
+     *
      * @return the form encoding type to use
+     *
      */
     public FormEncodingType getEncodingType() {
         return encodingType_;
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the form encoding type to use.
+     *
      * @param encodingType the form encoding type to use
+     *
      */
     public void setEncodingType(final FormEncodingType encodingType) {
         encodingType_ = encodingType;
     }
 
     /**
-     * <p>Retrieves the request parameters used. Similar to the servlet api function
+     * Returns the request parameters to use.
+     *
+     * <p>
+     * Retrieves the request parameters used. Similar to the servlet api function
      * getParameterMap() this works depending on the request type and collects the
      * url parameters and the body stuff.<br>
      * The value is also normalized - null is converted to an empty string.</p>
@@ -478,25 +609,37 @@ public class WebRequest implements Serializable {
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     * Returns the request parameters to use.
      *
-     * Retrieves the request parameters to use. If set, these request parameters will overwrite any
-     * request parameters which may be present in the {@link #getUrl() URL}. Should not be used in
-     * combination with the {@link #setRequestBody(String) request body}.
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT
+     * YOUR OWN RISK.</span><br>
+     *
+     * Retrieves the request parameters to use. If set, these request parameters
+     * will overwrite any request parameters which may be present in the
+     * {@link #getUrl() URL}. Should not be used in combination with the
+     * {@link #setRequestBody(String) request body}.
+     *
      * @return the request parameters to use
+     *
      */
     public List<NameValuePair> getRequestParameters() {
         return requestParameters_;
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     * Creates or updates this object..
      *
-     * Sets the request parameters to use. If set, these request parameters will overwrite any request
-     * parameters which may be present in the {@link #getUrl() URL}. Should not be used in combination
-     * with the {@link #setRequestBody(String) request body}.
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT
+     * YOUR OWN RISK.</span><br>
+     *
+     * Sets the request parameters to use. If set, these request parameters will
+     * overwrite any request parameters which may be present in the {@link #getUrl()
+     * URL}. Should not be used in combination with the
+     * {@link #setRequestBody(String) request body}.
+     *
      * @param requestParameters the request parameters to use
      * @throws RuntimeException if the request body has already been set
+     *
      */
     public void setRequestParameters(final List<NameValuePair> requestParameters) throws RuntimeException {
         if (requestBody_ != null) {
@@ -508,22 +651,35 @@ public class WebRequest implements Serializable {
     }
 
     /**
-     * Returns the body content to be submitted if this is a <code>POST</code> request. Ignored for all other request
-     * types. Should not be used in combination with {@link #setRequestParameters(List) request parameters}.
-     * @return the body content to be submitted if this is a <code>POST</code> request
+     * Returns the body content to be submitted if this is a <code>POST</code>
+     * request.
+     *
+     * Returns the body content to be submitted if this is a <code>POST</code>
+     * request. Ignored for all other request types. Should not be used in
+     * combination with {@link #setRequestParameters(List) request parameters}.
+     *
+     * @return the body content to be submitted if this is a <code>POST</code>
+     *         request
+     *
      */
     public String getRequestBody() {
         return requestBody_;
     }
 
     /**
-     * Sets the body content to be submitted if this is a {@code POST}, {@code PUT} or {@code PATCH} request.
-     * Other request types result in {@link RuntimeException}.
-     * Should not be used in combination with {@link #setRequestParameters(List) request parameters}.
-     * @param requestBody the body content to be submitted if this is a {@code POST}, {@code PUT}
-     *        or {@code PATCH} request
-     * @throws RuntimeException if the request parameters have already been set
-     *                          or this is not a {@code POST}, {@code PUT} or {@code PATCH} request.
+     * Creates or updates this object..
+     *
+     * Sets the body content to be submitted if this is a {@code POST}, {@code PUT}
+     * or {@code PATCH} request. Other request types result in
+     * {@link RuntimeException}. Should not be used in combination with
+     * {@link #setRequestParameters(List) request parameters}.
+     *
+     * @param requestBody the body content to be submitted if this is a
+     *                    {@code POST}, {@code PUT} or {@code PATCH} request
+     * @throws RuntimeException if the request parameters have already been set or
+     *                          this is not a {@code POST}, {@code PUT} or
+     *                          {@code PATCH} request.
+     *
      */
     public void setRequestBody(final String requestBody) throws RuntimeException {
         if (requestParameters_ != null && !requestParameters_.isEmpty()) {
@@ -544,15 +700,23 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the HTTP submit method to use.
+     *
+     * Returns the HTTP submit method to use.
+     *
      * @return the HTTP submit method to use
+     *
      */
     public HttpMethod getHttpMethod() {
         return httpMethod_;
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the HTTP submit method to use.
+     *
      * @param submitMethod the HTTP submit method to use
+     *
      */
     public void setHttpMethod(final HttpMethod submitMethod) {
         httpMethod_ = submitMethod;
@@ -560,24 +724,38 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the additional HTTP headers to use.
+     *
+     * Returns the additional HTTP headers to use.
+     *
      * @return the additional HTTP headers to use
+     *
      */
     public Map<String, String> getAdditionalHeaders() {
         return additionalHeaders_;
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the additional HTTP headers to use.
+     *
      * @param additionalHeaders the additional HTTP headers to use
+     *
      */
     public void setAdditionalHeaders(final Map<String, String> additionalHeaders) {
         additionalHeaders_ = additionalHeaders;
     }
 
     /**
-     * Returns whether the specified header name is already included in the additional HTTP headers.
+     * Creates or updates this object..
+     *
+     * Returns whether the specified header name is already included in the
+     * additional HTTP headers.
+     *
      * @param name the name of the additional HTTP header
-     * @return true if the specified header name is included in the additional HTTP headers
+     * @return true if the specified header name is included in the additional HTTP
+     *         headers
+     *
      */
     public boolean isAdditionalHeader(final String name) {
         for (final String key : additionalHeaders_.keySet()) {
@@ -589,9 +767,13 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Returns the header value associated with this name.
+     *
      * @param name the name of the additional HTTP header
      * @return the value or null
+     *
      */
     public String getAdditionalHeader(final String name) {
         String newKey = name;
@@ -605,8 +787,12 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the referer HTTP header - only if the provided url is valid.
+     *
      * @param url the url for the referer HTTP header
+     *
      */
     public void setRefererHeader(final URL url) {
         if (url == null || !url.getProtocol().startsWith("http")) {
@@ -622,9 +808,160 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Returns the destination of this request, used to compute the
+     * {@code Sec-Fetch-Dest} header (and, unless overridden, the default
+     * {@code Sec-Fetch-Mode}). Defaults to {@link FetchDestination#EMPTY},
+     * which is correct for plain {@code XMLHttpRequest}/{@code fetch()} calls.
+     *
+     * @return the destination of this request
+     */
+    public FetchDestination getFetchDestination() {
+        return fetchDestination_;
+    }
+
+    /**
+     * Sets the destination of this request.
+     *
+     * @param fetchDestination the destination of this request, or {@code null}
+     *                         to reset to {@link FetchDestination#EMPTY}
+     */
+    public void setFetchDestination(final FetchDestination fetchDestination) {
+        fetchDestination_ = fetchDestination == null ? FetchDestination.EMPTY : fetchDestination;
+    }
+
+    /**
+     * Returns the explicit mode override for this request, if any. When
+     * {@code null} (the default), the mode is derived from the
+     * {@link #getFetchDestination() destination}.
+     *
+     * @return the mode override, or {@code null} if none was set
+     */
+    public FetchMode getFetchModeOverride() {
+        return fetchModeOverride_;
+    }
+
+    /**
+     * Sets an explicit mode override for this request, e.g. for a {@code fetch()}
+     * call using an explicit {@code mode} option, or a subresource request using
+     * the {@code crossorigin} attribute (which forces CORS mode).
+     *
+     * @param fetchMode the mode to use, or {@code null} to derive it from the
+     *                  {@link #getFetchDestination() destination}
+     */
+    public void setFetchModeOverride(final FetchMode fetchMode) {
+        fetchModeOverride_ = fetchMode;
+    }
+
+    /**
+     * Returns whether this request is the result of a navigation backed by
+     * genuine user activation (e.g. a click on a link, a typed URL, or a form
+     * submitted via a click on its submit button) as opposed to one triggered
+     * purely by script (e.g. {@code location.href = ...}, a {@code <meta
+     * http-equiv="refresh">}, or an automatically-loaded {@code <iframe>}).
+     * <p>
+     * Only relevant for requests whose {@code Sec-Fetch-Mode} is {@code
+     * navigate}; used to compute the presence of the {@code Sec-Fetch-User}
+     * header, which real browsers omit entirely (never send as {@code ?0})
+     * whenever this is {@code false}.
+     * </p>
+     *
+     * @return whether this request was triggered by a real user gesture
+     */
+    public boolean isUserActivation() {
+        return userActivation_;
+    }
+
+    /**
+     * Sets whether this request is the result of a navigation backed by genuine
+     * user activation.
+     *
+     * @param userActivation whether this request was triggered by a real user
+     *                       gesture
+     */
+    public void setUserActivation(final boolean userActivation) {
+        userActivation_ = userActivation;
+    }
+
+    /**
+     * Returns the URL of the document or script that initiated this request, used
+     * to compute the {@code Sec-Fetch-Site} header. {@code null} means there is
+     * no initiator (e.g. a browser-chrome-initiated navigation such as a typed
+     * URL or bookmark), which maps to {@code Sec-Fetch-Site: none}.
+     * <p>
+     * Note this is tracked separately from the {@code Referer} header: unlike
+     * the referrer, it must not be affected by referrer-policy stripping, since
+     * {@code Sec-Fetch-Site} always reflects the true relationship between the
+     * initiator and the target, even when no {@code Referer} header is sent.
+     * </p>
+     *
+     * @return the URL of the initiator, or {@code null} if there is none
+     */
+    public URL getRequestingUrl() {
+        return requestingUrl_ == null ? null : UrlUtils.toUrlSafe(requestingUrl_);
+    }
+
+    /**
+     * Sets the URL of the document or script that initiated this request.
+     *
+     * @param requestingUrl the URL of the initiator, or {@code null} if there is
+     *                      none
+     */
+    public void setRequestingUrl(final URL requestingUrl) {
+        requestingUrl_ = requestingUrl == null ? null : requestingUrl.toExternalForm();
+    }
+
+    /**
+     * Convenience method for the common case of a top-level navigation (an
+     * anchor/area click, a form submission, a script-driven location change, ...):
+     * sets {@link FetchDestination#DOCUMENT}, the initiator URL, and whether the
+     * navigation was backed by genuine user activation, all in one call.
+     * <p>
+     * Every navigation-triggering call site needs all three of these set
+     * together for correct {@code Sec-Fetch-*} headers; bundling them here
+     * makes it harder for a call site to set some of them and forget the rest.
+     * </p>
+     * <p>
+     * For navigations whose destination is not {@link FetchDestination#DOCUMENT}
+     * (e.g. an {@code <iframe>}/{@code <frame>} load), use
+     * {@link #markAsNavigation(FetchDestination, URL, boolean)} instead.
+     * </p>
+     *
+     * @param requestingUrl the URL of the page initiating this navigation, or
+     *                      {@code null} if there is none (e.g. a typed URL)
+     * @param userActivation whether this navigation was triggered by a real
+     *                       user gesture as opposed to script
+     */
+    public void markAsNavigation(final URL requestingUrl, final boolean userActivation) {
+        markAsNavigation(FetchDestination.DOCUMENT, requestingUrl, userActivation);
+    }
+
+    /**
+     * Same as {@link #markAsNavigation(URL, boolean)}, but for navigations whose
+     * destination isn't a top-level {@link FetchDestination#DOCUMENT} - currently
+     * only {@code <iframe>}/{@code <frame>} loads ({@link FetchDestination#IFRAME}/
+     * {@link FetchDestination#FRAME}).
+     *
+     * @param destination the navigation's destination
+     * @param requestingUrl the URL of the page initiating this navigation, or
+     *                      {@code null} if there is none
+     * @param userActivation whether this navigation was triggered by a real
+     *                       user gesture as opposed to script
+     */
+    public void markAsNavigation(final FetchDestination destination, final URL requestingUrl,
+            final boolean userActivation) {
+        setFetchDestination(destination);
+        setRequestingUrl(requestingUrl);
+        setUserActivation(userActivation);
+    }
+
+    /**
+     * Creates or updates this object..
+     *
      * Sets the specified name/value pair in the additional HTTP headers.
-     * @param name the name of the additional HTTP header
+     *
+     * @param name  the name of the additional HTTP header
      * @param value the value of the additional HTTP header
+     *
      */
     public void setAdditionalHeader(final String name, final String value) {
         String newKey = name;
@@ -638,8 +975,12 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Removed the specified name/value pair from the additional HTTP headers.
+     *
      * @param name the name of the additional HTTP header
+     *
      */
     public void removeAdditionalHeader(String name) {
         for (final String key : additionalHeaders_.keySet()) {
@@ -652,24 +993,36 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Returns the credentials if set as part of the url.
+     *
      * Returns the credentials to use.
+     *
      * @return the credentials if set as part of the url
+     *
      */
     public Credentials getUrlCredentials() {
         return urlCredentials_;
     }
 
     /**
+     * Returns the credentials if set from the external builder.
+     *
      * Returns the credentials to use.
+     *
      * @return the credentials if set from the external builder
+     *
      */
     public Credentials getCredentials() {
         return credentials_;
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Sets the credentials to use.
+     *
      * @param credentials the credentials to use
+     *
      */
     public void setCredentials(final Credentials credentials) {
         credentials_ = credentials;
@@ -677,33 +1030,53 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns the character set to use to perform the request.
+     *
+     * Returns the character set to use to perform the request.
+     *
      * @return the character set to use to perform the request
+     *
      */
     public Charset getCharset() {
         return charset_;
     }
 
     /**
-     * Sets the character set to use to perform the request. The default value
-     * is {@link java.nio.charset.StandardCharsets#ISO_8859_1}.
+     * Creates or updates this object.
+     *
+     * Sets the character set to use to perform the request. The default value is
+     * {@link java.nio.charset.StandardCharsets#ISO_8859_1}.
+     *
      * @param charset the character set to use to perform the request
+     *
      */
     public void setCharset(final Charset charset) {
         charset_ = charset;
     }
 
     /**
-     * @return the default character set to use for the response when it does not specify one.
+     * Returns the default character set to use for the response when it does not
+     * specify one.
+     *
+     * @return the default character set to use for the response when it does not
+     *         specify one.
+     *
      */
     public Charset getDefaultResponseContentCharset() {
         return defaultResponseContentCharset_;
     }
 
     /**
-     * Sets the default character set to use for the response when it does not specify one.
+     * Creates or updates this object.
+     *
+     * Sets the default character set to use for the response when it does not
+     * specify one.
      * <p>
      * Unless set, the default is {@link java.nio.charset.StandardCharsets#UTF_8}.
-     * @param defaultResponseContentCharset the default character set of the response
+     * </p>
+     *
+     * @param defaultResponseContentCharset the default character set of the
+     *                                      response
+     *
      */
     public void setDefaultResponseContentCharset(final Charset defaultResponseContentCharset) {
         WebAssert.notNull("defaultResponseContentCharset", defaultResponseContentCharset);
@@ -711,8 +1084,11 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * @param hint the hint to check for
      * @return true if the hint is enabled
+     *
      */
     public boolean hasHint(final HttpHint hint) {
         if (httpHints_ == null) {
@@ -722,8 +1098,12 @@ public class WebRequest implements Serializable {
     }
 
     /**
+     * Creates or updates this object..
+     *
      * Enables the hint.
+     *
      * @param hint the hint to add
+     *
      */
     public void addHint(final HttpHint hint) {
         if (httpHints_ == null) {
@@ -734,7 +1114,11 @@ public class WebRequest implements Serializable {
 
     /**
      * Returns a string representation of this object.
+     *
+     * Returns a string representation of this object.
+     *
      * @return a string representation of this object
+     *
      */
     @Override
     public String toString() {
@@ -768,4 +1152,65 @@ public class WebRequest implements Serializable {
             defaultResponseContentCharset_ = Charset.forName(defaultResponseContentCharset);
         }
     }
+
+    // HA - start
+    private URL originalURL;
+
+    public URL getOriginalURL()
+    {
+        return originalURL;
+    }
+
+    public void setOriginalURL(URL url)
+    {
+        if (url != null && url.getPath().length() == 0)
+        {
+            try
+            {
+                String file = "/" + url.getFile();
+                if (url.getRef() != null)
+                {
+                    file += '#' + url.getRef();
+                }
+                url = new URL(url.getProtocol(), url.getHost(), url.getPort(), file);
+            }
+            catch (final Exception e)
+            {
+                throw new RuntimeException("WebRequestSettings: Can not set URL: " + url.toExternalForm());
+            }
+        }
+        originalURL = url;
+
+    }
+
+    public boolean isRedirected()
+    {
+        return getOriginalURL() != null;
+    }
+    
+    // #1414 start
+    private boolean isXHR_;
+    public void setXHR()
+    {
+        isXHR_ = true;
+    }
+    public boolean isXHR()
+    {
+        return isXHR_;
+    }
+    // #1414 end
+
+    // #1432 start
+    private boolean isDocumentRequest_;
+    public void setDocumentRequest()
+    {
+        isDocumentRequest_ = true;
+    }
+    public boolean isDocumentRequest()
+    {
+        return isDocumentRequest_;
+    }
+    // end
+
+    // HA - end
 }

@@ -14,13 +14,11 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
 import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 
 import java.net.MalformedURLException;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -59,15 +57,28 @@ import org.xml.sax.helpers.AttributesImpl;
  * @author Lai Quang Duong
  */
 public abstract class HtmlInput extends HtmlElement implements DisabledElement, SubmittableElement,
-    ValidatableElement  {
+    ValidatableHtmlElement  {
 
     private static final Log LOG = LogFactory.getLog(HtmlInput.class);
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "input";
 
+    /**
+     * The element's raw value (spec term), decoupled from the DOM child nodes
+     * once {@link #isValueDirty_} is {@code true}. Mirrors {@code HtmlInput}'s
+     * dirty-value-flag model rather than reading/writing child text nodes directly.
+     */
     private String rawValue_;
+
+    /**
+     * The dirty value flag (spec term). While {@code false}, the raw value tracks
+     * the element's child text content automatically. Once {@code true} (set by
+     * the {@code value} setter, or by a user edit/type), child mutations no
+     * longer affect the raw value until {@link #reset()} clears the flag again.
+     */
     private boolean isValueDirty_;
+
     private boolean valueModifiedByJavascript_;
     private Object valueAtFocus_;
     private String customValidity_;
@@ -150,6 +161,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the value.
+     *
      * @return the value
      */
     public String getValue() {
@@ -167,7 +180,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     protected void valueAttributeChanged(final String attributeValue, final boolean isValueDirty) {
-        if (!isValueDirty_) {
+        if (!isValueDirty) {
             setRawValue(attributeValue);
         }
     }
@@ -192,27 +205,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        DomNode node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement element
-                    && element.isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the value of the attribute {@code readonly}. Refer to the
      * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
@@ -221,7 +213,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      *         or an empty string if that attribute isn't defined.
      */
     public final String getReadOnlyAttribute() {
-        return getAttributeDirect("readonly");
+        return getAttributeDirect(ATTRIBUTE_READONLY);
     }
 
     /**
@@ -245,7 +237,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      *         or an empty string if that attribute isn't defined.
      */
     public final String getMaxLengthAttribute() {
-        return getAttribute("maxLength");
+        return getAttributeDirect("maxlength");
     }
 
     /**
@@ -275,7 +267,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      *         or an empty string if that attribute isn't defined.
      */
     public final String getMinLengthAttribute() {
-        return getAttribute("minLength");
+        return getAttributeDirect("minlength");
     }
 
     /**
@@ -469,7 +461,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     @Override
     public void reset() {
         setValue(getDefaultValue());
-        isValueDirty_ = true;
+        isValueDirty_ = false;
     }
 
     /**
@@ -542,10 +534,10 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     public void setReadOnly(final boolean isReadOnly) {
         if (isReadOnly) {
-            setAttribute("readOnly", "readOnly");
+            setAttribute(ATTRIBUTE_READONLY, "");
         }
         else {
-            removeAttribute("readOnly");
+            removeAttribute(ATTRIBUTE_READONLY);
         }
     }
 
@@ -562,7 +554,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return {@code true} if this element is read only
      */
     public boolean isReadOnly() {
-        return hasAttribute("readOnly");
+        return hasAttribute(ATTRIBUTE_READONLY);
     }
 
     /**
@@ -684,6 +676,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns returns the raw value.
+     *
      * @return returns the raw value
      */
     protected Object getInternalValue() {
@@ -865,20 +859,16 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         return !isValueMissingValidityState()
                 && isCustomValidityValid()
                 && isMaxLengthValid() && isMinLengthValid()
-                && !hasPatternMismatchValidityState();
+                && !hasPatternMismatchValidityState()
+                && !hasTypeMismatchValidityState()
+                && !hasRangeOverflowValidityState()
+                && !hasRangeUnderflowValidityState()
+                && !isStepMismatchValidityState()
+                && !hasBadInputValidityState();
     }
 
     protected boolean isCustomValidityValid() {
-        if (isCustomErrorValidityState()) {
-            final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
-            if (!"button".equals(type)
-                    && !"hidden".equals(type)
-                    && !"reset".equals(type)
-                    && !("image".equals(type) && hasFeature(HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY))) {
-                return false;
-            }
-        }
-        return true;
+        return !isCustomErrorValidityState();
     }
 
     @Override
@@ -897,6 +887,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns if the element executes pattern validation on blank strings.
+     *
      * @return if the element executes pattern validation on blank strings
      */
     protected boolean isBlankPatternValidated() {
@@ -975,7 +967,12 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         }
 
         try (Context cx = HtmlUnitContextFactory.getGlobal().enterContext()) {
+            // compile the raw pattern first: this is a validity check only (result discarded).
+            // Wrapping with "^(?:...)$ " cannot mask a genuinely invalid pattern -- the wrapper
+            // contributes a balanced open/close pair, so any unmatched parent/bracket or other
+            // structural defect in the raw pattern persists identically once wrapped.
             RegExpEngineAccess.compile(cx, pattern, "");
+
             final RegExpEngineAccess.CompiledRegExp compiled
                     = RegExpEngineAccess.compile(cx, "^(?:" + pattern + ")$", "");
 
@@ -999,20 +996,32 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * {@inheritDoc}
      */
     @Override
+    public String getCustomValidity() {
+        return customValidity_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setCustomValidity(final String message) {
         customValidity_ = message;
     }
 
     /**
+     * Returns whether this is a checkbox or a radio button.
+     *
      * @return whether this is a checkbox or a radio button
      */
     public boolean isCheckable() {
-        final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
-        return "radio".equals(type) || "checkbox".equals(type);
+        final String type = getAttributeDirect(TYPE_ATTRIBUTE);
+        return "radio".equalsIgnoreCase(type) || "checkbox".equalsIgnoreCase(type);
     }
 
     /**
-     * @return false for type submit/resest/image/button otherwise true
+     * Returns false for type submit/reset/image/button otherwise true.
+     *
+     * @return false for type submit/reset/image/button otherwise true
      */
     public boolean isSubmitable() {
         final String type = getAttributeDirect(TYPE_ATTRIBUTE);
@@ -1044,13 +1053,30 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         return getValue().length() < getMinLength();
     }
 
+    // no need to override isTooLongValidityState()
+    // The HTML spec (§4.10.18.5) has a deliberate rule: tooLong only fires
+    // if the user has interacted with the field ("the element has a dirty value flag").
+    // A value set via JS (elem.value = '...') that was never touched by the user does
+    // not set the dirty flag, so tooLong stays false regardless of the value length.
+    // see HtmlTextInputTest
+    // maxLengthValidationInvalid()/maxLengthValidationInvalidInitial()/maxLengthValidationValid()
+    //    @Override
+    //    public boolean isTooLongValidityState() {
+    //        return false;
+    //    }
+
     @Override
     public boolean isValidValidityState() {
         return !isCustomErrorValidityState()
                 && !isValueMissingValidityState()
                 && !isTooLongValidityState()
                 && !isTooShortValidityState()
-                && !hasPatternMismatchValidityState();
+                && !hasPatternMismatchValidityState()
+                && !hasTypeMismatchValidityState()
+                && !hasRangeOverflowValidityState()
+                && !hasRangeUnderflowValidityState()
+                && !isStepMismatchValidityState()
+                && !hasBadInputValidityState();
     }
 
     @Override
@@ -1061,6 +1087,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the value of the attribute {@code formnovalidate} or an empty string if that attribute isn't defined.
+     *
      * @return the value of the attribute {@code formnovalidate} or an empty string if that attribute isn't defined
      */
     public final boolean isFormNoValidate() {
@@ -1082,6 +1110,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the {@code type} property.
+     *
      * @return the {@code type} property
      */
     public final String getType() {

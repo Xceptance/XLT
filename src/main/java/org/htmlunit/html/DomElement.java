@@ -68,12 +68,15 @@ import org.w3c.dom.TypeInfo;
 import org.xml.sax.SAXException;
 
 /**
+ * A DOM element in an HTML or XML document.
+ *
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Tom Anderson
  * @author Ronald Brill
  * @author Frank Danek
  * @author Sven Strickroth
+ * @author Ronny Shapiro
  */
 public class DomElement extends DomNamespaceNode implements Element {
 
@@ -348,10 +351,10 @@ public class DomElement extends DomNamespaceNode implements Element {
      * {@inheritDoc}
      */
     @Override
-    protected boolean printXml(final String indent, final boolean tagBefore, final PrintWriter printWriter) {
+    protected boolean printXml(final String indent, final boolean indentBefore, final PrintWriter printWriter) {
         final boolean hasChildren = getFirstChild() != null;
 
-        if (tagBefore) {
+        if (indentBefore) {
             printWriter.print("\r\n");
             printWriter.print(indent);
         }
@@ -361,8 +364,8 @@ public class DomElement extends DomNamespaceNode implements Element {
 
         if (hasChildren) {
             printWriter.print(">");
-            final boolean tag = printChildrenAsXml(indent, true, printWriter);
-            if (tag) {
+            final boolean indBefore = printChildrenAsXml(indent, false, printWriter);
+            if (indBefore) {
                 printWriter.print("\r\n");
             printWriter.print(indent);
             }
@@ -379,7 +382,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             printWriter.print("/>");
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -729,8 +732,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     @Override
     public Attr setAttributeNode(final Attr attribute) {
-        attributes_.setNamedItem(attribute);
-        return null;
+        return attributes_.setNamedItem(attribute);
     }
 
     /**
@@ -763,6 +765,8 @@ public class DomElement extends DomNamespaceNode implements Element {
     }
 
     /**
+     * Returns the identifier of this element.
+     *
      * @return the identifier of this element
      */
     public final String getId() {
@@ -816,7 +820,9 @@ public class DomElement extends DomNamespaceNode implements Element {
     }
 
     /**
-     * @return an Iterable over the DomElement children of this object, i.e. excluding the non-element nodes
+     * Returns an {@link Iterable} over the {@link DomElement} children of this object, i.e. excluding the non-element nodes.
+     *
+     * @return an {@link Iterable} over the {@link DomElement} children of this object, i.e. excluding the non-element nodes
      */
     public final Iterable<DomElement> getChildElements() {
         return new ChildElementsIterable(this);
@@ -847,6 +853,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     protected static class ChildElementsIterator implements Iterator<DomElement> {
 
+        private DomElement currentElement_;
         private DomElement nextElement_;
 
         /**
@@ -866,7 +873,7 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         /**
-         * @return is there a next one ?
+         * {@inheritDoc}
          */
         @Override
         public boolean hasNext() {
@@ -874,14 +881,14 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         /**
-         * @return the next one
+         * {@inheritDoc}
          */
         @Override
         public DomElement next() {
             if (nextElement_ != null) {
-                final DomElement result = nextElement_;
+                currentElement_ = nextElement_;
                 setNextElement(nextElement_);
-                return result;
+                return currentElement_;
             }
             throw new NoSuchElementException();
         }
@@ -889,13 +896,11 @@ public class DomElement extends DomNamespaceNode implements Element {
         /** Removes the current one. */
         @Override
         public void remove() {
-            if (nextElement_ == null) {
+            if (currentElement_ == null) {
                 throw new IllegalStateException();
             }
-            final DomNode sibling = nextElement_.getPreviousSibling();
-            if (sibling != null) {
-                sibling.remove();
-            }
+            currentElement_.remove();
+            currentElement_ = null;
         }
 
         private void setNextElement(final DomNode node) {
@@ -936,7 +941,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      *
      * @param <P> the page type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public <P extends Page> P click() throws IOException {
         return click(false, false, false);
@@ -957,7 +962,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param altKey {@code true} if ALT is pressed during the click
      * @param <P> the page type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public <P extends Page> P click(final boolean shiftKey, final boolean ctrlKey, final boolean altKey)
         throws IOException {
@@ -981,7 +986,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param triggerMouseEvents if true trigger the mouse events also
      * @param <P> the page type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public <P extends Page> P click(final boolean shiftKey, final boolean ctrlKey, final boolean altKey,
             final boolean triggerMouseEvents) throws IOException {
@@ -989,6 +994,8 @@ public class DomElement extends DomNamespaceNode implements Element {
     }
 
     /**
+     * Returns true if this is an {@link DisabledElement} and disabled.
+     *
      * @return true if this is an {@link DisabledElement} and disabled
      */
     protected boolean isDisabledElementAndDisabled() {
@@ -1012,7 +1019,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param disableProcessLabelAfterBubbling ignore label processing
      * @param <P> the page type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     @SuppressWarnings("unchecked")
     public <P extends Page> P click(final boolean shiftKey, final boolean ctrlKey, final boolean altKey,
@@ -1132,7 +1139,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param ignoreVisibility whether to ignore visibility or not
      * @param <P> the page type
      * @return the page contained in the current window as returned by {@link WebClient#getCurrentWindow()}
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     @SuppressWarnings("unchecked")
     public <P extends Page> P click(final Event event,
@@ -1243,7 +1250,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      *
      * @param <P> the page type
      * @return the page that occupies this element's window after the element has been double-clicked
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public <P extends Page> P dblClick() throws IOException {
         return dblClick(false, false, false);
@@ -1261,7 +1268,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param altKey {@code true} if ALT is pressed during the double click
      * @param <P> the page type
      * @return the page that occupies this element's window after the element has been double-clicked
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     @SuppressWarnings("unchecked")
     public <P extends Page> P dblClick(final boolean shiftKey, final boolean ctrlKey, final boolean altKey)

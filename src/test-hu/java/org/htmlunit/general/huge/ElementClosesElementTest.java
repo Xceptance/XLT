@@ -48,7 +48,7 @@ public class ElementClosesElementTest extends WebDriverTestCase {
             "command", "col", "colgroup",
             "embed", "frame", "frameset", "head", "hr", "iframe", "image", "img", "input", "keygen",
             "link", "meta", "noembed", "noframes", "noscript", "param", "plaintext",
-            "script", "select", "source", "style",
+            "script", "source", "style",
             "table", "tbody", "template", "textarea", "tfoot", "thead", "title",
             "tr", "track", "wbr", "xmp");
 
@@ -75,6 +75,18 @@ public class ElementClosesElementTest extends WebDriverTestCase {
     public static Collection<Arguments> data() throws Exception {
         final List<Arguments> list = new ArrayList<>();
         final List<String> strings = new ArrayList<>(DefaultElementFactory.SUPPORTED_TAGS_);
+
+        // no longer supported but we still like to test this
+        strings.add("blink");
+        strings.add("ilayer");
+        strings.add("layer");
+        strings.add("multicol");
+        strings.add("nextid");
+        strings.add("nolayer");
+        strings.add("sound");
+        strings.add("spacer");
+        strings.add("xml");
+
         strings.add("unknown");
 
         for (final String parent : strings) {
@@ -927,34 +939,19 @@ public class ElementClosesElementTest extends WebDriverTestCase {
         test("p", "xmp");
     }
 
+    @Alerts("0")
+    void _select_input() throws Exception {
+        test("select", "input");
+    }
+
+    @Alerts("0")
+    void _select_select() throws Exception {
+        test("select", "select");
+    }
+
     @Alerts("1")
     void _ruby_blink() throws Exception {
         test("ruby", "blink");
-    }
-
-    @Alerts("1")
-    void _select_hr() throws Exception {
-        test("select", "hr");
-    }
-
-    @Alerts("1")
-    void _select_optgroup() throws Exception {
-        test("select", "optgroup");
-    }
-
-    @Alerts("1")
-    void _select_option() throws Exception {
-        test("select", "option");
-    }
-
-    @Alerts("1")
-    void _select_script() throws Exception {
-        test("select", "script");
-    }
-
-    @Alerts("1")
-    void _select_template() throws Exception {
-        test("select", "template");
     }
 
     @Alerts("1")

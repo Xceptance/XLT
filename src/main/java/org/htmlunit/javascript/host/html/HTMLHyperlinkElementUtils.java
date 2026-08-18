@@ -22,7 +22,7 @@ import org.htmlunit.util.UrlUtils;
 
 /**
  * Implementation of the {@code HTMLHyperlinkElementUtils} mixin.
- * Provides URL decomposition property logic
+ * Provides URL decomposition property logic.
  * @see <a href="https://html.spec.whatwg.org/multipage/links.html#htmlhyperlinkelementutils">
  *      HTMLHyperlinkElementUtils</a>
  *
@@ -32,7 +32,7 @@ import org.htmlunit.util.UrlUtils;
 final class HTMLHyperlinkElementUtils {
 
     /**
-     * Private ctor to keep Checkstyle happy
+     * Private ctor to keep Checkstyle happy.
      */
     private HTMLHyperlinkElementUtils() {
     }

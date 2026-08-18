@@ -30,7 +30,7 @@ import org.htmlunit.util.StringUtils;
  * @author Ronald Brill
  * @author Lai Quang Duong
  */
-public class HtmlFieldSet extends HtmlElement implements DisabledElement, ValidatableElement {
+public class HtmlFieldSet extends HtmlElement implements DisabledElement, ValidatableHtmlElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "fieldset";
@@ -38,7 +38,7 @@ public class HtmlFieldSet extends HtmlElement implements DisabledElement, Valida
     private String customValidity_;
 
     /**
-     * Creates an instance of HtmlFieldSet
+     * Creates an instance of HtmlFieldSet.
      *
      * @param qualifiedName the qualified name of the element type to instantiate
      * @param page the HtmlPage that contains this element
@@ -55,6 +55,14 @@ public class HtmlFieldSet extends HtmlElement implements DisabledElement, Valida
     @Override
     public boolean willValidate() {
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCustomValidity() {
+        return customValidity_;
     }
 
     /**
@@ -92,26 +100,5 @@ public class HtmlFieldSet extends HtmlElement implements DisabledElement, Valida
     @Override
     public final String getDisabledAttribute() {
         return getAttributeDirect(ATTRIBUTE_DISABLED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        DomNode node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement element
-                    && element.isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
     }
 }

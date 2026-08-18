@@ -31,9 +31,9 @@ public class NativeFunctionPrefixResolver implements PrefixResolver {
     private final VarScope scope_;
 
     /**
-     * Constructor.
+     * Creates an instance backed by the given resolver function.
      *
-     * @param resolverFn the {@link NativeFunction} this resolver is for
+     * @param resolverFn the {@link NativeFunction} this resolver delegates to
      * @param scope the scope
      */
     public NativeFunctionPrefixResolver(final NativeFunction resolverFn, final VarScope scope) {
@@ -46,7 +46,7 @@ public class NativeFunctionPrefixResolver implements PrefixResolver {
      */
     @Override
     public String getNamespaceForPrefix(final String prefix) {
-        final Object result = Context.call(null, resolverFn_, scope_, null, new Object[]{prefix});
+        final Object result = Context.call(null, resolverFn_, scope_, null, new Object[] {prefix});
         return result == null ? null : result.toString();
     }
 

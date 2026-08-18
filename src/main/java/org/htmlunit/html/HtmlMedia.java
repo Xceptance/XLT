@@ -27,7 +27,7 @@ import org.htmlunit.util.StringUtils;
  * @author Frank Danek
  * @author Ronald Brill
  */
-public class HtmlMedia extends HtmlElement {
+public abstract class HtmlMedia extends HtmlElement {
 
     /**
      * Creates an instance.
@@ -42,26 +42,6 @@ public class HtmlMedia extends HtmlElement {
     }
 
     /**
-     * Determines whether the specified media type can be played back.
-     * @param type the type
-     * @return "probably", "maybe", or "". The current implementation returns ""
-     */
-    public String canPlayType(final String type) {
-        if (StringUtils.isBlank(type)) {
-            return "";
-        }
-
-        final int semPos = type.indexOf(';');
-        final int codecPos = type.indexOf("codec");
-
-        if (semPos > 0 && codecPos > semPos) {
-            return "probably";
-        }
-
-        return "maybe";
-    }
-
-    /**
      * Returns the value of the attribute {@code src}. Refer to the
      * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
@@ -73,7 +53,9 @@ public class HtmlMedia extends HtmlElement {
     }
 
     /**
-     * @return the value of the {@code src} value
+     * Returns the fully qualified source URL.
+     *
+     * @return the fully qualified value of the {@code src} attribute
      */
     public String getSrc() {
         final String src = getSrcAttribute();

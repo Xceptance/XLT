@@ -100,7 +100,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlRadioButtonInput;
 import org.htmlunit.html.HtmlStyle;
 import org.htmlunit.html.HtmlTextArea;
-import org.htmlunit.html.ValidatableElement;
+import org.htmlunit.html.ValidatableHtmlElement;
 import org.htmlunit.javascript.host.css.MediaList;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.StringUtils;
@@ -160,7 +160,7 @@ public class CssStyleSheet implements Serializable {
     /** The CSS import rules and their corresponding stylesheets. */
     private final Map<CSSImportRuleImpl, CssStyleSheet> imports_ = new HashMap<>();
 
-    /** cache parsed media strings */
+    /** cache parsed media strings. */
     private static final Map<String, MediaListImpl> MEDIA = new HashMap<>();
 
     /** This stylesheet's URI (used to resolved contained @import rules). */
@@ -931,14 +931,22 @@ public class CssStyleSheet implements Serializable {
                 return true;
 
             case "valid":
-                if (element instanceof HtmlForm || element instanceof ValidatableElement) {
-                    return ((HtmlElement) element).isValid();
+                if (element instanceof ValidatableHtmlElement validatable) {
+                    return validatable.willValidate()
+                                && ((HtmlElement) validatable).isValid();
+                }
+                else if (element instanceof HtmlForm form) {
+                    return form.isValid();
                 }
                 return false;
 
             case "invalid":
-                if (element instanceof HtmlForm || element instanceof ValidatableElement) {
-                    return !((HtmlElement) element).isValid();
+                if (element instanceof ValidatableHtmlElement validatable) {
+                    return validatable.willValidate()
+                                && !((HtmlElement) validatable).isValid();
+                }
+                else if (element instanceof HtmlForm form) {
+                    return !form.isValid();
                 }
                 return false;
 
@@ -1277,6 +1285,8 @@ public class CssStyleSheet implements Serializable {
     }
 
     /**
+     * Returns the {@link CssStyleSheet} imported by this rule.
+     *
      * @param importRule the {@link CSSImportRuleImpl} that imports the {@link CssStyleSheet}
      * @return the {@link CssStyleSheet} imported by this rule
      */

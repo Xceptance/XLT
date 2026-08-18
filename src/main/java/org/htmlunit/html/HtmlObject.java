@@ -33,7 +33,7 @@ import org.htmlunit.xml.XmlPage;
  * @author Ronald Brill
  * @author Frank Danek
  */
-public class HtmlObject extends HtmlElement implements ValidatableElement {
+public class HtmlObject extends HtmlElement implements ValidatableHtmlElement {
 
     private static final Log LOG = LogFactory.getLog(HtmlObject.class);
 
@@ -43,7 +43,7 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
     private String customValidity_;
 
     /**
-     * Creates an instance of HtmlObject
+     * Creates an instance of HtmlObject.
      *
      * @param qualifiedName the qualified name of the element type to instantiate
      * @param page the HtmlPage that contains this element
@@ -300,6 +300,14 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
     @Override
     public boolean willValidate() {
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCustomValidity() {
+        return customValidity_;
     }
 
     /**

@@ -70,7 +70,7 @@ import org.htmlunit.util.StringUtils;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Dennis Duysak
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration">MDN doc</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration">MDN Documentation</a>
  */
 @JsxClass
 public class CSSStyleDeclaration extends HtmlUnitScriptable {
@@ -117,7 +117,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
 
     // private static final Log LOG = LogFactory.getLog(CSSStyleDeclaration.class);
 
-    /** The wrapped CSSStyleDeclaration */
+    /** The wrapped CSSStyleDeclaration. */
     private AbstractCssStyleDeclaration styleDeclaration_;
     private CSSStyleSheet parentStyleSheet_;
 
@@ -201,10 +201,10 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Sets the specified style attribute.
      * @param name the attribute name (camel-cased)
      * @param newValue the attribute value
-     * @param important important value
+     * @param important the priority (e.g. empty string, or "important")
      */
     protected void setStyleAttribute(final String name, String newValue, final String important) {
-        if (null == newValue || "null".equals(newValue)) {
+        if (newValue == null || "null".equals(newValue)) {
             newValue = "";
         }
 
@@ -926,8 +926,9 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns a CSS property name from a CSSStyleDeclaration by index.
      * @param index the index
-     * @return a CSS property name from a CSSStyleDeclaration by index.
+     * @return a CSS property name from a CSSStyleDeclaration by index
      */
     @JsxFunction
     public String item(final int index) {
@@ -1944,7 +1945,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Sets the style attribute which should be treated as an integer in pixels.
      * @param name the attribute name
      * @param value the attribute value
-     * @param important important value
+     * @param important the priority (e.g. empty string, or "important")
      * @param auto true if auto is supported
      * @param percent true if percent is supported
      * @param validValues valid values
@@ -1960,7 +1961,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
         }
 
         String valueString = JavaScriptEngine.toString(value);
-        if (null == value) {
+        if (value == null) {
             valueString = "";
         }
 
@@ -1986,19 +1987,14 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
             unit = valueString.substring(valueString.length() - 1);
             valueString = valueString.substring(0, valueString.length() - 1);
         }
-        else if (valueString.endsWith("px")
-            || valueString.endsWith("em")
-            || valueString.endsWith("ex")
-            || valueString.endsWith("pt")
-            || valueString.endsWith("cm")
-            || valueString.endsWith("mm")
-            || valueString.endsWith("in")
-            || valueString.endsWith("pc")
-            || valueString.endsWith("ch")
-            || valueString.endsWith("vh")
-            || valueString.endsWith("vw")) {
-            unit = valueString.substring(valueString.length() - 2);
-            valueString = valueString.substring(0, valueString.length() - 2);
+        else if (valueString.endsWith("dvmin")
+            || valueString.endsWith("dvmax")
+            || valueString.endsWith("lvmin")
+            || valueString.endsWith("lvmax")
+            || valueString.endsWith("svmin")
+            || valueString.endsWith("svmax")) {
+            unit = valueString.substring(valueString.length() - 5);
+            valueString = valueString.substring(0, valueString.length() - 5);
         }
         else if (valueString.endsWith("rem")
             || valueString.endsWith("vmin")
@@ -2012,14 +2008,19 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
             unit = valueString.substring(valueString.length() - 3);
             valueString = valueString.substring(0, valueString.length() - 3);
         }
-        else if (valueString.endsWith("dvmin")
-            || valueString.endsWith("dvmax")
-            || valueString.endsWith("lvmin")
-            || valueString.endsWith("lvmax")
-            || valueString.endsWith("svmin")
-            || valueString.endsWith("svmax")) {
-            unit = valueString.substring(valueString.length() - 5);
-            valueString = valueString.substring(0, valueString.length() - 5);
+        else if (valueString.endsWith("px")
+            || valueString.endsWith("em")
+            || valueString.endsWith("ex")
+            || valueString.endsWith("pt")
+            || valueString.endsWith("cm")
+            || valueString.endsWith("mm")
+            || valueString.endsWith("in")
+            || valueString.endsWith("pc")
+            || valueString.endsWith("ch")
+            || valueString.endsWith("vh")
+            || valueString.endsWith("vw")) {
+            unit = valueString.substring(valueString.length() - 2);
+            valueString = valueString.substring(0, valueString.length() - 2);
         }
         else {
             return;

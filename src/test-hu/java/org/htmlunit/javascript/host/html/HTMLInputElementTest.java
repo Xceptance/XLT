@@ -25,6 +25,7 @@ import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -2554,8 +2555,6 @@ public class HTMLInputElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"false", "false", "false", "false", "false"},
             FF = {"true", "false", "true", "false", "true"},
             FF_ESR = {"true", "false", "true", "false", "true"})
-    @HtmlUnitNYI(FF = {"false", "false", "false", "false", "false"},
-            FF_ESR = {"false", "false", "false", "false", "false"})
     public void willValidateImage() throws Exception {
         willValidate("type='image'");
     }
@@ -2752,6 +2751,1431 @@ public class HTMLInputElementTest extends WebDriverTestCase {
             + "    log(i.formNoValidate);\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"original", "from js", "original", "changed"})
+    public void reset() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    let inpt = document.getElementById('theInput');\n"
+            + "    let frm = document.getElementById('theForm');\n"
+
+            + "    log(inpt.value);\n"
+
+            + "    inpt.value = 'from js';\n"
+            + "    log(inpt.value);\n"
+
+            + "    frm.reset();\n"
+            + "    log(inpt.value);\n"
+
+            // Since the dirty flag should now be false, changing the content attribute
+            // should update the live value again.
+            + "    inpt.setAttribute('value', 'changed');\n"
+            + "    log(inpt.value);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "<form id=\"theForm\">\n"
+            + "  <input id='theInput' type='text' value='original'>\r\n"
+            + "</form>\r\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Setting .value to the value it already holds must not move the selection
+     * (per spec, comparing against oldAPIValue before the assignment).
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "2"})
+    public void settingValueToSameValue_selectionUnchanged() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('myInput');\n"
+            + "  input.selectionStart = 1;\n"
+            + "  input.selectionEnd = 2;\n"
+            + "  input.value = 'hello';\n"
+            + "  log(input.selectionStart);\n"
+            + "  log(input.selectionEnd);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='myInput' value='hello'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Even though a same-value assignment leaves the selection
+     * untouched, the dirty flag must still flip to true. Proven indirectly: if
+     * the flag were still false, a later change to the 'value' content attribute
+     * would still be reflected in .value; if the flag correctly flipped true,
+     * that later attribute change must be ignored.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("hello")
+    public void settingValueToSameValue_stillSetsDirtyFlag() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('myInput');\n"
+            + "  input.value = 'hello';\n"
+            + "  input.setAttribute('value', 'changed');\n"
+            + "  log(input.value);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='myInput' value='hello'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Selection must be preserved across MULTIPLE consecutive same-value
+     * assignments, not just the first one.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "2"})
+    public void settingValueToSameValueTwice_selectionPreservedBothTimes() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('myInput');\n"
+            + "  input.value = 'hello';\n"
+            + "  input.selectionStart = 1;\n"
+            + "  input.selectionEnd = 2;\n"
+            + "  input.value = 'hello';\n"
+            + "  log(input.selectionStart);\n"
+            + "  log(input.selectionEnd);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='myInput' value='hello'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * The "old value" comparison must be against the CURRENT raw value, not the
+     * page's originally-parsed value attribute. After dirtying to 'X', setting
+     * .value back to the ORIGINAL text ('hello') is a change relative to the
+     * current raw value ('X'), so the cursor MUST move -- even though 'hello'
+     * matches the original value attribute.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"5", "5"})
+    public void settingValueBackToOriginalText_cursorMovesBecauseCurrentValueDiffers() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('myInput');\n"
+            + "  input.value = 'X';\n"
+            + "  input.selectionStart = 0;\n"
+            + "  input.selectionEnd = 0;\n"
+            + "  input.value = 'hello';\n"
+            + "  log(input.selectionStart);\n"
+            + "  log(input.selectionEnd);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='myInput' value='hello'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Assigning the empty string to an already-empty value should
+     * also be treated as "no change" -- no cursor move, but still dirties the
+     * flag.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("")
+    public void settingEmptyValueToAlreadyEmptyValue_selectionUnchangedButDirty() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('myInput');\n"
+            + "  input.value = '';\n"
+            + "  input.setAttribute('value', 'late');\n"
+            + "  log(input.value);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='myInput' value=''>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * The ordinary changing-value path must still
+     * move the cursor to the end -- guards against the same-value fix
+     * accidentally suppressing the cursor move for genuine changes too.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"7", "7"})
+    public void settingValueToDifferentValue_cursorMovesToEnd() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('myInput');\n"
+            + "  input.selectionStart = 0;\n"
+            + "  input.selectionEnd = 0;\n"
+            + "  input.value = 'goodbye';\n"
+            + "  log(input.selectionStart);\n"
+            + "  log(input.selectionEnd);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <input id='myInput' value='hello'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * After reset(), selectionStart and selectionEnd must be
+     * consistent with each other (start <= end), not left in an inverted state.
+     * Targets the current HtmlSelectableTextInput.reset() implementation, which
+     * only calls setSelectionEnd(0) without also resetting selectionStart --
+     * after the preceding setValue() call moved selectionStart to the END of
+     * the default value, this leaves start > end unless something else clamps
+     * it.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"8", "8"},
+            FF = {"1", "2"},
+            FF_ESR = {"1", "2"})
+    @HtmlUnitNYI(FF = {"8", "8"},
+            FF_ESR = {"8", "8"})
+    public void resetSetsSelectionStartAndEndConsistently() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('theInput');\n"
+            + "  var frm = document.getElementById('theForm');\n"
+            + "  input.value = 'dirtied';\n"
+            + "  input.selectionStart = 1;\n"
+            + "  input.selectionEnd = 2;\n"
+            + "  frm.reset();\n"
+            + "  log(input.selectionStart);\n"
+            + "  log(input.selectionEnd);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "<form id='theForm'>\n"
+            + "  <input id='theInput' type='text' value='original'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * If the 'value' content
+     * attribute is changed by script WHILE .value is dirty (so the
+     * dirty-flag guard suppresses the sync), a subsequent reset() must pick up
+     * whatever the attribute CURRENTLY holds -- not the page's originally-parsed
+     * value.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("updated")
+    public void resetReflectsCurrentAttributeNotOriginalParsedValue() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var input = document.getElementById('theInput');\n"
+            + "  var frm = document.getElementById('theForm');\n"
+            + "  input.value = 'X';\n"
+            + "  input.setAttribute('value', 'updated');\n"
+            + "  frm.reset();\n"
+            + "  log(input.value);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "<form id='theForm'>\n"
+            + "  <input id='theInput' type='text' value='original'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Reset triggered via a real click on a &lt;input type=reset&gt; button
+     * should behave identically to a scripted form.reset() call -- the existing
+     * reset() test only exercises the scripted path.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("original")
+    public void resetViaResetButtonClick_matchesScriptedReset() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "<form id='theForm'>\n"
+            + "  <input id='theInput' type='text' value='original'>\n"
+            + "  <input id='resetBtn' type='reset'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement input = driver.findElement(By.id("theInput"));
+        input.click();
+        input.sendKeys(Keys.chord(Keys.CONTROL, Keys.END));
+        input.sendKeys("-typed");
+
+        driver.findElement(By.id("resetBtn")).click();
+
+        final String value = input.getDomProperty("value");
+        assertEquals(getExpectedAlerts()[0], value);
+    }
+
+    /**
+     * The reset() called on a field whose value was NEVER
+     * changed (dirty flag never set) -- with the setValue() fix applied, the
+     * cursor-move there is conditional on old-value != new-value, so when
+     * reset() restores the SAME value that was already showing, that condition
+     * is false and the cursor-move is skipped entirely. This checks what
+     * selectionStart/selectionEnd end up being in that case: whatever they were
+     * BEFORE reset() (since nothing moves them), which may or may not match what
+     * real browsers do -- real browsers might unconditionally reposition the
+     * cursor as part of the reset algorithm itself, independent of the value
+     * setter's own conditional logic.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"5", "5", "original", "5", "5"})
+    public void resetOnNeverDirtiedInput_selectionPosition() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "<form id='theForm'>\n"
+            + "  <input id='theInput' type='text' value='original'>\n"
+            + "  <input id='resetBtn' type='reset'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement input = driver.findElement(By.id("theInput"));
+
+        // click into the field and move the caret somewhere in the middle,
+        // WITHOUT ever changing its value (no sendKeys/typing, no .value set)
+        input.click();
+        input.sendKeys(Keys.ARROW_LEFT, Keys.ARROW_LEFT, Keys.ARROW_LEFT);
+
+        final JavascriptExecutor js = (JavascriptExecutor) driver;
+        final Long selStartBeforeReset = (Long) js.executeScript(
+                "return arguments[0].selectionStart;", input);
+        final Long selEndBeforeReset = (Long) js.executeScript(
+                "return arguments[0].selectionEnd;", input);
+
+        driver.findElement(By.id("resetBtn")).click();
+
+        final Long selStartAfterReset = (Long) js.executeScript(
+                "return arguments[0].selectionStart;", input);
+        final Long selEndAfterReset = (Long) js.executeScript(
+                "return arguments[0].selectionEnd;", input);
+        final String valueAfterReset = input.getDomProperty("value");
+
+        assertEquals(getExpectedAlerts()[0], String.valueOf(selStartBeforeReset));
+        assertEquals(getExpectedAlerts()[1], String.valueOf(selEndBeforeReset));
+        assertEquals(getExpectedAlerts()[2], valueAfterReset);
+        assertEquals(getExpectedAlerts()[3], String.valueOf(selStartAfterReset));
+        assertEquals(getExpectedAlerts()[4], String.valueOf(selEndAfterReset));
+    }
+
+    /**
+     * Same "never touched" scenario, but with an explicit
+     * mid-field selection RANGE (not just a collapsed caret) set beforehand via
+     * script, to check whether reset() collapses/repositions a real selection
+     * range too, or only affects a collapsed caret position.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"original", "2", "5"})
+    public void resetOnNeverDirtiedInputWithExplicitSelectionRange_selectionPosition() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "<form id='theForm'>\n"
+            + "  <input id='theInput' type='text' value='original'>\n"
+            + "  <input id='resetBtn' type='reset'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement input = driver.findElement(By.id("theInput"));
+
+        final JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].setSelectionRange(2, 5);", input);
+
+        driver.findElement(By.id("resetBtn")).click();
+
+        final Long selStartAfterReset = (Long) js.executeScript(
+                "return arguments[0].selectionStart;", input);
+        final Long selEndAfterReset = (Long) js.executeScript(
+                "return arguments[0].selectionEnd;", input);
+        final String valueAfterReset = input.getDomProperty("value");
+
+        assertEquals(getExpectedAlerts()[0], valueAfterReset);
+        assertEquals(getExpectedAlerts()[1], String.valueOf(selStartAfterReset));
+        assertEquals(getExpectedAlerts()[2], String.valueOf(selEndAfterReset));
+    }
+
+    /**
+     * Confirms that typing into a text input (real keyboard simulation via
+     * sendKeys, not a scripted .value assignment) updates .value but leaves the
+     * 'value' content attribute untouched.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"seed-typed", "seed"})
+    public void typingUpdatesValueButNotAttribute() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <input id='foo' value='seed'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement input = driver.findElement(By.id("foo"));
+        input.click();
+        input.sendKeys(Keys.chord(Keys.CONTROL, Keys.END));
+        input.sendKeys("-typed");
+
+        final String value = input.getDomProperty("value");
+        final String attribute = input.getDomAttribute("value");
+
+        assertEquals(getExpectedAlerts()[0], value);
+        assertEquals(getExpectedAlerts()[1], attribute);
+    }
+
+    /**
+     * After dirtying .value via real typing, a clone must preserve the
+     * dirtied value rather than reverting to the (cloned) 'value' attribute.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"seed-typed", "seed"})
+    public void cloneNodeAfterTyping_cloneRetainsDirtiedValue() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <input id='foo' value='seed'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement input = driver.findElement(By.id("foo"));
+        input.click();
+        input.sendKeys(Keys.chord(Keys.CONTROL, Keys.END));
+        input.sendKeys("-typed");
+
+        final JavascriptExecutor js = (JavascriptExecutor) driver;
+        final String cloneValue = (String) js.executeScript(
+                "return arguments[0].cloneNode(true).value;", input);
+        final String cloneAttribute = (String) js.executeScript(
+                "return arguments[0].cloneNode(true).getAttribute('value');", input);
+
+        assertEquals(getExpectedAlerts()[0], cloneValue);
+        assertEquals(getExpectedAlerts()[1], cloneAttribute);
+    }
+
+    /**
+     * After cloning a still-CLEAN input and attaching the clone to the document,
+     * typing independently into the original and the clone must not
+     * cross-contaminate either one's value.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"original-text", "clone-text"})
+    public void cloneNodeThenIndependentTyping_noCrossContamination() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <input id='foo' value=''>\n"
+            + "  <script>\n"
+            + "    var c = document.getElementById('foo').cloneNode(true);\n"
+            + "    c.id = 'clone';\n"
+            + "    document.body.appendChild(c);\n"
+            + "  </script>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement original = driver.findElement(By.id("foo"));
+        final WebElement clone = driver.findElement(By.id("clone"));
+
+        original.click();
+        original.sendKeys("original-text");
+        clone.click();
+        clone.sendKeys("clone-text");
+
+        final String originalValue = original.getDomProperty("value");
+        final String cloneValue = clone.getDomProperty("value");
+
+        assertEquals(getExpectedAlerts()[0], originalValue);
+        assertEquals(getExpectedAlerts()[1], cloneValue);
+    }
+
+    /**
+     * Resetting a clone (via a real click on its OWN form's reset button) must
+     * only affect the clone -- the original, sitting in a separate form, must be
+     * untouched.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"seed-original-dirtied", "seed"})
+    public void cloneNodeThenResetOnCloneOnly_doesNotAffectOriginal() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <form id='form1'>\n"
+            + "    <input id='foo' value='seed'>\n"
+            + "    <input id='resetBtn1' type='reset'>\n"
+            + "  </form>\n"
+            + "  <form id='form2'>\n"
+            + "    <input id='resetBtn2' type='reset'>\n"
+            + "  </form>\n"
+            + "  <script>\n"
+            + "    var c = document.getElementById('foo').cloneNode(true);\n"
+            + "    c.id = 'clone';\n"
+            + "    document.getElementById('form2').appendChild(c);\n"
+            + "  </script>\n"
+            + "</body>\n"
+            + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        final WebElement original = driver.findElement(By.id("foo"));
+        final WebElement clone = driver.findElement(By.id("clone"));
+
+        original.click();
+        original.sendKeys(Keys.chord(Keys.CONTROL, Keys.END));
+        original.sendKeys("-original-dirtied");
+
+        clone.click();
+        clone.sendKeys(Keys.chord(Keys.CONTROL, Keys.END));
+        clone.sendKeys("-clone-dirtied");
+
+        // reset only form2, which contains the clone
+        driver.findElement(By.id("resetBtn2")).click();
+
+        final String originalValue = original.getDomProperty("value");
+        final String cloneValue = clone.getDomProperty("value");
+
+        assertEquals(getExpectedAlerts()[0], originalValue);
+        assertEquals(getExpectedAlerts()[1], cloneValue);
+    }
+
+    /**
+     * An editable text input with a custom validity message must
+     * report checkValidity() false.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "true", "false", "false"})
+    public void setCustomValidityOnEditableInput_isInvalid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('some error');\n"
+            + "    log(i.willValidate);\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validity.valid);\n"
+            + "    log(i.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * A DISABLED input with a custom validity message must still
+     * report checkValidity() true -- disabled bars it from constraint
+     * validation entirely, so the custom error must not surface through
+     * checkValidity(), even though willValidate is already known to be false
+     * for this case.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "true", "false", "true"})
+    public void setCustomValidityOnDisabledInput_notInvalid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('some error');\n"
+            + "    log(i.willValidate);\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validity.valid);\n"
+            + "    log(i.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' disabled>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Same as above but for READONLY instead of disabled -- readonly
+     * also bars a text-type input from constraint validation per spec.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "true", "false", "true"})
+    public void setCustomValidityOnReadonlyInput_notInvalid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('some error');\n"
+            + "    log(i.willValidate);\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validity.valid);\n"
+            + "    log(i.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' readonly>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Same as above but for type='hidden' -- a hidden-type input is
+     * barred from constraint validation via a THIRD, distinct mechanism (its
+     * own type state), not disabled or readonly. willValidateHidden() already
+     * confirms willValidate is false for this type; this confirms
+     * checkValidity() is consistent with that, given the routing bug found
+     * elsewhere was specifically about checkValidity() not always consulting
+     * willValidate() even when willValidate() itself was correct.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "true", "false", "true"})
+    public void setCustomValidityOnHiddenInput_notInvalid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('some error');\n"
+            + "    log(i.willValidate);\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validity.valid);\n"
+            + "    log(i.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='hidden'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * A required, empty text input is genuinely invalid (valueMissing)
+     * when editable, but must report checkValidity() true if ALSO disabled --
+     * confirms the disabled-barring check takes priority over an actual
+     * constraint violation, not just over a custom validity message.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "true"})
+    public void requiredEmptyDisabledInput_checkValidityTrue() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var editable = document.getElementById('editable');\n"
+            + "    var disabled = document.getElementById('disabled');\n"
+            + "    log(editable.checkValidity());\n"
+            + "    log(disabled.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='editable' type='text' required>\n"
+            + "    <input id='disabled' type='text' required disabled>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Same as above, but for readonly instead of disabled.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "true"})
+    public void requiredEmptyReadonlyInput_checkValidityTrue() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var editable = document.getElementById('editable');\n"
+            + "    var readonly = document.getElementById('readonly');\n"
+            + "    log(editable.checkValidity());\n"
+            + "    log(readonly.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='editable' type='text' required>\n"
+            + "    <input id='readonly' type='text' required readonly>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Clearing a previously-set custom validity message (empty string) must
+     * restore validity for an editable input -- confirms setCustomValidity is
+     * reversible, not just settable.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "false", "true"})
+    public void clearCustomValidity_restoresValid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('some error');\n"
+            + "    log(i.validity.valid);\n"
+            + "    i.setCustomValidity('');\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validity.valid);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * The validationMessage should reflect the custom validity message for a
+     * validation-participating (editable) input, and should be empty for a
+     * barred-from-validation (disabled) one, regardless of a custom message
+     * being set.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"editable error", ""})
+    public void validationMessageReflectsCustomValidityWhereApplicable() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var editable = document.getElementById('editable');\n"
+            + "    var disabled = document.getElementById('disabled');\n"
+            + "    editable.setCustomValidity('editable error');\n"
+            + "    disabled.setCustomValidity('disabled error');\n"
+            + "    log(editable.validationMessage);\n"
+            + "    log(disabled.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='editable' type='text'>\n"
+            + "    <input id='disabled' type='text' disabled>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * The reportValidity() is untested anywhere in this file -- basic coverage that
+     * it returns the same boolean as checkValidity() for an input with a custom
+     * validity message set.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "false"})
+    public void reportValidityMatchesCheckValidity() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('some error');\n"
+            + "    log(i.checkValidity());\n"
+            + "    log(i.reportValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Basic .validity object coverage independent of setCustomValidity() --
+     * only the bare checkValidity() boolean is tested anywhere currently; this
+     * confirms .validity.valueMissing and .validity.valid reflect a genuine
+     * (non-custom) constraint violation correctly.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "false", "false", "true"})
+    public void validityValueMissingForRequiredEmptyInput() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.valueMissing);\n"
+            + "    log(i.validity.valid);\n"
+            + "    i.value = 'something';\n"
+            + "    log(i.validity.valueMissing);\n"
+            + "    log(i.validity.valid);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"invalid fired", "false"})
+    public void elementCheckValidityFiresInvalidEventDirectly() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i1 = document.getElementById('i1');\n"
+            + "    i1.addEventListener('invalid', function() {\n"
+            + "      log('invalid fired');\n"
+            + "    });\n"
+            + "    log(i1.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i1' value='' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void checkValidityDoesNotFireInvalidWhenActuallyValid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.addEventListener('invalid', function() { log('unexpected invalid fired'); });\n"
+            + "    log(i.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='filled' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Companion negative check for a BARRED (disabled) control: even though a
+     * disabled+required+empty input has an underlying constraint violation,
+     * 'invalid' must not fire since it's excluded from validation entirely.
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void checkValidityDoesNotFireInvalidOnDisabledControl() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.addEventListener('invalid', function() { log('unexpected invalid fired'); });\n"
+            + "    log(i.checkValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='' required disabled>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"invalid fired", "false"})
+    public void inputReportValidityFiresInvalidEvent() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.addEventListener('invalid', function() { log('invalid fired'); });\n"
+            + "    log(i.reportValidity());\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "Please fill out this field."})
+    public void validationMessage_valueMissing_input() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.valueMissing);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "Please select an item in the list."})
+    public void validationMessage_valueMissing_select() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var s = document.getElementById('s');\n"
+            + "    log(s.validity.valueMissing);\n"
+            + "    log(s.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <select id='s' required>"
+            + "      <option value=''></option>"
+            + "      <option value='a'>a</option>"
+            + "    </select>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "Please fill out this field."})
+    public void validationMessage_valueMissing_textarea() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var t = document.getElementById('t');\n"
+            + "    log(t.validity.valueMissing);\n"
+            + "    log(t.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <textarea id='t' required></textarea>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "Please match the requested format."})
+    public void validationMessage_patternMismatch() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.patternMismatch);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='abc' pattern='[0-9]+'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(
+            DEFAULT = "Please match the requested format.",
+            FF = "Please match the requested format: digits only.",
+            FF_ESR = "Please match the requested format: digits only.")
+    @HtmlUnitNYI(FF = "Please match the requested format.",
+            FF_ESR = "Please match the requested format.")
+    public void validationMessage_patternMismatch_withTitle() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='abc' pattern='[0-9]+' title='digits only'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", ""})
+    public void validationMessage_tooLong_input() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.value = '12345';\n"
+            + "    log(i.validity.tooLong);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' maxlength='3'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", ""})
+    public void validationMessage_tooShort_input() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.value = 'ab';\n"
+            + "    log(i.validity.tooShort);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' minlength='5'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(
+            DEFAULT = {"true", "Value must be less than or equal to 10."},
+            FF = {"true", "Please select a value that is no more than 10."},
+            FF_ESR = {"true", "Please select a value that is no more than 10."})
+    @HtmlUnitNYI(
+            CHROME = {"true", "Value must be less than or equal to the maximum."},
+            EDGE = {"true", "Value must be less than or equal to the maximum."},
+            FF = {"true", "Value must be less than or equal to the maximum."},
+            FF_ESR = {"true", "Value must be less than or equal to the maximum."})
+    public void validationMessage_rangeOverflow() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.rangeOverflow);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='number' value='50' max='10'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(
+            DEFAULT = {"true", "Value must be greater than or equal to 10."},
+            FF = {"true", "Please select a value that is no less than 10."},
+            FF_ESR = {"true", "Please select a value that is no less than 10."})
+    @HtmlUnitNYI(
+            CHROME = {"true", "Value must be greater than or equal to the minimum."},
+            EDGE = {"true", "Value must be greater than or equal to the minimum."},
+            FF = {"true", "Value must be greater than or equal to the minimum."},
+            FF_ESR = {"true", "Value must be greater than or equal to the minimum."})
+    public void validationMessage_rangeUnderflow() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.rangeUnderflow);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='number' value='1' min='10'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(
+            DEFAULT = {"true", "Please enter a valid value. The two nearest valid values are 2 and 4."},
+            FF = {"true", "Please select a valid value. The two nearest valid values are 2 and 4."},
+            FF_ESR = {"true", "Please select a valid value. The two nearest valid values are 2 and 4."})
+    @HtmlUnitNYI(
+            CHROME = {"true", "Please enter a valid value."},
+            EDGE = {"true", "Please enter a valid value."},
+            FF = {"true", "Please enter a valid value."},
+            FF_ESR = {"true", "Please enter a valid value."})
+    public void validationMessage_stepMismatch() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.stepMismatch);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='number' value='3' step='2' min='0'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(
+            DEFAULT = {"true", "Please include an '@' in the email address. 'not-an-email' is missing an '@'."},
+            FF = {"true", "Please enter an email address."},
+            FF_ESR = {"true", "Please enter an email address."})
+    @HtmlUnitNYI(CHROME = {"true", "Please enter an email address."},
+            EDGE = {"true", "Please enter an email address."})
+    public void validationMessage_typeMismatch_email() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.typeMismatch);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='email' value='not-an-email'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "Please enter a URL."})
+    public void validationMessage_typeMismatch_url() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.typeMismatch);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='url' value='not a url'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "Please enter a valid value, thanks!"})
+    public void validationMessage_customError_exactStringEchoedBack() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('Please enter a valid value, thanks!');\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='anything'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", "true", "Please match the requested format."})
+    public void validationMessage_priority_patternMismatchAlone() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    log(i.validity.valueMissing);\n"
+            + "    log(i.validity.patternMismatch);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='abc' pattern='[0-9]+' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true","true", "custom message wins"})
+    public void validationMessage_priority_customErrorBeatsValueMissing() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var i = document.getElementById('i');\n"
+            + "    i.setCustomValidity('custom message wins');\n"
+            + "    log(i.validity.valueMissing);\n"
+            + "    log(i.validity.customError);\n"
+            + "    log(i.validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='' required>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("")
+    public void validationMessage_emptyWhenValid() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(document.getElementById('i').validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='fine'>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("")
+    public void validationMessage_emptyWhenBarredViaDisabled() throws Exception {
+        final String html = DOCTYPE_HTML
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(document.getElementById('i').validationMessage);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i' type='text' value='' required disabled>\n"
+            + "  </form>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);

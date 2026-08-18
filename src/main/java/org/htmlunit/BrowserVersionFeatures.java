@@ -38,10 +38,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     ANCHOR_SEND_PING_REQUEST,
 
-    /** Screen colorDepth is 32 instead of 24. */
-    @BrowserFeature({CHROME, EDGE})
-    COLOR_DEPHT_32,
-
     /** Background image is 'initial'. */
     @BrowserFeature({CHROME, EDGE})
     CSS_BACKGROUND_INITIAL,
@@ -172,10 +168,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({FF, FF_ESR})
     HTTP_HEADER_PRIORITY,
 
-    /** The anchor hostname setter ignores blank url's. */
-    @BrowserFeature({FF, FF_ESR})
-    JS_ANCHOR_HOSTNAME_IGNORE_BLANK,
-
     /**
      * The anchor pathname detects url's starting with one letter as file url's
      * and replaces them with the file protocol. */
@@ -258,6 +250,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     JS_ERROR_STACK_TRACE_LIMIT,
 
+    /** Javascript {@code Error.stackTraceLimit}. */
+    @BrowserFeature(FF)
+    JS_ERROR_STACK_TRACE_LIMIT_128,
+
     /** Javascript InputEvent reads the inputType property from data. */
     @BrowserFeature({FF, FF_ESR})
     JS_EVENT_INPUT_CTOR_INPUTTYPE,
@@ -287,6 +283,10 @@ public enum BrowserVersionFeatures {
      */
     @BrowserFeature({FF, FF_ESR})
     JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0,
+
+    /** Indicates that innerText add a nl when reaching svg element. */
+    @BrowserFeature({FF, FF_ESR})
+    JS_INNER_TEXT_SELECT_EMPTY,
 
     /** Indicates that innerText add a nl when reaching svg element. */
     @BrowserFeature({CHROME, EDGE})
@@ -335,10 +335,6 @@ public enum BrowserVersionFeatures {
     /** Indicates that someObj.offsetParent returns null, it someObj has fixed style. */
     @BrowserFeature({CHROME, EDGE, FF})
     JS_OFFSET_PARENT_NULL_IF_FIXED,
-
-    /** element.outerHTML removes all children from detached node. */
-    @BrowserFeature({CHROME, EDGE})
-    JS_OUTER_HTML_THROWS_FOR_DETACHED,
 
     /** Indicates that the {@code Object.getOwnPropertyDescriptor.get} contains name. */
     @BrowserFeature({FF, FF_ESR})
@@ -407,6 +403,10 @@ public enum BrowserVersionFeatures {
     /** XMLHttpRequest triggers the load events also if the abort was signaled. */
     @BrowserFeature({FF, FF_ESR})
     XHR_LOAD_ALWAYS_AFTER_DONE,
+
+    /** Indicates if the XMLHttpRequest preflight request includes the 'Sec-Fetch-Mode=cors' header. */
+    @BrowserFeature({CHROME, EDGE})
+    XHR_PREFLIGHT_CORS,
 
     /** If state unsent the response text is empty even if the response type is wrong. */
     @BrowserFeature({FF, FF_ESR})

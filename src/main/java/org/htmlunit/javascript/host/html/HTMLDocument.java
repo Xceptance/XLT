@@ -86,7 +86,7 @@ import org.htmlunit.util.UrlUtils;
  * @author Frank Danek
  * @author Sven Strickroth
  *
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms535862.aspx">MSDN documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document">MDN Documentation</a>
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-7068919">
  *     W3C DOM Level 1</a>
  */
@@ -161,7 +161,7 @@ public class HTMLDocument extends Document {
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536782.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/write">MDN Documentation</a>
      */
     @JsxFunction
     public static void write(final Context context, final VarScope scope,
@@ -205,7 +205,7 @@ public class HTMLDocument extends Document {
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536783.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/writeln">MDN Documentation</a>
      */
     @JsxFunction
     public static void writeln(final Context context, final VarScope scope,
@@ -249,6 +249,7 @@ public class HTMLDocument extends Document {
      * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
      * a good description of the semantics of open(), write(), writeln() and close().
+     * </p>
      *
      * @param content the content to write
      */
@@ -313,10 +314,10 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * Indicates if the content is a well formed HTML snippet that can already be parsed to be added to the DOM.
+     * Indicates if the content is a well-formed HTML snippet that can already be parsed to be added to the DOM.
      *
      * @param content the HTML snippet
-     * @return {@code false} if it not well formed
+     * @return {@code false} if it is not well-formed
      */
     static boolean canAlreadyBeParsed(final String content) {
         // all <script> must have their </script> because the parser doesn't close automatically this tag
@@ -409,7 +410,7 @@ public class HTMLDocument extends Document {
         if (scriptTagCount > 0 || tagState != ParsingStatus.OUTSIDE) {
             if (LOG.isDebugEnabled()) {
                 final StringBuilder message = new StringBuilder()
-                    .append("canAlreadyBeParsed() retruns false for content: '")
+                    .append("canAlreadyBeParsed() returns false for content: '")
                     .append(StringUtils.abbreviateMiddle(content, ".", 100))
                     .append("' (scriptTagCount: ")
                         .append(scriptTagCount)
@@ -444,14 +445,15 @@ public class HTMLDocument extends Document {
      * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
      * a good description of the semantics of open(), write(), writeln() and close().
+     * </p>
      *
      * @param url when a new document is opened, <i>url</i> is a String that specifies a MIME type for the document.
      *        When a new window is opened, <i>url</i> is a String that specifies the URL to render in the new window
      * @param name the name
      * @param features the features
-     * @param replace whether to replace in the history list or no
-     * @return a reference to the new document object.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536652.aspx">MSDN documentation</a>
+     * @param replace whether to replace in the history list or not
+     * @return a reference to the new document object
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/open">MDN Documentation</a>
      */
     @JsxFunction
     public HTMLDocument open(final Object url, final Object name, final Object features,
@@ -554,7 +556,7 @@ public class HTMLDocument extends Document {
     public HtmlUnitScriptable getElementById(final String id) {
         implicitCloseIfNecessary();
         final DomElement domElement = getPage().getElementById(id);
-        if (null == domElement) {
+        if (domElement == null) {
             // Just fall through - result is already set to null
             if (LOG.isDebugEnabled()) {
                 LOG.debug("getElementById(" + id + "): no DOM node found with this id");
@@ -616,7 +618,7 @@ public class HTMLDocument extends Document {
     /**
      * Calls to <code>document.XYZ</code> should first look at elements named <code>XYZ</code> before
      * using standard functions.
-     * <p>
+     *
      * {@inheritDoc}
      */
     @Override

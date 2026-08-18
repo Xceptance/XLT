@@ -204,7 +204,7 @@ public class HtmlForm extends HtmlElement {
     /**
      * Check if element which cause submit contains new html5 attributes
      * (formaction, formmethod, formtarget, formenctype)
-     * and override existing values
+     * and override existing values.
      * @param submitElement the element to update
      */
     private void updateHtml5Attributes(final SubmittableElement submitElement) {
@@ -335,16 +335,11 @@ public class HtmlForm extends HtmlElement {
         request.setRequestParameters(parameters);
         if (HttpMethod.POST == method) {
             request.setEncodingType(FormEncodingType.getInstance(getEnctypeAttribute()));
-        }
-        request.setCharset(enc);
 
-        // forms are ignoring the rel='noreferrer'
-        if (browser.hasFeature(FORM_IGNORE_REL_NOREFERRER)
-                || !relContainsNoreferrer()) {
-            request.setRefererHeader(htmlPage.getUrl());
-        }
+            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
+                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
+            }
 
-        if (HttpMethod.POST == method) {
             try {
                 request.setAdditionalHeader(HttpHeader.ORIGIN,
                         UrlUtils.getUrlWithProtocolAndAuthority(htmlPage.getUrl()).toExternalForm());
@@ -355,10 +350,23 @@ public class HtmlForm extends HtmlElement {
                 }
             }
         }
-        if (HttpMethod.POST == method) {
-            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
-                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
-            }
+        request.setCharset(enc);
+
+        // Sec-Fetch-* support (https://www.w3.org/TR/fetch-metadata/):
+        // a form submission is a top-level navigation, initiated by the page
+        // containing the form. The initiator must be set regardless of
+        // "noreferrer", since Sec-Fetch-Site reflects the true relationship
+        // between initiator and target even when the Referer header itself is
+        // suppressed. Unlike anchor clicks, this method actually knows whether
+        // the submission was caused by a real submit control (submitElement != null,
+        // e.g. a click on a submit button/input) or triggered purely by script
+        // (submitElement == null, e.g. form.submit()) - see this method's javadoc -
+        // so Sec-Fetch-User can be set correctly rather than hardcoded.
+        request.markAsNavigation(htmlPage.getUrl(), submitElement != null);
+
+        // forms are ignoring the rel='noreferrer'
+        if (browser.hasFeature(FORM_IGNORE_REL_NOREFERRER) || !relContainsNoreferrer()) {
+            request.setRefererHeader(htmlPage.getUrl());
         }
 
         return request;
@@ -551,12 +559,13 @@ public class HtmlForm extends HtmlElement {
     }
 
     /**
-     * @return A List containing all form controls in the form.
-     *         The form controls in the returned collection are in the same order
-     *         in which they appear in the form by following a preorder,
-     *         depth-first traversal of the tree. This is called tree order.
-     *         Only the following elements are returned:
-     *         button, fieldset, input, object, output, select, textarea.
+     * Returns the form controls contained in this form.
+     *
+     * @return a list containing all form controls in tree order (preorder,
+     *         depth-first traversal). Only the following elements are
+     *         included: {@code button}, {@code fieldset}, {@code input},
+     *         {@code object}, {@code output}, {@code select}, and
+     *         {@code textarea}
      */
     public List<HtmlElement> getFormElements() {
         return getElements(htmlElement -> {
@@ -601,8 +610,10 @@ public class HtmlForm extends HtmlElement {
     }
 
     /**
-     * @param filter a predicate to filter the element
-     * @return all elements attached to this form and matching the filter predicate
+     * Returns the form elements that match the specified filter.
+     *
+     * @param filter the predicate used to select elements
+     * @return a list of form elements matching the specified filter
      */
     public List<HtmlElement> getElements(final Predicate<HtmlElement> filter) {
         final List<HtmlElement> elements = new ArrayList<>();
@@ -994,7 +1005,9 @@ public class HtmlForm extends HtmlElement {
     }
 
     /**
-     * @return the value of the attribute {@code novalidate} or an empty string if that attribute isn't defined
+     * Returns whether form validation is disabled.
+     *
+     * @return {@code true} if the {@code novalidate} attribute is present
      */
     public final boolean isNoValidate() {
         return hasAttribute(ATTRIBUTE_NOVALIDATE);

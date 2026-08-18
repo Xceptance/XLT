@@ -26,13 +26,13 @@ import org.htmlunit.SgmlPage;
  * @author Ronald Brill
  * @author Frank Danek
  */
-public class HtmlMeter extends HtmlMedia implements LabelableElement {
+public class HtmlMeter extends HtmlElement implements LabelableElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "meter";
 
     /**
-     * Creates an instance of HtmlMeter
+     * Creates an instance of HtmlMeter.
      *
      * @param qualifiedName the qualified name of the element type to instantiate
      * @param page the HtmlPage that contains this element

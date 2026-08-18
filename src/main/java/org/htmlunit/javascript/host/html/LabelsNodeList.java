@@ -29,7 +29,6 @@ import org.htmlunit.javascript.host.dom.NodeList;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
- *
  */
 class LabelsNodeList extends NodeList {
 
@@ -44,7 +43,7 @@ class LabelsNodeList extends NodeList {
 
     /**
      * This is overridden in order to prevent caching at all.
-     * <p>
+     *
      * {@inheritDoc}
      */
     @Override

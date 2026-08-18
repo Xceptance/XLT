@@ -16,10 +16,12 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_AREA_WITHOUT_HREF_FOCUSABLE;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlArea;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
@@ -38,6 +40,8 @@ import org.htmlunit.util.UrlUtils;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAreaElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlArea.class)
 public class HTMLAreaElement extends HTMLElement {
@@ -52,7 +56,7 @@ public class HTMLAreaElement extends HTMLElement {
     }
 
     /**
-     * Calls for instance for implicit conversion to string.
+     * Called, for instance, for implicit conversion to a string.
      * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
      * @param hint the type hint
      * @return the default value
@@ -76,8 +80,8 @@ public class HTMLAreaElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the {@code alt} property.
-     * @param alt the value
+     * Sets the value of the {@code alt} property.
+     * @param alt the {@code alt} property value
      */
     @JsxSetter
     public void setAlt(final String alt) {
@@ -93,6 +97,24 @@ public class HTMLAreaElement extends HTMLElement {
     }
 
     /**
+     * Returns the {@code type} attribute.
+     * @return the {@code type} attribute
+     */
+    @JsxGetter(FF)
+    public String getType() {
+        return getDomNodeOrDie().getAttributeDirect(DomElement.TYPE_ATTRIBUTE);
+    }
+
+    /**
+     * Sets the {@code type} attribute.
+     * @param type the {@code type} attribute value
+     */
+    @JsxSetter(FF)
+    public void setType(final String type) {
+        getDomNodeOrDie().setAttribute(DomElement.TYPE_ATTRIBUTE, type);
+    }
+
+    /**
      * Returns the value of the {@code rel} property.
      * @return the value of the {@code rel} property
      */
@@ -102,8 +124,8 @@ public class HTMLAreaElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the {@code rel} property.
-     * @param rel the value
+     * Sets the value of the {@code rel} property.
+     * @param rel the {@code rel} property value
      */
     @JsxSetter
     public void setRel(final String rel) {
@@ -145,7 +167,7 @@ public class HTMLAreaElement extends HTMLElement {
 
     /**
      * Sets the {@code coords} attribute.
-     * @param coords {@code coords} attribute
+     * @param coords the {@code coords} attribute value
      */
     @JsxSetter
     public void setCoords(final String coords) {

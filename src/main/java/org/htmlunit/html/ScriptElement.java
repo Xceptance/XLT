@@ -35,17 +35,27 @@ public interface ScriptElement {
     boolean isDeferred();
 
     /**
+     * Returns {@code true} if this crossorigin attribute is available.
+     * @return {@code true} if this crossorigin attribute is available.
+     */
+    boolean isCrossorigin();
+
+    /**
      * Sets if executed.
      * @param executed if executed
      */
     void setExecuted(boolean executed);
 
     /**
+     * Returns the script source url.
+     *
      * @return the script source url
      */
     String getScriptSource();
 
     /**
+     * Returns the charset used for the script encoding.
+     *
      * @return the charset used for the script encoding
      */
     String getScriptCharset();

@@ -19,14 +19,11 @@ import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.StringUtils;
-import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "button".
@@ -44,9 +41,9 @@ import org.w3c.dom.Node;
  * @author Lai Quang Duong
  */
 public class HtmlButton extends HtmlElement implements DisabledElement, SubmittableElement,
-                LabelableElement, ValidatableElement {
+                LabelableElement, ValidatableHtmlElement {
 
-    private static final Log LOG = LogFactory.getLog(HtmlButton.class);
+    // private static final Log LOG = LogFactory.getLog(HtmlButton.class);
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "button";
@@ -109,35 +106,6 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * {@inheritDoc}
      */
     @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        Node node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement element
-                    && element.isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns {@code true} if this element is read only.
-     * @return {@code true} if this element is read only
-     */
-    public boolean isReadOnly() {
-        return hasAttribute("readOnly");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public NameValuePair[] getSubmitNameValuePairs() {
         return new NameValuePair[]{new NameValuePair(getNameAttribute(), getValueAttribute())};
     }
@@ -145,31 +113,36 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
     /**
      * {@inheritDoc}
      *
+     * This implementation is empty; buttons have no reset-specific behavior.
+     *
      * @see SubmittableElement#reset()
      */
     @Override
     public void reset() {
-        LOG.debug("reset() not implemented for this element");
+        // Empty.
     }
 
     /**
      * {@inheritDoc}
+     *
+     * This implementation is empty; buttons do not maintain a default value.
      *
      * @see SubmittableElement#setDefaultValue(String)
      */
     @Override
     public void setDefaultValue(final String defaultValue) {
-        LOG.debug("setDefaultValue() not implemented for this element");
+        // Empty.
     }
 
     /**
      * {@inheritDoc}
      *
+     * This implementation returns an empty string; buttons do not maintain a default value.
+     *
      * @see SubmittableElement#getDefaultValue()
      */
     @Override
     public String getDefaultValue() {
-        LOG.debug("getDefaultValue() not implemented for this element");
         return "";
     }
 
@@ -245,11 +218,13 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @return the value of the attribute {@code type} or the default value if that attribute isn't defined
      */
     public final String getTypeAttribute() {
-        return getAttribute(TYPE_ATTRIBUTE);
+        return getAttributeDirect(TYPE_ATTRIBUTE);
     }
 
     /**
-     * @return the normalized type value (submit|reset|button).
+     * Returns the normalized button type.
+     *
+     * @return the normalized type value ({@code submit}, {@code reset}, or {@code button})
      */
     public String getType() {
         final String type = getTypeAttribute();
@@ -328,6 +303,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
 
     /**
      * {@inheritDoc}
+     *
      * @return {@code true} to make generated XML readable as HTML.
      */
     @Override
@@ -340,10 +316,6 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean isValid() {
-        if (TYPE_RESET.equals(getType())) {
-            return true;
-        }
-
         return super.isValid() && !isCustomErrorValidityState();
     }
 
@@ -357,6 +329,14 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
         }
 
         return !isDisabled();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCustomValidity() {
+        return customValidity_;
     }
 
     /**
@@ -381,7 +361,9 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
     }
 
     /**
-     * @return the value of the attribute {@code formnovalidate} or an empty string if that attribute isn't defined
+     * Returns whether the {@code formnovalidate} attribute is present.
+     *
+     * @return {@code true} if the {@code formnovalidate} attribute is present
      */
     public final boolean isFormNoValidate() {
         return hasAttribute(ATTRIBUTE_FORMNOVALIDATE);

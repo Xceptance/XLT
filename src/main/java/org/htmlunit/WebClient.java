@@ -17,15 +17,16 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_PRIORITY;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.ref.Cleaner;
+import java.lang.ref.Cleaner.Cleanable;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -78,6 +79,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserListener;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.http.HttpStatus;
 import org.htmlunit.http.HttpUtils;
 import org.htmlunit.httpclient.HttpClientConverter;
@@ -95,7 +97,6 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.file.Blob;
 import org.htmlunit.javascript.host.html.HTMLIFrameElement;
 import org.htmlunit.protocol.data.DataURLConnection;
-import org.htmlunit.http.Cookie;
 import org.htmlunit.util.HeaderUtils;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
@@ -163,6 +164,8 @@ public class WebClient implements Serializable, AutoCloseable {
     private static final int ALLOWED_REDIRECTIONS_SAME_URL = 20;
     private static final WebResponseData RESPONSE_DATA_NO_HTTP_RESPONSE = new WebResponseData(
             0, "No HTTP Response", Collections.emptyList());
+
+    static final Cleaner CLEANER = Cleaner.create();
 
     /**
      * These response headers are not copied from a 304 response to the cached
@@ -233,6 +236,8 @@ public class WebClient implements Serializable, AutoCloseable {
     private transient List<WeakReference<JavaScriptJobManager>> jobManagers_ =
             Collections.synchronizedList(new ArrayList<>());
     private WebWindow currentWindow_;
+
+    private transient BlobUrlStore blobUrlStore_ = new BlobUrlStore();
 
     private HTMLParserListener htmlParserListener_;
     private CSSErrorHandler cssErrorHandler_ = new DefaultCssErrorHandler();
@@ -394,10 +399,12 @@ public class WebClient implements Serializable, AutoCloseable {
      * <p>
      * The returned {@link Page} will be created by the {@link PageCreator}
      * configured by {@link #setPageCreator(PageCreator)}, if any.
+     * </p>
      * <p>
      * The {@link DefaultPageCreator} will create a {@link Page} depending on the content type of the HTTP response,
      * basically {@link HtmlPage} for HTML content, {@link org.htmlunit.xml.XmlPage} for XML content,
      * {@link TextPage} for other text content and {@link UnexpectedPage} for anything else.
+     * </p>
      *
      * @param webWindow the WebWindow to load the result of the request into
      * @param webRequest the web request
@@ -422,10 +429,12 @@ public class WebClient implements Serializable, AutoCloseable {
      * <p>
      * The returned {@link Page} will be created by the {@link PageCreator}
      * configured by {@link #setPageCreator(PageCreator)}, if any.
+     * </p>
      * <p>
      * The {@link DefaultPageCreator} will create a {@link Page} depending on the content type of the HTTP response,
      * basically {@link HtmlPage} for HTML content, {@link org.htmlunit.xml.XmlPage} for XML content,
      * {@link TextPage} for other text content and {@link UnexpectedPage} for anything else.
+     * </p>
      *
      * @param webWindow the WebWindow to load the result of the request into
      * @param webRequest the web request
@@ -737,6 +746,7 @@ public class WebClient implements Serializable, AutoCloseable {
      *
      * <p>Logs the response's content if its status code indicates a request failure and
      * {@link WebClientOptions#isPrintContentOnFailingStatusCode()} returns {@code true}.
+     * </p>
      *
      * @param webResponse the response whose content may be logged
      */
@@ -754,6 +764,7 @@ public class WebClient implements Serializable, AutoCloseable {
      *
      * <p>Throws a {@link FailingHttpStatusCodeException} if the request's status code indicates a request
      * failure and {@link WebClientOptions#isThrowExceptionOnFailingStatusCode()} returns {@code true}.
+     * </p>
      *
      * @param webResponse the response which may trigger a {@link FailingHttpStatusCodeException}
      */
@@ -1021,6 +1032,14 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
+     * Returns the blob URL store for this client.
+     * @return the {@link BlobUrlStore} for this client
+     */
+    public BlobUrlStore getBlobUrlStore() {
+        return blobUrlStore_;
+    }
+
+    /**
      * Adds a listener for {@link WebWindowEvent}s. All events from all windows associated with this
      * client will be sent to the specified listener.
      * @param listener a listener
@@ -1046,6 +1065,8 @@ public class WebClient implements Serializable, AutoCloseable {
         for (final WebWindowListener listener : new ArrayList<>(webWindowListeners_)) {
             listener.webWindowContentChanged(event);
         }
+
+        blobUrlStore_.removeForPage(event.getOldPage());
     }
 
     private void fireWindowOpened(final WebWindowEvent event) {
@@ -1065,6 +1086,8 @@ public class WebClient implements Serializable, AutoCloseable {
         for (final WebWindowListener listener : new ArrayList<>(webWindowListeners_)) {
             listener.webWindowClosed(event);
         }
+
+        blobUrlStore_.removeForPage(event.getOldPage());
 
         // to open a new top level window if all others are gone
         if (currentWindowTracker_ != null) {
@@ -1345,6 +1368,18 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
+     * Registers an object and a cleaning action to run when the object
+     * becomes phantom reachable. This forwards the call to our static {@link Cleaner}.
+     *
+     * @param obj   the object to monitor
+     * @param action a {@code Runnable} to invoke when the object becomes phantom reachable
+     * @return a {@code Cleanable} instance
+     */
+    public static Cleanable registerCleanerAction(final Object obj, final Runnable action) {
+        return CLEANER.register(obj, action);
+    }
+
+    /**
      * Expands a relative URL relative to the specified base. In most situations
      * this is the same as <code>new URL(baseUrl, relativeUrl)</code> but
      * there are some cases that URL doesn't handle correctly. See
@@ -1451,11 +1486,10 @@ public class WebClient implements Serializable, AutoCloseable {
         return webResponse;
     }
 
-    private WebResponse makeWebResponseForBlobUrl(final WebRequest webRequest) {
-        final Window window = getCurrentWindow().getScriptableObject();
-        final Blob fileOrBlob = window.getDocument().resolveBlobUrl(webRequest.getUrl().toString());
+    private WebResponse makeWebResponseForBlobUrl(final WebRequest webRequest) throws IOException {
+        final Blob fileOrBlob = blobUrlStore_.resolve(webRequest.getUrl().toString());
         if (fileOrBlob == null) {
-            throw JavaScriptEngine.typeError("Cannot load data from " + webRequest.getUrl());
+            throw new FileNotFoundException("No entry for '" + webRequest.getUrl() + "' in the BlobUrlStore.");
         }
 
         final List<NameValuePair> headers = new ArrayList<>();
@@ -1691,6 +1725,10 @@ public class WebClient implements Serializable, AutoCloseable {
                 for (final Map.Entry<String, String> entry : webRequest.getAdditionalHeaders().entrySet()) {
                     wrs.setAdditionalHeader(entry.getKey(), entry.getValue());
                 }
+                wrs.setFetchDestination(webRequest.getFetchDestination());
+                wrs.setFetchModeOverride(webRequest.getFetchModeOverride());
+                wrs.setRequestingUrl(webRequest.getRequestingUrl());
+
                 return loadWebResponseFromWebConnection(wrs, allowedRedirects - 1);
             }
             else if (status == HttpStatus.TEMPORARY_REDIRECT_307
@@ -1820,40 +1858,8 @@ public class WebClient implements Serializable, AutoCloseable {
             wrs.setAdditionalHeader(HttpHeader.ACCEPT_LANGUAGE, getBrowserVersion().getAcceptLanguageHeader());
         }
 
-        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_DEST)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "document");
-        }
-        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_MODE)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "navigate");
-        }
-        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_SITE)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
-        }
-        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_USER)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_USER, "?1");
-        }
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_PRIORITY)
-                && !wrs.isAdditionalHeader(HttpHeader.PRIORITY)) {
-            wrs.setAdditionalHeader(HttpHeader.PRIORITY, "u=0, i");
-        }
-
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_CH_UA)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_CH_UA, getBrowserVersion().getSecClientHintUserAgentHeader());
-        }
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE, "?0");
-        }
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM)) {
-            wrs.setAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM,
-                    getBrowserVersion().getSecClientHintUserAgentPlatformHeader());
-        }
-
-        if (!wrs.isAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS)) {
-            wrs.setAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS, "1");
-        }
+        // the sec- stuff is done later in the HttpWebConnection
+        // this implies that stuff is not visible in the MockWebConnection
     }
 
     /**
@@ -1861,6 +1867,7 @@ public class WebClient implements Serializable, AutoCloseable {
      * This is a snapshot; future changes are not reflected by this list.
      * <p>
      * The list is ordered by age, the oldest one first.
+     * </p>
      *
      * @return an immutable list of open web windows (whether they are top level windows or not)
      * @see #getWebWindowByName(String)
@@ -1889,6 +1896,7 @@ public class WebClient implements Serializable, AutoCloseable {
      * This is a snapshot; future changes are not reflected by this list.
      * <p>
      * The list is ordered by age, the oldest one first.
+     * </p>
      *
      * @return an immutable list of open top level windows
      * @see #getWebWindowByName(String)
@@ -2269,8 +2277,6 @@ public class WebClient implements Serializable, AutoCloseable {
      * Closes all opened windows, stopping all background JavaScript processing.
      * The WebClient is not really usable after this - you have to create a new one or
      * use WebClient.reset() instead.
-     * <p>
-     * {@inheritDoc}
      */
     @Override
     public void close() {
@@ -2391,6 +2397,7 @@ public class WebClient implements Serializable, AutoCloseable {
      *
      * <p>This shuts down the whole client and restarts with a new empty window.
      * Cookies and other states are preserved.
+     * </p>
      */
     public void reset() {
         close();
@@ -2679,6 +2686,7 @@ public class WebClient implements Serializable, AutoCloseable {
         loadQueue_ = new ArrayList<>();
         css3ParserPool_ = new CSS3ParserPool();
         broadcastChannel_ = new HashSet<>();
+        blobUrlStore_ = new BlobUrlStore();
     }
 
     private static class LoadJob {
@@ -3072,12 +3080,15 @@ public class WebClient implements Serializable, AutoCloseable {
      * hence it is possible to miss a returned parser from another thread under heavy pressure,
      * but because that is unlikely, we keep it simple and efficient. Caches are not supposed
      * to give cutting-edge guarantees.
+     * </p>
      * <p>
      * This concept avoids a resource leak when someone does not close the fetched
      * parser because the pool does not know anything about the parser unless
      * it returns. We are not running a checkout-checkin concept.
+     * </p>
      * <p>
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     * </p>
      */
     static class CSS3ParserPool {
         /*
@@ -3117,7 +3128,6 @@ public class WebClient implements Serializable, AutoCloseable {
      * This is a poolable CSS3Parser which can be reused automatically when closed.
      * A regular CSS3Parser is not thread-safe, hence also our pooled parser
      * is not thread-safe.
-     * <p>
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      */
     public static class PooledCSS3Parser extends CSS3Parser implements AutoCloseable {

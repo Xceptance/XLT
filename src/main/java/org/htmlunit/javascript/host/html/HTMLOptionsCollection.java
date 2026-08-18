@@ -43,6 +43,8 @@ import org.htmlunit.javascript.host.dom.DOMException;
  * @author Bruce Faulkner
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection">MDN Documentation</a>
  */
 @JsxClass
 public class HTMLOptionsCollection extends HtmlUnitScriptable {
@@ -225,12 +227,14 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * <p>This method will call the {@link #put(int, Scriptable, Object)} method for actually
      * adding the element to the collection.</p>
      *
-     * <p>According to <a href="http://msdn.microsoft.com/en-us/library/ms535921.aspx">the
-     * Microsoft DHTML reference page for the JavaScript add() method of the options collection</a>,
+     * <p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLOptionsCollection/add">MDN
+     * documentation</a> for the JavaScript add() method of the options collection,
      * the index parameter is specified as follows:
+     * </p>
      * <p>
      * <i>Optional. Integer that specifies the index position in the collection where the element is
      * placed. If no value is given, the method places the element at the end of the collection.</i>
+     * </p>
      *
      * @param newOptionObject the DomNode to insert in the collection
      * @param beforeOptionObject An optional parameter which specifies the index position in the
@@ -266,7 +270,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
             }
         }
 
-        if (null == beforeOption) {
+        if (beforeOption == null) {
             htmlSelect_.appendOption(htmlOption);
             return;
         }
@@ -306,6 +310,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code Symbol.iterator} function that allows iterating over this collection.
      * @return the Iterator symbol
      */
     @JsxSymbol

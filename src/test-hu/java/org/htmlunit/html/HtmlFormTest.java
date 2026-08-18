@@ -45,12 +45,13 @@ import org.junit.jupiter.api.Test;
  * @author Ahmed Ashour
  * @author Philip Graf
  * @author Ronald Brill
+ * @author Ronny Shapiro
  */
 public class HtmlFormTest extends SimpleWebTestCase {
 
     /**
      * Tests the good case for setCheckedRatdioButton().
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void setSelectedRadioButton_ValueExists() throws Exception {
@@ -84,7 +85,7 @@ public class HtmlFormTest extends SimpleWebTestCase {
 
     /**
      * Tests setCheckedRadioButton() with a value that doesn't exist.
-     * @exception Exception If the test fails
+     * @throws Exception If the test fails
      */
     @Test
     public void setSelectedRadioButton_ValueDoesNotExist_DoNotForceSelection() throws Exception {

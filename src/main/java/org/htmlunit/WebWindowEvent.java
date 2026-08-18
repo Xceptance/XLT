@@ -75,7 +75,7 @@ public final class WebWindowEvent extends EventObject {
      */
     @Override
     public boolean equals(final Object object) {
-        if (null == object) {
+        if (object == null) {
             return false;
         }
         if (getClass() == object.getClass()) {
@@ -171,6 +171,8 @@ public final class WebWindowEvent extends EventObject {
     }
 
     /**
+     * Returns the event type.
+     *
      * @return the event type
      */
     public int getEventType() {

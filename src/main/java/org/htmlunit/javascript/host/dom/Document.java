@@ -30,13 +30,11 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
@@ -118,7 +116,6 @@ import org.htmlunit.javascript.host.event.ProgressEvent;
 import org.htmlunit.javascript.host.event.TextEvent;
 import org.htmlunit.javascript.host.event.UIEvent;
 import org.htmlunit.javascript.host.event.WheelEvent;
-import org.htmlunit.javascript.host.file.Blob;
 import org.htmlunit.javascript.host.html.HTMLAllCollection;
 import org.htmlunit.javascript.host.html.HTMLBodyElement;
 import org.htmlunit.javascript.host.html.HTMLCollection;
@@ -153,7 +150,7 @@ import org.w3c.dom.ProcessingInstruction;
  * @author Lai Quang Duong
  * @author Sven Strickroth
  *
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms531073.aspx">MSDN documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document">MDN Documentation</a>
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-7068919">W3C Dom Level 1</a>
  */
 @JsxClass
@@ -163,7 +160,7 @@ public class Document extends Node {
 
     /**
      * See <a href="https://developer.mozilla.org/en/Rich-Text_Editing_in_Mozilla#Executing_Commands">
-     *     Executing Commands</a>
+     *     Executing Commands</a>.
      */
     private static final Set<String> EXECUTE_CMDS_FF = new HashSet<>();
     private static final Set<String> EXECUTE_CMDS_CHROME = new HashSet<>();
@@ -230,8 +227,6 @@ public class Document extends Node {
     private ScriptableObject currentScript_;
     private transient FontFaceSet fonts_;
     private transient StyleSheetList styleSheetList_;
-
-    private final Map<String, Blob> blobUrl2Blobs_ = new HashMap<>();
 
     static {
         // commands
@@ -344,7 +339,7 @@ public class Document extends Node {
      * Sets the value of the {@code location} property. The location's default property is "href",
      * so setting "document.location='http://www.sf.net'" is equivalent to setting
      * "document.location.href='http://www.sf.net'".
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms535866.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/location">MDN Documentation</a>
      * @param location the location to navigate to
      * @throws IOException when location loading fails
      */
@@ -514,7 +509,13 @@ public class Document extends Node {
     @JsxFunction
     public HtmlUnitScriptable adoptNode(final Node externalNode) {
         externalNode.remove();
-        return importNode(externalNode, true);
+
+        final DomNode domNode = externalNode.getDomNodeOrDie();
+        domNode.processImportNode(this);
+        for (final DomNode childNode : domNode.getDescendants()) {
+            childNode.processImportNode(this);
+        }
+        return domNode.getScriptableObject();
     }
 
     /**
@@ -797,7 +798,7 @@ public class Document extends Node {
 
     /**
      * Returns the value of the {@code activeElement} property.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533065.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement">MDN Documentation</a>
      * @return the value of the {@code activeElement} property
      */
     @JsxGetter
@@ -833,7 +834,7 @@ public class Document extends Node {
 
     /**
      * Returns the value of the JavaScript property {@code anchors}.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms537435.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/anchors">MDN Documentation</a>
      * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_doc_ref4.html#1024543">
      *     Gecko DOM reference</a>
      * @return the value of this property
@@ -866,10 +867,8 @@ public class Document extends Node {
 
     /**
      * Returns the value of the JavaScript property {@code applets}.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms537436.aspx">
-     *     MSDN documentation</a>
-     * @see <a href="https://developer.mozilla.org/En/DOM:document.applets">
-     *     Gecko DOM reference</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/applets">
+     *     MDN Documentation</a>
      * @return the value of this property
      */
     @JsxGetter
@@ -1056,7 +1055,7 @@ public class Document extends Node {
 
     /**
      * Indicates if the command is supported.
-     * @see <a href="http://msdn2.microsoft.com/en-us/library/ms536681.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/queryCommandSupported">MDN Documentation</a>
      * @param cmd the command identifier
      * @return {@code true} if the command is supported
      */
@@ -1066,7 +1065,7 @@ public class Document extends Node {
     }
 
     private boolean hasCommand(final String cmd, final boolean includeBold) {
-        if (null == cmd) {
+        if (cmd == null) {
             return false;
         }
 
@@ -1090,7 +1089,7 @@ public class Document extends Node {
 
     /**
      * Executes a command.
-     * @see <a href="http://msdn2.microsoft.com/en-us/library/ms536419.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand">MDN Documentation</a>
      * @param cmd the command identifier
      * @param userInterface display a user interface if the command supports one
      * @param value the string, number, or other value to assign (possible values depend on the command)
@@ -1168,7 +1167,7 @@ public class Document extends Node {
 
     /**
      * Adds a cookie, as long as cookies are enabled.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533693.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie">MDN Documentation</a>
      * @param newCookie in the format "name=value[;expires=date][;domain=domainname][;path=path][;secure]"
      */
     @JsxSetter
@@ -1364,6 +1363,7 @@ public class Document extends Node {
      * with the except of setting the domain to itself.</p>
      * <p>
      * The domain will be set according to the following rules:
+     * </p>
      * <ol>
      * <li>If the newDomain.equalsIgnoreCase(currentDomain) the method returns with no error.</li>
      * <li>If the browser version is netscape, the newDomain is downshifted.</li>
@@ -1374,7 +1374,7 @@ public class Document extends Node {
      *          d2.d3.gargoylesoftware.com
      *             d3.gargoylesoftware.com
      *                gargoylesoftware.com
-     * <p>
+     * <br>
      *        transformation to:        com
      *        will fail
      * </li>
@@ -1383,6 +1383,7 @@ public class Document extends Node {
      * TODO This code could be modified to understand country domain suffixes.
      * The domain www.bbc.co.uk should be trimmable only down to bbc.co.uk
      * trimming to co.uk should not be possible.
+     * </p>
      * @param newDomain the new domain to set
      */
     @JsxSetter
@@ -1807,7 +1808,7 @@ public class Document extends Node {
 
     /**
      * Returns the value of the JavaScript property {@code links}. Refer also to the
-     * <a href="http://msdn.microsoft.com/en-us/library/ms537465.aspx">MSDN documentation</a>.
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/links">MDN Documentation</a>.
      * @return the value of this property
      */
     @JsxGetter
@@ -1849,6 +1850,7 @@ public class Document extends Node {
      * <p>
      * Refer to <a href="http://www.w3.org/TR/DOM-Level-2-HTML/html.html#ID-71555259">
      * The DOM spec</a> for details.
+     * </p>
      *
      * @param elementName - value of the {@code name} attribute to look for
      * @return all HTML elements that have a {@code name} attribute with the specified value
@@ -2039,7 +2041,7 @@ public class Document extends Node {
     /**
      * Returns the value of the {@code bgColor} property.
      * @return the value of the {@code bgColor} property
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533505.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/bgColor">MDN Documentation</a>
      */
     @JsxGetter
     public String getBgColor() {
@@ -2053,7 +2055,7 @@ public class Document extends Node {
     /**
      * Sets the value of the {@code bgColor} property.
      * @param color the value of the {@code bgColor} property
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533505.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/bgColor">MDN Documentation</a>
      */
     @JsxSetter
     public void setBgColor(final String color) {
@@ -3480,6 +3482,7 @@ public class Document extends Node {
     }
 
     /**
+     * Returns the {@code currentScript} property.
      * @return the {@code currentScript}
      */
     @JsxGetter
@@ -3488,6 +3491,7 @@ public class Document extends Node {
     }
 
     /**
+     * Sets the {@code currentScript} property.
      * @param script the {@code currentScript}
      */
     public void setCurrentScript(final ScriptableObject script) {
@@ -3495,6 +3499,7 @@ public class Document extends Node {
     }
 
     /**
+     * Returns the {@code FontFaceSet} property.
      * @return the {@code FontFaceSet}
      */
     @JsxGetter
@@ -3575,39 +3580,5 @@ public class Document extends Node {
     @Override
     public boolean contains(final Object element) {
         return getDocumentElement().contains(element);
-    }
-
-    /**
-     * Generate and return the URL for the given blob.
-     * @param blob the Blob containing the data
-     * @return the URL {@link org.htmlunit.javascript.host.URL#createObjectURL(Object)}
-     */
-    public String generateBlobUrl(final Blob blob) {
-        final URL url = getPage().getUrl();
-
-        String origin = "null";
-        if (!UrlUtils.URL_ABOUT_BLANK.equals(url)) {
-            origin = url.getProtocol() + "://" + url.getAuthority();
-        }
-
-        final String blobUrl = "blob:" + origin + "/" + UUID.randomUUID();
-        blobUrl2Blobs_.put(blobUrl, blob);
-        return blobUrl;
-    }
-
-    /**
-     * @param url the url to resolve
-     * @return the Blob for the given URL or {@code null} if not found.
-     */
-    public Blob resolveBlobUrl(final String url) {
-        return blobUrl2Blobs_.get(url);
-    }
-
-    /**
-     * Revokes the URL for the given blob.
-     * @param url the url to revoke {@link org.htmlunit.javascript.host.URL#revokeObjectURL(Scriptable)}
-     */
-    public void revokeBlobUrl(final String url) {
-        blobUrl2Blobs_.remove(url);
     }
 }

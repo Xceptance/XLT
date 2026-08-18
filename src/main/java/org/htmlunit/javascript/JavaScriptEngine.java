@@ -16,6 +16,7 @@
 package org.htmlunit.javascript;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT;
+import static org.htmlunit.BrowserVersionFeatures.JS_ERROR_STACK_TRACE_LIMIT_128;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_INSTALL_TRIGGER_NULL;
 
 import java.io.IOException;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -136,7 +136,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     private transient boolean holdPostponedActions_;
     private transient boolean shutdownPending_;
 
-    /** The JavaScriptExecutor corresponding to all windows of this Web client */
+    /** The JavaScriptExecutor corresponding to all windows of this Web client. */
     private transient JavaScriptExecutor javaScriptExecutor_;
 
     /**
@@ -464,6 +464,9 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         final ScriptableObject errorObject = (ScriptableObject) ScriptableObject.getProperty(globalThis, "Error");
         if (browserVersion.hasFeature(JS_ERROR_STACK_TRACE_LIMIT)) {
             errorObject.defineProperty("stackTraceLimit", 10, ScriptableObject.EMPTY);
+        }
+        else if (browserVersion.hasFeature(JS_ERROR_STACK_TRACE_LIMIT_128)) {
+            errorObject.defineProperty("stackTraceLimit", 128, ScriptableObject.EMPTY);
         }
         else {
             ScriptableObject.deleteProperty(errorObject, "stackTraceLimit");
@@ -877,6 +880,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                 }
                 return ScriptRuntime.doTopCall(function, cx, scope, thisObject, args, cx.isStrictMode());
             }
+
             @Override
             protected String getSourceCode(final Context cx) {
                 return cx.decompileFunction(function, 2);
@@ -888,6 +892,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     /**
      * Indicates if JavaScript is running in current thread.
      * <p>This allows code to know if their own evaluation has been triggered by some JS code.
+     * </p>
      * @return {@code true} if JavaScript is running
      */
     @Override
@@ -1268,9 +1273,11 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
-     * @param error the error
-     * @param message the message
-     * @return a new EcmaError
+     * Constructs a new ECMAScript error.
+     *
+     * @param error the error type
+     * @param message the error message
+     * @return the constructed {@link EcmaError}
      */
     public static EcmaError constructError(final String error, final String message) {
         return ScriptRuntime.constructError(error, message);
@@ -1335,6 +1342,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * Create a new JavaScript object.
      *
      * <p>Equivalent to evaluating "new Object()".
+     * </p>
      *
      * @param scope the scope to search for the constructor and to evaluate against
      * @return the new object
@@ -1435,49 +1443,61 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
-     * @param o the object to convert
-     * @return int value
+     * Converts the specified value to a 32-bit integer.
+     *
+     * @param o the value to convert
+     * @return the converted 32-bit integer value
      */
     public static int toInt32(final Object o) {
         return ScriptRuntime.toInt32(o);
     }
 
     /**
-     * @param o the object to convert
-     * @return double value
+     * Converts the specified value to an integer.
+     *
+     * @param o the value to convert
+     * @return the converted integer value as a {@code double}
      */
     public static double toInteger(final Object o) {
         return ScriptRuntime.toInteger(o);
     }
 
     /**
-     * @param args an array
-     * @param index the index in the array
-     * @return double value
+     * Converts the value at the specified array index to an integer.
+     *
+     * @param args the array containing the value to convert
+     * @param index the index of the value in the array
+     * @return the converted integer value as a {@code double}
      */
     public static double toInteger(final Object[] args, final int index) {
         return ScriptRuntime.toInteger(args, index);
     }
 
     /**
+     * Determines whether the specified value is {@code undefined}.
+     *
      * @param obj the value to check
-     * @return whether obj is undefined
+     * @return {@code true} if the specified value is {@code undefined}
      */
     public static boolean isUndefined(final Object obj) {
         return org.htmlunit.corejs.javascript.Undefined.isUndefined(obj);
     }
 
     /**
+     * Determines whether the specified value is {@code NaN}.
+     *
      * @param obj the value to check
-     * @return whether obj is NAN
+     * @return {@code true} if the specified value is {@code NaN}
      */
     public static boolean isNaN(final Object obj) {
         return ScriptRuntime.isNaN(obj);
     }
 
     /**
+     * Determines whether the specified value is a JavaScript {@code Array}.
+     *
      * @param obj the value to check
-     * @return whether obj is an Array
+     * @return {@code true} if the specified value is a JavaScript {@code Array}
      */
     public static boolean isArray(final Object obj) {
         return (obj instanceof Scriptable s)
@@ -1485,17 +1505,21 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
+     * Determines whether the specified {@link Scriptable} is array-like.
+     *
      * @param obj the value to check
-     * @return true if the passed in {@link Scriptable} looks like an array
+     * @return {@code true} if the specified {@link Scriptable} is array-like
      */
     public static boolean isArrayLike(final Scriptable obj) {
         return ScriptRuntime.isArrayLike(obj);
     }
 
     /**
-     * @param cx the Context
-     * @param obj the value to check
-     * @return the length of the array like {@link Scriptable}
+     * Returns the length of the specified array-like {@link Scriptable}.
+     *
+     * @param cx the JavaScript context
+     * @param obj the array-like value
+     * @return the length of the specified array-like {@link Scriptable}
      */
     public static long lengthOfArrayLike(final Context cx, final Scriptable obj) {
         return AbstractEcmaObjectOperations.lengthOfArrayLike(cx, obj);
@@ -1504,7 +1528,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     /**
      * Iterates an arrayLike {@link Scriptable} calling the {@link Consumer} on
      * every item.
-     * @param cx the context or {@link Null}
+     * @param cx the context or null
      * @param arrayLike the {@link Scriptable} to iterate
      * @param consumer the {@link Consumer} to call
      */
@@ -1519,6 +1543,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     }
 
     /**
+     * Returns the top call scope.
+     *
      * @return the top call scope
      */
     public static TopLevel getTopCallScope() {

@@ -19,6 +19,7 @@ import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_BLANK_SRC_AS_EMPTY;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_EMPTY_SRC_DISPLAY_FALSE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLELEMENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLUNKNOWNELEMENT;
+import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
 import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0;
 import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0;
 
@@ -36,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.HttpHeader;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.SgmlPage;
@@ -631,8 +633,10 @@ public class HtmlImage extends HtmlElement {
     }
 
     /**
-     * @return the {@link ImageData} of this image
-     * @throws IOException in case of error
+     * Returns the image data for this image.
+     *
+     * @return the {@link ImageData} for this image
+     * @throws IOException if an I/O error occurs while reading the image
      */
     public ImageData getImageData() throws IOException {
         readImageIfNeeded();
@@ -656,10 +660,10 @@ public class HtmlImage extends HtmlElement {
             try {
                 imageData_.close();
             }
-            catch (final IOException e) {
-                throw e;
-            }
             catch (final Exception ex) {
+                if (ex instanceof IOException) {
+                    throw (IOException) ex;
+                }
                 throw new IOException("Exception during close()", ex);
             }
             imageData_ = null;
@@ -708,6 +712,24 @@ public class HtmlImage extends HtmlElement {
                                                                     browser.getAcceptEncodingHeader());
                     request.setCharset(page.getCharset());
                     request.setRefererHeader(page.getUrl());
+
+                    // Sec-Fetch-* support (https://www.w3.org/TR/fetch-metadata/):
+                    // an <img> load is never user-activated, and is initiated by the
+                    // containing page; the crossorigin attribute (any value) forces
+                    // CORS mode, otherwise images default to no-cors.
+                    request.setFetchDestination(WebRequest.FetchDestination.IMAGE);
+                    request.setFetchModeOverride(WebRequest.FetchMode.NO_CORS);
+                    request.setRequestingUrl(page.getUrl());
+
+                    if (hasAttribute("crossorigin")) {
+                        request.setFetchModeOverride(WebRequest.FetchMode.CORS);
+
+                        if (browser.hasFeature(HTTP_HEADER_CH_UA)) {
+                            request.setAdditionalHeader(HttpHeader.ORIGIN,
+                                    UrlUtils.getUrlWithProtocolAndAuthority(page.getUrl()).toExternalForm());
+                        }
+                    }
+
                     imageWebResponse_ = webClient.loadWebResponse(request);
                 }
             }
@@ -725,7 +747,7 @@ public class HtmlImage extends HtmlElement {
     private void readImageIfNeeded() throws IOException {
         downloadImageIfNeeded();
         if (imageData_ == null) {
-            if (null == imageWebResponse_) {
+            if (imageWebResponse_ == null) {
                 throw new IOException("No image response available (src='" + getSrcAttribute() + "')");
             }
             imageData_ = Platform.buildImageData(imageWebResponse_.getContentAsStream());
@@ -741,7 +763,7 @@ public class HtmlImage extends HtmlElement {
      * @param x the x position of the click
      * @param y the y position of the click
      * @return the page contained by this image's window after the click
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     public Page click(final int x, final int y) throws IOException {
         lastClickX_ = x;
@@ -761,7 +783,7 @@ public class HtmlImage extends HtmlElement {
      * same as the original page, depending on JavaScript event handlers, etc.
      *
      * @return the page contained by this image's window after the click
-     * @exception IOException if an IO error occurs
+     * @throws IOException if an IO error occurs
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -863,7 +885,10 @@ public class HtmlImage extends HtmlElement {
     // HA end
 
     /**
-     * @return true if the image was successfully downloaded
+     * Returns whether this image has finished loading.
+     *
+     * @return {@code true} if the image has finished loading or has no
+     *         {@code src} attribute
      */
     public boolean isComplete() {
         return isComplete_ || ATTRIBUTE_NOT_DEFINED == getSrcAttribute();
@@ -938,7 +963,7 @@ public class HtmlImage extends HtmlElement {
                 mouseEvent.setClientX(getPosX() + lastClickX_);
             }
             if (lastClickY_ >= 0) {
-                mouseEvent.setClientY(getPosX() + lastClickY_);
+                mouseEvent.setClientY(getPosY() + lastClickY_);
             }
         }
 

@@ -1167,8 +1167,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1230,8 +1230,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1325,8 +1325,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1356,8 +1356,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1451,8 +1451,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1482,8 +1482,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1577,8 +1577,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -1608,8 +1608,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.03333px",
-            CHROME = "3.726px",
-            EDGE = "3.786px")
+            CHROME = "3.702px",
+            EDGE = "3.774px")
     @HtmlUnitNYI(CHROME = "4px",
             EDGE =  "4px",
             FF = "4px",
@@ -2290,10 +2290,10 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("85")
-    @HtmlUnitNYI(CHROME = "18",
-            EDGE = "18",
-            FF = "18",
-            FF_ESR = "18")
+    @HtmlUnitNYI(CHROME = "77",
+            EDGE = "77",
+            FF = "77",
+            FF_ESR = "77")
     public void offsetHeight_with_childHeight() throws Exception {
         final String html = DOCTYPE_HTML
             + "<html><head><script>\n"
@@ -3422,10 +3422,6 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("40")
-    @HtmlUnitNYI(CHROME = "1256",
-            EDGE = "1256",
-            FF = "1256",
-            FF_ESR = "1256")
     public void widthBlockElements() throws Exception {
         final String content = DOCTYPE_HTML
             + "<html><head><script>\n"

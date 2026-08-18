@@ -25,8 +25,8 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.io.ByteArrayOutputStream;
@@ -67,9 +67,13 @@ public class AwtRenderingBackend implements RenderingBackend {
 
     private AffineTransform transformation_;
     private float globalAlpha_;
-    private int lineWidth_;
+    private float lineWidth_;
     private Color fillColor_;
     private Color strokeColor_;
+
+    private LineCap lineCap_;
+    private LineJoin lineJoin_;
+    private float miterLimit_;
 
     private final List<Path2D> subPaths_;
     private final Deque<SaveState> savedStates_;
@@ -255,6 +259,11 @@ public class AwtRenderingBackend implements RenderingBackend {
         graphics2D_.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         graphics2D_.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
+        // without this AWT snaps strokes to pixel boundaries (hence the floor rounding).
+        // With VALUE_STROKE_PURE, strokes are rendered at their exact fractional coordinates,
+        // matching browser sub-pixel behavior.
+        graphics2D_.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
         // reset
         fillColor_ = Color.black;
         strokeColor_ = Color.black;
@@ -269,6 +278,10 @@ public class AwtRenderingBackend implements RenderingBackend {
         graphics2D_.setBackground(new Color(0f, 0f, 0f, 0f));
         graphics2D_.setColor(Color.black);
         graphics2D_.clearRect(0, 0, imageWidth, imageHeight);
+
+        lineCap_ = LineCap.BUTT;
+        lineJoin_ = LineJoin.MITER;
+        miterLimit_ = 10.0f;
 
         subPaths_ = new ArrayList<>();
         savedStates_ = new ArrayDeque<>();
@@ -325,24 +338,49 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] ellipse()");
         }
 
-        final Path2D subPath = getCurrentSubPath();
-        if (subPath != null) {
-            final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
-            final double startAngleDegree = 360 - (startAngle * 180 / Math.PI);
-            final double endAngleDegree = 360 - (endAngle * 180 / Math.PI);
+        if (startAngle == endAngle) {
+            return;
+        }
 
-            double extendAngle = startAngleDegree - endAngleDegree;
-            extendAngle = Math.min(360, Math.abs(extendAngle));
-            if (anticlockwise && extendAngle < 360) {
-                extendAngle = extendAngle - 360;
+        final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
+        final AffineTransform transformation = new AffineTransform();
+        transformation.rotate(rotation, p.getX(), p.getY());
+
+        double startAngleDegree = Math.toDegrees(startAngle);
+        double endAngleDegree = Math.toDegrees(endAngle);
+
+        double extendAngle = endAngleDegree - startAngleDegree;
+        final Arc2D arc;
+        if (Math.abs(extendAngle) >= 360) {
+            arc = new Arc2D.Double(p.getX() - radiusX, p.getY() - radiusY, radiusX * 2, radiusY * 2,
+                    0, 360, Arc2D.OPEN);
+        }
+        else {
+            startAngleDegree = reverseAngle(startAngleDegree);
+            endAngleDegree = reverseAngle(endAngleDegree);
+
+            extendAngle = endAngleDegree - startAngleDegree;
+            if (!anticlockwise) {
+                extendAngle = -reverseAngle(extendAngle);
             }
 
-            final AffineTransform transformation = new AffineTransform();
-            transformation.rotate(rotation, p.getX(), p.getY());
-            final Arc2D arc = new Arc2D.Double(p.getX() - radiusX, p.getY() - radiusY, radiusX * 2, radiusY * 2,
-                                            startAngleDegree, extendAngle * -1, Arc2D.OPEN);
-            subPath.append(transformation.createTransformedShape(arc), false);
+            arc = new Arc2D.Double(p.getX() - radiusX, p.getY() - radiusY, radiusX * 2, radiusY * 2,
+                                            startAngleDegree, extendAngle, Arc2D.OPEN);
         }
+
+        // connect=true only if there is already a current point (implicit lineTo behaviour);
+        // connect=false when the subpath is new so we don't get a spurious line from (0,0)
+        // or from the moveTo seed point to the arc's own geometric start.
+        final boolean hasCurrentPoint;
+        if (subPaths_.isEmpty()) {
+            final Path2D subPath = new Path2D.Double();
+            subPaths_.add(subPath);
+            hasCurrentPoint = false;
+        }
+        else {
+            hasCurrentPoint = subPaths_.get(subPaths_.size() - 1).getCurrentPoint() != null;
+        }
+        getCurrentSubPath().append(transformation.createTransformedShape(arc), hasCurrentPoint);
     }
 
     /**
@@ -355,13 +393,12 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] bezierCurveTo()");
         }
 
-        final Path2D subPath = getCurrentSubPath();
-        if (subPath != null) {
-            final Point2D cp1 = transformation_.transform(new Point2D.Double(cp1x, cp1y), null);
-            final Point2D cp2 = transformation_.transform(new Point2D.Double(cp2x, cp2y), null);
-            final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
-            subPath.curveTo(cp1.getX(), cp1.getY(), cp2.getX(), cp2.getY(), p.getX(), p.getY());
-        }
+        final Point2D cp1 = transformation_.transform(new Point2D.Double(cp1x, cp1y), null);
+        final Point2D cp2 = transformation_.transform(new Point2D.Double(cp2x, cp2y), null);
+        final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
+
+        getCurrentSubPath(cp1.getX(), cp1.getY())
+                .curveTo(cp1.getX(), cp1.getY(), cp2.getX(), cp2.getY(), p.getX(), p.getY());
     }
 
     /**
@@ -374,21 +411,11 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] arc()");
         }
 
-        final Path2D subPath = getCurrentSubPath();
-        if (subPath != null) {
-            final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
-            final double startAngleDegree = 360 - (startAngle * 180 / Math.PI);
-            final double endAngleDegree = 360 - (endAngle * 180 / Math.PI);
+        ellipse(x, y, radius, radius, 0, startAngle, endAngle, anticlockwise);
+    }
 
-            double extendAngle = startAngleDegree - endAngleDegree;
-            extendAngle = Math.min(360, Math.abs(extendAngle));
-            if (anticlockwise && extendAngle < 360) {
-                extendAngle = extendAngle - 360;
-            }
-            final Arc2D arc = new Arc2D.Double(p.getX() - radius, p.getY() - radius, radius * 2, radius * 2,
-                                            startAngleDegree, extendAngle * -1, Arc2D.OPEN);
-            subPath.append(arc, false);
-        }
+    private static double reverseAngle(final double degrees) {
+        return ((-degrees % 360) + 360) % 360;
     }
 
     /**
@@ -400,14 +427,17 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] clearRect(" + x + ", " + y + ", " + w + ", " + h + ")");
         }
 
-        final Composite saved = graphics2D_.getComposite();
+        final Composite savedComposite = graphics2D_.getComposite();
+        final Color savedColor = graphics2D_.getColor();
 
-        graphics2D_.setColor(Color.BLACK);
-        graphics2D_.setComposite(AlphaComposite.Clear); // overpaint
-        final Rectangle2D rect = new Rectangle2D.Double(x, y, w, h);
-        graphics2D_.fill(transformation_.createTransformedShape(rect));
-
-        graphics2D_.setComposite(saved);
+        try {
+            graphics2D_.setComposite(AlphaComposite.Clear); // force transparent clear
+            graphics2D_.fill(rectPath(x, y, w, h));
+        }
+        finally {
+            graphics2D_.setComposite(savedComposite);
+            graphics2D_.setColor(savedColor);
+        }
     }
 
     /**
@@ -549,14 +579,19 @@ public class AwtRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void fill() {
+    public void fill(final RenderingBackend.WindingRule windingRule) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[" + id_ + "] fill()");
+            LOG.debug("[" + id_ + "] fill("
+                    + (windingRule == RenderingBackend.WindingRule.EVEN_ODD ? "evenOdd" : "nonZero") + ")");
         }
 
-        graphics2D_.setStroke(new BasicStroke(getLineWidth()));
+        final int awtRule = (windingRule == RenderingBackend.WindingRule.EVEN_ODD)
+                ? Path2D.WIND_EVEN_ODD
+                : Path2D.WIND_NON_ZERO;
+
         graphics2D_.setColor(fillColor_);
         for (final Path2D path2d : subPaths_) {
+            path2d.setWindingRule(awtRule);
             graphics2D_.fill(path2d);
         }
     }
@@ -565,14 +600,13 @@ public class AwtRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void fillRect(final int x, final int y, final int w, final int h) {
+    public void fillRect(final double x, final double y, final double w, final double h) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] fillRect(" + x + ", "  + y + ", "  + w + ", "  + h + ")");
         }
 
         graphics2D_.setColor(fillColor_);
-        final Rectangle2D rect = new Rectangle2D.Double(x, y, w, h);
-        graphics2D_.fill(transformation_.createTransformedShape(rect));
+        graphics2D_.fill(rectPath(x, y, w, h));
     }
 
     /**
@@ -588,7 +622,7 @@ public class AwtRenderingBackend implements RenderingBackend {
         try {
             graphics2D_.setTransform(transformation_);
             graphics2D_.setColor(fillColor_);
-            graphics2D_.drawString(text, (int) x, (int) y);
+            graphics2D_.drawString(text, (float) x, (float) y);
         }
         finally {
             graphics2D_.setTransform(savedTransform);
@@ -606,31 +640,26 @@ public class AwtRenderingBackend implements RenderingBackend {
 
         final byte[] array = new byte[width * height * 4];
         int index = 0;
-        for (int x = sx; x < sx + width; x++) {
-            if (x < 0 || x >= image_.getWidth()) {
-                array[index++] = (byte) 0;
-                array[index++] = (byte) 0;
-                array[index++] = (byte) 0;
-                array[index++] = (byte) 0;
-            }
-            else {
-                for (int y = sy; y < sy + height; y++) {
-                    if (y < 0 || y >= image_.getHeight()) {
-                        array[index++] = (byte) 0;
-                        array[index++] = (byte) 0;
-                        array[index++] = (byte) 0;
-                        array[index++] = (byte) 0;
-                    }
-                    else {
-                        final int color = image_.getRGB(x, y);
-                        array[index++] = (byte) ((color & 0xff0000) >> 16);
-                        array[index++] = (byte) ((color & 0xff00) >> 8);
-                        array[index++] = (byte) (color & 0xff);
-                        array[index++] = (byte) ((color & 0xff000000) >>> 24);
-                    }
+
+        // Canvas ImageData order is row-major
+        for (int y = sy; y < sy + height; y++) {
+            for (int x = sx; x < sx + width; x++) {
+                if (x < 0 || x >= image_.getWidth() || y < 0 || y >= image_.getHeight()) {
+                    array[index++] = (byte) 0;
+                    array[index++] = (byte) 0;
+                    array[index++] = (byte) 0;
+                    array[index++] = (byte) 0;
+                }
+                else {
+                    final int color = image_.getRGB(x, y);
+                    array[index++] = (byte) ((color >> 16) & 0xFF);  // R
+                    array[index++] = (byte) ((color >> 8) & 0xFF);   // G
+                    array[index++] = (byte) (color & 0xFF);          // B
+                    array[index++] = (byte) ((color >>> 24) & 0xFF); // A
                 }
             }
         }
+
         return array;
     }
 
@@ -643,9 +672,12 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] lineTo(" + x + ", " + y + ")");
         }
 
+        final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
         final Path2D subPath = getCurrentSubPath();
-        if (subPath != null) {
-            final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
+        if (subPath.getCurrentPoint() == null) {
+            subPath.moveTo(p.getX(), p.getY());
+        }
+        else {
             subPath.lineTo(p.getX(), p.getY());
         }
     }
@@ -659,8 +691,18 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] moveTo(" + x + ", " + y + ")");
         }
 
-        final Path2D subPath = new Path2D.Double();
         final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
+
+        if (!subPaths_.isEmpty()) {
+            final Path2D last = subPaths_.get(subPaths_.size() - 1);
+            if (!hasSegments(last)) {
+                last.reset();
+                last.moveTo(p.getX(), p.getY());
+                return;
+            }
+        }
+
+        final Path2D subPath = new Path2D.Double();
         subPath.moveTo(p.getX(), p.getY());
         subPaths_.add(subPath);
     }
@@ -678,43 +720,62 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] putImageData()");
         }
 
-        final Color orgColor = graphics2D_.getColor();
+        if (imageDataBytes == null || imageDataWidth <= 0 || imageDataHeight <= 0) {
+            return;
+        }
 
-        final int width = dx + imageDataWidth;
-        final int height = dy + imageDataHeight;
-        final int imageWidth = dirtyX + dirtyWidth;
-        final int imageHeight = dirtyY + dirtyHeight;
+        // Normalize dirty rect (negative width/height)
+        int sx = dirtyX;
+        int sy = dirtyY;
+        int sw = dirtyWidth;
+        int sh = dirtyHeight;
+        if (sw < 0) {
+            sx += sw;
+            sw = -sw;
+        }
+        if (sh < 0) {
+            sy += sh;
+            sh = -sh;
+        }
+        if (sw == 0 || sh == 0) {
+            return;
+        }
 
-        int byteIdx = 0;
-        int imageX = 0;
-        int imageY = 0;
-        for (int insertY = dy; insertY < height; insertY++) {
-            for (int insertX = dx; insertX < width; insertX++) {
-                if (0 <= insertX && insertX < image_.getWidth()
-                        && 0 <= insertY && insertY < image_.getHeight()
-                        && dirtyX <= imageX && imageX < imageWidth
-                        && dirtyY <= imageY && imageY < imageHeight) {
-                    final int r = imageDataBytes[byteIdx++] & 0xFF;
-                    final int g = imageDataBytes[byteIdx++] & 0xFF;
-                    final int b = imageDataBytes[byteIdx++] & 0xFF;
-                    final int a = imageDataBytes[byteIdx++] & 0xFF;
-                    final Color color = new Color(r, g, b, a);
-                    graphics2D_.setColor(color);
-                    graphics2D_.drawLine(insertX, insertY, insertX, insertY);
-                }
-                else {
-                    byteIdx += 4;
-                }
+        // Clip dirty rect to source bounds
+        final int srcStartX = Math.max(0, sx);
+        final int srcStartY = Math.max(0, sy);
+        final int srcEndX = Math.min(imageDataWidth, sx + sw);
+        final int srcEndY = Math.min(imageDataHeight, sy + sh);
+        if (srcStartX >= srcEndX || srcStartY >= srcEndY) {
+            return;
+        }
 
-                imageX++;
-                if (imageX == imageDataWidth) {
-                    imageX = 0;
-                    imageY++;
-                }
+        final int srcWidth = srcEndX - srcStartX;
+        final int srcHeight = srcEndY - srcStartY;
+
+        final BufferedImage srcImage = new BufferedImage(srcWidth, srcHeight, BufferedImage.TYPE_INT_ARGB);
+        for (int row = 0; row < srcHeight; row++) {
+            for (int col = 0; col < srcWidth; col++) {
+                final int byteIdx = ((srcStartY + row) * imageDataWidth + (srcStartX + col)) * 4;
+                final int r = imageDataBytes[byteIdx]     & 0xFF;
+                final int g = imageDataBytes[byteIdx + 1] & 0xFF;
+                final int b = imageDataBytes[byteIdx + 2] & 0xFF;
+                final int a = imageDataBytes[byteIdx + 3] & 0xFF;
+                srcImage.setRGB(col, row, (a << 24) | (r << 16) | (g << 8) | b);
             }
         }
 
-        graphics2D_.setColor(orgColor);
+        final Composite savedComposite = graphics2D_.getComposite();
+        final AffineTransform savedTransform = graphics2D_.getTransform();
+        try {
+            graphics2D_.setComposite(AlphaComposite.Src);
+            graphics2D_.setTransform(new AffineTransform());
+            graphics2D_.drawImage(srcImage, dx + srcStartX, dy + srcStartY, null);
+        }
+        finally {
+            graphics2D_.setComposite(savedComposite);
+            graphics2D_.setTransform(savedTransform);
+        }
     }
 
     /**
@@ -727,12 +788,9 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] quadraticCurveTo()");
         }
 
-        final Path2D subPath = getCurrentSubPath();
-        if (subPath != null) {
-            final Point2D cp = transformation_.transform(new Point2D.Double(cpx, cpy), null);
-            final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
-            subPath.quadTo(cp.getX(), cp.getY(), p.getX(), p.getY());
-        }
+        final Point2D cp = transformation_.transform(new Point2D.Double(cpx, cpy), null);
+        final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
+        getCurrentSubPath(cp.getX(), cp.getY()).quadTo(cp.getX(), cp.getY(), p.getX(), p.getY());
     }
 
     /**
@@ -741,15 +799,16 @@ public class AwtRenderingBackend implements RenderingBackend {
     @Override
     public void rect(final double x, final double y, final double w, final double h) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[" + id_ + "] rect()");
+            LOG.debug("[" + id_ + "] rect(" + x + ", "  + y + ", "  + w + ", "  + h + ")");
         }
 
-        final Path2D subPath = getCurrentSubPath();
-        if (subPath != null) {
-            final Point2D p = transformation_.transform(new Point2D.Double(x, y), null);
-            final Rectangle2D rect = new Rectangle2D.Double(p.getX(), p.getY(), w, h);
-            subPath.append(rect, false);
-        }
+        final Point2D p0 = transformation_.transform(new Point2D.Double(x, y), null);
+        subPaths_.add(rectPath(x, y, w, h));
+
+        // Spec requires a fresh subpath seeded at (x, y) after the closed rect
+        final Path2D nextPath = new Path2D.Double();
+        nextPath.moveTo(p0.getX(), p0.getY());
+        subPaths_.add(nextPath);
     }
 
     /**
@@ -808,7 +867,7 @@ public class AwtRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public int getLineWidth() {
+    public float getLineWidth() {
         return lineWidth_;
     }
 
@@ -856,7 +915,7 @@ public class AwtRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void setLineWidth(final int lineWidth) {
+    public void setLineWidth(final float lineWidth) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] setLineWidth(" + lineWidth + ")");
         }
@@ -887,10 +946,14 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] stroke()");
         }
 
-        graphics2D_.setStroke(new BasicStroke(getLineWidth()));
+        graphics2D_.setStroke(new BasicStroke(getLineWidth(),
+                toAwtLineCap(lineCap_), toAwtLineJoin(lineJoin_), miterLimit_));
         graphics2D_.setColor(strokeColor_);
+
         for (final Path2D path2d : subPaths_) {
-            graphics2D_.draw(path2d);
+            if (hasSegments(path2d)) {
+                graphics2D_.draw(path2d);
+            }
         }
     }
 
@@ -898,14 +961,15 @@ public class AwtRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void strokeRect(final int x, final int y, final int w, final int h) {
+    public void strokeRect(final double x, final double y, final double w, final double h) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] strokeRect(" + x + ", "  + y + ", "  + w + ", "  + h + ")");
         }
 
+        graphics2D_.setStroke(new BasicStroke(getLineWidth(),
+                toAwtLineCap(lineCap_), toAwtLineJoin(lineJoin_), miterLimit_));
         graphics2D_.setColor(strokeColor_);
-        final Rectangle2D rect = new Rectangle2D.Double(x, y, w, h);
-        graphics2D_.draw(transformation_.createTransformedShape(rect));
+        graphics2D_.draw(rectPath(x, y, w, h));
     }
 
     /**
@@ -925,7 +989,7 @@ public class AwtRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void translate(final int x, final int y) {
+    public void translate(final double x, final double y) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] translate()");
         }
@@ -943,29 +1007,31 @@ public class AwtRenderingBackend implements RenderingBackend {
             LOG.debug("[" + id_ + "] clip(" + windingRule + ", " + path + ")");
         }
 
-        if (path == null && subPaths_.isEmpty()) {
-            graphics2D_.setClip(null);
+        final Path2D clipPath = new Path2D.Double();
+
+        if (path == null) {
+            if (subPaths_.isEmpty()) {
+                return;
+            }
+            for (final Path2D path2d : subPaths_) {
+                if (hasSegments(path2d)) {
+                    clipPath.append(path2d, false);
+                }
+            }
+        }
+        else {
+            // TODO integrate external Path2D host object once available
             return;
         }
 
-        final Path2D currentPath;
-        if (path == null) {
-            currentPath = subPaths_.get(subPaths_.size() - 1);
-        }
-        else {
-            // currentPath = path.getPath2D();
-            currentPath = null;
-        }
-        currentPath.closePath();
-
         if (windingRule == WindingRule.NON_ZERO) {
-            currentPath.setWindingRule(Path2D.WIND_NON_ZERO);
+            clipPath.setWindingRule(Path2D.WIND_NON_ZERO);
         }
         else {
-            currentPath.setWindingRule(Path2D.WIND_EVEN_ODD);
+            clipPath.setWindingRule(Path2D.WIND_EVEN_ODD);
         }
 
-        graphics2D_.clip(currentPath);
+        graphics2D_.clip(clipPath);
     }
 
     /**
@@ -980,7 +1046,71 @@ public class AwtRenderingBackend implements RenderingBackend {
         if (subPaths_.isEmpty()) {
             return;
         }
-        subPaths_.get(subPaths_.size() - 1).closePath();
+
+        final Path2D current = subPaths_.get(subPaths_.size() - 1);
+
+        // Extract the first point of the current subpath — this is where
+        // the spec requires the new subpath to be seeded after closing.
+        final double[] coords = new double[6];
+        final PathIterator it = current.getPathIterator(null);
+        if (it.isDone()) {
+            return; // empty path, nothing to close
+        }
+        it.currentSegment(coords); // first segment is always SEG_MOVETO
+        final double firstX = coords[0];
+        final double firstY = coords[1];
+
+        current.closePath();
+
+        // Spec: "Create a new subpath with the same first point as the
+        // previous subpath."
+        final Path2D nextPath = new Path2D.Double();
+        nextPath.moveTo(firstX, firstY);
+        subPaths_.add(nextPath);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LineJoin getLineJoin() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] getLineJoin()");
+        }
+        return lineJoin_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLineJoin(final LineJoin lineJoin) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] setLineJoin(" + lineJoin + ")");
+        }
+        lineJoin_ = lineJoin;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LineCap getLineCap() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] getLineCap()");
+        }
+        return lineCap_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLineCap(final LineCap lineCap) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] setLineCap(" + lineCap + ")");
+        }
+        lineCap_ = lineCap;
     }
 
     private Path2D getCurrentSubPath() {
@@ -992,33 +1122,48 @@ public class AwtRenderingBackend implements RenderingBackend {
         return subPaths_.get(subPaths_.size() - 1);
     }
 
-    private static final class SaveState {
-        private final AffineTransform transformation_;
-        private final float globalAlpha_;
-        private final int lineWidth_;
-        private final Color fillColor_;
-        private final Color strokeColor_;
-        private final Shape clip_;
-
-        SaveState(final AwtRenderingBackend backend) {
-            transformation_ = backend.transformation_;
-            globalAlpha_ = backend.globalAlpha_;
-            lineWidth_ = backend.lineWidth_;
-            fillColor_ = backend.fillColor_;
-            strokeColor_ = backend.strokeColor_;
-
-            clip_ = backend.graphics2D_.getClip();
+    private Path2D getCurrentSubPath(final double x, final double y) {
+        if (subPaths_.isEmpty()) {
+            final Path2D subPath = new Path2D.Double();
+            subPaths_.add(subPath);
+            subPath.moveTo(x, y);
+            return subPath;
         }
 
-        void applyOn(final AwtRenderingBackend backend) {
-            backend.transformation_ = transformation_;
-            backend.globalAlpha_ = globalAlpha_;
-            backend.lineWidth_ = lineWidth_;
-            backend.fillColor_ = fillColor_;
-            backend.strokeColor_ = strokeColor_;
-
-            backend.graphics2D_.setClip(clip_);
+        final Path2D subPath = subPaths_.get(subPaths_.size() - 1);
+        if (subPath.getCurrentPoint() == null) {
+            subPath.moveTo(x, y);
         }
+        return subPath;
+    }
+
+    private Path2D rectPath(final double x, final double y, final double w, final double h) {
+        // Build the four corners explicitly from the raw (possibly negative) w/h
+        // so the winding matches the Canvas spec: (x,y) → (x+w,y) → (x+w,y+h) → (x,y+h)
+        // Do NOT use Rectangle2D.Double — it normalises negative dimensions.
+        final Path2D rectPath = new Path2D.Double();
+        final Point2D p0 = transformation_.transform(new Point2D.Double(x, y), null);
+        final Point2D p1 = transformation_.transform(new Point2D.Double(x + w, y), null);
+        final Point2D p2 = transformation_.transform(new Point2D.Double(x + w, y + h), null);
+        final Point2D p3 = transformation_.transform(new Point2D.Double(x, y + h), null);
+        rectPath.moveTo(p0.getX(), p0.getY());
+        rectPath.lineTo(p1.getX(), p1.getY());
+        rectPath.lineTo(p2.getX(), p2.getY());
+        rectPath.lineTo(p3.getX(), p3.getY());
+        rectPath.closePath();
+
+        return rectPath;
+    }
+
+    private static boolean hasSegments(final Path2D path) {
+        final PathIterator it = path.getPathIterator(null);
+        while (!it.isDone()) {
+            if (it.currentSegment(new double[6]) != PathIterator.SEG_MOVETO) {
+                return true;
+            }
+            it.next();
+        }
+        return false;
     }
 
     private static Color toAwtColor(final org.htmlunit.html.impl.Color color) {
@@ -1026,5 +1171,75 @@ public class AwtRenderingBackend implements RenderingBackend {
             return null;
         }
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    }
+
+    private static int toAwtLineJoin(final LineJoin lineJoin) {
+        return switch (lineJoin) {
+            case MITER -> BasicStroke.JOIN_MITER;
+            case ROUND -> BasicStroke.JOIN_ROUND;
+            case BEVEL -> BasicStroke.JOIN_BEVEL;
+        };
+    }
+
+    private static int toAwtLineCap(final LineCap lineCap) {
+        return switch (lineCap) {
+            case ROUND -> BasicStroke.CAP_ROUND;
+            case SQUARE -> BasicStroke.CAP_SQUARE;
+            case BUTT -> BasicStroke.CAP_BUTT;
+        };
+    }
+
+    private static final class SaveState {
+        private final AffineTransform transformation_;
+        private final float globalAlpha_;
+        private final float lineWidth_;
+        private final Color fillColor_;
+        private final Color strokeColor_;
+        private final Shape clip_;
+
+        private final LineCap lineCap_;
+        private final LineJoin lineJoin_;
+        private final float miterLimit_;
+
+        private final Font font_;
+
+        SaveState(final AwtRenderingBackend backend) {
+            transformation_ = new AffineTransform(backend.transformation_);
+            globalAlpha_ = backend.globalAlpha_;
+            lineWidth_ = backend.lineWidth_;
+            fillColor_ = backend.fillColor_;
+            strokeColor_ = backend.strokeColor_;
+
+            lineCap_ = backend.lineCap_;
+            lineJoin_ = backend.lineJoin_;
+            miterLimit_ = backend.miterLimit_;
+
+            // Defensive copy — getClip() can return a live mutable shape
+            // on some Graphics2D implementations
+            final Shape c = backend.graphics2D_.getClip();
+            clip_ = (c == null) ? null : new Path2D.Double(c);
+
+            // Font is immutable so no copy needed
+            font_ = backend.graphics2D_.getFont();
+        }
+
+        void applyOn(final AwtRenderingBackend backend) {
+            backend.transformation_ = new AffineTransform(transformation_);
+            backend.lineWidth_ = lineWidth_;
+            backend.fillColor_ = fillColor_;
+            backend.strokeColor_ = strokeColor_;
+
+            backend.updateGlobalAlpha(globalAlpha_);
+
+            backend.lineCap_ = lineCap_;
+            backend.lineJoin_ = lineJoin_;
+            backend.miterLimit_ = miterLimit_;
+
+            // Restore clip with another defensive copy so this SaveState
+            // remains reusable if somehow applyOn is called more than once
+            backend.graphics2D_.setClip((clip_ == null) ? null : new Path2D.Double(clip_));
+
+            backend.graphics2D_.setFont(font_);
+        }
     }
 }

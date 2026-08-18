@@ -24,8 +24,7 @@ import org.junit.jupiter.api.Test;
  * @author Daniel Gredler
  * @author Marc Guillemot
  * @author Ronald Brill
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms535868.aspx">MSDN documentation</a>
- * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_window_ref.html">Mozilla documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen">MDN documentation</a>
  */
 public class ScreenTest extends WebDriverTestCase {
 
@@ -78,9 +77,7 @@ public class ScreenTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"32", "32"},
-            FF = {"24", "24"},
-            FF_ESR = {"24", "24"})
+    @Alerts({"24", "24"})
     public void colorDepth() throws Exception {
         testNumericProperty("colorDepth");
     }
@@ -165,9 +162,7 @@ public class ScreenTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"32", "32"},
-            FF = {"24", "24"},
-            FF_ESR = {"24", "24"})
+    @Alerts({"24", "24"})
     public void pixelDepth() throws Exception {
         testNumericProperty("pixelDepth");
     }

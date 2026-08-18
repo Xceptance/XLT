@@ -17,26 +17,31 @@ package org.htmlunit;
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.htmlunit.css.CssPixelValueConverter;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Objects of this class represent one specific version of a given browser. Predefined
  * constants are provided for common browser versions.
  *
  * <p>You can create a different browser setup by using the BrowserVersionFactory.
- * <pre id='htmlUnitCode'>
+ * </p>
+ * <pre>
  *         final String applicationName = "APPNAME";
  *         final String applicationVersion = "APPVERSION";
  *         final String userAgent = "USERAGENT";
@@ -51,7 +56,7 @@ import org.htmlunit.util.MimeType;
  * </pre>
  * <p>But keep in mind this new one still behaves like an FF, only the stuff reported to the
  * outside is changed. This is more or less the same you can do with real browsers installing
- * plugins like UserAgentSwitcher.
+ * plugins like UserAgentSwitcher.</p>
  *
  * @author Mike Bowler
  * @author Daniel Gredler
@@ -65,7 +70,7 @@ import org.htmlunit.util.MimeType;
 public final class BrowserVersion implements Serializable {
 
     /** Latest Firefox. */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(151, "FF");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(153, "FF");
 
     private static final int FIREFOX_ESR_NUMERIC = 140;
 
@@ -73,10 +78,10 @@ public final class BrowserVersion implements Serializable {
     public static final BrowserVersion FIREFOX_ESR = new BrowserVersion(FIREFOX_ESR_NUMERIC, "FF-ESR");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(148, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(150, "Chrome");
 
     /** Latest Edge. */
-    public static final BrowserVersion EDGE = new BrowserVersion(148, "Edge");
+    public static final BrowserVersion EDGE = new BrowserVersion(150, "Edge");
 
     /**
      * Array with all supported browsers.
@@ -178,7 +183,7 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.SEC_CH_UA,
             HttpHeader.SEC_CH_UA_MOBILE,
             HttpHeader.SEC_CH_UA_PLATFORM,
-            "Upgrade-Insecure-Requests",
+            HttpHeader.UPGRADE_INSECURE_REQUESTS,
             HttpHeader.USER_AGENT,
             HttpHeader.ACCEPT,
             HttpHeader.SEC_FETCH_SITE,
@@ -197,9 +202,9 @@ public final class BrowserVersion implements Serializable {
         CHROME.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         CHROME.scriptAcceptHeader_ = "*/*";
 
-        CHROME.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
+        CHROME.secClientHintUserAgentHeader_ = "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\""
                 + CHROME.getBrowserVersionNumeric() + "\", \"Google Chrome\";v=\""
-                + CHROME.getBrowserVersionNumeric() + "\", \"Not/A)Brand\";v=\"99\"";
+                + CHROME.getBrowserVersionNumeric() + "\"";
 
         CHROME.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
@@ -225,7 +230,7 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.SEC_CH_UA,
             HttpHeader.SEC_CH_UA_MOBILE,
             HttpHeader.SEC_CH_UA_PLATFORM,
-            "Upgrade-Insecure-Requests",
+            HttpHeader.UPGRADE_INSECURE_REQUESTS,
             HttpHeader.USER_AGENT,
             HttpHeader.ACCEPT,
             HttpHeader.SEC_FETCH_SITE,
@@ -244,9 +249,9 @@ public final class BrowserVersion implements Serializable {
         EDGE.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         EDGE.scriptAcceptHeader_ = "*/*";
 
-        EDGE.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
+        EDGE.secClientHintUserAgentHeader_ = "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\""
                 + EDGE.getBrowserVersionNumeric() + "\", \"Microsoft Edge\";v=\""
-                + EDGE.getBrowserVersionNumeric() + "\", \"Not/A)Brand\";v=\"99\"";
+                + EDGE.getBrowserVersionNumeric() + "\"";
 
         EDGE.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
@@ -256,116 +261,8 @@ public final class BrowserVersion implements Serializable {
             113, 115, 116, 117, 118, 119, 121, 122, 123, 124, 126, 127, 128, 129, 130, 132, 132, 133, 134, 136, 137,
             138, 139, 140, 142, 142, 143, 144, 145, 147};
 
-        // default file upload mime types
-        CHROME.registerUploadMimeType("html", MimeType.TEXT_HTML);
-        CHROME.registerUploadMimeType("htm", MimeType.TEXT_HTML);
-        CHROME.registerUploadMimeType("css", MimeType.TEXT_CSS);
-        CHROME.registerUploadMimeType("xml", MimeType.TEXT_XML);
-        CHROME.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
-        CHROME.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
-        CHROME.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
-        CHROME.registerUploadMimeType("png", MimeType.IMAGE_PNG);
-        CHROME.registerUploadMimeType("pdf", "application/pdf");
-        CHROME.registerUploadMimeType("webp", "image/webp");
-        CHROME.registerUploadMimeType("mp4", "video/mp4");
-        CHROME.registerUploadMimeType("m4v", "video/mp4");
-        CHROME.registerUploadMimeType("m4a", "audio/x-m4a");
-        CHROME.registerUploadMimeType("mp3", "audio/mpeg");
-        CHROME.registerUploadMimeType("ogv", "video/ogg");
-        CHROME.registerUploadMimeType("ogm", "video/ogg");
-        CHROME.registerUploadMimeType("ogg", "audio/ogg");
-        CHROME.registerUploadMimeType("oga", "audio/ogg");
-        CHROME.registerUploadMimeType("opus", "audio/ogg");
-        CHROME.registerUploadMimeType("webm", "video/webm");
-        CHROME.registerUploadMimeType("wav", "audio/wav");
-        CHROME.registerUploadMimeType("flac", "audio/flac");
-        CHROME.registerUploadMimeType("xhtml", "application/xhtml+xml");
-        CHROME.registerUploadMimeType("xht", "application/xhtml+xml");
-        CHROME.registerUploadMimeType("xhtm", "application/xhtml+xml");
-        CHROME.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
-        CHROME.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
-
-        EDGE.registerUploadMimeType("html", MimeType.TEXT_HTML);
-        EDGE.registerUploadMimeType("htm", MimeType.TEXT_HTML);
-        EDGE.registerUploadMimeType("css", MimeType.TEXT_CSS);
-        EDGE.registerUploadMimeType("xml", MimeType.TEXT_XML);
-        EDGE.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
-        EDGE.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
-        EDGE.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
-        EDGE.registerUploadMimeType("png", MimeType.IMAGE_PNG);
-        EDGE.registerUploadMimeType("pdf", "application/pdf");
-        EDGE.registerUploadMimeType("webp", "image/webp");
-        EDGE.registerUploadMimeType("mp4", "video/mp4");
-        EDGE.registerUploadMimeType("m4v", "video/mp4");
-        EDGE.registerUploadMimeType("m4a", "audio/x-m4a");
-        EDGE.registerUploadMimeType("mp3", "audio/mpeg");
-        EDGE.registerUploadMimeType("ogv", "video/ogg");
-        EDGE.registerUploadMimeType("ogm", "video/ogg");
-        EDGE.registerUploadMimeType("ogg", "audio/ogg");
-        EDGE.registerUploadMimeType("oga", "audio/ogg");
-        EDGE.registerUploadMimeType("opus", "audio/ogg");
-        EDGE.registerUploadMimeType("webm", "video/webm");
-        EDGE.registerUploadMimeType("wav", "audio/wav");
-        EDGE.registerUploadMimeType("flac", "audio/flac");
-        EDGE.registerUploadMimeType("xhtml", "application/xhtml+xml");
-        EDGE.registerUploadMimeType("xht", "application/xhtml+xml");
-        EDGE.registerUploadMimeType("xhtm", "application/xhtml+xml");
-        EDGE.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
-        EDGE.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
-
-        FIREFOX_ESR.registerUploadMimeType("html", MimeType.TEXT_HTML);
-        FIREFOX_ESR.registerUploadMimeType("htm", MimeType.TEXT_HTML);
-        FIREFOX_ESR.registerUploadMimeType("css", MimeType.TEXT_CSS);
-        FIREFOX_ESR.registerUploadMimeType("xml", MimeType.TEXT_XML);
-        FIREFOX_ESR.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
-        FIREFOX_ESR.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
-        FIREFOX_ESR.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
-        FIREFOX_ESR.registerUploadMimeType("pdf", "application/pdf");
-        FIREFOX_ESR.registerUploadMimeType("mp4", "video/mp4");
-        FIREFOX_ESR.registerUploadMimeType("m4v", "video/mp4");
-        FIREFOX_ESR.registerUploadMimeType("m4a", "audio/mp4");
-        FIREFOX_ESR.registerUploadMimeType("png", MimeType.IMAGE_PNG);
-        FIREFOX_ESR.registerUploadMimeType("mp3", "audio/mpeg");
-        FIREFOX_ESR.registerUploadMimeType("ogv", "video/ogg");
-        FIREFOX_ESR.registerUploadMimeType("ogm", "video/ogg");
-        FIREFOX_ESR.registerUploadMimeType("ogg", "application/ogg");
-        FIREFOX_ESR.registerUploadMimeType("oga", "audio/ogg");
-        FIREFOX_ESR.registerUploadMimeType("opus", "audio/ogg");
-        FIREFOX_ESR.registerUploadMimeType("webm", "video/webm");
-        FIREFOX_ESR.registerUploadMimeType("webp", "image/webp");
-        FIREFOX_ESR.registerUploadMimeType("wav", "audio/wav");
-        FIREFOX_ESR.registerUploadMimeType("flac", "audio/x-flac");
-        FIREFOX_ESR.registerUploadMimeType("xhtml", "application/xhtml+xml");
-        FIREFOX_ESR.registerUploadMimeType("xht", "application/xhtml+xml");
-        FIREFOX_ESR.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
-        FIREFOX_ESR.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
-
-        FIREFOX.registerUploadMimeType("html", MimeType.TEXT_HTML);
-        FIREFOX.registerUploadMimeType("htm", MimeType.TEXT_HTML);
-        FIREFOX.registerUploadMimeType("css", MimeType.TEXT_CSS);
-        FIREFOX.registerUploadMimeType("xml", MimeType.TEXT_XML);
-        FIREFOX.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
-        FIREFOX.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
-        FIREFOX.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
-        FIREFOX.registerUploadMimeType("pdf", "application/pdf");
-        FIREFOX.registerUploadMimeType("mp4", "video/mp4");
-        FIREFOX.registerUploadMimeType("m4v", "video/mp4");
-        FIREFOX.registerUploadMimeType("m4a", "audio/mp4");
-        FIREFOX.registerUploadMimeType("png", MimeType.IMAGE_PNG);
-        FIREFOX.registerUploadMimeType("mp3", "audio/mpeg");
-        FIREFOX.registerUploadMimeType("ogv", "video/ogg");
-        FIREFOX.registerUploadMimeType("ogm", "video/ogg");
-        FIREFOX.registerUploadMimeType("ogg", "application/ogg");
-        FIREFOX.registerUploadMimeType("oga", "audio/ogg");
-        FIREFOX.registerUploadMimeType("opus", "audio/ogg");
-        FIREFOX.registerUploadMimeType("webm", "video/webm");
-        FIREFOX.registerUploadMimeType("webp", "image/webp");
-        FIREFOX.registerUploadMimeType("wav", "audio/wav");
-        FIREFOX.registerUploadMimeType("flac", "audio/x-flac");
-        FIREFOX.registerUploadMimeType("xhtml", "application/xhtml+xml");
-        FIREFOX.registerUploadMimeType("xht", "application/xhtml+xml");
-        FIREFOX.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
-        FIREFOX.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
+        initUploadMimeTypes();
+        initMediaResources();
     }
 
     private final int browserVersionNumeric_;
@@ -396,6 +293,8 @@ public final class BrowserVersion implements Serializable {
     private String[] headerNamesOrdered_;
     private int[] fontHeights_;
     private final Map<String, String> uploadMimeTypes_;
+    private final HashSet<MediaResourceType> maybeMediaResource_;
+    private final HashSet<MediaResourceType> probablyMediaResources_;
 
     /**
      * Creates a new browser version instance.
@@ -428,10 +327,15 @@ public final class BrowserVersion implements Serializable {
         features_ = EnumSet.noneOf(BrowserVersionFeatures.class);
         uploadMimeTypes_ = new HashMap<>();
 
+        maybeMediaResource_ = new HashSet<>();
+        probablyMediaResources_ = new HashSet<>();
+
         initFeatures();
     }
 
     /**
+     * Returns whether the same browser.
+     *
      * @param other the {@link BrowserVersion} to compare with
      * @return true if the nickname and the numeric version are the same
      */
@@ -473,6 +377,146 @@ public final class BrowserVersion implements Serializable {
         }
     }
 
+    private static void initUploadMimeTypes() {
+        // shared by all four browsers
+        final BrowserVersion[] all = {CHROME, EDGE, FIREFOX, FIREFOX_ESR};
+        for (final BrowserVersion browser : all) {
+            browser.registerUploadMimeType("html",  MimeType.TEXT_HTML);
+            browser.registerUploadMimeType("htm",   MimeType.TEXT_HTML);
+            browser.registerUploadMimeType("css",   MimeType.TEXT_CSS);
+            browser.registerUploadMimeType("xml",   MimeType.TEXT_XML);
+            browser.registerUploadMimeType("gif",   MimeType.IMAGE_GIF);
+            browser.registerUploadMimeType("jpeg",  MimeType.IMAGE_JPEG);
+            browser.registerUploadMimeType("jpg",   MimeType.IMAGE_JPEG);
+            browser.registerUploadMimeType("png",   MimeType.IMAGE_PNG);
+            browser.registerUploadMimeType("pdf",   "application/pdf");
+            browser.registerUploadMimeType("webp",  "image/webp");
+            browser.registerUploadMimeType("mp4",   "video/mp4");
+            browser.registerUploadMimeType("m4v",   "video/mp4");
+            browser.registerUploadMimeType("mp3",   "audio/mpeg");
+            browser.registerUploadMimeType("ogv",   "video/ogg");
+            browser.registerUploadMimeType("ogm",   "video/ogg");
+            browser.registerUploadMimeType("oga",   "audio/ogg");
+            browser.registerUploadMimeType("opus",  "audio/ogg");
+            browser.registerUploadMimeType("webm",  "video/webm");
+            browser.registerUploadMimeType("wav",   "audio/wav");
+            browser.registerUploadMimeType("xhtml", "application/xhtml+xml");
+            browser.registerUploadMimeType("xht",   "application/xhtml+xml");
+            browser.registerUploadMimeType("txt",   MimeType.TEXT_PLAIN);
+            browser.registerUploadMimeType("text",  MimeType.TEXT_PLAIN);
+        }
+
+        // Chrome / Edge overrides (and additions)
+        for (final BrowserVersion browser : new BrowserVersion[]{CHROME, EDGE}) {
+            browser.registerUploadMimeType("m4a",  "audio/x-m4a");   // differs
+            browser.registerUploadMimeType("ogg",  "audio/ogg");      // differs
+            browser.registerUploadMimeType("flac", "audio/flac");     // differs
+
+            browser.registerUploadMimeType("xhtm", "application/xhtml+xml"); // Chrome/Edge only
+        }
+        // Firefox / Firefox ESR overrides
+        for (final BrowserVersion browser : new BrowserVersion[]{FIREFOX, FIREFOX_ESR}) {
+            browser.registerUploadMimeType("m4a",  "audio/mp4");       // differs
+            browser.registerUploadMimeType("ogg",  "application/ogg"); // differs
+            browser.registerUploadMimeType("flac", "audio/x-flac");    // differs
+            // xhtm absent in Firefox — intentionally not registered
+        }
+    }
+
+    private static void initMediaResources() {
+        // --- maybe: entries shared across all browsers ---
+        final HashSet<MediaResourceType> common = new HashSet<>();
+        common.add(new MediaResourceType("application/ogg", null));
+        common.add(new MediaResourceType("audio/mp4", null));
+        common.add(new MediaResourceType("audio/ogg", null));
+        common.add(new MediaResourceType("audio/wav", null));
+        common.add(new MediaResourceType("audio/webm", null));
+        common.add(new MediaResourceType("audio/x-m4a", null));
+        common.add(new MediaResourceType("audio/x-wav", null));
+        common.add(new MediaResourceType("video/mp4", null));
+        common.add(new MediaResourceType("video/webm", null));
+        common.add(new MediaResourceType("video/x-matroska", null));
+
+        // --- maybe: Firefox / Firefox ESR ---
+        HashSet<MediaResourceType> ff = new HashSet<>(common);
+        ff.add(new MediaResourceType("audio/aac", null));
+        ff.add(new MediaResourceType("audio/flac", null));
+        ff.add(new MediaResourceType("audio/mpeg", null));
+        ff.add(new MediaResourceType("audio/wave", null));
+        ff.add(new MediaResourceType("audio/x-aac", null));
+        ff.add(new MediaResourceType("audio/x-flac", null));
+        ff.add(new MediaResourceType("audio/x-pn-wav", null));
+        ff.add(new MediaResourceType("video/quicktime", null));
+        FIREFOX.maybeMediaResource_.addAll(ff);
+
+        FIREFOX_ESR.maybeMediaResource_.addAll(ff);
+        FIREFOX_ESR.maybeMediaResource_.remove(new MediaResourceType("video/x-matroska", null));
+
+        // --- maybe: Chrome / Edge (Edge is a superset of Chrome) ---
+        HashSet<MediaResourceType> chrome = new HashSet<>(common);
+        chrome.add(new MediaResourceType("application/vnd.apple.mpegurl", null));
+        chrome.add(new MediaResourceType("application/x-mpegURL", null));
+        chrome.add(new MediaResourceType("video/3gpp", null));
+        chrome.add(new MediaResourceType("video/ogg", null));
+        chrome.add(new MediaResourceType("video/x-matroska", "avc1,vorbis"));
+        CHROME.maybeMediaResource_.addAll(chrome);
+        chrome.add(new MediaResourceType("audio/3gpp", null));
+        EDGE.maybeMediaResource_.addAll(chrome);
+
+        // --- probably: entries shared across all browsers ---
+        common.clear();
+        common.add(new MediaResourceType("audio/mp4", "mp4a.40.2"));
+        common.add(new MediaResourceType("audio/mp4", "mp4a.40.5"));
+        common.add(new MediaResourceType("audio/mp4", "mp4a.40.29"));
+        common.add(new MediaResourceType("audio/mpeg", "mp3"));
+        common.add(new MediaResourceType("audio/ogg", "flac"));
+        common.add(new MediaResourceType("audio/ogg", "opus"));
+        common.add(new MediaResourceType("audio/ogg", "vorbis"));
+        common.add(new MediaResourceType("audio/wav", "1"));
+        common.add(new MediaResourceType("audio/webm", "opus"));
+        common.add(new MediaResourceType("audio/webm", "vorbis"));
+        common.add(new MediaResourceType("video/mp4", "mp4a.40.2"));
+        common.add(new MediaResourceType("video/mp4", "av01.0.01M.08"));
+        common.add(new MediaResourceType("video/mp4", "av01.0.01M.08,mp4a.40.2"));
+        common.add(new MediaResourceType("video/mp4", "avc1.42E01E"));
+        common.add(new MediaResourceType("video/mp4", "avc1.42E01E,mp4a.40.2"));
+        common.add(new MediaResourceType("video/mp4", "avc1.640028"));
+        common.add(new MediaResourceType("video/mp4", "avc1.640028,mp4a.40.2"));
+        common.add(new MediaResourceType("video/mp4", "avc1.4D401E"));
+        common.add(new MediaResourceType("video/mp4", "avc1.4D401E,mp4a.40.2"));
+        common.add(new MediaResourceType("video/mp4", "hev1.1.6.L93.90"));
+        common.add(new MediaResourceType("video/mp4", "hev1.1.6.L93.90,mp4a.40.2"));
+        common.add(new MediaResourceType("video/mp4", "hvc1.1.6.L93.90"));
+        common.add(new MediaResourceType("video/mp4", "hvc1.1.6.L93.90,mp4a.40.2"));
+        common.add(new MediaResourceType("video/webm", "opus"));
+        common.add(new MediaResourceType("video/webm", "opus,vp9"));
+        common.add(new MediaResourceType("video/webm", "vorbis"));
+        common.add(new MediaResourceType("video/webm", "vorbis,vp8"));
+        common.add(new MediaResourceType("video/webm", "vp8"));
+        common.add(new MediaResourceType("video/webm", "vp9"));
+
+        // --- probably: Firefox / Firefox ESR (adds AV1-in-WebM) ---
+        ff = new HashSet<>(common);
+        ff.add(new MediaResourceType("video/webm", "av1"));
+        ff.add(new MediaResourceType("video/webm", "av1,opus"));
+        FIREFOX.probablyMediaResources_.addAll(ff);
+        FIREFOX_ESR.probablyMediaResources_.addAll(ff);
+
+        // --- probably: Chrome / Edge (Edge adds Dolby AC-3 / E-AC-3) ---
+        chrome = new HashSet<>(common);
+        chrome.add(new MediaResourceType("audio/aac", null));
+        chrome.add(new MediaResourceType("audio/flac", null));
+        chrome.add(new MediaResourceType("audio/mp4", "mp4a.69"));
+        chrome.add(new MediaResourceType("audio/mpeg", null));
+        chrome.add(new MediaResourceType("video/3gpp", "avc1.42E01E,mp4a.40.2"));
+        CHROME.probablyMediaResources_.addAll(chrome);
+        chrome.add(new MediaResourceType("audio/mp4", "ac-3"));
+        chrome.add(new MediaResourceType("audio/mp4", "ec-3"));
+        chrome.add(new MediaResourceType("video/mp4", "ac-3"));
+        chrome.add(new MediaResourceType("video/mp4", "ec-3"));
+        EDGE.probablyMediaResources_.addAll(chrome);
+    }
+
     /**
      * Returns the default browser version that is used whenever a specific version isn't specified.
      * Defaults to {@link #BEST_SUPPORTED}.
@@ -492,6 +536,8 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns whether the chrome.
+     *
      * Returns {@code true} if this <code>BrowserVersion</code> instance represents some
      * version of Google Chrome. Note that Google Chrome does not return 'Chrome'
      * in the application name, we have to look in the nickname.
@@ -502,15 +548,19 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns whether the edge.
+     *
      * Returns {@code true} if this <code>BrowserVersion</code> instance represents some
      * version of Microsoft Edge.
-     * @return whether this version is a version of a Chrome browser
+     * @return whether this version is a version of the Edge browser
      */
     public boolean isEdge() {
         return getNickname().startsWith("Edge");
     }
 
     /**
+     * Returns whether the firefox.
+     *
      * Returns {@code true} if this <code>BrowserVersion</code> instance represents some
      * version of Firefox.
      * @return whether this version is a version of a Firefox browser
@@ -520,8 +570,10 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns whether the firefox esr.
+     *
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     * @return whether this is version 78  of a Firefox browser
+     * @return whether this represents the Firefox Extended Support Release (ESR) version
      */
     public boolean isFirefoxESR() {
         return isFirefox() && getBrowserVersionNumeric() == FIREFOX_ESR_NUMERIC;
@@ -537,6 +589,8 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns the browser version numeric.
+     *
      * @return the browserVersionNumeric
      */
     public int getBrowserVersionNumeric() {
@@ -547,7 +601,7 @@ public final class BrowserVersion implements Serializable {
      * Returns the application code name, for example "Mozilla".
      * Default value is "Mozilla" if not explicitly configured.
      * @return the application code name
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533077.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/appCodeName">MDN documentation</a>
      */
     public String getApplicationCodeName() {
         return applicationCodeName_;
@@ -556,8 +610,9 @@ public final class BrowserVersion implements Serializable {
     /**
      * Returns the application minor version, for example "0".
      * Default value is "0" if not explicitly configured.
+     * This is a legacy, non-standard property that was only ever implemented by Internet
+     * Explorer (as {@code navigator.appMinorVersion}).
      * @return the application minor version
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533078.aspx">MSDN documentation</a>
      */
     public String getApplicationMinorVersion() {
         return applicationMinorVersion_;
@@ -566,7 +621,7 @@ public final class BrowserVersion implements Serializable {
     /**
      * Returns the application name, for example "Netscape".
      * @return the application name
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533079.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/appName">MDN documentation</a>
      */
     public String getApplicationName() {
         return applicationName_;
@@ -575,13 +630,15 @@ public final class BrowserVersion implements Serializable {
     /**
      * Returns the application version, for example "4.0 (compatible; MSIE 6.0b; Windows 98)".
      * @return the application version
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533080.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/appVersion">MDN documentation</a>
      */
     public String getApplicationVersion() {
         return applicationVersion_;
     }
 
     /**
+     * Returns the vendor.
+     *
      * @return the vendor
      */
     public String getVendor() {
@@ -590,7 +647,7 @@ public final class BrowserVersion implements Serializable {
 
     /**
      * Returns the browser locale.
-     * Default value is ENGLISH_US if not explicitly configured.
+     * Default value is {@code Locale.forLanguageTag("en-US")} if not explicitly configured.
      * @return the system locale
      */
     public Locale getBrowserLocale() {
@@ -599,9 +656,9 @@ public final class BrowserVersion implements Serializable {
 
     /**
      * Returns the browser application language, for example "en-us".
-     * Default value is ENGLISH_US if not explicitly configured.
+     * Default value is {@code "en-US"} if not explicitly configured.
      * @return the browser application language
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533542.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language">MDN documentation</a>
      */
     public String getBrowserLanguage() {
         return browserLocale_.toLanguageTag();
@@ -611,7 +668,7 @@ public final class BrowserVersion implements Serializable {
      * Returns {@code true} if the browser is currently online.
      * Default value is {@code true} if not explicitly configured.
      * @return {@code true} if the browser is currently online
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534307.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine">MDN documentation</a>
      */
     public boolean isOnLine() {
         return onLine_;
@@ -621,7 +678,7 @@ public final class BrowserVersion implements Serializable {
      * Returns the platform on which the application is running, for example "Win32".
      * Default value is 'Win32' if not explicitly configured.
      * @return the platform on which the application is running
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534340.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/platform">MDN documentation</a>
      */
     public String getPlatform() {
         return platform_;
@@ -669,6 +726,8 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns the script accept header.
+     *
      * Returns the value used by the browser for the {@code Accept} header
      * if requesting a script.
      * @return the accept header string
@@ -678,6 +737,8 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns the xml http request accept header.
+     *
      * Returns the value used by the browser for the {@code Accept} header
      * if performing an XMLHttpRequest.
      * @return the accept header string
@@ -687,6 +748,8 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns the img accept header.
+     *
      * Returns the value used by the browser for the {@code Accept} header
      * if requesting an image.
      * @return the accept header string
@@ -696,6 +759,8 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
+     * Returns the css accept header.
+     *
      * Returns the value used by the browser for the {@code Accept} header
      * if requesting a CSS declaration.
      * @return the accept header string
@@ -739,15 +804,15 @@ public final class BrowserVersion implements Serializable {
 
     /**
      * Returns the productSub.
-     * @return the buildId
+     * @return the productSub
      */
     public String getProductSub() {
         return productSub_;
     }
 
     /**
-     * Gets the headers names, so they are sent in the given order (if included in the request).
-     * @return headerNames the header names in ordered manner
+     * Gets the header names, so they are sent in the given order (if included in the request).
+     * @return the header names, in the order they should be sent
      */
     public String[] getHeaderNamesOrdered() {
         return headerNamesOrdered_;
@@ -789,7 +854,7 @@ public final class BrowserVersion implements Serializable {
      * @return the corresponding height
      */
     public int getFontHeight(final String fontSize) {
-        if (fontHeights_ == null || fontSize.isEmpty()) {
+        if (fontHeights_ == null || StringUtils.isEmptyOrNull(fontSize)) {
             return 18;
         }
 
@@ -834,10 +899,64 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
-     * @return the pixesPerChar based on the specified {@code fontSize}
+     * Performs this operation.
+     *
+     * @return the pixesPerChar
+     *
+     * @deprecated as of version 5.3.0; use {@link #getPixelsPerChar()} instead.
      */
+    @Deprecated(since = "5.3.0", forRemoval = true)
     public int getPixesPerChar() {
+        return getPixelsPerChar();
+    }
+
+    /**
+     * Returns the pixels per char.
+     *
+     * @return the pixelsPerChar (currently hard coded 10)
+     */
+    public int getPixelsPerChar() {
         return 10;
+    }
+
+    /**
+     * Performs this operation.
+     *
+     * Determines whether this browser thinks it can play the given media resource type,
+     * mirroring the result of the DOM method {@code HTMLMediaElement.canPlayType()}.
+     *
+     * <p>The {@code type} is parsed into a MIME type and an optional {@code codecs}
+     * parameter (see {@link MediaResourceType#parse(String)} for the exact parsing rules).
+     * The parsed value is then looked up first against this browser's "probably" playable
+     * resources (MIME type plus a known-good codec list) and, failing that, against its
+     * "maybe" playable resources (MIME type alone, with no codec guarantee).</p>
+     *
+     * @param type the media type string to test, e.g. {@code "video/mp4"} or
+     *             {@code "video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\""}
+     * @return {@code "probably"} if this exact MIME type and codec combination is known to
+     *         be supported, {@code "maybe"} if the MIME type alone (with no codec specified)
+     *         is known to be supported, or {@code ""} if {@code type} is blank, or if a
+     *         codec was specified but that exact MIME/codec pairing isn't a known
+     *         {@code "probably"} match
+     * @see MediaResourceType#parse(String)
+     * @see <a href="https://html.spec.whatwg.org/multipage/media.html#dom-navigator-canplaytype">
+     *      HTML Living Standard – canPlayType</a>
+     */
+    public String canPlayType(final String type) {
+        final MediaResourceType mediaType = MediaResourceType.parse(type);
+        if (mediaType == null) {
+            return "";
+        }
+
+        if (probablyMediaResources_.contains(mediaType)) {
+            return "probably";
+        }
+
+        if (maybeMediaResource_.contains(mediaType)) {
+            return "maybe";
+        }
+
+        return "";
     }
 
     @Override
@@ -854,6 +973,8 @@ public final class BrowserVersion implements Serializable {
         private final BrowserVersion workPiece_;
 
         /**
+         * Performs this operation.
+         *
          * Creates a new BrowserVersionBuilder using the given browser version
          * as template for the browser to be constructed.
          * @param version the blueprint
@@ -887,9 +1008,13 @@ public final class BrowserVersion implements Serializable {
 
             workPiece_.features_.addAll(version.features_);
             workPiece_.uploadMimeTypes_.putAll(version.uploadMimeTypes_);
+            workPiece_.maybeMediaResource_.addAll(version.maybeMediaResource_);
+            workPiece_.probablyMediaResources_.addAll(version.probablyMediaResources_);
         }
 
         /**
+         * Performs this operation.
+         *
          * @return the new immutable browser version
          */
         public BrowserVersion build() {
@@ -897,6 +1022,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the application minor version.
+         *
          * @param applicationMinorVersion the applicationMinorVersion to set
          * @return this for fluent use
          */
@@ -906,6 +1033,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the application name.
+         *
          * @param applicationName the applicationName to set
          * @return this for fluent use
          */
@@ -915,6 +1044,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the application version.
+         *
          * @param applicationVersion the applicationVersion to set
          * @return this for fluent use
          */
@@ -924,6 +1055,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the vendor.
+         *
          * @param vendor the vendor to set
          * @return this for fluent use
          */
@@ -933,6 +1066,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the application code name.
+         *
          * @param applicationCodeName the applicationCodeName to set
          * @return this for fluent use
          */
@@ -955,6 +1090,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the on line.
+         *
          * @param onLine the onLine to set
          * @return this for fluent use
          */
@@ -964,6 +1101,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the platform.
+         *
          * @param platform the platform to set
          * @return this for fluent use
          */
@@ -973,6 +1112,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the system timezone.
+         *
          * @param systemTimezone the systemTimezone to set
          * @return this for fluent use
          */
@@ -982,6 +1123,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the user agent.
+         *
          * @param userAgent the userAgent to set
          * @return this for fluent use
          */
@@ -991,6 +1134,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the accept encoding header.
+         *
          * @param acceptEncodingHeader the {@code Accept-Encoding} header
          * @return this for fluent use
          */
@@ -1000,6 +1145,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the accept language header.
+         *
          * @param acceptLanguageHeader the {@code Accept-Language} header
          * @return this for fluent use
          */
@@ -1009,6 +1156,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the html accept header.
+         *
          * @param htmlAcceptHeader the {@code Accept} header to be used when retrieving pages
          * @return this for fluent use
          */
@@ -1018,6 +1167,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the img accept header.
+         *
          * @param imgAcceptHeader the {@code Accept} header to be used when retrieving images
          * @return this for fluent use
          */
@@ -1027,6 +1178,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the css accept header.
+         *
          * @param cssAcceptHeader the {@code Accept} header to be used when retrieving pages
          * @return this for fluent use
          */
@@ -1036,6 +1189,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the script accept header.
+         *
          * @param scriptAcceptHeader the {@code Accept} header to be used when retrieving scripts
          * @return this for fluent use
          */
@@ -1045,6 +1200,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the xml http request accept header.
+         *
          * @param xmlHttpRequestAcceptHeader the {@code Accept} header to be used when
          *        performing XMLHttpRequests
          * @return this for fluent use
@@ -1055,6 +1212,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the sec client hint user agent header.
+         *
          * @param secClientHintUserAgentHeader the {@code sec-ch-ua} header value
          * @return this for fluent use
          */
@@ -1064,6 +1223,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the sec client hint user agent platform header.
+         *
          * @param secClientHintUserAgentPlatformHeader the {@code sec-ch-ua-platform} header value
          * @return this for fluent use
          */
@@ -1073,6 +1234,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the product sub.
+         *
          * @param productSub the productSub
          * @return this for fluent use
          */
@@ -1082,6 +1245,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the header names ordered.
+         *
          * @param headerNamesOrdered the headerNamesOrdered
          * @return this for fluent use
          */
@@ -1091,6 +1256,8 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the font heights.
+         *
          * @param fontHeights the fontHeights
          * @return this for fluent use
          */
@@ -1100,12 +1267,193 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
+         * Sets the build id.
+         *
          * @param buildId the buildId
          * @return this for fluent use
          */
         BrowserVersionBuilder setBuildId(final String buildId) {
             workPiece_.buildId_ = buildId;
             return this;
+        }
+    }
+
+    /**
+     * Performs this operation.
+     *
+     * Represents a media type that a browser can play, combining a MIME type
+     * with an optional set of codecs.
+     * <p>Instances are immutable.</p>
+     *
+     * <p>Instances are used as keys in the two lookup sets held by each
+     * {@link BrowserVersion} ({@code maybeMediaResource_} and
+     * {@code probablyMediaResources_}) and are queried by
+     * {@link BrowserVersion#canPlayType(String)} to determine the value
+     * returned by the {@code HTMLMediaElement.canPlayType()} DOM method:
+     * </p>
+     * <ul>
+     *   <li>{@code "maybe"}    — the MIME type alone is in the
+     *       {@code maybeMediaResource_} set (no codec information given).</li>
+     *   <li>{@code "probably"} — the MIME type together with the specific
+     *       codec list is in the {@code probablyMediaResources_} set.</li>
+     *   <li>{@code ""}         — neither set contains a matching entry.</li>
+     * </ul>
+     *
+     * <p>Equality and hashing are based on both the MIME type string and the
+     * normalised codec string, so {@code new MediaResourceType("video/mp4", null)}
+     * and {@code new MediaResourceType("video/mp4", "avc1.42E01E")} are
+     * considered distinct entries.</p>
+     *
+     * @see BrowserVersion#canPlayType(String)
+     * @see <a href="https://html.spec.whatwg.org/multipage/media.html#dom-navigator-canplaytype">
+     *      HTML Living Standard – canPlayType</a>
+     */
+    public static class MediaResourceType implements Serializable {
+        /** The MIME type part of the media resource type, e.g. {@code "video/mp4"}. */
+        private final String mime_;
+
+        /**
+         * The normalised, comma-separated, alphabetically sorted codec list,
+         * or {@code null} when no {@code codecs} parameter was supplied.
+         */
+        private final String codecs_;
+
+         /**
+          * Performs this operation.
+          *
+          * Creates a new {@code MediaResourceType} with the given MIME type and
+          * optional codec string.
+          *
+          * @param mime   the MIME type, e.g. {@code "audio/ogg"};
+          *               must not be {@code null}
+          * @param codecs the normalised codec list, e.g. {@code "opus"} or
+          *               {@code "avc1.42E01E,mp4a.40.2"}, or {@code null} if
+          *               no codec information is associated with this entry
+          */
+        public MediaResourceType(final String mime, final String codecs) {
+            mime_ = mime;
+            codecs_ = codecs;
+        }
+
+        /**
+         * Performs this operation.
+         *
+         * Parses a raw {@code canPlayType()} argument string into a
+         * {@code MediaResourceType} suitable for a set lookup.
+         *
+         * <p>The parsing rules follow the
+         * <a href="https://html.spec.whatwg.org/multipage/media.html#dom-navigator-canplaytype">
+         * HTML Living Standard</a>:
+         * </p>
+         * <ol>
+         *   <li>Blank or whitespace-only input returns {@code null} (the caller
+         *       will map this to {@code ""}).</li>
+         *   <li>If a semicolon ({@code ;}) is present, everything before it is
+         *       treated as the MIME type and the remainder is inspected for a
+         *       {@code codecs} parameter.</li>
+         *   <li>When a {@code codecs} parameter is found its value is
+         *       <em>normalised</em>: surrounding quotes are stripped, individual
+         *       codec tokens are trimmed and sorted alphabetically, then
+         *       re-joined with a comma. This ensures that
+         *       {@code "vp8, vorbis"} and {@code "vorbis,vp8"} resolve to the
+         *       same entry.</li>
+         *   <li>A {@code codecs} key without a value (e.g. {@code "video/mp4; codecs"})
+         *       is treated as if no codec information were present, yielding a
+         *       codec of {@code null}.</li>
+         *   <li>Input without a semicolon is used verbatim as the MIME type
+         *       with a {@code null} codec.</li>
+         * </ol>
+         *
+         * @param mediaResourceType the raw string passed to
+         *                          {@code HTMLMediaElement.canPlayType()},
+         *                          e.g. {@code "video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\""}
+         * @return the parsed {@code MediaResourceType}, or {@code null} if the
+         *         input is blank (indicating an immediate {@code ""} result)
+         */
+        public static MediaResourceType parse(final String mediaResourceType) {
+            if (StringUtils.isBlank(mediaResourceType)) {
+                return null;
+            }
+
+            final String[] parts = mediaResourceType.split(";", -1);
+            final String mime = parts[0].trim();
+
+            if (parts.length == 1) {
+                return new MediaResourceType(mime, null);
+            }
+
+            // Walk each parameter after the MIME type (parts[1..n]).
+            for (int i = 1; i < parts.length; i++) {
+                final String param = parts[i].trim();
+                final int eqPos = param.indexOf('=');
+
+                if (eqPos < 0) {
+                    continue; // bare key with no value — skip
+                }
+
+                final String key = param.substring(0, eqPos).trim();
+                if (!"codecs".equalsIgnoreCase(key)) {
+                    continue; // not the codecs param — keep looking
+                }
+
+                String value = param.substring(eqPos + 1).trim();
+
+                // Strip surrounding double-quotes if present.
+                if (value.length() >= 2
+                        && value.charAt(0) == '"'
+                        && value.charAt(value.length() - 1) == '"') {
+                    value = value.substring(1, value.length() - 1).trim();
+                }
+
+                // Strip surrounding single-quotes if present.
+                if (value.length() >= 2
+                        && value.charAt(0) == '\''
+                        && value.charAt(value.length() - 1) == '\'') {
+                    value = value.substring(1, value.length() - 1).trim();
+                }
+
+                if (value.isEmpty()) {
+                    return new MediaResourceType(mime, null);
+                }
+
+                // Normalise: trim each token, sort, re-join.
+                final String codecs = Arrays.stream(value.split(",", -1))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .sorted()
+                        .collect(Collectors.joining(","));
+
+                return new MediaResourceType(mime, codecs.isEmpty() ? null : codecs);
+            }
+
+            // Semicolons present but no codecs param found.
+            return new MediaResourceType(mime, null);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int hashCode() {
+            return Objects.hash(codecs_, mime_);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MediaResourceType other = (MediaResourceType) obj;
+            return Objects.equals(codecs_, other.codecs_) && Objects.equals(mime_, other.mime_);
         }
     }
 }

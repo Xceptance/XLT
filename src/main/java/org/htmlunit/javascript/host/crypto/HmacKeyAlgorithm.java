@@ -48,7 +48,7 @@ final class HmacKeyAlgorithm {
     }
 
     /**
-     * Parse HMAC key algorithm parameters from a JS object.
+     * Parses HMAC key algorithm parameters from a JS object.
      *
      * @param keyGenParams the JS algorithm parameters object
      * @return the parsed HmacKeyAlgorithm
@@ -58,7 +58,7 @@ final class HmacKeyAlgorithm {
     }
 
     /**
-     * Parse HMAC key algorithm parameters from a JS object, with an optional fallback length.
+     * Parses HMAC key algorithm parameters from a JS object, with an optional fallback length.
      *
      * @param keyGenParams the JS algorithm parameters object
      * @param fallbackLength optional length to use when not specified in params;
@@ -103,6 +103,8 @@ final class HmacKeyAlgorithm {
     }
 
     /**
+     * Returns the Java algorithm name for {@link javax.crypto.Mac} (e.g. "HmacSHA256").
+     *
      * @return the Java algorithm name for {@link javax.crypto.Mac} (e.g. "HmacSHA256")
      */
     String getJavaName() {
@@ -111,7 +113,7 @@ final class HmacKeyAlgorithm {
 
     /**
      * Converts to a JS object matching the {@code HmacKeyAlgorithm} dictionary:
-     * {@code {name: "HMAC", hash: {name: "SHA-256"}, length: N}}
+     * {@code {name: "HMAC", hash: {name: "SHA-256"}, length: N}}.
      *
      * @param scope the JS scope for prototype/parent setup
      * @return the JS algorithm object
