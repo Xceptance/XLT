@@ -2478,8 +2478,12 @@ CLSS public abstract interface org.openqa.selenium.WebDriver
 intf org.openqa.selenium.SearchContext
 
 CLSS public abstract interface org.openqa.selenium.bidi.HasBiDi
+ anno 0 org.openqa.selenium.Beta()
 meth public abstract java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="4.46")
+meth public abstract org.openqa.selenium.bidi.Handle getHandle()
 meth public org.openqa.selenium.bidi.BiDi getBiDi()
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="4.46")
 
 CLSS public org.openqa.selenium.chrome.ChromeDriver
 cons public init()
@@ -2553,9 +2557,7 @@ intf org.openqa.selenium.firefox.HasFullPageScreenshot
 meth public <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
-meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
 meth public org.openqa.selenium.Capabilities getCapabilities()
-meth public org.openqa.selenium.bidi.BiDi getBiDi()
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
@@ -2564,7 +2566,7 @@ meth public void setContext(org.openqa.selenium.firefox.FirefoxCommandContext)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void uninstallExtension(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,context,extensions,fullPageScreenshot
+hfds LOG,capabilities,context,extensions,fullPageScreenshot
 hcls FirefoxDriverCommandExecutor
 
 CLSS public abstract interface org.openqa.selenium.firefox.HasContext
@@ -2596,6 +2598,7 @@ intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.PrintsPage
 intf org.openqa.selenium.TakesScreenshot
 intf org.openqa.selenium.WebDriver
+intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
 intf org.openqa.selenium.interactions.Interactive
 intf org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
