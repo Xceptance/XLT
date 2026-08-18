@@ -1394,7 +1394,12 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
     protected String _getValue(final String elementLocator)
     {
         final HtmlElement e = finder.findElement(getCurrentPage(), elementLocator, false);
-        if (e instanceof HtmlTextArea || (e instanceof HtmlOption && !e.hasAttribute("value")))
+        if (e instanceof HtmlTextArea textArea)
+        {
+            return textArea.getText();
+        }
+
+        if (e instanceof HtmlOption && !e.hasAttribute("value"))
         {
             return getElementText(e);
         }
