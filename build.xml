@@ -418,12 +418,6 @@
         </antcall>
     </target>
 
-    <target name="hu-tests">
-        <antcall target="test">
-            <param name="action" value="execute-hu" />
-        </antcall>
-    </target>
-
     <!--
         =====================================
         = API signature check and creation. =

@@ -11,9 +11,6 @@
     <property name="reports.junit" value="${build.doc.dir}/junit" />
     <property name="reports.junit.xml" value="${reports.junit}/xml" />
     <property name="reports.junit.html" value="${reports.junit}/html" />
-    <property name="reports.junit-hu" value="${build.doc.dir}/junit-hu" />
-    <property name="reports.junit-hu.xml" value="${reports.junit-hu}/xml" />
-    <property name="reports.junit-hu.html" value="${reports.junit-hu}/html" />
 
     <!-- checkstyle -->
     <property name="reports.checkstyle" value="${build.doc.dir}/checkstyle" />
@@ -77,7 +74,6 @@
 
         <path id="test.classpath">
             <pathelement location="${test.classes.dir}" />
-            <pathelement location="${test-hu.classes.dir}" />
             <resources refid="test.fileset" />
             <path refid="classpath" />
         </path>
@@ -382,67 +378,6 @@
                 <available file="${reports.checkstyle.xml}/checkstyle_report.xml" type="file" />
             </and>
         </condition>
-    </target>
-
-    <!-- *** HtmlUnit tests *** -->
-
-    <!--
-            Compiles the Java sources in ${src-test-hu.dir} to ${classes.dir}. Any non-Java file in the sources
-            dir will be copied there, too.
-        -->
-    <target name="test.compile-hu" description="Generates HtmlUnit test class files." depends="test.init">
-        <mkdir dir="${test-hu.classes.dir}" />
-
-        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="21" target="21">
-            <classpath refid="test.classpath" />
-        </javac>
-
-        <copy todir="${test-hu.classes.dir}">
-            <fileset dir="${src-test-hu.dir}/java">
-                <exclude name="**/*.java" />
-            </fileset>
-            <fileset dir="${src-test-hu.dir}/resources">
-                <include name="**/*" />
-            </fileset>
-        </copy>
-
-    </target>
-
-    <target name="test.run-hu" description="Executes the HtmlUnit JUnit tests." depends="test.compile-hu">
-        <mkdir dir="${reports.junit-hu.xml}" />
-
-        <makeurl file="${basedir}/${src-test-hu.dir}/resources/log4j.properties" property="hu-log4j.url" />
-        <junit forkmode="once" printsummary="on" fork="on" showoutput="on">
-            <!-- set classpath -->
-            <classpath refid="test.classpath" />
-
-            <jvmarg value="-Dlog4j.configuration=${hu-log4j.url}" />
-
-            <formatter type="xml" />
-
-            <batchtest todir="${reports.junit-hu.xml}">
-                <fileset dir="${src-test-hu.dir}/java">
-                    <include name="**/*Test.java" />
-                    <exclude name="**/Abstract*Test.java" />
-                </fileset>
-            </batchtest>
-        </junit>
-    </target>
-
-    <target name="test.junit-hu.report">
-        <!-- create JUnit HTML output directory -->
-        <mkdir dir="${reports.junit-hu.html}" />
-
-        <!-- create JUnit HTML report -->
-        <junitreport todir="${reports.junit-hu.html}">
-            <fileset dir="${reports.junit-hu.xml}" includes="TEST-*.xml" />
-            <report format="frames" todir="${reports.junit-hu.html}" />
-        </junitreport>
-
-    </target>
-
-    <target name="test.execute-hu" description="Executes the HtmlUnit JUnit tests and generates a HTML report." depends="test.run-hu, test.junit-hu.report">
-        <!-- Just be dependent -->
     </target>
 
 </project>
