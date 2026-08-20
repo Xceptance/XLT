@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,6 @@ public class DataTransfer extends HtmlUnitScriptable {
     private DataTransferItemList items_;
 
     /**
-     * Ctor.
-     */
-    public DataTransfer() {
-        super();
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
@@ -47,6 +40,8 @@ public class DataTransfer extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code files} property.
+     *
      * @return the {@code files} property
      */
     @JsxGetter
@@ -55,6 +50,8 @@ public class DataTransfer extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code items} property.
+     *
      * @return the {@code items} property
      */
     @JsxGetter

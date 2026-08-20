@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
- * The JavaScript object that represents a AbstractRange.
+ * The JavaScript object that represents an AbstractRange.
  *
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/AbstractRange">AbstractRange</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/AbstractRange">MDN Documentation</a>
  * @author Ronald Brill
  */
 @JsxClass
@@ -69,6 +69,7 @@ public class AbstractRange extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the start container.
      * @return the start container
      */
     protected Node internGetStartContainer() {
@@ -85,6 +86,7 @@ public class AbstractRange extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the end container.
      * @return the end container
      */
     protected Node internGetEndContainer() {
@@ -101,6 +103,7 @@ public class AbstractRange extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the start offset.
      * @return the start offset
      */
     protected int internGetStartOffset() {
@@ -117,6 +120,7 @@ public class AbstractRange extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the end offset.
      * @return the end offset
      */
     protected int internGetEndOffset() {
@@ -197,6 +201,7 @@ public class AbstractRange extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns a {@link SimpleRange} version of this object.
      * @return a {@link SimpleRange} version of this object
      */
     public SimpleRange getSimpleRange() {
@@ -206,10 +211,9 @@ public class AbstractRange extends HtmlUnitScriptable {
 
     @Override
     protected Object equivalentValues(final Object value) {
-        if (!(value instanceof AbstractRange)) {
+        if (!(value instanceof AbstractRange other)) {
             return false;
         }
-        final AbstractRange other = (AbstractRange) value;
         return startContainer_ == other.startContainer_
                 && endContainer_ == other.endContainer_
                 && startOffset_ == other.startOffset_

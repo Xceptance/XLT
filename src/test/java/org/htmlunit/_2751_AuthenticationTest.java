@@ -76,7 +76,7 @@ public class _2751_AuthenticationTest
             constraintMapping.setPathSpec("/*");
 
             final ConstraintSecurityHandler handler = (ConstraintSecurityHandler) context.getSecurityHandler();
-            handler.setLoginService(new HashLoginService("MyRealm", "./src/test-hu/resources/realm.properties"));
+            handler.setLoginService(new HashLoginService("MyRealm", "./src/test/resources/realm.properties"));
             handler.setConstraintMappings(new ConstraintMapping[]
                 {
                     constraintMapping

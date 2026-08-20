@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
@@ -25,6 +25,10 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.BrowserVersion.BrowserVersionBuilder;
 
 /**
+ * Defines traits of a {@link BrowserVersion} that can be configured or queried.
+ * Implements {@link BrowserVersionTraitNames} for standardized trait names
+ * and {@link OptionEnum} for capability and property management.
+ *
  * @author Scott Babcock
  * @author Ronald Brill
  */
@@ -558,6 +562,12 @@ public enum BrowserVersionTrait implements BrowserVersionTraitNames, OptionEnum 
         return null;
     }
 
+    /**
+     * Returns the {@link BrowserVersionTrait} corresponding to the given capability key.
+     *
+     * @param key the capability key to look up
+     * @return the matching BrowserVersionTrait, or {@code null} if none matches
+     */
     public static BrowserVersionTrait fromCapabilityKey(final String key) {
         for (final BrowserVersionTrait trait : BrowserVersionTrait.values()) {
             if (trait.capabilityKey_.equals(key)) {
@@ -567,6 +577,12 @@ public enum BrowserVersionTrait implements BrowserVersionTraitNames, OptionEnum 
         return null;
     }
 
+    /**
+     * Returns the {@link BrowserVersionTrait} corresponding to the given property name.
+     *
+     * @param name the property name to look up
+     * @return the matching BrowserVersionTrait, or {@code null} if none matches
+     */
     public static BrowserVersionTrait fromPropertyName(final String name) {
         for (final BrowserVersionTrait trait : BrowserVersionTrait.values()) {
             if (trait.propertyName_.equals(name)) {

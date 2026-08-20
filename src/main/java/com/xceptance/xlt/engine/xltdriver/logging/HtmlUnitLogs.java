@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,11 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.logging;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -33,22 +34,36 @@ import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.Logs;
 
 /**
- * An implementation of the {@link Logs} interface for HtmlUnit. At the moment
- * this is empty.
+ * Implementation of the {@link Logs} interface for HtmlUnit-based drivers.
+ * <p>
+ * This class provides access to logging information produced by HtmlUnit’s
+ * WebConsole and exposes it through the standard WebDriver logging API.
+ * Log entries recorded by the browser are captured by an internal
+ * {@link HtmlUnitDriverLogger} instance.
  *
  * @author Ronald Brill
  */
 public class HtmlUnitLogs implements Logs {
+    /**
+     * The logger used to collect and store WebConsole log messages from the
+     * underlying HtmlUnit {@link WebClient}.
+     */
     private final HtmlUnitDriverLogger logger_;
 
+    /**
+     * Creates a new {@link HtmlUnitLogs} instance and configures the given
+     * {@link WebClient} to use an internal {@link HtmlUnitDriverLogger} for
+     * WebConsole log output.
+     *
+     * @param webClient the HtmlUnit client whose WebConsole logger will be
+     *                  replaced with an {@link HtmlUnitDriverLogger};
+     *                  must not be {@code null}
+     */
     public HtmlUnitLogs(final WebClient webClient) {
         logger_ = new HtmlUnitDriverLogger();
         webClient.getWebConsole().setLogger(logger_);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public LogEntries get(final String logType) {
         if (LogType.BROWSER.equals(logType)) {
@@ -58,9 +73,6 @@ public class HtmlUnitLogs implements Logs {
         return new LogEntries(Collections.emptyList());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Set<String> getAvailableLogTypes() {
         return Collections.emptySet();
@@ -95,9 +107,7 @@ public class HtmlUnitLogs implements Logs {
                 result = new ArrayList<>(insertPos_);
             }
 
-            for (int i = 0; i < insertPos_; i++) {
-                result.add(buffer_[i]);
-            }
+            result.addAll(Arrays.asList(buffer_).subList(0, insertPos_));
 
             insertPos_ = 0;
             isFull_ = false;

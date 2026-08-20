@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package org.htmlunit.javascript.host.xml;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF;
 import static org.htmlunit.BrowserVersionFeatures.XHR_HANDLE_SYNC_NETWORK_ERRORS;
 import static org.htmlunit.BrowserVersionFeatures.XHR_LOAD_ALWAYS_AFTER_DONE;
+import static org.htmlunit.BrowserVersionFeatures.XHR_PREFLIGHT_CORS;
 import static org.htmlunit.BrowserVersionFeatures.XHR_RESPONSE_TEXT_EMPTY_UNSENT;
 import static org.htmlunit.BrowserVersionFeatures.XHR_SEND_NETWORK_ERROR_IF_ABORTED;
 
@@ -44,7 +44,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.AjaxController;
@@ -52,8 +51,10 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
+import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
+import org.htmlunit.WebRequest.FetchMode;
 import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
@@ -77,6 +78,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.DOMException;
@@ -89,12 +91,15 @@ import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
+import org.htmlunit.util.UrlUtils;
 import org.htmlunit.util.WebResponseWrapper;
 import org.htmlunit.util.XUserDefinedCharset;
 import org.htmlunit.xml.XmlPage;
+import org.w3c.dom.DocumentType;
 
 /**
- * A JavaScript object for an {@code XMLHttpRequest}.
+ * JavaScript host object for {@code XMLHttpRequest}.
  *
  * @author Daniel Gredler
  * @author Marc Guillemot
@@ -108,23 +113,22 @@ import org.htmlunit.xml.XmlPage;
  * @author Lai Quang Duong
  * @author Sven Strickroth
  *
- * @see <a href="http://www.w3.org/TR/XMLHttpRequest/">W3C XMLHttpRequest</a>
- * @see <a href="http://developer.apple.com/internet/webcontent/xmlhttpreq.html">Safari documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">MDN Documentation</a>
  */
 @JsxClass
 public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     private static final Log LOG = LogFactory.getLog(XMLHttpRequest.class);
 
-    /** The object has been created, but not initialized (the open() method has not been called). */
+    /** The object has been created, but not initialized (the {@code open()} method has not been called). */
     @JsxConstant
     public static final int UNSENT = 0;
 
-    /** The object has been created, but the send() method has not been called. */
+    /** The object has been created, but the {@code send()} method has not been called. */
     @JsxConstant
     public static final int OPENED = 1;
 
-    /** The send() method has been called, but the status and headers are not yet available. */
+    /** The {@code send()} method has been called, but the status and headers are not yet available. */
     @JsxConstant
     public static final int HEADERS_RECEIVED = 2;
 
@@ -165,6 +169,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     private String responseType_;
 
     private Document responseXML_;
+    private XMLHttpRequestUpload upload_;
 
     /**
      * Creates a new instance.
@@ -175,7 +180,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -185,6 +190,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * Sets the state as specified and invokes the state change handler if one has been set.
+     *
      * @param state the new state
      */
     private void setState(final int state) {
@@ -247,6 +253,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      *   <li>3 = loading</li>
      *   <li>4 = done</li>
      * </ul>
+     *
      * @return the current state of the HTTP request
      */
     @JsxGetter
@@ -255,6 +262,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
+     * Returns the {@code responseType} property.
+     *
      * @return the {@code responseType} property
      */
     @JsxGetter
@@ -264,7 +273,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * Sets the {@code responseType} property.
-     * @param responseType the {@code responseType} property.
+     *
+     * @param responseType the {@code responseType} property
      */
     @JsxSetter
     public void setResponseType(final String responseType) {
@@ -291,8 +301,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * @return returns the response's body content as an ArrayBuffer, Blob, Document, JavaScript Object,
-     * or DOMString, depending on the value of the request's responseType property.
+     * Returns the response body as an {@code ArrayBuffer}, {@code Blob}, {@code Document},
+     * JavaScript object, or {@code DOMString}, depending on the value of the {@code responseType} property.
+     *
+     * @return the response body
      */
     @JsxGetter
     public Object getResponse() {
@@ -311,10 +323,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return null;
         }
 
-        if (webResponse_ instanceof NetworkErrorWebResponse) {
+        if (webResponse_ instanceof NetworkErrorWebResponse response) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
-                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+                LOG.debug("XMLHttpRequest.responseXML returns because of a network error ("
+                        + response.getError() + ")");
             }
             return null;
         }
@@ -353,7 +365,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
                 nativeArrayBuffer.setParentScope(getParentScope());
                 nativeArrayBuffer.setPrototype(
-                        ScriptableObject.getClassPrototype(getWindow(), nativeArrayBuffer.getClassName()));
+                        ScriptableObject.getClassPrototype(getParentScope(), nativeArrayBuffer.getClassName()));
 
                 return nativeArrayBuffer;
             }
@@ -368,7 +380,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     try (InputStream inputStream = webResponse_.getContentAsStream()) {
                         final Blob blob = new Blob(IOUtils.toByteArray(inputStream), webResponse_.getContentType());
                         blob.setParentScope(getParentScope());
-                        blob.setPrototype(ScriptableObject.getClassPrototype(getWindow(), blob.getClassName()));
+                        blob.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), blob.getClassName()));
 
                         return blob;
                     }
@@ -386,7 +398,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             if (webResponse_ != null) {
                 String contentType = webResponse_.getContentType();
-                if (StringUtils.isEmpty(contentType)) {
+                if (org.htmlunit.util.StringUtils.isEmptyOrNull(contentType)) {
                     contentType = MimeType.TEXT_XML;
                 }
                 return buildResponseXML(contentType);
@@ -401,10 +413,12 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 }
 
                 try {
-                    return new JsonParser(Context.getCurrentContext(), this).parseValue(content);
+                    return new JsonParser(Context.getCurrentContext(), getParentScope()).parseValue(content);
                 }
                 catch (final ParseException e) {
-                    webResponse_ = new NetworkErrorWebResponse(webRequest_, new IOException(e));
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("XMLHttpRequest json parsing faild (" + e.getMessage() + ")");
+                    }
                     return null;
                 }
             }
@@ -444,7 +458,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Returns a string version of the data retrieved from the server.
+     * Returns the response body as a string.
+     *
      * @return a string version of the data retrieved from the server
      */
     @JsxGetter
@@ -457,7 +472,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             throw JavaScriptEngine.asJavaScriptException(
                     getWindow(),
                     "InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': "
-                    + "The value is only accessible if the object's 'responseType' is '' or 'text' "
+                            + "The value is only accessible if the object's 'responseType' is '' or 'text' "
                             + "(was '" + getResponseType() + "').",
                     DOMException.INVALID_STATE_ERR);
         }
@@ -466,13 +481,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return "";
         }
 
-        if (webResponse_ instanceof NetworkErrorWebResponse) {
+        if (webResponse_ instanceof NetworkErrorWebResponse resp) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
-                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+                LOG.debug("XMLHttpRequest.responseXML returns because of a network error ("
+                        + resp.getError() + ")");
             }
-
-            final NetworkErrorWebResponse resp = (NetworkErrorWebResponse) webResponse_;
             if (resp.getError() instanceof NoPermittedHeaderException) {
                 return "";
             }
@@ -494,7 +507,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * Returns a DOM-compatible document object version of the data retrieved from the server.
-     * @return a DOM-compatible document object version of the data retrieved from the server
+     *
+     * @return a DOM-compatible document object, or {@code null}
      */
     @JsxGetter
     public Object getResponseXML() {
@@ -502,24 +516,33 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return responseXML_;
         }
 
+        if (!RESPONSE_TYPE_DEFAULT.equals(responseType_) && !RESPONSE_TYPE_DOCUMENT.equals(responseType_)) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': "
+                            + "The value is only accessible if the object's 'responseType' is '' or 'document' "
+                            + "(was '" + getResponseType() + "').",
+                    DOMException.INVALID_STATE_ERR);
+        }
+
         if (webResponse_ == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("XMLHttpRequest.responseXML returns null because there "
-                        + "in no web resonse so far (has send() been called?)");
+                        + "is no web response so far (has send() been called?)");
             }
             return null;
         }
 
-        if (webResponse_ instanceof NetworkErrorWebResponse) {
+        if (webResponse_ instanceof NetworkErrorWebResponse response) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("XMLHttpRequest.responseXML returns of a network error ("
-                        + ((NetworkErrorWebResponse) webResponse_).getError() + ")");
+                LOG.debug("XMLHttpRequest.responseXML returns because of a network error ("
+                        + response.getError() + ")");
             }
             return null;
         }
 
         String contentType = webResponse_.getContentType();
-        if (StringUtils.isEmpty(contentType)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(contentType)) {
             contentType = MimeType.TEXT_XML;
         }
 
@@ -533,9 +556,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Returns the numeric status returned by the server, such as 404 for "Not Found"
-     * or 200 for "OK".
-     * @return the numeric status returned by the server
+     * Returns the numeric HTTP status code returned by the server (e.g. 404 for "Not Found"
+     * or 200 for "OK").
+     *
+     * @return the numeric HTTP status code
      */
     @JsxGetter
     public int getStatus() {
@@ -554,8 +578,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Returns the string message accompanying the status code, such as "Not Found" or "OK".
-     * @return the string message accompanying the status code
+     * Returns the HTTP status message accompanying the status code (e.g. "Not Found" or "OK").
+     *
+     * @return the HTTP status message
      */
     @JsxGetter
     public String getStatusText() {
@@ -570,7 +595,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             LOG.error("XMLHttpRequest.statusText was retrieved without a response available (readyState: "
                 + state_ + ").");
         }
-        return null;
+        return "";
     }
 
     /**
@@ -590,17 +615,15 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             fireJavascriptEvent(Event.TYPE_LOAD_END);
         }
 
-        // JavaScriptEngine.constructError("NetworkError",
-        //         "Failed to execute 'send' on 'XMLHttpRequest': Failed to load '" + webRequest_.getUrl() + "'");
-
         setState(UNSENT);
         webResponse_ = new NetworkErrorWebResponse(webRequest_, null);
         aborted_ = true;
     }
 
     /**
-     * Returns the labels and values of all the HTTP headers.
-     * @return the labels and values of all the HTTP headers
+     * Returns all the HTTP response headers as a string.
+     *
+     * @return all response header names and values as a string
      */
     @JsxFunction
     public String getAllResponseHeaders() {
@@ -610,12 +633,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         if (webResponse_ != null) {
             final StringBuilder builder = new StringBuilder();
             for (final NameValuePair header : webResponse_.getResponseHeaders()) {
-                builder.append(header.getName()).append(": ").append(header.getValue());
-
-                if (!getBrowserVersion().hasFeature(XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF)) {
-                    builder.append('\r');
-                }
-                builder.append('\n');
+                builder
+                    .append(header.getName())
+                    .append(": ")
+                    .append(header.getValue())
+                    .append("\r\n");
             }
             return builder.toString();
         }
@@ -624,13 +646,14 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             LOG.error("XMLHttpRequest.getAllResponseHeaders() was called without a response available (readyState: "
                 + state_ + ").");
         }
-        return null;
+        return "";
     }
 
     /**
-     * Retrieves the value of an HTTP header from the response body.
-     * @param headerName the (case-insensitive) name of the header to retrieve
-     * @return the value of the specified HTTP header
+     * Returns the value of the specified HTTP response header.
+     *
+     * @param headerName the case-insensitive name of the header to retrieve
+     * @return the value of the specified HTTP header, or {@code null} if not found
      */
     @JsxFunction
     public String getResponseHeader(final String headerName) {
@@ -649,12 +672,13 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Assigns the destination URL, method and other optional attributes of a pending request.
-     * @param method the method to use to send the request to the server (GET, POST, etc)
+     * Initializes the request by specifying the destination URL, method, and other optional attributes.
+     *
+     * @param method the HTTP method to use (e.g. GET, POST)
      * @param urlParam the URL to send the request to
-     * @param asyncParam Whether or not to send the request to the server asynchronously, defaults to {@code true}
-     * @param user If authentication is needed for the specified URL, the username to use to authenticate
-     * @param password If authentication is needed for the specified URL, the password to use to authenticate
+     * @param asyncParam whether to send the request asynchronously; defaults to {@code true}
+     * @param user the username to use for authentication, if required
+     * @param password the password to use for authentication, if required
      */
     @JsxFunction
     public void open(final String method, final Object urlParam, final Object asyncParam,
@@ -681,8 +705,30 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             request.setDefaultResponseContentCharset(UTF_8);
             request.setRefererHeader(pageUrl);
 
+            request.setFetchDestination(WebRequest.FetchDestination.EMPTY);
+            request.setFetchModeOverride(FetchMode.CORS);
+            request.setRequestingUrl(pageUrl);
+
             try {
-                request.setHttpMethod(HttpMethod.valueOf(method.toUpperCase(Locale.ROOT)));
+                HttpMethod.validateHttpMethodName(method);
+            }
+            catch (final IllegalArgumentException e) {
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        e.getMessage(),
+                        DOMException.SYNTAX_ERR);
+            }
+
+            final String methodUC = method.toUpperCase(Locale.ROOT);
+            if ("TRACE".equals(methodUC)) {
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "HTTP Method '" + method + "' not allowed.",
+                        DOMException.SECURITY_ERR);
+            }
+
+            try {
+                request.setHttpMethod(HttpMethod.valueOf(methodUC));
             }
             catch (final IllegalArgumentException e) {
                 if (LOG.isInfoEnabled()) {
@@ -691,29 +737,45 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 return;
             }
 
-            isSameOrigin_ = isSameOrigin(pageUrl, fullUrl);
-            final boolean alwaysAddOrigin = HttpMethod.GET != request.getHttpMethod()
-                                            && HttpMethod.PATCH != request.getHttpMethod()
-                                            && HttpMethod.HEAD != request.getHttpMethod();
-            if (alwaysAddOrigin || !isSameOrigin_) {
-                final StringBuilder origin = new StringBuilder().append(pageUrl.getProtocol()).append("://")
-                        .append(pageUrl.getHost());
-                if (pageUrl.getPort() != -1) {
-                    origin.append(':').append(pageUrl.getPort());
-                }
-                request.setAdditionalHeader(HttpHeader.ORIGIN, origin.toString());
+            if ("data".equals(fullUrl.getProtocol())) {
+                isSameOrigin_ = true;
             }
-
-            // password is ignored if no user defined
-            if (user != null && !JavaScriptEngine.isUndefined(user)) {
-                final String userCred = user.toString();
-
-                String passwordCred = "";
-                if (password != null && !JavaScriptEngine.isUndefined(password)) {
-                    passwordCred = password.toString();
+            else if ("blob".equals(fullUrl.getProtocol())) {
+                boolean sameOrigin = false;
+                try {
+                    final URL blobOrigin = UrlUtils.toUrlUnsafe(fullUrl.toExternalForm().substring("blob:".length()));
+                    sameOrigin = UrlUtils.isSameOrigin(pageUrl, blobOrigin);
+                }
+                catch (final MalformedURLException ignored) {
+                    // keep sameOrigin = false
+                }
+                isSameOrigin_ = sameOrigin;
+            }
+            else {
+                isSameOrigin_ = UrlUtils.isSameOrigin(pageUrl, fullUrl);
+                final boolean alwaysAddOrigin = HttpMethod.GET != request.getHttpMethod()
+                                                && HttpMethod.HEAD != request.getHttpMethod();
+                if (alwaysAddOrigin || !isSameOrigin_) {
+                    final StringBuilder origin = new StringBuilder().append(pageUrl.getProtocol()).append("://")
+                            .append(pageUrl.getHost());
+                    if (pageUrl.getPort() != -1) {
+                        origin.append(':').append(pageUrl.getPort());
+                    }
+                    request.setAdditionalHeader(HttpHeader.ORIGIN, origin.toString());
                 }
 
-                request.setCredentials(new HtmlUnitUsernamePasswordCredentials(userCred, passwordCred.toCharArray()));
+                // password is ignored if no user defined
+                if (user != null && !JavaScriptEngine.isUndefined(user)) {
+                    final String userCred = user.toString();
+
+                    String passwordCred = "";
+                    if (password != null && !JavaScriptEngine.isUndefined(password)) {
+                        passwordCred = password.toString();
+                    }
+
+                    request.setCredentials(
+                                new HtmlUnitUsernamePasswordCredentials(userCred, passwordCred.toCharArray()));
+                }
             }
             webRequest_ = request;
         }
@@ -732,24 +794,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
     }
 
-    private static boolean isSameOrigin(final URL originUrl, final URL newUrl) {
-        if (!originUrl.getHost().equals(newUrl.getHost())) {
-            return false;
-        }
-
-        int originPort = originUrl.getPort();
-        if (originPort == -1) {
-            originPort = originUrl.getDefaultPort();
-        }
-        int newPort = newUrl.getPort();
-        if (newPort == -1) {
-            newPort = newUrl.getDefaultPort();
-        }
-        return originPort == newPort;
-    }
-
     /**
-     * Sends the specified content to the server in an HTTP request and receives the response.
+     * Sends the request to the server with the specified content as the request body.
+     *
      * @param content the body of the message being sent with the request
      */
     @JsxFunction
@@ -781,7 +828,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         else {
             // Create and start a thread in which to execute the request.
             final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
-            final ContextAction<Object> action = new ContextAction<Object>() {
+            final ContextAction<Object> action = new ContextAction<>() {
                 @Override
                 public Object run(final Context cx) {
                     doSend();
@@ -803,7 +850,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Prepares the WebRequest that will be sent.
+     * Prepares the {@link WebRequest} that will be sent.
+     *
      * @param content the content to send
      */
     private void prepareRequestContent(final Object content) {
@@ -817,21 +865,27 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             final boolean setEncodingType = webRequest_.getAdditionalHeader(HttpHeader.CONTENT_TYPE) == null;
 
-            if (content instanceof HTMLDocument) {
-                // final String body = ((HTMLDocument) content).getDomNodeOrDie().asXml();
-                final String body = new XMLSerializer().serializeToString((HTMLDocument) content);
+            if (content instanceof HTMLDocument document) {
+                String body = new XMLSerializer().serializeToString(document);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Setting request body to: " + body);
                 }
+
+                final Element docElement = ((Document) content).getDocumentElement();
+                final SgmlPage page = docElement.getDomNodeOrDie().getPage();
+                final DocumentType doctype = page.getDoctype();
+                if (doctype != null && !StringUtils.isEmptyOrNull(doctype.getName())) {
+                    body = "<!DOCTYPE " + doctype.getName() + ">" + body;
+                }
+
                 webRequest_.setRequestBody(body);
                 if (setEncodingType) {
                     webRequest_.setAdditionalHeader(HttpHeader.CONTENT_TYPE, "text/html;charset=UTF-8");
                 }
             }
-            else if (content instanceof XMLDocument) {
+            else if (content instanceof XMLDocument xmlDocument) {
                 // this output differs from real browsers but it seems to be a good starting point
                 try (StringWriter writer = new StringWriter()) {
-                    final XMLDocument xmlDocument = (XMLDocument) content;
 
                     final Transformer transformer = TransformerFactory.newInstance().newTransformer();
                     transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -854,22 +908,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
                 }
             }
-            else if (content instanceof FormData) {
-                ((FormData) content).fillRequest(webRequest_);
+            else if (content instanceof FormData data) {
+                data.fillRequest(webRequest_);
             }
-            else if (content instanceof NativeArrayBufferView) {
-                final NativeArrayBufferView view = (NativeArrayBufferView) content;
+            else if (content instanceof NativeArrayBufferView view) {
                 webRequest_.setRequestBody(new String(view.getBuffer().getBuffer(), UTF_8));
                 if (setEncodingType) {
                     webRequest_.setEncodingType(null);
                 }
             }
-            else if (content instanceof URLSearchParams) {
-                ((URLSearchParams) content).fillRequest(webRequest_);
+            else if (content instanceof URLSearchParams params) {
+                params.fillRequest(webRequest_);
                 webRequest_.addHint(HttpHint.IncludeCharsetInContentTypeHeader);
             }
-            else if (content instanceof Blob) {
-                ((Blob) content).fillRequest(webRequest_);
+            else if (content instanceof Blob blob) {
+                blob.fillRequest(webRequest_);
             }
             else {
                 final String body = JavaScriptEngine.toString(content);
@@ -891,14 +944,20 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * The real send job.
+     * Performs the actual send operation.
      */
     void doSend() {
-        final WebClient wc = getWindow().getWebWindow().getWebClient();
+        final Window window = getWindow();
+        final WebWindow webWindow = window.getWebWindow();
+        final WebClient wc = webWindow.getWebClient();
 
         // accessing to local resource is forbidden for security reason
         if (!wc.getOptions().isFileProtocolForXMLHttpRequestsAllowed()
                 && "file".equals(webRequest_.getUrl().getProtocol())) {
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Not allowed to load local resource: " + webRequest_.getUrl());
+            }
 
             if (async_) {
                 setState(DONE);
@@ -906,20 +965,19 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 fireJavascriptEvent(Event.TYPE_ERROR);
                 fireJavascriptEvent(Event.TYPE_LOAD_END);
             }
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Not allowed to load local resource: " + webRequest_.getUrl());
-            }
+            else {
             throw JavaScriptEngine.asJavaScriptException(
-                    getWindow(),
+                        window,
                     "Not allowed to load local resource: " + webRequest_.getUrl(),
                     DOMException.NETWORK_ERR);
+        }
         }
 
         final BrowserVersion browserVersion = getBrowserVersion();
         try {
             if (!isSameOrigin_ && isPreflight()) {
                 final WebRequest preflightRequest = new WebRequest(webRequest_.getUrl(), HttpMethod.OPTIONS);
+                preflightRequest.setEncodingType(null);
 
                 // preflight request shouldn't have cookies
                 preflightRequest.addHint(HttpHint.BlockCookies);
@@ -951,6 +1009,14 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     preflightRequest.setTimeout(timeout_);
                 }
 
+                if (getBrowserVersion().hasFeature(XHR_PREFLIGHT_CORS)) {
+                    // preflightRequest.setFetchModeOverride(FetchMode.CORS);
+                    preflightRequest.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "cors");
+                }
+
+                final HtmlPage containingPage = (HtmlPage) webWindow.getEnclosedPage();
+                preflightRequest.setRefererHeader(containingPage.getUrl());
+
                 // TODO HA #2932, #1414 start
                 preflightRequest.setXHR();
                 // TODO HA #2932, #1414 end
@@ -970,7 +1036,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                         LOG.debug("No permitted request for URL " + webRequest_.getUrl());
                     }
                     throw JavaScriptEngine.asJavaScriptException(
-                            getWindow(),
+                            window,
                             "No permitted \"Access-Control-Allow-Origin\" header.",
                             DOMException.NETWORK_ERR);
                 }
@@ -1093,7 +1159,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     fireJavascriptEvent(Event.TYPE_LOAD_END);
                 }
 
-                throw JavaScriptEngine.asJavaScriptException(getWindow(),
+                throw JavaScriptEngine.asJavaScriptException(window,
                         e.getMessage(), DOMException.NETWORK_ERR);
             }
         }
@@ -1126,11 +1192,15 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             if (HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.equalsIgnoreCase(pair.getName())) {
                 String value = pair.getValue();
                 if (value != null) {
+                    if (ALLOW_ORIGIN_ALL.equals(value)) {
+                        // all headers are allowed
+                        return true;
+                    }
                     value = org.htmlunit.util.StringUtils.toRootLowerCase(value);
                     final String[] values = org.htmlunit.util.StringUtils.splitAtComma(value);
                     for (String part : values) {
                         part = part.trim();
-                        if (StringUtils.isNotEmpty(part)) {
+                        if (!org.htmlunit.util.StringUtils.isEmptyOrNull(part)) {
                             accessControlValues.add(part);
                         }
                     }
@@ -1149,8 +1219,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * @param name header name (MUST be lower-case for performance reasons)
-     * @param value header value
+     * Checks whether the given header name requires a preflight request.
+     *
+     * @param name the header name (MUST be lower-case for performance reasons)
+     * @param value the header value
+     * @return {@code true} if this header requires a preflight
      */
     private static boolean isPreflightHeader(final String name, final String value) {
         if (HttpHeader.CONTENT_TYPE_LC.equals(name)) {
@@ -1171,10 +1244,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Sets the specified header to the specified value. The <code>open</code> method must be
+     * Sets the specified header to the specified value. The {@code open()} method must be
      * called before this method, or an error will occur.
-     * @param name the name of the header being set
-     * @param value the value of the header being set
+     *
+     * @param name the name of the header to set
+     * @param value the value of the header to set
      */
     @JsxFunction
     public void setRequestHeader(final String name, final String value) {
@@ -1198,8 +1272,9 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Not all request headers can be set from JavaScript.
-     * @see <a href="http://www.w3.org/TR/XMLHttpRequest/#the-setrequestheader-method">W3C doc</a>
+     * Checks whether the specified request header may be set from JavaScript.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/setRequestHeader">MDN Documentation</a>
      * @param name the header name
      * @return {@code true} if the header can be set from JavaScript
      */
@@ -1215,11 +1290,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     }
 
     /**
-     * Override the mime type returned by the server (if any). This may be used, for example, to force a stream
-     * to be treated and parsed as text/xml, even if the server does not report it as such.
-     * This must be done before the send method is invoked.
-     * @param mimeType the type used to override that returned by the server (if any)
-     * @see <a href="http://xulplanet.com/references/objref/XMLHttpRequest.html#method_overrideMimeType">XUL Planet</a>
+     * Overrides the MIME type returned by the server. This must be called before {@code send()}.
+     * This may be used, for example, to force a stream to be treated and parsed as {@code text/xml},
+     * even if the server does not report it as such.
+     *
+     * @param mimeType the MIME type to use instead of the one returned by the server
      */
     @JsxFunction
     public void overrideMimeType(final String mimeType) {
@@ -1234,6 +1309,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * Returns the {@code withCredentials} property.
+     *
      * @return the {@code withCredentials} property
      */
     @JsxGetter
@@ -1243,7 +1319,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * Sets the {@code withCredentials} property.
-     * @param withCredentials the {@code withCredentials} property.
+     *
+     * @param withCredentials the {@code withCredentials} property
      */
     @JsxSetter
     public void setWithCredentials(final boolean withCredentials) {
@@ -1252,14 +1329,21 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
     /**
      * Returns the {@code upload} property.
+     *
      * @return the {@code upload} property
      */
     @JsxGetter
     public XMLHttpRequestUpload getUpload() {
+        if (upload_ != null) {
+            return upload_;
+        }
+
         final XMLHttpRequestUpload upload = new XMLHttpRequestUpload();
         upload.setParentScope(getParentScope());
         upload.setPrototype(getPrototype(upload.getClass()));
-        return upload;
+
+        upload_ = upload;
+        return upload_;
     }
 
     /**
@@ -1280,11 +1364,22 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         super.setOnreadystatechange(readyStateChangeHandler);
     }
 
+    /**
+     * Returns the number of milliseconds a request can take before automatically being terminated.
+     * A value of {@code 0} means there is no timeout.
+     *
+     * @return the timeout in milliseconds
+     */
     @JsxGetter
     public int getTimeout() {
         return timeout_;
     }
 
+    /**
+     * Sets the number of milliseconds a request can take before automatically being terminated.
+     *
+     * @param timeout the timeout in milliseconds
+     */
     @JsxSetter
     public void setTimeout(final int timeout) {
         timeout_ = timeout;
@@ -1346,16 +1441,13 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
 
         @Override
-        public Charset getContentCharsetOrNull() {
-            return null;
-        }
-
-        @Override
         public WebRequest getWebRequest() {
             return request_;
         }
 
         /**
+         * Returns the I/O error that caused this network error response.
+         *
          * @return the error
          */
         public IOException getError() {

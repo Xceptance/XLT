@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -42,13 +43,6 @@ public class DataTransferItemList extends HtmlUnitScriptable {
     private FileList fileList_;
 
     /**
-     * Creates an instance.
-     */
-    public DataTransferItemList() {
-        super();
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
@@ -57,6 +51,8 @@ public class DataTransferItemList extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code length} property.
+     *
      * @return the {@code length} property
      */
     @JsxGetter
@@ -78,16 +74,16 @@ public class DataTransferItemList extends HtmlUnitScriptable {
      * @param args the arguments passed into the method
      * @param function the function
      * @return the newly-created {@link DataTransferItem} object
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536782.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add">MDN documentation</a>
      */
     @JsxFunction
-    public static DataTransferItem add(final Context context, final Scriptable scope,
+    public static DataTransferItem add(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         final DataTransferItemList itemList = (DataTransferItemList) thisObj;
         if (args.length == 1) {
-            if (args[0] instanceof File) {
-                final DataTransferItem item = DataTransferItem.buildFileItem((File) args[0]);
-                item.setParentScope(itemList.getParentScope());
+            if (args[0] instanceof File file) {
+                final DataTransferItem item = DataTransferItem.buildFileItem(file);
+                item.setParentScope(scope);
                 item.setPrototype(itemList.getPrototype(item.getClass()));
 
                 if (itemList.items_ == null) {
@@ -106,7 +102,7 @@ public class DataTransferItemList extends HtmlUnitScriptable {
             final String data = JavaScriptEngine.toString(args[0]);
             final String type = JavaScriptEngine.toString(args[1]);
             final DataTransferItem item = DataTransferItem.buildStringItem(data, type);
-            item.setParentScope(itemList.getParentScope());
+            item.setParentScope(scope);
             item.setPrototype(itemList.getPrototype(item.getClass()));
 
             if (itemList.items_ == null) {
@@ -137,8 +133,9 @@ public class DataTransferItemList extends HtmlUnitScriptable {
     /**
      * Removes the DataTransferItem at the specified index from the list. If the index is less
      * than zero or greater than one less than the length of the list, the list will not be changed.
+     *
      * @param index the zero-based index number of the item in the drag data list to remove.
-     * If the index doesn't correspond to an existing item in the list, the list is left unchanged.
+     *        If the index doesn't correspond to an existing item in the list, the list is left unchanged.
      */
     @JsxFunction
     public void remove(final int index) {
@@ -164,8 +161,9 @@ public class DataTransferItemList extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns an Iterator allowing to go through all keys contained in this object.
-     * @return a NativeArrayIterator
+     * Returns an iterator over the values in this object.
+     *
+     * @return a native array iterator
      */
     @JsxSymbol(symbolName = "iterator")
     public Scriptable values() {
@@ -173,8 +171,9 @@ public class DataTransferItemList extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the file list for the parent {@code DataTransfer} object.
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
-     * Maintains the file list for the parent DataTrasnfer object.
+     *
      * @return the {@code files} property
      */
     public FileList getFiles() {

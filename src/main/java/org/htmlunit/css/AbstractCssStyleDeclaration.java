@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ import org.htmlunit.util.StringUtils;
 /**
  * A css StyleDeclaration.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -87,7 +87,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Get the value for the style attribute.
-     * This impl ignores the default getDefaultValueIfEmpty flag, but there is a overload
+     * This impl ignores the default getDefaultValueIfEmpty flag, but there is an overload
      * in {@link ComputedCssStyleDeclaration}.
      * @param definition the definition
      * @param getDefaultValueIfEmpty whether to get the default value if empty or not
@@ -103,6 +103,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     public abstract boolean hasFeature(BrowserVersionFeatures property);
 
     /**
+     * Returns the the {@link BrowserVersion}.
+     *
      * @return the {@link BrowserVersion}
      */
     public abstract BrowserVersion getBrowserVersion();
@@ -113,7 +115,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * attributes exists, its value is returned. If neither attribute exists, an empty string
      * is returned.</p>
      *
-     * <p>The second named attribute may be shorthand for a the actual desired property.
+     * <p>The second named attribute may be shorthand for the actual desired property.
      * The following formats are possible:</p>
      * <ol>
      *   <li><code>top right bottom left</code>: All values are explicit.</li>
@@ -214,6 +216,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     public abstract int getLength();
 
     /**
+     * Returns the name of the CSS property at the specified index.
+     *
      * @param index the index
      * @return the name of the CSS property at the specified index
      */
@@ -253,6 +257,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     public abstract Map<String, StyleElement> getStyleMap();
 
     /**
+     * Returns true if this is a computed style declaration.
+     *
      * @return true if this is a computed style declaration
      */
     public boolean isComputed() {
@@ -265,9 +271,9 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      */
     public String getBackgroundAttachment() {
         String value = getStyleAttribute(Definition.BACKGROUND_ATTACHMENT, false);
-        if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             final String bg = getStyleAttribute(Definition.BACKGROUND, true);
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(bg)) {
+            if (StringUtils.isNotBlank(bg)) {
                 value = findAttachment(bg);
                 if (value == null) {
                     if (hasFeature(CSS_BACKGROUND_INITIAL) && !isComputed()) {
@@ -289,9 +295,9 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      */
     public String getBackgroundColor() {
         String value = getStyleAttribute(Definition.BACKGROUND_COLOR, false);
-        if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             final String bg = getStyleAttribute(Definition.BACKGROUND, false);
-            if (org.apache.commons.lang3.StringUtils.isBlank(bg)) {
+            if (StringUtils.isBlank(bg)) {
                 return "";
             }
             value = findColor(bg);
@@ -309,7 +315,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
             }
             return value;
         }
-        if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             return "";
         }
         return value;
@@ -321,9 +327,9 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      */
     public String getBackgroundImage() {
         String value = getStyleAttribute(Definition.BACKGROUND_IMAGE, false);
-        if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             final String bg = getStyleAttribute(Definition.BACKGROUND, false);
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(bg)) {
+            if (StringUtils.isNotBlank(bg)) {
                 value = findImageUrl(bg);
                 final boolean backgroundInitial = hasFeature(CSS_BACKGROUND_INITIAL);
                 if (value == null) {
@@ -357,12 +363,12 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
         if (value == null) {
             return null;
         }
-        if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             final String bg = getStyleAttribute(Definition.BACKGROUND, false);
             if (bg == null) {
                 return null;
             }
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(bg)) {
+            if (StringUtils.isNotBlank(bg)) {
                 value = findPosition(bg);
                 final boolean isInitial = hasFeature(CSS_BACKGROUND_INITIAL);
                 if (value == null) {
@@ -419,9 +425,9 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      */
     public String getBackgroundRepeat() {
         String value = getStyleAttribute(Definition.BACKGROUND_REPEAT, false);
-        if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+        if (StringUtils.isBlank(value)) {
             final String bg = getStyleAttribute(Definition.BACKGROUND, false);
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(bg)) {
+            if (StringUtils.isNotBlank(bg)) {
                 value = findRepeat(bg);
                 if (value == null) {
                     if (hasFeature(CSS_BACKGROUND_INITIAL) && !isComputed()) {
@@ -435,6 +441,14 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
         }
 
         return value;
+    }
+
+    /**
+     * Gets the {@code blockSize} style attribute.
+     * @return the style attribute
+     */
+    public String getBlockSize() {
+        return getStyleAttribute(Definition.BLOCK_SIZE, true);
     }
 
     /**
@@ -526,7 +540,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
-     * Gets the border width for the specified side
+     * Gets the border width for the specified side.
      * @param borderSideWidth the border side width Definition
      * @param borderSide the border side Definition
      * @return the width, "" if not defined
@@ -537,7 +551,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
             value = findBorderWidth(getStyleAttribute(borderSide, false));
             if (value == null) {
                 final String borderWidth = getStyleAttribute(Definition.BORDER_WIDTH, false);
-                if (!org.apache.commons.lang3.StringUtils.isEmpty(borderWidth)) {
+                if (!StringUtils.isEmptyOrNull(borderWidth)) {
                     final String[] values = StringUtils.splitAtJavaWhitespace(borderWidth);
                     int index = values.length;
                     if (borderSideWidth.name().contains("TOP")) {
@@ -728,6 +742,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Returns the style attribute {@code left}.
+     *
      * @return the style attribute {@code left}
      */
     public String getLeft() {
@@ -735,6 +751,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Returns the style attribute {@code letterSpacing}.
+     *
      * @return the style attribute {@code letterSpacing}
      */
     public String getLetterSpacing() {
@@ -742,6 +760,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Returns the style attribute {@code letterSpacing}.
+     *
      * @return the style attribute {@code lineHeight}
      */
     public String getLineHeight() {
@@ -749,6 +769,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code margin} style attribute.
+     *
      * @return the style attribute {@code margin}
      */
     public String getMargin() {
@@ -757,6 +779,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Gets the {@code marginBottom} style attribute.
+     *
      * @return the style attribute
      */
     public String getMarginBottom() {
@@ -765,6 +788,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Gets the {@code marginLeft} style attribute.
+     *
      * @return the style attribute
      */
     public String getMarginLeft() {
@@ -773,6 +797,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Gets the {@code marginRight} style attribute.
+     *
      * @return the style attribute
      */
     public String getMarginRight() {
@@ -781,6 +806,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Gets the {@code marginTop} style attribute.
+     *
      * @return the style attribute
      */
     public String getMarginTop() {
@@ -788,6 +814,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code maxHeight} style attribute.
+     *
      * @return the style attribute {@code maxHeight}
      */
     public String getMaxHeight() {
@@ -795,6 +823,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code maxWidth} style attribute.
+     *
      * @return the style attribute {@code maxWidth}
      */
     public String getMaxWidth() {
@@ -802,6 +832,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code minHeight} style attribute.
+     *
      * @return the style attribute {@code minHeight}
      */
     public String getMinHeight() {
@@ -809,6 +841,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code minWidth} style attribute.
+     *
      * @return the style attribute {@code minWidth}
      */
     public String getMinWidth() {
@@ -817,6 +851,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Gets the {@code opacity} style attribute.
+     *
      * @return the style attribute
      */
     public String getOpacity() {
@@ -825,9 +860,9 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
             return "";
         }
 
-        final String trimedOpacity = opacity.trim();
+        final String trimmedOpacity = opacity.trim();
         try {
-            final double value = Double.parseDouble(trimedOpacity);
+            final double value = Double.parseDouble(trimmedOpacity);
             if (value % 1 == 0) {
                 return Integer.toString((int) value);
             }
@@ -840,6 +875,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code orphans} style attribute.
+     *
      * @return the style attribute {@code orphans}
      */
     public String getOrphans() {
@@ -847,6 +884,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code outline} style attribute.
+     *
      * @return the style attribute {@code outline}
      */
     public String getOutline() {
@@ -854,6 +893,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code outlineWidth} style attribute.
+     *
      * @return the style attribute {@code outlineWidth}
      */
     public String getOutlineWidth() {
@@ -861,6 +902,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code padding} style attribute.
+     *
      * @return the style attribute {@code padding}
      */
     public String getPadding() {
@@ -868,6 +911,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code paddingBottom} style attribute.
+     *
      * @return the style attribute {@code paddingBottom}
      */
     public String getPaddingBottom() {
@@ -875,6 +920,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code paddingLeft} style attribute.
+     *
      * @return the style attribute {@code paddingLeft}
      */
     public String getPaddingLeft() {
@@ -882,6 +929,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code paddingRight} style attribute.
+     *
      * @return the style attribute {@code paddingRight}
      */
     public String getPaddingRight() {
@@ -889,6 +938,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code paddingTop} style attribute.
+     *
      * @return the style attribute {@code paddingTop}
      */
     public String getPaddingTop() {
@@ -896,6 +947,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code position} style attribute.
+     *
      * @return the style attribute {@code position}
      */
     public String getPosition() {
@@ -903,6 +956,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code right} style attribute.
+     *
      * @return the style attribute {@code right}
      */
     public String getRight() {
@@ -910,6 +965,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code rubyAlign} style attribute.
+     *
      * @return the style attribute {@code rubyAlign}
      */
     public String getRubyAlign() {
@@ -917,6 +974,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code size} style attribute.
+     *
      * @return the style attribute {@code size}
      */
     public String getSize() {
@@ -924,6 +983,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code textIndent} style attribute.
+     *
      * @return the style attribute {@code textIndent}
      */
     public String getTextIndent() {
@@ -931,6 +992,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code top} style attribute.
+     *
      * @return the style attribute {@code top}
      */
     public String getTop() {
@@ -938,6 +1001,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code verticalAlign} style attribute.
+     *
      * @return the style attribute {@code verticalAlign}
      */
     public String getVerticalAlign() {
@@ -945,6 +1010,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code widows} style attribute.
+     *
      * @return the style attribute {@code widows}
      */
     public String getWidows() {
@@ -952,6 +1019,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code width} style attribute.
+     *
      * @return the style attribute {@code width}
      */
     public String getWidth() {
@@ -959,6 +1028,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     }
 
     /**
+     * Gets the {@code wordSpacing} style attribute.
+     *
      * @return the style attribute {@code wordSpacing}
      */
     public String getWordSpacing() {
@@ -967,6 +1038,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Gets the {@code zIndex} style attribute.
+     *
      * @return the style attribute
      */
     public String getZIndex() {
@@ -982,6 +1054,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for any attachment notation in the specified text.
+     *
      * @param text the string to search in
      * @return the string of the attachment if found, null otherwise
      */
@@ -997,6 +1070,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for any color notation in the specified text.
+     *
      * @param text the string to search in
      * @return the string of the color if found, null otherwise
      */
@@ -1022,6 +1096,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for any URL notation in the specified text.
+     *
      * @param text the string to search in
      * @return the string of the URL if found, null otherwise
      */
@@ -1035,6 +1110,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for any position notation in the specified text.
+     *
      * @param text the string to search in
      * @return the string of the position if found, null otherwise
      */
@@ -1056,6 +1132,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for any repeat notation in the specified text.
+     *
      * @param text the string to search in
      * @return the string of the repeat if found, null otherwise
      */
@@ -1077,6 +1154,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for a border style in the specified text.
+     *
      * @param text the string to search in
      * @return the border style if found, null otherwise
      */
@@ -1091,6 +1169,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Returns if the specified token is a border style.
+     *
      * @param token the token to check
      * @return whether the token is a border style or not
      */
@@ -1104,6 +1183,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Searches for a border width in the specified text.
+     *
      * @param text the string to search in
      * @return the border width if found, null otherwise
      */
@@ -1118,6 +1198,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Returns if the specified token is a border width.
+     *
      * @param token the token to check
      * @return whether the token is a border width or not
      */
@@ -1128,6 +1209,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
 
     /**
      * Returns if the specified token is a length.
+     *
      * @param token the token to check
      * @return whether the token is a length or not
      */

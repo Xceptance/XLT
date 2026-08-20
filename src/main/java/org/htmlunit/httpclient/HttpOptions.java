@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,27 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
  */
 public class HttpOptions extends HttpEntityEnclosingRequestBase {
 
+    /**
+     * Ctor.
+     */
     public HttpOptions() {
         super();
     }
 
+    /**
+     * Ctor.
+     * @param uri the uri
+     */
     public HttpOptions(final URI uri) {
         super();
         setURI(uri);
     }
 
     /**
-     * @param uri the uri
-     * @throws IllegalArgumentException if the uri is invalid.
+     * Constructs a new HTTP OPTIONS request for the specified URI.
+     *
+     * @param uri the request URI
+     * @throws IllegalArgumentException if the specified URI is invalid
      */
     public HttpOptions(final String uri) {
         super();

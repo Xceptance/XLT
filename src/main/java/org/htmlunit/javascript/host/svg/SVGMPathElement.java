@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,19 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.svg.SvgMPath;
 
 /**
- * A JavaScript object for {@code SVGMPathElement}.
+ * JavaScript host object for {@code SVGMPathElement}.
  *
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGMPathElement">MDN Documentation</a>
  */
 @JsxClass(domClass = SvgMPath.class)
 public class SVGMPathElement extends SVGElement {
 
     /**
-     * Creates an instance.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor

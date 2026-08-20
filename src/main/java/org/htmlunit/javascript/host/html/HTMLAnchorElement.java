@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
@@ -27,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.SgmlPage;
@@ -42,13 +39,14 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * The JavaScript object that represents an anchor.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:gousseff@netscape.net">Alexei Goussev</a>
+ * @author Mike Bowler
+ * @author Alexei Goussev
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Chris Erskine
@@ -56,6 +54,9 @@ import org.htmlunit.util.UrlUtils;
  * @author Sudhan Moghe
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlAnchor.class)
 public class HTMLAnchorElement extends HTMLElement {
@@ -115,8 +116,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the name property.
-     * @param name name attribute value
+     * Sets the {@code name} property.
+     * @param name the {@code name} property value
      */
     @JsxSetter
     @Override
@@ -125,8 +126,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the name property of this link.
-     * @return the name property
+     * Returns the value of this link's {@code name} property.
+     * @return the value of this link's {@code name} property
      */
     @JsxGetter
     @Override
@@ -135,8 +136,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the target property of this link.
-     * @param target target attribute value
+     * Sets the {@code target} property of this link.
+     * @param target the {@code target} property value
      */
     @JsxSetter
     public void setTarget(final String target) {
@@ -144,8 +145,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the target property of this link.
-     * @return the href property
+     * Returns the value of this link's {@code target} property.
+     * @return the value of this link's {@code target} property
      */
     @JsxGetter
     public String getTarget() {
@@ -171,8 +172,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the rel property.
-     * @param rel rel attribute value
+     * Sets the {@code rel} property.
+     * @param rel the {@code rel} property value
      */
     @JsxSetter
     public void setRel(final String rel) {
@@ -180,8 +181,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rel property.
-     * @return the rel property
+     * Returns the value of this link's {@code rel} property.
+     * @return the value of this link's {@code rel} property
      */
     @JsxGetter
     public String getRel() {
@@ -189,8 +190,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rev property.
-     * @return the rev property
+     * Returns the value of this link's {@code rev} property.
+     * @return the value of this link's {@code rev} property
      */
     @JsxGetter
     public String getRev() {
@@ -198,8 +199,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the rev property.
-     * @param rel rev attribute value
+     * Sets the {@code rev} property.
+     * @param rel the {@code rev} property value
      */
     @JsxSetter
     public void setRev(final String rel) {
@@ -207,13 +208,13 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rev property.
-     * @return the referrerPolicy property
+     * Returns the value of this link's {@code referrerPolicy} property.
+     * @return the value of this link's {@code referrerPolicy} property
      */
     @JsxGetter
     public String getReferrerPolicy() {
         String attrib = getDomNodeOrDie().getAttribute("referrerPolicy");
-        if (StringUtils.isEmpty(attrib)) {
+        if (StringUtils.isEmptyOrNull(attrib)) {
             return "";
         }
         attrib = attrib.toLowerCase(Locale.ROOT);
@@ -224,8 +225,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the rev property.
-     * @param referrerPolicy referrerPolicy attribute value
+     * Sets the {@code referrerPolicy} property.
+     * @param referrerPolicy the {@code referrerPolicy} property value
      */
     @JsxSetter
     public void setReferrerPolicy(final String referrerPolicy) {
@@ -236,16 +237,12 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the search portion of the link's URL (the portion starting with
      * '?' and up to but not including any '#').
      * @return the search portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/search">MDN Documentation</a>
      */
     @JsxGetter
     public String getSearch() {
         try {
-            final String query = getUrl().getQuery();
-            if (query == null) {
-                return "";
-            }
-            return "?" + query;
+            return HTMLHyperlinkElementUtils.getSearch(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -254,42 +251,25 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the search portion of the link's URL (the portion starting with '?'
-     * and up to but not including any '#')..
+     * and up to but not including any '#').
      * @param search the new search portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/search">MDN Documentation</a>
      */
     @JsxSetter
     public void setSearch(final String search) throws Exception {
-        final String query;
-        if (search == null
-                || org.htmlunit.util.StringUtils.isEmptyString(search)
-                || org.htmlunit.util.StringUtils.equalsChar('?', search)) {
-            query = null;
-        }
-        else if (search.charAt(0) == '?') {
-            query = search.substring(1);
-        }
-        else {
-            query = search;
-        }
-
-        setUrl(UrlUtils.getUrlWithNewQuery(getUrl(), query));
+        setUrl(HTMLHyperlinkElementUtils.setSearch(getUrl(), search));
     }
 
     /**
      * Returns the hash portion of the link's URL (the portion following the '#', including the '#').
      * @return the hash portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hash">MDN Documentation</a>
      */
     @JsxGetter
     public String getHash() {
         try {
-            final String hash = getUrl().getRef();
-            if (hash == null) {
-                return "";
-            }
-            return "#" + hash;
+            return HTMLHyperlinkElementUtils.getHash(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -300,17 +280,17 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the hash portion of the link's URL (the portion following the '#').
      * @param hash the new hash portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hash">MDN Documentation</a>
      */
     @JsxSetter
     public void setHash(final String hash) throws Exception {
-        setUrl(UrlUtils.getUrlWithNewRef(getUrl(), hash));
+        setUrl(HTMLHyperlinkElementUtils.setHash(getUrl(), hash));
     }
 
     /**
      * Returns the host portion of the link's URL (the '[hostname]:[port]' portion).
      * @return the host portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533784.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/host">MDN Documentation</a>
      */
     @JsxGetter
     public String getHost() {
@@ -319,7 +299,7 @@ public class HTMLAnchorElement extends HTMLElement {
             final int port = url.getPort();
             final String host = url.getHost();
 
-            if (port == -1) {
+            if (port == -1 || HTMLHyperlinkElementUtils.isDefaultPort(url.getProtocol(), port)) {
                 return host;
             }
             return host + ":" + port;
@@ -333,34 +313,22 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the host portion of the link's URL (the '[hostname]:[port]' portion).
      * @param host the new host portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533784.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/host">MDN Documentation</a>
      */
     @JsxSetter
     public void setHost(final String host) throws Exception {
-        final String hostname;
-        final int port;
-        final int index = host.indexOf(':');
-        if (index != -1) {
-            hostname = host.substring(0, index);
-            port = Integer.parseInt(host.substring(index + 1));
-        }
-        else {
-            hostname = host;
-            port = -1;
-        }
-        final URL url = UrlUtils.getUrlWithNewHostAndPort(getUrl(), hostname, port);
-        setUrl(url);
+        setUrl(HTMLHyperlinkElementUtils.setHost(getUrl(), host));
     }
 
     /**
      * Returns the hostname portion of the link's URL.
      * @return the hostname portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533785.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hostname">MDN Documentation</a>
      */
     @JsxGetter
     public String getHostname() {
         try {
-            return UrlUtils.encodeAnchor(getUrl().getHost());
+            return HTMLHyperlinkElementUtils.getHostname(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -371,24 +339,37 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the hostname portion of the link's URL.
      * @param hostname the new hostname portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533785.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/hostname">MDN Documentation</a>
      */
     @JsxSetter
-    public void setHostname(final String hostname) throws Exception {
-        if (getBrowserVersion().hasFeature(JS_ANCHOR_HOSTNAME_IGNORE_BLANK)) {
-            if (!StringUtils.isBlank(hostname)) {
-                setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
+    public void setHostname(String hostname) throws Exception {
+        if (hostname != null) {
+            if (hostname.indexOf(' ') > -1) {
+                return;
+            }
+
+            final int idx = hostname.indexOf('#');
+            if (idx > -1) {
+                hostname = hostname.substring(0, idx);
             }
         }
-        else if (!StringUtils.isEmpty(hostname)) {
+
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(hostname)) {
+            return;
+        }
+
+        try {
             setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
+        }
+        catch (final MalformedURLException  e) {
+            // do nothing
         }
     }
 
     /**
      * Returns the pathname portion of the link's URL.
      * @return the pathname portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534332.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/pathname">MDN Documentation</a>
      */
     @JsxGetter
     public String getPathname() {
@@ -399,19 +380,12 @@ public class HTMLAnchorElement extends HTMLElement {
                 String href = anchor.getHrefAttribute();
                 if (href.length() > 1 && Character.isLetter(href.charAt(0)) && ':' == href.charAt(1)) {
                     if (browser.hasFeature(JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS)) {
-                        href = StringUtils.capitalize(href);
+                        href = org.apache.commons.lang3.StringUtils.capitalize(href);
                     }
                     if (browser.hasFeature(JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL)) {
                         href = "/" + href;
                     }
                     return href;
-                }
-            }
-            else if (browser.hasFeature(JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL)) {
-                final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
-                final String href = anchor.getHrefAttribute();
-                if (href.length() > 1 && Character.isLetter(href.charAt(0)) && ':' == href.charAt(1)) {
-                    return href.substring(2);
                 }
             }
             return getUrl().getPath();
@@ -429,23 +403,24 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the pathname portion of the link's URL.
      * @param pathname the new pathname portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534332.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/pathname">MDN Documentation</a>
      */
     @JsxSetter
     public void setPathname(final String pathname) throws Exception {
-        setUrl(UrlUtils.getUrlWithNewPath(getUrl(), pathname));
+        setUrl(HTMLHyperlinkElementUtils.setPathname(getUrl(), pathname));
     }
 
     /**
      * Returns the port portion of the link's URL.
      * @return the port portion of the link's URL
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534342.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/port">MDN Documentation</a>
      */
     @JsxGetter
     public String getPort() {
         try {
-            final int port = getUrl().getPort();
-            if (port == -1) {
+            final URL url = getUrl();
+            final int port = url.getPort();
+            if (port == -1 || HTMLHyperlinkElementUtils.isDefaultPort(url.getProtocol(), port)) {
                 return "";
             }
             return Integer.toString(port);
@@ -459,17 +434,24 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the port portion of the link's URL.
      * @param port the new port portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534342.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/port">MDN Documentation</a>
      */
     @JsxSetter
     public void setPort(final String port) throws Exception {
-        setUrl(UrlUtils.getUrlWithNewPort(getUrl(), Integer.parseInt(port)));
+        final URL url = getUrl();
+        final int newPort = Integer.parseInt(port);
+        if (HTMLHyperlinkElementUtils.isDefaultPort(url.getProtocol(), newPort)) {
+            setUrl(UrlUtils.getUrlWithNewPort(url, -1));
+        }
+        else {
+            setUrl(UrlUtils.getUrlWithNewPort(url, newPort));
+        }
     }
 
     /**
      * Returns the protocol portion of the link's URL, including the trailing ':'.
      * @return the protocol portion of the link's URL, including the trailing ':'
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534353.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/protocol">MDN Documentation</a>
      */
     @JsxGetter
     public String getProtocol() {
@@ -498,34 +480,18 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the protocol portion of the link's URL.
      * @param protocol the new protocol portion of the link's URL
      * @throws Exception if an error occurs
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534353.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/protocol">MDN Documentation</a>
      */
     @JsxSetter
     public void setProtocol(final String protocol) throws Exception {
-        if (protocol.isEmpty()) {
-            return;
-        }
-
-        final String bareProtocol = StringUtils.substringBefore(protocol, ":").trim();
-        if (!UrlUtils.isValidScheme(bareProtocol)) {
-            return;
-        }
-        if (!UrlUtils.isSpecialScheme(bareProtocol)) {
-            return;
-        }
-
-        try {
-            URL url = UrlUtils.getUrlWithNewProtocol(getUrl(), bareProtocol);
-            url = UrlUtils.removeRedundantPort(url);
-            setUrl(url);
-        }
-        catch (final MalformedURLException ignored) {
-            // ignore
+        final URL result = HTMLHyperlinkElementUtils.setProtocol(getUrl(), protocol);
+        if (result != null) {
+            setUrl(result);
         }
     }
 
     /**
-     * Calls for instance for implicit conversion to string.
+     * Called, for instance, for implicit conversion to a string.
      * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
      * @param hint the type hint
      * @return the default value
@@ -610,7 +576,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code coords} attribute.
-     * @param coords {@code coords} attribute
+     * @param coords the {@code coords} attribute value
      */
     @JsxSetter
     public void setCoords(final String coords) {
@@ -628,7 +594,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code hreflang} attribute.
-     * @param hreflang {@code hreflang} attribute
+     * @param hreflang the {@code hreflang} attribute value
      */
     @JsxSetter
     public void setHreflang(final String hreflang) {
@@ -660,11 +626,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getUsername() {
         try {
-            final String userInfo = getUrl().getUserInfo();
-            if (userInfo == null) {
-                return "";
-            }
-            return StringUtils.substringBefore(userInfo, ':');
+            return HTMLHyperlinkElementUtils.getUsername(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -673,7 +635,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code username} attribute.
-     * @param username {@code username} attribute
+     * @param username the {@code username} attribute value
      */
     @JsxSetter
     public void setUsername(final String username) {
@@ -699,11 +661,7 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxGetter
     public String getPassword() {
         try {
-            final String userName = getUrl().getUserInfo();
-            if (userName == null) {
-                return "";
-            }
-            return StringUtils.substringAfter(userName, ":");
+            return HTMLHyperlinkElementUtils.getPassword(getUrl());
         }
         catch (final MalformedURLException e) {
             return "";
@@ -712,7 +670,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code password} attribute.
-     * @param password {@code password} attribute
+     * @param password the {@code password} attribute value
      */
     @JsxSetter
     public void setPassword(final String password) {
@@ -742,7 +700,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code download} attribute.
-     * @param download {@code download} attribute
+     * @param download the {@code download} attribute value
      */
     @JsxSetter
     public void setDownload(final String download) {
@@ -760,7 +718,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code ping} attribute.
-     * @param ping {@code ping} attribute
+     * @param ping the {@code ping} attribute value
      */
     @JsxSetter
     public void setPing(final String ping) {
@@ -778,7 +736,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code shape} attribute.
-     * @param shape {@code shape} attribute
+     * @param shape the {@code shape} attribute value
      */
     @JsxSetter
     public void setShape(final String shape) {
@@ -796,7 +754,7 @@ public class HTMLAnchorElement extends HTMLElement {
 
     /**
      * Sets the {@code type} attribute.
-     * @param type {@code type} attribute
+     * @param type the {@code type} attribute value
      */
     @JsxSetter
     public void setType(final String type) {
@@ -813,8 +771,8 @@ public class HTMLAnchorElement extends HTMLElement {
     }
 
     /**
-     * Sets the relList property.
-     * @param rel attribute value
+     * Sets the {@code relList} attribute.
+     * @param rel the {@code relList} attribute value
      */
     @JsxSetter
     public void setRelList(final Object rel) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.html;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Wrapper for the HTML element "input" where type is "email".
@@ -68,20 +68,6 @@ public class HtmlEmailInput extends HtmlSelectableTextInput implements Labelable
         return raw.trim();
     }
 
-    @Override
-    public boolean isValid() {
-        final boolean isValid = super.isValid();
-        if (!isValid) {
-            return false;
-        }
-
-        final String val = getValue();
-        if (StringUtils.isNotBlank(val)) {
-            return DEFAULT_PATTERN.matcher(val).matches();
-        }
-        return true;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -104,5 +90,29 @@ public class HtmlEmailInput extends HtmlSelectableTextInput implements Labelable
     @Override
     protected boolean isMinMaxLengthSupported() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     * Per spec, a non-empty value must match the (deliberately simplified,
+     * RFC-5322-approximating) email pattern above. An empty value is never
+     * a type mismatch on its own -- that's valueMissing's concern, if
+     * 'required' is set.
+     */
+    @Override
+    public boolean hasTypeMismatchValidityState() {
+        final String val = getValue();
+        if (StringUtils.isBlank(val)) {
+            return false;
+        }
+        return !DEFAULT_PATTERN.matcher(val).matches();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTypeMismatchMessage() {
+        return "Please enter an email address.";
     }
 }

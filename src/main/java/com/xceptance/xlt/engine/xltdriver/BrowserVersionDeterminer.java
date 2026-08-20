@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,16 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
+import java.util.Map;
+import java.util.Optional;
+
 import org.htmlunit.BrowserVersion;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.htmlunit.options.HtmlUnitDriverOptions;
 import org.openqa.selenium.remote.Browser;
+import org.openqa.selenium.remote.CapabilityType;
 
 /**
- * Determine browser and its version.
+ * Determines the appropriate {@link BrowserVersion} to use based on system properties,
+ * capabilities, or other configuration sources. Provides utilities to select or customize
+ * browser versions for HtmlUnitDriver instances.
  *
  * @author Martin Bartoš
  * @author Ronald Brill
@@ -47,14 +54,14 @@ public final class BrowserVersionDeterminer {
         final String browserName;
         final String browserVersion;
 
-        final String rawVersion = capabilities.getBrowserVersion();
+        final String rawVersion = getBrowserVersion(capabilities);
         final String[] splitVersion = rawVersion == null ? new String[0] : rawVersion.split("-");
         if (splitVersion.length > 1) {
             browserName = splitVersion[0];
             browserVersion = splitVersion[1];
         }
         else {
-            browserName = capabilities.getBrowserVersion();
+            browserName = getBrowserVersion(capabilities);
             browserVersion = null;
         }
 
@@ -102,6 +109,21 @@ public final class BrowserVersionDeterminer {
         }
 
         return browserVersionObject;
+    }
+
+    /**
+     * Retrieves the browser version string from the given {@link Capabilities}.
+     * Checks both {@link HtmlUnitDriverOptions#BROWSER_VERSION} and
+     * {@link CapabilityType#BROWSER_VERSION}.
+     *
+     * @param capabilities the capabilities to inspect
+     * @return the browser version as a string, or an empty string if not specified
+     */
+    public static String getBrowserVersion(final Capabilities capabilities) {
+        final Map<String, Object> capsMap = capabilities.asMap();
+        return String.valueOf(Optional.ofNullable(capsMap.get(HtmlUnitDriverOptions.BROWSER_VERSION))
+                .or(() -> Optional.ofNullable(capsMap.get(CapabilityType.BROWSER_VERSION)))
+                .orElse(""));
     }
 
     private BrowserVersionDeterminer() {

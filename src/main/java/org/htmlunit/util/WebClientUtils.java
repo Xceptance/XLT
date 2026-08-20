@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.htmlunit.javascript.HtmlUnitContextFactory;
  * Utility class containing miscellaneous {@link WebClient}-related methods.
  *
  * @author Daniel Gredler
+ * @author Ronald Brill
  */
 public final class WebClientUtils {
 
@@ -40,9 +41,10 @@ public final class WebClientUtils {
     }
 
     /**
-     * Attaches a visual (GUI) debugger to the specified client.
+     * Attaches a visual (GUI) JavaScript debugger to the specified client.
+     *
      * @param client the client to which the visual debugger is to be attached
-     * @see <a href="http://www.mozilla.org/rhino/debugger.html">Mozilla Rhino Debugger Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Tools">Mozilla Developer Tools</a>
      */
     public static void attachVisualDebugger(final WebClient client) {
         final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
@@ -67,5 +69,4 @@ public final class WebClientUtils {
         };
         main.setSourceProvider(sourceProvider);
     }
-
 }

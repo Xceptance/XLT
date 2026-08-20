@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList">MDN doc</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList">MDN Documentation</a>
  */
 @JsxClass
 public class CSSRuleList extends HtmlUnitScriptable {
@@ -76,7 +76,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
     }
 
     /**
-     * Add a rule.
+     * Adds a rule.
      * @param rule the rule to add
      */
     protected void addRule(final CSSRule rule) {
@@ -84,7 +84,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
     }
 
     /**
-     * Clear the listOfRules.
+     * Clears the list of rules.
      */
     protected void clearRules() {
         rules_.clear();

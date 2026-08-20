@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class File extends Blob {
     private static final DateTimeFormatter LAST_MODIFIED_DATE_FORMATTER
                             = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
 
-    private static class FileBackend extends Backend {
+    private static class FileBackend implements Backend {
         private static final Log LOG = LogFactory.getLog(FileBackend.class);
 
         private final java.io.File file_;
@@ -86,7 +86,7 @@ public class File extends Blob {
         }
 
         @Override
-        byte[] getBytes(final int start, final int end) {
+        public byte[] getBytes(final int start, final int end) {
             final byte[] result = new byte[end - start];
             try {
                 System.arraycopy(FileUtils.readFileToByteArray(file_), start, result, 0, result.length);

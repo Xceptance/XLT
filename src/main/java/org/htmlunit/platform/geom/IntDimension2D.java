@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ public class IntDimension2D {
     }
 
     /**
+     * Returns the width of this as integer.
+     *
      * @return the width of this as integer.
      */
     public int getWidth() {
@@ -44,6 +46,8 @@ public class IntDimension2D {
     }
 
     /**
+     * Returns the height of this as integer.
+     *
      * @return the height of this as integer.
      */
     public int getHeight() {

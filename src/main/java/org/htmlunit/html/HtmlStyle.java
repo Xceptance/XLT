@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,12 @@ import org.htmlunit.cssparser.parser.InputSource;
 /**
  * Wrapper for the HTML element "style".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  */
 public class HtmlStyle extends HtmlElement {
 
@@ -45,7 +46,7 @@ public class HtmlStyle extends HtmlElement {
     private CssStyleSheet sheet_;
 
     /**
-     * Creates an instance of HtmlStyle
+     * Creates an instance of HtmlStyle.
      *
      * @param qualifiedName the qualified name of the element type to instantiate
      * @param page the HtmlPage that contains this element
@@ -124,6 +125,8 @@ public class HtmlStyle extends HtmlElement {
     }
 
     /**
+     * Return the referenced style sheet.
+     *
      * @return the referenced style sheet
      */
     public CssStyleSheet getSheet() {

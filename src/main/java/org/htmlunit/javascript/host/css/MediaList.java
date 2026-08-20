@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Ronald Brill
  * @author Ahmed Ashour
  * @author Frank Danek
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaList">MDN doc</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaList">MDN Documentation</a>
  */
 @JsxClass
 public class MediaList extends HtmlUnitScriptable {
@@ -60,7 +60,7 @@ public class MediaList extends HtmlUnitScriptable {
     public MediaList(final CSSStyleSheet parent, final CssMediaList cssMediaList) {
         super();
         cssMediaList_ = cssMediaList;
-        setParentScope(parent);
+        setParentScope(parent.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
 
@@ -95,7 +95,7 @@ public class MediaList extends HtmlUnitScriptable {
     /**
      * The parsable textual representation of the media list.
      * This is a comma-separated list of media.
-     * @return the parsable textual representation.
+     * @return the parsable textual representation
      */
     @JsxGetter
     public String getMediaText() {

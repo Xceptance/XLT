@@ -49,7 +49,7 @@ import com.xceptance.xlt.engine.scripting.TestDataUtils;
     {
         TestDataUtils.class
     })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*", "com.sun.*"})
 public class AbstractHtmlUnitScriptTestCaseTest
 {
     @After

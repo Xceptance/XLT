@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.Callable;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -51,9 +49,11 @@ import org.htmlunit.javascript.host.dom.AbstractList;
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection">MDN Documentation</a>
  */
 @JsxClass
-public class HTMLCollection extends AbstractList implements Callable {
+public class HTMLCollection extends AbstractList {
 
     /**
      * Creates an instance.
@@ -72,9 +72,9 @@ public class HTMLCollection extends AbstractList implements Callable {
 
     /**
      * Creates an instance.
-     * @param domNode parent scope
+     * @param domNode the parent scope
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of domNode changes (attribute added, modified or removed)
      */
     public HTMLCollection(final DomNode domNode, final boolean attributeChangeSensitive) {
         super(domNode, attributeChangeSensitive, null);
@@ -111,6 +111,10 @@ public class HTMLCollection extends AbstractList implements Callable {
         return new HTMLCollection(parentScope, initialElements);
     }
 
+    /**
+     * Returns the {@code Symbol.iterator} function that allows iterating over this collection.
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
@@ -130,41 +134,13 @@ public class HTMLCollection extends AbstractList implements Callable {
      * {@inheritDoc}
      */
     @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        if (supportsParentheses()) {
-            if (args.length == 0) {
-                throw JavaScriptEngine.reportRuntimeError("Zero arguments; need an index or a key.");
-            }
-            final Object object = getIt(args[0]);
-            if (object == NOT_FOUND) {
-                return null;
-            }
-            return object;
-        }
-
-        throw JavaScriptEngine.typeError("HTMLCollection does nont support function like access");
-    }
-
-    /**
-     * Is parentheses supported.
-     *
-     * @return true or false
-     */
-    protected boolean supportsParentheses() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     protected Object getWithPreemptionByName(final String name, final List<DomNode> elements) {
         final List<DomNode> matchingElements = new ArrayList<>();
         final boolean searchName = isGetWithPreemptionSearchName();
         for (final DomNode next : elements) {
-            if (next instanceof DomElement
+            if (next instanceof DomElement element
                     && (searchName || next instanceof HtmlInput || next instanceof HtmlForm)) {
-                final String nodeName = ((DomElement) next).getAttributeDirect(DomElement.NAME_ATTRIBUTE);
+                final String nodeName = element.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     matchingElements.add(next);
                 }
@@ -198,7 +174,7 @@ public class HTMLCollection extends AbstractList implements Callable {
      * Returns the item or items corresponding to the specified index or key.
      * @param index the index or key corresponding to the element or elements to return
      * @return the element or elements corresponding to the specified index or key
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536460.aspx">MSDN doc</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection/item">MDN Documentation</a>
      */
     @JsxFunction
     public Object item(final Object index) {
@@ -218,9 +194,9 @@ public class HTMLCollection extends AbstractList implements Callable {
     /**
      * Retrieves the item or items corresponding to the specified name (checks ids, and if
      * that does not work, then names).
-     * @param name the name or id the element or elements to return
+     * @param name the name or id of the element or elements to return
      * @return the element or elements corresponding to the specified name or id
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536634.aspx">MSDN doc</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection/namedItem">MDN Documentation</a>
      */
     @JsxFunction
     public Scriptable namedItem(final String name) {
@@ -228,8 +204,7 @@ public class HTMLCollection extends AbstractList implements Callable {
         final BrowserVersion browserVersion = getBrowserVersion();
         if (browserVersion.hasFeature(HTMLCOLLECTION_NAMED_ITEM_ID_FIRST)) {
             for (final Object next : elements) {
-                if (next instanceof DomElement) {
-                    final DomElement elem = (DomElement) next;
+                if (next instanceof DomElement elem) {
                     final String id = elem.getId();
                     if (name.equals(id)) {
                         return getScriptableForElement(elem);
@@ -238,8 +213,7 @@ public class HTMLCollection extends AbstractList implements Callable {
             }
         }
         for (final Object next : elements) {
-            if (next instanceof DomElement) {
-                final DomElement elem = (DomElement) next;
+            if (next instanceof DomElement elem) {
                 final String nodeName = elem.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     return getScriptableForElement(elem);

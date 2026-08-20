@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLHtmlElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlHtml.class)
 public class HTMLHtmlElement extends HTMLElement {
@@ -68,7 +70,7 @@ public class HTMLHtmlElement extends HTMLElement {
     }
 
     /**
-     * Returns {@code version} property.
+     * Returns the {@code version} property.
      * @return the {@code version} property
      */
     @JsxGetter
@@ -77,8 +79,8 @@ public class HTMLHtmlElement extends HTMLElement {
     }
 
     /**
-     * Sets {@code version} property.
-     * @param version the {@code version} property
+     * Sets the {@code version} property.
+     * @param version the {@code version} property value
      */
     @JsxSetter
     public void setVersion(final String version) {

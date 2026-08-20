@@ -17,7 +17,6 @@ package com.xceptance.xlt.api.data;
 
 import static org.easymock.EasyMock.expect;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.UUID;
@@ -40,7 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
     {
         GeneralDataProvider.class
     })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*", "com.sun.*"})
 public class GeneralDataProviderSecondTest
 {
     /**
@@ -103,5 +102,4 @@ public class GeneralDataProviderSecondTest
         PowerMock.replay(UUID.class);
         Assert.assertTrue(provider.getUniqueEmail("", "", 17).matches("^" + uuidString.substring(0, 17) + "@$"));
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package org.htmlunit.html.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
@@ -70,6 +71,7 @@ public class SimpleRange implements Serializable {
 
     /**
      * Constructs a range for the specified element.
+     *
      * @param node the node for the range
      */
     public SimpleRange(final DomNode node) {
@@ -81,6 +83,7 @@ public class SimpleRange implements Serializable {
 
     /**
      * Constructs a range for the provided element and start and end offset.
+     *
      * @param node the node for the range
      * @param offset the start and end offset
      */
@@ -93,6 +96,7 @@ public class SimpleRange implements Serializable {
 
     /**
      * Constructs a range for the provided elements and offsets.
+     *
      * @param startNode the start node
      * @param startOffset the start offset
      * @param endNode the end node
@@ -110,6 +114,7 @@ public class SimpleRange implements Serializable {
 
     /**
      * Duplicates the contents of this.
+     *
      * @return DocumentFragment that contains content equivalent to this
      */
     public DomDocumentFragment cloneContents() {
@@ -189,6 +194,7 @@ public class SimpleRange implements Serializable {
     /**
      * Produces a new SimpleRange whose boundary-points are equal to the
      * boundary-points of this.
+     *
      * @return duplicated simple
      */
     public SimpleRange cloneRange() {
@@ -224,7 +230,6 @@ public class SimpleRange implements Serializable {
 
     private void deleteContents(final DomNode ancestor) {
         final DomNode start;
-        final DomNode end;
         if (isOffsetChars(startContainer_)) {
             start = startContainer_;
             String text = getText(start);
@@ -239,6 +244,8 @@ public class SimpleRange implements Serializable {
         else {
             start = startContainer_.getNextSibling();
         }
+
+        final DomNode end;
         if (isOffsetChars(endContainer_)) {
             end = endContainer_;
             String text = getText(end);
@@ -253,6 +260,7 @@ public class SimpleRange implements Serializable {
         else {
             end = endContainer_.getNextSibling();
         }
+
         boolean foundStart = false;
         boolean started = false;
         final Iterator<DomNode> i = ancestor.getDescendants().iterator();
@@ -290,8 +298,10 @@ public class SimpleRange implements Serializable {
     }
 
     /**
+     * Determines whether this range is collapsed.
+     *
      * @return true if startContainer equals endContainer and
-     * startOffset equals endOffset
+     *         startOffset equals endOffset
      * @throws DOMException in case of error
      */
     public boolean isCollapsed() throws DOMException {
@@ -299,24 +309,34 @@ public class SimpleRange implements Serializable {
     }
 
     /**
+     * Returns the deepest common ancestor of this range's boundary points.
+     *
      * @return the deepest common ancestor container of this range's two
-     * boundary-points.
+     *         boundary-points.
      * @throws DOMException in case of error
      */
     public DomNode getCommonAncestorContainer() throws DOMException {
-        if (startContainer_ != null && endContainer_ != null) {
-            for (DomNode p1 = startContainer_; p1 != null; p1 = p1.getParentNode()) {
-                for (DomNode p2 = endContainer_; p2 != null; p2 = p2.getParentNode()) {
-                    if (p1 == p2) {
-                        return p1;
-                    }
-                }
-            }
+        final HashSet<DomNode> startAncestors = new HashSet<>();
+        DomNode ancestor = startContainer_;
+        while (ancestor != null) {
+            startAncestors.add(ancestor);
+            ancestor = ancestor.getParentNode();
         }
+
+        ancestor = endContainer_;
+        while (ancestor != null) {
+            if (startAncestors.contains(ancestor)) {
+                return ancestor;
+            }
+            ancestor = ancestor.getParentNode();
+        }
+
         return null;
     }
 
     /**
+     * Returns the node within which this range ends.
+     *
      * @return the Node within which this range ends
      */
     public DomNode getEndContainer() {
@@ -324,6 +344,8 @@ public class SimpleRange implements Serializable {
     }
 
     /**
+     * Returns the offset within the end container.
+     *
      * @return offset within the ending node of this
      */
     public int getEndOffset() {
@@ -331,6 +353,8 @@ public class SimpleRange implements Serializable {
     }
 
     /**
+     * Returns the node within which this range begins.
+     *
      * @return the Node within which this range begins
      */
     public DomNode getStartContainer() {
@@ -338,6 +362,8 @@ public class SimpleRange implements Serializable {
     }
 
     /**
+     * Returns the offset within the start container.
+     *
      * @return offset within the starting node of this
      */
     public int getStartOffset() {
@@ -380,8 +406,7 @@ public class SimpleRange implements Serializable {
     }
 
     private static void insertNodeOrDocFragment(final DomNode parent, final DomNode newNode, final DomNode refNode) {
-        if (newNode instanceof DocumentFragment) {
-            final DocumentFragment fragment = (DocumentFragment) newNode;
+        if (newNode instanceof DocumentFragment fragment) {
 
             final NodeList childNodes = fragment.getChildNodes();
             while (childNodes.getLength() > 0) {
@@ -410,10 +435,10 @@ public class SimpleRange implements Serializable {
      * @param node Node to select from
      */
     public void selectNodeContents(final DomNode node) {
-        startContainer_ = node.getFirstChild();
+        startContainer_ = node;
         startOffset_ = 0;
-        endContainer_ = node.getLastChild();
-        endOffset_ = getMaxOffset(node.getLastChild());
+        endContainer_ = node;
+        endOffset_ = getMaxOffset(node);
     }
 
     /**
@@ -453,10 +478,9 @@ public class SimpleRange implements Serializable {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof SimpleRange)) {
+        if (!(obj instanceof SimpleRange other)) {
             return false;
         }
-        final SimpleRange other = (SimpleRange) obj;
         return new EqualsBuilder()
             .append(startContainer_, other.startContainer_)
             .append(endContainer_, other.endContainer_)
@@ -469,11 +493,7 @@ public class SimpleRange implements Serializable {
      */
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .append(startContainer_)
-            .append(endContainer_)
-            .append(startOffset_)
-            .append(endOffset_).toHashCode();
+        return Objects.hash(startContainer_, endContainer_, startOffset_, endOffset_);
     }
 
     /**
@@ -493,15 +513,15 @@ public class SimpleRange implements Serializable {
     }
 
     private static String getText(final DomNode node) {
-        if (node instanceof SelectableTextInput) {
-            return ((SelectableTextInput) node).getText();
+        if (node instanceof SelectableTextInput input) {
+            return input.getText();
         }
         return node.getTextContent();
     }
 
     private static void setText(final DomNode node, final String text) {
-        if (node instanceof SelectableTextInput) {
-            ((SelectableTextInput) node).setText(text);
+        if (node instanceof SelectableTextInput input) {
+            input.setText(text);
         }
         else {
             node.setTextContent(text);
@@ -553,23 +573,25 @@ public class SimpleRange implements Serializable {
     }
 
     /**
+     * Returns the nodes fully contained within this range in document order.
+     *
      * @return a list with all nodes contained in this range
      */
     public List<DomNode> containedNodes() {
         final DomNode ancestor = getCommonAncestorContainer();
         if (ancestor == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
+        // When start == end (same text node), just return it directly
+        if (startContainer_ == endContainer_ && isOffsetChars(startContainer_)) {
+            return Collections.singletonList(startContainer_);
+        }
+
+        // Resolve start node without mutating
         final DomNode start;
-        final DomNode end;
         if (isOffsetChars(startContainer_)) {
             start = startContainer_;
-            String text = getText(start);
-            if (startOffset_ > -1 && startOffset_ < text.length()) {
-                text = text.substring(0, startOffset_);
-            }
-            setText(start, text);
         }
         else if (startContainer_.getChildNodes().getLength() > startOffset_) {
             start = (DomNode) startContainer_.getChildNodes().item(startOffset_);
@@ -577,13 +599,11 @@ public class SimpleRange implements Serializable {
         else {
             start = startContainer_.getNextSibling();
         }
+
+        // Resolve end node without mutating
+        final DomNode end;
         if (isOffsetChars(endContainer_)) {
             end = endContainer_;
-            String text = getText(end);
-            if (endOffset_ > -1 && endOffset_ < text.length()) {
-                text = text.substring(endOffset_);
-            }
-            setText(end, text);
         }
         else if (endContainer_.getChildNodes().getLength() > endOffset_) {
             end = (DomNode) endContainer_.getChildNodes().item(endOffset_);

@@ -41,7 +41,7 @@ import com.xceptance.xlt.engine.XltEngine;
     {
         HtmlPage.class, WebResponse.class
     })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*", "com.sun.*"})
 public class StandardValidatorTest
 {
     private StandardValidator validator;

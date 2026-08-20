@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import org.htmlunit.util.HeaderUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
- * <p>Simple cache implementation which caches compiled JavaScript files and parsed CSS snippets. Caching
+ * Simple cache implementation which caches compiled JavaScript files and parsed CSS snippets. Caching
  * compiled JavaScript files avoids unnecessary web requests and additional compilation overhead, while
- * caching parsed CSS snippets avoids very expensive CSS parsing.</p>
+ * caching parsed CSS snippets avoids very expensive CSS parsing.
  *
  * @author Marc Guillemot
  * @author Daniel Gredler
@@ -91,7 +91,7 @@ public class Cache implements Serializable {
          */
         @Override
         public boolean equals(final Object obj) {
-            return obj instanceof Entry && lastAccess_ == ((Entry) obj).lastAccess_;
+            return obj instanceof Entry e && lastAccess_ == e.lastAccess_;
         }
 
         /**
@@ -110,7 +110,7 @@ public class Cache implements Serializable {
         }
 
         /**
-         * Is this cached entry still fresh?
+         * Check, if this cached entry still fresh.
          * @param now the current time
          * @return <code>true</code> if can keep in the cache
          * @see #isWithinCacheWindow(WebResponse, long, long)
@@ -121,12 +121,12 @@ public class Cache implements Serializable {
     }
 
     /**
-     * <p>Find expiry time using
+     * Find expiry time using
      * a) s-maxage specified<br />
      * b) max-age specified<br />
      * c) expired specified<br />
      * d) A Last-Update is specified and the time is now within 10% of the difference between download time and update
-     * time</p>
+     * time.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc7234#section-4.2.2">RFC 7234</a>
      *
@@ -168,8 +168,8 @@ public class Cache implements Serializable {
      *
      * @param request the request corresponding to the specified compiled script
      * @param response the response corresponding to the specified compiled script
-     * @param toCache the object that is to be cached, if possible (may be for instance a compiled script or
-     * simply a WebResponse)
+     * @param toCache the object that is to be cached, if possible (for instance a compiled script or
+     *        simply a WebResponse)
      * @return whether the response was cached or not
      */
     public boolean cacheIfPossible(final WebRequest request, final WebResponse response, final Object toCache) {

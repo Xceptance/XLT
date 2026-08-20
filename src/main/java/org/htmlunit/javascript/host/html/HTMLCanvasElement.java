@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlCanvas.class)
 public class HTMLCanvasElement extends HTMLElement {
@@ -74,7 +76,7 @@ public class HTMLCanvasElement extends HTMLElement {
 
     /**
      * Sets the {@code width} property.
-     * @param width the {@code width} property
+     * @param width the {@code width} property value
      */
     @JsxSetter
     public void setWidth(final int width) {
@@ -97,7 +99,7 @@ public class HTMLCanvasElement extends HTMLElement {
 
     /**
      * Sets the {@code height} property.
-     * @param height the {@code height} property
+     * @param height the {@code height} property value
      */
     @JsxSetter
     public void setHeight(final int height) {
@@ -107,8 +109,8 @@ public class HTMLCanvasElement extends HTMLElement {
     /**
      * Gets the context.
      * @param contextId the context id
-     * @return Returns an object that exposes an API for drawing on the canvas,
-     * or null if the given context ID is not supported
+     * @return an object that exposes an API for drawing on the canvas,
+     *         or null if the given context ID is not supported
      */
     @JsxFunction
     public HtmlUnitScriptable getContext(final String contextId) {
@@ -125,7 +127,7 @@ public class HTMLCanvasElement extends HTMLElement {
     }
 
     /**
-     * Get the data: URL representation of the Canvas element.
+     * Gets the data: URL representation of the canvas element.
      * Here we return an empty image.
      * @param type the type (optional)
      * @return the data URL

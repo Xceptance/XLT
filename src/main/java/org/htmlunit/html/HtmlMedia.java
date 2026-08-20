@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.html;
 import java.net.MalformedURLException;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.util.StringUtils;
 
 /**
  * HTML Media element, e.g. {@link HtmlAudio} or {@link HtmlVideo}.
@@ -27,7 +27,7 @@ import org.htmlunit.SgmlPage;
  * @author Frank Danek
  * @author Ronald Brill
  */
-public class HtmlMedia extends HtmlElement {
+public abstract class HtmlMedia extends HtmlElement {
 
     /**
      * Creates an instance.
@@ -42,26 +42,6 @@ public class HtmlMedia extends HtmlElement {
     }
 
     /**
-     * Determines whether the specified media type can be played back.
-     * @param type the type
-     * @return "probably", "maybe", or "". The current implementation returns ""
-     */
-    public String canPlayType(final String type) {
-        if (StringUtils.isAllBlank(type)) {
-            return "";
-        }
-
-        final int semPos = type.indexOf(';');
-        final int codecPos = type.indexOf("codec");
-
-        if (semPos > 0 && codecPos > semPos) {
-            return "probably";
-        }
-
-        return "maybe";
-    }
-
-    /**
      * Returns the value of the attribute {@code src}. Refer to the
      * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
@@ -73,11 +53,13 @@ public class HtmlMedia extends HtmlElement {
     }
 
     /**
-     * @return the value of the {@code src} value
+     * Returns the fully qualified source URL.
+     *
+     * @return the fully qualified value of the {@code src} attribute
      */
     public String getSrc() {
         final String src = getSrcAttribute();
-        if (org.htmlunit.util.StringUtils.isEmptyString(src)) {
+        if (StringUtils.isEmptyString(src)) {
             return src;
         }
         try {

@@ -39,7 +39,7 @@ import org.htmlunit.WebConnection;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.WebResponse;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
@@ -165,9 +165,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
             if (!webRequest.getRequestParameters().isEmpty())
             {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(pairs);
-
-                final String query = URLEncodedUtils.format(httpClientPairs, charset);
+                final String query = HttpUtils.toQueryFormFields(pairs, charset);
                 uri = UrlUtils.toURI(url, query);
             }
 
@@ -180,8 +178,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
                 if (webRequest.getRequestBody() == null)
                 {
                     final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                    final List<org.apache.http.NameValuePair> httpClientPairs = HttpClientConverter.nameValuePairsToHttpClient(pairs);
-                    final String body = URLEncodedUtils.format(httpClientPairs, charset);
+                    final String body = HttpUtils.toQueryFormFields(pairs, charset);
 
                     if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader))
                     {

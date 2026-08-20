@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.htmlunit.util.WebResponseWrapper;
  * is the same but the request may have some variation like an anchor.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
 class WebResponseFromCache extends WebResponseWrapper {
 
@@ -45,7 +46,8 @@ class WebResponseFromCache extends WebResponseWrapper {
     }
 
     /**
-     * Wraps the provided response for the given request
+     * Wraps the provided response for the given request.
+     *
      * @param cachedResponse the response from cache
      * @param currentRequest the new request
      */

@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,34 +15,73 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 import org.htmlunit.WebClient;
 import org.openqa.selenium.WebDriver;
 
 /**
- * Class for timeouts managing.
+ * Implements the {@link WebDriver.Timeouts} interface for HtmlUnit.
+ * <p>
+ * This class stores and manages timeout values used by HtmlUnit-based
+ * WebDriver instances, including implicit wait time, script execution
+ * timeout, and page load timeout. When a {@link WebClient} is provided,
+ * these values may be applied directly to the underlying client.
  *
  * @author Martin Bartoš
  * @author Ronald Brill
  */
 public class HtmlUnitTimeouts implements WebDriver.Timeouts {
+    /**
+     * The amount of time (in milliseconds) the driver should wait when
+     * searching for elements that are not immediately present.
+     * <p>
+     * Defaults to {@code 0}, meaning no implicit wait.
+     */
     private long implicitWait_ = 0;
-    private long scriptTimeout_ = 0;
-    private long pageLoadTimeout_ = 0;
+
+    /**
+     * The timeout (in milliseconds) for asynchronous script execution.
+     * <p>
+     * Defaults to {@code 30_000} (30 seconds).
+     */
+    private long scriptTimeout_ = 30 * 1000;
+
+    /**
+     * The amount of time (in milliseconds) to wait for a page load to complete.
+     * <p>
+     * Defaults to {@code 300_000} (5 minutes).
+     */
+    private long pageLoadTimeout_ = 300 * 1000;
+
+    /**
+     * The underlying HtmlUnit {@link WebClient} associated with this timeout
+     * configuration. May be {@code null} if the instance was constructed
+     * without a client.
+     */
     private WebClient webClient_ = null;
 
+    /**
+     * Default constructor for {@link HtmlUnitTimeouts}.
+     * <p>
+     * Creates an instance without an associated {@link WebClient}.
+     * All timeouts will need to be configured later if required.
+     */
     public HtmlUnitTimeouts() {
         // nop
     }
 
+    /**
+     * Constructs an {@link HtmlUnitTimeouts} instance associated with the given {@link WebClient}.
+     *
+     * @param webClient the {@link WebClient} whose timeouts this instance will manage
+     */
     public HtmlUnitTimeouts(final WebClient webClient) {
-        this.webClient_ = webClient;
+        webClient_ = webClient;
     }
 
     @Override
@@ -50,29 +89,15 @@ public class HtmlUnitTimeouts implements WebDriver.Timeouts {
         return Duration.ofMillis(implicitWait_);
     }
 
-    @Deprecated
-    @Override
-    public WebDriver.Timeouts implicitlyWait(final long time, final TimeUnit unit) {
-        implicitlyWait(Duration.ofMillis(TimeUnit.MILLISECONDS.convert(time, unit)));
-        return this;
-    }
-
     @Override
     public WebDriver.Timeouts implicitlyWait(final Duration duration) {
-        this.implicitWait_ = Math.max(0, duration.toMillis());
+        implicitWait_ = Math.max(0, duration.toMillis());
         return this;
     }
 
     @Override
     public WebDriver.Timeouts scriptTimeout(final Duration duration) {
-        this.scriptTimeout_ = duration.toMillis();
-        return this;
-    }
-
-    @Deprecated
-    @Override
-    public WebDriver.Timeouts setScriptTimeout(final long time, final TimeUnit unit) {
-        scriptTimeout(Duration.ofMillis(TimeUnit.MILLISECONDS.convert(time, unit)));
+        scriptTimeout_ = duration.toMillis();
         return this;
     }
 
@@ -81,16 +106,9 @@ public class HtmlUnitTimeouts implements WebDriver.Timeouts {
         return Duration.ofMillis(scriptTimeout_);
     }
 
-    @Deprecated
-    @Override
-    public WebDriver.Timeouts pageLoadTimeout(final long time, final TimeUnit unit) {
-        pageLoadTimeout(Duration.ofMillis(TimeUnit.MILLISECONDS.convert(time, unit)));
-        return this;
-    }
-
     @Override
     public WebDriver.Timeouts pageLoadTimeout(final Duration duration) {
-        this.pageLoadTimeout_ = duration.toMillis();
+        pageLoadTimeout_ = duration.toMillis();
         setPageLoadTimeoutForWebClient(webClient_, pageLoadTimeout_);
         return this;
     }

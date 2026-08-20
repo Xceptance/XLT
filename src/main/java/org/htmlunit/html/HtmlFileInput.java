@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,19 +24,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Wrapper for the HTML element "input".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Daniel Gredler
  * @author Ahmed Ashour
  * @author Marc Guillemot
@@ -68,7 +68,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
     /**
      * Returns the in-memory data assigned to this file input element, if any.
-     * @return {@code null} if {@link #setData(byte[])} hasn't be used
+     * @return {@code null} if {@link #setData(byte[])} hasn't been used
      */
     public final byte[] getData() {
         return data_;
@@ -107,19 +107,28 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
         final List<NameValuePair> list = new ArrayList<>();
         for (final File file : files_) {
-            String contentType;
-            if (contentType_ == null) {
-                contentType = getPage().getWebClient().getBrowserVersion().getUploadMimeType(file);
-                if (StringUtils.isEmpty(contentType)) {
-                    contentType = MimeType.APPLICATION_OCTET_STREAM;
+            final Charset charset = getPage().getCharset();
+
+            final KeyDataPair keyDataPair;
+            if (data_ == null) {
+                String contentType;
+                if (contentType_ == null) {
+                    contentType = getPage().getWebClient().getBrowserVersion().getUploadMimeType(file);
+                    if (StringUtils.isEmptyOrNull(contentType)) {
+                        contentType = MimeType.APPLICATION_OCTET_STREAM;
+                    }
                 }
+                else {
+                    contentType = contentType_;
+                }
+
+                keyDataPair = new KeyDataPair(getNameAttribute(), file, null, contentType, charset);
             }
             else {
-                contentType = contentType_;
+                keyDataPair = new KeyDataPair(getNameAttribute(), null, file.getName(),
+                                                MimeType.APPLICATION_OCTET_STREAM, charset);
+                keyDataPair.setData(data_);
             }
-            final Charset charset = getPage().getCharset();
-            final KeyDataPair keyDataPair = new KeyDataPair(getNameAttribute(), file, null, contentType, charset);
-            keyDataPair.setData(data_);
             list.add(keyDataPair);
         }
         return list.toArray(new NameValuePair[0]);
@@ -137,7 +146,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
     /**
      * Gets the content type that should be sent together with the uploaded file.
      * @return the content type, or {@code null} if this has not been explicitly set
-     * and should be guessed from file content
+     *         and should be guessed from file content
      */
     public String getContentType() {
         return contentType_;
@@ -181,7 +190,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public void setValue(final String newValue) {
-        if (StringUtils.isEmpty(newValue)) {
+        if (StringUtils.isEmptyOrNull(newValue)) {
             setFiles();
             return;
         }
@@ -200,6 +209,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
      * <p>
      * We may follow WebDriver solution, once made,
      * see https://code.google.com/p/selenium/issues/detail?id=2239
+     * </p>
      * @param files the list of files to upload
      */
     public void setFiles(final File... files) {
@@ -248,7 +258,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
     }
 
     /**
-     * To tolerate {@code file://}
+     * To tolerate {@code file://}.
      */
     private static File normalizeFile(final File file) {
         File f = null;
@@ -279,11 +289,34 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
     }
 
     /**
+     * {@inheritDoc}
+     * Per spec, the reset algorithm for a file upload control is special-cased:
+     * it simply empties the list of selected files. Unlike other input types,
+     * there is no "restore to the value attribute" step at all -- a browser can
+     * never resurrect a specific file selection from markup, for the same
+     * security reason the 'value' attribute is unsettable and fake-pathed in
+     * the first place. Deliberately does NOT call super.reset() (which would
+     * try to reconstruct a fake File from the 'value' attribute via setValue())
+     * and deliberately does NOT fire a change event, matching the same
+     * "reset fires a reset event, not a change event" principle already applied
+     * to HtmlInput/HtmlTextArea.
+     * @see SubmittableElement#reset()
+     */
+    @Override
+    public void reset() {
+        files_ = new File[0];
+    }
+
+    /**
      * Returns whether this element satisfies all form validation constraints set.
      * @return whether this element satisfies all form validation constraints set
      */
     @Override
     public boolean isValid() {
+        if (isDisabled()) {
+            return true;
+        }
+
         return isCustomValidityValid()
                 && (!isRequiredSupported()
                         || ATTRIBUTE_NOT_DEFINED == getAttributeDirect("required")

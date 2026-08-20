@@ -56,13 +56,13 @@
         <maven.compiler.target>21</maven.compiler.target>
         <asm.version>9.7.1</asm.version>
         <flexmark.version>0.64.8</flexmark.version>
-        <htmlunit.version>4.10.0</htmlunit.version>
+        <htmlunit.version>5.4.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
         <log4j.version>2.24.3</log4j.version>
         <powermock.version>2.0.9</powermock.version>
-        <selenium.version>4.29.0</selenium.version>
-        <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
+        <selenium.version>4.47.0</selenium.version>
+        <htmlunitdriver.version>4.47.0</htmlunitdriver.version>
         <otel.version>1.46.0</otel.version>
         <!-- plugin versions -->
         <license-maven-plugin.version>4.1</license-maven-plugin.version>
@@ -255,22 +255,17 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.18.0</version>
+            <version>2.22.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <version>3.20.0</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.3.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.brotli</groupId>
-            <artifactId>dec</artifactId>
-            <version>0.1.2</version>
+            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlunit</groupId>
@@ -316,18 +311,6 @@
             <groupId>org.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
             <version>${htmlunit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.12.2</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- XLT -->
         <dependency>
@@ -750,107 +733,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- HtmlUnit -->
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit4</artifactId>
-            <version>1.4.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-batik</artifactId>
-            <version>3.12.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>xmlgraphics-commons</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-transcoder</artifactId>
-            <version>1.18</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <!-- Exclude XML APIs as these would clash with the java.xml module. -->
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis-ext</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <scope>test</scope>
-            <version>1.6.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.romankh3</groupId>
-            <artifactId>image-comparison</artifactId>
-            <version>4.4.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty.websocket</groupId>
-            <artifactId>websocket-server</artifactId>
-            <version>${jetty.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.caucho</groupId>
-            <artifactId>quercus</artifactId>
-            <version>4.0.66</version>
-            <scope>test</scope>
-        </dependency>
         <!-- Checkstyle -->
         <dependency>
             <groupId>com.puppycrawl.tools</groupId>
@@ -940,6 +822,12 @@
             <groupId>net.sf.trove4j</groupId>
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${jetty.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

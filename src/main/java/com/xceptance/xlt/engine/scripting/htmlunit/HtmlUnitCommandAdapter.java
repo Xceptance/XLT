@@ -51,11 +51,11 @@ import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.SubmittableElement;
 import org.htmlunit.html.impl.SelectableTextInput;
+import org.htmlunit.http.Cookie;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.event.MouseEvent;
-import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;
 
 import com.xceptance.xlt.api.util.HtmlPageUtils;
@@ -1394,7 +1394,12 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
     protected String _getValue(final String elementLocator)
     {
         final HtmlElement e = finder.findElement(getCurrentPage(), elementLocator, false);
-        if (e instanceof HtmlTextArea || (e instanceof HtmlOption && !e.hasAttribute("value")))
+        if (e instanceof HtmlTextArea textArea)
+        {
+            return textArea.getText();
+        }
+
+        if (e instanceof HtmlOption && !e.hasAttribute("value"))
         {
             return getElementText(e);
         }

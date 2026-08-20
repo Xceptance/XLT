@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLObjectElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlObject.class)
 public class HTMLObjectElement extends HTMLElement {
@@ -53,7 +55,7 @@ public class HTMLObjectElement extends HTMLElement {
 
     /**
      * Sets the {@code border} attribute.
-     * @param border the {@code border} attribute
+     * @param border the {@code border} attribute value
      */
     @JsxSetter
     public void setBorder(final String border) {
@@ -70,7 +72,7 @@ public class HTMLObjectElement extends HTMLElement {
 
     /**
      * Sets the {@code classid} attribute.
-     * @param classid the {@code classid} attribute
+     * @param classid the {@code classid} attribute value
      */
     public void setClassid(final String classid) {
         getDomNodeOrDie().setAttribute("classid", classid);
@@ -167,15 +169,35 @@ public class HTMLObjectElement extends HTMLElement {
 
     /**
      * Checks whether the element has any constraints and whether it satisfies them.
-     * @return if the element is valid
+     * @return {@code true} if the element is valid
      */
     @JsxFunction
     public boolean checkValidity() {
-        return getDomNodeOrDie().isValid();
+        return ValidatableHTMLElement.doCheckValidity(getDomNodeOrDie());
     }
 
     /**
-     * @return a ValidityState with the validity states that this element is in.
+     * Performs the same validity checking steps as the checkValidity() method.
+     * @return {@code true} if the element is valid
+     */
+    @JsxFunction
+    public boolean reportValidity() {
+        return ValidatableHTMLElement.doReportValidity(getDomNodeOrDie());
+    }
+
+    /**
+     * Returns the message describing why the element's value fails constraint
+     * validation, or "" if it's valid or barred from validation.
+     * @return the validation message
+     */
+    @JsxGetter
+    public String getValidationMessage() {
+        return ValidatableHTMLElement.getValidationMessage(getDomNodeOrDie());
+    }
+
+    /**
+     * Returns a {@link ValidityState} object representing the validity states of this element.
+     * @return a {@link ValidityState} object representing the validity states of this element
      */
     @JsxGetter
     public ValidityState getValidity() {
@@ -187,11 +209,12 @@ public class HTMLObjectElement extends HTMLElement {
     }
 
     /**
+     * Returns whether the element is a candidate for constraint validation.
      * @return whether the element is a candidate for constraint validation
      */
     @JsxGetter
-    public boolean getWillValidate() {
-        return ((HtmlObject) getDomNodeOrDie()).willValidate();
+    public boolean isWillValidate() {
+        return getDomNodeOrDie().willValidate();
     }
 
     /**
@@ -200,6 +223,14 @@ public class HTMLObjectElement extends HTMLElement {
      */
     @JsxFunction
     public void setCustomValidity(final String message) {
-        ((HtmlObject) getDomNodeOrDie()).setCustomValidity(message);
+        getDomNodeOrDie().setCustomValidity(message);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HtmlObject getDomNodeOrDie() {
+        return (HtmlObject) super.getDomNodeOrDie();
     }
 }

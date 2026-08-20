@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,13 @@ import org.w3c.dom.Text;
  * Representation of a text node in the HTML DOM.
  *
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Rodney Gitzel
  * @author Ahmed Ashour
  * @author Sudhan Moghe
  * @author Philip Graf
  * @author Ronald Brill
+ * @author Ronny Shapiro
  */
 public class DomText extends DomCharacterData implements Text {
 
@@ -112,7 +113,7 @@ public class DomText extends DomCharacterData implements Text {
     }
 
     /**
-     * @return the node type constant, in this case {@link org.w3c.dom.Node#TEXT_NODE}
+     * {@inheritDoc}
      */
     @Override
     public short getNodeType() {
@@ -120,7 +121,7 @@ public class DomText extends DomCharacterData implements Text {
     }
 
     /**
-     * @return the node name, in this case {@link #NODE_NAME}
+     * {@inheritDoc}
      */
     @Override
     public String getNodeName() {
@@ -128,23 +129,23 @@ public class DomText extends DomCharacterData implements Text {
     }
 
     /**
-     * Recursively writes the XML data for the node tree starting at <code>node</code>.
-     *
-     * @param indent white space to indent child nodes
-     * @param printWriter writer where child nodes are written
+     * {@inheritDoc}
      */
     @Override
-    protected void printXml(final String indent, final PrintWriter printWriter) {
+    protected boolean printXml(final String indent, final boolean indentBefore, final PrintWriter printWriter) {
         String data = getData();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(data)) {
-            printWriter.print(indent);
+        boolean indBefore = indentBefore;
+        if (StringUtils.isNotBlank(data)) {
             if (!(getParentNode() instanceof HtmlStyle) || !data.startsWith("<!--") || !data.endsWith("-->")) {
                 data = StringUtils.escapeXmlChars(data);
             }
             printWriter.print(data);
-            printWriter.print("\r\n");
+            indBefore = false;
         }
-        printChildrenAsXml(indent, printWriter);
+        else if (data != null && !data.isEmpty()) {
+            indBefore = true;
+        }
+        return printChildrenAsXml(indent, indBefore, printWriter);
     }
 
     /**
@@ -187,7 +188,7 @@ public class DomText extends DomCharacterData implements Text {
     }
 
     /**
-     * Indicates if the provided character can by "typed" in the element.
+     * Indicates if the provided character can be "typed" in the element.
      * @param c the character
      * @return {@code true} if it is accepted
      */

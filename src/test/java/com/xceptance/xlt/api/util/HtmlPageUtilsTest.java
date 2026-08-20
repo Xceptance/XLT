@@ -70,7 +70,7 @@ import com.xceptance.xlt.util.HtmlTestViaFile;
     {
         XltRandom.class, HtmlForm.class
     })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*", "com.sun.*"})
 public class HtmlPageUtilsTest
 {
     /**

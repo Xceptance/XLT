@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void fill() {
+    public void fill(final WindingRule windingRule) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] fill()");
         }
@@ -152,7 +152,7 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void fillRect(final int x, final int y, final int w, final int h) {
+    public void fillRect(final double x, final double y, final double w, final double h) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] fillRect(" + x + ", "  + y + ", "  + w + ", "  + h + ")");
         }
@@ -259,8 +259,8 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public int getLineWidth() {
-        return 1;
+    public float getLineWidth() {
+        return 1f;
     }
 
     /**
@@ -297,7 +297,7 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void setLineWidth(final int lineWidth) {
+    public void setLineWidth(final float lineWidth) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] setLineWidth(" + lineWidth + ")");
         }
@@ -329,7 +329,7 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void strokeRect(final int x, final int y, final int w, final int h) {
+    public void strokeRect(final double x, final double y, final double w, final double h) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] strokeRect(" + x + ", "  + y + ", "  + w + ", "  + h + ")");
         }
@@ -350,7 +350,7 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void translate(final int x, final int y) {
+    public void translate(final double x, final double y) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] translate()");
         }
@@ -374,6 +374,48 @@ public class NoOpRenderingBackend implements RenderingBackend {
     public void closePath() {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + id_ + "] closePath()");
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LineJoin getLineJoin() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] getLineJoin()");
+        }
+        return LineJoin.MITER;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLineJoin(final LineJoin lineJoin) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] setLineJoin(" + lineJoin + ")");
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LineCap getLineCap() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] getLineCap()");
+        }
+        return LineCap.BUTT;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setLineCap(final LineCap lineCap) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + id_ + "] setLineCap(" + lineCap + ")");
         }
     }
 }

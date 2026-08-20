@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import org.htmlunit.SgmlPage;
 /**
  * Wrapper for the HTML element "tr".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
@@ -51,15 +51,19 @@ public class HtmlTableRow extends HtmlElement {
     }
 
     /**
-     * @return an Iterator over the all HtmlTableCell objects in this row
+     * Returns an iterator over all cells in this row.
+     *
+     * @return an iterator over all {@link HtmlTableCell} objects in this row
      */
     public CellIterator getCellIterator() {
         return new CellIterator();
     }
 
     /**
-     * @return an immutable list containing all the HtmlTableCells held by this object
-     * @see #getCellIterator
+     * Returns an immutable list of all cells in this row.
+     *
+     * @return an immutable list containing all {@link HtmlTableCell} objects in this row
+     * @see #getCellIterator()
      */
     public List<HtmlTableCell> getCells() {
         final List<HtmlTableCell> result = new ArrayList<>();
@@ -70,6 +74,8 @@ public class HtmlTableRow extends HtmlElement {
     }
 
     /**
+     * Returns the cell at the specified index.
+     *
      * @param index the 0-based index
      * @return the cell at the given index
      * @throws IndexOutOfBoundsException if there is no cell at the given index
@@ -91,7 +97,7 @@ public class HtmlTableRow extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code align}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getAlignAttribute() {
         return getAttributeDirect("align");
@@ -103,7 +109,7 @@ public class HtmlTableRow extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code char}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getCharAttribute() {
         return getAttributeDirect("char");
@@ -115,7 +121,7 @@ public class HtmlTableRow extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code charoff}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getCharoffAttribute() {
         return getAttributeDirect("charoff");
@@ -127,15 +133,16 @@ public class HtmlTableRow extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code valign}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getValignAttribute() {
         return getAttributeDirect("valign");
     }
 
     /**
-     * Gets the table containing this row.
-     * @return the table
+     * Returns the table containing this row.
+     *
+     * @return the enclosing table
      */
     public HtmlTable getEnclosingTable() {
         return (HtmlTable) getEnclosingElement("table");
@@ -147,7 +154,7 @@ public class HtmlTableRow extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code bgcolor}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getBgcolorAttribute() {
         return getAttributeDirect("bgcolor");
@@ -166,15 +173,16 @@ public class HtmlTableRow extends HtmlElement {
             setNextCell(getFirstChild());
         }
 
-        /** @return whether there is another cell available */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean hasNext() {
             return nextCell_ != null;
         }
 
         /**
-         * @return the next cell
-         * @throws NoSuchElementException if no cell is available
+         * {@inheritDoc}
          */
         @Override
         public HtmlTableCell next() throws NoSuchElementException {
@@ -182,7 +190,7 @@ public class HtmlTableRow extends HtmlElement {
         }
 
         /**
-         * Removes the cell under the cursor from the current row.
+         * {@inheritDoc}
          */
         @Override
         public void remove() {
@@ -196,6 +204,8 @@ public class HtmlTableRow extends HtmlElement {
         }
 
         /**
+         * Returns the next cell.
+         *
          * @return the next cell
          * @throws NoSuchElementException if no cell is available
          */
@@ -209,20 +219,20 @@ public class HtmlTableRow extends HtmlElement {
         }
 
         /**
-         * Sets the internal position to the next cell, starting at the given node
+         * Sets the internal position to the next cell, starting at the given node.
          * @param node the node to mark as the next cell; if this is not a cell, the
          *        next reachable cell will be marked.
          */
         private void setNextCell(final DomNode node) {
             nextCell_ = null;
             for (DomNode next = node; next != null; next = next.getNextSibling()) {
-                if (next instanceof HtmlTableCell) {
-                    nextCell_ = (HtmlTableCell) next;
+                if (next instanceof HtmlTableCell cell) {
+                    nextCell_ = cell;
                     return;
                 }
-                else if (currentForm_ == null && next instanceof HtmlForm) {
+                else if (currentForm_ == null && next instanceof HtmlForm form) {
                     // Completely illegal HTML but some of the big sites (ie amazon) do this
-                    currentForm_ = (HtmlForm) next;
+                    currentForm_ = form;
                     setNextCell(next.getFirstChild());
                     return;
                 }
@@ -235,9 +245,7 @@ public class HtmlTableRow extends HtmlElement {
         }
 
         /**
-         * Returns an HtmlTableCell iterator.
-         *
-         * @return an HtmlTableCell Iterator.
+         * {@inheritDoc}
          */
         @Override
         public Iterator<HtmlTableCell> iterator() {

@@ -18,6 +18,7 @@ package com.xceptance.xlt.engine;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 
 /**
  * An {@link XltScript} wraps an existing {@link Script} instance and holds additional information.
@@ -54,9 +55,9 @@ public final class XltScript implements Script
      * {@inheritDoc}
      */
     @Override
-    public Object exec(final Context context, final Scriptable scriptable)
+    public Object exec(final Context context, final VarScope scope, final Scriptable scriptable)
     {
-        return script.exec(context, scriptable);
+        return script.exec(context, scope, scriptable);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 
 /**
- * JavaScript object representing the BeforeUnloadEvent.
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/window.onbeforeunload">Mozilla Developer Network</a>
- * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ff974336.aspx">MSDN</a>
+ * JavaScript host object for {@code BeforeUnloadEvent}.
  *
  * @author Frank Danek
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Atsushi Nakagawa
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/BeforeUnloadEvent">MDN Documentation</a>
  */
 @JsxClass
 public class BeforeUnloadEvent extends Event {
@@ -40,13 +40,12 @@ public class BeforeUnloadEvent extends Event {
      * Creates a new event instance.
      */
     public BeforeUnloadEvent() {
-        super();
-        setType("");
+        super("");
         returnValue_ = "";
     }
 
     /**
-     * The JavaScript constructor. It seems it is not possible to do it from JavaScript code.
+     * JavaScript constructor. This event cannot be constructed from JavaScript.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -79,13 +78,17 @@ public class BeforeUnloadEvent extends Event {
     }
 
     /**
-     * @return {@code true} if returnValue holds the beforeunload message
+     * Returns {@code true} if {@code returnValue} holds the beforeunload message.
+     *
+     * @return {@code true} if {@code returnValue} holds the beforeunload message
      */
     public boolean isBeforeUnloadMessageSet() {
         return !getReturnValueDefault(getBrowserVersion()).equals(getReturnValue());
     }
 
     /**
+     * Returns the return value associated with the event.
+     *
      * @return the return value associated with the event
      */
     @JsxGetter
@@ -96,6 +99,7 @@ public class BeforeUnloadEvent extends Event {
 
     /**
      * Sets the return value associated with the event.
+     *
      * @param returnValue the return value associated with the event
      */
     @JsxSetter

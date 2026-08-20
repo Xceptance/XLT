@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
+import static org.htmlunit.BrowserVersionFeatures.EVENT_SCROLL_UIEVENT;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_SELECTION_NULL_IF_INVISIBLE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.AlertHandler;
@@ -65,6 +65,8 @@ import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.Slot;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
@@ -101,11 +103,13 @@ import org.htmlunit.javascript.host.css.StyleMedia;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.Document;
+import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.Selection;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MessageEvent;
 import org.htmlunit.javascript.host.event.MouseEvent;
+import org.htmlunit.javascript.host.event.UIEvent;
 import org.htmlunit.javascript.host.html.DocumentProxy;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLDocument;
@@ -113,16 +117,17 @@ import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.performance.Performance;
 import org.htmlunit.javascript.host.speech.SpeechSynthesis;
 import org.htmlunit.javascript.host.xml.XMLDocument;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
 
 /**
- * A JavaScript object for {@code Window}.
+ * JavaScript host object for {@code Window}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:chen_jun@users.sourceforge.net">Chen Jun</a>
+ * @author Mike Bowler
+ * @author Chen Jun
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Darrell DeBoer
  * @author Marc Guillemot
  * @author Dierk Koenig
@@ -136,10 +141,12 @@ import org.htmlunit.xml.XmlPage;
  * @author Colin Alworth
  * @author Atsushi Nakagawa
  * @author Sven Strickroth
+ * @author Lai Quang Duong
  *
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms535873.aspx">MSDN documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window">MDN Documentation</a>
  */
 @JsxClass
+@SuppressWarnings("PMD.TooManyFields")
 public class Window extends EventTarget implements WindowOrWorkerGlobalScope, AutoCloseable {
 
     private static final Log LOG = LogFactory.getLog(Window.class);
@@ -200,7 +207,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     private Map<Class<? extends Scriptable>, Scriptable> prototypes_ = new HashMap<>();
     private Object controllers_;
     private Object opener_;
-    private Object top_ = NOT_FOUND; // top can be set from JS to any value!
     private Crypto crypto_;
     private Scriptable performance_;
 
@@ -208,14 +214,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
     private transient List<AnimationFrame> animationFrames_ = new ArrayList<>();
 
-    private static final class AnimationFrame {
-        private final long id_;
-        private final Function callback_;
-
-        AnimationFrame(final long id, final Function callback) {
-            id_ = id;
-            callback_ = callback;
-        }
+    private record AnimationFrame(long id_, Function callback_) {
     }
 
     /**
@@ -229,7 +228,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+    public static Scriptable jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         throw JavaScriptEngine.typeError("Illegal constructor");
     }
@@ -402,7 +401,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @param replace whether to replace in the history list or no
      * @return the newly opened window, or {@code null} if popup windows have been disabled
      * @see org.htmlunit.WebClientOptions#isPopupBlockerEnabled()
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536651.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/open">MDN documentation</a>
      */
     @JsxFunction
     public WindowProxy open(final Object url, final Object name, final Object features,
@@ -441,7 +440,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         }
 
         // if specified name is the name of an existing window, then hold it
-        if (StringUtils.isEmpty(urlString) && !org.htmlunit.util.StringUtils.isEmptyString(windowName)) {
+        if (StringUtils.isEmptyOrNull(urlString) && !StringUtils.isEmptyString(windowName)) {
             try {
                 final WebWindow webWindow = webClient.getWebWindowByName(windowName);
                 return getProxy(webWindow);
@@ -481,7 +480,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * and does not contain an other page than the one that originated the setTimeout.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      *
      * @param context the JavaScript context
      * @param scope the scope
@@ -491,16 +490,34 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the id of the created timer
      */
     @JsxFunction
-    public static Object setTimeout(final Context context, final Scriptable scope,
+    public static Object setTimeout(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setTimeout(context, thisObj, args, function);
+    }
+
+    /**
+     * Queues a microtask to be executed.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask">
+     *     MDN web docs</a>
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     * @return undefined
+     */
+    @JsxFunction
+    public static Object queueMicrotask(final Context context, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        return WindowOrWorkerGlobalScopeMixin.queueMicrotask(thisObj, args);
     }
 
     /**
      * Sets a chunk of JavaScript to be invoked each time a specified number of milliseconds has elapsed.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
-     * MDN web docs</a>
+     *     MDN web docs</a>
      * @param context the JavaScript context
      * @param scope the scope
      * @param thisObj the scriptable
@@ -509,40 +526,75 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the id of the created interval
      */
     @JsxFunction
-    public static Object setInterval(final Context context, final Scriptable scope,
+    public static Object setInterval(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setInterval(context, thisObj, args, function);
     }
 
     /**
-     * Cancels a time-out previously set with the
-     * {@link #setTimeout(Context, Scriptable, Scriptable, Object[], Function)} method.
+     * Cancels a one-time timeout that was previously established by a call to
+     * {@link #setTimeout(Context, VarScope, Scriptable, Object[], Function)}.
      *
-     * @param timeoutId identifier for the timeout to clear
-     *        as returned by {@link #setTimeout(Context, Scriptable, Scriptable, Object[], Function)}
+     * <p>If {@code timeoutId} is {@code 0} or negative, this method does nothing,
+     * since valid job IDs are always positive integers. This matches browser behavior
+     * where {@code clearTimeout(0)} is a safe no-op, commonly used when {@code 0}
+     * is employed as a sentinel value to indicate "no active timeout".</p>
+     *
+     * <p>If the given ID does not correspond to any active timeout (e.g. it has
+     * already fired or been cancelled), this method returns silently without
+     * throwing an error, consistent with the HTML Living Standard.</p>
+     *
+     * @param timeoutId the ID of the timeout to cancel, as returned by
+     *        {@link #setTimeout(Context, VarScope, Scriptable, Object[], Function)};
+     *        values of {@code 0} or less are ignored
+     * @see #setTimeout(Context, VarScope, Scriptable, Object[], Function)
+     * @see #clearInterval(int)
+     * @see <a href="https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-cleartimeout">
+     *      HTML Living Standard – clearTimeout</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/clearTimeout">
+     *      MDN Web Docs – clearTimeout</a>
      */
     @JsxFunction
     public void clearTimeout(final int timeoutId) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("clearTimeout(" + timeoutId + ")");
+        if (timeoutId > 0) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("clearTimeout(" + timeoutId + ")");
+            }
+            getWebWindow().getJobManager().removeJob(timeoutId);
         }
-        getWebWindow().getJobManager().removeJob(timeoutId);
     }
 
     /**
-     * Cancels the interval previously started using the
-     * {@link #setInterval(Context, Scriptable, Scriptable, Object[], Function)} method.
-     * Current implementation does nothing.
-     * @param intervalID specifies the interval to cancel as returned by the
-     *        {@link #setInterval(Context, Scriptable, Scriptable, Object[], Function)} method
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536353.aspx">MSDN documentation</a>
+     * Cancels a repeating interval that was previously established by a call to
+     * {@link #setInterval(Context, VarScope, Scriptable, Object[], Function)}.
+     *
+     * <p>If {@code intervalID} is {@code 0} or negative, this method does nothing,
+     * since valid job IDs are always positive integers. This matches browser behavior
+     * where {@code clearInterval(0)} is a safe no-op, commonly used when {@code 0}
+     * is employed as a sentinel value to indicate "no active interval".</p>
+     *
+     * <p>If the given ID does not correspond to any active interval (e.g. it has
+     * already fired or been cancelled), this method returns silently without
+     * throwing an error, consistent with the HTML Living Standard.</p>
+     *
+     * @param intervalID the ID of the interval to cancel, as returned by
+     *        {@link #setInterval(Context, VarScope, Scriptable, Object[], Function)};
+     *        values of {@code 0} or less are ignored
+     * @see #setInterval(Context, VarScope, Scriptable, Object[], Function)
+     * @see #clearTimeout(int)
+     * @see <a href="https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-clearinterval">
+     *      HTML Living Standard – clearInterval</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/clearInterval">
+     *      MDN Web Docs – clearInterval</a>
      */
     @JsxFunction
     public void clearInterval(final int intervalID) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("clearInterval(" + intervalID + ")");
+        if (intervalID > 0) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("clearInterval(" + intervalID + ")");
+            }
+            getWebWindow().getJobManager().removeJob(intervalID);
         }
-        getWebWindow().getJobManager().removeJob(intervalID);
     }
 
     /**
@@ -567,9 +619,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
+     * Sets the {@code clientInformation} property.
+     *
      * @param clientInformation the new value
      */
-    @JsxSetter({CHROME, EDGE, FF})
+    @JsxSetter
     public void setClientInformation(final Object clientInformation) {
         clientInformation_ = clientInformation;
     }
@@ -643,13 +697,13 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * To log to the developer tools console, use console.log().
      * <p>
      * HtmlUnit always uses the WebConsole.
-     *
+     * </p>
      * @param message the message to log
      */
     @JsxFunction({FF, FF_ESR})
     public void dump(final String message) {
         final WebConsole console = getWebWindow().getWebClient().getWebConsole();
-        console.print(Context.getCurrentContext(), this, Level.INFO, new String[] {message}, null);
+        console.print(Context.getCurrentContext(), getParentScope(), Level.INFO, new String[] {message}, null);
     }
 
     /**
@@ -669,7 +723,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
         for (final AnimationFrame animationFrame : animationFrames) {
             jsEngine.callFunction((HtmlPage) ww.getEnclosedPage(),
-                        animationFrame.callback_, this, getParentScope(), args);
+                        animationFrame.callback_, getParentScope(), this, args);
         }
         return animationFrames_.size();
     }
@@ -682,9 +736,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public int requestAnimationFrame(final Object callback) {
-        if (callback instanceof Function) {
+        if (callback instanceof Function function) {
             final int id = animationFrames_.size();
-            final AnimationFrame animationFrame = new AnimationFrame(id, (Function) callback);
+            final AnimationFrame animationFrame = new AnimationFrame(id, function);
             animationFrames_.add(animationFrame);
             return id;
         }
@@ -728,24 +782,25 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxGetter
     public External getExternal() {
         final External external = new External();
-        external.setParentScope(this);
+        external.setParentScope(getParentScope());
         external.setPrototype(getPrototype(external.getClass()));
         return external;
     }
 
     /**
      * Initializes this window.
+     * @param scope the scope
      * @param webWindow the web window corresponding to this window
      * @param pageToEnclose the page that will become the enclosing page
      */
-    public void initialize(final WebWindow webWindow, final Page pageToEnclose) {
+    public void initialize(final TopLevel scope, final WebWindow webWindow, final Page pageToEnclose) {
         webWindow_ = webWindow;
         webWindow_.setScriptableObject(this);
 
-        defineProperty("length", null, GETTER_LENGTH, SETTER_LENGTH, ScriptableObject.READONLY);
-        defineProperty("self", null, GETTER_SELF, SETTER_SELF, ScriptableObject.READONLY);
-        defineProperty("parent", null, GETTER_PARENT, SETTER_PARENT, ScriptableObject.READONLY);
-        defineProperty("frames", null, GETTER_FRAMES, SETTER_FRAMES, ScriptableObject.READONLY);
+        defineProperty(scope, "length", null, GETTER_LENGTH, SETTER_LENGTH, ScriptableObject.READONLY);
+        defineProperty(scope, "self", null, GETTER_SELF, SETTER_SELF, ScriptableObject.READONLY);
+        defineProperty(scope, "parent", null, GETTER_PARENT, SETTER_PARENT, ScriptableObject.READONLY);
+        defineProperty(scope, "frames", null, GETTER_FRAMES, SETTER_FRAMES, ScriptableObject.READONLY);
 
         windowProxy_ = new WindowProxy(webWindow_);
 
@@ -755,12 +810,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         else {
             document_ = new HTMLDocument();
         }
-        document_.setParentScope(this);
+        document_.setParentScope(scope);
         document_.setPrototype(getPrototype(document_.getClass()));
         document_.setWindow(this);
 
-        if (pageToEnclose instanceof SgmlPage) {
-            final SgmlPage page = (SgmlPage) pageToEnclose;
+        if (pageToEnclose instanceof SgmlPage page) {
             document_.setDomNode(page);
 
             if (page.isHtmlPage()) {
@@ -773,29 +827,27 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         documentProxy_ = new DocumentProxy(webWindow_);
 
         navigator_ = new Navigator();
-        navigator_.setParentScope(this);
+        navigator_.setParentScope(scope);
         navigator_.setPrototype(getPrototype(navigator_.getClass()));
 
         screen_ = new Screen(getWebWindow().getScreen());
-        screen_.setParentScope(this);
+        screen_.setParentScope(scope);
         screen_.setPrototype(getPrototype(screen_.getClass()));
 
         history_ = new History();
-        history_.setParentScope(this);
+        history_.setParentScope(scope);
         history_.setPrototype(getPrototype(history_.getClass()));
 
         location_ = new Location();
-        location_.setParentScope(this);
+        location_.setParentScope(scope);
         location_.setPrototype(getPrototype(location_.getClass()));
-        location_.jsConstructor();
-        location_.initialize(this, pageToEnclose);
+        location_.initialize(scope, this, pageToEnclose);
 
         // like a JS new Object()
-        final Context ctx = Context.getCurrentContext();
-        controllers_ = ctx.newObject(this);
+        controllers_ = JavaScriptEngine.newObject(scope);
 
-        if (webWindow_ instanceof TopLevelWindow) {
-            final WebWindow opener = ((TopLevelWindow) webWindow_).getOpener();
+        if (webWindow_ instanceof TopLevelWindow window) {
+            final WebWindow opener = window.getOpener();
             if (opener != null) {
                 opener_ = opener.getScriptableObject();
             }
@@ -834,21 +886,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxGetter
     public Object getTop() {
-        if (top_ != NOT_FOUND) {
-            return top_;
-        }
-
         final WebWindow top = getWebWindow().getTopWindow();
         return top.getScriptableObject();
-    }
-
-    /**
-     * Sets the value of the {@code top} property.
-     * @param o the new value
-     */
-    @JsxSetter
-    public void setTop(final Object o) {
-        // ignore
     }
 
     /**
@@ -858,8 +897,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxGetter
     public Object getOpener() {
         Object opener = opener_;
-        if (opener instanceof Window) {
-            opener = ((Window) opener).windowProxy_;
+        if (opener instanceof Window window) {
+            opener = window.windowProxy_;
         }
         return opener;
     }
@@ -880,8 +919,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxGetter
     public HtmlUnitScriptable getFrameElement() {
         final WebWindow window = getWebWindow();
-        if (window instanceof FrameWindow) {
-            return ((FrameWindow) window).getFrameElement().getScriptableObject();
+        if (window instanceof FrameWindow frameWindow) {
+            return frameWindow.getFrameElement().getScriptableObject();
         }
         return null;
     }
@@ -1021,8 +1060,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     private HTMLCollection getFrames() {
         final Page page = getWebWindow().getEnclosedPage();
-        if (page instanceof HtmlPage) {
-            return new HTMLCollectionFrames((HtmlPage) page);
+        if (page instanceof HtmlPage htmlPage) {
+            return new HTMLCollectionFrames(htmlPage);
         }
         return null;
     }
@@ -1058,8 +1097,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxFunction(functionName = "close")
     public void close_js() {
         final WebWindow webWindow = getWebWindow();
-        if (webWindow instanceof TopLevelWindow) {
-            ((TopLevelWindow) webWindow).close();
+        if (webWindow instanceof TopLevelWindow window) {
+            window.close();
         }
         else {
             webWindow.getWebClient().deregisterWebWindow(webWindow);
@@ -1156,9 +1195,22 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             body.setScrollLeft(body.getScrollLeft() + xOff);
             body.setScrollTop(body.getScrollTop() + yOff);
 
-            final Event event = new Event(body, Event.TYPE_SCROLL);
-            body.fireEvent(event);
+            fireScrollEvent(body);
         }
+
+        fireScrollEvent(document_);
+    }
+
+    private void fireScrollEvent(final Node node) {
+        final Event event;
+        if (getBrowserVersion().hasFeature(EVENT_SCROLL_UIEVENT)) {
+            event = new UIEvent(node, Event.TYPE_SCROLL);
+        }
+        else {
+            event = new Event(node, Event.TYPE_SCROLL);
+            event.setCancelable(false);
+        }
+        node.fireEvent(event);
     }
 
     /**
@@ -1171,9 +1223,10 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         if (body != null) {
             body.setScrollTop(body.getScrollTop() + (19 * lines));
 
-            final Event event = new Event(body, Event.TYPE_SCROLL);
-            body.fireEvent(event);
+            fireScrollEvent(body);
         }
+
+        fireScrollEvent(document_);
     }
 
     /**
@@ -1186,9 +1239,10 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         if (body != null) {
             body.setScrollTop(body.getScrollTop() + (getInnerHeight() * pages));
 
-            final Event event = new Event(body, Event.TYPE_SCROLL);
-            body.fireEvent(event);
+            fireScrollEvent(body);
         }
+
+        fireScrollEvent(document_);
     }
 
     /**
@@ -1200,8 +1254,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public void scrollTo(final Scriptable x, final Scriptable y) {
         final HTMLElement body = document_.getBody();
         if (body != null) {
-            int xOff = 0;
-            int yOff = 0;
+            int xOff;
+            int yOff;
             if (y != null) {
                 xOff = JavaScriptEngine.toInt32(x);
                 yOff = JavaScriptEngine.toInt32(y);
@@ -1224,9 +1278,10 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             body.setScrollLeft(xOff);
             body.setScrollTop(yOff);
 
-            final Event event = new Event(body, Event.TYPE_SCROLL);
-            body.fireEvent(event);
+            fireScrollEvent(body);
         }
+
+        fireScrollEvent(document_);
     }
 
     /**
@@ -1329,9 +1384,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
      /**
-     * Sets the value of the window's {@code name} property.
-     * @param name the value of the window's {@code name} property
-     */
+      * Sets the value of the window's {@code name} property.
+      * @param name the value of the window's {@code name} property
+      */
     @JsxSetter
     public void setName(final String name) {
         getWebWindow().setName(name);
@@ -1404,16 +1459,17 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             final int line = e.getFailingLineNumber();
             final int column = e.getFailingColumnNumber();
 
+            final TopLevel scope = getTopLevelScope(getParentScope());
+
             Object jsError = e.getMessage();
             if (e.getCause() instanceof JavaScriptException) {
                 msg = "uncaught exception: " + e.getCause().getMessage();
                 jsError = ((JavaScriptException) e.getCause()).getValue();
             }
-            else if (e.getCause() instanceof EcmaError) {
+            else if (e.getCause() instanceof EcmaError ecmaError) {
                 msg = "uncaught " + e.getCause().getMessage();
 
-                final EcmaError ecmaError = (EcmaError) e.getCause();
-                final Scriptable err = Context.getCurrentContext().newObject(this, "Error");
+                final Scriptable err = JavaScriptEngine.newObject(scope, "Error", JavaScriptEngine.EMPTY_ARGS);
                 ScriptableObject.putProperty(err, "message", ecmaError.getMessage());
                 ScriptableObject.putProperty(err, "fileName", ecmaError.sourceName());
                 ScriptableObject.putProperty(err, "lineNumber", Integer.valueOf(ecmaError.lineNumber()));
@@ -1421,7 +1477,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             }
 
             final Object[] args = {msg, url, Integer.valueOf(line), Integer.valueOf(column), jsError};
-            f.call(Context.getCurrentContext(), this, this, args);
+            f.call(Context.getCurrentContext(), scope, this, args);
         }
     }
 
@@ -1430,40 +1486,37 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * To be called when the property detection fails in normal scenarios.
-     *
-     * @param name the name
-     * @return the found object, or {@link Scriptable#NOT_FOUND}
+     * {@inheritDoc}
      */
-    public Object getWithFallback(final String name) {
-        Object result = NOT_FOUND;
-
+    @Override
+    protected Object getWithPreemption(final String name) {
         final DomNode domNode = getDomNodeOrNull();
-        if (domNode != null) {
+        if (domNode == null) {
+            return NOT_FOUND;
+        }
 
-            // May be attempting to retrieve a frame by name.
-            final HtmlPage page = (HtmlPage) domNode.getPage();
-            result = getFrameWindowByName(page, name);
+        // May be attempting to retrieve a frame by name.
+        final HtmlPage page = (HtmlPage) domNode.getPage();
+        Object result = getFrameWindowByName(page, name);
+
+        if (result == NOT_FOUND) {
+            result = getElementsByName(page, name);
 
             if (result == NOT_FOUND) {
-                result = getElementsByName(page, name);
-
-                if (result == NOT_FOUND) {
-                    // May be attempting to retrieve element by ID (try map-backed operation again instead of XPath).
-                    try {
-                        final HtmlElement htmlElement = page.getHtmlElementById(name);
-                        result = getScriptableFor(htmlElement);
-                    }
-                    catch (final ElementNotFoundException e) {
-                        result = NOT_FOUND;
-                    }
+                // May be attempting to retrieve element by ID (try map-backed operation again instead of XPath).
+                try {
+                    final HtmlElement htmlElement = page.getHtmlElementById(name);
+                    result = getScriptableFor(htmlElement);
+                }
+                catch (final ElementNotFoundException e) {
+                    result = NOT_FOUND;
                 }
             }
+        }
 
-            if (result instanceof Window) {
-                final WebWindow webWindow = ((Window) result).getWebWindow();
-                result = getProxy(webWindow);
-            }
+        if (result instanceof Window window) {
+            final WebWindow webWindow = window.getWebWindow();
+            result = getProxy(webWindow);
         }
 
         return result;
@@ -1656,9 +1709,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     /**
      * Prints the current page. The current implementation uses the {@link PrintHandler}
      * defined for the {@link WebClient} to process the window.
-     * @see <a href="http://www.mozilla.org/docs/dom/domref/dom_window_ref85.html">
-     * Mozilla documentation</a>
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536672.aspx">MSDN documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/print">MDN documentation</a>
      */
     @JsxFunction
     public void print() {
@@ -1669,7 +1720,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         }
 
         final SgmlPage sgmlPage = getDocument().getPage();
-        if (!(sgmlPage instanceof HtmlPage)) {
+        if (!(sgmlPage instanceof HtmlPage page)) {
             LOG.debug("Page is not an HtmlPage - window.print() ignored");
             return;
         }
@@ -1677,7 +1728,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         Event event = new Event(this, Event.TYPE_BEFOREPRINT);
         fireEvent(event);
 
-        final HtmlPage page = (HtmlPage) sgmlPage;
         page.setPrinting(true);
         try {
             handler.handlePrint(page);
@@ -1716,15 +1766,14 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      *
      * @param element the element
      * @param pseudoElement a string specifying the pseudo-element to match (may be {@code null});
-     * e.g. ':before'
+     *        e.g. ':before'
      * @return the computed style
      */
     @JsxFunction
     public ComputedCSSStyleDeclaration getComputedStyle(final Object element, final String pseudoElement) {
-        if (!(element instanceof Element)) {
+        if (!(element instanceof Element e)) {
             throw JavaScriptEngine.typeError("parameter 1 is not of type 'Element'");
         }
-        final Element e = (Element) element;
 
         final ComputedCssStyleDeclaration style = getWebWindow().getComputedStyle(e.getDomNodeOrDie(), pseudoElement);
         return new ComputedCSSStyleDeclaration(e, style);
@@ -1738,8 +1787,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public Selection getSelection() {
         final WebWindow webWindow = getWebWindow();
         // return null if the window is in a frame that is not displayed
-        if (webWindow instanceof FrameWindow) {
-            final FrameWindow frameWindow = (FrameWindow) webWindow;
+        if (webWindow instanceof FrameWindow frameWindow) {
             if (getBrowserVersion().hasFeature(JS_WINDOW_SELECTION_NULL_IF_INVISIBLE)
                     && !frameWindow.getFrameElement().isDisplayed()) {
                 return null;
@@ -1755,7 +1803,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public Selection getSelectionImpl() {
         if (selection_ == null) {
             selection_ = new Selection();
-            selection_.setParentScope(this);
+            selection_.setParentScope(getParentScope());
             selection_.setPrototype(getPrototype(selection_.getClass()));
         }
         return selection_;
@@ -1785,18 +1833,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Returns the value of {@code mozInnerScreenX} property.
      * @return the value of {@code mozInnerScreenX} property
      */
-    @JsxGetter(FF)
+    @JsxGetter({FF, FF_ESR})
     public int getMozInnerScreenX() {
         return 12;
-    }
-
-    /**
-     * Returns the value of {@code mozInnerScreenX} property.
-     * @return the value of {@code mozInnerScreenX} property
-     */
-    @JsxGetter(value = FF_ESR, propertyName = "mozInnerScreenX")
-    public int getMozInnerScreenXffesr_js() {
-        return 10;
     }
 
     /**
@@ -1805,7 +1844,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxGetter({FF, FF_ESR})
     public int getMozInnerScreenY() {
-        return 89;
+        return 90;
     }
 
     private static final class Filter {
@@ -1880,11 +1919,13 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
+     * Returns the {@code netscape} property.
+     *
      * @return the value of {@code netscape} property
      */
     @JsxGetter({FF, FF_ESR})
     public Netscape getNetscape() {
-        return new Netscape(this);
+        return new Netscape(getParentScope());
     }
 
     /**
@@ -1956,7 +1997,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/window.postMessage">MDN documentation</a>
      */
     @JsxFunction
-    public static void postMessage(final Context context, final Scriptable scope,
+    public static void postMessage(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function funObj) {
 
         // support the structured clone algorithm
@@ -1966,16 +2007,25 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         final Object message = args[0];
 
         String targetOrigin = "*";
-        if (args.length > 1) {
-            targetOrigin = JavaScriptEngine.toString(args[1]);
-        }
-
         Object transfer = JavaScriptEngine.UNDEFINED;
-        if (args.length > 2) {
-            transfer = args[2];
+
+        if (args.length > 1) {
+            if (JavaScriptEngine.isArray(args[1])) {
+                transfer = args[1];
+            }
+            else {
+                targetOrigin = JavaScriptEngine.toString(args[1]);
+            }
         }
 
-        final Window sender = (Window) scope;
+        if (args.length > 2) {
+            if (JavaScriptEngine.isArray(args[2])) {
+                transfer = args[2];
+            }
+        }
+
+        final TopLevel topLevel = ScriptableObject.getTopLevelScope(scope);
+        final Window sender = (Window) topLevel.getGlobalThis();
         final Window receiver = (Window) thisObj;
         final URL receiverURL = receiver.getWebWindow().getEnclosedPage().getUrl();
 
@@ -1983,9 +2033,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         final Page page = webWindow.getEnclosedPage();
         final URL senderURL = page.getUrl();
 
-        if (!org.htmlunit.util.StringUtils.equalsChar('*', targetOrigin)) {
+        if (!StringUtils.equalsChar('*', targetOrigin)) {
             final URL targetURL;
-            if (org.htmlunit.util.StringUtils.equalsChar('/', targetOrigin)) {
+            if (StringUtils.equalsChar('/', targetOrigin)) {
                 targetURL = senderURL;
             }
             else {
@@ -1994,7 +2044,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
                 }
                 catch (final Exception e) {
                     throw JavaScriptEngine.asJavaScriptException(
-                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            sender,
                             "Failed to execute 'postMessage' on 'Window': Invalid target origin '"
                                     + targetOrigin + "' was specified (reason: " + e.getMessage() + ".",
                             DOMException.SYNTAX_ERR);
@@ -2012,7 +2062,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             }
         }
 
-        String origin = "";
+        final String origin;
         try {
             final URL originUrl = UrlUtils.getUrlWithoutPathRefQuery(senderURL);
             origin = UrlUtils.removeRedundantPort(originUrl).toExternalForm();
@@ -2065,7 +2115,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public Scriptable getPerformance() {
         if (performance_ == null) {
             final Performance performance = new Performance();
-            performance.setParentScope(this);
+            performance.setParentScope(getParentScope());
             performance.setPrototype(getPrototype(performance.getClass()));
             performance_ = performance;
         }
@@ -2076,8 +2126,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * The performance attribute is defined as replacable
      * (https://w3c.github.io/hr-time/#the-performance-attribute) but not implemented
      * as that.
-     *
+     * <p>
      * Sets the {@code performance} property.
+     * </p>
      * @param performance the value to overwrite the defined property value
      */
     @JsxSetter
@@ -2101,7 +2152,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxGetter({CHROME, EDGE})
     public StyleMedia getStyleMedia() {
         final StyleMedia styleMedia = new StyleMedia();
-        styleMedia.setParentScope(this);
+        styleMedia.setParentScope(getParentScope());
         styleMedia.setPrototype(getPrototype(styleMedia.getClass()));
         return styleMedia;
     }
@@ -2115,7 +2166,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxFunction
     public MediaQueryList matchMedia(final String mediaQueryString) {
         final MediaQueryList mediaQueryList = new MediaQueryList(mediaQueryString);
-        mediaQueryList.setParentScope(this);
+        mediaQueryList.setParentScope(getParentScope());
         mediaQueryList.setPrototype(getPrototype(mediaQueryList.getClass()));
         return mediaQueryList;
     }
@@ -2145,7 +2196,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxGetter({CHROME, EDGE})
     public SpeechSynthesis getSpeechSynthesis() {
         final SpeechSynthesis speechSynthesis = new SpeechSynthesis();
-        speechSynthesis.setParentScope(this);
+        speechSynthesis.setParentScope(getParentScope());
         speechSynthesis.setPrototype(getPrototype(speechSynthesis.getClass()));
         return speechSynthesis;
     }
@@ -2155,7 +2206,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code offscreenBuffering} property
      */
     @JsxGetter({CHROME, EDGE})
-    public boolean getOffscreenBuffering() {
+    public boolean isOffscreenBuffering() {
         return true;
     }
 
@@ -2177,15 +2228,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @Override
     public void close() {
         // nothing to do
-    }
-
-    /**
-     * Does nothing.
-     * @param parent the new parent scope
-     */
-    @Override
-    public void setParentScope(final Scriptable parent) {
-        // nothing as the window is the top level scope and its parent scope should stay null
     }
 
     /**
@@ -3813,10 +3855,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
+     * Returns a boolean indicating whether the current context is secure (true) or not (false).
      * @return a boolean indicating whether the current context is secure (true) or not (false).
      */
     @JsxGetter
-    public boolean getIsSecureContext() {
+    public boolean isIsSecureContext() {
         final Page page = getWebWindow().getEnclosedPage();
         if (page != null) {
             final String protocol = page.getUrl().getProtocol();
@@ -3850,8 +3893,8 @@ class HTMLCollectionFrames extends HTMLCollection {
     @Override
     protected Scriptable getScriptableForElement(final Object obj) {
         final WebWindow window;
-        if (obj instanceof BaseFrameElement) {
-            window = ((BaseFrameElement) obj).getEnclosedWindow();
+        if (obj instanceof BaseFrameElement element) {
+            window = element.getEnclosedWindow();
         }
         else {
             window = ((FrameWindow) obj).getFrameElement().getEnclosedWindow();

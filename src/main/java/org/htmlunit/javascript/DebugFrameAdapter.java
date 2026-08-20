@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.corejs.javascript.debug.DebugFrame;
 
 /**
@@ -23,6 +24,7 @@ import org.htmlunit.corejs.javascript.debug.DebugFrame;
  * exists as a convenience for creating debug frame objects.
  *
  * @author Daniel Gredler
+ * @author Ronald Brill
  */
 public class DebugFrameAdapter implements DebugFrame {
 
@@ -34,7 +36,7 @@ public class DebugFrameAdapter implements DebugFrame {
 
     /** {@inheritDoc} */
     @Override
-    public void onEnter(final Context cx, final Scriptable activation, final Scriptable thisObj, final Object[] args) {
+    public void onEnter(final Context cx, final VarScope activation, final Scriptable thisObj, final Object[] args) {
         // Empty.
     }
 

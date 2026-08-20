@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@ public class HtmlTemplate extends HtmlElement {
     }
 
     /**
+     * Return the associated document fragment.
+     *
      * @return the associated document fragment
      */
     public DomDocumentFragment getContent() {
@@ -69,8 +71,41 @@ public class HtmlTemplate extends HtmlElement {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected void printChildrenAsXml(final String indent, final PrintWriter printWriter) {
-        domDocumentFragment_.printChildrenAsXml(indent, printWriter);
+    protected boolean printXml(final String indent, final boolean indentBefore, final PrintWriter printWriter) {
+        final boolean hasChildren = domDocumentFragment_.getFirstChild() != null;
+
+        if (indentBefore) {
+            printWriter.print("\r\n");
+            printWriter.print(indent);
+        }
+
+        printWriter.print('<');
+        printOpeningTagContentAsXml(printWriter);
+
+        if (hasChildren) {
+            printWriter.print(">");
+            final boolean tag = domDocumentFragment_.printChildrenAsXml(indent, indentBefore, printWriter);
+            if (tag) {
+                printWriter.print("\r\n");
+                printWriter.print(indent);
+            }
+            printWriter.print("</");
+            printWriter.print(getTagName());
+            printWriter.print(">");
+        }
+        else if (isEmptyXmlTagExpanded()) {
+            printWriter.print("></");
+            printWriter.print(getTagName());
+            printWriter.print(">");
+        }
+        else {
+            printWriter.print("/>");
+        }
+
+        return true;
     }
 }

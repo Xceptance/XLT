@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,14 @@ import java.util.NoSuchElementException;
 
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.util.geometry.Point2D;
 
 /**
  * Wrapper for the HTML element "table".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
@@ -59,7 +60,8 @@ public class HtmlTable extends HtmlElement {
      * This means, a cell with colspan='2' consumes two columns; a cell with rowspan='3' consumes three rows. The
      * index is based on the 'background' model of the table; if you have a row like<br>
      * &lt;td&gt;cell1&lt;/td&gt; &lt;td colspan='2'&gt;cell2&lt;/td&gt; then this row is treated as a row with
-     * three cells.<br>
+     * three cells.
+     * </p>
      * <p>
      * <code>
      * getCellAt(rowIndex, 0).asText() returns "cell1";<br>
@@ -75,13 +77,13 @@ public class HtmlTable extends HtmlElement {
      */
     public final HtmlTableCell getCellAt(final int rowIndex, final int columnIndex) {
         final RowIterator rowIterator = getRowIterator();
-        final HashSet<Position> occupied = new HashSet<>();
+        final HashSet<Point2D> occupied = new HashSet<>();
         int row = 0;
         for (final HtmlTableRow htmlTableRow : rowIterator) {
             final HtmlTableRow.CellIterator cellIterator = htmlTableRow.getCellIterator();
             int col = 0;
             for (final HtmlTableCell cell : cellIterator) {
-                while (occupied.contains(new Position(row, col))) {
+                while (occupied.contains(new Point2D(row, col))) {
                     col++;
                 }
                 final int nextRow = row + cell.getRowSpan();
@@ -91,10 +93,12 @@ public class HtmlTable extends HtmlElement {
                         return cell;
                     }
                 }
-                if (cell.getRowSpan() > 1 || cell.getColumnSpan() > 1) {
-                    for (int i = 0; i < cell.getRowSpan(); i++) {
-                        for (int j = 0; j < cell.getColumnSpan(); j++) {
-                            occupied.add(new Position(row + i, col + j));
+                final int rowSpan = cell.getRowSpan();
+                final int columnSpan = cell.getColumnSpan();
+                if (rowSpan > 1 || columnSpan > 1) {
+                    for (int i = 0; i < rowSpan; i++) {
+                        for (int j = 0; j < columnSpan; j++) {
+                            occupied.add(new Point2D(row + i, col + j));
                         }
                     }
                 }
@@ -106,15 +110,19 @@ public class HtmlTable extends HtmlElement {
     }
 
     /**
-     * @return an iterator over all the HtmlTableRow objects
+     * Returns an iterator over all rows in this table.
+     *
+     * @return an iterator over all {@link HtmlTableRow} objects
      */
     private RowIterator getRowIterator() {
         return new RowIterator();
     }
 
     /**
-     * @return an immutable list containing all the HtmlTableRow objects
-     * @see #getRowIterator
+     * Returns an immutable list of all rows in this table.
+     *
+     * @return an immutable list containing all {@link HtmlTableRow} objects
+     * @see #getRowIterator()
      */
     public List<HtmlTableRow> getRows() {
         final List<HtmlTableRow> result = new ArrayList<>();
@@ -125,10 +133,12 @@ public class HtmlTable extends HtmlElement {
     }
 
     /**
+     * Returns the row at the specified index.
+     *
      * @param index the 0-based index of the row
-     * @return the HtmlTableRow at the given index
+     * @return the {@link HtmlTableRow} at the given index
      * @throws IndexOutOfBoundsException if there is no row at the given index
-     * @see #getRowIterator
+     * @see #getRowIterator()
      */
     public HtmlTableRow getRow(final int index) throws IndexOutOfBoundsException {
         int count = 0;
@@ -156,11 +166,11 @@ public class HtmlTable extends HtmlElement {
     }
 
     /**
-     * Finds and return the row with the specified id.
+     * Returns the row with the specified identifier.
      *
-     * @param id the id of the row
-     * @return the row with the specified id
-     * @exception ElementNotFoundException If the row cannot be found.
+     * @param id the row identifier
+     * @return the row with the specified identifier
+     * @throws ElementNotFoundException if the row cannot be found
      */
     public final HtmlTableRow getRowById(final String id) throws ElementNotFoundException {
         for (final HtmlTableRow row : getRowIterator()) {
@@ -192,8 +202,8 @@ public class HtmlTable extends HtmlElement {
      */
     public HtmlTableHeader getHeader() {
         for (final DomElement element : getChildElements()) {
-            if (element instanceof HtmlTableHeader) {
-                return (HtmlTableHeader) element;
+            if (element instanceof HtmlTableHeader header) {
+                return header;
             }
         }
         return null;
@@ -206,8 +216,8 @@ public class HtmlTable extends HtmlElement {
      */
     public HtmlTableFooter getFooter() {
         for (final DomElement element : getChildElements()) {
-            if (element instanceof HtmlTableFooter) {
-                return (HtmlTableFooter) element;
+            if (element instanceof HtmlTableFooter footer) {
+                return footer;
             }
         }
         return null;
@@ -222,8 +232,8 @@ public class HtmlTable extends HtmlElement {
     public List<HtmlTableBody> getBodies() {
         final List<HtmlTableBody> bodies = new ArrayList<>();
         for (final DomElement element : getChildElements()) {
-            if (element instanceof HtmlTableBody) {
-                bodies.add((HtmlTableBody) element);
+            if (element instanceof HtmlTableBody body) {
+                bodies.add(body);
             }
         }
         return bodies;
@@ -235,7 +245,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code summary}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getSummaryAttribute() {
         return getAttributeDirect("summary");
@@ -247,7 +257,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code width}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getWidthAttribute() {
         return getAttributeDirect("width");
@@ -259,7 +269,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code border}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getBorderAttribute() {
         return getAttributeDirect("border");
@@ -271,7 +281,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code frame}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getFrameAttribute() {
         return getAttributeDirect("frame");
@@ -283,7 +293,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code rules}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getRulesAttribute() {
         return getAttributeDirect("rules");
@@ -295,7 +305,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code cellspacing}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getCellSpacingAttribute() {
         return getAttributeDirect("cellspacing");
@@ -307,7 +317,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code cellpadding}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getCellPaddingAttribute() {
         return getAttributeDirect("cellpadding");
@@ -319,7 +329,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code align}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getAlignAttribute() {
         return getAttributeDirect("align");
@@ -331,7 +341,7 @@ public class HtmlTable extends HtmlElement {
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code bgcolor}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getBgcolorAttribute() {
         return getAttributeDirect("bgcolor");
@@ -351,7 +361,7 @@ public class HtmlTable extends HtmlElement {
         }
 
         /**
-         * @return {@code true} if there are more rows available
+         * {@inheritDoc}
          */
         @Override
         public boolean hasNext() {
@@ -359,8 +369,7 @@ public class HtmlTable extends HtmlElement {
         }
 
         /**
-         * @return the next row from this iterator
-         * @throws NoSuchElementException if no more rows are available
+         * {@inheritDoc}
          */
         @Override
         public HtmlTableRow next() throws NoSuchElementException {
@@ -368,7 +377,7 @@ public class HtmlTable extends HtmlElement {
         }
 
         /**
-         * Removes the current row from the underlying table.
+         * {@inheritDoc}
          */
         @Override
         public void remove() {
@@ -382,6 +391,8 @@ public class HtmlTable extends HtmlElement {
         }
 
         /**
+         * Returns the next row.
+         *
          * @return the next row from this iterator
          * @throws NoSuchElementException if no more rows are available
          */
@@ -402,12 +413,12 @@ public class HtmlTable extends HtmlElement {
         private void setNextRow(final DomNode node) {
             nextRow_ = null;
             for (DomNode next = node; next != null; next = next.getNextSibling()) {
-                if (next instanceof HtmlTableRow) {
-                    nextRow_ = (HtmlTableRow) next;
+                if (next instanceof HtmlTableRow row) {
+                    nextRow_ = row;
                     return;
                 }
-                else if (currentGroup_ == null && next instanceof TableRowGroup) {
-                    currentGroup_ = (TableRowGroup) next;
+                else if (currentGroup_ == null && next instanceof TableRowGroup group) {
+                    currentGroup_ = group;
                     setNextRow(next.getFirstChild());
                     return;
                 }
@@ -419,6 +430,9 @@ public class HtmlTable extends HtmlElement {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Iterator<HtmlTableRow> iterator() {
             return this;
@@ -427,7 +441,9 @@ public class HtmlTable extends HtmlElement {
 
     /**
      * {@inheritDoc}
-     * @return {@code true} as browsers ignore self closing <code>table</code> tags.
+     *
+     * @return {@code true} so that generated XML uses explicit opening and closing
+     *         {@code <table>} tags
      */
     @Override
     protected boolean isEmptyXmlTagExpanded() {
@@ -440,48 +456,5 @@ public class HtmlTable extends HtmlElement {
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.TABLE;
-    }
-
-    private static final class Position {
-
-        private final int posX_;
-        private final int posY_;
-
-        Position(final int x, final int y) {
-            posX_ = x;
-            posY_ = y;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + posX_;
-            result = prime * result + posY_;
-            return result;
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-
-            final Position other = (Position) obj;
-            if (posX_ != other.posX_) {
-                return false;
-            }
-            if (posY_ != other.posY_) {
-                return false;
-            }
-
-            return true;
-        }
     }
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,18 +29,18 @@ import java.util.List;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.http.HttpStatus;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A response from a web server.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Brad Clarke
  * @author Noboru Sinohara
  * @author Marc Guillemot
@@ -64,9 +64,9 @@ public class WebResponse implements Serializable {
     private String blockReason_;
 
     /**
-     * Constructs with all data.
+     * Constructs a web response.
      *
-     * @param responseData      Data that was send back
+     * @param responseData      the response data
      * @param url               Where this response came from
      * @param requestMethod     the method used to get this response
      * @param loadTime          How long the response took to be sent
@@ -77,9 +77,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Constructs with all data.
+     * Constructs a web response.
      *
-     * @param responseData      Data that was send back
+     * @param responseData      the response data
      * @param request           the request used to get this response
      * @param loadTime          How long the response took to be sent
      */
@@ -99,7 +99,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the response headers as a list of {@link NameValuePair}s.
+     * Returns the response headers.
      * @return the response headers as a list of {@link NameValuePair}s
      */
     public List<NameValuePair> getResponseHeaders() {
@@ -121,7 +121,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the status code that was returned by the server.
+     * Returns the HTTP status code.
      * @return the status code that was returned by the server
      */
     public int getStatusCode() {
@@ -129,7 +129,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the status message that was returned from the server.
+     * Returns the HTTP status message.
      * @return the status message that was returned from the server
      */
     public String getStatusMessage() {
@@ -137,7 +137,7 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the content type returned from the server, e.g. "text/html".
+     * Returns the response content type.
      * @return the content type returned from the server, e.g. "text/html"
      */
     public String getContentType() {
@@ -176,25 +176,6 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Returns the content charset specified explicitly in the header or in the content,
-     * or {@code null} if none was specified.
-     * @return the content charset specified explicitly in the header or in the content,
-     *         or {@code null} if none was specified
-     *
-     * @deprecated as of version 4.0.0; use {@link #getContentCharset()} instead
-     */
-    @Deprecated
-    public Charset getContentCharsetOrNull() {
-        try (InputStream is = getContentAsStream()) {
-            return EncodingSniffer.sniffEncoding(getResponseHeaders(), is);
-        }
-        catch (final IOException e) {
-            LOG.warn("Error trying to sniff encoding.", e);
-            return null;
-        }
-    }
-
-    /**
      * Returns the content charset for this response, even if no charset was specified explicitly.
      * <p>
      * This method always returns a valid charset. This method first checks the {@code Content-Type}
@@ -202,14 +183,15 @@ public class WebResponse implements Serializable {
      * charset based on the type of the content. As a last resort, this method returns the
      * value of {@link org.htmlunit.WebRequest#getDefaultResponseContentCharset()} which is
      * {@link java.nio.charset.StandardCharsets#UTF_8} by default.
+     * </p>
      * @return the content charset for this response
      */
     public Charset getContentCharset() {
         wasContentCharsetTentative_ = false;
 
         try (InputStream is = getContentAsStreamWithBomIfApplicable()) {
-            if (is instanceof BOMInputStream) {
-                final String bomCharsetName = ((BOMInputStream) is).getBOMCharsetName();
+            if (is instanceof BOMInputStream stream) {
+                final String bomCharsetName = stream.getBOMCharsetName();
                 if (bomCharsetName != null) {
                     return Charset.forName(bomCharsetName);
                 }
@@ -254,13 +236,15 @@ public class WebResponse implements Serializable {
      * Returns whether the charset of the previous call to {@link #getContentCharset()} was "tentative".
      * <p>
      * A charset is classed as "tentative" if its detection is prone to false positive/negatives.
+     * </p>
      * <p>
      * For example, HTML meta-tag sniffing can be fooled by text that looks-like-a-meta-tag inside
      * JavaScript code (false positive) or if the meta-tag is after the first 1024 bytes (false negative).
+     * </p>
      * @return {@code true} if the charset of the previous call to {@link #getContentCharset()} was
-     * "tentative".
+     *         "tentative".
      * @see <a href="https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence">
-     * https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence</a>
+     *     https://html.spec.whatwg.org/multipage/parsing.html#concept-encoding-confidence</a>
      */
     public boolean wasContentCharsetTentative() {
         return wasContentCharsetTentative_;
@@ -269,7 +253,7 @@ public class WebResponse implements Serializable {
     /**
      * Returns the response content as a string, using the charset/encoding specified in the server response.
      * @return the response content as a string, using the charset/encoding specified in the server response
-     * or null if the content retrieval was failing
+     *         or null if the content retrieval was failing
      */
     public String getContentAsString() {
         return getContentAsString(getContentCharset());
@@ -285,8 +269,7 @@ public class WebResponse implements Serializable {
     public String getContentAsString(final Charset encoding) {
         if (responseData_ != null) {
             try (InputStream in = responseData_.getInputStreamWithBomIfApplicable(BOM_HEADERS)) {
-                if (in instanceof BOMInputStream) {
-                    try (BOMInputStream bomIn = (BOMInputStream) in) {
+                if (in instanceof BOMInputStream bomIn) {
                         // there seems to be a bug in BOMInputStream
                         // we have to call this before hasBOM(ByteOrderMark)
                         if (bomIn.hasBOM()) {
@@ -302,7 +285,6 @@ public class WebResponse implements Serializable {
                         }
                         return IOUtils.toString(bomIn, encoding);
                     }
-                }
 
                 return IOUtils.toString(in, encoding);
             }
@@ -364,16 +346,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * Mark this response for using UTF-8 as default charset.
-     * @deprecated as of version 4.0.0; use {@link WebRequest#setDefaultResponseContentCharset(Charset)} instead
-     */
-    @Deprecated
-    public void defaultCharsetUtf8() {
-        getWebRequest().setDefaultResponseContentCharset(UTF_8);
-    }
-
-    /**
-     * @return true if the 2xx
+     * Returns whether the response has a successful HTTP status code.
+     *
+     * @return {@code true} if the status code is in the 2xx range
      */
     public boolean isSuccess() {
         final int statusCode = getStatusCode();
@@ -381,7 +356,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the 2xx or 305
+     * Returns whether the response has a successful HTTP status code.
+     *
+     * @return {@code true} if the status code is in the 2xx range or 305
      */
     public boolean isSuccessOrUseProxy() {
         final int statusCode = getStatusCode();
@@ -390,7 +367,9 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the 2xx or 305
+     * Returns whether the response has a successful HTTP status code.
+     *
+     * @return {@code true} if the status code is in the 2xx range or 305
      */
     public boolean isSuccessOrUseProxyOrNotModified() {
         final int statusCode = getStatusCode();
@@ -400,13 +379,17 @@ public class WebResponse implements Serializable {
     }
 
     /**
-     * @return true if the request was blocked
+     * Returns whether the request was blocked.
+     *
+     * @return {@code true} if the request was blocked
      */
     public boolean wasBlocked() {
         return wasBlocked_;
     }
 
     /**
+     * Returns the reason for blocking or null.
+     *
      * @return the reason for blocking or null
      */
     public String getBlockReason() {

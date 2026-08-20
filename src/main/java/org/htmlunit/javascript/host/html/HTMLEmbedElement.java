@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,14 @@
  */
 package org.htmlunit.javascript.host.html;
 
+import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlEmbed;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -26,6 +32,9 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLEmbedElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlEmbed.class)
 public class HTMLEmbedElement extends HTMLElement {
@@ -94,6 +103,54 @@ public class HTMLEmbedElement extends HTMLElement {
     }
 
     /**
+     * Returns the value of the {@code src} property.
+     * @return the value of the {@code src} property
+     */
+    @JsxGetter
+    public String getSrc() {
+        final HtmlEmbed embed = (HtmlEmbed) getDomNodeOrDie();
+        String src = embed.getAttributeDirect("src");
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            return src;
+        }
+        try {
+            final URL expandedSrc = ((HtmlPage) embed.getPage()).getFullyQualifiedUrl(src);
+            src = expandedSrc.toString();
+        }
+        catch (final MalformedURLException ignored) {
+            // ignore
+        }
+        return src;
+    }
+
+    /**
+     * Sets the value of the {@code src} property.
+     * @param src the value of the {@code src} property
+     */
+    @JsxSetter
+    public void setSrc(final String src) {
+        getDomNodeOrDie().setAttribute("src", src);
+    }
+
+    /**
+     * Returns the value of the {@code type} property.
+     * @return the value of the {@code type} property
+     */
+    @JsxGetter
+    public String getType() {
+        return getDomNodeOrDie().getAttributeDirect("type");
+    }
+
+    /**
+     * Sets the value of the {@code type} property.
+     * @param type the value of the {@code type} property
+     */
+    @JsxSetter
+    public void setType(final String type) {
+        getDomNodeOrDie().setAttribute("type", type);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -113,7 +170,7 @@ public class HTMLEmbedElement extends HTMLElement {
 
     /**
      * Sets the {@code name} attribute.
-     * @param name the {@code name} attribute
+     * @param name the {@code name} attribute value
      */
     @JsxSetter
     @Override

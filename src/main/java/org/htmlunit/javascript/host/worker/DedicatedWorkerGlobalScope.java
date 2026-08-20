@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,13 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
-import org.htmlunit.javascript.RecursiveFunctionObject;
 import org.htmlunit.javascript.background.BasicJavaScriptJob;
 import org.htmlunit.javascript.background.JavaScriptJob;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
@@ -49,11 +50,6 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.configuration.WorkerJavaScriptConfiguration;
-import org.htmlunit.javascript.host.PermissionStatus;
-import org.htmlunit.javascript.host.Permissions;
-import org.htmlunit.javascript.host.PushManager;
-import org.htmlunit.javascript.host.PushSubscription;
-import org.htmlunit.javascript.host.PushSubscriptionOptions;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.WindowOrWorkerGlobalScopeMixin;
 import org.htmlunit.javascript.host.event.Event;
@@ -70,6 +66,8 @@ import org.htmlunit.util.MimeType;
  * @author Marc Guillemot
  * @author Ronald Brill
  * @author Rural Hunter
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope">MDN Documentation</a>
  */
 @JsxClass
 public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
@@ -111,7 +109,7 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
     }
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -121,7 +119,11 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
     /**
      * Constructor.
-     * @param webClient the WebClient
+     *
+     * @param owningWindow the owning window
+     * @param context the current context
+     * @param webClient the {@link WebClient}
+     * @param name the worker name
      * @param worker the started worker
      * @throws Exception in case of problem
      */
@@ -131,18 +133,15 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
 
-        context.initSafeStandardObjects(this);
-        JavaScriptEngine.configureRhino(webClient, browserVersion, this);
+        final TopLevel scope = context.initSafeStandardObjects(new TopLevel(this));
+        this.setParentScope(scope);
+
+        JavaScriptEngine.configureRhino(webClient, browserVersion, scope, this);
 
         final WorkerJavaScriptConfiguration jsConfig = WorkerJavaScriptConfiguration.getInstance(browserVersion);
 
-        ClassConfiguration config = jsConfig.getClassConfiguration(
-                DedicatedWorkerGlobalScope.class.getSuperclass().getSimpleName());
-        final HtmlUnitScriptable parentPrototype = JavaScriptEngine.configureClass(config, this);
-
-        config = jsConfig.getClassConfiguration(DedicatedWorkerGlobalScope.class.getSimpleName());
-        final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this);
-        prototype.setPrototype(parentPrototype);
+        final ClassConfiguration config = jsConfig.getDedicatedWorkerGlobalScopeClassConfiguration();
+        final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, scope);
         setPrototype(prototype);
 
         final Map<Class<? extends Scriptable>, Scriptable> prototypes = new HashMap<>();
@@ -152,11 +151,11 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         prototypesPerJSName.put(config.getClassName(), prototype);
 
         final FunctionObject functionObject =
-                new RecursiveFunctionObject(DedicatedWorkerGlobalScope.class.getSimpleName(),
-                        config.getJsConstructor().getValue(), this, browserVersion);
-        functionObject.addAsConstructor(this, prototype, ScriptableObject.DONTENUM);
+                new FunctionObject(DedicatedWorkerGlobalScope.class.getSimpleName(),
+                        config.getJsConstructor().getValue(), scope);
+        functionObject.addAsConstructor(scope, prototype, ScriptableObject.DONTENUM);
 
-        JavaScriptEngine.configureScope(this, config, functionObject, jsConfig,
+        JavaScriptEngine.configureGlobalThis(scope, this, config, functionObject, jsConfig,
                 browserVersion, prototypes, prototypesPerJSName);
         // remove some aliases
         delete("webkitURL");
@@ -170,15 +169,6 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
             delete(SourceBufferList.class.getSimpleName());
         }
 
-        if (browserVersion.isFirefoxESR()) {
-            delete(Permissions.class.getSimpleName());
-            delete(PermissionStatus.class.getSimpleName());
-            delete(PushManager.class.getSimpleName());
-            delete(PushSubscription.class.getSimpleName());
-            delete(PushSubscriptionOptions.class.getSimpleName());
-            delete(ServiceWorkerRegistration.class.getSimpleName());
-        }
-
         if (!webClient.getOptions().isWebSocketEnabled()) {
             delete("WebSocket");
         }
@@ -190,15 +180,16 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         origin_ = currentURL.getProtocol() + "://" + currentURL.getHost() + ':' + currentURL.getPort();
 
         name_ = name;
-        defineProperty("name", null, GETTER_NAME, SETTER_NAME, ScriptableObject.READONLY);
+        defineProperty(scope, "name", null, GETTER_NAME, SETTER_NAME, ScriptableObject.READONLY);
 
         worker_ = worker;
         workerLocation_ = null;
     }
 
     /**
-     * Get the scope itself.
-     * @return this
+     * Returns the scope itself.
+     *
+     * @return this scope
      */
     @JsxGetter
     public Object getSelf() {
@@ -207,6 +198,7 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
     /**
      * Returns the {@code onmessage} event handler.
+     *
      * @return the {@code onmessage} event handler
      */
     @JsxGetter
@@ -216,6 +208,7 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
     /**
      * Sets the {@code onmessage} event handler.
+     *
      * @param onmessage the {@code onmessage} event handler
      */
     @JsxSetter
@@ -224,7 +217,9 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
     }
 
     /**
-     * @return returns the WorkerLocation associated with the worker
+     * Returns the {@link WorkerLocation} associated with the worker.
+     *
+     * @return the worker location
      */
     @JsxGetter
     public WorkerLocation getLocation() {
@@ -232,7 +227,9 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
     }
 
     /**
-     * @return returns the WorkerNavigator associated with the worker
+     * Returns the {@link WorkerNavigator} associated with the worker.
+     *
+     * @return the worker navigator
      */
     @JsxGetter
     public WorkerNavigator getNavigator() {
@@ -240,14 +237,17 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
     }
 
     /**
-     * @return the {@code name}
+     * Returns the {@code name} of the worker.
+     *
+     * @return the worker name
      */
     public String jsGetName() {
         return name_;
     }
 
     /**
-     * Sets the {@code name}.
+     * Sets the {@code name} of the worker.
+     *
      * @param name the new name
      */
     public void jsSetName(final Scriptable name) {
@@ -256,14 +256,15 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
     /**
      * Posts a message to the {@link Worker} in the page's context.
-     * @param message the message
+     *
+     * @param message the message to post
      */
     @JsxFunction
     public void postMessage(final Object message) {
         final MessageEvent event = new MessageEvent();
         event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin_, "",
                                     owningWindow_, JavaScriptEngine.UNDEFINED);
-        event.setParentScope(owningWindow_);
+        event.setParentScope(getTopLevelScope(getParentScope()));
         event.setPrototype(owningWindow_.getPrototype(event.getClass()));
 
         if (LOG.isDebugEnabled()) {
@@ -290,7 +291,7 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         final MessageEvent event = new MessageEvent();
         event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin_, "",
                                     owningWindow_, JavaScriptEngine.UNDEFINED);
-        event.setParentScope(owningWindow_);
+        event.setParentScope(getTopLevelScope(getParentScope()));
         event.setPrototype(owningWindow_.getPrototype(event.getClass()));
 
         final JavaScriptEngine jsEngine =
@@ -313,9 +314,8 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         if (handlers != null) {
             final Object[] args = {event};
             for (final Scriptable scriptable : handlers) {
-                if (scriptable instanceof Function) {
-                    final Function handlerFunction = (Function) scriptable;
-                    handlerFunction.call(cx, this, this, args);
+                if (scriptable instanceof Function handlerFunction) {
+                    handlerFunction.call(cx, ScriptableObject.getTopLevelScope(event.getParentScope()), this, args);
                 }
             }
         }
@@ -323,21 +323,22 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         final Function handlerFunction = getEventHandler(Event.TYPE_MESSAGE);
         if (handlerFunction != null) {
             final Object[] args = {event};
-            handlerFunction.call(cx, this, this, args);
+            handlerFunction.call(cx, getParentScope(), this, args);
         }
     }
 
     /**
-     * Import external script(s).
+     * Imports one or more external scripts into the worker's scope.
+     *
      * @param cx the current context
      * @param scope the scope
      * @param thisObj this object
-     * @param args the script(s) to import
+     * @param args the script URL(s) to import
      * @param funObj the JS function called
-     * @throws IOException in case of problem loading/executing the scripts
+     * @throws IOException in case of problem loading or executing the scripts
      */
     @JsxFunction
-    public static void importScripts(final Context cx, final Scriptable scope,
+    public static void importScripts(final Context cx, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function funObj) throws IOException {
         final DedicatedWorkerGlobalScope workerScope = (DedicatedWorkerGlobalScope) thisObj;
 
@@ -354,11 +355,11 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         final URL fullUrl = page.getFullyQualifiedUrl(url);
 
         workerLocation_ = new WorkerLocation(fullUrl, origin_);
-        workerLocation_.setParentScope(this);
+        workerLocation_.setParentScope(getParentScope());
         workerLocation_.setPrototype(getPrototype(workerLocation_.getClass()));
 
         workerNavigator_ = new WorkerNavigator(webClient.getBrowserVersion());
-        workerNavigator_.setParentScope(this);
+        workerNavigator_.setParentScope(getParentScope());
         workerNavigator_.setPrototype(getPrototype(workerNavigator_.getClass()));
 
         final WebRequest webRequest = new WebRequest(fullUrl);
@@ -371,10 +372,8 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
         final String scriptCode = response.getContentAsString();
         final AbstractJavaScriptEngine<?> javaScriptEngine = webClient.getJavaScriptEngine();
 
-        final DedicatedWorkerGlobalScope thisScope = this;
-        final ContextAction<Object> action = cx -> {
-            return javaScriptEngine.execute(page, thisScope, scriptCode, fullUrl.toExternalForm(), 1);
-        };
+        final ContextAction<Object> action =
+                cx -> javaScriptEngine.execute(page, getParentScope(), scriptCode, fullUrl.toExternalForm(), 1);
 
         final HtmlUnitContextFactory cf = javaScriptEngine.getContextFactory();
 
@@ -388,12 +387,11 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
     }
 
     /**
-     * Sets a chunk of JavaScript to be invoked at some specified time later.
-     * The invocation occurs only if the window is opened after the delay
-     * and does not contain another page than the one that originated the setTimeout.
+     * Sets a chunk of JavaScript to be invoked after the specified delay.
+     * The invocation occurs only if the window is still open after the delay
+     * and has not been replaced by another page.
      *
-     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout">
-     * MDN web docs</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/setTimeout">MDN Documentation</a>
      *
      * @param context the JavaScript context
      * @param scope the scope
@@ -403,17 +401,17 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
      * @return the id of the created timer
      */
     @JsxFunction
-    public static Object setTimeout(final Context context, final Scriptable scope,
+    public static Object setTimeout(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setTimeout(context,
                 ((DedicatedWorkerGlobalScope) thisObj).owningWindow_, args, function);
     }
 
     /**
-     * Sets a chunk of JavaScript to be invoked each time a specified number of milliseconds has elapsed.
+     * Sets a chunk of JavaScript to be invoked repeatedly at the specified interval.
      *
-     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
-     * MDN web docs</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/setInterval">MDN Documentation</a>
+     *
      * @param context the JavaScript context
      * @param scope the scope
      * @param thisObj the scriptable
@@ -422,16 +420,17 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
      * @return the id of the created interval
      */
     @JsxFunction
-    public static Object setInterval(final Context context, final Scriptable scope,
+    public static Object setInterval(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setInterval(context,
                 ((DedicatedWorkerGlobalScope) thisObj).owningWindow_, args, function);
     }
 
     /**
-     * Returns the prototype object corresponding to the specified HtmlUnit class inside the window scope.
+     * Returns the prototype object corresponding to the specified HtmlUnit class inside the worker scope.
+     *
      * @param jsClass the class whose prototype is to be returned
-     * @return the prototype object corresponding to the specified class inside the specified scope
+     * @return the prototype object corresponding to the specified class
      */
     @Override
     public Scriptable getPrototype(final Class<? extends HtmlUnitScriptable> jsClass) {
@@ -440,7 +439,8 @@ public class DedicatedWorkerGlobalScope extends WorkerGlobalScope {
 
     /**
      * Sets the prototypes for HtmlUnit host classes.
-     * @param map a Map of ({@link Class}, {@link Scriptable})
+     *
+     * @param map a map of ({@link Class}, {@link Scriptable}) prototype entries
      */
     public void setPrototypes(final Map<Class<? extends Scriptable>, Scriptable> map) {
         prototypes_ = map;

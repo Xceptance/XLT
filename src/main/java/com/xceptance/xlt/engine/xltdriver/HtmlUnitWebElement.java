@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.ScriptResult;
@@ -78,6 +77,18 @@ import org.w3c.dom.NamedNodeMap;
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 
 /**
+ * Represents an HTML element in the context of {@link HtmlUnitDriver}.
+ * <p>
+ * Implements {@link WebElement}, {@link Coordinates}, and {@link Locatable} interfaces
+ * to provide standard Selenium interactions, including clicking, submitting forms,
+ * reading attributes, and determining location and size.
+ * <p>
+ * This class wraps a {@link DomElement} and delegates operations to
+ * {@link HtmlUnitDriver} where appropriate.
+ * <p>
+ * It also handles submit logic for forms, manages element state checks
+ * (like visibility, enabled/disabled, stale elements), and supports
+ * reading CSS values and DOM properties.
  *
  * @author Alexei Barantsev
  * @author Ahmed Ashour
@@ -89,6 +100,10 @@ import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
  */
 public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates, Locatable {
 
+    /**
+     * List of boolean attributes in HTML that may be present on elements.
+     * These are used to correctly determine attribute values.
+     */
     private static final String[] booleanAttributes = {"async", "autofocus", "autoplay", "checked", "compact",
         "complete", "controls", "declare", "defaultchecked", "defaultselected", "defer", "disabled", "draggable",
         "ended", "formnovalidate", "hidden", "indeterminate", "iscontenteditable", "ismap", "itemscope", "loop",
@@ -96,12 +111,23 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         "readonly", "required", "reversed", "scoped", "seamless", "seeking", "selected", "spellcheck", "truespeed",
         "willvalidate"};
 
+    /** The {@link HtmlUnitDriver} instance associated with this element. */
     private final HtmlUnitDriver driver_;
+    /** Unique identifier for this element within the driver. */
     private final int id_;
+    /** The underlying {@link DomElement} that this WebElement wraps. */
     private final DomElement element_;
 
+    /** Cached string representation of the element for {@link #toString()}. */
     private String toString_;
 
+    /**
+     * Constructs a new {@link HtmlUnitWebElement} that wraps the given {@link DomElement}.
+     *
+     * @param driver the {@link HtmlUnitDriver} instance this element belongs to
+     * @param id a unique identifier for this element within the driver
+     * @param element the underlying {@link DomElement} to wrap
+     */
     public HtmlUnitWebElement(final HtmlUnitDriver driver, final int id, final DomElement element) {
         driver_ = driver;
         id_ = id;
@@ -124,6 +150,19 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         driver_.submit(this);
     }
 
+    /**
+     * Submits the form associated with this element.
+     * <p>
+     * - If the element itself is a {@link HtmlForm}, it submits that form.
+     * - If the element is a {@link HtmlSubmitInput} or {@link HtmlImageInput}, it clicks the element.
+     * - If the element is an {@link HtmlInput} nested in a form, it submits that form.
+     * - Otherwise, it searches for the nearest parent form and submits it.
+     * </p>
+     * <p>
+     * Throws {@link UnsupportedOperationException} if no form is found in the element's hierarchy.
+     * Wraps any {@link IOException} in a {@link WebDriverException}.
+     * </p>
+     */
     void submitImpl() {
         try {
             if (element_ instanceof HtmlForm) {
@@ -243,15 +282,21 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         }
     }
 
+    /**
+     * Verifies that this element can be interacted with.
+     * <p>
+     * Checks that the element is not stale, is displayed, and, unless
+     * {@code ignoreDisabled} is true, is enabled.
+     * </p>
+     *
+     * @param ignoreDisabled if true, the enabled/disabled state of the element is ignored
+     * @throws ElementNotInteractableException if the element is not visible
+     * @throws InvalidElementStateException if the element is disabled and {@code ignoreDisabled} is false
+     */
     void verifyCanInteractWithElement(final boolean ignoreDisabled) {
         assertElementNotStale();
 
-        final Boolean displayed = driver_.implicitlyWaitFor(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return isDisplayed();
-            }
-        });
+        final Boolean displayed = driver_.implicitlyWaitFor(this::isDisplayed);
 
         if (displayed == null || !displayed) {
             throw new ElementNotInteractableException("You may only interact with visible elements");
@@ -262,6 +307,18 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         }
     }
 
+    /**
+     * Switches focus to this element if necessary.
+     * <p>
+     * - If JavaScript is enabled and the previously active element is not this element,
+     *   it blurs the old active element (unless it's the body).
+     * - Sets focus to this element.
+     * </p>
+     * <p>
+     * Handles {@link StaleElementReferenceException} in case the previously active element
+     * has been removed from the DOM.
+     * </p>
+     */
     void switchFocusToThisIfNeeded() {
         // TODO: HA start (XLT#1227 / SEL#1521)
         /*
@@ -270,7 +327,7 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         final boolean jsEnabled = driver_.isJavascriptEnabled();
         final boolean oldActiveEqualsCurrent = oldActiveElement.equals(this);
         try {
-            final boolean isBody = oldActiveElement.getTagName().toLowerCase().equals("body");
+            final boolean isBody = "body".equalsIgnoreCase(oldActiveElement.getTagName());
             if (jsEnabled && !oldActiveEqualsCurrent && !isBody) {
                 oldActiveElement.element_.blur();
             }
@@ -307,63 +364,60 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
             return trueOrNull(((HtmlInput) element_).isChecked());
         }
 
-        if ("href".equals(lowerName)) {
-            final String href = element_.getAttribute(name);
-            if (ATTRIBUTE_NOT_DEFINED == href) {
-                return null;
+        switch (lowerName) {
+            case "href": {
+                final String href = element_.getAttribute(name);
+                if (ATTRIBUTE_NOT_DEFINED == href) {
+                    return null;
+                }
+                final HtmlPage page = (HtmlPage) element_.getPage();
+                try {
+                    return page.getFullyQualifiedUrl(href.trim()).toString();
+                }
+                catch (final MalformedURLException e) {
+                    return null;
+                }
             }
-            final HtmlPage page = (HtmlPage) element_.getPage();
-            try {
-                return page.getFullyQualifiedUrl(href.trim()).toString();
+            case "src": {
+                final String link = element_.getAttribute(name);
+                if (ATTRIBUTE_NOT_DEFINED == link) {
+                    return "";
+                }
+                final HtmlPage page = (HtmlPage) element_.getPage();
+                try {
+                    return page.getFullyQualifiedUrl(link.trim()).toString();
+                }
+                catch (final MalformedURLException e) {
+                    return null;
+                }
             }
-            catch (final MalformedURLException e) {
-                return null;
-            }
-        }
+            case "value":
+                if (element_ instanceof HtmlInput) {
+                    return ((HtmlInput) element_).getValue();
+                }
+                if (element_ instanceof HtmlTextArea) {
+                    return ((HtmlTextArea) element_).getText();
+                }
 
-        if ("src".equals(lowerName)) {
-            final String link = element_.getAttribute(name);
-            if (ATTRIBUTE_NOT_DEFINED == link) {
-                return "";
-            }
-            final HtmlPage page = (HtmlPage) element_.getPage();
-            try {
-                return page.getFullyQualifiedUrl(link.trim()).toString();
-            }
-            catch (final MalformedURLException e) {
-                return null;
-            }
-        }
+                // According to
+                // http://www.w3.org/TR/1999/REC-html401-19991224/interact/forms.html#adef-value-OPTION
+                // if the value attribute doesn't exist, getting the "value" attribute defers to
+                // the
+                // option's content.
+                if (element_ instanceof HtmlOption && !element_.hasAttribute("value")) {
+                    return getText();
+                }
 
-        if ("value".equals(lowerName)) {
-            if (element_ instanceof HtmlInput) {
-                return ((HtmlInput) element_).getValue();
-            }
-            if (element_ instanceof HtmlTextArea) {
-                return ((HtmlTextArea) element_).getText();
-            }
-
-            // According to
-            // http://www.w3.org/TR/1999/REC-html401-19991224/interact/forms.html#adef-value-OPTION
-            // if the value attribute doesn't exist, getting the "value" attribute defers to
-            // the
-            // option's content.
-            if (element_ instanceof HtmlOption && !element_.hasAttribute("value")) {
-                return getText();
-            }
-
-            final String attributeValue = element_.getAttribute(name);
-            if (ATTRIBUTE_NOT_DEFINED == attributeValue) {
-                return null;
-            }
-            return attributeValue;
-        }
-
-        if ("disabled".equals(lowerName)) {
-            if (element_ instanceof DisabledElement) {
-                return trueOrNull(((DisabledElement) element_).isDisabled());
-            }
-            return "true";
+                final String attributeValue = element_.getAttribute(name);
+                if (ATTRIBUTE_NOT_DEFINED == attributeValue) {
+                    return null;
+                }
+                return attributeValue;
+            case "disabled":
+                if (element_ instanceof DisabledElement) {
+                    return trueOrNull(((DisabledElement) element_).isDisabled());
+                }
+                return "true";
         }
 
         if ("multiple".equals(lowerName) && element_ instanceof HtmlSelect) {
@@ -613,15 +667,35 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         // HA end (#1292)
     }
 
+    /**
+     * Returns the {@link HtmlUnitDriver} associated with this element.
+     *
+     * @return the driver instance that owns this element
+     */
     protected HtmlUnitDriver getDriver() {
         return driver_;
     }
 
+    /**
+     * Returns the underlying {@link DomElement} wrapped by this {@link WebElement}.
+     *
+     * @return the wrapped {@link DomElement}
+     */
     public DomElement getElement() {
         return element_;
     }
 
-    @Deprecated // It's not a part of WebDriver API
+    /**
+     * Returns a list of child elements with the specified tag name.
+     * <p>
+     * This method is <em>deprecated</em> because it is not part of the official
+     * WebDriver API. Consider using {@link #findElements(By)} instead.
+     *
+     * @param tagName the tag name to search for among the descendants of this element
+     * @return a list of matching {@link WebElement} instances
+     * @deprecated It's not a part of WebDriver API
+     */
+    @Deprecated
     public List<WebElement> getElementsByTagName(final String tagName) {
         assertElementNotStale();
 
@@ -687,6 +761,14 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         return toString_;
     }
 
+    /**
+     * Verifies that this element is not stale.
+     * <p>
+     * An element is considered stale if it has been removed from the DOM
+     * or if the page it belongs to has been refreshed or navigated away.
+     * If the element is stale, the underlying {@link HtmlUnitDriver} will
+     * throw a {@link StaleElementReferenceException}.
+     */
     protected void assertElementNotStale() {
         driver_.assertElementNotStale(element_);
     }
@@ -752,11 +834,6 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         return element_.hashCode();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.openqa.selenium.WrapsDriver#getContainingDriver()
-     */
     @Override
     public WebDriver getWrappedDriver() {
         return driver_;
@@ -792,10 +869,23 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         throw new UnsupportedOperationException("Screenshots are not enabled for HtmlUnitDriver");
     }
 
+    /**
+     * Returns the unique identifier assigned to this element within the {@link HtmlUnitDriver}.
+     *
+     * @return the element's unique ID
+     */
     public int getId() {
         return id_;
     }
 
+    /**
+     * Converts this element into a JSON representation suitable for WebDriver communication.
+     * <p>
+     * The resulting map includes the encoded element key as defined by the W3C WebDriver
+     * specification, with this element's unique ID as the value.
+     *
+     * @return a {@link Map} representing this element in JSON format
+     */
     public Map<String, Object> toJson() {
         return Map.of(Dialect.W3C.getEncodedElementKey(), getId());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.htmlunit.javascript.host.dom;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomDocumentType;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -30,8 +31,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms762752.aspx">MSDN documentation</a>
- * @see <a href="http://www.xulplanet.com/references/objref/DocumentType.html">XUL Planet</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentType">MDN Documentation</a>
  */
 @JsxClass(domClass = DomDocumentType.class)
 public class DocumentType extends Node {
@@ -46,8 +46,8 @@ public class DocumentType extends Node {
     }
 
     /**
-     * Returns the name.
-     * @return the name
+     * Returns the {@code name} property.
+     * @return the {@code name} property
      */
     @JsxGetter
     public String getName() {
@@ -63,8 +63,8 @@ public class DocumentType extends Node {
     }
 
     /**
-     * Returns the publicId.
-     * @return the publicId
+     * Returns the {@code publicId} property.
+     * @return the {@code publicId} property
      */
     @JsxGetter
     public String getPublicId() {
@@ -72,8 +72,8 @@ public class DocumentType extends Node {
     }
 
     /**
-     * Returns the systemId.
-     * @return the systemId
+     * Returns the {@code systemId} property.
+     * @return the {@code systemId} property
      */
     @JsxGetter
     public String getSystemId() {
@@ -99,7 +99,7 @@ public class DocumentType extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void before(final Context context, final Scriptable scope,
+    public static void before(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
     }
@@ -114,13 +114,13 @@ public class DocumentType extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void after(final Context context, final Scriptable scope,
+    public static void after(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
 
     /**
-     * Replaces the node wit a set of Node or DOMString objects.
+     * Replaces the node with a set of Node or DOMString objects.
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -128,7 +128,7 @@ public class DocumentType extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceWith(final Context context, final Scriptable scope,
+    public static void replaceWith(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }

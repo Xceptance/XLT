@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript.host.performance;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.json.JsonParser;
-import org.htmlunit.corejs.javascript.json.JsonParser.ParseException;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -27,15 +24,17 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
- * A JavaScript object for {@code PerformanceNavigation}.
+ * JavaScript host object for {@code PerformanceNavigation}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigation">MDN Documentation</a>
  */
 @JsxClass
 public class PerformanceNavigation extends HtmlUnitScriptable {
 
-    private static final Log LOG = LogFactory.getLog(PerformanceNavigation.class);
+    // private static final Log LOG = LogFactory.getLog(PerformanceNavigation.class);
 
     /** Navigate. */
     @JsxConstant
@@ -54,7 +53,7 @@ public class PerformanceNavigation extends HtmlUnitScriptable {
     public static final int TYPE_RESERVED = 255;
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -63,6 +62,7 @@ public class PerformanceNavigation extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code type} property.
+     *
      * @return the {@code type} property
      */
     @JsxGetter
@@ -72,6 +72,7 @@ public class PerformanceNavigation extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code redirectCount} property.
+     *
      * @return the {@code redirectCount} property
      */
     @JsxGetter
@@ -80,26 +81,16 @@ public class PerformanceNavigation extends HtmlUnitScriptable {
     }
 
     /**
-     * The {@code toJSON} function.
-     * @return the {@code toJSON} object
+     * Serializes the object to a JSON representation.
+     *
+     * @return a JSON object containing the {@code type} and {@code redirectCount} properties
      */
     @JsxFunction
-    public Object toJSON() {
-        final String jsonString = new StringBuilder()
-                .append("{\"type\":")
-                .append(getType())
-                .append(", \"redirectCount\":")
-                .append(getRedirectCount())
-                .append('}').toString();
-        try {
-            return new JsonParser(Context.getCurrentContext(), getParentScope()).parseValue(jsonString);
-        }
-        catch (final ParseException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Failed parsingJSON '" + jsonString + "'", e);
-            }
-        }
-        return null;
-    }
+    public Scriptable toJSON() {
+        final Scriptable json = JavaScriptEngine.newObject(getParentScope());
+        json.put("type", json, getType());
+        json.put("redirectCount", json, getRedirectCount());
 
+        return json;
+    }
 }

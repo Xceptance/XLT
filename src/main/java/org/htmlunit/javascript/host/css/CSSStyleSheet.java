@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
@@ -32,14 +32,13 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.w3c.dom.DOMException;
 
 /**
  * A JavaScript object for {@code CSSStyleSheet}.
  *
- * @see <a href="http://msdn2.microsoft.com/en-us/library/ms535871.aspx">MSDN doc</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet">MDN Documentation</a>
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author Ahmed Ashour
@@ -87,7 +86,7 @@ public class CSSStyleSheet extends StyleSheet {
     public CSSStyleSheet(final HTMLElement element, final InputSource source, final String uri) {
         super(element);
 
-        setParentScope(element.getWindow());
+        setParentScope(getTopLevelScope(element.getParentScope()));
         setPrototype(getPrototype(CSSStyleSheet.class));
 
         styleSheet_ = new CssStyleSheet(element.getDomNodeOrDie(), source, uri);
@@ -102,8 +101,6 @@ public class CSSStyleSheet extends StyleSheet {
     public CSSStyleSheet(final HTMLElement element, final String styleSheet, final String uri) {
         super(element);
 
-        final Window win = element.getWindow();
-
         CssStyleSheet css = null;
         try (InputSource source = new InputSource(new StringReader(styleSheet))) {
             css = new CssStyleSheet(element.getDomNodeOrDie(), source, uri);
@@ -112,7 +109,7 @@ public class CSSStyleSheet extends StyleSheet {
             LOG.error(e.getMessage(), e);
         }
 
-        setParentScope(win);
+        setParentScope(element.getParentScope());
         setPrototype(getPrototype(CSSStyleSheet.class));
 
         styleSheet_ = css;
@@ -124,7 +121,7 @@ public class CSSStyleSheet extends StyleSheet {
      * @param parentScope the parent scope
      * @param cssStyleSheet the CSS stylesheet which this stylesheet host object represents
      */
-    public CSSStyleSheet(final HTMLElement element, final Scriptable parentScope,
+    public CSSStyleSheet(final HTMLElement element, final VarScope parentScope,
             final CssStyleSheet cssStyleSheet) {
         super(element);
 
@@ -211,7 +208,7 @@ public class CSSStyleSheet extends StyleSheet {
             }
 
             final CSSRule cssRule = CSSRule.create(this, rule);
-            if (null == cssRule) {
+            if (cssRule == null) {
                 cssRulesIndexFix_.add(pos);
             }
             else {
@@ -253,10 +250,10 @@ public class CSSStyleSheet extends StyleSheet {
 
     /**
      * Adds a new rule.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/aa358796.aspx">MSDN</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/addRule">MDN Documentation</a>
      * @param selector the selector name
      * @param rule the rule
-     * @return always return -1 as of MSDN documentation
+     * @return always -1
      */
     @JsxFunction
     public int addRule(final String selector, final String rule) {
@@ -285,7 +282,7 @@ public class CSSStyleSheet extends StyleSheet {
     /**
      * Deletes an existing rule.
      * @param position the position of the rule to be deleted
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms531195(v=VS.85).aspx">MSDN</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/removeRule">MDN Documentation</a>
      */
     @JsxFunction
     public void removeRule(final int position) {

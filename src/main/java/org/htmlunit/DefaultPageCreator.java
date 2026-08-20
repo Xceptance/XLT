@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.Html;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.neko.HtmlUnitNekoHtmlParser;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.xml.XmlPage;
 
 /**
@@ -40,38 +40,38 @@ import org.htmlunit.xml.XmlPage;
  *
  * <p>
  * The following table shows the type of {@link Page} created depending on the content type:<br>
- * <br>
- *  <table border="1" style="width:50%;">
- *    <tr>
- *      <th>Content type</th>
- *      <th>Type of page</th>
- *    </tr>
- *    <tr>
- *      <td>text/html<br>
- *          text/javascript</td>
- *      <td>{@link HtmlPage}</td>
- *    </tr>
- *    <tr>
- *      <td>text/xml<br>
- *      application/xml<br>
- *      text/vnd.wap.wml<br>
- *      *+xml
- *      </td>
- *      <td>{@link XmlPage}, or an {@link XHtmlPage} if an XHTML namespace is used</td>
- *    </tr>
- *    <tr>
- *      <td>text/*</td>
- *      <td>{@link TextPage}</td>
- *    </tr>
- *    <tr>
- *      <td>Anything else</td>
- *      <td>{@link UnexpectedPage}</td>
- *    </tr>
- *  </table>
+ * </p>
+ * <table border="1" style="width:50%;">
+ *   <tr>
+ *     <th>Content type</th>
+ *     <th>Type of page</th>
+ *   </tr>
+ *   <tr>
+ *     <td>text/html<br>
+ *         text/javascript</td>
+ *     <td>{@link HtmlPage}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>text/xml<br>
+ *     application/xml<br>
+ *     text/vnd.wap.wml<br>
+ *     *+xml
+ *     </td>
+ *     <td>{@link XmlPage}, or an {@link XHtmlPage} if an XHTML namespace is used</td>
+ *   </tr>
+ *   <tr>
+ *     <td>text/*</td>
+ *     <td>{@link TextPage}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>Anything else</td>
+ *     <td>{@link UnexpectedPage}</td>
+ *   </tr>
+ * </table>
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
- * @author <a href="mailto:yourgod@users.sourceforge.net">Brad Clarke</a>
+ * @author Mike Bowler
+ * @author Christian Sell
+ * @author Brad Clarke
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Daniel Gredler
@@ -86,7 +86,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
 
     /**
      * See <a href="http://tools.ietf.org/html/draft-abarth-mime-sniff-05">
-     * http://tools.ietf.org/html/draft-abarth-mime-sniff-05</a>
+     * http://tools.ietf.org/html/draft-abarth-mime-sniff-05</a>.
      */
     private static final String[] HTML_PATTERNS = {"!DOCTYPE HTML", "HTML", "HEAD", "SCRIPT",
         "IFRAME", "H1", "DIV", "FONT", "TABLE", "A", "STYLE", "TITLE", "B", "BODY", "BR", "P", "!--" };
@@ -115,12 +115,11 @@ public class DefaultPageCreator implements PageCreator, Serializable {
      * @return "xml", "html", "javascript", "text" or "unknown"
      */
     public static PageType determinePageType(final String contentType) {
-        if (null == contentType) {
+        if (contentType == null) {
             return PageType.UNKNOWN;
         }
 
-        final String contentTypeLC = org.htmlunit.util.StringUtils
-                                            .toRootLowerCase(contentType);
+        final String contentTypeLC = StringUtils.toRootLowerCase(contentType);
 
         if (MimeType.isJavascriptMimeType(contentTypeLC)) {
             return PageType.JAVASCRIPT;
@@ -151,12 +150,12 @@ public class DefaultPageCreator implements PageCreator, Serializable {
     /**
      * Determines the kind of page to create from the content type.
      * @param webResponse the response to investigate
-     * @exception IOException if an IO problem occurs
+     * @throws IOException if an IO problem occurs
      * @return "xml", "html", "javascript", "text" or "unknown"
      */
     public static PageType determinePageType(final WebResponse webResponse) throws IOException {
         final String contentType = webResponse.getContentType();
-        if (!StringUtils.isEmpty(contentType)) {
+        if (!StringUtils.isEmptyOrNull(contentType) && !"*/*".equals(contentType)) {
             return determinePageType(contentType);
         }
 
@@ -208,7 +207,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
      *
      * @param webResponse the response from the server
      * @param webWindow the window that this page will be loaded into
-     * @exception IOException if an IO problem occurs
+     * @throws IOException if an IO problem occurs
      * @return the new page object
      */
     @Override
@@ -247,7 +246,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
 
     /**
      * See <a href="http://tools.ietf.org/html/draft-abarth-mime-sniff-05#section-4">
-     * http://tools.ietf.org/html/draft-abarth-mime-sniff-05#section-4</a>
+     * http://tools.ietf.org/html/draft-abarth-mime-sniff-05#section-4</a>.
      * @param bytes the bytes to check
      */
     private static boolean isBinary(final byte[] bytes) {
@@ -279,10 +278,16 @@ public class DefaultPageCreator implements PageCreator, Serializable {
     private static byte[] read(final InputStream stream, final int maxNb) throws IOException {
         final byte[] buffer = new byte[maxNb];
         final int nbRead = stream.read(buffer);
+        if (nbRead == -1) {
+            return ArrayUtils.EMPTY_BYTE_ARRAY;
+        }
         if (nbRead == buffer.length) {
             return buffer;
         }
-        return ArrayUtils.subarray(buffer, 0, nbRead);
+
+        final byte[] result = new byte[nbRead];
+        System.arraycopy(buffer, 0, result, 0, nbRead);
+        return result;
     }
 
     /**
@@ -297,7 +302,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
         final HtmlPage page = new HtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        HTML_PARSER.parse(webResponse, page, false, false);
+        HTML_PARSER.parse(webWindow.getWebClient(), webResponse, page, false, false);
         return page;
     }
 
@@ -313,7 +318,7 @@ public class DefaultPageCreator implements PageCreator, Serializable {
         final XHtmlPage page = new XHtmlPage(webResponse, webWindow);
         webWindow.setEnclosedPage(page);
 
-        HTML_PARSER.parse(webResponse, page, true, false);
+        HTML_PARSER.parse(webWindow.getWebClient(), webResponse, page, true, false);
         return page;
     }
 

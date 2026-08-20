@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeFunction;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -54,10 +56,10 @@ public class XPathEvaluator extends HtmlUnitScriptable {
      *         in scope for a specified node
      */
     @JsxFunction
-    public XPathNSResolver createNSResolver(final Node nodeResolver) {
-        final XPathNSResolver resolver = new XPathNSResolver();
+    public NativeXPathNSResolver createNSResolver(final Node nodeResolver) {
+        final NativeXPathNSResolver resolver = new NativeXPathNSResolver();
         resolver.setElement(nodeResolver);
-        resolver.setParentScope(getWindow());
+        resolver.setParentScope(getTopLevelScope(getParentScope()));
         resolver.setPrototype(getPrototype(resolver.getClass()));
         return resolver;
     }
@@ -77,23 +79,22 @@ public class XPathEvaluator extends HtmlUnitScriptable {
             final Object resolver, final int type, final Object result) {
         try {
             // contextNodeObj can be either a node or an array with the node as the first element.
-            if (!(contextNodeObj instanceof Node)) {
+            if (!(contextNodeObj instanceof Node contextNode)) {
                 throw JavaScriptEngine.typeError("Illegal value for parameter 'context'");
             }
 
-            final Node contextNode = (Node) contextNodeObj;
             PrefixResolver prefixResolver = null;
-            if (resolver instanceof PrefixResolver) {
-                prefixResolver = (PrefixResolver) resolver;
+            if (resolver instanceof PrefixResolver prefixResolver1) {
+                prefixResolver = prefixResolver1;
             }
-            else if (resolver instanceof NativeFunction) {
+            else if (resolver instanceof NativeFunction function) {
                 prefixResolver = new NativeFunctionPrefixResolver(
-                                        (NativeFunction) resolver, contextNode.getParentScope());
+                                        function, contextNode.getParentScope());
             }
 
             final XPathResult xPathResult;
-            if (result instanceof XPathResult) {
-                xPathResult = (XPathResult) result;
+            if (result instanceof XPathResult pathResult) {
+                xPathResult = pathResult;
             }
             else {
                 xPathResult = new XPathResult();
@@ -119,7 +120,7 @@ public class XPathEvaluator extends HtmlUnitScriptable {
      * @return a XPathExpression representing the compiled form of the XPath expression.
      */
     @JsxFunction
-    public static XPathExpression createExpression(final Context context, final Scriptable scope,
+    public static XPathExpression createExpression(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (args.length < 1) {
             throw JavaScriptEngine.reportRuntimeError("Missing 'expression' parameter");
@@ -128,12 +129,12 @@ public class XPathEvaluator extends HtmlUnitScriptable {
         PrefixResolver prefixResolver = null;
         if (args.length > 1) {
             final Object resolver = args[1];
-            if (resolver instanceof PrefixResolver) {
-                prefixResolver = (PrefixResolver) resolver;
+            if (resolver instanceof PrefixResolver prefixResolver1) {
+                prefixResolver = prefixResolver1;
             }
-            else if (resolver instanceof NativeFunction) {
+            else if (resolver instanceof NativeFunction nativeFunction) {
                 prefixResolver = new NativeFunctionPrefixResolver(
-                                        (NativeFunction) resolver, scope.getParentScope());
+                                        nativeFunction, scope.getParentScope());
             }
         }
 
@@ -141,7 +142,8 @@ public class XPathEvaluator extends HtmlUnitScriptable {
 
         try {
             final String xpath = JavaScriptEngine.toString(args[0]);
-            final DomNode doc = ((Window) scope).getDocument().getDocumentElement().getDomNodeOrDie();
+            final Window window = (Window) (ScriptableObject.getTopLevelScope(scope)).getGlobalThis();
+            final DomNode doc = window.getDocument().getDocumentElement().getDomNodeOrDie();
             final XPathExpression xPathExpression  = new XPathExpression(xpath, prefixResolver, doc);
             xPathExpression.setParentScope(evaluator.getParentScope());
             xPathExpression.setPrototype(evaluator.getPrototype(xPathExpression.getClass()));

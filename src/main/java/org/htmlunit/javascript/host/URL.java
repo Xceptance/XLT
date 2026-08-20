@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
-
 import java.net.MalformedURLException;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.Page;
+import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -37,12 +37,14 @@ import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
 /**
- * A JavaScript object for {@code URL}.
+ * JavaScript host object for {@code URL}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author cd alexndr
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL">MDN Documentation</a>
  */
 @JsxClass
 public class URL extends HtmlUnitScriptable {
@@ -50,12 +52,13 @@ public class URL extends HtmlUnitScriptable {
     private java.net.URL url_;
 
     /**
-     * Creates an instance.
+     * Creates an instance of this object.
+     *
      * @param url a string representing an absolute or relative URL.
-     * If url is a relative URL, base is required, and will be used
-     * as the base URL. If url is an absolute URL, a given base will be ignored.
-     * @param base a string representing the base URL to use in case url
-     * is a relative URL. If not specified, it defaults to ''.
+     *        If {@code url} is a relative URL, {@code base} is required and will be used
+     *        as the base URL. If {@code url} is an absolute URL, a given {@code base} will be ignored.
+     * @param base a string representing the base URL to use when {@code url}
+     *        is a relative URL. If not specified, it defaults to {@code ''}.
      */
     @JsxConstructor
     @JsxConstructorAlias(alias = "webkitURL")
@@ -66,12 +69,12 @@ public class URL extends HtmlUnitScriptable {
         }
 
         try {
-            if (StringUtils.isBlank(baseStr)) {
+            if (org.htmlunit.util.StringUtils.isBlank(baseStr)) {
                 url_ = UrlUtils.toUrlUnsafe(url);
             }
             else {
                 final java.net.URL baseUrl = UrlUtils.toUrlUnsafe(baseStr);
-                url_ = new java.net.URL(baseUrl, url);
+                url_ = UrlUtils.toUrlUnsafe(UrlUtils.resolveUrl(baseUrl, url));
             }
             url_ = UrlUtils.removeRedundantPort(url_);
         }
@@ -81,40 +84,62 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * The URL.createObjectURL() static method creates a DOMString containing a URL
-     * representing the object given in parameter.
-     * The URL lifetime is tied to the document in the window on which it was created.
-     * The new object URL represents the specified File object or Blob object.
+     * The URL.createObjectURL() static method creates a {@code DOMString} containing a URL
+     * representing the object given as parameter.
+     * The new object URL represents the specified {@link File} object or {@link Blob} object
+     * and is registered in the {@link org.htmlunit.BlobUrlStore user-agent-wide blob URL store},
+     * so it can be resolved from any document of the same client.
      *
-     * @param fileOrBlob Is a File object or a Blob object to create a object URL for.
-     * @return the url
+     * @param fileOrBlob the {@link File} or {@link Blob} to create an object URL for
+     * @return the object URL, or {@code null} if the argument is not a supported type
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL_static">MDN Documentation</a>
      */
     @JsxStaticFunction
     public static String createObjectURL(final Object fileOrBlob) {
-        if (fileOrBlob instanceof File) {
-            final File file = (File) fileOrBlob;
-            return getWindow(file).getDocument().generateBlobUrl(file);
+        if (!(fileOrBlob instanceof Blob blob)) {
+            throw JavaScriptEngine.typeError("URL.createObjectURL: argument 1 is not a Blob.");
         }
 
-        if (fileOrBlob instanceof Blob) {
-            final Blob blob = (Blob) fileOrBlob;
-            return getWindow(blob).getDocument().generateBlobUrl(blob);
+        final WebWindow webWindow = getWindow(blob).getWebWindow();
+        final Page page = webWindow.getEnclosedPage();
+        final java.net.URL pageUrl = page.getUrl();
+
+        String origin = "null";
+        if (pageUrl != UrlUtils.URL_ABOUT_BLANK) {
+            final int port = pageUrl.getPort();
+            if (port < 0 || port == pageUrl.getDefaultPort()) {
+                origin = pageUrl.getProtocol() + "://" + pageUrl.getHost();
+            }
+            else {
+                origin = pageUrl.getProtocol() + "://" + pageUrl.getHost() + ':' + port;
+            }
         }
 
-        return null;
+        final String blobUrl = "blob:" + origin + "/" + UUID.randomUUID();
+        webWindow.getWebClient().getBlobUrlStore().put(blobUrl, blob, page);
+        return blobUrl;
     }
 
     /**
-     * @param objectURL String representing the object URL that was
-     *          created by calling URL.createObjectURL().
+     * Revokes a {@code blob:} URL, removing its entry from the blob URL store.
+     *
+     * @param objectURL the object URL previously returned by {@link #createObjectURL(Object)}
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL/revokeObjectURL_static">MDN Documentation</a>
      */
     @JsxStaticFunction
     public static void revokeObjectURL(final Scriptable objectURL) {
-        getWindow(objectURL).getDocument().revokeBlobUrl(Context.toString(objectURL));
+        final String url = JavaScriptEngine.toString(objectURL);
+        if (!url.startsWith("blob:")) {
+            return;
+        }
+        getWindow(objectURL).getWebWindow().getWebClient().getBlobUrlStore().remove(url);
     }
 
     /**
-     * @return hash property of the URL containing a '#' followed by the fragment identifier of the URL.
+     * Returns the hash portion of the URL, containing a {@code #} followed by the fragment identifier.
+     *
+     * @return the hash portion of the URL, or an empty string if there is no fragment
      */
     @JsxGetter
     public String getHash() {
@@ -125,17 +150,25 @@ public class URL extends HtmlUnitScriptable {
         return ref == null ? "" : "#" + ref;
     }
 
+    /**
+     * Sets the {@code hash} property.
+     *
+     * @param fragment the new hash value
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setHash(final String fragment) throws MalformedURLException {
         if (url_ == null) {
             return;
         }
-        url_ = UrlUtils.getUrlWithNewRef(url_, StringUtils.isEmpty(fragment) ? null : fragment);
+        url_ = UrlUtils.getUrlWithNewRef(url_, org.htmlunit.util.StringUtils.isEmptyOrNull(fragment) ? null : fragment);
     }
 
     /**
-     * @return the host, that is the hostname, and then, if the port of the URL is nonempty,
-     * a ':', followed by the port of the URL.
+     * Returns the host portion of the URL, consisting of the hostname and, if the port is non-empty,
+     * a {@code :} followed by the port.
+     *
+     * @return the host
      */
     @JsxGetter
     public String getHost() {
@@ -146,6 +179,12 @@ public class URL extends HtmlUnitScriptable {
         return url_.getHost() + (port > 0 ? ":" + port : "");
     }
 
+    /**
+     * Sets the {@code host} property.
+     *
+     * @param host the new host value
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setHost(final String host) throws MalformedURLException {
         if (url_ == null) {
@@ -153,7 +192,7 @@ public class URL extends HtmlUnitScriptable {
         }
 
         String newHost = StringUtils.substringBefore(host, ':');
-        if (StringUtils.isEmpty(newHost)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(newHost)) {
             return;
         }
 
@@ -182,7 +221,7 @@ public class URL extends HtmlUnitScriptable {
         url_ = UrlUtils.getUrlWithNewHost(url_, newHost);
 
         final String newPort = StringUtils.substringAfter(host, ':');
-        if (StringUtils.isNotBlank(newHost)) {
+        if (org.htmlunit.util.StringUtils.isNotBlank(newHost)) {
             try {
                 url_ = UrlUtils.getUrlWithNewHostAndPort(url_, newHost, Integer.parseInt(newPort));
             }
@@ -198,8 +237,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the host, that is the hostname, and then, if the port of the URL is nonempty,
-     * a ':', followed by the port of the URL.
+     * Returns the hostname portion of the URL.
+     *
+     * @return the hostname
      */
     @JsxGetter
     public String getHostname() {
@@ -210,20 +250,40 @@ public class URL extends HtmlUnitScriptable {
         return UrlUtils.encodeAnchor(url_.getHost());
     }
 
+    /**
+     * Sets the {@code hostname} property.
+     *
+     * @param hostname the new hostname value
+     */
     @JsxSetter
-    public void setHostname(final String hostname) throws MalformedURLException {
-        if (getBrowserVersion().hasFeature(JS_ANCHOR_HOSTNAME_IGNORE_BLANK)) {
-            if (!StringUtils.isBlank(hostname)) {
-                url_ = UrlUtils.getUrlWithNewHost(url_, hostname);
+    public void setHostname(String hostname) {
+        if (hostname != null) {
+            if (hostname.indexOf(' ') > -1) {
+                return;
+            }
+
+            final int idx = hostname.indexOf('#');
+            if (idx > -1) {
+                hostname = hostname.substring(0, idx);
             }
         }
-        else if (!StringUtils.isEmpty(hostname)) {
+
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(hostname)) {
+            return;
+        }
+
+        try {
             url_ = UrlUtils.getUrlWithNewHost(url_, hostname);
+        }
+        catch (final MalformedURLException  e) {
+            // do nothing
         }
     }
 
     /**
-     * @return whole URL
+     * Returns the full URL as a string.
+     *
+     * @return the full URL
      */
     @JsxGetter
     public String getHref() {
@@ -234,6 +294,12 @@ public class URL extends HtmlUnitScriptable {
         return jsToString();
     }
 
+    /**
+     * Sets the {@code href} property, navigating to the new URL.
+     *
+     * @param href the new URL string
+     * @throws MalformedURLException if the URL is malformed
+     */
     @JsxSetter
     public void setHref(final String href) throws MalformedURLException {
         if (url_ == null) {
@@ -245,6 +311,8 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the origin of the URL.
+     *
      * @return the origin
      */
     @JsxGetter
@@ -261,7 +329,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return a URLSearchParams object allowing access to the GET decoded query arguments contained in the URL.
+     * Returns a {@link URLSearchParams} object providing access to the decoded query arguments of the URL.
+     *
+     * @return the search params
      */
     @JsxGetter
     public URLSearchParams getSearchParams() {
@@ -276,7 +346,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the password specified before the domain name.
+     * Returns the password specified before the domain name.
+     *
+     * @return the password, or an empty string if none is specified
      */
     @JsxGetter
     public String getPassword() {
@@ -285,10 +357,22 @@ public class URL extends HtmlUnitScriptable {
         }
 
         final String userInfo = url_.getUserInfo();
-        final int idx = userInfo == null ? -1 : userInfo.indexOf(':');
-        return idx == -1 ? "" : userInfo.substring(idx + 1);
+        if (userInfo != null) {
+            final int idx = userInfo.indexOf(':');
+            if (idx > -1) {
+                return userInfo.substring(idx + 1);
+            }
+        }
+
+        return "";
     }
 
+    /**
+     * Sets the {@code password} property.
+     *
+     * @param password the new password value
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setPassword(final String password) throws MalformedURLException {
         if (url_ == null) {
@@ -299,7 +383,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return a URLSearchParams object allowing access to the GET decoded query arguments contained in the URL.
+     * Returns the pathname portion of the URL.
+     *
+     * @return the pathname
      */
     @JsxGetter
     public String getPathname() {
@@ -311,6 +397,12 @@ public class URL extends HtmlUnitScriptable {
         return path.isEmpty() ? "/" : path;
     }
 
+    /**
+     * Sets the {@code pathname} property.
+     *
+     * @param path the new pathname value
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setPathname(final String path) throws MalformedURLException {
         if (url_ == null) {
@@ -321,8 +413,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the port number of the URL. If the URL does not contain an explicit port number,
-     * it will be set to ''
+     * Returns the port number of the URL, or an empty string if no explicit port is specified.
+     *
+     * @return the port, or an empty string
      */
     @JsxGetter
     public String getPort() {
@@ -334,6 +427,12 @@ public class URL extends HtmlUnitScriptable {
         return port == -1 ? "" : Integer.toString(port);
     }
 
+    /**
+     * Sets the {@code port} property.
+     *
+     * @param port the new port value, or an empty string to remove the port
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setPort(final String port) throws MalformedURLException {
         if (url_ == null) {
@@ -345,7 +444,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the protocol scheme of the URL, including the final ':'.
+     * Returns the protocol scheme of the URL, including the trailing {@code :}.
+     *
+     * @return the protocol
      */
     @JsxGetter
     public String getProtocol() {
@@ -356,13 +457,19 @@ public class URL extends HtmlUnitScriptable {
         return protocol.isEmpty() ? "" : (protocol + ":");
     }
 
+    /**
+     * Sets the {@code protocol} property.
+     *
+     * @param protocol the new protocol value
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setProtocol(final String protocol) throws MalformedURLException {
         if (url_ == null || protocol.isEmpty()) {
             return;
         }
 
-        final String bareProtocol = StringUtils.substringBefore(protocol, ":").trim();
+        final String bareProtocol = org.htmlunit.util.StringUtils.substringBefore(protocol, ":").trim();
         if (!UrlUtils.isValidScheme(bareProtocol)) {
             return;
         }
@@ -380,7 +487,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the query string containing a '?' followed by the parameters of the URL
+     * Returns the query string, containing a {@code ?} followed by the URL's parameters.
+     *
+     * @return the search string, or an empty string if none
      */
     @JsxGetter
     public String getSearch() {
@@ -391,6 +500,12 @@ public class URL extends HtmlUnitScriptable {
         return search == null ? "" : "?" + search;
     }
 
+    /**
+     * Sets the {@code search} property.
+     *
+     * @param search the new search string
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setSearch(final String search) throws MalformedURLException {
         if (url_ == null) {
@@ -416,6 +531,12 @@ public class URL extends HtmlUnitScriptable {
         url_ = UrlUtils.getUrlWithNewQuery(url_, query);
     }
 
+    /**
+     * Sets the {@code search} property from a list of {@link NameValuePair}s.
+     *
+     * @param nameValuePairs the pairs to encode as the query string
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     public void setSearch(final List<NameValuePair> nameValuePairs) throws MalformedURLException {
         final StringBuilder newSearch = new StringBuilder();
         for (final NameValuePair nameValuePair : nameValuePairs) {
@@ -432,7 +553,9 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the username specified before the domain name.
+     * Returns the username specified before the domain name.
+     *
+     * @return the username, or an empty string if none is specified
      */
     @JsxGetter
     public String getUsername() {
@@ -448,6 +571,12 @@ public class URL extends HtmlUnitScriptable {
         return StringUtils.substringBefore(userInfo, ':');
     }
 
+    /**
+     * Sets the {@code username} property.
+     *
+     * @param username the new username value
+     * @throws MalformedURLException if the resulting URL is malformed
+     */
     @JsxSetter
     public void setUsername(final String username) throws MalformedURLException {
         if (url_ == null) {
@@ -457,10 +586,11 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * Calls for instance for implicit conversion to string.
-     * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
+     * Returns the default string representation of this URL.
+     *
      * @param hint the type hint
-     * @return the default value
+     * @return the URL as a string
+     * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
      */
     @Override
     public Object getDefaultValue(final Class<?> hint) {
@@ -468,15 +598,16 @@ public class URL extends HtmlUnitScriptable {
             return super.getDefaultValue(hint);
         }
 
-        if (StringUtils.isEmpty(url_.getPath())) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(url_.getPath())) {
             return url_.toExternalForm() + "/";
         }
         return url_.toExternalForm();
     }
 
     /**
-     * @return a serialized version of the URL,
-     * although in practice it seems to have the same effect as URL.toString().
+     * Returns a serialized version of the URL. In practice this is equivalent to {@link #jsToString()}.
+     *
+     * @return the serialized URL string
      */
     @JsxFunction
     public String toJSON() {
@@ -484,12 +615,13 @@ public class URL extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the text of the URL.
-     * @return the text
+     * Returns the URL as a string.
+     *
+     * @return the URL string
      */
     @JsxFunction(functionName = "toString")
     public String jsToString() {
-        if (StringUtils.isEmpty(url_.getPath())) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(url_.getPath())) {
             try {
                 return UrlUtils.getUrlWithNewPath(url_, "/").toExternalForm();
             }

@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.mockito.Mockito;
 
-import com.tngtech.archunit.thirdparty.com.google.common.io.Files;
+import com.google.common.io.Files;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.util.XltProperties;
 

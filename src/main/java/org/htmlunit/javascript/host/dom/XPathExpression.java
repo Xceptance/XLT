@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import javax.xml.transform.TransformerException;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.xpath.HtmlUnitPrefixResolver;
 import org.htmlunit.html.xpath.XPathAdapter;
@@ -82,7 +83,7 @@ public class XPathExpression extends HtmlUnitScriptable {
      * @return the result of the evaluation of the XPath expression
      */
     @JsxFunction
-    public static XPathResult evaluate(final Context context, final Scriptable scope,
+    public static XPathResult evaluate(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (args.length < 1) {
             throw JavaScriptEngine.reportRuntimeError("Missing 'contextNode' parameter");
@@ -108,8 +109,8 @@ public class XPathExpression extends HtmlUnitScriptable {
             final XPathExpression expression = (XPathExpression) thisObj;
 
             final XPathResult xPathResult;
-            if (result instanceof XPathResult) {
-                xPathResult = (XPathResult) result;
+            if (result instanceof XPathResult pathResult) {
+                xPathResult = pathResult;
             }
             else {
                 xPathResult = new XPathResult();

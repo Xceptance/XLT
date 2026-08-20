@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  */
 package org.htmlunit.util.geometry;
 
+import java.util.Objects;
+
 /**
- * Simple 2D point.
+ * Simple immutable 2D point.
  *
  * @author Ronald Brill
  */
@@ -23,15 +25,31 @@ public class Point2D {
     private final double myX_;
     private final double myY_;
 
+    /**
+     * Creates a new point with the given coordinates.
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     */
     public Point2D(final double x, final double y) {
         myX_ = x;
         myY_ = y;
     }
 
+    /**
+     * Returns the x coordinate.
+     *
+     * @return the x coordinate
+     */
     public double getX() {
         return myX_;
     }
 
+    /**
+     * Returns the y coordinate.
+     *
+     * @return the y coordinate
+     */
     public double getY() {
         return myY_;
     }
@@ -39,5 +57,20 @@ public class Point2D {
     @Override
     public String toString() {
         return "Point2D (" + myX_ + ", " + myY_ + ")";
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final Point2D point2D = (Point2D) o;
+        return Double.compare(myX_, point2D.myX_) == 0 && Double.compare(myY_, point2D.myY_) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(myX_, myY_);
     }
 }

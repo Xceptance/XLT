@@ -18,7 +18,7 @@ package org.htmlunit;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.javascript.host.ClientRect;
+import org.htmlunit.javascript.host.DOMRect;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class _2144_FileInputHasNonZeroWidthTest extends AbstractWebTestCase
         final HtmlElement fileInput = page.getFirstByXPath(".//input[@type='file']");
 
         final HTMLElement scritable = (HTMLElement) fileInput.getScriptableObject();
-        final ClientRect rectum;
+        final DOMRect rectum;
         try
         {
             Context.enter();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package org.htmlunit.html.impl;
+
+import java.util.Objects;
 
 /**
  * Our own implementation of color to be
@@ -67,6 +69,8 @@ public class Color {
     }
 
     /**
+     * Returns the red part.
+     *
      * @return the red part
      */
     public int getRed() {
@@ -74,6 +78,8 @@ public class Color {
     }
 
     /**
+     * Returns the green part.
+     *
      * @return the green part
      */
     public int getGreen() {
@@ -81,6 +87,8 @@ public class Color {
     }
 
     /**
+     * Returns the blue part.
+     *
      * @return the blue part
      */
     public int getBlue() {
@@ -88,6 +96,8 @@ public class Color {
     }
 
     /**
+     * Returns the alpha part.
+     *
      * @return the alpha part
      */
     public int getAlpha() {
@@ -99,13 +109,7 @@ public class Color {
      */
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + alpha_;
-        result = prime * result + blue_;
-        result = prime * result + green_;
-        result = prime * result + red_;
-        return result;
+        return Objects.hash(red_, green_, blue_, alpha_);
     }
 
     /**

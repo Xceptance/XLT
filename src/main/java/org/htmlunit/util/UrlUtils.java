@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -231,12 +230,12 @@ public final class UrlUtils {
     public static URL toUrlUnsafe(final String url) throws MalformedURLException {
         WebAssert.notNull("url", url);
 
-        final String protocol = org.apache.commons.lang3.StringUtils.substringBefore(url, ":").toLowerCase(Locale.ROOT);
+        final String protocol = StringUtils.substringBefore(url, ":").toLowerCase(Locale.ROOT);
 
         if (protocol.isEmpty() || UrlUtils.isNormalUrlProtocol(protocol)) {
             final URL response = new URL(url);
             if (response.getProtocol().startsWith("http")
-                    && org.apache.commons.lang3.StringUtils.isEmpty(response.getHost())) {
+                    && StringUtils.isEmptyOrNull(response.getHost())) {
                 throw new MalformedURLException("Missing host name in url: " + url);
             }
             return response;
@@ -247,7 +246,7 @@ public final class UrlUtils {
         }
 
         if (ABOUT.equals(protocol)) {
-            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(ABOUT_BLANK, url)) {
+            if (ABOUT_BLANK.equalsIgnoreCase(url)) {
                 return URL_ABOUT_BLANK;
             }
             return new URL(null, url, ABOUT_HANDLER);
@@ -374,7 +373,7 @@ public final class UrlUtils {
      * string that is not followed by two hexadecimal characters.
      * @param input the input bytes
      * @return the given input string where every occurrence of <code>%</code> in
-     * invalid escape sequences has been replace by <code>%25</code>
+     *         invalid escape sequences has been replace by <code>%25</code>
      */
     private static String encodePercentSign(final byte[] input) {
         if (input == null) {
@@ -536,7 +535,7 @@ public final class UrlUtils {
     public static URL getUrlWithNewUserName(final URL u, final String newUserName) throws MalformedURLException {
         String newUserInfo = newUserName == null ? "" : newUserName;
         final String userInfo = u.getUserInfo();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(userInfo)) {
+        if (StringUtils.isNotBlank(userInfo)) {
             final int colonIdx = userInfo.indexOf(':');
             if (colonIdx > -1) {
                 newUserInfo = newUserInfo + userInfo.substring(colonIdx);
@@ -557,7 +556,7 @@ public final class UrlUtils {
             throws MalformedURLException {
         String newUserInfo = newUserPassword == null ? "" : ':' + newUserPassword;
         final String userInfo = u.getUserInfo();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(userInfo)) {
+        if (StringUtils.isNotBlank(userInfo)) {
             final int colonIdx = userInfo.indexOf(':');
             if (colonIdx > -1) {
                 newUserInfo = userInfo.substring(0, colonIdx) + newUserInfo;
@@ -700,9 +699,10 @@ public final class UrlUtils {
 
     /**
      * Parses a given specification using the algorithm depicted in
-     * <a href="http://www.faqs.org/rfcs/rfc1808.html">RFC1808</a>:
+     * <a href="http://www.faqs.org/rfcs/rfc1808.html">RFC1808</a>.
      * <p>
      * Section 2.4: Parsing a URL
+     * </p>
      * <p>
      *   An accepted method for parsing URLs is useful to clarify the
      *   generic-RL syntax of Section 2.2 and to describe the algorithm for
@@ -712,7 +712,7 @@ public final class UrlUtils {
      *   rules assume that the URL has already been separated from any
      *   surrounding text and copied to a "parse string". The rules are
      *   listed in the order in which they would be applied by the parser.
-     *
+     * </p>
      * @param spec The specification to parse.
      * @return the parsed specification.
      */
@@ -912,12 +912,14 @@ public final class UrlUtils {
      * Returns true if specified string is a valid scheme name.
      * <p>
      * https://tools.ietf.org/html/rfc1738
+     * </p>
      * <p>
      * Scheme names consist of a sequence of characters. The lower case
      * letters "a"--"z", digits, and the characters plus ("+"), period
      * ("."), and hyphen ("-") are allowed. For resiliency, programs
      * interpreting URLs should treat upper case letters as equivalent to
      * lower case in scheme names (e.g., allow "HTTP" as well as "http").
+     * </p>
      *
      * @param scheme the scheme string to check
      * @return true if valid
@@ -952,9 +954,8 @@ public final class UrlUtils {
 
     /**
      * Returns true if specified string is a special scheme.
-     * <p>
-     * https://url.spec.whatwg.org/#special-scheme
-     * <p>
+     * see <a href='https://url.spec.whatwg.org/#special-scheme'>
+     * https://url.spec.whatwg.org/#special-scheme</a>
      *
      * @param scheme the scheme string to check
      * @return true if special
@@ -976,9 +977,10 @@ public final class UrlUtils {
 
     /**
      * Resolves a given relative URL against a base URL using the algorithm
-     * depicted in <a href="http://www.faqs.org/rfcs/rfc1808.html">RFC1808</a>:
+     * depicted in <a href="http://www.faqs.org/rfcs/rfc1808.html">RFC1808</a>.
      * <p>
      * Section 4: Resolving Relative URLs
+     * </p>
      * <p>
      *   This section describes an example algorithm for resolving URLs within
      *   a context in which the URLs may be relative, such that the result is
@@ -987,6 +989,7 @@ public final class UrlUtils {
      *   original author, it does guarantee that any valid URL (relative or
      *   absolute) can be consistently transformed to an absolute form given a
      *   valid base URL.
+     * </p>
      *
      * @param baseUrl     The base URL in which to resolve the specification.
      * @param relativeUrl The relative URL to resolve against the base URL.
@@ -1123,7 +1126,7 @@ public final class UrlUtils {
     }
 
     /**
-     * "../" after the leading "/" should be removed as browsers do (not in RFC)
+     * "../" after the leading "/" should be removed as browsers do (not in RFC).
      */
     private static String removeLeadingSlashPoints(final String path) {
         int i = 1;
@@ -1140,8 +1143,6 @@ public final class UrlUtils {
 
     /**
      * Class <code>Url</code> represents a Uniform Resource Locator.
-     *
-     * @author Martin Tamme
      */
     private static class Url {
 
@@ -1349,20 +1350,17 @@ public final class UrlUtils {
     }
 
     /**
+     * Returns the encoded string.
+     *
      * @param part the part to encode
-     * @return the ecoded string
+     * @return the encoded string
      */
     public static String encodeQueryPart(final String part) {
         if (part == null || part.isEmpty()) {
             return "";
         }
 
-        try {
-            return URLEncoder.encode(part, "UTF-8");
-        }
-        catch (final UnsupportedEncodingException e) {
-            return part;
-        }
+        return URLEncoder.encode(part, UTF_8);
     }
 
     /**
@@ -1379,32 +1377,52 @@ public final class UrlUtils {
         return url;
     }
 
-    // adapted from apache commons codec
-    public static byte[] decodeDataUrl(final byte[] bytes) throws IllegalArgumentException  {
+    /**
+     * Decodes an array of URL safe 7-bit characters into an array of original bytes.
+     * Escaped characters are converted back to their original representation.
+     * @param bytes array of URL safe characters
+     * @param removeWhitespace if true don't add whitespace chars to the output
+     * @return array of original bytes
+     * @throws IllegalArgumentException in case of error
+     */
+    public static byte[] decodeDataUrl(final byte[] bytes, final boolean removeWhitespace)
+                            throws IllegalArgumentException  {
+        // adapted from apache commons codec
         if (bytes == null) {
             return null;
         }
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         for (int i = 0; i < bytes.length; i++) {
-            final int b = bytes[i];
+            int b = bytes[i];
             if (b == '%') {
                 try {
                     final int u = digit16(bytes[++i]);
                     final int l = digit16(bytes[++i]);
-                    buffer.write((char) ((u << 4) + l));
+                    b = (u << 4) + l;
                 }
                 catch (final ArrayIndexOutOfBoundsException e) {
                     throw new IllegalArgumentException("Invalid URL encoding: ", e);
                 }
             }
-            else {
-                buffer.write(b);
+            if (removeWhitespace
+                    && (b == 9 || b == 10 || b == 12 || b == 13 || b == 32)) {
+                continue;
             }
+
+            buffer.write(b);
         }
         return buffer.toByteArray();
     }
 
+    /**
+     * Decodes an array of URL safe 7-bit characters into an array of original bytes.
+     * Escaped characters are converted back to their original representation.
+     * @param bytes array of URL safe characters
+     * @return array of original bytes
+     * @throws IllegalArgumentException in case of error
+     */
     public static byte[] decodeUrl(final byte[] bytes) throws IllegalArgumentException {
+        // adapted from apache commons codec
         if (bytes == null) {
             return null;
         }
@@ -1439,8 +1457,14 @@ public final class UrlUtils {
         return i;
     }
 
-    // adapted from apache commons codec
+    /**
+     * Encodes an array of bytes into an array of URL safe 7-bit characters. Unsafe characters are escaped.
+     * @param urlsafe bitset of characters deemed URL safe
+     * @param bytes  array of bytes to convert to URL safe characters
+     * @return array of bytes containing URL safe characters
+     */
     public static byte[] encodeUrl(final BitSet urlsafe, final byte[] bytes) {
+        // adapted from apache commons codec
         if (bytes == null) {
             return null;
         }
@@ -1470,5 +1494,38 @@ public final class UrlUtils {
 
     private static char hexDigit(final int b) {
         return Character.toUpperCase(Character.forDigit(b & 0xF, 16));
+    }
+
+    /**
+     * Determines whether two URLs share the same origin according to the Same-Origin Policy.
+     * Two URLs are considered to have the same origin if they have the same protocol (scheme),
+     * host, and port.
+     *
+     * <p>The method handles default ports correctly by using the URL's default port when
+     * the explicit port is -1 (indicating no port was specified).
+     * </p>
+     *
+     * @param originUrl the first URL to compare (must not be null)
+     * @param newUrl the second URL to compare (must not be null)
+     * @return {@code true} if both URLs have the same host and effective port; {@code false} otherwise
+     */
+    public static boolean isSameOrigin(final URL originUrl, final URL newUrl) {
+        if (!originUrl.getProtocol().equals(newUrl.getProtocol())) {
+            return false;
+        }
+
+        if (!originUrl.getHost().equalsIgnoreCase(newUrl.getHost())) {
+            return false;
+        }
+
+        int originPort = originUrl.getPort();
+        if (originPort == -1) {
+            originPort = originUrl.getDefaultPort();
+        }
+        int newPort = newUrl.getPort();
+        if (newPort == -1) {
+            newPort = newUrl.getDefaultPort();
+        }
+        return originPort == newPort;
     }
 }

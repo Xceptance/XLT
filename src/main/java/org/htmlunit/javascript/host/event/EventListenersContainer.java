@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,9 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -37,7 +40,7 @@ import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLElement;
 
 /**
- * Container for event listener.
+ * Container for event listeners.
  *
  * @author Marc Guillemot
  * @author Daniel Gredler
@@ -50,53 +53,33 @@ public class EventListenersContainer implements Serializable {
 
     private static final Log LOG = LogFactory.getLog(EventListenersContainer.class);
 
-    // Refactoring note: This seems ad-hoc..  Shouldn't synchronization be orchestrated between
-    // JS thread and main thread at a much higher layer?  Anyways, to preserve behaviour of prior
+    // Refactoring note: This seems ad-hoc. Shouldn't synchronization be orchestrated between
+    // JS thread and main thread at a much higher layer?  Anyway, to preserve behaviour of prior
     // coding where 'synchronized' was used more explicitly, we're using a ConcurrentHashMap here
     // and using ConcurrentMap.compute() to mutate below so that mutations are atomic.  This for
     // example avoids the case where two concurrent addListener()s can result in either being lost.
     private final ConcurrentMap<String, TypeContainer> typeContainers_ = new ConcurrentHashMap<>();
     private final EventTarget jsNode_;
 
-    private static class TypeContainer implements Serializable {
+    private record TypeContainer(List<Scriptable> capturingListeners_, List<Scriptable> bubblingListeners_,
+                                 List<Scriptable> atTargetListeners_, Function handler_) implements Serializable {
         public static final TypeContainer EMPTY = new TypeContainer();
 
         // This sentinel value could be some singleton instance but null
         // isn't used for anything else so why not.
         private static final Scriptable EVENT_HANDLER_PLACEHOLDER = null;
 
-        private final List<Scriptable> capturingListeners_;
-        private final List<Scriptable> bubblingListeners_;
-        private final List<Scriptable> atTargetListeners_;
-        private final Function handler_;
-
         TypeContainer() {
-            capturingListeners_ = Collections.emptyList();
-            bubblingListeners_ = Collections.emptyList();
-            atTargetListeners_ = Collections.emptyList();
-            handler_ = null;
-        }
-
-        private TypeContainer(final List<Scriptable> capturingListeners,
-                    final List<Scriptable> bubblingListeners, final List<Scriptable> atTargetListeners,
-                    final Function handler) {
-            capturingListeners_ = capturingListeners;
-            bubblingListeners_ = bubblingListeners;
-            atTargetListeners_ = atTargetListeners;
-            handler_ = handler;
+            this(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), null);
         }
 
         List<Scriptable> getListeners(final int eventPhase) {
-            switch (eventPhase) {
-                case Event.CAPTURING_PHASE:
-                    return capturingListeners_;
-                case Event.AT_TARGET:
-                    return atTargetListeners_;
-                case Event.BUBBLING_PHASE:
-                    return bubblingListeners_;
-                default:
-                    throw new UnsupportedOperationException("eventPhase: " + eventPhase);
-            }
+            return switch (eventPhase) {
+                case Event.CAPTURING_PHASE -> capturingListeners_;
+                case Event.AT_TARGET -> atTargetListeners_;
+                case Event.BUBBLING_PHASE -> bubblingListeners_;
+                default -> throw new UnsupportedOperationException("eventPhase: " + eventPhase);
+            };
         }
 
         public TypeContainer setPropertyHandler(final Function propertyHandler) {
@@ -124,7 +107,6 @@ public class EventListenersContainer implements Serializable {
         }
 
         public TypeContainer addListener(final Scriptable listener, final boolean useCapture) {
-
             List<Scriptable> capturingListeners = capturingListeners_;
             List<Scriptable> bubblingListeners = bubblingListeners_;
             final List<Scriptable> listeners = useCapture ? capturingListeners : bubblingListeners;
@@ -154,7 +136,6 @@ public class EventListenersContainer implements Serializable {
         }
 
         public TypeContainer removeListener(final Scriptable listener, final boolean useCapture) {
-
             List<Scriptable> capturingListeners = capturingListeners_;
             List<Scriptable> bubblingListeners = bubblingListeners_;
             final List<Scriptable> listeners = useCapture ? capturingListeners : bubblingListeners;
@@ -190,9 +171,9 @@ public class EventListenersContainer implements Serializable {
     }
 
     /**
-     * The constructor.
+     * Creates a new container for the given event target node.
      *
-     * @param jsNode the node.
+     * @param jsNode the node
      */
     public EventListenersContainer(final EventTarget jsNode) {
         jsNode_ = jsNode;
@@ -201,13 +182,13 @@ public class EventListenersContainer implements Serializable {
     /**
      * Adds an event listener.
      *
-     * @param type the event type to listen for (like "load")
+     * @param type the event type to listen for (e.g. {@code "load"})
      * @param listener the event listener
-     * @param useCapture If {@code true}, indicates that the user wishes to initiate capture (not yet implemented)
-     * @return {@code true} if the listener has been added
+     * @param useCapture if {@code true}, the listener is added for the capture phase
+     * @return {@code true} if the listener was added; {@code false} if it was already registered
      */
     public boolean addEventListener(final String type, final Scriptable listener, final boolean useCapture) {
-        if (null == listener) {
+        if (listener == null) {
             return true;
         }
 
@@ -236,22 +217,22 @@ public class EventListenersContainer implements Serializable {
     }
 
     /**
-     * Returns the relevant listeners.
+     * Returns the listeners for the given event type and capture mode.
      *
      * @param eventType the event type
-     * @param useCapture whether to use capture of not
-     * @return the listeners list (empty list when empty)
+     * @param useCapture whether to return capture-phase listeners
+     * @return the list of listeners (empty list if none)
      */
     public List<Scriptable> getListeners(final String eventType, final boolean useCapture) {
         return getTypeContainer(eventType).getListeners(useCapture ? Event.CAPTURING_PHASE : Event.BUBBLING_PHASE);
     }
 
     /**
-     * Removes event listener.
+     * Removes an event listener.
      *
-     * @param eventType the type
-     * @param listener the listener
-     * @param useCapture to use capture or not
+     * @param eventType the event type
+     * @param listener the listener to remove
+     * @param useCapture whether to remove from the capture phase
      */
     void removeEventListener(final String eventType, final Scriptable listener, final boolean useCapture) {
         if (listener == null) {
@@ -263,9 +244,10 @@ public class EventListenersContainer implements Serializable {
     }
 
     /**
-     * Sets the handler property (with a handler or something else).
-     * @param eventType the event type (like "click")
-     * @param value the new property
+     * Sets the property handler for the given event type.
+     *
+     * @param eventType the event type (e.g. {@code "click"})
+     * @param value the new handler, or {@code null} to remove it
      */
     public void setEventHandler(final String eventType, final Object value) {
         final Function handler;
@@ -303,15 +285,27 @@ public class EventListenersContainer implements Serializable {
                 page = (HtmlPage) jsNode_.getDomNodeOrDie();
             }
             else {
-                final Scriptable parentScope = jsNode_.getParentScope();
-                if (parentScope instanceof Window) {
-                    page = (HtmlPage) ((Window) parentScope).getDomNodeOrDie();
+                Scriptable scriptableObj = null;
+                final VarScope parentScope = jsNode_.getParentScope();
+                if (parentScope instanceof TopLevel topLevel) {
+                    scriptableObj = topLevel.getGlobalThis();
                 }
-                else if (parentScope instanceof HTMLDocument) {
-                    page = ((HTMLDocument) parentScope).getPage();
+                else if (parentScope instanceof WithScope withScope) {
+                    scriptableObj = withScope.getObject();
+                }
+
+                if (scriptableObj instanceof Window window) {
+                    page = (HtmlPage) window.getDomNodeOrDie();
+                }
+                else if (scriptableObj instanceof HTMLDocument document) {
+                    page = document.getPage();
+                }
+                else if (scriptableObj != null) {
+                    page = ((HTMLElement) scriptableObj).getDomNodeOrDie().getHtmlPageOrNull();
                 }
                 else {
-                    page = ((HTMLElement) parentScope).getDomNodeOrDie().getHtmlPageOrNull();
+                    page = null;
+                    throw new UnsupportedOperationException("TODO ");
                 }
             }
 
@@ -324,14 +318,14 @@ public class EventListenersContainer implements Serializable {
                 }
                 Function function = null;
                 Scriptable thisObject = null;
-                if (listener instanceof Function) {
-                    function = (Function) listener;
+                if (listener instanceof Function function2) {
+                    function = function2;
                     thisObject = jsNode_;
                 }
                 else if (listener instanceof NativeObject) {
                     final Object handleEvent = ScriptableObject.getProperty(listener, "handleEvent");
-                    if (handleEvent instanceof Function) {
-                        function = (Function) handleEvent;
+                    if (handleEvent instanceof Function function1) {
+                        function = function1;
                         thisObject = listener;
                     }
                 }
@@ -351,16 +345,18 @@ public class EventListenersContainer implements Serializable {
     }
 
     /**
-     * Executes bubbling listeners.
+     * Executes bubbling listeners for the given event.
+     *
      * @param event the event
-     * @param args arguments
+     * @param args the arguments
      */
     public void executeBubblingListeners(final Event event, final Object[] args) {
         executeEventListeners(Event.BUBBLING_PHASE, event, args);
     }
 
     /**
-     * Executes capturing listeners.
+     * Executes capturing listeners for the given event.
+     *
      * @param event the event
      * @param args the arguments
      */
@@ -369,7 +365,8 @@ public class EventListenersContainer implements Serializable {
     }
 
     /**
-     * Executes listeners for events targeting the node. (non-propagation phase)
+     * Executes listeners for events targeting this node (non-propagation phase).
+     *
      * @param event the event
      * @param args the arguments
      */
@@ -378,18 +375,20 @@ public class EventListenersContainer implements Serializable {
     }
 
     /**
-     * Returns an event handler.
-     * @param eventType the event name (e.g. "click")
-     * @return the handler function, {@code null} if the property is null or not a function
+     * Returns the event handler function for the given event type.
+     *
+     * @param eventType the event type (e.g. {@code "click"})
+     * @return the handler function, or {@code null} if not set
      */
     public Function getEventHandler(final String eventType) {
         return getTypeContainer(eventType).handler_;
     }
 
     /**
-     * Returns {@code true} if there are any event listeners for the specified event.
-     * @param eventType the event type (e.g. "click")
-     * @return {@code true} if there are any event listeners for the specified event, {@code false} otherwise
+     * Returns whether there are any event listeners registered for the given event type.
+     *
+     * @param eventType the event type (e.g. {@code "click"})
+     * @return {@code true} if there are any listeners, {@code false} otherwise
      */
     boolean hasEventListeners(final String eventType) {
         return !getTypeContainer(eventType).atTargetListeners_.isEmpty();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,27 +31,32 @@ import java.util.Set;
 /**
  * Simple and efficient linked map or better ordered map implementation to
  * replace the default linked list which is heavy.
- *
+ * <p>
  * This map does not support null and it is not thread-safe. It implements the
  * map interface but only for compatibility reason in the sense of replacing a
  * regular map. Iterator and streaming methods are either not implemented or
  * less efficient.
- *
+ * </p>
+ * <p>
  * It goes the extra mile to avoid the overhead of wrapper objects.
- *
+ * </p>
+ * <p>
  * Because you typically know what you do, we run minimal index checks only and
  * rely on the default exceptions by Java. Why should we do things twice?
- *
+ * </p>
+ * <p>
  * Important Note: This is meant for small maps because to save on memory
  * allocation and churn, we are not keeping a wrapper for a reference from the
  * map to the list, only from the list to the map. Hence when you remove a key,
  * we have to iterate the entire list. Mostly, half of it most likely, but still
  * expensive enough. When you have something small like 10 to 20 entries, this
  * won't matter that much especially when a remove might be a rare event.
- *
+ * </p>
+ * <p>
  * This is based on FashHashMap from XLT which is based on a version from:
  * https://github.com/mikvor/hashmapTest/blob/master/src/main/java/map/objobj/ObjObjMap.java
  * No concrete license specified at the source. The project is public domain.
+ * </p>
  *
  * @param <K> the type of the key
  * @param <V> the type of the value
@@ -167,7 +172,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
     }
 
     /**
-     * Adds a key and value to the internal position structure
+     * Adds a key and value to the internal position structure.
      *
      * @param key the key
      * @param value the value to store
@@ -200,7 +205,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
             final Object ret = mapData_[ptr + 1];
             mapData_[ptr + 1] = value;
 
-            /// existing entry, no need to update the position
+            // existing entry, no need to update the position
 
             return (V) ret;
         }
@@ -414,7 +419,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
     }
 
     /**
-     * Get us the start index from where we search or insert into the map
+     * Get us the start index from where we search or insert into the map.
      *
      * @param key the key to calculate the position for
      * @return the start position
@@ -429,6 +434,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
      *
      * <p>
      * Note that this function will return 1 when the argument is 0.
+     * </p>
      *
      * @param x a long integer smaller than or equal to 2<sup>62</sup>.
      * @return the least power of two greater than or equal to the specified value.
@@ -479,7 +485,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
      */
     public Entry<K, V> getEntry(final int index) {
         if (index < 0 || index >= this.orderedListSize_) {
-            throw new IndexOutOfBoundsException(String.format("Index: %s, Size: %s", index, this.orderedListSize_));
+            throw new IndexOutOfBoundsException("Index: %s, Size: %s".formatted(index, this.orderedListSize_));
         }
 
         final int pos = this.orderedList_[index];
@@ -496,7 +502,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
      */
     public K getKey(final int index) {
         if (index < 0 || index >= this.orderedListSize_) {
-            throw new IndexOutOfBoundsException(String.format("Index: %s, Size: %s", index, this.orderedListSize_));
+            throw new IndexOutOfBoundsException("Index: %s, Size: %s".formatted(index, this.orderedListSize_));
         }
 
         final int pos = this.orderedList_[index];
@@ -513,7 +519,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
      */
     public V getValue(final int index) {
         if (index < 0 || index >= this.orderedListSize_) {
-            throw new IndexOutOfBoundsException(String.format("Index: %s, Size: %s", index, this.orderedListSize_));
+            throw new IndexOutOfBoundsException("Index: %s, Size: %s".formatted(index, this.orderedListSize_));
         }
 
         final int pos = this.orderedList_[index];
@@ -530,7 +536,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
      */
     public V remove(final int index) {
         if (index < 0 || index >= this.orderedListSize_) {
-            throw new IndexOutOfBoundsException(String.format("Index: %s, Size: %s", index, this.orderedListSize_));
+            throw new IndexOutOfBoundsException("Index: %s, Size: %s".formatted(index, this.orderedListSize_));
         }
 
         final int pos = this.orderedList_[index];
@@ -544,26 +550,58 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
         return this.put(key, value, Position.LAST);
     }
 
+    /**
+     * Insert at the beginning.
+     * @param key the key
+     * @param value the value
+     * @return the inserted value
+     */
     public V addFirst(final K key, final V value) {
         return this.put(key, value, Position.FIRST);
     }
 
+    /**
+     * Append at the end.
+     * @param key the key
+     * @param value the value
+     * @return the appended value
+     */
     public V add(final K key, final V value) {
         return this.put(key, value, Position.LAST);
     }
 
+    /**
+     * Append at the end.
+     * @param key the key
+     * @param value the value
+     * @return the appended value
+     */
     public V addLast(final K key, final V value) {
         return this.put(key, value, Position.LAST);
     }
 
+    /**
+     * Returns the first value.
+     *
+     * @return the first value.
+     */
     public V getFirst() {
         return getValue(0);
     }
 
+    /**
+     * Returns the last value.
+     *
+     * @return the last value.
+     */
     public V getLast() {
         return getValue(this.orderedListSize_ - 1);
     }
 
+    /**
+     * Removes the first entry.
+     * @return the removed value or null if the map was empty.
+     */
     public V removeFirst() {
         if (this.orderedListSize_ > 0) {
             final int pos = this.orderedList_[0];
@@ -573,6 +611,10 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
         return null;
     }
 
+    /**
+     * Removes the last entry.
+     * @return the removed value or null if the map was empty.
+     */
     public V removeLast() {
         if (this.orderedListSize_ > 0) {
             final int pos = this.orderedList_[this.orderedListSize_ - 1];
@@ -640,7 +682,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
     }
 
     /**
-     * We have to overwrite the export due to the use of static object as marker
+     * We have to overwrite the export due to the use of static object as marker.
      *
      * @param aInputStream the inputstream to read from
      * @throws IOException when the reading from the source fails
@@ -671,7 +713,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
     }
 
     /**
-     * We have to overwrite the export due to the use of static object as marker
+     * We have to overwrite the export due to the use of static object as marker.
      *
      * @param aOutputStream the stream to write to
      * @throws IOException in case we have issue writing our data to the stream
@@ -713,8 +755,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
 
         @Override
         public boolean contains(final Object o) {
-            if (o instanceof Map.Entry) {
-                final Map.Entry ose = (Map.Entry) o;
+            if (o instanceof Map.Entry ose) {
                 final Object k = ose.getKey();
                 final Object v = ose.getValue();
 
@@ -961,7 +1002,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
         }
 
         if (i == this.orderedListSize_) {
-            throw new IllegalArgumentException(String.format("Position %s was not in order list", position));
+            throw new IllegalArgumentException("Position %s was not in order list".formatted(position));
         }
     }
 
@@ -969,14 +1010,16 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
     public String toString() {
         final int maxLen = 10;
 
-        return String.format(
-                "mapData=%s, mapFillFactor=%s, mapThreshold=%s, mapSize=%s,%norderedList=%s, orderedListSize=%s",
-                mapData_ != null ? Arrays.asList(mapData_).subList(0, Math.min(mapData_.length, maxLen)) : null,
-                        FILLFACTOR_, mapThreshold_, mapSize_,
-                        orderedList_ != null
+        return "mapData=%s, mapFillFactor=%s, mapThreshold=%s, mapSize=%s,%norderedList=%s, orderedListSize=%s"
+                .formatted(
+                    mapData_ != null
+                        ? Arrays.asList(mapData_).subList(0, Math.min(mapData_.length, maxLen))
+                        : null,
+                    FILLFACTOR_, mapThreshold_, mapSize_,
+                    orderedList_ != null
                         ? Arrays.toString(Arrays.copyOf(orderedList_, Math.min(orderedList_.length, maxLen)))
-                                : null,
-                                orderedListSize_);
+                        : null,
+                    orderedListSize_);
     }
 
     /**
@@ -1032,8 +1075,7 @@ public class OrderedFastHashMap<K, V> implements Map<K, V>, Serializable {
                 return true;
             }
 
-            if (o instanceof Map.Entry) {
-                final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+            if (o instanceof Map.Entry<?, ?> e) {
 
                 if (Objects.equals(key_, e.getKey()) && Objects.equals(value_, e.getValue())) {
                     return true;

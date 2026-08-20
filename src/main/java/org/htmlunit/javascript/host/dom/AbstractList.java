@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 
 import org.htmlunit.corejs.javascript.ExternalArrayData;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomChangeEvent;
 import org.htmlunit.html.DomChangeListener;
 import org.htmlunit.html.DomElement;
@@ -34,7 +35,6 @@ import org.htmlunit.html.HtmlAttributeChangeListener;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.configuration.JsxClass;
 
 /**
  * The parent class of {@link NodeList} and {@link org.htmlunit.javascript.host.html.HTMLCollection}.
@@ -46,7 +46,6 @@ import org.htmlunit.javascript.configuration.JsxClass;
  * @author Frank Danek
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false)
 public class AbstractList extends HtmlUnitScriptable implements ExternalArrayData {
 
     /**
@@ -64,7 +63,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     private boolean attributeChangeSensitive_;
 
     /**
-     * Cache collection elements when possible, so as to avoid expensive XPath expression evaluations.
+     * Cache collection elements when possible, to avoid expensive XPath expression evaluations.
      */
     private List<DomNode> cachedElements_;
 
@@ -103,7 +102,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      *
      * @param domNode the {@link DomNode}
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of domNode changes (attribute added, modified or removed)
      * @param initialElements the initial content for the cache
      */
     protected AbstractList(final DomNode domNode, final boolean attributeChangeSensitive,
@@ -111,18 +110,15 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         super();
         if (domNode != null) {
             setDomNode(domNode, false);
-            final HtmlUnitScriptable parentScope = domNode.getScriptableObject();
-            if (parentScope != null) {
-                setParentScope(parentScope);
-                setPrototype(getPrototype(getClass()));
-            }
+            setParentScope(domNode.getScriptableObject().getParentScope());
+            setPrototype(getPrototype(getClass()));
         }
         attributeChangeSensitive_ = attributeChangeSensitive;
         cachedElements_ = initialElements;
         if (initialElements != null) {
             registerListener();
         }
-        setExternalArrayData(this);
+        setExternalArrayData(getParentScope(), this);
     }
 
     /**
@@ -135,6 +131,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
+     * Sets whether this collection should avoid object detection.
+     *
      * @param newValue the new value
      */
     public void setAvoidObjectDetection(final boolean newValue) {
@@ -142,6 +140,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
+     * Sets the function that determines the effect of attribute changes on the cache.
+     *
      * @param effectOnCacheFunction the new function
      */
     public void setEffectOnCacheFunction(
@@ -153,7 +153,9 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
-     * @return elementSupplier
+     * Returns the supplier used to retrieve the collection elements.
+     *
+     * @return the element supplier
      */
     protected Supplier<List<DomNode>> getElementSupplier() {
         return elementsSupplier_;
@@ -171,7 +173,9 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
-     * @return isMatchingPredicate
+     * Returns the predicate used to determine whether a node belongs to this collection.
+     *
+     * @return the matching predicate
      */
     protected Predicate<DomNode> getIsMatchingPredicate() {
         return isMatchingPredicate_;
@@ -195,8 +199,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * @return the element or elements corresponding to the specified index or key
      */
     protected Object getIt(final Object o) {
-        if (o instanceof Number) {
-            final Number n = (Number) o;
+        if (o instanceof Number n) {
             final int i = n.intValue();
             return get(i, this);
         }
@@ -239,6 +242,9 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         return cachedElements;
     }
 
+    /**
+     * Registers the DOM and attribute change listeners for this collection.
+     */
     private void registerListener() {
         if (!listenerRegistered_) {
             final DomNode domNode = getDomNodeOrNull();
@@ -246,11 +252,11 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
                 final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl(this);
                 domNode.addDomChangeListener(listener);
                 if (attributeChangeSensitive_) {
-                    if (domNode instanceof HtmlElement) {
-                        ((HtmlElement) domNode).addHtmlAttributeChangeListener(listener);
+                    if (domNode instanceof HtmlElement element) {
+                        element.addHtmlAttributeChangeListener(listener);
                     }
-                    else if (domNode instanceof HtmlPage) {
-                        ((HtmlPage) domNode).addHtmlAttributeChangeListener(listener);
+                    else if (domNode instanceof HtmlPage page) {
+                        page.addHtmlAttributeChangeListener(listener);
                     }
                 }
                 listenerRegistered_ = true;
@@ -270,7 +276,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     protected Object getWithPreemption(final String name) {
         // Test to see if we are trying to get the length of this collection?
         // If so return NOT_FOUND here to let the property be retrieved using the prototype
-        if (/*xpath_ == null || */"length".equals(name)) {
+        if ("length".equals(name)) {
             return NOT_FOUND;
         }
 
@@ -280,8 +286,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         final List<DomNode> matchingElements = new ArrayList<>();
 
         for (final DomNode next : elements) {
-            if (next instanceof DomElement) {
-                final String id = ((DomElement) next).getId();
+            if (next instanceof DomElement element) {
+                final String id = element.getId();
                 if (name.equals(id)) {
                     matchingElements.add(next);
                 }
@@ -302,8 +308,9 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
-     * Constructs a new instance with an initial cache value.
-     * @param parentScope the parent scope, on which we listen for changes
+     * Creates a new collection backed by the specified initial elements.
+     *
+     * @param parentScope the parent scope on which to listen for changes
      * @param initialElements the initial content for the cache
      * @return the newly created instance
      */
@@ -320,8 +327,8 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     protected Object getWithPreemptionByName(final String name, final List<DomNode> elements) {
         final List<DomNode> matchingElements = new ArrayList<>();
         for (final DomNode next : elements) {
-            if (next instanceof DomElement) {
-                final String nodeName = ((DomElement) next).getAttributeDirect(DomElement.NAME_ATTRIBUTE);
+            if (next instanceof DomElement element) {
+                final String nodeName = element.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     matchingElements.add(next);
                 }
@@ -343,8 +350,9 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
-     * Returns the length.
-     * @return the length
+     * Returns the number of elements in this collection.
+     *
+     * @return the number of elements
      */
     public int getLength() {
         return getElements().size();
@@ -367,8 +375,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         if (other == this) {
             return Boolean.TRUE;
         }
-        else if (other instanceof AbstractList) {
-            final AbstractList otherArray = (AbstractList) other;
+        else if (other instanceof AbstractList otherArray) {
             final DomNode domNode = getDomNodeOrNull();
             final DomNode domNodeOther = otherArray.getDomNodeOrNull();
             if (getClass() == other.getClass()
@@ -431,7 +438,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         @Override
         public void attributeReplaced(final HtmlAttributeChangeEvent event) {
             final AbstractList nodes = nodeList_.get();
-            if (null == nodes) {
+            if (nodes == null) {
                 return;
             }
             if (nodes.attributeChangeSensitive_) {
@@ -439,9 +446,14 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
             }
         }
 
+        /**
+         * Clears the cached collection elements if required by the specified attribute change.
+         *
+         * @param event the attribute change event
+         */
         private void handleChangeOnCache(final HtmlAttributeChangeEvent event) {
             final AbstractList nodes = nodeList_.get();
-            if (null == nodes) {
+            if (nodes == null) {
                 return;
             }
 
@@ -463,13 +475,14 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     /**
-     * Gets the scriptable for the provided element that may already be the right scriptable.
+     * Returns the scriptable object for the specified element.
+     *
      * @param object the object for which to get the scriptable
-     * @return the scriptable
+     * @return the scriptable object
      */
     protected Scriptable getScriptableForElement(final Object object) {
-        if (object instanceof Scriptable) {
-            return (Scriptable) object;
+        if (object instanceof Scriptable scriptable) {
+            return scriptable;
         }
         return getScriptableFor(object);
     }
@@ -478,14 +491,15 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * {@inheritDoc}
      */
     @Override
-    public void defineProperty(final String propertyName, final Object delegateTo,
+    public void defineProperty(final VarScope scope,
+            final String propertyName, final Object delegateTo,
             final Method getter, final Method setter, final int attributes) {
         // length is defined on the prototype, don't define it again
         if ("length".equals(propertyName) && getPrototype() != null) {
             return;
         }
 
-        super.defineProperty(propertyName, delegateTo, getter, setter, attributes);
+        super.defineProperty(scope, propertyName, delegateTo, getter, setter, attributes);
     }
 
     @Override

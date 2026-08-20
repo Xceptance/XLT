@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebRequest;
+import org.htmlunit.corejs.javascript.ClassDescriptor;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.EcmaError;
@@ -35,8 +36,9 @@ import org.htmlunit.corejs.javascript.IteratorLikeIterable;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.SymbolKey;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -44,17 +46,20 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSymbol;
+import org.htmlunit.javascript.host.xml.FormData.FormDataIterator;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
 /**
- * A JavaScript object for {@code URLSearchParams}.
+ * JavaScript host object for {@code URLSearchParams}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Ween Jiann
  * @author cd alexndr
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams">MDN Documentation</a>
  */
 @JsxClass
 public class URLSearchParams extends HtmlUnitScriptable {
@@ -62,21 +67,41 @@ public class URLSearchParams extends HtmlUnitScriptable {
     private static final Log LOG = LogFactory.getLog(URLSearchParams.class);
 
     /** Constant used to register the prototype in the context. */
-    public static final String URL_SEARCH_PARMS_TAG = "URLSearchParams";
+    private static final String URL_SEARCH_PARMS_ITERATOR_TAG = "URLSearchParams Iterator";
 
     private URL url_;
 
+    /**
+     * {@link ES6Iterator} implementation for JavaScript support.
+     */
     public static final class NativeParamsIterator extends ES6Iterator {
+
+        private static final ClassDescriptor DESCRIPTOR =
+                ES6Iterator.makeDescriptor(URL_SEARCH_PARMS_ITERATOR_TAG, URL_SEARCH_PARMS_ITERATOR_TAG);
+
         enum Type { KEYS, VALUES, BOTH }
 
         private final Type type_;
         private final String className_;
         private final transient Iterator<NameValuePair> iterator_;
 
-        public static void init(final ScriptableObject scope, final String className) {
-            ES6Iterator.init(scope, false, new NativeParamsIterator(className), URL_SEARCH_PARMS_TAG);
+        /**
+         * Initializes the iterator prototype.
+         *
+         * @param cx the {@link Context}
+         * @param scope the scope
+         * @param className the class name
+         */
+        public static void init(final Context cx, final TopLevel scope, final String className) {
+            ES6Iterator.initialize(
+                    DESCRIPTOR, cx, scope, new FormDataIterator(className), false, URL_SEARCH_PARMS_ITERATOR_TAG);
         }
 
+        /**
+         * Creates an empty instance (used for prototype initialization).
+         *
+         * @param className the class name
+         */
         public NativeParamsIterator(final String className) {
             super();
             iterator_ = Collections.emptyIterator();
@@ -84,9 +109,17 @@ public class URLSearchParams extends HtmlUnitScriptable {
             className_ = className;
         }
 
-        public NativeParamsIterator(final Scriptable scope, final String className, final Type type,
+        /**
+         * Creates an instance backed by the given iterator.
+         *
+         * @param scope the scope
+         * @param className the class name
+         * @param type the iteration type (keys, values, or both)
+         * @param iterator the backing iterator
+         */
+        public NativeParamsIterator(final VarScope scope, final String className, final Type type,
                                         final Iterator<NameValuePair> iterator) {
-            super(scope, URL_SEARCH_PARMS_TAG);
+            super(scope, className);
             iterator_ = iterator;
             type_ = type;
             className_ = className;
@@ -98,36 +131,32 @@ public class URLSearchParams extends HtmlUnitScriptable {
         }
 
         @Override
-        protected boolean isDone(final Context cx, final Scriptable scope) {
+        protected boolean isDone(final Context cx, final VarScope scope) {
             return !iterator_.hasNext();
         }
 
         @Override
-        protected Object nextValue(final Context cx, final Scriptable scope) {
+        protected Object nextValue(final Context cx, final VarScope scope) {
             final NameValuePair e = iterator_.next();
-            switch (type_) {
-                case KEYS:
-                    return e.getName();
-                case VALUES:
-                    return e.getValue();
-                case BOTH:
-                    return cx.newArray(scope, new Object[] {e.getName(), e.getValue()});
-                default:
-                    throw new AssertionError();
-            }
+            return switch (type_) {
+                case KEYS -> e.getName();
+                case VALUES -> e.getValue();
+                case BOTH -> cx.newArray(scope, new Object[]{e.getName(), e.getValue()});
+            };
         }
     }
 
     /**
-     * Constructs a new instance.
+     * Default constructor.
      */
     public URLSearchParams() {
         super();
     }
 
     /**
-     * Constructs a new instance for the given js url.
-     * @param url the base url
+     * Constructs a new instance backed by the given URL.
+     *
+     * @param url the base URL whose search string is managed by this instance
      */
     URLSearchParams(final URL url) {
         super();
@@ -135,8 +164,10 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * Constructs a new instance.
-     * @param params the params string
+     * Creates an instance of this object.
+     *
+     * @param params initial search parameters; may be a string, a sequence of
+     *        {@code [name, value]} pairs, or a record object
      */
     @JsxConstructor
     public void jsConstructor(final Object params) {
@@ -163,10 +194,9 @@ public class URLSearchParams extends HtmlUnitScriptable {
      */
     private static List<NameValuePair> resolveParams(final Object params) {
         // if params is a sequence
-        if (params instanceof Scriptable && hasProperty((Scriptable) params, SymbolKey.ITERATOR)) {
+        if (params instanceof Scriptable paramsScriptable && hasProperty(paramsScriptable, SymbolKey.ITERATOR)) {
 
             final Context cx = Context.getCurrentContext();
-            final Scriptable paramsScriptable = (Scriptable) params;
 
             final List<NameValuePair> nameValuePairs = new ArrayList<>();
 
@@ -204,9 +234,9 @@ public class URLSearchParams extends HtmlUnitScriptable {
         }
 
         // if params is a record
-        if (params instanceof NativeObject) {
+        if (params instanceof NativeObject object) {
             final List<NameValuePair> nameValuePairs = new ArrayList<>();
-            for (final Map.Entry<Object, Object> keyValuePair : ((NativeObject) params).entrySet()) {
+            for (final Map.Entry<Object, Object> keyValuePair : object.entrySet()) {
                 nameValuePairs.add(
                         new NameValuePair(
                                 JavaScriptEngine.toString(keyValuePair.getKey()),
@@ -227,7 +257,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
         final List<NameValuePair> splitted = new ArrayList<>();
 
         params = StringUtils.stripStart(params, "?");
-        if (StringUtils.isEmpty(params)) {
+        if (org.htmlunit.util.StringUtils.isEmptyOrNull(params)) {
             return splitted;
         }
 
@@ -241,16 +271,14 @@ public class URLSearchParams extends HtmlUnitScriptable {
 
     private static NameValuePair splitQueryParameter(final String singleParam) {
         final int idx = singleParam.indexOf('=');
+
         if (idx > -1) {
             final String key = singleParam.substring(0, idx);
-            String value = null;
-            if (idx < singleParam.length()) {
-                value = singleParam.substring(idx + 1);
-            }
+            final String value = singleParam.substring(idx + 1); // always safe, may be empty string
             return new NameValuePair(key, value);
         }
-        final String value = "";
-        return new NameValuePair(singleParam, value);
+
+        return new NameValuePair(singleParam, "");
     }
 
     private static IteratorLikeIterable buildIteratorLikeIterable(final Context cx, final Scriptable iterable) {
@@ -259,11 +287,10 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The append() method of the URLSearchParams interface appends a specified
-     * key/value pair as a new search parameter.
+     * Appends a new key/value pair as a search parameter.
      *
-     * @param name  The name of the parameter to append.
-     * @param value The value of the parameter to append.
+     * @param name the name of the parameter to append
+     * @param value the value of the parameter to append
      */
     @JsxFunction
     public void append(final String name, final String value) {
@@ -287,10 +314,9 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The delete() method of the URLSearchParams interface deletes the given search
-     * parameter and its associated value, from the list of all search parameters.
+     * Deletes the given search parameter and all its associated values.
      *
-     * @param name The name of the parameter to be deleted.
+     * @param name the name of the parameter to delete
      */
     @JsxFunction
     @Override
@@ -317,11 +343,10 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The get() method of the URLSearchParams interface returns the
-     * first value associated to the given search parameter.
+     * Returns the first value associated with the given search parameter.
      *
-     * @param name The name of the parameter to return.
-     * @return An array of USVStrings.
+     * @param name the name of the parameter to find
+     * @return the first value for the given name, or {@code null} if not found
      */
     @JsxFunction
     public String get(final String name) {
@@ -335,11 +360,10 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The getAll() method of the URLSearchParams interface returns all the values
-     * associated with a given search parameter as an array.
+     * Returns all values associated with the given search parameter.
      *
-     * @param name The name of the parameter to return.
-     * @return An array of USVStrings.
+     * @param name the name of the parameter to find
+     * @return an array of all values for the given name
      */
     @JsxFunction
     public Scriptable getAll(final String name) {
@@ -351,17 +375,15 @@ public class URLSearchParams extends HtmlUnitScriptable {
             }
         }
 
-        return JavaScriptEngine.newArray(getWindow(this), result.toArray());
+        return JavaScriptEngine.newArray(getParentScope(), result.toArray());
     }
 
     /**
-     * The set() method of the URLSearchParams interface sets the value associated with a
-     * given search parameter to the given value. If there were several matching values,
-     * this method deletes the others. If the search parameter doesn't exist, this method
-     * creates it.
+     * Sets the value associated with the given search parameter, replacing all existing values.
+     * If the parameter does not exist, it is appended.
      *
-     * @param name  The name of the parameter to set.
-     * @param value The value of the parameter to set.
+     * @param name the name of the parameter to set
+     * @param value the new value
      */
     @JsxFunction
     public void set(final String name, final String value) {
@@ -395,11 +417,10 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The has() method of the URLSearchParams interface returns a Boolean that
-     * indicates whether a parameter with the specified name exists.
+     * Returns whether a parameter with the given name exists.
      *
-     * @param name The name of the parameter to find.
-     * @return A Boolean.
+     * @param name the name of the parameter to check
+     * @return {@code true} if the parameter exists, {@code false} otherwise
      */
     @JsxFunction
     public boolean has(final String name) {
@@ -414,18 +435,16 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The URLSearchParams.forEach() method allows iteration through
-     * all key/value pairs contained in this object via a callback function.
-     * @param callback Function to execute on each key/value pairs
+     * Iterates over all key/value pairs, calling the given callback for each.
+     *
+     * @param callback the function to call for each key/value pair
      */
     @JsxFunction
     public void forEach(final Object callback) {
-        if (!(callback instanceof Function)) {
+        if (!(callback instanceof Function fun)) {
             throw JavaScriptEngine.typeError(
                     "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
-
-        final Function fun = (Function) callback;
 
         String currentSearch = null;
         List<NameValuePair> params = null;
@@ -447,11 +466,10 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * The URLSearchParams.entries() method returns an iterator allowing to go through
-     * all key/value pairs contained in this object. The key and value of each pair
-     * are USVString objects.
+     * Returns an iterator over all key/value pairs in this object.
+     * Keys and values are {@code USVString} objects.
      *
-     * @return an iterator.
+     * @return an iterator of {@code [name, value]} arrays
      */
     @JsxFunction
     @JsxSymbol(symbolName = "iterator")
@@ -459,39 +477,39 @@ public class URLSearchParams extends HtmlUnitScriptable {
         final List<NameValuePair> splitted = splitQuery();
 
         return new NativeParamsIterator(getParentScope(),
-                "URLSearchParams Iterator", NativeParamsIterator.Type.BOTH, splitted.iterator());
+                URL_SEARCH_PARMS_ITERATOR_TAG, NativeParamsIterator.Type.BOTH, splitted.iterator());
     }
 
     /**
-     * The URLSearchParams.keys() method returns an iterator allowing to go through
-     * all keys contained in this object. The keys are USVString objects.
+     * Returns an iterator over all keys in this object.
      *
-     * @return an iterator.
+     * @return an iterator of key strings
      */
     @JsxFunction
     public ES6Iterator keys() {
         final List<NameValuePair> splitted = splitQuery();
 
         return new NativeParamsIterator(getParentScope(),
-                "URLSearchParams Iterator", NativeParamsIterator.Type.KEYS, splitted.iterator());
+                URL_SEARCH_PARMS_ITERATOR_TAG, NativeParamsIterator.Type.KEYS, splitted.iterator());
     }
 
     /**
-     * The URLSearchParams.values() method returns an iterator allowing to go through
-     * all values contained in this object. The values are USVString objects.
+     * Returns an iterator over all values in this object.
      *
-     * @return an iterator.
+     * @return an iterator of value strings
      */
     @JsxFunction
     public ES6Iterator values() {
         final List<NameValuePair> splitted = splitQuery();
 
         return new NativeParamsIterator(getParentScope(),
-                "URLSearchParams Iterator", NativeParamsIterator.Type.VALUES, splitted.iterator());
+                URL_SEARCH_PARMS_ITERATOR_TAG, NativeParamsIterator.Type.VALUES, splitted.iterator());
     }
 
     /**
-     * @return the total number of search parameter entries
+     * Returns the total number of search parameter entries.
+     *
+     * @return the number of entries
      */
     @JsxGetter
     public int getSize() {
@@ -500,7 +518,9 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the text of the URLSearchParams
+     * Returns the URL-encoded string representation of this search params object.
+     *
+     * @return the encoded query string
      */
     @JsxFunction(functionName = "toString")
     public String jsToString() {
@@ -519,10 +539,11 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * Calls for instance for implicit conversion to string.
-     * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
+     * Returns the default string representation of this object.
+     *
      * @param hint the type hint
-     * @return the default value
+     * @return the URL-encoded query string
+     * @see org.htmlunit.javascript.HtmlUnitScriptable#getDefaultValue(java.lang.Class)
      */
     @Override
     public Object getDefaultValue(final Class<?> hint) {
@@ -530,7 +551,8 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the specified request with the parameters in this {@code FormData}.
+     * Populates the given {@link WebRequest} with the parameters from this object.
+     *
      * @param webRequest the web request to fill
      */
     public void fillRequest(final WebRequest webRequest) {
@@ -539,11 +561,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
 
         final List<NameValuePair> splitted = splitQuery();
         if (!splitted.isEmpty()) {
-            final List<NameValuePair> params = new ArrayList<>();
-            for (final NameValuePair entry : splitted) {
-                params.add(new NameValuePair(entry.getName(), entry.getValue()));
-            }
-            webRequest.setRequestParameters(params);
+            webRequest.setRequestParameters(new ArrayList<>(splitted));
         }
     }
 }

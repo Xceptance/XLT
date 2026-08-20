@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -34,10 +34,27 @@ public class InputKeysContainer {
     private final boolean submitKeyFound_;
     private boolean capitalize_ = false;
 
+    /**
+     * Creates a new {@link InputKeysContainer} containing the specified character sequences.
+     * <p>
+     * This constructor does not trim characters past an ENTER or RETURN key if present.
+     *
+     * @param sequences one or more sequences of characters to include in the container
+     */
     public InputKeysContainer(final CharSequence... sequences) {
         this(false, sequences);
     }
 
+    /**
+     * Creates a new {@link InputKeysContainer} containing the specified character sequences,
+     * with the option to trim content after the first ENTER or RETURN key.
+     * <p>
+     * If {@code trimPastEnterKey} is {@code true} and the character sequences contain an ENTER
+     * or RETURN key, the container will truncate the content at the first occurrence of that key.
+     *
+     * @param trimPastEnterKey if {@code true}, truncate content after the first ENTER/RETURN key
+     * @param sequences one or more sequences of characters to include in the container
+     */
     public InputKeysContainer(final boolean trimPastEnterKey, final CharSequence... sequences) {
         for (final CharSequence seq : sequences) {
             builder_.append(seq);
@@ -77,11 +94,21 @@ public class InputKeysContainer {
         return toReturn;
     }
 
+    /**
+     * Returns whether a submit key (ENTER or RETURN) was found in the input sequences.
+     *
+     * @return {@code true} if a submit key was found; {@code false} otherwise
+     */
     public boolean wasSubmitKeyFound() {
         return submitKeyFound_;
     }
 
+    /**
+     * Sets whether the input sequences should be capitalized.
+     *
+     * @param capitalize {@code true} to enable capitalization; {@code false} to disable
+     */
     public void setCapitalization(final boolean capitalize) {
-        this.capitalize_ = capitalize;
+        capitalize_ = capitalize;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 
 /**
- * A JavaScript object for {@code SVGAngle}.
+ * JavaScript host object for {@code SVGAngle}.
  *
  * @author Marc Guillemot
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGAngle">MDN Documentation</a>
  */
 @JsxClass
 public class SVGAngle extends HtmlUnitScriptable {
@@ -49,7 +51,7 @@ public class SVGAngle extends HtmlUnitScriptable {
     public static final int SVG_ANGLETYPE_GRAD = 4;
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {

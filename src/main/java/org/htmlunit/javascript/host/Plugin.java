@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,13 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSymbol;
 
 /**
- * A JavaScript object for {@code Plugin}.
+ * JavaScript host object for {@code Plugin}.
  *
  * @author Marc Guillemot
  * @author Ahmed Ashour
+ * @author Ronald Brill
  *
- * @see <a href="http://www.xulplanet.com/references/objref/MimeTypeArray.html">XUL Planet</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Plugin">MDN Documentation</a>
  */
 @JsxClass
 public class Plugin extends HtmlUnitScriptable {
@@ -50,7 +51,7 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -58,7 +59,7 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Ctor initializing fields.
+     * Creates an instance with the given properties.
      *
      * @param name the plugin name
      * @param description the plugin description
@@ -72,9 +73,10 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the item at the given index.
+     * Returns the {@link MimeType} at the given index.
+     *
      * @param index the index
-     * @return the item at the given position
+     * @return the {@link MimeType} at the given position, or {@code null} if out of range
      */
     @JsxFunction
     public MimeType item(final int index) {
@@ -97,7 +99,7 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the element at the specified index, or {@code null} if the index is invalid.
+     * Returns the element at the specified index, or {@link #NOT_FOUND} if the index is invalid.
      * {@inheritDoc}
      */
     @Override
@@ -112,9 +114,10 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the item at the given index.
-     * @param name the item name
-     * @return the item with the given name
+     * Returns the {@link MimeType} with the given MIME type string.
+     *
+     * @param name the MIME type string to look up
+     * @return the matching {@link MimeType}, or {@code null} if not found
      */
     @JsxFunction
     public MimeType namedItem(final String name) {
@@ -127,8 +130,9 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the array size.
-     * @return the number elements
+     * Returns the number of MIME types supported by this plugin.
+     *
+     * @return the number of elements
      */
     @JsxGetter
     public int getLength() {
@@ -136,7 +140,8 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Adds an element.
+     * Adds a {@link MimeType} to this plugin.
+     *
      * @param element the element to add
      */
     void add(final MimeType element) {
@@ -144,7 +149,8 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the plugin's description.
+     * Returns the plugin description.
+     *
      * @return the description
      */
     @JsxGetter
@@ -153,8 +159,9 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the plugin's file name.
-     * @return the file name
+     * Returns the plugin filename.
+     *
+     * @return the filename
      */
     @JsxGetter
     public String getFilename() {
@@ -162,7 +169,8 @@ public class Plugin extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the plugin's name.
+     * Returns the plugin name.
+     *
      * @return the name
      */
     @JsxGetter
@@ -170,6 +178,11 @@ public class Plugin extends HtmlUnitScriptable {
         return name_;
     }
 
+    /**
+     * Returns an iterator over the values in this plugin.
+     *
+     * @return the iterator
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
