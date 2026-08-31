@@ -64,6 +64,16 @@ public class ReportGeneratorConfigurationReport
      */
     public int timeZoneOffset;
 
+    /**
+     * The target height for charts.
+     */
+    public int chartHeight;
+
+    /**
+     * The target width for charts.
+     */
+    public int chartWidth;
+
     ReportGeneratorConfigurationReport(ReportGeneratorConfiguration config)
     {
         this.slowestRequestsPerBucket = config.getSlowestRequestsPerBucket();
@@ -75,5 +85,8 @@ public class ReportGeneratorConfigurationReport
         final TimeZone tz = TimeZone.getDefault();
         timeZoneLabel = tz.getDisplayName(tz.inDaylightTime(new Date(config.getChartStartTime())), TimeZone.SHORT, Locale.US);
         timeZoneOffset = tz.getOffset(config.getChartStartTime());
+
+        this.chartHeight = config.getChartHeight();
+        this.chartWidth = config.getChartWidth();
     }
 }
