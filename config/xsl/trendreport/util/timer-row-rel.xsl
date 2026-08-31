@@ -38,10 +38,15 @@
         <tr>
             <!-- name -->
             <td class="key">
-                <a>
-                    <xsl:attribute name="href">#timerchart-<xsl:value-of select="$gid"/></xsl:attribute>
-                    <xsl:value-of select="name"/>
-                </a>
+                <div class="trunc-cell">
+                    <span class="trunc-text">
+                        <a>
+                            <xsl:attribute name="href">#timerchart-<xsl:value-of select="$gid"/></xsl:attribute>
+                            <xsl:attribute name="title"><xsl:value-of select="normalize-space(name)" /></xsl:attribute>
+                            <xsl:value-of select="name" />
+                        </a>
+                    </span>
+                </div>
             </td>
 
             <!-- values -->
