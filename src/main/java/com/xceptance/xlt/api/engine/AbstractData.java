@@ -104,8 +104,6 @@ public abstract class AbstractData implements Data
         {
             // read and check the values
             name = values.get(1).toString();
-            name.hashCode(); // create it when it is still hot in the cache
-
             time = ParseNumbers.parseLong(values.get(2));
 
             if (time <= 0)
