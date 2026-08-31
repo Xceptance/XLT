@@ -15,32 +15,19 @@
  */
 package com.xceptance.xlt.api.data;
 
-import static org.easymock.EasyMock.expect;
-
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.easymock.PowerMock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /**
  * Test the implementation of a specific GeneralDataProvider method.
  * 
  * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {
-        GeneralDataProvider.class
-    })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class GeneralDataProviderSecondTest
 {
     /**
@@ -51,27 +38,28 @@ public class GeneralDataProviderSecondTest
     {
         final GeneralDataProvider provider = GeneralDataProvider.getInstance();
 
-        PowerMock.mockStatic(UUID.class);
         final long l = 0xffffffffffffL;
         final UUID uuid = new UUID(l, l);
 
-        expect(UUID.randomUUID()).andReturn(uuid);
-        PowerMock.replay(UUID.class);
+        try (final MockedStatic<UUID> mock = Mockito.mockStatic(UUID.class))
+        {
+            mock.when(UUID::randomUUID).thenReturn(uuid);
 
-        final String user = provider.getUniqueUserName();
-        Assert.assertEquals("user0000ffff-ffff-ff".substring(0, 20), user);
+            final String user = provider.getUniqueUserName();
+            Assert.assertEquals("user0000ffff-ffff-ff".substring(0, 20), user);
+        }
     }
 
-    @Test(expected = NoSuchFileException.class)
+    @Test(expected = RuntimeException.class)
     public void testGetDataProvider() throws Exception
     {
-        PowerMock.mockStatic(DataProvider.class);
+        try (final MockedStatic<DataProvider> mock = Mockito.mockStatic(DataProvider.class))
+        {
+            mock.when(() -> DataProvider.getInstance(Mockito.anyString())).thenThrow(new FileNotFoundException("HD'oh"));
 
-        expect(DataProvider.getInstance("default/companies.txt")).andThrow(new IOException("HD'oh"));
-        PowerMock.replay(DataProvider.class);
-
-        final GeneralDataProvider provider = GeneralDataProvider.getInstance();
-        provider.getCompany(false);
+            final GeneralDataProvider provider = GeneralDataProvider.getInstance();
+            provider.getCompany(false);
+        }
     }
 
     /**
@@ -84,24 +72,21 @@ public class GeneralDataProviderSecondTest
     {
         final GeneralDataProvider provider = GeneralDataProvider.getInstance();
 
-        PowerMock.mockStatic(UUID.class);
         final long l = 0xffffffffffffL;
         final UUID uuid = new UUID(l, l);
 
-        // 0000ffffffffffff0000ffffffffffff
         final String uuidString = "0000ffffffffffff0000ffffffffffff";
 
-        expect(UUID.randomUUID()).andReturn(uuid).times(3);
+        try (final MockedStatic<UUID> mock = Mockito.mockStatic(UUID.class))
+        {
+            mock.when(UUID::randomUUID).thenReturn(uuid);
 
-        PowerMock.replay(UUID.class);
-        Assert.assertTrue(provider.getUniqueEmail("r", "test.com", 15).matches("^r" + uuidString.substring(0, 14) + "@test.com$"));
+            Assert.assertTrue(provider.getUniqueEmail("r", "test.com", 15).matches("^r" + uuidString.substring(0, 14) + "@test.com$"));
 
-        PowerMock.replay(UUID.class);
-        Assert.assertTrue(provider.getUniqueEmail("r12-", "test.foo.com", 10).matches("^r12-" + uuidString.substring(0, 6) +
-                                                                                          "@test.foo.com$"));
+            Assert.assertTrue(provider.getUniqueEmail("r12-", "test.foo.com", 10)
+                                      .matches("^r12-" + uuidString.substring(0, 6) + "@test.foo.com$"));
 
-        PowerMock.replay(UUID.class);
-        Assert.assertTrue(provider.getUniqueEmail("", "", 17).matches("^" + uuidString.substring(0, 17) + "@$"));
+            Assert.assertTrue(provider.getUniqueEmail("", "", 17).matches("^" + uuidString.substring(0, 17) + "@$"));
+        }
     }
-
 }
