@@ -40,7 +40,7 @@
             <xsl:otherwise>
                 <xsl:choose>
                     <xsl:when test="$maxSumSoFar = 0">
-                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                        <xsl:text>&#x2013;</xsl:text>
                     </xsl:when>
                     <xsl:when test="$minSumSoFar = $maxSumSoFar">
                         <xsl:value-of select="format-number($minSumSoFar, '#,##0')"/>
@@ -70,7 +70,7 @@
         </xsl:variable>
         <xsl:choose>
             <xsl:when test="$max &lt;= 0">
-                <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                <xsl:text>&#x2013;</xsl:text>
             </xsl:when>
             <xsl:when test="$min = $max">
                 <xsl:call-template name="format-msec-to-h">
@@ -145,7 +145,7 @@
             <xsl:otherwise>
                 <xsl:choose>
                     <xsl:when test="string-length($maxSoFar) = 0">
-                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                        <xsl:text>&#x2013;</xsl:text>
                     </xsl:when>
                     <xsl:when test="$minSoFar = $maxSoFar">
                         <xsl:value-of select="format-number($maxSoFar, '#,##0')"/>
@@ -162,6 +162,7 @@
 
     <xsl:template name="load-profile-table">
         <xsl:param name="rootNode"/>
+        <xsl:param name="loadMeter" select="'true'"/>
 
         <table class="">
             <thead>
@@ -274,7 +275,11 @@
                                     </xsl:if>
                                     <xsl:value-of select="numberOfUsers"/>
                                 </td>
-                                <td class="value number load-meter" style="--loadp:{numberOfUsersPercentage}">
+                                <td class="value number">
+                                    <xsl:if test="$loadMeter != 'false'">
+                                        <xsl:attribute name="class">value number load-meter</xsl:attribute>
+                                        <xsl:attribute name="style">--loadp:<xsl:value-of select="numberOfUsersPercentage"/></xsl:attribute>
+                                    </xsl:if>
                                     <xsl:value-of select="format-number(numberOfUsersPercentage, '#,##0.00')" />
                                     <xsl:text>%</xsl:text>
                                 </td>
@@ -284,7 +289,7 @@
                                             <xsl:value-of select="format-number(numberOfIterations, '#,##0')"/>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                            <xsl:text>&#x2013;</xsl:text>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
@@ -299,25 +304,29 @@
                                                     <xsl:value-of select="arrivalRate"/>
                                                 </xsl:when>
                                                 <xsl:otherwise>
-                                                    <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                                    <xsl:text>&#x2013;</xsl:text>
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                            <xsl:text>&#x2013;</xsl:text>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
                                	<xsl:choose>
                                     <xsl:when test="string-length(arrivalRate) != 0">
-                                        <td class="value number load-meter" style="--loadp:{arrivalRatePercentage}">
-                                        <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
-                                        <xsl:text>%</xsl:text>
+                                        <td class="value number">
+                                            <xsl:if test="$loadMeter != 'false'">
+                                                <xsl:attribute name="class">value number load-meter</xsl:attribute>
+                                                <xsl:attribute name="style">--loadp:<xsl:value-of select="arrivalRatePercentage"/></xsl:attribute>
+                                            </xsl:if>
+                                            <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
+                                            <xsl:text>%</xsl:text>
                                         </td>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <td class="value number">
-                                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                        <xsl:text>&#x2013;</xsl:text>
                                         </td>
                                     </xsl:otherwise> 
                                 </xsl:choose>                                
@@ -330,7 +339,7 @@
                                             </xsl:call-template>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                            <xsl:text>&#x2013;</xsl:text>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
@@ -342,7 +351,7 @@
                                             </xsl:call-template>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                            <xsl:text>&#x2013;</xsl:text>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
@@ -354,7 +363,7 @@
                                             </xsl:call-template>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                            <xsl:text>&#x2013;</xsl:text>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
@@ -371,7 +380,7 @@
                                             </xsl:call-template>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                            <xsl:text>&#x2013;</xsl:text>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>

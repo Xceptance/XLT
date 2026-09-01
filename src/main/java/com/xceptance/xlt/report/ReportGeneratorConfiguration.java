@@ -244,6 +244,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_PREFIX + "dynamicCharts.enabled";
 
+    private static final String PROP_PDF_REPORT_ENABLED = PROP_PREFIX + "pdf.enable";
+
     static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" +
                                                       PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
 
@@ -401,6 +403,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private boolean dynamicChartsEnabled;
 
     /**
+     * Whether PDF report generation is enabled.
+     */
+    private boolean pdfReportEnabled;
+
+    /**
      * Creates a new ReportGeneratorConfiguration object.
      *
      * @throws IOException
@@ -556,6 +563,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         additionalMovingAverages = readAdditionalMovingAverageConfigurations(new ArrayList<>());
 
         dynamicChartsEnabled = getBooleanProperty(PROP_DYNAMIC_CHARTS_ENABLED, true);
+        pdfReportEnabled = getBooleanProperty(PROP_PDF_REPORT_ENABLED, false);
 
         readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
         parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
@@ -1140,6 +1148,27 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public boolean dynamicChartsEnabled()
     {
         return !noCharts && dynamicChartsEnabled;
+    }
+
+    /**
+     * Returns whether PDF report generation is enabled.
+     *
+     * @return <code>true</code> if PDF report generation is enabled, <code>false</code> otherwise
+     */
+    public boolean isPdfReportEnabled()
+    {
+        return pdfReportEnabled;
+    }
+
+    /**
+     * Sets whether PDF report generation is enabled.
+     *
+     * @param enabled
+     *            <code>true</code> to enable PDF report generation, <code>false</code> otherwise
+     */
+    public void setPdfReportEnabled(final boolean enabled)
+    {
+        pdfReportEnabled = enabled;
     }
 
     /**

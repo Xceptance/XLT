@@ -1,0 +1,265 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@page {
+    size: A4 landscape;
+    margin: 12mm 12mm 14mm 12mm;
+    @top-right {
+        content: "XLT Performance Report";
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 7.5pt;
+        color: #888888;
+    }
+    @bottom-left {
+        content: "Xceptance LoadTest";
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 7.5pt;
+        color: #888888;
+    }
+    @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 7.5pt;
+        color: #888888;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 8pt;
+    line-height: 1.35;
+    color: #222222;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header & Metadata */
+#header {
+    border-bottom: 2px solid #2f4782;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+}
+
+#header .brand {
+    font-size: 16pt;
+    font-weight: bold;
+    color: #2f4782;
+}
+
+#header .title {
+    font-size: 13pt;
+    color: #444444;
+    margin-top: 2px;
+}
+
+#header .report-meta {
+    font-size: 8pt;
+    color: #666666;
+    margin-top: 4px;
+}
+
+/* Section styling */
+.section {
+    margin-bottom: 14px;
+}
+
+.page-break {
+    page-break-before: always;
+}
+
+.keep-together {
+    page-break-inside: avoid;
+}
+
+h1 {
+    font-size: 15pt;
+    color: #2f4782;
+    margin: 0 0 8px 0;
+    page-break-after: avoid;
+}
+
+h2 {
+    font-size: 12pt;
+    color: #2f4782;
+    margin: 12px 0 6px 0;
+    border-bottom: 1px solid #2f4782;
+    padding-bottom: 3px;
+    page-break-after: avoid;
+}
+
+h3 {
+    font-size: 9.5pt;
+    color: #2f4782;
+    margin: 10px 0 4px 0;
+    page-break-after: avoid;
+}
+
+h4, h5 {
+    font-size: 8.5pt;
+    color: #2f4782;
+    margin: 6px 0 3px 0;
+    page-break-after: avoid;
+}
+
+p {
+    margin: 4px 0;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+    margin: 6px 0 10px 0;
+    page-break-inside: auto;
+}
+
+tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+}
+
+thead {
+    display: table-header-group;
+}
+
+tfoot {
+    display: table-footer-group;
+}
+
+th, td {
+    padding: 2.5px 4px;
+    text-align: left;
+    border: 1px solid #d0d6dc;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #edf2f8;
+    color: #1e3a68;
+    font-weight: 600;
+    text-align: center;
+}
+
+th.colgroup1, td.colgroup1 {
+    background-color: #f7f9fb;
+}
+
+th[rowspan], th[colspan] {
+    vertical-align: middle;
+}
+
+td.number, td.value, th.number {
+    text-align: right;
+}
+
+td.key {
+    font-weight: 500;
+    text-align: left;
+}
+
+td.text {
+    text-align: left;
+}
+
+tr:nth-child(even) td {
+    background-color: #f9fbfd;
+}
+
+tr:nth-child(even) td.colgroup1 {
+    background-color: #f0f4f8;
+}
+
+tr.totals td {
+    font-weight: bold;
+    background-color: #e5edf5;
+    border-top: 1.5px solid #2f4782;
+}
+
+td.no-data, p.no-data {
+    color: #777777;
+    font-style: italic;
+    padding: 8px;
+    text-align: center;
+}
+
+/* Scorecard */
+.scorecard-group {
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+}
+
+.scorecard-rule {
+    padding: 3px 6px;
+    margin-bottom: 2px;
+    border-left: 3px solid #ccc;
+    font-size: 7.5pt;
+}
+
+.scorecard-rule.passed {
+    border-left-color: #28a745;
+    background-color: #f2f9f3;
+}
+
+.scorecard-rule.failed {
+    border-left-color: #dc3545;
+    background-color: #fdf2f2;
+}
+
+.scorecard-rule.skipped {
+    border-left-color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+/* Overview Charts */
+.chart-container {
+    text-align: center;
+    margin: 8px 0 12px 0;
+    page-break-inside: avoid;
+}
+
+.chart-container img {
+    max-width: 98%;
+    max-height: 380px;
+}
+
+/* Info grid / General definition list */
+.grid-2col {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.grid-2col td {
+    border: none;
+    padding: 2px 6px;
+    vertical-align: top;
+}
+
+/* Hide interactive components */
+input, button, form, .filter, .clear-input, .c-tabs-nav, .backlink, .no-print, .more, .more-show, a.cluetip {
+    display: none;
+}
+
+/* Links */
+a {
+    color: #2f4782;
+    text-decoration: none;
+}

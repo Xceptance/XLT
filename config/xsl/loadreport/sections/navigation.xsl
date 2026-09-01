@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:template name="navigation">
     <xsl:param name="scorecardPresent" select="false()" />
+    <xsl:param name="pdfReportPresent" select="false()" />
     <nav>
         <input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
         <label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
@@ -66,6 +67,9 @@
             </li>
             <xsl:if test="$scorecardPresent">
                 <li><a href="scorecard.html">Scorecard</a></li>
+            </xsl:if>
+            <xsl:if test="$pdfReportPresent">
+                <li><a href="load-report.pdf">Download PDF</a></li>
             </xsl:if>
             <li><a href="ai-data.md">AI Data</a></li>
         </ul>

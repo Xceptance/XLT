@@ -160,6 +160,11 @@ public class ReportGeneratorMain
     private boolean noAgentCharts;
 
     /**
+     * Flag which indicates if PDF report should be generated.
+     */
+    private boolean pdfReport;
+
+    /**
      * Exclude ram-up period.
      */
     private boolean noRampUp;
@@ -300,6 +305,9 @@ public class ReportGeneratorMain
         final Option noAgentCharts = new Option(OPTION_NO_AGENT_CHARTS, "no-agent-charts", false, "disables generation of agent charts");
         options.addOption(noAgentCharts);
 
+        final Option pdfReport = new Option(XltConstants.COMMANDLINE_OPTION_PDF, "pdf", false, "enables generation of PDF summary report");
+        options.addOption(pdfReport);
+
         final Option includeScenarios = new Option(OPTION_TEST_CASE_INCLUDES, "include-testcases", true,
                                                    "comma-separated list of test cases to include");
         includeScenarios.setArgName("test cases");
@@ -337,6 +345,7 @@ public class ReportGeneratorMain
         // get command line options
         noCharts = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_NO_CHARTS);
         noAgentCharts = commandLine.hasOption(OPTION_NO_AGENT_CHARTS);
+        pdfReport = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_PDF);
         noRampUp = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_NO_RAMPUP);
 
         if (commandLine.hasOption(OPTION_LINK2RESULTS))
@@ -474,10 +483,10 @@ public class ReportGeneratorMain
         XltLogger.reportLogger.info(Console.startSection("Setup..."));
 
         final Timer timer = Timer.start();
-        final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, overridePropertyFile,
-                                                                    commandLineProperties, testCaseIncludePatternList,
-                                                                    testCaseExcludePatternList, agentIncludePatternList,
-                                                                    agentExcludePatternList);
+        final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, pdfReport,
+                                                                    overridePropertyFile, commandLineProperties,
+                                                                    testCaseIncludePatternList, testCaseExcludePatternList,
+                                                                    agentIncludePatternList, agentExcludePatternList);
         XltLogger.reportLogger.info(timer.stop().get("...finished"));
         XltLogger.reportLogger.info(Console.endSection());
 
