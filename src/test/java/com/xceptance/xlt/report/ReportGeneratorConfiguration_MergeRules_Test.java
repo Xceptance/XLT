@@ -37,46 +37,7 @@ public class ReportGeneratorConfiguration_MergeRules_Test extends ReportGenerato
     }
 
     @Test
-    public void getMergeRules_urlPatternWithHashRegex()
-    {
-        final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
-        appendPropertyToFile(rulePrefix + "newName", "{n} Cart");
-        appendPropertyToFile(rulePrefix + "urlPattern", "http://example.com/.*#{.*}");
-        appendPropertyToFile(rulePrefix + "stopOnMatch", "false");
-
-        final List<MergeRule> mergeRules = readReportGeneratorProperties().getMergeRules();
-        assertEquals(1, mergeRules.size());
-
-        final MergeRule rule = mergeRules.get(0);
-        assertNotNull(rule);
-
-        final RequestData data = new RequestData("MyRequest");
-        data.setUrl("http://example.com/item#abc");
-        rule.process(data);
-        assertEquals("MyRequest Cart", data.getName());
-    }
-
-    @Test
-    public void getMergeRules_namePatternWithHashRegex()
-    {
-        final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
-        appendPropertyToFile(rulePrefix + "newName", "MatchedName");
-        appendPropertyToFile(rulePrefix + "namePattern", "#{.*}");
-        appendPropertyToFile(rulePrefix + "stopOnMatch", "true");
-
-        final List<MergeRule> mergeRules = readReportGeneratorProperties().getMergeRules();
-        assertEquals(1, mergeRules.size());
-
-        final MergeRule rule = mergeRules.get(0);
-        assertNotNull(rule);
-
-        final RequestData data = new RequestData("#test");
-        rule.process(data);
-        assertEquals("MatchedName", data.getName());
-    }
-
-    @Test
-    public void getMergeRules_quantifierOnHashCharacter()
+    public void getMergeRules_urlPatternWithHashQuantifier()
     {
         final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
         appendPropertyToFile(rulePrefix + "newName", "MatchedHash");
@@ -93,5 +54,84 @@ public class ReportGeneratorConfiguration_MergeRules_Test extends ReportGenerato
         data.setUrl("http://example.com/page##");
         rule.process(data);
         assertEquals("MatchedHash", data.getName());
+    }
+
+    @Test
+    public void getMergeRules_urlPatternWithLiteralHashBrace()
+    {
+        final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
+        appendPropertyToFile(rulePrefix + "newName", "{n} MatchedLiteral");
+        appendPropertyToFile(rulePrefix + "urlPattern", ".*/item#[{].*[}]");
+        appendPropertyToFile(rulePrefix + "stopOnMatch", "false");
+
+        final List<MergeRule> mergeRules = readReportGeneratorProperties().getMergeRules();
+        assertEquals(1, mergeRules.size());
+
+        final MergeRule rule = mergeRules.get(0);
+        assertNotNull(rule);
+
+        final RequestData data = new RequestData("MyRequest");
+        data.setUrl("http://example.com/item#{abc}");
+        rule.process(data);
+        assertEquals("MyRequest MatchedLiteral", data.getName());
+    }
+
+    @Test
+    public void getMergeRules_namePatternWithHashQuantifier()
+    {
+        final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
+        appendPropertyToFile(rulePrefix + "newName", "MatchedName");
+        appendPropertyToFile(rulePrefix + "namePattern", "req#{1,2}");
+        appendPropertyToFile(rulePrefix + "stopOnMatch", "true");
+
+        final List<MergeRule> mergeRules = readReportGeneratorProperties().getMergeRules();
+        assertEquals(1, mergeRules.size());
+
+        final MergeRule rule = mergeRules.get(0);
+        assertNotNull(rule);
+
+        final RequestData data = new RequestData("req##");
+        rule.process(data);
+        assertEquals("MatchedName", data.getName());
+    }
+
+    @Test
+    public void getMergeRules_newNameWithHashSyntax()
+    {
+        final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
+        appendPropertyToFile(rulePrefix + "newName", "{n} #{literal}");
+        appendPropertyToFile(rulePrefix + "namePattern", ".*");
+        appendPropertyToFile(rulePrefix + "stopOnMatch", "true");
+
+        final List<MergeRule> mergeRules = readReportGeneratorProperties().getMergeRules();
+        assertEquals(1, mergeRules.size());
+
+        final MergeRule rule = mergeRules.get(0);
+        assertNotNull(rule);
+
+        final RequestData data = new RequestData("MyRequest");
+        rule.process(data);
+        assertEquals("MyRequest #{literal}", data.getName());
+    }
+
+    @Test
+    public void getMergeRules_standardVariableSubstitutionStillWorks()
+    {
+        appendPropertyToFile("my.base.url", "http://example.com");
+        final String rulePrefix = PROP_MERGE_RULES_PREFIX + "1.";
+        appendPropertyToFile(rulePrefix + "newName", "{n} MatchedBase");
+        appendPropertyToFile(rulePrefix + "urlPattern", "${my.base.url}/page#{1,2}");
+        appendPropertyToFile(rulePrefix + "stopOnMatch", "true");
+
+        final List<MergeRule> mergeRules = readReportGeneratorProperties().getMergeRules();
+        assertEquals(1, mergeRules.size());
+
+        final MergeRule rule = mergeRules.get(0);
+        assertNotNull(rule);
+
+        final RequestData data = new RequestData("MyRequest");
+        data.setUrl("http://example.com/page#");
+        rule.process(data);
+        assertEquals("MyRequest MatchedBase", data.getName());
     }
 }
