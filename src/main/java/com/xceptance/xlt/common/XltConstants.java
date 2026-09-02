@@ -226,6 +226,21 @@ public final class XltConstants
     public static final String COMMANDLINE_OPTION_PROPERTY_FILENAME = "pf";
 
     /**
+     * The option name of the <em>pdf</em> option on the command line.
+     */
+    public static final String COMMANDLINE_OPTION_PDF = "pdf";
+
+    /**
+     * The option name of the <em>rating</em> option on the command line.
+     */
+    public static final String COMMANDLINE_OPTION_RATING = "rating";
+
+    /**
+     * The option name of the <em>rating-summary</em> option on the command line.
+     */
+    public static final String COMMANDLINE_OPTION_RATING_SUMMARY = "rating-summary";
+
+    /**
      * The date format on the command line for filtering.
      */
     public static final String COMMANDLINE_DATE_FORMAT = "yyyyMMdd-HHmmss";

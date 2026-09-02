@@ -59,6 +59,21 @@ public class ConfigurationReport
     public List<String> comments = new ArrayList<String>();
 
     /**
+     * The rating grade (e.g. A to F).
+     */
+    public String rating;
+
+    /**
+     * The plain text rating summary.
+     */
+    public String ratingSummary;
+
+    /**
+     * The HTML-rendered rating evaluation (from Markdown).
+     */
+    public String ratingEvaluation;
+
+    /**
      * The name of the (test) project.
      */
     public String projectName;

@@ -1375,10 +1375,56 @@ table * {
             {
                  margin: 5px 20px;
             }
-                .section .paragraph ul li
-                {
-                    list-style-position: inside;
-                }
+    /*
+     * ----------------------------------------------------
+     * Rating section
+     * ----------------------------------------------------
+     */
+    .rating-container {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 10px 0 15px 0;
+    }
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        font-size: 26px;
+        font-weight: bold;
+        color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        background-color: #6c757d;
+        flex-shrink: 0;
+    }
+    .rating-badge-a {
+        background-color: #28a745;
+    }
+    .rating-badge-b {
+        background-color: #5cb85c;
+    }
+    .rating-badge-c {
+        background-color: #f0ad4e;
+    }
+    .rating-badge-d {
+        background-color: #e67e22;
+    }
+    .rating-badge-e, .rating-badge-f {
+        background-color: #d9534f;
+    }
+    .rating-summary {
+        color: var(--description-color);
+    }
+    .rating-evaluation {
+        margin-top: 15px;
+        padding: 12px 16px;
+        background-color: rgba(0, 0, 0, 0.02);
+        border-left: 4px solid var(--section-headline-color);
+        border-radius: 4px;
+    }
 
 /*
  * ----------------------------------------------------

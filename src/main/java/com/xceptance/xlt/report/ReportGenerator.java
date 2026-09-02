@@ -47,6 +47,7 @@ import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.report.external.ExternalReportGenerator;
 import com.xceptance.xlt.report.scorecard.Evaluator;
 import com.xceptance.xlt.report.scorecard.Scorecard;
+import com.xceptance.xlt.report.pdf.PdfReportGenerator;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
@@ -107,6 +108,30 @@ public class ReportGenerator
                            final String agentExcludePatternList)
         throws Exception
     {
+        this(inputDir, outputDir, noCharts, noAgentCharts, false, overridePropertyFile, commandLineProperties,
+             testCaseIncludePatternList, testCaseExcludePatternList, agentIncludePatternList, agentExcludePatternList);
+    }
+
+    /**
+     * @param inputDir
+     * @param outputDir
+     * @param noCharts
+     * @param noAgentCharts
+     * @param pdfReport
+     * @param overridePropertyFile
+     * @param commandLineProperties
+     * @param testCaseIncludePatternList
+     *            a comma-separated list of reg-ex patterns that match the test cases to be included in the report
+     * @param testCaseExcludePatternList
+     *            a comma-separated list of reg-ex patterns that match the test cases to be excluded from the report
+     * @throws Exception
+     */
+    public ReportGenerator(final FileObject inputDir, final File outputDir, final boolean noCharts, boolean noAgentCharts,
+                           final boolean pdfReport, final File overridePropertyFile, final Properties commandLineProperties,
+                           final String testCaseIncludePatternList, final String testCaseExcludePatternList,
+                           final String agentIncludePatternList, final String agentExcludePatternList)
+        throws Exception
+    {
 
         final FileObject configDir = inputDir.resolveFile(XltConstants.CONFIG_DIR_NAME);
 
@@ -140,6 +165,11 @@ public class ReportGenerator
         if (noAgentCharts)
         {
             config.disableAgentCharts();
+        }
+
+        if (pdfReport)
+        {
+            config.setPdfReportEnabled(true);
         }
 
         // results directory
@@ -287,11 +317,22 @@ public class ReportGenerator
                 transformScorecard(scorecardXml);
             }
 
+            // create the PDF report (if enabled)
+            if (config.isPdfReportEnabled())
+            {
+                createPdfReport(xmlReport, outputDir, scorecardXml != null);
+            }
+
             // output the path to the report either as file path (Win) or as clickable file URL
             final File reportFile = new File(outputDir, "index.html");
             final String reportPath = ReportUtils.toString(reportFile);
 
             XltLogger.reportLogger.info("Report: {}", reportPath);
+            if (config.isPdfReportEnabled())
+            {
+                final File pdfReportFile = new File(outputDir, PdfReportGenerator.DEFAULT_PDF_FILENAME);
+                XltLogger.reportLogger.info("PDF Report: {}", ReportUtils.toString(pdfReportFile));
+            }
         }
         finally
         {
@@ -664,6 +705,7 @@ public class ReportGenerator
         parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
         parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
+        parameters.put("pdfReportPresent", Boolean.valueOf(config.isPdfReportEnabled()));
 
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
@@ -687,6 +729,45 @@ public class ReportGenerator
             TaskManager.getInstance().waitForAllTasksToComplete();
             TaskManager.getInstance().stopProgress();
 
+            XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
+            XltLogger.reportLogger.info(Console.endSection());
+        }
+    }
+
+    /**
+     * Creates the PDF report.
+     *
+     * @param inputXmlFile
+     *            the XML input file (e.g., loadreport.xml)
+     * @param outputDir
+     *            the report output directory
+     * @param scorecardPresent
+     *            indicates whether a scorecard was generated
+     * @throws Exception
+     *             if PDF creation fails
+     */
+    public void createPdfReport(final File inputXmlFile, final File outputDir, final boolean scorecardPresent) throws Exception
+    {
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("Creating PDF Report..."));
+
+        final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.LOAD_REPORT_XSL_PATH), "pdf.xsl");
+        final File outputPdfFile = new File(outputDir, PdfReportGenerator.DEFAULT_PDF_FILENAME);
+
+        final Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+        parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+        parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+        parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
+        parameters.put("pdfReportPresent", Boolean.TRUE);
+
+        final long start = TimerUtils.get().getStartTime();
+        try
+        {
+            PdfReportGenerator.generatePdfReport(inputXmlFile, outputDir, styleSheetFile, outputPdfFile, parameters);
+        }
+        finally
+        {
             XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.reportLogger.info(Console.endSection());
         }

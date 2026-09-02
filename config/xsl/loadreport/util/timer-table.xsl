@@ -20,6 +20,7 @@
         <xsl:param name="tableRowHeader"/>
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
+        <xsl:param name="hasLinks" select="'true'"/>
 
         <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
         <xsl:variable name="intervalCount" select="count(/testreport/testReportConfig/runtimeIntervals/interval)"/>
@@ -114,11 +115,11 @@
                                         </xsl:attribute>
                                         <xsl:choose>
                                             <xsl:when test="position() &lt; count($runtimeIntervalsNode/interval)">
-                                                <xsl:text disable-output-escaping="yes">&amp;le;</xsl:text>
+                                                <xsl:text>&#x2264;</xsl:text>
                                                 <xsl:value-of select="format-number(@to, '#,##0')"/>
                                             </xsl:when>
                                             <xsl:otherwise>
-                                                <xsl:text disable-output-escaping="yes">&amp;gt;</xsl:text>
+                                                <xsl:text>&gt;</xsl:text>
                                                 <xsl:value-of select="format-number(@from, '#,##0')"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
@@ -150,6 +151,7 @@
                             <xsl:sort select="name" data-type="number"/>
                             <xsl:call-template name="timer-row">
                                 <xsl:with-param name="type" select="$type"/>
+                                <xsl:with-param name="hasLinks" select="$hasLinks"/>
                             </xsl:call-template>
                         </xsl:for-each>
                     </tbody>

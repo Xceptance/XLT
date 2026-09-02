@@ -22,6 +22,7 @@
 <xsl:include href="text/descriptions.xsl" />
 
 <xsl:include href="sections/load-profile.xsl" />
+<xsl:include href="sections/rating.xsl" />
 <xsl:include href="sections/comment.xsl" />
 <xsl:include href="sections/general.xsl" />
 <xsl:include href="sections/summary.xsl" />
@@ -43,6 +44,7 @@
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
 <xsl:param name="scorecardPresent" />
+<xsl:param name="pdfReportPresent" />
 
 <xsl:template match="/testreport">
 
@@ -58,6 +60,7 @@
     <div id="content">
         <xsl:call-template name="header">
             <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
+            <xsl:with-param name="pdfReportPresent" select="$pdfReportPresent" />
         </xsl:call-template>
 
         <div id="data-content">
@@ -69,6 +72,15 @@
 			<xsl:call-template name="load-profile">
 				<xsl:with-param name="rootNode" select="configuration" />
 			</xsl:call-template>
+
+            <!--
+                ************************************
+                * Rating
+                ************************************
+            -->
+            <xsl:call-template name="rating-section">
+                <xsl:with-param name="rootNode" select="configuration" />
+            </xsl:call-template>
 
             <!--
                 ************************************

@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:template name="navigation">
     <xsl:param name="scorecardPresent" select="false()" />
+    <xsl:param name="pdfReportPresent" select="false()" />
     <nav>
         <input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
         <label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
@@ -9,6 +10,9 @@
             <li><a href="index.html">Overview</a>
                 <ul>
                     <li><a href="index.html#load-profile">Load Profile</a></li>
+                    <xsl:if test="string-length(normalize-space(//configuration/rating)) > 0 or string-length(normalize-space(//configuration/ratingSummary)) > 0 or string-length(normalize-space(//configuration/ratingEvaluation)) > 0">
+                        <li><a href="index.html#rating">Rating</a></li>
+                    </xsl:if>
                     <li><a href="index.html#comment">Test Comment</a></li>
                     <li><a href="index.html#general">General Information</a></li>
                     <li><a href="index.html#agents">Agent Summary</a></li>
@@ -66,6 +70,9 @@
             </li>
             <xsl:if test="$scorecardPresent">
                 <li><a href="scorecard.html">Scorecard</a></li>
+            </xsl:if>
+            <xsl:if test="$pdfReportPresent">
+                <li><a href="load-report.pdf">Download PDF</a></li>
             </xsl:if>
             <li><a href="ai-data.md">AI Data</a></li>
         </ul>

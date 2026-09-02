@@ -160,6 +160,11 @@ public class ReportGeneratorMain
     private boolean noAgentCharts;
 
     /**
+     * Flag which indicates if PDF report should be generated.
+     */
+    private boolean pdfReport;
+
+    /**
      * Exclude ram-up period.
      */
     private boolean noRampUp;
@@ -300,6 +305,18 @@ public class ReportGeneratorMain
         final Option noAgentCharts = new Option(OPTION_NO_AGENT_CHARTS, "no-agent-charts", false, "disables generation of agent charts");
         options.addOption(noAgentCharts);
 
+        final Option pdfReport = new Option(XltConstants.COMMANDLINE_OPTION_PDF, "pdf", false, "enables generation of PDF summary report");
+        options.addOption(pdfReport);
+
+        final Option rating = new Option(XltConstants.COMMANDLINE_OPTION_RATING, "rating", true, "the rating score for the test report (e.g. A-F)");
+        rating.setArgName("rating");
+        options.addOption(rating);
+
+        final Option ratingSummary = new Option(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY, "rating-summary", true,
+                                                "the rating summary for the test report");
+        ratingSummary.setArgName("summary");
+        options.addOption(ratingSummary);
+
         final Option includeScenarios = new Option(OPTION_TEST_CASE_INCLUDES, "include-testcases", true,
                                                    "comma-separated list of test cases to include");
         includeScenarios.setArgName("test cases");
@@ -337,6 +354,7 @@ public class ReportGeneratorMain
         // get command line options
         noCharts = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_NO_CHARTS);
         noAgentCharts = commandLine.hasOption(OPTION_NO_AGENT_CHARTS);
+        pdfReport = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_PDF);
         noRampUp = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_NO_RAMPUP);
 
         if (commandLine.hasOption(OPTION_LINK2RESULTS))
@@ -454,6 +472,18 @@ public class ReportGeneratorMain
                                               Boolean.toString(linkToResults.booleanValue()));
         }
 
+        // get rating and rating summary command line overrides
+        if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING))
+        {
+            final String ratingVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING);
+            commandLineProperties.setProperty("com.xceptance.xtc.loadtest.rating", ratingVal);
+        }
+        if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY))
+        {
+            final String summaryVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY);
+            commandLineProperties.setProperty("com.xceptance.xtc.loadtest.rating.summary", summaryVal);
+        }
+
         // get test case include/exclude patterns
         testCaseIncludePatternList = commandLine.getOptionValue(OPTION_TEST_CASE_INCLUDES);
         testCaseExcludePatternList = commandLine.getOptionValue(OPTION_TEST_CASE_EXCLUDES);
@@ -474,10 +504,10 @@ public class ReportGeneratorMain
         XltLogger.reportLogger.info(Console.startSection("Setup..."));
 
         final Timer timer = Timer.start();
-        final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, overridePropertyFile,
-                                                                    commandLineProperties, testCaseIncludePatternList,
-                                                                    testCaseExcludePatternList, agentIncludePatternList,
-                                                                    agentExcludePatternList);
+        final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, pdfReport,
+                                                                    overridePropertyFile, commandLineProperties,
+                                                                    testCaseIncludePatternList, testCaseExcludePatternList,
+                                                                    agentIncludePatternList, agentExcludePatternList);
         XltLogger.reportLogger.info(timer.stop().get("...finished"));
         XltLogger.reportLogger.info(Console.endSection());
 
@@ -722,5 +752,15 @@ public class ReportGeneratorMain
     boolean isToTimeRel()
     {
         return toTimeRel;
+    }
+
+    boolean isPdfReport()
+    {
+        return pdfReport;
+    }
+
+    Properties getCommandLineProperties()
+    {
+        return commandLineProperties;
     }
 }

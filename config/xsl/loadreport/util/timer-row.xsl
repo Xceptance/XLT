@@ -4,43 +4,51 @@
 
 	<xsl:template name="timer-row">
 		<xsl:param name="type" />
+		<xsl:param name="hasLinks" select="'true'" />
 
 		<xsl:variable name="gid" select="generate-id(.)" />
 
 		<tr>
 			<!-- name -->
 			<td class="key colgroup1 forcewordbreak">
-				<a>
-					<xsl:attribute name="href">#chart-<xsl:value-of
-						select="$gid" /></xsl:attribute>
-					<xsl:attribute name="data-id">tableEntry-<xsl:value-of
-						select="$gid" /></xsl:attribute>
-					<xsl:if test="count(urls) &gt; 0">
-						<!-- title and class only for requests with urls -->
-						<xsl:attribute name="data-rel">#url-listing-<xsl:value-of
-							select="$gid" /></xsl:attribute>
-						<xsl:attribute name="class">cluetip</xsl:attribute>
-					</xsl:if>
-					<xsl:value-of select="name" />
-				</a>
-				<xsl:text></xsl:text>
-				<xsl:if test="count(urls) &gt; 0">
-					<div id="url-listing-{$gid}" class="cluetip-data">
-						<h4>
-							<xsl:value-of select="format-number(urls/total, '#,##0')" />
-							<xsl:text> distinct URL(s)**</xsl:text>
-						</h4>
-						<ul class="urls">
-							<xsl:for-each select="urls/list/string">
-								<li>
-									<a href="{.}" target="_blank">
-										<xsl:value-of select="." />
-									</a>
-								</li>
-							</xsl:for-each>
-						</ul>
-					</div>
-				</xsl:if>
+				<xsl:choose>
+					<xsl:when test="$hasLinks = 'false' or not($hasLinks)">
+						<xsl:value-of select="name" />
+					</xsl:when>
+					<xsl:otherwise>
+						<a>
+							<xsl:attribute name="href">#chart-<xsl:value-of
+								select="$gid" /></xsl:attribute>
+							<xsl:attribute name="data-id">tableEntry-<xsl:value-of
+								select="$gid" /></xsl:attribute>
+							<xsl:if test="count(urls) &gt; 0">
+								<!-- title and class only for requests with urls -->
+								<xsl:attribute name="data-rel">#url-listing-<xsl:value-of
+									select="$gid" /></xsl:attribute>
+								<xsl:attribute name="class">cluetip</xsl:attribute>
+							</xsl:if>
+							<xsl:value-of select="name" />
+						</a>
+						<xsl:text></xsl:text>
+						<xsl:if test="count(urls) &gt; 0">
+							<div id="url-listing-{$gid}" class="cluetip-data">
+								<h4>
+									<xsl:value-of select="format-number(urls/total, '#,##0')" />
+									<xsl:text> distinct URL(s)**</xsl:text>
+								</h4>
+								<ul class="urls">
+									<xsl:for-each select="urls/list/string">
+										<li>
+											<a href="{.}" target="_blank">
+												<xsl:value-of select="." />
+											</a>
+										</li>
+									</xsl:for-each>
+								</ul>
+							</div>
+						</xsl:if>
+					</xsl:otherwise>
+				</xsl:choose>
 			</td>
 
 			<!-- labels -->

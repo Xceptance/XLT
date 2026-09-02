@@ -140,6 +140,58 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             report.comments.add(processComment(entry.getValue()));
         }
 
+        // get rating, rating summary, and rating evaluation (command-line/report configuration takes precedence over suite properties)
+        String rawRating = null;
+        String rawSummary = null;
+        String rawEvaluation = null;
+
+        if (getConfiguration() != null && getConfiguration().getProperties() != null)
+        {
+            final Properties configProps = getConfiguration().getProperties();
+            rawRating = configProps.getProperty("com.xceptance.xtc.loadtest.rating");
+            rawSummary = configProps.getProperty("com.xceptance.xtc.loadtest.rating.summary");
+            rawEvaluation = configProps.getProperty("com.xceptance.xtc.loadtest.rating.evaluation");
+            if (StringUtils.isBlank(rawEvaluation))
+            {
+                rawEvaluation = configProps.getProperty("com.xceptance.xtc.loadtest.evaluation");
+            }
+        }
+
+        if (StringUtils.isBlank(rawRating))
+        {
+            rawRating = props.getProperty("com.xceptance.xtc.loadtest.rating");
+        }
+        if (StringUtils.isBlank(rawSummary))
+        {
+            rawSummary = props.getProperty("com.xceptance.xtc.loadtest.rating.summary");
+        }
+        if (StringUtils.isBlank(rawEvaluation))
+        {
+            rawEvaluation = props.getProperty("com.xceptance.xtc.loadtest.rating.evaluation");
+            if (StringUtils.isBlank(rawEvaluation))
+            {
+                rawEvaluation = props.getProperty("com.xceptance.xtc.loadtest.evaluation");
+            }
+        }
+
+        report.rating = StringUtils.isNotBlank(rawRating) ? rawRating.trim() : null;
+        report.ratingSummary = StringUtils.isNotBlank(rawSummary) ? rawSummary.trim() : null;
+
+        if (StringUtils.isNotBlank(rawEvaluation))
+        {
+            String evalMarkdown = rawEvaluation.strip();
+            if (evalMarkdown.contains("\\n"))
+            {
+                evalMarkdown = evalMarkdown.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t");
+            }
+            if (evalMarkdown.length() >= MARKDOWN_PREFIX.length() &&
+                evalMarkdown.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
+            {
+                evalMarkdown = evalMarkdown.substring(MARKDOWN_PREFIX.length());
+            }
+            report.ratingEvaluation = renderMarkdown(evalMarkdown);
+        }
+
         // add project name
         final String projectName = props.getProperty(XltConstants.PROJECT_NAME_PROPERTY);
         report.projectName = StringUtils.isNotBlank(projectName) ? projectName.trim() : null;
@@ -253,6 +305,30 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     }
 
     /**
+     * Renders a markdown string to HTML, wrapped in a div with class "markdown".
+     *
+     * @param markdown
+     *            the markdown string to render
+     * @return the rendered HTML or null if empty
+     */
+    static String renderMarkdown(final String markdown)
+    {
+        if (markdown == null)
+        {
+            return null;
+        }
+
+        final String cleaned = markdown.strip();
+        if (cleaned.isEmpty())
+        {
+            return null;
+        }
+
+        final String html = MARKDOWN_RENDERER.render(MARKDOWN_PARSER.parse(cleaned));
+        return "<div class=\"markdown\">" + html + "</div>";
+    }
+
+    /**
      * Processes a comment string. If the comment starts with the marker {@value #MARKDOWN_PREFIX} (case-insensitive),
      * the remainder is treated as Markdown and converted to HTML, wrapped in a div with class "markdown". Otherwise the
      * raw string is returned unchanged.
@@ -274,8 +350,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             cleanedString.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
         {
             final String markdown = cleanedString.substring(MARKDOWN_PREFIX.length());
-            final String html = MARKDOWN_RENDERER.render(MARKDOWN_PARSER.parse(markdown));
-            return "<div class=\"markdown\">" + html + "</div>";
+            return renderMarkdown(markdown);
         }
 
         return comment;
