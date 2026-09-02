@@ -184,6 +184,49 @@ public class AiDataStylesheetTest
         Assert.assertFalse("XTC block emitted for a non-XTC run", output.contains("xtc:"));
     }
 
+    @Test
+    public void testErrorsGroupedByMessage()
+    {
+        // two entries share "Common problem" and must appear as one group carrying their combined count
+        Assert.assertEquals("Message should be grouped, not repeated", 1,
+                            output.lines().filter(l -> l.startsWith("### ") && l.contains("Common problem")).count());
+        Assert.assertTrue("Combined count missing", output.contains("Common problem - 900"));
+    }
+
+    @Test
+    public void testErrorsOrderedByDescendingCount()
+    {
+        final int common = output.indexOf("### 1. Common problem");
+        final int rare = output.indexOf("### 2. Rare problem");
+
+        Assert.assertTrue("The larger group should be first, got:\n" + output, common > 0 && rare > common);
+    }
+
+    @Test
+    public void testErrorCountersPresent()
+    {
+        Assert.assertTrue("totalErrors missing", output.contains("totalErrors: 903"));
+        Assert.assertTrue("distinctEntries missing", output.contains("distinctEntries: 3"));
+        Assert.assertTrue("distinctMessages missing", output.contains("distinctMessages: 2"));
+        Assert.assertTrue("tracesIncludedFor missing", output.contains("tracesIncludedFor: 2"));
+    }
+
+    @Test
+    public void testStackTracesTrimmedToLeadingFrames()
+    {
+        // the fixture's biggest group has 11 trace lines, the limit is 8
+        Assert.assertTrue("Trace not trimmed", output.contains("... 3 more frames"));
+        Assert.assertFalse("Frame beyond the limit survived", output.contains("b.B.f9"));
+        Assert.assertTrue("Leading frame missing", output.contains("b.B.f1(B.java:1)"));
+    }
+
+    @Test
+    public void testResponseCodesWithShare()
+    {
+        Assert.assertTrue("Response code section missing", output.contains("## Response Codes"));
+        Assert.assertTrue("404 count or share wrong", output.contains("| 404 | Not Found | 250 | 4.76 |"));
+    }
+
     /**
      * Returns the header row of the table that follows the given section heading.
      */
@@ -263,7 +306,54 @@ public class AiDataStylesheetTest
                      <totalCount>900</totalCount>
                    </event>
                  </events>
-                 <errors/>
+                 <responseCodes>
+                   <responseCode>
+                     <code>200</code>
+                     <statusText>OK</statusText>
+                     <count>5000</count>
+                   </responseCode>
+                   <responseCode>
+                     <code>404</code>
+                     <statusText>Not Found</statusText>
+                     <count>250</count>
+                   </responseCode>
+                 </responseCodes>
+                 <errors>
+                   <error>
+                     <count>3</count>
+                     <testCaseName>TFixture</testCaseName>
+                     <actionName>RareAction</actionName>
+                     <message>Rare problem</message>
+                     <trace>java.lang.AssertionError: Rare problem
+               	at a.A.one(A.java:1)
+               	at a.A.two(A.java:2)</trace>
+                   </error>
+                   <error>
+                     <count>500</count>
+                     <testCaseName>TFixture</testCaseName>
+                     <actionName>HotAction</actionName>
+                     <message>Common problem</message>
+                     <trace>java.lang.AssertionError: Common problem
+               	at b.B.f1(B.java:1)
+               	at b.B.f2(B.java:2)
+               	at b.B.f3(B.java:3)
+               	at b.B.f4(B.java:4)
+               	at b.B.f5(B.java:5)
+               	at b.B.f6(B.java:6)
+               	at b.B.f7(B.java:7)
+               	at b.B.f8(B.java:8)
+               	at b.B.f9(B.java:9)
+               	at b.B.f10(B.java:10)</trace>
+                   </error>
+                   <error>
+                     <count>400</count>
+                     <testCaseName>TOther</testCaseName>
+                     <actionName>HotAction</actionName>
+                     <message>Common problem</message>
+                     <trace>java.lang.AssertionError: Common problem
+               	at b.B.f1(B.java:1)</trace>
+                   </error>
+                 </errors>
                </testreport>
                """;
     }

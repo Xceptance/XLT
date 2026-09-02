@@ -96,6 +96,14 @@ not appear here. Check the Response Codes section for those.
 </xsl:text>
     </xsl:template>
 
+    <xsl:template name="ai-desc-network">
+<xsl:text>
+Counts cover every request, including those that passed validation. A response code
+outside 2xx that did not trip a test assertion appears here but not in the Errors section,
+so this is the only place a run's 404s or redirect overhead become visible.
+</xsl:text>
+    </xsl:template>
+
     <xsl:template name="ai-desc-agents">
 <xsl:text>
 Load generator health. If agent CPU approaches saturation, or full GC time is a

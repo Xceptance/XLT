@@ -37,12 +37,12 @@
 
 ## 3. New sections from existing XML
 
-- [ ] 3.1 `## Summary` from `summary/*` (transactions, actions, requests, page load timings,
+- [x] 3.1 `## Summary` from `summary/*` (transactions, actions, requests, page load timings,
       custom timers)
-- [ ] 3.2 `## Response Codes` from `responseCodes/responseCode` with share against `general/hits`
-- [ ] 3.3 `## Content Types` from `contentTypes` with share
-- [ ] 3.4 `## Hosts` from `hosts` and `## Request Methods` from `requestMethods` with share
-- [ ] 3.5 Extend `## Agents` with CPU max, `fullGcCount`, `fullGcTime`, `minorGcCount`,
+- [x] 3.2 `## Response Codes` from `responseCodes/responseCode` with share against `general/hits`
+- [x] 3.3 `## Content Types` from `contentTypes` with share
+- [x] 3.4 `## Hosts` from `hosts` and `## Request Methods` from `requestMethods` with share
+- [x] 3.5 Extend `## Agents` with CPU max, `fullGcCount`, `fullGcTime`, `minorGcCount`,
       `minorGcTime`
 
 ## 4. Table cleanup
@@ -60,13 +60,13 @@
 
 ## 5. Error section redesign
 
-- [ ] 5.1 `xsl:for-each-group group-by="message"` with
+- [x] 5.1 `xsl:for-each-group group-by="message"` with
       `xsl:sort select="sum(current-group()/count)" order="descending" data-type="number"`
-- [ ] 5.2 Emit the group overview table (rank, message, count, distinct test cases, distinct actions)
-- [ ] 5.3 Emit the per-group `(test case, action, count)` table, sorted descending
-- [ ] 5.4 Emit stack traces for the top N groups only (`xsl:param`, default 10), trimmed to the top
+- [x] 5.2 Emit the group overview table (rank, message, count, distinct test cases, distinct actions)
+- [x] 5.3 Emit the per-group `(test case, action, count)` table, sorted descending
+- [x] 5.4 Emit stack traces for the top N groups only (`xsl:param`, default 10), trimmed to the top
       8 frames via `tokenize(trace,'\n')` with a `... N more frames` marker
-- [ ] 5.5 Emit the counters block: `transactionErrors`, `distinctEntries`, `distinctMessages`,
+- [x] 5.5 Emit the counters block: `transactionErrors`, `distinctEntries`, `distinctMessages`,
       `tracesIncludedFor`
 
 ## 6. Time series (Java)
@@ -86,7 +86,7 @@
 
 ## 7. Corrections
 
-- [ ] 7.1 Fix the TTFB definition in `config/xsl/loadreport/text/descriptions.xsl` —
+- [x] 7.1 Fix the TTFB definition in `config/xsl/loadreport/text/descriptions.xsl` —
       TTFB = Connect + Send + ServerBusy, not including Receive Time
 - [ ] 7.2 On archive, confirm `openspec/specs/ai-data-export/spec.md` picked up the `ai-summary.md`
       to `ai-data.md` rename from this change's delta
@@ -117,7 +117,7 @@
 
 - [x] 8.1 Unit test: transform a small fixture and assert the `units` block and `schemaVersion`
       are present
-- [ ] 8.2 Unit test: assert error groups are ordered by descending total count
+- [x] 8.2 Unit test: assert error groups are ordered by descending total count
 - [x] 8.3 Unit test: assert no `Median` column when `p50` is configured, and that it is present
       when p50 is absent
 - [x] 8.4 Unit test: assert comments contain no `<` and every line is blockquoted
