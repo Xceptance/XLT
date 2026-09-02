@@ -90,27 +90,27 @@
       TTFB = Connect + Send + ServerBusy, not including Receive Time
 - [ ] 7.2 On archive, confirm `openspec/specs/ai-data-export/spec.md` picked up the `ai-summary.md`
       to `ai-data.md` rename from this change's delta
-- [ ] 7.3 Remove the stale content from `doc/feature-doc/ai-data.md` — it documents
+- [x] 7.3 Remove the stale content from `doc/feature-doc/ai-data.md` — it documents
       `ai-summary.md`, a FreeMarker `ai-summary.ftl`, and a `transformations.18.templateFileName`
       property that does not exist
 
 ## 7a. User documentation (doc/feature-doc/ai-data.md)
 
-- [ ] 7a.1 Quick start: where the file appears, what it is for, how to hand it to an LLM
-- [ ] 7a.2 Section-by-section reference: every section the file can contain, what its columns mean
-- [ ] 7a.3 Units table: which values are milliseconds, seconds, bytes, unitless
-- [ ] 7a.4 Time series: how the bucket interval is derived from duration, why it is not fixed at
+- [x] 7a.1 Quick start: where the file appears, what it is for, how to hand it to an LLM
+- [x] 7a.2 Section-by-section reference: every section the file can contain, what its columns mean
+- [x] 7a.3 Units table: which values are milliseconds, seconds, bytes, unitless
+- [x] 7a.4 Time series: how the bucket interval is derived from duration, why it is not fixed at
       one minute, which scopes are exported, how to read `Elapsed` vs `Time`
-- [ ] 7a.5 Error section: grouping by message, ordering by count, the trace limit and how to
+- [x] 7a.5 Error section: grouping by message, ordering by count, the trace limit and how to
       raise it
-- [ ] 7a.6 "What is deliberately not in here, and why" — Apdex, per-hour/per-day projections,
+- [x] 7a.6 "What is deliberately not in here, and why" — Apdex, per-hour/per-day projections,
       scorecard, per-entity series, full traces for low-count errors, external data, custom logs
-- [ ] 7a.7 "What you cannot conclude from this file" — whole-run aggregates, ramp-up-inclusive
+- [x] 7a.7 "What you cannot conclude from this file" — whole-run aggregates, ramp-up-inclusive
       rates, timing means that do not sum
-- [ ] 7a.8 Customisation: disabling the export, the configurable parameters, and that editing the
+- [x] 7a.8 Customisation: disabling the export, the configurable parameters, and that editing the
       stylesheet needs no build step
-- [ ] 7a.9 Example prompts matched to the sections the file actually contains
-- [ ] 7a.10 Review for stale references — no `ai-summary.md`, no FreeMarker, no non-existent
+- [x] 7a.9 Example prompts matched to the sections the file actually contains
+- [x] 7a.10 Review for stale references — no `ai-summary.md`, no FreeMarker, no non-existent
       configuration keys
 
 ## 8. Testing
@@ -135,10 +135,10 @@
 
 ## 9. Verification
 
-- [ ] 9.1 Regenerate against
+- [x] 9.1 Regenerate against
       `reports/xlt-result-ariat-lt-2025-315-20251119-165727/testreport.xml` and diff section sizes
       against the 149,707-byte baseline; confirm ~35 KB
-- [ ] 9.2 Confirm the ramp-up plateau is visible in the time series and matches `rampUpPeriod`
-- [ ] 9.3 Confirm the 404s and redirects are now visible via the Response Codes section
-- [ ] 9.4 Run the full test suite for regressions
-- [ ] 9.5 Verify the report renders and the "AI Data" navigation link still resolves
+- [x] 9.2 Confirm the ramp-up plateau is visible in the time series and matches `rampUpPeriod`
+- [x] 9.3 Confirm the 404s and redirects are now visible via the Response Codes section
+- [x] 9.4 Run the full test suite for regressions
+- [x] 9.5 Verify the report renders and the "AI Data" navigation link still resolves

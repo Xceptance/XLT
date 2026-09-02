@@ -31,6 +31,7 @@ transactions, 7,306 transaction errors, 4 agents.
 
 **Goals**
 - Reduce `ai-data.md` to roughly 35 KB while increasing the information it carries.
+  (Measured outcome: 47.5 KB, see the verification note at the end.)
 - Make every value unambiguous without inference (units, semantics, what is and is not derivable).
 - Give the file a time dimension.
 - Keep the file a single self-contained artifact requiring no external context.
@@ -442,6 +443,34 @@ Two ordering constraints: phase 2.2 (comments) wants phase 0.1 first or it falls
 de-tagged HTML, and phase 4.4 (arrival rate) wants phase 0.2 first.
 
 Phase 7a (documentation) is written last, once the layout is final.
+
+## Verified Outcome
+
+Measured on `reports/xlt-result-ariat-lt-2025-315-20251119-165727`, with a time series built from
+that report's own chart data:
+
+| Section | Bytes | Share |
+|---|---:|---:|
+| Errors | 14,615 | 30.7% |
+| Requests | 13,600 | 28.6% |
+| Time Series | 5,151 | 10.8% |
+| Actions | 3,532 | 7.4% |
+| Transactions | 2,061 | 4.3% |
+| Events | 1,981 | 4.2% |
+| Custom Values | 1,421 | 3.0% |
+| Everything else | 5,176 | 10.9% |
+| **Total** | **47,537** | |
+
+149,707 to 47,537 bytes, a 3.1x reduction with seven sections added. Above the 35 KB estimate
+because that figure only counted removals; the time series (5.2 KB) and the explanatory text
+(1.5 KB) are additions the estimate did not include.
+
+The error section fell from 119,235 to 14,615 bytes and is no longer the bulk of the file.
+Requests is now the largest section, which is the right shape for a file about request performance.
+
+The ramp-up inference the whole time series exists for works end to end. The header states
+`rampUpPeriod: 900`, and the rendered series shows transaction throughput climbing 21, 22, 24 and
+then holding at 24 from `elapsed 900` onward.
 
 ## Open Questions
 

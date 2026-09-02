@@ -56,8 +56,11 @@ coding that do not exist in a Markdown file, and its TTFB definition is factuall
 - **Correct the record.** The stale `ai-summary.md` / FreeMarker naming in the capability spec and
   in `doc/feature-doc/ai-data.md`, and the wrong TTFB definition in `descriptions.xsl`.
 
-Target: ~149,700 bytes to ~35,000 bytes, while adding seven sections — Reading this file, Summary,
-Response Codes, Content Types, Hosts, Request Methods and Time Series.
+Target was ~149,700 bytes down to ~35,000. Measured on the sample report: **47,537 bytes**, a 3.1x
+reduction, while adding seven sections — Reading this file, Summary, Response Codes, Content Types,
+Hosts, Request Methods and Time Series. The gap to the estimate is the parts that were added rather
+than removed: the time series is 5.2 KB and the explanatory text 1.5 KB, neither of which the
+original 35 KB guess accounted for.
 
 ## Capabilities
 
