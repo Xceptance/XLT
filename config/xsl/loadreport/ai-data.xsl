@@ -548,8 +548,19 @@
             <xsl:variable name="showReceive" select="not(ai:all-zero($rows/receiveTime/mean))" />
             <xsl:variable name="showTtfb" select="not(ai:all-zero($rows/timeToFirstBytes/mean))" />
 
+            <!--
+            Labels come from the report's labeling rules and are how a run qualifies its
+            requests - by business area, page type, whatever the rules assign. Only shown
+            when the run actually assigned some, so it costs nothing when unused.
+            -->
+            <xsl:variable name="showLabels" select="exists($rows/labels[normalize-space(.) != ''])" />
+
             <xsl:variable name="headers" as="xs:string*">
-                <xsl:sequence select="'Name', 'Count', 'Count/s', 'Errors', 'Error%', 'Min', 'Max', 'Mean'" />
+                <xsl:sequence select="'Name'" />
+                <xsl:if test="$showLabels">
+                    <xsl:sequence select="'Labels'" />
+                </xsl:if>
+                <xsl:sequence select="'Count', 'Count/s', 'Errors', 'Error%', 'Min', 'Max', 'Mean'" />
                 <xsl:if test="$showMedian">
                     <xsl:sequence select="'Median'" />
                 </xsl:if>
@@ -585,7 +596,10 @@
 
             <xsl:for-each select="$rows">
                 <xsl:variable name="cells" as="xs:string*">
-                    <xsl:sequence select="string(name)" />
+                    <xsl:sequence select="ai:cell(name)" />
+                    <xsl:if test="$showLabels">
+                        <xsl:sequence select="ai:cell(labels)" />
+                    </xsl:if>
                     <xsl:sequence select="ai:int(count)" />
                     <xsl:sequence select="ai:num(countPerSecond)" />
                     <xsl:sequence select="ai:int(errors)" />

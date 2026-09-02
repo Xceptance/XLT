@@ -74,6 +74,12 @@ unit test so a change fails loudly.
   and stays.
 - A request network column is suppressed when it is zero for every row, tested with
   `every $r in $rows satisfies number($r/dnsTime/mean) = 0`.
+- The request table carries a `Labels` column from `TimerReport.labels`, the whitespace-delimited
+  label string the report's labeling rules assign. It is what a run uses to qualify its requests -
+  by business area, page type, or anything else - so it lets a model compare areas rather than
+  individual request names. Omitted when no request carries a label, like the network columns.
+  (`colorizationGroupName` also exists on the request report and is populated in the sample, but it
+  is a presentation grouping derived for colouring the HTML table, not a label the run assigned.)
 - `Iterations` is dropped when all rows are 0. Zero does not mean "zero iterations completed", it
   means "not configured", and a model reads it literally.
 

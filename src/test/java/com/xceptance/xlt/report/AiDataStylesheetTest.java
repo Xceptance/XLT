@@ -185,6 +185,26 @@ public class AiDataStylesheetTest
     }
 
     @Test
+    public void testRequestLabelsColumn()
+    {
+        final String header = tableHeader("## Requests");
+
+        Assert.assertTrue("Labels column missing: " + header, header.contains("| Labels |"));
+        Assert.assertTrue("Label values missing", output.contains("| Homepage | checkout guest | 100 |"));
+    }
+
+    @Test
+    public void testUniformlyZeroNetworkColumnsDropped()
+    {
+        final String header = tableHeader("## Requests");
+
+        // dns, connect and send are zero for every row in the fixture
+        Assert.assertFalse("DNS should be dropped: " + header, header.contains("DNS"));
+        Assert.assertFalse("Connect should be dropped: " + header, header.contains("Connect"));
+        Assert.assertTrue("ServerBusy carries data and must stay: " + header, header.contains("ServerBusy"));
+    }
+
+    @Test
     public void testTimeSeriesIsOneCombinedTable()
     {
         Assert.assertTrue("Time series section missing", output.contains("## Time Series"));
@@ -352,6 +372,33 @@ public class AiDataStylesheetTest
                      <totalCount>900</totalCount>
                    </event>
                  </events>
+                 <requests>
+                   <request>
+                     <name>Homepage</name>
+                     <labels>checkout guest</labels>
+                     <count>100</count>
+                     <countPerSecond>0.5</countPerSecond>
+                     <errors>0</errors>
+                     <errorPercentage>0.000</errorPercentage>
+                     <min>10</min>
+                     <max>90</max>
+                     <median>40.000</median>
+                     <mean>44.000</mean>
+                     <deviation>5.000</deviation>
+                     <percentiles>
+                       <p50>40.000</p50>
+                       <p95>80.000</p95>
+                     </percentiles>
+                     <bytesSent><mean>100</mean></bytesSent>
+                     <bytesReceived><mean>200</mean></bytesReceived>
+                     <dnsTime><mean>0.000</mean></dnsTime>
+                     <connectTime><mean>0.000</mean></connectTime>
+                     <sendTime><mean>0.000</mean></sendTime>
+                     <serverBusyTime><mean>30.000</mean></serverBusyTime>
+                     <receiveTime><mean>4.000</mean></receiveTime>
+                     <timeToFirstBytes><mean>30.000</mean></timeToFirstBytes>
+                   </request>
+                 </requests>
                  <summary>
                    <transactions>
                      <name>All Transactions</name>

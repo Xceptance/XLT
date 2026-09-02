@@ -50,6 +50,8 @@
 - [x] 4.1 Rewrite the `timer-table` template using the rounding helpers
 - [x] 4.2 Drop `Median` when a `p50` percentile is present; keep it otherwise
 - [x] 4.3 Requests table: suppress network columns that are uniformly zero
+- [x] 4.3a Requests table: add a `Labels` column from `TimerReport.labels`, omitted when no request
+      carries a label
 - [x] 4.4 Load profile: drop `Iterations` when all zero; render `arrivalRateMin` /
       `arrivalRateMax` from the raw fields added in 0.2 (do not parse the rendered `1...3,535` form)
 - [x] 4.5 Custom Values: apply the rounding helpers (own table, not covered by 4.1)

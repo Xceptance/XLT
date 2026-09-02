@@ -109,6 +109,12 @@ deviation, and every percentile the report is configured for.
 `Median` appears only when no P50 percentile is configured. When P50 is present the two are the
 same number in every row, so one of them is dropped.
 
+Requests additionally carry a `Labels` column when the run assigns labels. Labels come from the
+report's labeling rules and are how a run qualifies its requests — by business area, page type, or
+whatever the rules assign. One row can carry several, separated by spaces, which lets a model group
+and compare areas rather than individual request names. The column is omitted when no request
+carries a label.
+
 Requests additionally carry socket-level network timing means — DNS, connect, send, server busy,
 receive, time to first bytes — plus mean bytes sent and received. A timing column that is zero for
 every request is left out.

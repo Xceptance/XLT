@@ -61,6 +61,11 @@ A request is a single HTTP operation. This section reflects server and network b
 most directly. Request names derive from the action name and may have been merged by
 filter and transformation rules, so one row can aggregate many distinct URLs.
 
+When the run assigns labels, a Labels column appears. Labels come from the report's
+labeling rules and are how a run qualifies its requests - by business area, page type, or
+whatever the rules assign. One row can carry several, separated by spaces. Group by them to
+compare areas rather than individual requests.
+
 Request runtime is the network time plus the client-side time to process headers and
 protocol data and hand the payload to the application.
 

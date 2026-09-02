@@ -124,6 +124,15 @@ timing means, omitting timing columns that carry no information.
 - **THEN** the table SHALL include the standard timer columns plus DNS, connect, send, server
   busy, receive and TTFB means, and bytes sent/received means
 
+#### Scenario: Request labels included
+- **WHEN** at least one request carries a label
+- **THEN** the request table SHALL include a labels column, so requests can be grouped and compared
+  by whatever the labeling rules assign rather than only by name
+
+#### Scenario: Labels column omitted when unused
+- **WHEN** no request carries a label
+- **THEN** the labels column SHALL be omitted
+
 #### Scenario: Uniformly zero network columns suppressed
 - **WHEN** a network timing column is zero for every request in the report
 - **THEN** that column SHALL be omitted
