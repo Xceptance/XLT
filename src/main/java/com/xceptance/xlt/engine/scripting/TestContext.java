@@ -38,7 +38,6 @@ import org.htmlunit.WebClient;
 
 import com.xceptance.common.collection.LRUHashMap;
 import com.xceptance.xlt.api.engine.Session;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
 import com.xceptance.xlt.api.tests.AbstractTestCase;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -441,11 +440,6 @@ public class TestContext
         if (object instanceof AbstractTestCase)
         {
             scope = new VariableScope(((AbstractTestCase) object).getTestDataSet(), scope);
-        }
-
-        if (!(object instanceof AbstractScriptTestCase))
-        {
-            scope = new VariableScope(getData(object), scope);
         }
 
         setScope(scope);
