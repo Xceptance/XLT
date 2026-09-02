@@ -229,6 +229,64 @@ td.no-data, p.no-data {
     background-color: #f8f9fa;
 }
 
+/* Rating */
+.rating-container {
+    margin: 6px 0 10px 0;
+}
+
+.rating-badge {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 18pt;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #6c757d;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+.rating-badge-a {
+    background-color: #28a745;
+}
+
+.rating-badge-b {
+    background-color: #5cb85c;
+}
+
+.rating-badge-c {
+    background-color: #f0ad4e;
+}
+
+.rating-badge-d {
+    background-color: #e67e22;
+}
+
+.rating-badge-e, .rating-badge-f {
+    background-color: #d9534f;
+}
+
+.rating-summary {
+    display: inline;
+    color: #222222;
+    vertical-align: middle;
+}
+
+.rating-evaluation {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #2f4782;
+    page-break-inside: avoid;
+}
+
+.rating-evaluation .markdown p {
+    margin: 3px 0;
+}
+
 /* Overview Charts */
 .chart-container {
     text-align: center;

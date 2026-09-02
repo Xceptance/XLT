@@ -26,6 +26,7 @@
 <xsl:include href="text/descriptions.xsl" />
 
 <xsl:include href="sections/load-profile.xsl" />
+<xsl:include href="sections/rating.xsl" />
 <xsl:include href="sections/comment.xsl" />
 <xsl:include href="sections/general.xsl" />
 <xsl:include href="sections/summary.xsl" />
@@ -70,9 +71,9 @@
             </xsl:choose>
         </div>
         <div class="report-meta">
-            <span><b>Start:</b> <xsl:value-of select="general/startTime" /></span> |
-            <span><b>Duration:</b> <xsl:value-of select="general/duration" /></span> |
-            <span><b>Target:</b> <xsl:value-of select="general/target" /></span>
+            <span><b>Start:</b>&#160;<xsl:value-of select="general/startTime" /></span> |
+            <span><b>End:</b>&#160;<xsl:value-of select="general/endTime" /></span> |
+            <span><b>Duration:</b>&#160;<xsl:call-template name="format-msec-to-h"><xsl:with-param name="n1" select="general/duration * 1000" /></xsl:call-template></span>
         </div>
     </div>
 
@@ -84,6 +85,11 @@
                 <xsl:with-param name="loadMeter" select="'false'" />
             </xsl:call-template>
         </xsl:if>
+
+        <!-- Rating -->
+        <xsl:call-template name="rating-section">
+            <xsl:with-param name="rootNode" select="configuration" />
+        </xsl:call-template>
 
         <!-- Test Comment -->
         <xsl:if test="configuration/comments">
@@ -112,53 +118,78 @@
             <xsl:with-param name="rootNode" select="general" />
         </xsl:call-template>
 
-        <!-- Overview Runtime Chart -->
+        <!-- Transactions Table -->
         <xsl:if test="count(transactions/*) &gt; 0">
-            <div class="section" id="overview-chart">
-                <h2>Overview Runtimes Chart</h2>
+            <div class="page-break"></div>
+            <div class="section" id="transactions-section">
+                <h2>Transactions</h2>
                 <div class="chart-container">
-                    <img src="charts/transactions/Transactions.webp" alt="Transactions Overview Chart" />
+                    <img src="charts/transactions/All%20Transactions.webp" alt="Transactions Overview Chart" />
                 </div>
+                <xsl:call-template name="timer-table">
+                    <xsl:with-param name="elements" select="transactions/*"/>
+                    <xsl:with-param name="summaryElement" select="summary/transactions"/>
+                    <xsl:with-param name="tableRowHeader" select="'Transaction Name'"/>
+                    <xsl:with-param name="type" select="'transaction'"/>
+                    <xsl:with-param name="hasLinks" select="'false'"/>
+                </xsl:call-template>
             </div>
         </xsl:if>
 
-        <!-- Transactions Table -->
-        <div class="page-break"></div>
-        <div class="section" id="transactions-section">
-            <h2>Transactions</h2>
-            <xsl:call-template name="timer-table">
-                <xsl:with-param name="elements" select="transactions/*"/>
-                <xsl:with-param name="summaryElement" select="summary/transactions"/>
-                <xsl:with-param name="tableRowHeader" select="'Transaction Name'"/>
-                <xsl:with-param name="type" select="'transaction'"/>
-                <xsl:with-param name="hasLinks" select="'false'"/>
-            </xsl:call-template>
-        </div>
-
         <!-- Actions Table -->
-        <div class="section" id="actions-section">
-            <h2>Actions</h2>
-            <xsl:call-template name="timer-table">
-                <xsl:with-param name="elements" select="actions/*"/>
-                <xsl:with-param name="summaryElement" select="summary/actions"/>
-                <xsl:with-param name="tableRowHeader" select="'Action Name'"/>
-                <xsl:with-param name="type" select="'action'"/>
-                <xsl:with-param name="hasLinks" select="'false'"/>
-            </xsl:call-template>
-        </div>
+        <xsl:if test="count(actions/*) &gt; 0">
+            <div class="page-break"></div>
+            <div class="section" id="actions-section">
+                <h2>Actions</h2>
+                <div class="chart-container">
+                    <img src="charts/actions/All%20Actions.webp" alt="Actions Overview Chart" />
+                </div>
+                <xsl:call-template name="timer-table">
+                    <xsl:with-param name="elements" select="actions/*"/>
+                    <xsl:with-param name="summaryElement" select="summary/actions"/>
+                    <xsl:with-param name="tableRowHeader" select="'Action Name'"/>
+                    <xsl:with-param name="type" select="'action'"/>
+                    <xsl:with-param name="hasLinks" select="'false'"/>
+                </xsl:call-template>
+            </div>
+        </xsl:if>
 
         <!-- Requests Table -->
-        <div class="section" id="requests-section">
-            <h2>Requests</h2>
-            <xsl:call-template name="timer-table">
-                <xsl:with-param name="elements" select="requests/*"/>
-                <xsl:with-param name="summaryElement" select="summary/requests"/>
-                <xsl:with-param name="tableRowHeader" select="'Request Name'"/>
-                <xsl:with-param name="runtimeIntervalsNode" select="testReportConfig/runtimeIntervals"/>
-                <xsl:with-param name="type" select="'request'"/>
-                <xsl:with-param name="hasLinks" select="'false'"/>
-            </xsl:call-template>
-        </div>
+        <xsl:if test="count(requests/*) &gt; 0">
+            <div class="page-break"></div>
+            <div class="section" id="requests-section">
+                <h2>Requests</h2>
+                <div class="chart-container">
+                    <img src="charts/requests/All%20Requests.webp" alt="Requests Overview Chart" />
+                </div>
+                <xsl:call-template name="timer-table">
+                    <xsl:with-param name="elements" select="requests/*"/>
+                    <xsl:with-param name="summaryElement" select="summary/requests"/>
+                    <xsl:with-param name="tableRowHeader" select="'Request Name'"/>
+                    <xsl:with-param name="runtimeIntervalsNode" select="testReportConfig/runtimeIntervals"/>
+                    <xsl:with-param name="type" select="'request'"/>
+                    <xsl:with-param name="hasLinks" select="'false'"/>
+                </xsl:call-template>
+            </div>
+        </xsl:if>
+
+        <!-- Custom Timers Table -->
+        <xsl:if test="count(customTimers/*) &gt; 0">
+            <div class="page-break"></div>
+            <div class="section" id="custom-timers-section">
+                <h2>Custom Timers</h2>
+                <div class="chart-container">
+                    <img src="charts/custom/All%20Custom%20Timers.webp" alt="Custom Timers Overview Chart" />
+                </div>
+                <xsl:call-template name="timer-table">
+                    <xsl:with-param name="elements" select="customTimers/*"/>
+                    <xsl:with-param name="summaryElement" select="summary/customTimers"/>
+                    <xsl:with-param name="tableRowHeader" select="'Timer Name'"/>
+                    <xsl:with-param name="type" select="'custom'"/>
+                    <xsl:with-param name="hasLinks" select="'false'"/>
+                </xsl:call-template>
+            </div>
+        </xsl:if>
 
         <!-- Error Summary (Stats only, no stacktraces) -->
         <xsl:if test="count(errors/error) &gt; 0">

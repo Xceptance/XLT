@@ -308,6 +308,15 @@ public class ReportGeneratorMain
         final Option pdfReport = new Option(XltConstants.COMMANDLINE_OPTION_PDF, "pdf", false, "enables generation of PDF summary report");
         options.addOption(pdfReport);
 
+        final Option rating = new Option(XltConstants.COMMANDLINE_OPTION_RATING, "rating", true, "the rating score for the test report (e.g. A-F)");
+        rating.setArgName("rating");
+        options.addOption(rating);
+
+        final Option ratingSummary = new Option(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY, "rating-summary", true,
+                                                "the rating summary for the test report");
+        ratingSummary.setArgName("summary");
+        options.addOption(ratingSummary);
+
         final Option includeScenarios = new Option(OPTION_TEST_CASE_INCLUDES, "include-testcases", true,
                                                    "comma-separated list of test cases to include");
         includeScenarios.setArgName("test cases");
@@ -461,6 +470,18 @@ public class ReportGeneratorMain
         {
             commandLineProperties.setProperty("com.xceptance.xlt.reportgenerator.linkToResultBrowsers",
                                               Boolean.toString(linkToResults.booleanValue()));
+        }
+
+        // get rating and rating summary command line overrides
+        if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING))
+        {
+            final String ratingVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING);
+            commandLineProperties.setProperty("com.xceptance.xtc.loadtest.rating", ratingVal);
+        }
+        if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY))
+        {
+            final String summaryVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY);
+            commandLineProperties.setProperty("com.xceptance.xtc.loadtest.rating.summary", summaryVal);
         }
 
         // get test case include/exclude patterns
@@ -731,5 +752,15 @@ public class ReportGeneratorMain
     boolean isToTimeRel()
     {
         return toTimeRel;
+    }
+
+    boolean isPdfReport()
+    {
+        return pdfReport;
+    }
+
+    Properties getCommandLineProperties()
+    {
+        return commandLineProperties;
     }
 }

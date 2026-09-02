@@ -22,6 +22,7 @@
 <xsl:include href="text/descriptions.xsl" />
 
 <xsl:include href="sections/load-profile.xsl" />
+<xsl:include href="sections/rating.xsl" />
 <xsl:include href="sections/comment.xsl" />
 <xsl:include href="sections/general.xsl" />
 <xsl:include href="sections/summary.xsl" />
@@ -71,6 +72,15 @@
 			<xsl:call-template name="load-profile">
 				<xsl:with-param name="rootNode" select="configuration" />
 			</xsl:call-template>
+
+            <!--
+                ************************************
+                * Rating
+                ************************************
+            -->
+            <xsl:call-template name="rating-section">
+                <xsl:with-param name="rootNode" select="configuration" />
+            </xsl:call-template>
 
             <!--
                 ************************************

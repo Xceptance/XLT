@@ -10,6 +10,9 @@
             <li><a href="index.html">Overview</a>
                 <ul>
                     <li><a href="index.html#load-profile">Load Profile</a></li>
+                    <xsl:if test="string-length(normalize-space(//configuration/rating)) > 0 or string-length(normalize-space(//configuration/ratingSummary)) > 0 or string-length(normalize-space(//configuration/ratingEvaluation)) > 0">
+                        <li><a href="index.html#rating">Rating</a></li>
+                    </xsl:if>
                     <li><a href="index.html#comment">Test Comment</a></li>
                     <li><a href="index.html#general">General Information</a></li>
                     <li><a href="index.html#agents">Agent Summary</a></li>

@@ -111,6 +111,42 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     }
 
     /**
+     * Verifies that PDF report is generated correctly when rating, summary, and evaluation are present.
+     */
+    @Test
+    public void testGeneratePdfReportWithRating() throws Exception
+    {
+        final File targetDir = tempFolder.newFolder("report-output-rating");
+        final File cssDir = new File(targetDir, "css");
+        cssDir.mkdirs();
+        FileUtils.copyFileToDirectory(new File("config/testreport/css/pdf.css"), cssDir);
+        FileUtils.copyFileToDirectory(new File("config/testreport/css/default.css"), cssDir);
+
+        // Read sample xml and inject rating elements into configuration
+        String xmlContent = org.apache.commons.io.FileUtils.readFileToString(sampleXmlFile, java.nio.charset.StandardCharsets.UTF_8);
+        final String ratingXml = "<rating>A</rating>\n" +
+                                 "<ratingSummary>Excellent performance achieved.</ratingSummary>\n" +
+                                 "<ratingEvaluation>&lt;div class=\"markdown\"&gt;&lt;h3&gt;Key Findings&lt;/h3&gt;&lt;p&gt;No SLA breaches observed.&lt;/p&gt;&lt;/div&gt;</ratingEvaluation>\n";
+        xmlContent = xmlContent.replace("</configuration>", ratingXml + "</configuration>");
+
+        final File ratingXmlFile = new File(targetDir, "testreport.xml");
+        org.apache.commons.io.FileUtils.writeStringToFile(ratingXmlFile, xmlContent, java.nio.charset.StandardCharsets.UTF_8);
+
+        final File outputPdfFile = new File(targetDir, "load-report.pdf");
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("productName", "XLT");
+        parameters.put("productVersion", "10.0.0");
+        parameters.put("productUrl", "https://www.xceptance.com");
+        parameters.put("scorecardPresent", Boolean.FALSE);
+        parameters.put("pdfReportPresent", Boolean.TRUE);
+
+        PdfReportGenerator.generatePdfReport(ratingXmlFile, targetDir, styleSheetFile, outputPdfFile, parameters);
+
+        Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
+        Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
+    }
+
+    /**
      * Tests that the configuration default for PDF report is false.
      */
     @Test
