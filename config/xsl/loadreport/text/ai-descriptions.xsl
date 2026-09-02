@@ -110,10 +110,10 @@ Elapsed is seconds since the start of the run, so comparing it against `rampUpPe
 the header shows where ramp-up ended and steady state began. Time is the wall clock, for
 lining a spike up against server logs.
 
-The three scopes sit on the same row on purpose. Requests rising points at the server.
-Actions rising while requests stay flat points at client-side work - JavaScript, waits, or
-the test code. Transactions rising while actions stay flat points at think time or the
-test's own processing.
+The three scopes sit on the same row on purpose. Request Mean rising points at the server.
+Action Mean rising while Request Mean stays flat points at client-side work - JavaScript,
+waits, or the test code. Transaction Mean rising while Action Mean stays flat points at
+think time or the test's own processing.
 
 The bucket interval is derived from the test duration and stated above, so it varies
 between reports. It is never finer than the resolution of the collected data.

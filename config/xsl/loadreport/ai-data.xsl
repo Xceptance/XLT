@@ -310,8 +310,15 @@
             <xsl:value-of select="ai:int($series/sourceResolution)" />
             <xsl:text>&#10;```&#10;&#10;</xsl:text>
 
-            <xsl:value-of select="ai:header(('Elapsed', 'Time', 'Txn Mean', 'Txn /s', 'Txn Err/s',
-                                             'Act Mean', 'Req Mean', 'Req /s'))" />
+            <!--
+            Spelled out rather than abbreviated. The header row is written once, so the
+            abbreviations saved almost nothing, and "Act" reads as "act" as easily as
+            "action".
+            -->
+            <xsl:value-of select="ai:header(('Elapsed', 'Time',
+                                             'Transaction Mean', 'Transactions/s', 'Transaction Errors/s',
+                                             'Action Mean',
+                                             'Request Mean', 'Requests/s'))" />
 
             <xsl:for-each select="$series/rows/row">
                 <xsl:variable name="cells" as="xs:string*">

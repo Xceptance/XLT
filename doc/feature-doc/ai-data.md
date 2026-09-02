@@ -159,7 +159,7 @@ Everything else in the file is a single aggregate over the whole run. This secti
 "when did it get slow" and "did the errors arrive in a burst" answerable.
 
 ```
-| Elapsed | Time | Txn Mean | Txn /s | Txn Err/s | Act Mean | Req Mean | Req /s |
+| Elapsed | Time | Transaction Mean | Transactions/s | Transaction Errors/s | Action Mean | Request Mean | Requests/s |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 |  900 | 17:12:00 | 41683 | 22.5 | 0.02 | 512 | 98 | 201.4 |
 ```
@@ -172,9 +172,9 @@ layer* slowed down:
 
 | What rises | Where the problem is |
 |---|---|
-| Req Mean | The server |
-| Act Mean, while Req Mean stays flat | Client-side work — JavaScript, waits, test code |
-| Txn Mean, while Act Mean stays flat | Think time or the test's own processing |
+| Request Mean | The server |
+| Action Mean, while Request Mean stays flat | Client-side work — JavaScript, waits, test code |
+| Transaction Mean, while Action Mean stays flat | Think time or the test's own processing |
 
 ### The bucket interval is derived, not fixed
 

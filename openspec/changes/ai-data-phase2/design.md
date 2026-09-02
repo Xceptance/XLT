@@ -224,10 +224,13 @@ shares them and costs roughly 7 KB at the 120-row maximum, less than two separat
 have, and it puts the three numbers on the same row where they can actually be compared:
 
 ```
-| Elapsed | Time | Txn Mean | Txn /s | Txn Err/s | Act Mean | Req Mean | Req /s |
+| Elapsed | Time | Transaction Mean | Transactions/s | Transaction Errors/s | Action Mean | Request Mean | Requests/s |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-|  900 | 17:12 | 41683 | 22.5 | 0.02 | 512 | 98 | 201.4 |
+|  900 | 17:12:00 | 41683 | 22.5 | 0.02 | 512 | 98 | 201.4 |
 ```
+
+Column names are spelled out. The header row is written once, so abbreviating it saved almost
+nothing, and a model should not have to resolve "Txn" or read "Act" as anything but "act".
 
 **Columns**: `Elapsed` and `Time` both. Elapsed makes the ramp-up check arithmetic-free (compare
 against `rampUpPeriod`); absolute time is what correlates a spike with server logs or APM during
@@ -236,7 +239,7 @@ more columns for a signal the per-entity `Max` and `P99.9` already carry.
 
 **Errors column.** The chart JSON has no error field, but `GeneralReportProvider` already
 maintains `failedTransactionsValueSet`. Since we are downsampling in Java anyway, the table carries
-`Txn Err/s`. The sample run's 7,306 errors are currently undistinguishable between a single bad
+`Transaction Errors/s`. The sample run's 7,306 errors are currently undistinguishable between a single bad
 minute and a steady trickle — the difference between an incident and a systemic defect.
 
 **Validation.** Downsampling the sample to 1 minute yields 81 rows / 2,808 bytes, and `Count/s`

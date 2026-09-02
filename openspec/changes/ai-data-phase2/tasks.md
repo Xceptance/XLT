@@ -82,8 +82,9 @@
 - [x] 6.4 Emit one `<timeSeries>` element into `testreport.xml` carrying `interval`, `buckets`,
       `sourceResolution` and one row per bucket holding all three scopes; include elapsed seconds
       per row so the stylesheet never has to parse a formatted date
-- [x] 6.5 Render a single `## Time Series` table in `ai-data.xsl` — `Elapsed`, `Time`, `Txn Mean`,
-      `Txn /s`, `Txn Err/s`, `Act Mean`, `Req Mean`, `Req /s`. No `Max` columns
+- [x] 6.5 Render a single `## Time Series` table in `ai-data.xsl` — `Elapsed`, `Time`,
+      `Transaction Mean`, `Transactions/s`, `Transaction Errors/s`, `Action Mean`, `Request Mean`,
+      `Requests/s`. Spelled out, not abbreviated. No `Max` columns
 - [x] 6.6 Emit the `timeSeries:` metadata block so the interval is stated, not inferred
 
 ## 7. Corrections

@@ -230,10 +230,20 @@ public class AiDataStylesheetTest
 
         Assert.assertTrue("Elapsed column missing: " + header, header.contains("Elapsed"));
         Assert.assertTrue("Wall clock column missing: " + header, header.contains("Time"));
-        Assert.assertTrue("Transaction columns missing: " + header, header.contains("Txn Mean"));
-        Assert.assertTrue("Action column missing: " + header, header.contains("Act Mean"));
-        Assert.assertTrue("Request columns missing: " + header, header.contains("Req Mean"));
-        Assert.assertTrue("Error rate column missing: " + header, header.contains("Txn Err/s"));
+        Assert.assertTrue("Transaction columns missing: " + header, header.contains("Transaction Mean"));
+        Assert.assertTrue("Action column missing: " + header, header.contains("Action Mean"));
+        Assert.assertTrue("Request columns missing: " + header, header.contains("Request Mean"));
+        Assert.assertTrue("Error rate column missing: " + header, header.contains("Transaction Errors/s"));
+    }
+
+    @Test
+    public void testTimeSeriesHeadersAreNotAbbreviated()
+    {
+        final String header = tableHeader("## Time Series");
+
+        Assert.assertFalse("Abbreviated header: " + header, header.contains("Txn"));
+        Assert.assertFalse("Abbreviated header: " + header, header.contains("Act "));
+        Assert.assertFalse("Abbreviated header: " + header, header.contains("Req "));
     }
 
     @Test
