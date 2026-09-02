@@ -74,12 +74,15 @@ unit test so a change fails loudly.
   and stays.
 - A request network column is suppressed when it is zero for every row, tested with
   `every $r in $rows satisfies number($r/dnsTime/mean) = 0`.
-- The request table carries a `Labels` column from `TimerReport.labels`, the whitespace-delimited
-  label string the report's labeling rules assign. It is what a run uses to qualify its requests -
-  by business area, page type, or anything else - so it lets a model compare areas rather than
-  individual request names. Omitted when no request carries a label, like the network columns.
-  (`colorizationGroupName` also exists on the request report and is populated in the sample, but it
-  is a presentation grouping derived for colouring the HTML table, not a label the run assigned.)
+- Timer tables carry a `Labels` column from `TimerReport.labels`, the whitespace-delimited label
+  string the report's labeling rules assign. It is what a run uses to qualify its timers - by
+  business area, page type, or anything else - so it lets a model compare areas rather than
+  individual names. The field is on `TimerReport`, so transactions, actions, requests, page load
+  timings and custom timers all get it. Omitted per table when nothing in it carries a label, like
+  the network columns.
+  `colorizationGroupName` is deliberately not used, even though it is populated in the sample where
+  `labels` is not. It is a presentation grouping derived for colouring the HTML table, not something
+  the run assigned to the timer, so it would look like a label without being one.
 - `Iterations` is dropped when all rows are 0. Zero does not mean "zero iterations completed", it
   means "not configured", and a model reads it literally.
 
@@ -429,7 +432,9 @@ and a `transformations.18.templateFileName` key, none of which exist.
 - **XSLT 3.0 coupling** — see Decision 1.
 - **Message-only error grouping may be too coarse** — see Decision 5.
 - **Layout change breaks anyone parsing `ai-data.md`** — it is an AI input artifact, not an
-  interface, and `schemaVersion: 1` is introduced for detection.
+  interface, and `schemaVersion: 2` is introduced for detection. The layout that already shipped is
+  version 1: four separate YAML fragments, no units, no time series, ungrouped errors. This change
+  extends it rather than replacing it, so the two need to be tellable apart.
 - **The time series adds a Java change and grows `testreport.xml`** — accepted; it removes the
   largest gap in the format and decouples resolution from `chartWidth`.
 - **Phase 0 adds fields to the report model** (`rawComments`, `arrivalRateMin/Max`) — additive

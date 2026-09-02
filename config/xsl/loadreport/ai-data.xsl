@@ -153,7 +153,12 @@
         <xsl:variable name="props" select="configuration/properties" />
 
         <xsl:text>&#10;```yaml&#10;</xsl:text>
-        <xsl:text>schemaVersion: 1&#10;</xsl:text>
+        <!--
+        Version 2. Version 1 is the layout that shipped before this one: four separate YAML
+        fragments, no units, no time series, ungrouped errors. This is an extension of it,
+        not a replacement, so consumers can tell the two apart.
+        -->
+        <xsl:text>schemaVersion: 2&#10;</xsl:text>
 
         <xsl:text>units:&#10;</xsl:text>
         <xsl:text>  responseTimes: ms      # min, max, mean, dev, all P* columns, all network timings&#10;</xsl:text>
@@ -493,8 +498,15 @@
         <!-- Median duplicates P50 in every row, so it only appears when P50 does not. -->
         <xsl:variable name="showMedian" select="empty($elements[1]/percentiles/p50)" />
 
+        <!-- labeling rules can label any timer, not just requests; shown only where used -->
+        <xsl:variable name="showLabels" select="exists($elements/labels[normalize-space(.) != ''])" />
+
         <xsl:variable name="headers" as="xs:string*">
-            <xsl:sequence select="'Name', 'Count', 'Count/s', 'Errors', 'Error%', 'Min', 'Max', 'Mean'" />
+            <xsl:sequence select="'Name'" />
+            <xsl:if test="$showLabels">
+                <xsl:sequence select="'Labels'" />
+            </xsl:if>
+            <xsl:sequence select="'Count', 'Count/s', 'Errors', 'Error%', 'Min', 'Max', 'Mean'" />
             <xsl:if test="$showMedian">
                 <xsl:sequence select="'Median'" />
             </xsl:if>
@@ -508,7 +520,10 @@
 
         <xsl:for-each select="$elements">
             <xsl:variable name="cells" as="xs:string*">
-                <xsl:sequence select="string(name)" />
+                <xsl:sequence select="ai:cell(name)" />
+                <xsl:if test="$showLabels">
+                    <xsl:sequence select="ai:cell(labels)" />
+                </xsl:if>
                 <xsl:sequence select="ai:int(count)" />
                 <xsl:sequence select="ai:num(countPerSecond)" />
                 <xsl:sequence select="ai:int(errors)" />

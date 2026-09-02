@@ -39,7 +39,8 @@ coding that do not exist in a Markdown file, and its TTFB definition is factuall
 - **Identify the run.** The XTC organization, project, load test run id, result id and report id
   go into the header, so a reader can tell which run the file describes and can tell two reports
   apart.
-- **State the contract.** A `schemaVersion` and a per-field `units` block, plus a "Reading this
+- **State the contract.** A `schemaVersion` (2, the shipped layout being 1) and a per-field
+  `units` block, plus a "Reading this
   file" section carrying the inference rules an LLM needs (no time series in the aggregates,
   rates include ramp-up, timing means do not sum).
 - **Add the missing sections.** Summary, Response Codes, Content Types, Hosts, Request Methods,
@@ -105,4 +106,5 @@ _(none)_
   section explained, units stated, deliberate omissions and their reasons recorded, and the limits
   of what the file supports concluding made explicit.
 - **Breaking changes**: The layout and column set of `ai-data.md` change. The file is an AI input
-  artifact, not a parsed interface; `schemaVersion: 1` is introduced so consumers can detect it.
+  artifact, not a parsed interface; `schemaVersion: 2` is introduced so consumers can tell this
+  layout from the one that shipped before it, which is treated as version 1.

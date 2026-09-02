@@ -22,7 +22,8 @@ from the report. The file SHALL begin with a single top-level heading and SHALL 
 
 #### Scenario: Schema version declared
 - **WHEN** the AI data file is generated
-- **THEN** it SHALL declare `schemaVersion: 1` in its header block
+- **THEN** it SHALL declare `schemaVersion: 2` in its header block, version 1 being the layout that
+  shipped before this change, which this one extends
 
 #### Scenario: Output contains no stray whitespace lines
 - **WHEN** the AI data file is generated
@@ -124,14 +125,18 @@ timing means, omitting timing columns that carry no information.
 - **THEN** the table SHALL include the standard timer columns plus DNS, connect, send, server
   busy, receive and TTFB means, and bytes sent/received means
 
-#### Scenario: Request labels included
-- **WHEN** at least one request carries a label
-- **THEN** the request table SHALL include a labels column, so requests can be grouped and compared
-  by whatever the labeling rules assign rather than only by name
+#### Scenario: Labels included
+- **WHEN** at least one entry in a timer table carries a label
+- **THEN** that table SHALL include a labels column, so entries can be grouped and compared by
+  whatever the labeling rules assign rather than only by name
+
+#### Scenario: Labels on every timer table
+- **WHEN** labeling rules assign labels to timers other than requests
+- **THEN** those tables SHALL carry the labels column too
 
 #### Scenario: Labels column omitted when unused
-- **WHEN** no request carries a label
-- **THEN** the labels column SHALL be omitted
+- **WHEN** no entry in a table carries a label
+- **THEN** that table SHALL omit the labels column
 
 #### Scenario: Uniformly zero network columns suppressed
 - **WHEN** a network timing column is zero for every request in the report

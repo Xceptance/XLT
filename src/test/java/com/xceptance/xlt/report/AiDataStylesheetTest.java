@@ -79,7 +79,7 @@ public class AiDataStylesheetTest
     @Test
     public void testSchemaVersionAndUnitsDeclared()
     {
-        Assert.assertTrue("schemaVersion missing", output.contains("schemaVersion: 1"));
+        Assert.assertTrue("schemaVersion missing", output.contains("schemaVersion: 2"));
         Assert.assertTrue("units block missing", output.contains("units:"));
         Assert.assertTrue("response time unit missing", output.contains("responseTimes: ms"));
         Assert.assertTrue("period unit missing", output.contains("periods: s"));
@@ -191,6 +191,23 @@ public class AiDataStylesheetTest
 
         Assert.assertTrue("Labels column missing: " + header, header.contains("| Labels |"));
         Assert.assertTrue("Label values missing", output.contains("| Homepage | checkout guest | 100 |"));
+    }
+
+    @Test
+    public void testLabelsOnOtherTimerTables()
+    {
+        // labeling rules can label any timer, so the shared table carries the column too
+        final String header = tableHeader("## Transactions");
+
+        Assert.assertTrue("Labels column missing from transactions: " + header, header.contains("| Labels |"));
+        Assert.assertTrue("Label value missing", output.contains("| TFixture | checkout | 5250 |"));
+    }
+
+    @Test
+    public void testLabelsColumnOmittedWhenUnused()
+    {
+        // the fixture's events have no labels, and nothing there should gain an empty column
+        Assert.assertFalse("Empty labels column emitted", tableHeader("## Events").contains("Labels"));
     }
 
     @Test
@@ -345,6 +362,7 @@ public class AiDataStylesheetTest
                  <transactions>
                    <transaction>
                      <name>TFixture</name>
+                     <labels>checkout</labels>
                      <count>5250</count>
                      <countPerSecond>1.458</countPerSecond>
                      <errors>0</errors>

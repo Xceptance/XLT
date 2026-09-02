@@ -40,7 +40,7 @@ Sections appear only when the run produced data for them.
 A single YAML block:
 
 ```yaml
-schemaVersion: 1
+schemaVersion: 2
 units:
   responseTimes: ms      # min, max, mean, dev, all P* columns, all network timings
   periods: s             # duration, rampUp, measurement, shutdown
@@ -65,7 +65,9 @@ xtc:
   reportId: "#1"
 ```
 
-`schemaVersion` lets a consumer tell the layout apart from later ones. The `units` block matters
+`schemaVersion` is **2**. Version 1 is the layout that shipped before it — four separate YAML
+fragments, no units, no time series, ungrouped errors. This one extends that rather than replacing
+it, so a consumer can tell which it is holding. The `units` block matters
 more than it looks: most values are milliseconds, but periods are seconds and CLS is a unitless
 score, so a single blanket statement would be wrong.
 
@@ -109,11 +111,11 @@ deviation, and every percentile the report is configured for.
 `Median` appears only when no P50 percentile is configured. When P50 is present the two are the
 same number in every row, so one of them is dropped.
 
-Requests additionally carry a `Labels` column when the run assigns labels. Labels come from the
-report's labeling rules and are how a run qualifies its requests — by business area, page type, or
+A `Labels` column appears on any of these tables whose entries carry labels. Labels come from the
+report's labeling rules and are how a run qualifies its timers — by business area, page type, or
 whatever the rules assign. One row can carry several, separated by spaces, which lets a model group
-and compare areas rather than individual request names. The column is omitted when no request
-carries a label.
+and compare areas rather than individual names. Each table omits the column when nothing in it is
+labelled.
 
 Requests additionally carry socket-level network timing means — DNS, connect, send, server busy,
 receive, time to first bytes — plus mean bytes sent and received. A timing column that is zero for
