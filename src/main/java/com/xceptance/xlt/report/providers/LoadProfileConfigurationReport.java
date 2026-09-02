@@ -33,6 +33,20 @@ public class LoadProfileConfigurationReport
     @XStreamConverter(LoadFunctionXStreamConverter.class)
     public int[][] arrivalRate;
 
+    /**
+     * The lowest arrival rate of the load function, or <code>null</code> if no arrival rate is configured. The
+     * {@link #arrivalRate} field is rendered for human readers as "1...3,535", complete with grouping separators;
+     * this field and {@link #arrivalRateMax} carry the same information as plain numbers.
+     */
+    public Integer arrivalRateMin = null;
+
+    /**
+     * The highest arrival rate of the load function, or <code>null</code> if no arrival rate is configured.
+     *
+     * @see #arrivalRateMin
+     */
+    public Integer arrivalRateMax = null;
+
     public BigDecimal arrivalRatePercentage = null;
 
     @XStreamConverter(ComplexLoadFunctionXStreamConverter.class)
@@ -46,6 +60,20 @@ public class LoadProfileConfigurationReport
 
     @XStreamConverter(LoadFunctionXStreamConverter.class)
     public int[][] numberOfUsers;
+
+    /**
+     * The lowest user count of the load function, or <code>null</code> if no user count is configured.
+     *
+     * @see #arrivalRateMin
+     */
+    public Integer numberOfUsersMin = null;
+
+    /**
+     * The highest user count of the load function, or <code>null</code> if no user count is configured.
+     *
+     * @see #arrivalRateMin
+     */
+    public Integer numberOfUsersMax = null;
 
     public BigDecimal numberOfUsersPercentage = null;
 
@@ -78,5 +106,57 @@ public class LoadProfileConfigurationReport
         this.warmUpPeriod = tcConfig.getWarmUpPeriod();
         this.actionThinkTime = tcConfig.getActionThinkTime();
         this.actionThinkTimeDeviation = tcConfig.getActionThinkTimeDeviation();
+
+        this.arrivalRateMin = minOfLoadFunction(this.arrivalRate);
+        this.arrivalRateMax = maxOfLoadFunction(this.arrivalRate);
+        this.numberOfUsersMin = minOfLoadFunction(this.numberOfUsers);
+        this.numberOfUsersMax = maxOfLoadFunction(this.numberOfUsers);
+    }
+
+    /**
+     * Returns the lowest value of the given load function.
+     *
+     * @param loadFunction
+     *            the load function, may be <code>null</code>
+     * @return the minimum, or <code>null</code> if there is no load function
+     */
+    private static Integer minOfLoadFunction(final int[][] loadFunction)
+    {
+        if (loadFunction == null || loadFunction.length == 0)
+        {
+            return null;
+        }
+
+        // see LoadFunctionXStreamConverter, which renders the same values for human readers
+        int minimum = Integer.MAX_VALUE;
+        for (final int[] array : loadFunction)
+        {
+            minimum = Math.min(minimum, array[1]);
+        }
+
+        return minimum;
+    }
+
+    /**
+     * Returns the highest value of the given load function.
+     *
+     * @param loadFunction
+     *            the load function, may be <code>null</code>
+     * @return the maximum, or <code>null</code> if there is no load function
+     */
+    private static Integer maxOfLoadFunction(final int[][] loadFunction)
+    {
+        if (loadFunction == null || loadFunction.length == 0)
+        {
+            return null;
+        }
+
+        int maximum = 0;
+        for (final int[] array : loadFunction)
+        {
+            maximum = Math.max(maximum, array[1]);
+        }
+
+        return maximum;
     }
 }

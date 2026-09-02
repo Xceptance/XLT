@@ -1,11 +1,12 @@
 ## 0. Raw values in the report model (Java)
 
-- [ ] 0.1 Add a `rawComments` list to `ConfigurationReport`, index-aligned with `comments`, holding
+- [x] 0.1 Add a `rawComments` list to `ConfigurationReport`, index-aligned with `comments`, holding
       the comment with the `::markdown::` prefix removed when present and the value as-is otherwise;
       populate it in `ConfigurationReportProvider` alongside `processComment()`
-- [ ] 0.2 Add numeric `arrivalRateMin` / `arrivalRateMax` to `LoadProfileConfigurationReport`,
-      derived from the `int[][]` load function, alongside the existing rendered `arrivalRate`
-- [ ] 0.3 Verify the rendered forms are unchanged so the HTML report and existing stylesheets are
+- [x] 0.2 Add numeric min/max fields to `LoadProfileConfigurationReport` for both load functions —
+      `arrivalRateMin` / `arrivalRateMax` and `numberOfUsersMin` / `numberOfUsersMax` — since
+      `LoadFunctionXStreamConverter` renders both with grouping separators and an ellipsis range
+- [x] 0.3 Verify the rendered forms are unchanged so the HTML report and existing stylesheets are
       unaffected
 
 ## 1. Foundation — ai-data.xsl

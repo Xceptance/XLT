@@ -138,6 +138,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         for (final Map.Entry<String, String> entry : sortedLoadtestProps.entrySet())
         {
             report.comments.add(processComment(entry.getValue()));
+            report.rawComments.add(rawComment(entry.getValue()));
         }
 
         // add project name
@@ -276,6 +277,32 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             final String markdown = cleanedString.substring(MARKDOWN_PREFIX.length());
             final String html = MARKDOWN_RENDERER.render(MARKDOWN_PARSER.parse(markdown));
             return "<div class=\"markdown\">" + html + "</div>";
+        }
+
+        return comment;
+    }
+
+    /**
+     * Returns the comment as authored, with the {@value #MARKDOWN_PREFIX} marker removed if present. In contrast to
+     * {@link #processComment(String)} no Markdown is rendered, so the result is the source text the user wrote.
+     *
+     * @param comment
+     *            the comment string to process
+     * @return the comment without the Markdown marker
+     */
+    static String rawComment(final String comment)
+    {
+        if (comment == null)
+        {
+            return null;
+        }
+
+        final String cleanedString = comment.strip();
+
+        if (cleanedString.length() >= MARKDOWN_PREFIX.length() &&
+            cleanedString.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
+        {
+            return cleanedString.substring(MARKDOWN_PREFIX.length());
         }
 
         return comment;

@@ -102,9 +102,13 @@ in half of Europe and ambiguous inside a pipe table.
 add the raw value to the report model rather than reverse-engineering the rendered one. The raw
 and rendered forms coexist; existing consumers are untouched.
 
-Applied here: emit `arrivalRateMin` and `arrivalRateMax` as numeric fields alongside the existing
-rendered `arrivalRate`. The `fn:num()` helper remains as a defensive guard for any field not yet
-covered, but nothing should depend on it.
+Applied here: emit min/max numeric fields alongside the rendered form. `numberOfUsers` needs it as
+much as `arrivalRate` — it carries the same `@XStreamConverter` and renders through the same
+`String.format("%,d")`, which is where a flat 1021-user profile turns into `1,021` in the table.
+So both get min/max fields.
+
+The `fn:num()` helper remains as a defensive guard for any field not yet covered, but nothing
+should depend on it.
 
 ### 5. Error aggregation
 
