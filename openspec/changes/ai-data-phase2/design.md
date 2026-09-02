@@ -455,6 +455,25 @@ de-tagged HTML, and phase 4.4 (arrival rate) wants phase 0.2 first.
 
 Phase 7a (documentation) is written last, once the layout is final.
 
+### 7b. An overflow the time series uncovered
+
+`IntMinMaxValueSet.getFirstSecond()` computed `firstSecond * 1000` with `firstSecond` declared
+`int`, so the multiplication overflowed for any timestamp after 1970-01-25. At the sample report's
+start time it returned -1,660,102,656 instead of 1,763,571,456,000.
+
+Nothing in production called it, so the bug had never surfaced. The existing tests use timestamps
+around 10,000,000 ms, where the overflow does not show. The time series is the first code to read
+it, and the symptom was every mean column coming out as 0: the bogus start pushed every sample
+outside the bucket range, so every bucket ended up with zero weight.
+
+Fixed at the source (`1000L`) rather than worked around, since there were no callers to break.
+`DoubleMinMaxValueSet.getFirstSecond()` had the identical bug and is fixed the same way. Both now
+carry a regression test pinned to a real timestamp.
+
+Worth noting for anyone reading this code later: `IntMinMaxValueSet.getFirstSecond()` returns
+**milliseconds** while `ValueSet.getFirstSecond()` returns **seconds**, despite the identical name.
+`TimeSeriesDownsampler` uses both and comments the difference at each call site.
+
 ## Verified Outcome
 
 Measured on `reports/xlt-result-ariat-lt-2025-315-20251119-165727`, with a time series built from

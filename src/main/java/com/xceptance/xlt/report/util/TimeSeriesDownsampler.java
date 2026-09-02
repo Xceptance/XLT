@@ -94,11 +94,14 @@ public final class TimeSeriesDownsampler
         final long[] weightedSum = new long[buckets];
         final long[] weight = new long[buckets];
 
-        if (values != null)
+        if (values != null && values.getValueCount() > 0)
         {
             final IntMinMaxValue[] data = values.getValues();
             final int scale = Math.max(1, values.getScale());
-            final long start = values.getFirstSecond();
+
+            // IntMinMaxValueSet.getFirstSecond() returns milliseconds despite its name, unlike
+            // ValueSet.getFirstSecond() which returns seconds
+            final long start = values.getFirstSecond() / 1000;
 
             for (int i = 0; i < data.length; i++)
             {
@@ -145,9 +148,11 @@ public final class TimeSeriesDownsampler
     {
         final long[] sums = new long[buckets];
 
-        if (values != null)
+        if (values != null && values.getValueCount() > 0)
         {
             final int[] data = values.getValues();
+
+            // seconds here, unlike IntMinMaxValueSet.getFirstSecond()
             final long start = values.getFirstSecond();
 
             for (int i = 0; i < data.length; i++)

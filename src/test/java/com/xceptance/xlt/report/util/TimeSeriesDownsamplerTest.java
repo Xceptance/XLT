@@ -120,6 +120,54 @@ public class TimeSeriesDownsamplerTest
     }
 
     @Test
+    public void testMeanPerBucketAtARealisticEpoch()
+    {
+        // at epoch 0 a seconds/milliseconds mix-up is invisible, because 0 * 1000 is still 0.
+        // IntMinMaxValueSet.getFirstSecond() returns milliseconds while ValueSet.getFirstSecond()
+        // returns seconds, so this has to be pinned at a real timestamp.
+        final long startSecond = 1763571456L;
+
+        final IntMinMaxValueSet values = new IntMinMaxValueSet(1000);
+        values.addOrUpdateValue(startSecond * 1000, 500);
+        values.addOrUpdateValue((startSecond + 61) * 1000, 900);
+
+        final int[] means = TimeSeriesDownsampler.meanPerBucket(values, startSecond, 2, 60);
+
+        Assert.assertEquals("First bucket lost its samples", 500, means[0]);
+        Assert.assertEquals("Second bucket lost its samples", 900, means[1]);
+    }
+
+    @Test
+    public void testRatePerBucketAtARealisticEpoch()
+    {
+        final long startSecond = 1763571456L;
+
+        final ValueSet counts = new ValueSet();
+        for (int i = 0; i < 60; i++)
+        {
+            counts.addOrUpdateValue((startSecond + i) * 1000, 3);
+        }
+
+        final double[] rates = TimeSeriesDownsampler.ratePerBucket(counts, startSecond, 1, 60);
+
+        Assert.assertEquals(3.0, rates[0], 0.001);
+    }
+
+    @Test
+    public void testEmptyValueSetsAreTolerated()
+    {
+        // both value sets throw from getFirstSecond() when nothing was ever added
+        Assert.assertArrayEquals(new int[]
+            {
+                0, 0
+            }, TimeSeriesDownsampler.meanPerBucket(new IntMinMaxValueSet(100), 0, 2, 60));
+        Assert.assertArrayEquals(new double[]
+            {
+                0.0, 0.0
+            }, TimeSeriesDownsampler.ratePerBucket(new ValueSet(), 0, 2, 60), 0.001);
+    }
+
+    @Test
     public void testNullValueSetsAreTolerated()
     {
         Assert.assertArrayEquals(new int[]

@@ -211,7 +211,8 @@ public class DoubleMinMaxValueSet
             throw new IllegalStateException("No first second available as no values have been added so far.");
         }
 
-        return firstSecond * 1000;
+        // 1000L, not 1000: firstSecond is an int, so int arithmetic overflows for any real epoch timestamp
+        return firstSecond * 1000L;
     }
 
     /**
