@@ -11,29 +11,29 @@
 
 ## 1. Foundation — ai-data.xsl
 
-- [ ] 1.1 Raise `config/xsl/loadreport/ai-data.xsl` to `version="3.0"`; add a header comment
+- [x] 1.1 Raise `config/xsl/loadreport/ai-data.xsl` to `version="3.0"`; add a header comment
       recording the Saxon/XSLT 3.0 requirement and why
-- [ ] 1.2 Add `xsl:function` helpers: `fn:ms()` (`format-number(x,'0')`), `fn:rate()` and
+- [x] 1.2 Add `xsl:function` helpers: `fn:ms()` (`format-number(x,'0')`), `fn:rate()` and
       `fn:pct()` (`format-number(x,'0.##')`), `fn:num()` (strips thousands separators)
-- [ ] 1.3 Eliminate whitespace leakage — 106 pure-whitespace lines today; wrap literals in
+- [x] 1.3 Eliminate whitespace leakage — 106 pure-whitespace lines today; wrap literals in
       `xsl:text` so indentation stays inside tags
-- [ ] 1.4 Single `# XLT Load Test Report — AI Data` h1; demote all sections to `##`
+- [x] 1.4 Single `# XLT Load Test Report — AI Data` h1; demote all sections to `##`
 
 ## 2. Header, comments, glossary
 
-- [ ] 2.1 Merge the three YAML fragments (Test Metadata / XLT Version / Project) into one header
+- [x] 2.1 Merge the three YAML fragments (Test Metadata / XLT Version / Project) into one header
       block; add `schemaVersion: 1`, the per-field `units` block, and `rampUpPeriod`. Comments stay
       out of the YAML and get their own section in 2.2
-- [ ] 2.1a Add the XTC identifiers to the header from
+- [x] 2.1a Add the XTC identifiers to the header from
       `configuration/properties/property[@name='com.xceptance.xtc.*']/@value` — organization,
       project, `loadtest.run.id`, `loadtest.result.id`, `loadtest.report.id`; omit when absent
-- [ ] 2.2 Emit `## Comments` as blockquoted lines, reading `rawComments` when present and falling
+- [x] 2.2 Emit `## Comments` as blockquoted lines, reading `rawComments` when present and falling
       back to `comments`; strip HTML tags via `replace()` + `normalize-space()` in both cases
-- [ ] 2.3 Create `config/xsl/loadreport/text/ai-descriptions.xsl` with the AI-facing text
+- [x] 2.3 Create `config/xsl/loadreport/text/ai-descriptions.xsl` with the AI-facing text
       (see design.md Decision 11); named templates mirroring `descriptions.xsl` naming
-- [ ] 2.3a `xsl:include` `ai-descriptions.xsl` from `ai-data.xsl`
-- [ ] 2.4 Emit the `## Reading this file` block from `ai-descriptions.xsl`
-- [ ] 2.5 Call the per-section description templates directly under each section heading
+- [x] 2.3a `xsl:include` `ai-descriptions.xsl` from `ai-data.xsl`
+- [x] 2.4 Emit the `## Reading this file` block from `ai-descriptions.xsl`
+- [x] 2.5 Call the per-section description templates directly under each section heading
 
 ## 3. New sections from existing XML
 
@@ -47,16 +47,16 @@
 
 ## 4. Table cleanup
 
-- [ ] 4.1 Rewrite the `timer-table` template using the rounding helpers
-- [ ] 4.2 Drop `Median` when a `p50` percentile is present; keep it otherwise
-- [ ] 4.3 Requests table: suppress network columns that are uniformly zero
-- [ ] 4.4 Load profile: drop `Iterations` when all zero; render `arrivalRateMin` /
+- [x] 4.1 Rewrite the `timer-table` template using the rounding helpers
+- [x] 4.2 Drop `Median` when a `p50` percentile is present; keep it otherwise
+- [x] 4.3 Requests table: suppress network columns that are uniformly zero
+- [x] 4.4 Load profile: drop `Iterations` when all zero; render `arrivalRateMin` /
       `arrivalRateMax` from the raw fields added in 0.2 (do not parse the rendered `1...3,535` form)
-- [ ] 4.5 Custom Values: apply the rounding helpers (own table, not covered by 4.1)
-- [ ] 4.6 Web Vitals: apply the rounding helpers and add the description line — CLS unitless, the
+- [x] 4.5 Custom Values: apply the rounding helpers (own table, not covered by 4.1)
+- [x] 4.6 Web Vitals: apply the rounding helpers and add the description line — CLS unitless, the
       rest milliseconds, all scores 75th percentile per action
-- [ ] 4.7 Events: sort by count descending (same reasoning as the error section)
-- [ ] 4.8 Verify no projection fields (`countPerMinute/Hour/Day`) are emitted anywhere
+- [x] 4.7 Events: sort by count descending (same reasoning as the error section)
+- [x] 4.8 Verify no projection fields (`countPerMinute/Hour/Day`) are emitted anywhere
 
 ## 5. Error section redesign
 
@@ -115,13 +115,13 @@
 
 ## 8. Testing
 
-- [ ] 8.1 Unit test: transform a small fixture and assert the `units` block and `schemaVersion`
+- [x] 8.1 Unit test: transform a small fixture and assert the `units` block and `schemaVersion`
       are present
 - [ ] 8.2 Unit test: assert error groups are ordered by descending total count
-- [ ] 8.3 Unit test: assert no `Median` column when `p50` is configured, and that it is present
+- [x] 8.3 Unit test: assert no `Median` column when `p50` is configured, and that it is present
       when p50 is absent
-- [ ] 8.4 Unit test: assert comments contain no `<` and every line is blockquoted
-- [ ] 8.5 Unit test: assert the resolved `TransformerFactory` is Saxon, so a processor swap fails
+- [x] 8.4 Unit test: assert comments contain no `<` and every line is blockquoted
+- [x] 8.5 Unit test: assert the resolved `TransformerFactory` is Saxon, so a processor swap fails
       loudly rather than silently emitting garbage
 - [ ] 8.6 Unit test: interval ladder selection across durations of 5 min, 30 min, 1 h, 2 h, 4 h,
       8 h and 24 h; assert the 2 h case resolves to 1 m and that no case exceeds 120 rows
@@ -129,9 +129,9 @@
       original value otherwise, and `comments` is unchanged
 - [ ] 8.6b Unit test: `arrivalRateMin` / `arrivalRateMax` match the `int[][]` load function, and the
       rendered `arrivalRate` is unchanged
-- [ ] 8.6c Unit test: XTC block present when the properties exist, omitted entirely when they do not
-- [ ] 8.6d Unit test: events are ordered by descending count
-- [ ] 8.7 Unit test: assert no projection fields appear in the output
+- [x] 8.6c Unit test: XTC block present when the properties exist, omitted entirely when they do not
+- [x] 8.6d Unit test: events are ordered by descending count
+- [x] 8.7 Unit test: assert no projection fields appear in the output
 
 ## 9. Verification
 
