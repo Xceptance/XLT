@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.runners.model.MultipleFailureException;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.common.util.Holder;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.actions.AbstractAction;
 import com.xceptance.xlt.api.engine.GlobalClock;
@@ -83,70 +83,58 @@ public class SessionImpl extends Session
     private static final String UNKNOWN_USER_NAME = "UnknownUser";
 
     /**
-     * The Session instances keyed by thread group.
+     * The Session instance of the current thread.
+     * <p>
+     * Note: The session is stored as an inheritable thread-local, so the session is automatically shared with all child
+     * threads. Furthermore, the session is not stored directly but with a Holder in-between, so the user's main thread
+     * or any of its child threads can remove the session for all of these threads.
      */
-    private static final Map<ThreadGroup, SessionImpl> sessions = new ConcurrentHashMap<ThreadGroup, SessionImpl>(101);
+    private static final InheritableThreadLocal<Holder<SessionImpl>> sessionHolder = new InheritableThreadLocal<>()
+    {
+        @Override
+        protected Holder<SessionImpl> initialValue()
+        {
+            return new Holder<>();
+        }
+    };
 
     /**
-     * Name of the removeUserInfoFromURL property.
-     */
-
-    /**
-     * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
+     * Returns the Session instance for the calling thread and its related threads. If no such instance exists yet, it
+     * will be created.
      *
      * @return the Session instance for the calling thread
      */
     public static SessionImpl getCurrent()
     {
-        return getSessionForThread(Thread.currentThread());
+        final Holder<SessionImpl> holder = sessionHolder.get();
+
+        SessionImpl sessionImpl = holder.get();
+        if (sessionImpl == null)
+        {
+            synchronized (holder)
+            {
+                // check again
+                sessionImpl = holder.get();
+                if (sessionImpl == null)
+                {
+                    sessionImpl = new SessionImpl(XltPropertiesImpl.getInstance());
+                    holder.set(sessionImpl);
+                }
+            }
+        }
+
+        return sessionImpl;
     }
 
     /**
-     * Removes the Session instance for the calling thread. Typically, sessions are reused, so this method is especially
-     * useful for testing purposes.
+     * Removes the Session instance for the calling thread and its related threads. Typically, sessions are reused, so
+     * this method is especially useful for testing purposes.
      *
      * @return the Session instance just removed
      */
     public static SessionImpl removeCurrent()
     {
-        return sessions.remove(Thread.currentThread().getThreadGroup());
-    }
-
-    /**
-     * Returns the Session instance for the given thread. If no such instance exists yet, it will be created.
-     *
-     * @return the Session instance for the given thread
-     */
-    public static SessionImpl getSessionForThread(final Thread thread)
-    {
-        final ThreadGroup threadGroup = thread.getThreadGroup();
-
-        if (threadGroup == null)
-        {
-            // the thread died in between so there is no session
-            return null;
-        }
-        else
-        {
-            SessionImpl s = sessions.get(threadGroup);
-
-            if (s == null)
-            {
-                synchronized (threadGroup)
-                {
-                    // check again because two threads might have waited at the
-                    // sync block and the first one created the session already
-                    s = sessions.get(threadGroup);
-                    if (s == null)
-                    {
-                        s = new SessionImpl(XltPropertiesImpl.getInstance());
-                        sessions.put(threadGroup, s);
-                    }
-                }
-            }
-
-            return s;
-        }
+        return sessionHolder.get().remove();
     }
 
     /**
@@ -300,6 +288,7 @@ public class SessionImpl extends Session
         this.shutdownListeners = null;
         this.transactionTimeout = 0;
     }
+
     /**
      * Creates a new Session object.
      */
@@ -330,12 +319,11 @@ public class SessionImpl extends Session
         // create more session-specific helper objects
         requestHistory = new RequestHistory(this, properties);
 
-        this.isTransactionExpirationTimerEnabled = properties.getProperty(this, XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions")
-            .map(Boolean::valueOf)
-            .orElse(false);
-        this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT)
-            .flatMap(ParseNumbers::parseOptionalInt)
-            .orElse(DEFAULT_TRANSACTION_TIMEOUT);
+        this.isTransactionExpirationTimerEnabled = properties.getProperty(this,
+                                                                          XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions")
+                                                             .map(Boolean::valueOf).orElse(false);
+        this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT).flatMap(ParseNumbers::parseOptionalInt)
+                                            .orElse(DEFAULT_TRANSACTION_TIMEOUT);
     }
 
     /**
@@ -396,8 +384,9 @@ public class SessionImpl extends Session
             transactionTimer = null;  // just for safety's sake
             valueLog.clear();
 
-            // we cannot reset the name, because the session is recycled over and over again but never fully inited by the load test framework again
-            //userName = UNKNOWN_USER_NAME;
+            // we cannot reset the name, because the session is recycled over and over again but never fully inited by
+            // the load test framework again
+            // userName = UNKNOWN_USER_NAME;
 
             dataManagerImpl.close();
         }
@@ -492,7 +481,7 @@ public class SessionImpl extends Session
             // create new file handle for result directory rooted at the
             // user name directory which itself is rooted at the configured
             // result dir
-            //            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
+            // resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
             resultDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
 
             if (!Files.exists(resultDir))
@@ -507,8 +496,7 @@ public class SessionImpl extends Session
                     }
                     catch (IOException e)
                     {
-                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: "
-                            + resultDir.toString(), e);
+                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + resultDir.toString(), e);
 
                         return null;
                     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -34,8 +36,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 
 import com.xceptance.common.util.AbstractConfiguration;
+import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration.MovingAverageType;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltException;
@@ -45,6 +50,8 @@ import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMethod;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
+import com.xceptance.xlt.report.labelingrules.InvalidLabelingRuleException;
+import com.xceptance.xlt.report.labelingrules.LabelingRule;
 import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
@@ -144,13 +151,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RUNTIME_INTERVAL_BOUNDARIES = PROP_PREFIX + "runtimeIntervalBoundaries";
 
-    private static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
+    static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
 
-    private static final String PROP_REQUESTS_TABLE_COLORIZE_DEFAULT = "default";
+    static final String PROP_REQUESTS_TABLE_COLORIZE_DEFAULT = "default";
 
-    private static final String PROP_SUFFIX_MATCHING = "matching";
+    static final String PROP_SUFFIX_MATCHING = "matching";
 
-    private static final String PROP_SUFFIX_MEAN = "mean";
+    static final String PROP_SUFFIX_MATCHING_NAME = "matching.name";
+
+    static final String PROP_SUFFIX_MATCHING_LABEL = "matching.label";
+
+    static final String PROP_SUFFIX_MEAN = "mean";
 
     private static final String PROP_SUFFIX_MIN = "min";
 
@@ -162,13 +173,19 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_SUFFIX_ID = "id";
 
+    static final String PROP_SUFFIX_TYPE = "type";
+
+    static final String PROP_SUFFIX_VALUE = "value";
+
     private static final String PROP_CHARTS_PREFIX = PROP_PREFIX + "charts.";
+
+    static final String PROP_CHARTS_AVERAGE_COMMON = PROP_CHARTS_PREFIX + "commonAverage.";
+
+    static final String PROP_CHARTS_AVERAGES_ADDITIONAL = PROP_CHARTS_PREFIX + "averages.";
 
     private static final String PROP_CHARTS_COMPRESSION_FACTOR = PROP_CHARTS_PREFIX + "compressionFactor";
 
     private static final String PROP_CHARTS_HEIGHT = PROP_CHARTS_PREFIX + "height";
-
-    private static final String PROP_CHARTS_MOV_AVG_PERCENTAGE = PROP_CHARTS_PREFIX + "movingAverage.percentageOfValues";
 
     private static final String PROP_CHARTS_WIDTH = PROP_CHARTS_PREFIX + "width";
 
@@ -181,6 +198,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_RESULTS_ROOT_DIR = PROP_PREFIX + "results";
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
+
+    static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
 
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
@@ -225,19 +244,38 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_PREFIX + "dynamicCharts.enabled";
 
+    static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" +
+                                                      PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
+
+    static final String ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS = "Percentage value configured in property '%s' must be between '1%%' and '100%%', but was '%s'.";
+
+    static final String ERROR_AVERAGE_PROPERTY_MISSING = "Moving average configuration property '%s' exists, but required matching property '%s' isn't configured.";
+
+    static final String ERROR_AVERAGE_TIME_OUT_OF_BOUNDS = "Time value configured in property '%s' must be greater than '0s', but was '%s'.";
+
+    static final String ERROR_AVERAGE_TYPE_INVALID = "Moving average type '%s' configured in property '%s' is invalid. Valid types are: " +
+                                                     MovingAverageType.getNames() + ".";
+
+    static final String ERROR_COLORIZATION_PATTERN_MISSING = "At least one of the following properties must be defined for colorization group '%s':\n" +
+                                                             "%s\n%s\n%s (Deprecated. Equivalent to 'matching.name')";
+
+    static final String ERROR_INVALID_PROPERTY_VALUE_FORMAT = "Failed to read property '%s' because value format is invalid.";
+
     private final float chartsCompressionFactor;
 
     private final int chartsHeight;
 
     private final int chartsWidth;
 
+    private final MovingAverageConfiguration commonMovingAverage;
+
+    private final List<MovingAverageConfiguration> additionalMovingAverages;
+
     private final File configDirectory;
 
     private final Map<String, Class<? extends Data>> dataRecordClasses;
 
     private final File homeDirectory;
-
-    private final int movingAveragePoints;
 
     private final List<String> outputFileNames;
 
@@ -386,8 +424,31 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public ReportGeneratorConfiguration(Properties xltProperties, final File overridePropertyFile, final Properties commandLineProperties)
         throws IOException
     {
-        homeDirectory = XltExecutionContext.getCurrent().getXltHomeDir();
-        configDirectory = XltExecutionContext.getCurrent().getXltConfigDir();
+        this(XltExecutionContext.getCurrent().getXltHomeDir(), XltExecutionContext.getCurrent().getXltConfigDir(), xltProperties,
+             overridePropertyFile, commandLineProperties);
+    }
+
+    /**
+     * Creates a new ReportGeneratorConfiguration object. Allows setting the XLT home and config directory manually. Use
+     * this only for unit tests or similar scenarios.
+     *
+     * @param home
+     *            the XLT home directory
+     * @param config
+     *            the XLT config directory
+     * @param overridePropertyFile
+     *            Property file that overrides the basic one. This parameter might be <code>null</code> or empty
+     * @param commandLineProperties
+     *            Properties set on command line. This parameter might be <code>null</code>.
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    ReportGeneratorConfiguration(final File home, final File config, Properties xltProperties, final File overridePropertyFile,
+                                 final Properties commandLineProperties)
+        throws IOException
+    {
+        homeDirectory = home;
+        configDirectory = config;
 
         if (xltProperties == null)
         {
@@ -491,7 +552,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.0f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
-        movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
+        commonMovingAverage = readCommonMovingAverageConfiguration(MovingAverageConfiguration.createPercentageConfig(5));
+        additionalMovingAverages = readAdditionalMovingAverageConfigurations(new ArrayList<>());
 
         dynamicChartsEnabled = getBooleanProperty(PROP_DYNAMIC_CHARTS_ENABLED, true);
 
@@ -531,24 +593,35 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Checks the given string for leading zero digits.
+     * Get an ordered set of the index numbers for rules with the given rule prefix.
      *
-     * @param s
-     *            the string to be checked
+     * @param rulePrefix
+     *            the rule prefix
+     * @return an ordered set of the rule index numbers
      */
-    private void checkForLeadingZeros(final String s)
+    private TreeSet<Integer> getRuleNumbers(final String rulePrefix)
     {
-        if (s.length() > 1 && s.startsWith("0"))
+        final TreeSet<Integer> ruleNumbers = new TreeSet<>();
+        final Set<String> ruleNumberStrings = getPropertyKeyFragment(rulePrefix);
+        for (final String s : ruleNumberStrings)
         {
-            final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in request merge rule indices.\nPlease check your configuration and fix the following properties:");
-            for (final String prop : getPropertyKeysWithPrefix(PROP_REQUEST_MERGE_RULES_PREFIX + s + "."))
+            // check for leading zero digits
+            if (s.length() > 1 && s.startsWith("0"))
             {
-                sb.append("\n\t").append(prop);
-            }
-            sb.append("\n");
+                final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in merge or labeling rule indices.\nPlease check your configuration and fix the following properties:");
+                for (final String prop : getPropertyKeysWithPrefix(rulePrefix + s + "."))
+                {
+                    sb.append("\n\t").append(prop);
+                }
+                sb.append("\n");
 
-            throw new XltException(sb.toString());
+                throw new XltException(sb.toString());
+            }
+
+            ruleNumbers.add(Integer.parseInt(s));
         }
+
+        return ruleNumbers;
     }
 
     /**
@@ -767,9 +840,18 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * {@inheritDoc}
      */
     @Override
-    public int getMovingAveragePercentage()
+    public MovingAverageConfiguration getCommonMovingAverageConfig()
     {
-        return movingAveragePoints;
+        return commonMovingAverage;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MovingAverageConfiguration> getAdditionalMovingAverageConfigs()
+    {
+        return additionalMovingAverages;
     }
 
     public List<String> getOutputFileNames()
@@ -1198,31 +1280,55 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 final String propertyGroup = PROP_REQUESTS_TABLE_COLORIZE + "." + eachGroupName;
 
-                final String matchingPattern;
-                final String propertyMatching = propertyGroup + "." + PROP_SUFFIX_MATCHING;
+                String namePattern;
+                String labelPattern;
+
+                final String namePatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING_NAME;
+                final String labelPatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING_LABEL;
+                final String deprecatedNamePatternProperty = propertyGroup + "." + PROP_SUFFIX_MATCHING;
+
+                boolean useDeprecatedNameProperty = false;
+
                 if (PROP_REQUESTS_TABLE_COLORIZE_DEFAULT.equals(eachGroupName))
                 {
-                    matchingPattern = ".*";
+                    // set match-all patterns for the "default" group
+                    namePattern = ".*";
+                    labelPattern = ".*";
                 }
                 else
                 {
-                    matchingPattern = getStringProperty(propertyMatching);
+                    // get name and label patterns
+                    namePattern = getStringProperty(namePatternProperty, "");
+                    labelPattern = getStringProperty(labelPatternProperty, "");
 
-                    if (StringUtils.isBlank(matchingPattern))
+                    // if name pattern is blank, check the deprecated property name as a fallback
+                    if (StringUtils.isBlank(namePattern))
                     {
-                        throw new XltException(propertyMatching + " has no value. The value must be a regular expression");
+                        useDeprecatedNameProperty = true;
+                        namePattern = getStringProperty(deprecatedNamePatternProperty, "");
+                    }
+
+                    // validate that at least one pattern was provided
+                    if (StringUtils.isBlank(namePattern) && StringUtils.isBlank(labelPattern))
+                    {
+                        throw new XltException(String.format(ERROR_COLORIZATION_PATTERN_MISSING, eachGroupName, namePatternProperty,
+                                                             labelPatternProperty, deprecatedNamePatternProperty));
+                    }
+
+                    // if we have at least one pattern, all blank patterns are updated to match everything
+                    if (StringUtils.isBlank(namePattern))
+                    {
+                        namePattern = ".*";
+                    }
+                    if (StringUtils.isBlank(labelPattern))
+                    {
+                        labelPattern = ".*";
                     }
                 }
 
-                // just to break early in case the pattern is invalid
-                try
-                {
-                    compileRegEx(matchingPattern, propertyMatching);
-                }
-                catch (XltException e)
-                {
-                    throw new XltException(e.getMessage());
-                }
+                // just to break early in case the patterns are invalid
+                compileRegEx(namePattern, useDeprecatedNameProperty ? deprecatedNamePatternProperty : namePatternProperty);
+                compileRegEx(labelPattern, labelPatternProperty);
 
                 final List<RequestTableColorization.ColorizationRule> colorizationRules = new ArrayList<>();
                 colorizationRules.add(readColorizationRule(propertyGroup, PROP_SUFFIX_MEAN, PROP_SUFFIX_MEAN, false));
@@ -1231,7 +1337,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                 colorizationRules.addAll(readPercentileColorizationRules(propertyGroup, percentileIntervals));
                 colorizationRules.addAll(readSegmentationColorizationRules(propertyGroup, segmentationIntervals));
 
-                colorizationConfigs.add(new RequestTableColorization(eachGroupName, matchingPattern, colorizationRules));
+                colorizationConfigs.add(new RequestTableColorization(eachGroupName, namePattern, labelPattern, colorizationRules));
             }
 
             return colorizationConfigs;
@@ -1547,16 +1653,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         final List<MergeRule> requestProcessingRules = new ArrayList<>();
 
-        final Set<Integer> requestMergerNumbers = new TreeSet<>();
-        final Set<String> requestMergerNumberStrings = getPropertyKeyFragment(PROP_REQUEST_MERGE_RULES_PREFIX);
-        for (final String s : requestMergerNumberStrings)
-        {
-            checkForLeadingZeros(s);
-            requestMergerNumbers.add(Integer.parseInt(s));
-        }
-
         boolean invalidRulePresent = false;
-        for (final int i : requestMergerNumbers)
+        for (final int i : getRuleNumbers(PROP_REQUEST_MERGE_RULES_PREFIX))
         {
             final String basePropertyName = PROP_REQUEST_MERGE_RULES_PREFIX + i;
 
@@ -1639,6 +1737,58 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
+     * Reads the configured labeling rules and returns a new instance.
+     *
+     * @return the list of labeling rules
+     */
+    public List<LabelingRule> getLabelingRules()
+    {
+        final List<LabelingRule> labelingRules = new ArrayList<>();
+
+        boolean invalidRulePresent = false;
+        for (final int i : getRuleNumbers(PROP_LABELING_RULES_PREFIX))
+        {
+            final String basePropertyName = PROP_LABELING_RULES_PREFIX + i;
+
+            // general stuff
+            final String newLabels = getStringProperty(basePropertyName + ".newLabels", "");
+            final String typeString = getStringProperty(basePropertyName + ".types", "");
+            final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
+
+            // include patterns
+            final String namePattern = getStringProperty(basePropertyName + ".namePattern", "");
+            final String labelPattern = getStringProperty(basePropertyName + ".labelPattern", "");
+
+            // exclude patterns
+            final String nameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
+            final String labelExcludePattern = getStringProperty(basePropertyName + ".labelPattern.exclude", "");
+
+            // create and validate the rules
+            try
+            {
+                final LabelingRule rule = new LabelingRule(newLabels, typeString, namePattern, labelPattern, stopOnMatch,
+                                                           nameExcludePattern, labelExcludePattern);
+                labelingRules.add(rule);
+            }
+            catch (final InvalidLabelingRuleException e)
+            {
+                // Log it and continue with next rule.
+                final String errMsg = "Labeling rule '" + basePropertyName + "' is invalid. " + e.getMessage();
+                System.err.println(errMsg);
+                // remember that we encountered an invalid labeling rule
+                invalidRulePresent = true;
+            }
+        }
+
+        if (invalidRulePresent)
+        {
+            throw new XltException("Please check your configuration. At least one labeling rule is invalid and needs to be fixed.");
+        }
+
+        return labelingRules;
+    }
+
+    /**
      * Reads the Apdex thresholds (per action group) from the configurations.
      */
     private void readApdexThresholds()
@@ -1712,6 +1862,129 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         {
             throw new XltException(String.format("The value '%s' of property '%s' is not a valid regular expression:\n%s", regEx,
                                                  propertyName, ex.getMessage()));
+        }
+    }
+
+    /**
+     * Read the configuration for the common average from the properties. If no settings for the common average are
+     * provided, return the given default value instead.
+     *
+     * @param defaultValue
+     *            the default configuration to return if the properties contain no settings for the common average
+     * @return the common moving average configuration from the properties or the default value
+     */
+    private MovingAverageConfiguration readCommonMovingAverageConfiguration(final MovingAverageConfiguration defaultValue)
+    {
+        return Optional.ofNullable(readMovingAverageConfiguration(PROP_CHARTS_AVERAGE_COMMON)).orElse(defaultValue);
+    }
+
+    /**
+     * Read the configurations for the additional moving averages from the properties. If no additional moving averages
+     * are configured, return the given default values instead.
+     *
+     * @param defaultValues
+     *            the default configurations to return if the properties contain no settings for additional moving
+     *            averages
+     * @return the additional moving average configurations from the properties or the default value
+     */
+    private List<MovingAverageConfiguration> readAdditionalMovingAverageConfigurations(final List<MovingAverageConfiguration> defaultValues)
+    {
+        // Get the numeric indexes of all additional averages in the properties and verify they are within the expected
+        // limits
+        final List<Integer> indexes;
+        try
+        {
+            indexes = getPropertyKeyIndexes(PROP_CHARTS_AVERAGES_ADDITIONAL, 1, XltConstants.REPORT_CHART_MAX_ADDITIONAL_AVERAGES);
+        }
+        catch (final NumberFormatException | IndexOutOfBoundsException e)
+        {
+            throw new XltException(ERROR_AVERAGE_INDEX_INVALID, e);
+        }
+
+        // Read all additional moving average configurations
+        final List<MovingAverageConfiguration> additionalAverages = new ArrayList<>();
+        for (final int index : indexes)
+        {
+            final MovingAverageConfiguration avg = readMovingAverageConfiguration(PROP_CHARTS_AVERAGES_ADDITIONAL + index + ".");
+            if (avg != null)
+            {
+                additionalAverages.add(avg);
+            }
+        }
+
+        // If no additional averages were configured in the properties, return the default values
+        return additionalAverages.isEmpty() ? defaultValues : additionalAverages;
+    }
+
+    /**
+     * Read the moving average configuration (type and value) from the properties starting with the given prefix.
+     *
+     * @param prefix
+     *            the prefix of the configuration properties
+     * @return the resulting moving average configuration, or "null" if there is no configuration with the given prefix
+     * @throws XltException
+     *             if the moving average configuration is incomplete (either type or value are missing), the type is
+     *             invalid, the value format is invalid, or the value is outside the allowed ranges
+     */
+    private MovingAverageConfiguration readMovingAverageConfiguration(final String prefix)
+    {
+        final String typeKey = prefix + PROP_SUFFIX_TYPE;
+        final String valueKey = prefix + PROP_SUFFIX_VALUE;
+
+        final String typeString = getStringProperty(typeKey, null);
+        final String valueString = getStringProperty(valueKey, null);
+
+        // If the average isn't configured in the properties, return "null"
+        if (StringUtils.isBlank(typeString) && StringUtils.isBlank(valueString))
+        {
+            return null;
+        }
+
+        // Fail if value is configured, but type is missing
+        if (StringUtils.isBlank(typeString))
+        {
+            throw new XltException(String.format(ERROR_AVERAGE_PROPERTY_MISSING, valueKey, typeKey));
+        }
+
+        // Fail if type is configured, but value is missing
+        if (StringUtils.isBlank(valueString))
+        {
+            throw new XltException(String.format(ERROR_AVERAGE_PROPERTY_MISSING, typeKey, valueKey));
+        }
+
+        try
+        {
+            // Handle "percentage" type average
+            if (MovingAverageType.PERCENTAGE.getName().equals(typeString))
+            {
+                final int percentage = ParseUtils.parseIntPercentage(valueString);
+                if (percentage <= 0 || percentage > 100)
+                {
+                    throw new XltException(String.format(ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS, valueKey, valueString));
+                }
+                return MovingAverageConfiguration.createPercentageConfig(percentage);
+            }
+
+            // Handle "time" type average
+            if (MovingAverageType.TIME.getName().equals(typeString))
+            {
+                final int seconds = ParseUtils.parseTimePeriod(valueString);
+                if (seconds <= 0)
+                {
+                    throw new XltException(String.format(ERROR_AVERAGE_TIME_OUT_OF_BOUNDS, valueKey, valueString));
+                }
+                // If the input was only a numeric value, append an "s" to the name to signal that it's a "second" count
+                final String name = valueString.equals(String.valueOf(seconds)) ? (valueString + "s") : valueString;
+                return MovingAverageConfiguration.createTimeConfig(seconds, name);
+            }
+
+            // Fail if type isn't recognized
+            throw new XltException(String.format(ERROR_AVERAGE_TYPE_INVALID, typeString, typeKey));
+        }
+        catch (ParseException e)
+        {
+            // Throw an exception if we failed to parse the percentage or time value
+            throw new XltException(String.format(ERROR_INVALID_PROPERTY_VALUE_FORMAT, valueKey), e);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,9 +104,9 @@ public class MergeRule_Name_Test extends MergeRuleTestBase
         
         // both match, exclude wins
         {
-            var data = new RequestData("originalName");
+            var data = new RequestData("MyNameFoobar");
             assertEquals(1, rule.process(data));
-            assertEquals("originalName", data.getName());
+            assertEquals("MyNameFoobar", data.getName());
         }
         // no match
         {

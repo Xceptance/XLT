@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.math.BigInteger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.datasketches.hll.HllSketch;
+import org.apache.datasketches.hll.TgtHllType;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPointerAnnotation;
 import org.jfree.chart.axis.NumberAxis;
@@ -41,15 +43,14 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.HistogramValueSet;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
-import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
-
-import net.agkn.hll.HLL;
 
 /**
  * The {@link RequestDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -73,9 +74,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private final IntMinMaxValueSet responseSizeValueSet;
 
     /**
-     * Using a memory efficient HyperLogLog algorithmm for counting distinct urls
+     * Using HyperLogLog algorithm for counting distinct urls. We use the 8 bit version which is the fastest.
      */
-    private final HLL distinctUrlsHLL = new HLL(21/* log2m */, 5/* registerWidth */);
+    private final HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -153,6 +154,8 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      */
     private int distinctUrlSetLimitedSize;
 
+    private final LabelingRuleProcessor labelingRuleProcessor;
+
     /**
      * Constructor.
      *
@@ -210,6 +213,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         // set capping parameters
         setChartCappingInfo(config.getRequestChartCappingInfo());
+
+        // labeling rules
+        labelingRuleProcessor = new LabelingRuleProcessor(config.getLabelingRules());
     }
 
     /**
@@ -263,14 +269,16 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         final RequestReport timerReport = (RequestReport) super.createTimerReport(generateHistograms);
 
         // just int is safe, more than 2 billion urls is unlikely
-        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
+        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.getEstimate());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
-        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length] : new BigDecimal[]{};
+        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
+                                                                    : new BigDecimal[] {};
         if (countPerSegment != null)
         {
             for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
             {
-                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count);
+                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n],
+                                                                                       timerReport.count);
             }
         }
 
@@ -285,6 +293,9 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         timerReport.receiveTime = createStatisticsReport(receiveTimeStatistics);
         timerReport.timeToFirstBytes = createStatisticsReport(timeToFirstBytesStatistics);
         timerReport.timeToLastBytes = createStatisticsReport(timeToLastBytesStatistics);
+
+        // apply labeling rules
+        labelingRuleProcessor.process(timerReport);
 
         return timerReport;
     }
@@ -312,8 +323,10 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         if (countDistinctUrls)
         {
-            // store the URL's hash code only to save space
-            distinctUrlsHLL.addRaw(reqData.hashCodeOfUrlWithoutFragment());
+            // use a HyperLogLog sketch to count distinct URLs
+            // For backward compatibility, ignore URL fragments (part after '#')
+            // when counting distinct URLs.
+            distinctUrlsHLL.update(reqData.hashCodeOfUrlWithoutFragment());
 
             // remember some URLs (up to the limit)
             if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
@@ -358,7 +371,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // final long start = TimerUtils.getTime();
 
         final JFreeChart chart = JFreeChartUtils.createLineChart(timerName, "Bytes", timeSeries, getStartTime(), getEndTime(), true,
-                                                                 getMovingAveragePercentage());
+                                                                 getCommonMovingAverageConfig());
         JFreeChartUtils.saveChart(chart, timerName + "_ResponseSize", getChartDir(), getChartWidth(), getChartHeight());
 
         // System.out.printf("OK (%,d values, %,d ms)\n", timeSeries.getItemCount(), TimerUtils.getTime() - start);

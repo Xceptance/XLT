@@ -19,6 +19,7 @@
 <xsl:include href="../common/util/create-totals-td.xsl" />
 <xsl:include href="../common/util/filtered-footer-row.xsl" />
 
+<xsl:include href="util/timer-labels.xsl" />
 <xsl:include href="util/timer-row.xsl" />
 <xsl:include href="util/timer-summary-row.xsl" />
 <xsl:include href="util/timer-chart.xsl" />

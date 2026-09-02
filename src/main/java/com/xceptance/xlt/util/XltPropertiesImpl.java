@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 
+import com.xceptance.common.util.GroovyPropertyEvaluator;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.PropertiesUtils;
@@ -1152,6 +1153,16 @@ public class XltPropertiesImpl extends XltProperties
         {
             final String val = super.getProperty(key);
             return val == null ? null : PropertiesUtils.substituteVariables(val, this);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public synchronized void clear()
+        {
+            super.clear();
+            GroovyPropertyEvaluator.clearCache();
         }
 
         /**

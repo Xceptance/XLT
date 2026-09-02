@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,85 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+/**
+ * Represents a scorecard and its evaluation results.
+ *
+ * @author AI-generated: Antigravity
+ * @author Xceptance GmbH 2026
+ */
 @XStreamAlias("scorecard")
 public class Scorecard
 {
+    @XStreamAlias("error")
+    public static class Error
+    {
+        private String message;
+
+        private String log;
+
+        public Error()
+        {
+            // Default constructor for XStream
+        }
+
+        public Error(final String message, final String log)
+        {
+            this.message = message;
+            this.log = log;
+        }
+
+        public String getMessage()
+        {
+            return message;
+        }
+
+        public String getLog()
+        {
+            return log;
+        }
+
+        void setMessage(final String message)
+        {
+            this.message = message;
+        }
+
+        void setLog(final String log)
+        {
+            this.log = log;
+        }
+    }
+
+    @XStreamAlias("log")
+    public static class LogEntry
+    {
+        @XStreamAsAttribute
+        private final String level;
+
+        private final String message;
+
+        public LogEntry(final String level, final String message)
+        {
+            this.level = level;
+            this.message = message;
+        }
+
+        public String getLevel()
+        {
+            return level;
+        }
+
+        public String getMessage()
+        {
+            return message;
+        }
+
+        @Override
+        public String toString()
+        {
+            return String.format("[%s] %s", level, message);
+        }
+    }
+
     public static class Result
     {
         @XStreamAsAttribute
@@ -48,18 +124,31 @@ public class Scorecard
 
         private List<Group> groups;
 
-        private String error;
-
         private String rating;
 
-        public String getError()
+        private Error error;
+
+        private List<Issue> issues;
+
+        private List<LogEntry> logs;
+
+        public String getErrorMessage()
+        {
+            if (error == null)
+            {
+                return null;
+            }
+            return error.getMessage();
+        }
+
+        public Error getError()
         {
             return error;
         }
 
-        void setError(final String error)
+        void setError(final Error error)
         {
-            this.error = Objects.requireNonNull(error);
+            this.error = error;
         }
 
         public Integer getPoints()
@@ -131,6 +220,96 @@ public class Scorecard
             this.rating = rating;
         }
 
+        /**
+         * Returns the log messages collected during scorecard evaluation.
+         *
+         * @return unmodifiable list of log messages, or empty list if none
+         */
+        public List<LogEntry> getLogs()
+        {
+            if (logs == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(logs);
+        }
+
+        /**
+         * Sets the log messages from scratch.
+         *
+         * @param logs
+         *            list of log messages
+         */
+        void setLogs(final List<LogEntry> logs)
+        {
+            this.logs = logs != null ? new LinkedList<>(logs) : null;
+        }
+
+        /**
+         * Returns the issues collected during scorecard evaluation.
+         *
+         * @return unmodifiable list of issues, or empty list if none
+         */
+        public List<Issue> getIssues()
+        {
+            if (issues == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(issues);
+        }
+
+        /**
+         * Adds an issue to the result.
+         *
+         * @param issue
+         *            the issue to add
+         */
+        void addIssue(final Issue issue)
+        {
+            if (issues == null)
+            {
+                issues = new LinkedList<>();
+            }
+            issues.add(issue);
+        }
+
+    }
+
+    /**
+     * Represents an issue logged during scorecard evaluation.
+     */
+    @XStreamAlias("issue")
+    public static class Issue
+    {
+        @XStreamAsAttribute
+        private final String severity;
+
+        private final String message;
+
+        private final String location;
+
+        public Issue(final String severity, final String message, final String location)
+        {
+            this.severity = severity;
+            this.message = message;
+            this.location = location;
+        }
+
+        public String getSeverity()
+        {
+            return severity;
+        }
+
+        public String getMessage()
+        {
+            return message;
+        }
+
+        public String getLocation()
+        {
+            return location;
+        }
     }
 
     public final Configuration configuration;
@@ -147,7 +326,8 @@ public class Scorecard
     {
         final Scorecard r = new Scorecard(null);
         final String errMsg = ExceptionUtils.stream(t).map(Throwable::getMessage).collect(Collectors.joining(" -> "));
-        r.result.setError(errMsg);
+        final String stackTrace = ExceptionUtils.getStackTrace(t);
+        r.result.setError(new Error(errMsg, stackTrace));
         return r;
     }
 
@@ -185,7 +365,7 @@ public class Scorecard
         Group(final GroupDefinition definition)
         {
             this.definition = Objects.requireNonNull(definition, "Group definition must not be null");
-            this.id = definition.getId();
+            id = definition.getId();
         }
 
         public GroupDefinition getDefinition()
@@ -250,7 +430,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = true;
+            testFailed = true;
         }
 
         public boolean isEnabled()
@@ -298,7 +478,7 @@ public class Scorecard
             this.definition = Objects.requireNonNull(definition, "Rule definition must not be null");
             this.groupEnabled = groupEnabled;
 
-            this.id = definition.getId();
+            id = definition.getId();
         }
 
         public String getId()
@@ -368,7 +548,7 @@ public class Scorecard
 
         void setTestFailed()
         {
-            this.testFailed = true;
+            testFailed = true;
         }
 
         @XStreamAlias("check")
@@ -388,12 +568,14 @@ public class Scorecard
 
             private String value;
 
+            private String rawValue;
+
             Check(final RuleDefinition.Check definition, final boolean ruleEnabled)
             {
                 this.definition = Objects.requireNonNull(definition, "Check definition must not be null");
                 this.ruleEnabled = ruleEnabled;
 
-                this.index = definition.getIndex();
+                index = definition.getIndex();
             }
 
             public int getIndex()
@@ -436,11 +618,20 @@ public class Scorecard
                 this.value = value;
             }
 
+            public String getRawValue()
+            {
+                return rawValue;
+            }
+
+            void setRawValue(final String rawValue)
+            {
+                this.rawValue = rawValue;
+            }
+
             public boolean isEnabled()
             {
                 return ruleEnabled && definition.isEnabled();
             }
         }
-
     }
 }

@@ -12,6 +12,6 @@ BEGIN   {
             printf "%s\n\n", $1;
             printf "  * License: %s\n", $2;
             printf "  * Homepage: %s\n", $3;
-            if ($5 != "") printf "  * %s\n", $5;
+            # if ($4 != "") printf "  * %s\n", $4;
             printf "  * More information in folder: doc/3rd-party-licenses/%s\n\n", $1;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class SelectorDefinition
 
     private final String expression;
 
-    SelectorDefinition(final String id, final String expression)
+    public SelectorDefinition(final String id, final String expression)
     {
         this.id = Objects.requireNonNull(id, "Selector ID must not be null");
         this.expression = Objects.requireNonNull(expression, "Selector expression must not be null");

@@ -1,0 +1,232 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.xceptance.common.util;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.codehaus.groovy.control.CompilerConfiguration;
+
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+
+/**
+ * Utility class for evaluating Groovy expressions embedded in property values.
+ * <p>
+ * Supports the Spring-like syntax {@code #{...}} for embedding Groovy code that will be evaluated at property
+ * resolution time. Multi-line scripts are supported.
+ * </p>
+ * <p>
+ * Property values referenced inside Groovy expressions must use the standard {@code ${...}} variable substitution
+ * syntax, which is resolved <em>before</em> Groovy evaluation. The substituted value is pasted literally into the
+ * script text, so numeric values work naturally while string values must be quoted explicitly (e.g.
+ * {@code #{ '${mode}' == 'production' ? 100 : 10 }}).
+ * </p>
+ * Example usage in properties:
+ *
+ * <pre>
+ * totalUsers = 100
+ * browse.users = #{ (${totalUsers} * 0.4).intValue() }
+ * </pre>
+ *
+ * @author Xceptance Software Technologies GmbH
+ * @since 10.0.0
+ */
+public class GroovyPropertyEvaluator
+{
+
+
+    /**
+     * Cache for compiled scripts to improve performance. Thread-safe via ConcurrentHashMap.
+     */
+    private static final Map<String, Script> SCRIPT_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * Shared GroovyShell with security customizations.
+     */
+    private static final GroovyShell SHELL;
+
+    static
+    {
+        final CompilerConfiguration config = new CompilerConfiguration();
+        config.addCompilationCustomizers(PropertyGroovySecurityUtils.createSecureCustomizer());
+        SHELL = new GroovyShell(config);
+    }
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private GroovyPropertyEvaluator()
+    {
+    }
+
+    /**
+     * Evaluates any Groovy expressions in the given value string.
+     * <p>
+     * Groovy expressions are marked with {@code #{...}} syntax and can span multiple lines. The result of each
+     * expression replaces the entire {@code #{...}} block.
+     * </p>
+     *
+     * @param value
+     *            the string potentially containing Groovy expressions
+     * @return the value with all Groovy expressions evaluated and replaced
+     * @throws IllegalArgumentException
+     *             if a Groovy expression cannot be evaluated
+     */
+    public static String evaluateGroovyExpressions(final String value)
+    {
+        if (value == null || value.isEmpty() || !value.contains("#{"))
+        {
+            return value;
+        }
+
+        final StringBuilder result = new StringBuilder();
+        int currentIndex = 0;
+
+        while (true)
+        {
+            final int startIndex = value.indexOf("#{", currentIndex);
+            if (startIndex == -1)
+            {
+                result.append(value.substring(currentIndex));
+                break;
+            }
+
+            int openBrackets = 0;
+            int endIndex = -1;
+            boolean inSingleQuote = false;
+            boolean inDoubleQuote = false;
+            boolean escapeNext = false;
+
+            for (int i = startIndex + 2; i < value.length(); i++)
+            {
+                final char c = value.charAt(i);
+
+                if (escapeNext)
+                {
+                    escapeNext = false;
+                    continue;
+                }
+
+                if (c == '\\')
+                {
+                    escapeNext = true;
+                    continue;
+                }
+
+                if (c == '\'' && !inDoubleQuote)
+                {
+                    inSingleQuote = !inSingleQuote;
+                    continue;
+                }
+
+                if (c == '"' && !inSingleQuote)
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                    continue;
+                }
+
+                if (inSingleQuote || inDoubleQuote)
+                {
+                    continue;
+                }
+
+                if (c == '{')
+                {
+                    openBrackets++;
+                }
+                else if (c == '}')
+                {
+                    if (openBrackets == 0)
+                    {
+                        endIndex = i;
+                        break;
+                    }
+                    else
+                    {
+                        openBrackets--;
+                    }
+                }
+            }
+
+            if (endIndex == -1)
+            {
+                // No matching closing bracket found
+                result.append(value.substring(currentIndex));
+                break;
+            }
+
+            result.append(value.substring(currentIndex, startIndex));
+
+            final String script = value.substring(startIndex + 2, endIndex).trim();
+            final String evaluated = evaluateSingleExpression(script);
+            result.append(evaluated);
+
+            currentIndex = endIndex + 1;
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Evaluates a single Groovy script expression.
+     *
+     * @param script
+     *            the Groovy script to evaluate
+     * @return the string representation of the script result
+     * @throws IllegalArgumentException
+     *             if the script cannot be evaluated
+     */
+    private static String evaluateSingleExpression(final String script)
+    {
+        try
+        {
+            // Create bindings for this evaluation
+            final Binding binding = new Binding();
+
+            // Get or compile the script
+            final Script compiledScript = SCRIPT_CACHE.computeIfAbsent(script, s -> {
+                synchronized (SHELL)
+                {
+                    return SHELL.parse(s);
+                }
+            });
+
+            // Clone the script for thread safety
+            final Script scriptInstance = compiledScript.getClass().getDeclaredConstructor().newInstance();
+
+            // Execute with current bindings
+            scriptInstance.setBinding(binding);
+
+            final Object result = scriptInstance.run();
+            return result == null ? "" : result.toString();
+        }
+        catch (final Exception e)
+        {
+            throw new IllegalArgumentException(String.format("Failed to evaluate Groovy expression: #{%s} - %s", script, e.getMessage()),
+                                               e);
+        }
+    }
+
+    /**
+     * Clears the script cache. Useful for testing or when properties change significantly.
+     */
+    public static void clearCache()
+    {
+        SCRIPT_CACHE.clear();
+    }
+}

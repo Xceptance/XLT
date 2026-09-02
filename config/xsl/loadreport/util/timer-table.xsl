@@ -31,10 +31,20 @@
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
                         <form>
-                            <input class="filter" placeholder="Enter filter substrings" title=""/>
+                            <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByName" data-col-index="0"/>
                             <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </form>
                     </th>
+                    <xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+                        <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabels">
+                            <xsl:text>Labels</xsl:text>
+                            <br/>
+                            <form>
+                                <input class="filter" placeholder="Enter filter substrings" title="" data-filter-id="filterByLabels" data-col-index="1"/>
+                                <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                            </form>
+                        </th>
+                    </xsl:if>
                     <xsl:choose>
                         <xsl:when test="$type = 'request'">
                             <th colspan="5">Count</th>
@@ -148,13 +158,13 @@
                     <xsl:variable name="columnCount">
                         <xsl:choose>
                             <xsl:when test="$type = 'request'">
-                                <xsl:value-of select="11 + $percentileCount + count($runtimeIntervalsNode/interval)"/>
+                                <xsl:value-of select="13 + $percentileCount + count($runtimeIntervalsNode/interval)"/>
                             </xsl:when>
                             <xsl:when test="$type = 'transaction'">
-                                <xsl:value-of select="12 + $percentileCount"/>
+                                <xsl:value-of select="13 + $percentileCount"/>
                             </xsl:when>
                             <xsl:when test="$type = 'action'">
-                                <xsl:value-of select="12 + $percentileCount"/>
+                                <xsl:value-of select="13 + $percentileCount"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="11 + $percentileCount"/>

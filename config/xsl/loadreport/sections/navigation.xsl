@@ -64,9 +64,10 @@
                     <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
                 </ul>
             </li>
-        <xsl:if test="$scorecardPresent">
-            <li><a href="scorecard.html">Scorecard</a></li>
-        </xsl:if>
+            <xsl:if test="$scorecardPresent">
+                <li><a href="scorecard.html">Scorecard</a></li>
+            </xsl:if>
+            <li><a href="ai-data.md">AI Data</a></li>
         </ul>
     </nav>
     </xsl:template>
