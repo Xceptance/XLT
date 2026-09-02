@@ -71,18 +71,18 @@
 
 ## 6. Time series (Java)
 
-- [ ] 6.1 Add an interval selector, fixed in code, no property: smallest ladder value
+- [x] 6.1 Add an interval selector, fixed in code, no property: smallest ladder value
       (`1s,5s,10s,15s,30s,1m,2m,3m,5m,10m,15m,30m,1h`) at least `duration / 120`, floored at source
       resolution. Anchor check: a 2 h test must come out at 1 m
-- [ ] 6.2 Downsample `All Transactions`, `All Actions` and `All Requests` run-time and count/s
+- [x] 6.2 Downsample `All Transactions`, `All Actions` and `All Requests` run-time and count/s
       series from the in-memory `TimeSeries`, independent of `shouldChartsGenerated()`
-- [ ] 6.3 Add transaction errors per second from `GeneralReportProvider.failedTransactionsValueSet`
-- [ ] 6.4 Emit one `<timeSeries>` element into `testreport.xml` carrying `interval`, `buckets`,
+- [x] 6.3 Add transaction errors per second from `GeneralReportProvider.failedTransactionsValueSet`
+- [x] 6.4 Emit one `<timeSeries>` element into `testreport.xml` carrying `interval`, `buckets`,
       `sourceResolution` and one row per bucket holding all three scopes; include elapsed seconds
       per row so the stylesheet never has to parse a formatted date
-- [ ] 6.5 Render a single `## Time Series` table in `ai-data.xsl` — `Elapsed`, `Time`, `Txn Mean`,
+- [x] 6.5 Render a single `## Time Series` table in `ai-data.xsl` — `Elapsed`, `Time`, `Txn Mean`,
       `Txn /s`, `Txn Err/s`, `Act Mean`, `Req Mean`, `Req /s`. No `Max` columns
-- [ ] 6.6 Emit the `timeSeries:` metadata block so the interval is stated, not inferred
+- [x] 6.6 Emit the `timeSeries:` metadata block so the interval is stated, not inferred
 
 ## 7. Corrections
 
@@ -123,11 +123,11 @@
 - [x] 8.4 Unit test: assert comments contain no `<` and every line is blockquoted
 - [x] 8.5 Unit test: assert the resolved `TransformerFactory` is Saxon, so a processor swap fails
       loudly rather than silently emitting garbage
-- [ ] 8.6 Unit test: interval ladder selection across durations of 5 min, 30 min, 1 h, 2 h, 4 h,
+- [x] 8.6 Unit test: interval ladder selection across durations of 5 min, 30 min, 1 h, 2 h, 4 h,
       8 h and 24 h; assert the 2 h case resolves to 1 m and that no case exceeds 120 rows
-- [ ] 8.6a Unit test: `rawComments` holds the Markdown source for a `::markdown::` comment and the
+- [x] 8.6a Unit test: `rawComments` holds the Markdown source for a `::markdown::` comment and the
       original value otherwise, and `comments` is unchanged
-- [ ] 8.6b Unit test: `arrivalRateMin` / `arrivalRateMax` match the `int[][]` load function, and the
+- [x] 8.6b Unit test: `arrivalRateMin` / `arrivalRateMax` match the `int[][]` load function, and the
       rendered `arrivalRate` is unchanged
 - [x] 8.6c Unit test: XTC block present when the properties exist, omitted entirely when they do not
 - [x] 8.6d Unit test: events are ordered by descending count

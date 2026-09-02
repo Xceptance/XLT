@@ -96,6 +96,25 @@ not appear here. Check the Response Codes section for those.
 </xsl:text>
     </xsl:template>
 
+    <xsl:template name="ai-desc-time-series">
+<xsl:text>
+How the run behaved over time. This is the only section with a time dimension; everything
+else is a single aggregate over the whole test.
+
+Elapsed is seconds since the start of the run, so comparing it against `rampUpPeriod` in
+the header shows where ramp-up ended and steady state began. Time is the wall clock, for
+lining a spike up against server logs.
+
+The three scopes sit on the same row on purpose. Requests rising points at the server.
+Actions rising while requests stay flat points at client-side work - JavaScript, waits, or
+the test code. Transactions rising while actions stay flat points at think time or the
+test's own processing.
+
+The bucket interval is derived from the test duration and stated above, so it varies
+between reports. It is never finer than the resolution of the collected data.
+</xsl:text>
+    </xsl:template>
+
     <xsl:template name="ai-desc-network">
 <xsl:text>
 Counts cover every request, including those that passed validation. A response code

@@ -240,6 +240,17 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         }
     }
 
+    /**
+     * Returns the collected runtimes. Used to build the AI data time series, which needs the values themselves rather
+     * than the chart series derived from them.
+     *
+     * @return the runtime value set
+     */
+    protected IntMinMaxValueSet getRunTimeValueSet()
+    {
+        return runTimeValueSet;
+    }
+
     protected ValueSet getCountPerSecondValueSet()
     {
         return countPerSecondValueSet;

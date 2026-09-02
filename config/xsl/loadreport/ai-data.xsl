@@ -110,6 +110,7 @@
         <xsl:call-template name="ai-reading-rules" />
         <xsl:call-template name="comments" />
         <xsl:call-template name="summary" />
+        <xsl:call-template name="time-series" />
         <xsl:call-template name="load-profile" />
         <xsl:call-template name="timer-section">
             <xsl:with-param name="title" select="'Transactions'" />
@@ -276,6 +277,52 @@
                     <xsl:sequence select="ai:num(countPerSecond)" />
                     <xsl:sequence select="ai:int(errors)" />
                     <xsl:sequence select="ai:num(errorPercentage)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ time series -->
+
+    <!--
+    One table for all three scopes rather than one table each. The elapsed and wall clock
+    columns would otherwise be repeated three times, and side by side on a row the three
+    means say which layer slowed down.
+    -->
+    <xsl:template name="time-series">
+        <xsl:if test="summary/timeSeries/rows/row">
+            <xsl:variable name="series" select="summary/timeSeries" />
+
+            <xsl:text>&#10;## Time Series&#10;</xsl:text>
+            <xsl:call-template name="ai-desc-time-series" />
+
+            <xsl:text>&#10;```yaml&#10;interval: </xsl:text>
+            <xsl:value-of select="ai:int($series/interval)" />
+            <xsl:text>&#10;buckets: </xsl:text>
+            <xsl:value-of select="ai:int($series/buckets)" />
+            <xsl:text>&#10;sourceResolution: </xsl:text>
+            <xsl:value-of select="ai:int($series/sourceResolution)" />
+            <xsl:text>&#10;```&#10;&#10;</xsl:text>
+
+            <xsl:value-of select="ai:header(('Elapsed', 'Time', 'Txn Mean', 'Txn /s', 'Txn Err/s',
+                                             'Act Mean', 'Req Mean', 'Req /s'))" />
+
+            <xsl:for-each select="$series/rows/row">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="ai:int(elapsed)" />
+                    <!--
+                    The rendered timestamp carries the date and zone too, which are already in the
+                    header. Seconds stay because a short test gets sub-minute buckets, and without
+                    them consecutive rows would show the same clock time.
+                    -->
+                    <xsl:sequence select="substring(string(time), 12, 8)" />
+                    <xsl:sequence select="ai:ms(transactionMean)" />
+                    <xsl:sequence select="ai:num(transactionCountPerSecond)" />
+                    <xsl:sequence select="ai:num(transactionErrorsPerSecond)" />
+                    <xsl:sequence select="ai:ms(actionMean)" />
+                    <xsl:sequence select="ai:ms(requestMean)" />
+                    <xsl:sequence select="ai:num(requestCountPerSecond)" />
                 </xsl:variable>
                 <xsl:value-of select="ai:row($cells)" />
             </xsl:for-each>

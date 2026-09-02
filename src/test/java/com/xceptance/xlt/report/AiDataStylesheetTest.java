@@ -185,6 +185,52 @@ public class AiDataStylesheetTest
     }
 
     @Test
+    public void testTimeSeriesIsOneCombinedTable()
+    {
+        Assert.assertTrue("Time series section missing", output.contains("## Time Series"));
+
+        final String header = tableHeader("## Time Series");
+
+        Assert.assertTrue("Elapsed column missing: " + header, header.contains("Elapsed"));
+        Assert.assertTrue("Wall clock column missing: " + header, header.contains("Time"));
+        Assert.assertTrue("Transaction columns missing: " + header, header.contains("Txn Mean"));
+        Assert.assertTrue("Action column missing: " + header, header.contains("Act Mean"));
+        Assert.assertTrue("Request columns missing: " + header, header.contains("Req Mean"));
+        Assert.assertTrue("Error rate column missing: " + header, header.contains("Txn Err/s"));
+    }
+
+    @Test
+    public void testTimeSeriesClockTimesAreDistinct()
+    {
+        // a short test gets sub-minute buckets, so minute resolution here would repeat itself
+        Assert.assertTrue("First bucket clock time missing", output.contains("| 0 | 10:00:00 |"));
+        Assert.assertTrue("Second bucket clock time missing", output.contains("| 30 | 10:00:30 |"));
+    }
+
+    @Test
+    public void testTimeSeriesMetadataStated()
+    {
+        // the interval varies per report, so it has to be stated rather than inferred from the timestamps
+        Assert.assertTrue("interval missing", output.contains("interval: 30"));
+        Assert.assertTrue("buckets missing", output.contains("buckets: 2"));
+        Assert.assertTrue("sourceResolution missing", output.contains("sourceResolution: 4"));
+    }
+
+    @Test
+    public void testTimeSeriesRowsCarryAllThreeScopes()
+    {
+        Assert.assertTrue("Row not rendered as expected:\n" + output,
+                          output.contains("| 30 | 10:00:30 | 41683 | 22.5 | 0.02 | 640 | 121 | 201.4 |"));
+    }
+
+    @Test
+    public void testSummarySection()
+    {
+        Assert.assertTrue("Summary section missing", output.contains("## Summary"));
+        Assert.assertTrue("Summary row missing", output.contains("| All Transactions | 5250 | 1.46 | 903 | 17.2 |"));
+    }
+
+    @Test
     public void testErrorsGroupedByMessage()
     {
         // two entries share "Common problem" and must appear as one group carrying their combined count
@@ -306,6 +352,42 @@ public class AiDataStylesheetTest
                      <totalCount>900</totalCount>
                    </event>
                  </events>
+                 <summary>
+                   <transactions>
+                     <name>All Transactions</name>
+                     <count>5250</count>
+                     <countPerSecond>1.458</countPerSecond>
+                     <errors>903</errors>
+                     <errorPercentage>17.2</errorPercentage>
+                   </transactions>
+                   <timeSeries>
+                     <interval>30</interval>
+                     <buckets>2</buckets>
+                     <sourceResolution>4</sourceResolution>
+                     <rows>
+                       <row>
+                         <elapsed>0</elapsed>
+                         <time>2026-01-01 10:00:00 CET</time>
+                         <transactionMean>31529</transactionMean>
+                         <transactionCountPerSecond>0.5</transactionCountPerSecond>
+                         <transactionErrorsPerSecond>0.0</transactionErrorsPerSecond>
+                         <actionMean>512</actionMean>
+                         <requestMean>98</requestMean>
+                         <requestCountPerSecond>20.1</requestCountPerSecond>
+                       </row>
+                       <row>
+                         <elapsed>30</elapsed>
+                         <time>2026-01-01 10:00:30 CET</time>
+                         <transactionMean>41683</transactionMean>
+                         <transactionCountPerSecond>22.5</transactionCountPerSecond>
+                         <transactionErrorsPerSecond>0.02</transactionErrorsPerSecond>
+                         <actionMean>640</actionMean>
+                         <requestMean>121</requestMean>
+                         <requestCountPerSecond>201.4</requestCountPerSecond>
+                       </row>
+                     </rows>
+                   </timeSeries>
+                 </summary>
                  <responseCodes>
                    <responseCode>
                      <code>200</code>
