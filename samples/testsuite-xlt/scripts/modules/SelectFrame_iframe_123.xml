@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <command name="selectWindow" target="title=example page"/>
-  <command name="selectFrame" target="dom=frames[&quot;iframe1&quot;].frames[&quot;iframe2&quot;].frames[&quot;iframe3&quot;]"/>
-</scriptmodule>

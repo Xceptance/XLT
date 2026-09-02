@@ -13,19 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * NOTE: This file is generated. Do not edit! Your changes will be lost.
- */
 package posters.functional.errorChecking;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
-import com.xceptance.xlt.api.engine.scripting.ScriptName;
+import org.junit.Test;
+import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
+import posters.functional.modules.AddToCart;
+import posters.functional.modules.OpenCartOverview;
+import posters.functional.modules.OpenHomepage;
 
 /**
  * <p>Verifies that an error is shown if the product count of the cart couldn&#39;t be updated.</p>
  */
-@ScriptName
-("posters.functional.errorChecking.TInvalidProductCountInCart")
-public class TInvalidProductCountInCart extends AbstractScriptTestCase
+public class TInvalidProductCountInCart extends AbstractWebDriverScriptTestCase
 {
+
+    /**
+     * Constructor.
+     */
+    public TInvalidProductCountInCart()
+    {
+        super("https://localhost:8443");
+    }
+
+
+    /**
+     * Executes the test.
+     *
+     * @throws Throwable if anything went wrong
+     */
+    @Test
+    public void test() throws Throwable
+    {
+        OpenHomepage.execute();
+
+        AddToCart.execute();
+
+        //
+        // ~~~ OpenCartOverview ~~~
+        //
+        startAction("OpenCartOverview");
+        OpenCartOverview.execute();
+
+        //
+        // ~~~ UpdateProductCount ~~~
+        //
+        startAction("UpdateProductCount");
+        assertValue("//input[@id='productCount0']", "1");
+        click("//button[@id='btnUpdateProdCount0']");
+        type("//input[@id='productCount0']", "10000");
+        click("id=btnUpdateProdCount0");
+        // validate
+        waitForText("id=errorMessage", "× The product count could not be updated. Please try again.");
+        assertVisible("id=errorMessage");
+        assertText("//input[@id='productCount0']", "1000");
+
+    }
+
 }

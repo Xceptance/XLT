@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080/">
-  <module name="modules.Open_ExamplePage"/>
-  <command name="storeXpathCount" target="id('xyz')" value="notexisting"/>
-  <command name="assertXpathCount" target="id('xyz')" value="${notexisting}"/>
-  <command name="storeXpathCount" target="id('xpath_count')/input" value="existing"/>
-  <command name="assertXpathCount" target="id('xpath_count')/input" value="${existing}"/>
-</testcase>

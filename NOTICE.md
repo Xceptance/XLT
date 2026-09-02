@@ -123,12 +123,6 @@ flexmark-java
   * Homepage: https://github.com/vsch/flexmark-java
   * More information in folder: doc/3rd-party-licenses/flexmark-java
 
-freemarker
-
-  * License: Apache License 2.0
-  * Homepage: https://freemarker.apache.org/
-  * More information in folder: doc/3rd-party-licenses/freemarker
-
 google-api-services-compute
 
   * License: Apache License 2.0
@@ -273,12 +267,6 @@ opentelemetry
   * Homepage: https://github.com/open-telemetry
   * More information in folder: doc/3rd-party-licenses/opentelemetry
 
-pegdown
-
-  * License: Apache License 2.0
-  * Homepage: https://github.com/sirthias/pegdown
-  * More information in folder: doc/3rd-party-licenses/pegdown
-
 progressbar
 
   * License: MIT License
@@ -352,7 +340,7 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
-
+  
 crosshair
 
   * License: MIT License

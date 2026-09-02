@@ -23,7 +23,6 @@ import java.util.function.BiFunction;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitScriptCommands;
 import com.xceptance.xlt.engine.scripting.webdriver.WebDriverScriptCommands;
 
 /**
@@ -34,48 +33,6 @@ import com.xceptance.xlt.engine.scripting.webdriver.WebDriverScriptCommands;
  */
 public class AllScriptCommandsAvailableInXltApiTest
 {
-    /**
-     * Check the methods of class {@link AbstractHtmlUnitCommandsModule}.
-     */
-    @Test
-    public void testAbstractHtmlUnitCommandsModule()
-    {
-        // implemented methods
-        final Method[] expectedMethods = ScriptCommands.class.getDeclaredMethods();
-        final Method[] actualMethods = AbstractHtmlUnitCommandsModule.class.getDeclaredMethods();
-
-        // check the methods
-        checkAllMethods(expectedMethods, actualMethods, AllScriptCommandsAvailableInXltApiTest::isImplemented_HtmlUnit);
-    }
-
-    /**
-     * Check the methods of class {@link AbstractHtmlUnitScriptAction}.
-     */
-    @Test
-    public void testAbstractHtmlUnitScriptAction()
-    {
-        // implemented methods
-        final Method[] expectedMethods = ScriptCommands.class.getDeclaredMethods();
-        final Method[] actualMethods = AbstractHtmlUnitScriptAction.class.getDeclaredMethods();
-
-        // check the methods
-        checkAllMethods(expectedMethods, actualMethods, AllScriptCommandsAvailableInXltApiTest::isImplemented_HtmlUnit);
-    }
-
-    /**
-     * Check the methods of class {@link HtmlUnitScriptCommands}.
-     */
-    @Test
-    public void testHtmlUnitScriptCommands()
-    {
-        // implemented methods
-        final Method[] expectedMethods = ScriptCommands.class.getDeclaredMethods();
-        final Method[] actualMethods = HtmlUnitScriptCommands.class.getMethods();
-
-        // check the methods
-        checkAllMethods(expectedMethods, actualMethods, AllScriptCommandsAvailableInXltApiTest::isImplemented_HtmlUnit);
-    }
-
     /**
      * Check the methods of class {@link WebDriverScriptCommands}.
      */
@@ -163,18 +120,6 @@ public class AllScriptCommandsAvailableInXltApiTest
             }
         }
         Assert.assertEquals("", missingMethods);
-    }
-
-    // check, if the two given methods are equal
-    private static boolean isImplemented_HtmlUnit(final Method expectedMethod, final Method actualMethod)
-    {
-        // special methods, which don't need to be implemented
-        if (expectedMethod.getName().equals("startAction") || expectedMethod.getName().equals("open"))
-        {
-            return true;
-        }
-
-        return isImplemented(expectedMethod, actualMethod);
     }
 
     // check, if the two given methods are equal

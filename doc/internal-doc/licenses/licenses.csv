@@ -15,7 +15,6 @@ dec,MIT License,https://brotli.org/,
 dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
 dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,Not the full library has been used and modifications have been applied.
 flexmark-java,BSD 2-Clause License,https://github.com/vsch/flexmark-java,
-freemarker,Apache License 2.0,https://freemarker.apache.org/,
 google-api-services-compute,Apache License 2.0,https://developers.google.com/api-client-library/java/,
 groovy,Apache License 2.0,https://github.com/apache/groovy,
 hessian,Apache License 2.0,http://hessian.caucho.com/,which version exactly?
@@ -40,7 +39,6 @@ moby-names-generator,MIT License,https://github.com/schnatterer/moby-names-gener
 neko-htmlunit,Apache License 2.0,https://github.com/HtmlUnit/htmlunit-neko,
 okhttp,Apache License 2.0,https://github.com/square/okhttp,
 opentelemetry,Apache License 2.0,https://github.com/open-telemetry,
-pegdown,Apache License 2.0,https://github.com/sirthias/pegdown,
 progressbar,MIT License,https://github.com/ctongfei/progressbar,
 saxon-he,Mozilla Public License 2.0,https://www.saxonica.com/,
 selenium-java,Apache License 2.0,https://selenium.dev/,
