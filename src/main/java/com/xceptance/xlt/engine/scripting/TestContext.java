@@ -442,6 +442,8 @@ public class TestContext
             scope = new VariableScope(((AbstractTestCase) object).getTestDataSet(), scope);
         }
 
+        scope = new VariableScope(getData(object), scope);
+
         setScope(scope);
     }
 
