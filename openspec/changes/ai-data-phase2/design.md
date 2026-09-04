@@ -83,6 +83,18 @@ unit test so a change fails loudly.
   `colorizationGroupName` is deliberately not used, even though it is populated in the sample where
   `labels` is not. It is a presentation grouping derived for colouring the HTML table, not something
   the run assigned to the timer, so it would look like a label without being one.
+- Load profile settings that are identical for every test case are stated once above the table
+  instead of repeated down a column. In the sample run four of seven columns held one value across
+  all thirteen rows. The token saving is minor; the point is that a column asserts "this varies,
+  compare it", and a constant column asserts something false. Settings that do vary stay columns.
+- A load function that changes over the run is emitted as `second:value` pairs. Min and max alone
+  render a step profile identically to a smooth ramp, so the shape needs its own representation.
+  Functions with a single point produce nothing, since they do not change.
+- Summary scopes with a count of zero are dropped. A row of zeros for page load timings says "zero
+  page loads were recorded", which is a different claim from "page loads were not measured", and a
+  table cannot distinguish them.
+- Text explaining a column is emitted only where that column is. Otherwise the prose has to hedge
+  ("when the run assigns labels, a column appears") about something the reader cannot see.
 - `Iterations` is dropped when all rows are 0. Zero does not mean "zero iterations completed", it
   means "not configured", and a model reads it literally.
 

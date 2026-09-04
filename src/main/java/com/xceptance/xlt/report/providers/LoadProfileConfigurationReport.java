@@ -47,6 +47,13 @@ public class LoadProfileConfigurationReport
      */
     public Integer arrivalRateMax = null;
 
+    /**
+     * The arrival rate load function as <code>second:value</code> pairs, or <code>null</code> when the rate does not
+     * change over the run. Min and max only say where the function starts and ends, which loses the shape of anything
+     * more interesting than a single ramp - a stepped or spiky profile looks the same as a smooth climb.
+     */
+    public String arrivalRateProfile = null;
+
     public BigDecimal arrivalRatePercentage = null;
 
     @XStreamConverter(ComplexLoadFunctionXStreamConverter.class)
@@ -74,6 +81,14 @@ public class LoadProfileConfigurationReport
      * @see #arrivalRateMin
      */
     public Integer numberOfUsersMax = null;
+
+    /**
+     * The user count load function as <code>second:value</code> pairs, or <code>null</code> when the count does not
+     * change over the run.
+     *
+     * @see #arrivalRateProfile
+     */
+    public String numberOfUsersProfile = null;
 
     public BigDecimal numberOfUsersPercentage = null;
 
@@ -109,8 +124,39 @@ public class LoadProfileConfigurationReport
 
         this.arrivalRateMin = minOfLoadFunction(this.arrivalRate);
         this.arrivalRateMax = maxOfLoadFunction(this.arrivalRate);
+        this.arrivalRateProfile = profileOfLoadFunction(this.arrivalRate);
         this.numberOfUsersMin = minOfLoadFunction(this.numberOfUsers);
         this.numberOfUsersMax = maxOfLoadFunction(this.numberOfUsers);
+        this.numberOfUsersProfile = profileOfLoadFunction(this.numberOfUsers);
+    }
+
+    /**
+     * Renders a load function as <code>second:value</code> pairs, so that a profile which changes over the run keeps
+     * its shape instead of collapsing to a min and a max.
+     *
+     * @param loadFunction
+     *            the load function, may be <code>null</code>
+     * @return the pairs, or <code>null</code> when the function holds fewer than two points and therefore does not
+     *         change over time
+     */
+    private static String profileOfLoadFunction(final int[][] loadFunction)
+    {
+        if (loadFunction == null || loadFunction.length < 2)
+        {
+            return null;
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        for (final int[] point : loadFunction)
+        {
+            if (sb.length() > 0)
+            {
+                sb.append(' ');
+            }
+            sb.append(point[0]).append(':').append(point[1]);
+        }
+
+        return sb.toString();
     }
 
     /**

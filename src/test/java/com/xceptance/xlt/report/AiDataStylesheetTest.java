@@ -159,6 +159,54 @@ public class AiDataStylesheetTest
     }
 
     @Test
+    public void testConstantLoadProfileColumnsHoisted()
+    {
+        // both fixture test cases share a shutdown period, so it is stated once instead of repeated
+        Assert.assertTrue("Constants not hoisted", output.contains("Same for every test case:"));
+        Assert.assertTrue("Shutdown not hoisted", output.contains("shutdown 0 s"));
+
+        final String header = tableHeader("## Load Profile");
+        Assert.assertFalse("Shutdown should not be a column: " + header, header.contains("Shutdown"));
+    }
+
+    @Test
+    public void testVaryingLoadProfileColumnsKept()
+    {
+        // measurement and ramp-up differ between the two fixture cases, so they stay as columns
+        final String header = tableHeader("## Load Profile");
+
+        Assert.assertTrue("Measurement varies and must stay: " + header, header.contains("Measurement"));
+        Assert.assertTrue("Ramp-Up varies and must stay: " + header, header.contains("Ramp-Up"));
+    }
+
+    @Test
+    public void testLoadFunctionShapeKept()
+    {
+        // min and max alone cannot tell a step profile from a smooth ramp
+        final String header = tableHeader("## Load Profile");
+
+        Assert.assertTrue("Shape column missing: " + header, header.contains("Arrival Rate Over Time"));
+        Assert.assertTrue("Shape lost", output.contains("| 0:1 600:500 1200:100 |"));
+        Assert.assertTrue("Shape not explained", output.contains("second:value"));
+    }
+
+    @Test
+    public void testZeroCountSummaryScopesDropped()
+    {
+        // "zero page loads were recorded" is a different claim from "page loads were not measured"
+        Assert.assertTrue("Summary missing", output.contains("| All Transactions |"));
+        Assert.assertFalse("Zero row emitted", output.contains("All Page Load Timings"));
+    }
+
+    @Test
+    public void testLabelsExplanationOnlyWithTheColumn()
+    {
+        // the fixture labels its requests, so the paragraph belongs here and must not hedge
+        Assert.assertTrue("Labels not explained", output.contains("The Labels column comes from"));
+        Assert.assertFalse("Hedged wording survived", output.contains("When the run assigns labels"));
+    }
+
+    @Test
     public void testUnusedIterationsColumnDropped()
     {
         final String header = tableHeader("## Load Profile");
@@ -359,6 +407,20 @@ public class AiDataStylesheetTest
                        <shutdownPeriod>0</shutdownPeriod>
                        <userName>TFixture</userName>
                      </testCase>
+                     <testCase>
+                       <arrivalRateMin>1</arrivalRateMin>
+                       <arrivalRateMax>500</arrivalRateMax>
+                       <arrivalRateProfile>0:1 600:500 1200:100</arrivalRateProfile>
+                       <arrivalRate>1...500</arrivalRate>
+                       <numberOfUsersMin>10</numberOfUsersMin>
+                       <numberOfUsersMax>10</numberOfUsersMax>
+                       <numberOfUsers>10</numberOfUsers>
+                       <numberOfIterations>0</numberOfIterations>
+                       <measurementPeriod>1800</measurementPeriod>
+                       <rampUpPeriod>120</rampUpPeriod>
+                       <shutdownPeriod>0</shutdownPeriod>
+                       <userName>TStepped</userName>
+                     </testCase>
                    </loadProfile>
                  </configuration>
                  <general>
@@ -435,6 +497,13 @@ public class AiDataStylesheetTest
                      <errors>903</errors>
                      <errorPercentage>17.2</errorPercentage>
                    </transactions>
+                   <pageLoadTimings>
+                     <name>All Page Load Timings</name>
+                     <count>0</count>
+                     <countPerSecond>0</countPerSecond>
+                     <errors>0</errors>
+                     <errorPercentage>0</errorPercentage>
+                   </pageLoadTimings>
                    <timeSeries>
                      <interval>30</interval>
                      <buckets>2</buckets>

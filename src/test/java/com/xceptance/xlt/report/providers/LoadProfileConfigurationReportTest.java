@@ -77,6 +77,45 @@ public class LoadProfileConfigurationReportTest
     }
 
     @Test
+    public void testVaryingLoadFunctionKeepsItsShape()
+    {
+        final TestCaseLoadProfileConfiguration config = new TestCaseLoadProfileConfiguration();
+        config.setArrivalRate(new int[][]
+            {
+                {
+                    0, 1
+                },
+                {
+                    600, 500
+                },
+                {
+                    1200, 100
+                }
+            });
+
+        final LoadProfileConfigurationReport report = new LoadProfileConfigurationReport(config);
+
+        // min and max would render this the same as a smooth climb to 500
+        Assert.assertEquals("0:1 600:500 1200:100", report.arrivalRateProfile);
+    }
+
+    @Test
+    public void testConstantLoadFunctionHasNoProfile()
+    {
+        final TestCaseLoadProfileConfiguration config = new TestCaseLoadProfileConfiguration();
+        config.setNumberOfUsers(new int[][]
+            {
+                {
+                    0, 1021
+                }
+            });
+
+        final LoadProfileConfigurationReport report = new LoadProfileConfigurationReport(config);
+
+        Assert.assertNull("A function that does not change needs no shape", report.numberOfUsersProfile);
+    }
+
+    @Test
     public void testRenderedLoadFunctionIsUntouched()
     {
         final int[][] loadFunction = new int[][]

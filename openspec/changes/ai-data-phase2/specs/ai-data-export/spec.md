@@ -356,6 +356,28 @@ The AI data file SHALL emit numbers in an unambiguous machine-readable form.
   configured
 - **THEN** the column SHALL be omitted rather than emitted as zero
 
+#### Scenario: Constant columns stated once
+- **WHEN** a load profile setting holds the same value for every test case
+- **THEN** it SHALL be stated once above the table rather than repeated as a column, since a column
+  of identical values invites a comparison that cannot be made
+
+#### Scenario: Varying settings stay columns
+- **WHEN** a load profile setting differs between test cases
+- **THEN** it SHALL be emitted as a column
+
+#### Scenario: Load function shape preserved
+- **WHEN** a load function changes over the course of the run
+- **THEN** the file SHALL carry its points as time and value pairs, so that a stepped or spiky
+  profile can be told apart from a smooth ramp
+
+#### Scenario: Unmeasured scopes omitted from the summary
+- **WHEN** a summary scope has a count of zero because the run never measured it
+- **THEN** its row SHALL be omitted rather than emitted as zeros
+
+#### Scenario: Explanations follow their columns
+- **WHEN** a column is omitted because it carries nothing for this run
+- **THEN** any text explaining that column SHALL be omitted with it
+
 ---
 
 ### Requirement: AI Data — User Documentation

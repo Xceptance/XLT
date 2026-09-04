@@ -61,11 +61,6 @@ A request is a single HTTP operation. This section reflects server and network b
 most directly. Request names derive from the action name and may have been merged by
 filter and transformation rules, so one row can aggregate many distinct URLs.
 
-When the run assigns labels, a Labels column appears. Labels come from the report's
-labeling rules and are how a run qualifies its requests - by business area, page type, or
-whatever the rules assign. One row can carry several, separated by spaces. Group by them to
-compare areas rather than individual requests.
-
 Request runtime is the network time plus the client-side time to process headers and
 protocol data and hand the payload to the application.
 
@@ -87,6 +82,26 @@ Network timings are socket-level means:
 
 BytesSent and BytesRecv are measured on the wire, so compressed payloads are counted
 compressed, not as expanded by the parser.
+</xsl:text>
+    </xsl:template>
+
+    <xsl:template name="ai-desc-labels">
+<xsl:text>
+The Labels column comes from the report's labeling rules and is how this run qualifies its
+requests - by business area, page type, or whatever the rules assign. One row can carry
+several, separated by spaces. Group by them to compare areas rather than individual
+requests.
+</xsl:text>
+    </xsl:template>
+
+    <xsl:template name="ai-desc-load-profile">
+<xsl:text>
+An "Over Time" column describes a load function that changes during the run, as
+`second:value` pairs counted from the start of the test. `0:1 900:3535` means the value
+climbs from 1 at the start to 3535 at 900 seconds and holds there. Without it a stepped or
+spiky profile would look the same as a smooth ramp, since only the endpoints would survive.
+
+The plain Users and Arrival Rate columns are the peak the function reaches.
 </xsl:text>
     </xsl:template>
 

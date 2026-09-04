@@ -52,8 +52,15 @@
 - [x] 4.3 Requests table: suppress network columns that are uniformly zero
 - [x] 4.3a Requests table: add a `Labels` column from `TimerReport.labels`, omitted when no request
       carries a label
-- [x] 4.4 Load profile: drop `Iterations` when all zero; render `arrivalRateMin` /
-      `arrivalRateMax` from the raw fields added in 0.2 (do not parse the rendered `1...3,535` form)
+- [x] 4.4 Load profile: drop `Iterations` when all zero; render arrival rate and users from the
+      numeric fields added in 0.2 (do not parse the rendered `1...3,535` form)
+- [x] 4.4a Load profile: state settings that are constant across test cases once above the table,
+      keep them as columns only when they vary
+- [x] 4.4b Load profile: add `arrivalRateProfile` / `numberOfUsersProfile` to the report model as
+      `second:value` pairs, emitted only for functions that change over the run, and render them as
+      "Over Time" columns
+- [x] 4.4c Summary: omit scopes whose count is zero rather than emitting a row of zeros
+- [x] 4.4d Emit the labels explanation only where the labels column exists
 - [x] 4.5 Custom Values: apply the rounding helpers (own table, not covered by 4.1)
 - [x] 4.6 Web Vitals: apply the rounding helpers and add the description line — CLS unitless, the
       rest milliseconds, all scores 75th percentile per action

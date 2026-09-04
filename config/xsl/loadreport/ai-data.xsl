@@ -268,14 +268,19 @@
     and error rates without the reader adding up a table first.
     -->
     <xsl:template name="summary">
-        <xsl:if test="summary/*[count]">
+        <!--
+        A scope the run never measured would otherwise print as four zeros, and "zero page
+        loads were recorded" is a different statement from "page loads were not measured".
+        A model cannot tell them apart from a table, so the row is left out.
+        -->
+        <xsl:if test="summary/*[number(count) &gt; 0]">
             <xsl:variable name="headers" as="xs:string*"
                           select="'Scope', 'Count', 'Count/s', 'Errors', 'Error%'" />
 
             <xsl:text>&#10;## Summary&#10;&#10;</xsl:text>
             <xsl:value-of select="ai:header($headers)" />
 
-            <xsl:for-each select="summary/*[count]">
+            <xsl:for-each select="summary/*[number(count) &gt; 0]">
                 <xsl:variable name="cells" as="xs:string*">
                     <xsl:sequence select="string(name)" />
                     <xsl:sequence select="ai:int(count)" />
@@ -438,35 +443,103 @@
             <xsl:variable name="cases" select="configuration/loadProfile/testCase" />
 
             <!--
-            Iterations is zero for every row unless iteration mode is in use, and zero
-            there does not mean "none completed", it means "not configured". A model
-            reads it literally, so the column only appears when it carries something.
+            A column whose value is the same in every row invites a comparison that cannot be
+            made. Most runs configure one measurement period, ramp-up and shutdown for all test
+            cases, so those get stated once above the table and only become columns when a run
+            actually varies them.
+            -->
+            <xsl:variable name="varyMeasurement" select="count(distinct-values($cases/measurementPeriod)) &gt; 1" />
+            <xsl:variable name="varyRampUp" select="count(distinct-values($cases/rampUpPeriod)) &gt; 1" />
+            <xsl:variable name="varyShutdown" select="count(distinct-values($cases/shutdownPeriod)) &gt; 1" />
+
+            <!--
+            Iterations is zero for every row unless iteration mode is in use, and zero there does
+            not mean "none completed", it means "not configured". A model reads it literally.
             -->
             <xsl:variable name="showIterations" select="not(ai:all-zero($cases/numberOfIterations))" />
 
+            <!-- the shape only matters when a load function actually changes over the run -->
+            <xsl:variable name="showUserProfile" select="exists($cases/numberOfUsersProfile[. != ''])" />
+            <xsl:variable name="showRateProfile" select="exists($cases/arrivalRateProfile[. != ''])" />
+            <xsl:variable name="showRate" select="exists($cases/arrivalRateMax)" />
+
+            <xsl:text>&#10;## Load Profile&#10;</xsl:text>
+
+            <xsl:variable name="constants" as="xs:string*">
+                <xsl:if test="not($varyMeasurement)">
+                    <xsl:sequence select="concat('measurement ', ai:int($cases[1]/measurementPeriod), ' s')" />
+                </xsl:if>
+                <xsl:if test="not($varyRampUp)">
+                    <xsl:sequence select="concat('ramp-up ', ai:int($cases[1]/rampUpPeriod), ' s')" />
+                </xsl:if>
+                <xsl:if test="not($varyShutdown)">
+                    <xsl:sequence select="concat('shutdown ', ai:int($cases[1]/shutdownPeriod), ' s')" />
+                </xsl:if>
+            </xsl:variable>
+
+            <xsl:if test="exists($constants)">
+                <xsl:text>&#10;Same for every test case: </xsl:text>
+                <xsl:value-of select="string-join($constants, ', ')" />
+                <xsl:text>.&#10;</xsl:text>
+            </xsl:if>
+
+            <xsl:if test="$showUserProfile or $showRateProfile">
+                <xsl:call-template name="ai-desc-load-profile" />
+            </xsl:if>
+
             <xsl:variable name="headers" as="xs:string*">
-                <xsl:sequence select="'Test Case', 'Users', 'Arrival Rate Min', 'Arrival Rate Max'" />
+                <xsl:sequence select="'Test Case', 'Users'" />
+                <xsl:if test="$showUserProfile">
+                    <xsl:sequence select="'Users Over Time'" />
+                </xsl:if>
+                <xsl:if test="$showRate">
+                    <xsl:sequence select="'Arrival Rate'" />
+                </xsl:if>
+                <xsl:if test="$showRateProfile">
+                    <xsl:sequence select="'Arrival Rate Over Time'" />
+                </xsl:if>
                 <xsl:if test="$showIterations">
                     <xsl:sequence select="'Iterations'" />
                 </xsl:if>
-                <xsl:sequence select="'Measurement', 'Ramp-Up', 'Shutdown'" />
+                <xsl:if test="$varyMeasurement">
+                    <xsl:sequence select="'Measurement'" />
+                </xsl:if>
+                <xsl:if test="$varyRampUp">
+                    <xsl:sequence select="'Ramp-Up'" />
+                </xsl:if>
+                <xsl:if test="$varyShutdown">
+                    <xsl:sequence select="'Shutdown'" />
+                </xsl:if>
             </xsl:variable>
 
-            <xsl:text>&#10;## Load Profile&#10;&#10;</xsl:text>
+            <xsl:text>&#10;</xsl:text>
             <xsl:value-of select="ai:header($headers)" />
 
             <xsl:for-each select="$cases">
                 <xsl:variable name="cells" as="xs:string*">
-                    <xsl:sequence select="if (userName != '') then string(userName) else string(testCaseClassName)" />
+                    <xsl:sequence select="if (userName != '') then ai:cell(userName) else ai:cell(testCaseClassName)" />
                     <xsl:sequence select="ai:int(numberOfUsersMax)" />
-                    <xsl:sequence select="ai:int(arrivalRateMin)" />
-                    <xsl:sequence select="ai:int(arrivalRateMax)" />
+                    <xsl:if test="$showUserProfile">
+                        <xsl:sequence select="string(numberOfUsersProfile)" />
+                    </xsl:if>
+                    <xsl:if test="$showRate">
+                        <xsl:sequence select="ai:int(arrivalRateMax)" />
+                    </xsl:if>
+                    <xsl:if test="$showRateProfile">
+                        <xsl:sequence select="string(arrivalRateProfile)" />
+                    </xsl:if>
                     <xsl:if test="$showIterations">
                         <xsl:sequence select="ai:int(numberOfIterations)" />
                     </xsl:if>
-                    <xsl:sequence select="ai:int(measurementPeriod)" />
-                    <xsl:sequence select="ai:int(rampUpPeriod)" />
-                    <xsl:sequence select="ai:int(shutdownPeriod)" />
+                    <xsl:if test="$varyMeasurement">
+                        <xsl:sequence select="ai:int(measurementPeriod)" />
+                    </xsl:if>
+                    <xsl:if test="$varyRampUp">
+                        <xsl:sequence select="ai:int(rampUpPeriod)" />
+                    </xsl:if>
+                    <xsl:if test="$varyShutdown">
+                        <xsl:sequence select="ai:int(shutdownPeriod)" />
+                    </xsl:if>
                 </xsl:variable>
                 <xsl:value-of select="ai:row($cells)" />
             </xsl:for-each>
@@ -613,6 +686,9 @@
 
             <xsl:text>&#10;## Requests&#10;</xsl:text>
             <xsl:call-template name="ai-desc-requests" />
+            <xsl:if test="$showLabels">
+                <xsl:call-template name="ai-desc-labels" />
+            </xsl:if>
             <xsl:text>&#10;</xsl:text>
             <xsl:value-of select="ai:header($headers)" />
 

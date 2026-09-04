@@ -90,8 +90,9 @@ document.
 
 ### Summary
 
-Totals across all transactions, actions and requests: count, count per second, errors, error
-percentage.
+Totals per scope: count, count per second, errors, error percentage. A scope the run never measured
+is left out rather than shown as zeros — "zero page loads were recorded" and "page loads were not
+measured" are different statements, and a table cannot tell them apart.
 
 ### Time Series
 
@@ -99,9 +100,25 @@ The only section with a time dimension. See [Time series](#time-series-1) below.
 
 ### Load Profile
 
-Per test case: users, arrival rate range, measurement period, ramp-up, shutdown. The `Iterations`
-column appears only when iteration mode is in use — a zero there means "not configured", not "none
-completed", and a model reads it literally.
+Per test case: users, arrival rate, and any period that differs between test cases.
+
+Settings that are the same for every test case are stated once above the table rather than repeated
+down a column, because a column of identical values invites a comparison that cannot be made:
+
+```
+Same for every test case: measurement 4500 s, ramp-up 900 s, shutdown 300 s.
+```
+
+When a run does vary a period per test case, it becomes a column again.
+
+**Load functions that change over the run** get an "Over Time" column holding `second:value` pairs
+counted from the start of the test. `0:1 600:500 1200:100` is a climb to 500 at ten minutes followed
+by a drop to 100. Without it, only the endpoints would survive, and a stepped or spiky profile would
+be indistinguishable from a smooth ramp. The plain `Users` and `Arrival Rate` columns hold the peak
+the function reaches.
+
+The `Iterations` column appears only when iteration mode is in use — a zero there means "not
+configured", not "none completed", and a model reads it literally.
 
 ### Transactions, Actions, Requests, Page Load Timings, Custom Timers
 
@@ -111,11 +128,11 @@ deviation, and every percentile the report is configured for.
 `Median` appears only when no P50 percentile is configured. When P50 is present the two are the
 same number in every row, so one of them is dropped.
 
-A `Labels` column appears on any of these tables whose entries carry labels. Labels come from the
-report's labeling rules and are how a run qualifies its timers — by business area, page type, or
-whatever the rules assign. One row can carry several, separated by spaces, which lets a model group
-and compare areas rather than individual names. Each table omits the column when nothing in it is
-labelled.
+A `Labels` column appears on any of these tables whose entries carry labels, along with a paragraph
+explaining it. Labels come from the report's labeling rules and are how a run qualifies its timers —
+by business area, page type, or whatever the rules assign. One row can carry several, separated by
+spaces, which lets a model group and compare areas rather than individual names. Each table omits
+the column, and its explanation, when nothing in it is labelled.
 
 Requests additionally carry socket-level network timing means — DNS, connect, send, server busy,
 receive, time to first bytes — plus mean bytes sent and received. A timing column that is zero for
