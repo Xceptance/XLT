@@ -80,6 +80,7 @@ public class LoadProfileConfigurationReportTest
     public void testVaryingLoadFunctionKeepsItsShape()
     {
         final TestCaseLoadProfileConfiguration config = new TestCaseLoadProfileConfiguration();
+        config.setRampUpPeriod(600);
         config.setArrivalRate(new int[][]
             {
                 {
@@ -97,6 +98,71 @@ public class LoadProfileConfigurationReportTest
 
         // min and max would render this the same as a smooth climb to 500
         Assert.assertEquals("0:1 600:500 1200:100", report.arrivalRateProfile);
+    }
+
+    @Test
+    public void testPlainRampUpHasNoProfile()
+    {
+        // "0:1 900:3535" alongside "arrival rate 3535" and "ramp-up 900 s" says nothing new
+        final TestCaseLoadProfileConfiguration config = new TestCaseLoadProfileConfiguration();
+        config.setRampUpPeriod(900);
+        config.setArrivalRate(new int[][]
+            {
+                {
+                    0, 1
+                },
+                {
+                    900, 3535
+                }
+            });
+
+        final LoadProfileConfigurationReport report = new LoadProfileConfigurationReport(config);
+
+        Assert.assertNull("A plain ramp-up is already described by the peak and the ramp-up period",
+                          report.arrivalRateProfile);
+        Assert.assertEquals(Integer.valueOf(3535), report.arrivalRateMax);
+    }
+
+    @Test
+    public void testRampDownKeepsItsProfile()
+    {
+        // two points, but descending - the peak and the ramp-up period would not convey that
+        final TestCaseLoadProfileConfiguration config = new TestCaseLoadProfileConfiguration();
+        config.setRampUpPeriod(900);
+        config.setArrivalRate(new int[][]
+            {
+                {
+                    0, 3535
+                },
+                {
+                    900, 100
+                }
+            });
+
+        final LoadProfileConfigurationReport report = new LoadProfileConfigurationReport(config);
+
+        Assert.assertEquals("0:3535 900:100", report.arrivalRateProfile);
+    }
+
+    @Test
+    public void testRampToASecondPlateauKeepsItsProfile()
+    {
+        // the second point is not the end of ramp-up, so the shape is not implied
+        final TestCaseLoadProfileConfiguration config = new TestCaseLoadProfileConfiguration();
+        config.setRampUpPeriod(900);
+        config.setArrivalRate(new int[][]
+            {
+                {
+                    0, 1
+                },
+                {
+                    1800, 500
+                }
+            });
+
+        final LoadProfileConfigurationReport report = new LoadProfileConfigurationReport(config);
+
+        Assert.assertEquals("0:1 1800:500", report.arrivalRateProfile);
     }
 
     @Test

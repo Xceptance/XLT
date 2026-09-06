@@ -111,11 +111,16 @@ Same for every test case: measurement 4500 s, ramp-up 900 s, shutdown 300 s.
 
 When a run does vary a period per test case, it becomes a column again.
 
-**Load functions that change over the run** get an "Over Time" column holding `second:value` pairs
+**Load functions with a shape of their own** get an "Over Time" column holding `second:value` pairs
 counted from the start of the test. `0:1 600:500 1200:100` is a climb to 500 at ten minutes followed
-by a drop to 100. Without it, only the endpoints would survive, and a stepped or spiky profile would
+by a drop to 100. Without it, only the endpoints would survive and a stepped or spiky profile would
 be indistinguishable from a smooth ramp. The plain `Users` and `Arrival Rate` columns hold the peak
 the function reaches.
+
+A plain ramp-up gets no column. `0:1 900:3535` alongside an arrival rate of 3535 and a ramp-up of
+900 s would be saying the same thing a third time. The column appears when the function does
+something the peak and the ramp-up period do not already imply — a ramp down, a step, a second
+plateau.
 
 The `Iterations` column appears only when iteration mode is in use — a zero there means "not
 configured", not "none completed", and a model reads it literally.

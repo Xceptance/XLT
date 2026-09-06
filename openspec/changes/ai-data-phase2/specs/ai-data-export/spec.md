@@ -366,9 +366,16 @@ The AI data file SHALL emit numbers in an unambiguous machine-readable form.
 - **THEN** it SHALL be emitted as a column
 
 #### Scenario: Load function shape preserved
-- **WHEN** a load function changes over the course of the run
+- **WHEN** a load function changes over the course of the run in a way the peak value and ramp-up
+  period do not already describe
 - **THEN** the file SHALL carry its points as time and value pairs, so that a stepped or spiky
   profile can be told apart from a smooth ramp
+
+#### Scenario: A plain ramp-up needs no shape
+- **WHEN** a load function climbs from its lowest value at the start of the run to its highest at
+  the end of the ramp-up period, and does nothing else
+- **THEN** its points SHALL be omitted, since the peak value and the ramp-up period already state
+  the same thing
 
 #### Scenario: Unmeasured scopes omitted from the summary
 - **WHEN** a summary scope has a count of zero because the run never measured it

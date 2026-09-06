@@ -124,10 +124,10 @@ public class LoadProfileConfigurationReport
 
         this.arrivalRateMin = minOfLoadFunction(this.arrivalRate);
         this.arrivalRateMax = maxOfLoadFunction(this.arrivalRate);
-        this.arrivalRateProfile = profileOfLoadFunction(this.arrivalRate);
+        this.arrivalRateProfile = profileOfLoadFunction(this.arrivalRate, this.rampUpPeriod);
         this.numberOfUsersMin = minOfLoadFunction(this.numberOfUsers);
         this.numberOfUsersMax = maxOfLoadFunction(this.numberOfUsers);
-        this.numberOfUsersProfile = profileOfLoadFunction(this.numberOfUsers);
+        this.numberOfUsersProfile = profileOfLoadFunction(this.numberOfUsers, this.rampUpPeriod);
     }
 
     /**
@@ -136,12 +136,19 @@ public class LoadProfileConfigurationReport
      *
      * @param loadFunction
      *            the load function, may be <code>null</code>
-     * @return the pairs, or <code>null</code> when the function holds fewer than two points and therefore does not
-     *         change over time
+     * @param rampUpPeriod
+     *            the configured ramp-up period, used to recognise a plain ramp-up
+     * @return the pairs, or <code>null</code> when the function does not change over time, or changes only in the way
+     *         the ramp-up period already describes
      */
-    private static String profileOfLoadFunction(final int[][] loadFunction)
+    private static String profileOfLoadFunction(final int[][] loadFunction, final int rampUpPeriod)
     {
         if (loadFunction == null || loadFunction.length < 2)
+        {
+            return null;
+        }
+
+        if (isPlainRampUp(loadFunction, rampUpPeriod))
         {
             return null;
         }
@@ -157,6 +164,32 @@ public class LoadProfileConfigurationReport
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Tells whether the given function is nothing more than the configured ramp-up: two points, climbing from the
+     * lowest value at the start of the run to the highest at the end of the ramp-up.
+     * <p>
+     * Such a function is already fully described by the peak value and the ramp-up period, both of which the report
+     * states elsewhere, so spelling it out again would say nothing new.
+     *
+     * @param loadFunction
+     *            the load function
+     * @param rampUpPeriod
+     *            the configured ramp-up period
+     * @return whether the function is a plain ramp-up
+     */
+    private static boolean isPlainRampUp(final int[][] loadFunction, final int rampUpPeriod)
+    {
+        if (loadFunction.length != 2 || rampUpPeriod <= 0)
+        {
+            return false;
+        }
+
+        final int[] first = loadFunction[0];
+        final int[] second = loadFunction[1];
+
+        return first[0] == 0 && second[0] == rampUpPeriod && first[1] <= second[1];
     }
 
     /**

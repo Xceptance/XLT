@@ -89,7 +89,11 @@ unit test so a change fails loudly.
   compare it", and a constant column asserts something false. Settings that do vary stay columns.
 - A load function that changes over the run is emitted as `second:value` pairs. Min and max alone
   render a step profile identically to a smooth ramp, so the shape needs its own representation.
-  Functions with a single point produce nothing, since they do not change.
+  Functions with a single point produce nothing, since they do not change. Neither does a plain
+  ramp-up: two points climbing from the lowest value at second 0 to the highest at the end of the
+  ramp-up period is already stated by the peak column and the ramp-up period, and in the sample run
+  every one of the thirteen test cases had exactly that shape. A ramp down, a step, or a second
+  plateau all keep their points.
 - Summary scopes with a count of zero are dropped. A row of zeros for page load timings says "zero
   page loads were recorded", which is a different claim from "page loads were not measured", and a
   table cannot distinguish them.

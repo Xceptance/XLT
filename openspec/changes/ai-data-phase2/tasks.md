@@ -57,8 +57,8 @@
 - [x] 4.4a Load profile: state settings that are constant across test cases once above the table,
       keep them as columns only when they vary
 - [x] 4.4b Load profile: add `arrivalRateProfile` / `numberOfUsersProfile` to the report model as
-      `second:value` pairs, emitted only for functions that change over the run, and render them as
-      "Over Time" columns
+      `second:value` pairs, emitted only for functions whose shape is not already implied by the
+      peak and the ramp-up period, and render them as "Over Time" columns
 - [x] 4.4c Summary: omit scopes whose count is zero rather than emitting a row of zeros
 - [x] 4.4d Emit the labels explanation only where the labels column exists
 - [x] 4.5 Custom Values: apply the rounding helpers (own table, not covered by 4.1)
