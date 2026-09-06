@@ -195,6 +195,40 @@ themselves affected the measurements.
 - **THEN** it SHALL state that agent saturation inflates all measured times and that response
   times should then be read as upper bounds
 
+### Requirement: Navigation Link
+The report navigation SHALL include an "AI Data" link to `ai-data.md` in load reports.
+
+#### Scenario: AI summary file exists in load report
+- **WHEN** a load report is generated with the default configuration
+- **THEN** the navigation bar SHALL display an "AI Data" link pointing to `ai-data.md`
+
+#### Scenario: Trend and diff reports
+- **WHEN** a trend or diff report is generated
+- **THEN** the navigation bar SHALL NOT display the "AI Data" link (separate navigation templates)
+
+---
+
+### Requirement: Data Source — Standard Rendering Pipeline
+The AI data file SHALL be generated as a stylesheet transformation within the standard report
+rendering pipeline, reading data from `testreport.xml`.
+
+#### Scenario: Template-based generation
+- **WHEN** the report generator processes transformations
+- **THEN** `ai-data.xsl` SHALL be processed like any other report stylesheet, reading from the XML
+  data model
+
+#### Scenario: Output format
+- **WHEN** the stylesheet renders
+- **THEN** it SHALL use a text output method, so that no escaping is applied to the Markdown and
+  YAML it produces
+
+#### Scenario: Processor capability
+- **WHEN** the stylesheet is compiled
+- **THEN** the resolved XSLT processor SHALL support XSLT 3.0, which the grouping, functions and
+  regular expressions in this stylesheet require
+
+---
+
 ## ADDED Requirements
 
 ### Requirement: AI Data Content — Reading Rules

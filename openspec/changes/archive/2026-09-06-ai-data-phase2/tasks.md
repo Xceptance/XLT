@@ -98,7 +98,7 @@
 
 - [x] 7.1 Fix the TTFB definition in `config/xsl/loadreport/text/descriptions.xsl` —
       TTFB = Connect + Send + ServerBusy, not including Receive Time
-- [ ] 7.2 On archive, confirm `openspec/specs/ai-data-export/spec.md` picked up the `ai-summary.md`
+- [x] 7.2 On archive, confirm `openspec/specs/ai-data-export/spec.md` picked up the `ai-summary.md`
       to `ai-data.md` rename from this change's delta
 - [x] 7.3 Remove the stale content from `doc/feature-doc/ai-data.md` — it documents
       `ai-summary.md`, a FreeMarker `ai-summary.ftl`, and a `transformations.18.templateFileName`
