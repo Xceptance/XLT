@@ -95,10 +95,17 @@
         <xsl:sequence select="normalize-space(replace(string($value), '\|', '\\|'))" />
     </xsl:function>
 
-    <!-- True when the given element is zero, absent or empty for every row. -->
+    <!--
+    True when the given element renders as zero for every row.
+
+    Rounds before comparing, deliberately. The raw values decide nothing here - what matters
+    is what the reader sees. Three requests in a sample report had DNS means of 0.318, 0.169
+    and 0.021: non-zero, so a raw comparison kept the column, and then all eighty rows
+    printed "0" anyway.
+    -->
     <xsl:function name="ai:all-zero" as="xs:boolean">
         <xsl:param name="values" as="node()*" />
-        <xsl:sequence select="every $v in $values satisfies (string($v) = '' or number($v) = 0)" />
+        <xsl:sequence select="every $v in $values satisfies (string($v) = '' or round(number($v)) = 0)" />
     </xsl:function>
 
     <!-- ============================================================ document -->

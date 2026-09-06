@@ -72,8 +72,15 @@ unit test so a change fails loudly.
 - `Median` is dropped **only when a `p50` percentile is configured**, since they are then the same
   number in every row. Where percentiles are configured without p50, `Median` is the only source
   and stays.
-- A request network column is suppressed when it is zero for every row, tested with
-  `every $r in $rows satisfies number($r/dnsTime/mean) = 0`.
+- A request network column is suppressed when it renders as zero for every row. The test rounds
+  before comparing, because what matters is what the reader sees, not the stored value. In the
+  sample run three of eighty requests had DNS means of 0.318, 0.169 and 0.021 - non-zero, so a raw
+  comparison kept the column, and then every row printed `0` anyway.
+- Two constant columns are kept on purpose. `FullGC` and `FullGC Time` are zero for every agent in
+  the sample, but the agent section explicitly tells the reader to check full GC time before
+  trusting the response times, and an absent column cannot answer that - a reader would not know
+  whether it was zero or unmeasured. Four rows of zeros is a fair price for evidence the section
+  asks for. Custom timer error columns are the same shape at the same scale.
 - Timer tables carry a `Labels` column from `TimerReport.labels`, the whitespace-delimited label
   string the report's labeling rules assign. It is what a run uses to qualify its timers - by
   business area, page type, or anything else - so it lets a model compare areas rather than

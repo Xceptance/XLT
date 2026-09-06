@@ -263,8 +263,10 @@ public class AiDataStylesheetTest
     {
         final String header = tableHeader("## Requests");
 
-        // dns, connect and send are zero for every row in the fixture
-        Assert.assertFalse("DNS should be dropped: " + header, header.contains("DNS"));
+        // dns is 0.318 in the fixture - non-zero, but it renders as 0, and a column of zeros is
+        // noise whatever the underlying value was
+        Assert.assertFalse("DNS rounds to zero everywhere and should be dropped: " + header,
+                           header.contains("DNS"));
         Assert.assertFalse("Connect should be dropped: " + header, header.contains("Connect"));
         Assert.assertTrue("ServerBusy carries data and must stay: " + header, header.contains("ServerBusy"));
     }
@@ -481,7 +483,7 @@ public class AiDataStylesheetTest
                      </percentiles>
                      <bytesSent><mean>100</mean></bytesSent>
                      <bytesReceived><mean>200</mean></bytesReceived>
-                     <dnsTime><mean>0.000</mean></dnsTime>
+                     <dnsTime><mean>0.318</mean></dnsTime>
                      <connectTime><mean>0.000</mean></connectTime>
                      <sendTime><mean>0.000</mean></sendTime>
                      <serverBusyTime><mean>30.000</mean></serverBusyTime>
