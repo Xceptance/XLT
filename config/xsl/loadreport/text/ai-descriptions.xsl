@@ -88,9 +88,9 @@ compressed, not as expanded by the parser.
     <xsl:template name="ai-desc-labels">
 <xsl:text>
 The Labels column comes from the report's labeling rules and is how this run qualifies its
-requests - by business area, page type, or whatever the rules assign. One row can carry
-several, separated by spaces. Group by them to compare areas rather than individual
-requests.
+timers (transactions, actions, requests) - by business area, page type, or whatever the
+rules assign. One row can carry several, separated by spaces. Group by them to compare
+areas rather than individual timers.
 </xsl:text>
     </xsl:template>
 

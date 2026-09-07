@@ -140,8 +140,8 @@ spaces, which lets a model group and compare areas rather than individual names.
 the column, and its explanation, when nothing in it is labelled.
 
 Requests additionally carry socket-level network timing means — DNS, connect, send, server busy,
-receive, time to first bytes — plus mean bytes sent and received. A timing column that is zero for
-every request is left out.
+receive, time to first bytes — plus mean bytes sent and received. A timing column that is zero (or
+rounds to 0 ms) for every request is left out.
 
 ### Custom Values
 
@@ -175,14 +175,14 @@ behaviour.
 
 Per action, the 75th percentile score and rating for CLS, FCP, LCP, INP and TTFB.
 
-## Time series
+## Time Series
 
 Everything else in the file is a single aggregate over the whole run. This section is what makes
 "when did it get slow" and "did the errors arrive in a burst" answerable.
 
 ```
 | Elapsed | Time | Transaction Mean | Transactions/s | Transaction Errors/s | Action Mean | Request Mean | Requests/s |
-| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 |  900 | 17:12:00 | 41683 | 22.5 | 0.02 | 512 | 98 | 201.4 |
 ```
 
@@ -205,7 +205,7 @@ The interval varies with test duration and is stated in the file:
 ```yaml
 interval: 60
 buckets: 75
-sourceResolution: 5
+sourceResolution: 4
 ```
 
 A fixed one-minute interval fails at both ends. A five minute test would produce five rows and hide
@@ -241,6 +241,7 @@ first:
 
 ```
 | # | Message | Count | Test Cases | Actions |
+| --- | ---: | ---: | ---: | ---: |
 | 1 | No element found for: {CSS=#dwfrm_shipping_...} | 3594 | 2 | 1 |
 | 2 | Unexpected HTTP status code. expected:<200> but was:<403> | 46 | 8 | 12 |
 ```
@@ -316,24 +317,39 @@ lines in `config/reportgenerator.properties`:
 The **AI Data** navigation link will still appear but lead nowhere. To remove it too, edit
 `config/xsl/loadreport/sections/navigation.xsl`.
 
-### Changing what it contains
+### Error trace limits
 
-The file is produced by `config/xsl/loadreport/ai-data.xsl`, with the explanatory prose in
-`config/xsl/loadreport/text/ai-descriptions.xsl`. Both are plain stylesheets — edit them and
-regenerate the report. **No compilation or build step is needed.**
+Stack trace inclusion is configurable in `config/reportgenerator.properties`:
 
-Two values at the top of `ai-data.xsl` are worth knowing about:
+```properties
+## The maximum number of error groups to include stack traces for in the AI data export (10 by default).
+# com.xceptance.xlt.reportgenerator.aiData.tracesIncludedFor = 10
+
+## The maximum number of leading stack trace frames to include per trace in the AI data export (8 by default).
+# com.xceptance.xlt.reportgenerator.aiData.traceFrames = 8
+```
+
+- `tracesIncludedFor` is how many of the largest error groups get a stack trace.
+- `traceFrames` is how many leading frames each of those keeps.
+
+Raise them when you are chasing a specific failure and want more of the stack, and remember that
+traces dominate the file size.
+
+These properties are passed into `config/xsl/loadreport/ai-data.xsl` as stylesheet parameters:
 
 ```xml
 <xsl:param name="tracesIncludedFor" select="10" />
 <xsl:param name="traceFrames" select="8" />
 ```
 
-`tracesIncludedFor` is how many of the largest error groups get a stack trace; `traceFrames` is how
-many leading frames each of those keeps. Raise them when you are chasing a specific failure and
-want more of the stack, and remember that traces dominate the file size.
+### Changing what it contains
 
-Beyond that you can add sections, remove ones you do not need, or change which columns appear.
+The file is produced by `config/xsl/loadreport/ai-data.xsl`, with the explanatory prose in
+`config/xsl/loadreport/text/ai-descriptions.xsl`. Both are plain stylesheets — edit them and
+regenerate the report. **No compilation or build step is needed.**
+
+Beyond the trace properties above, you can add sections, remove ones you do not need, or change which
+columns appear.
 
 ### Requirements
 

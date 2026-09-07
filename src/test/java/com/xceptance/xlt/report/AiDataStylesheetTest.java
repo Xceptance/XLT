@@ -364,6 +364,30 @@ public class AiDataStylesheetTest
     }
 
     @Test
+    public void testCustomTraceLimitsViaParameters() throws Exception
+    {
+        final Path testDir = Files.createTempDirectory("aidatatest-params-");
+        try
+        {
+            final File input = testDir.resolve("testreport.xml").toFile();
+            final File result = testDir.resolve("ai-data.md").toFile();
+
+            Files.write(input.toPath(), sampleReport().getBytes(StandardCharsets.UTF_8));
+            XSLTUtils.transform(input, result, STYLESHEET, java.util.Map.of("tracesIncludedFor", 1, "traceFrames", 3));
+
+            final String customOutput = Files.readString(result.toPath(), StandardCharsets.UTF_8);
+            Assert.assertTrue("Custom tracesIncludedFor parameter not applied",
+                              customOutput.contains("tracesIncludedFor: 1"));
+            Assert.assertTrue("Custom traceFrames parameter not applied",
+                              customOutput.contains("... 8 more frames"));
+        }
+        finally
+        {
+            FileUtils.deleteDirectoryRelaxed(testDir.toFile());
+        }
+    }
+
+    @Test
     public void testResponseCodesWithShare()
     {
         Assert.assertTrue("Response code section missing", output.contains("## Response Codes"));
