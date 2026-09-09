@@ -12,52 +12,39 @@
 
                     <div class="rating-container">
                         <xsl:if test="$rootNode/score">
-                            <xsl:variable name="rawScore" select="normalize-space($rootNode/score)" />
-                            <xsl:variable name="rawScoreUpper"
-                                select="translate($rawScore, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')" />
-                            <xsl:variable name="scoreNorm">
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="$rawScoreUpper = 'APLUS' or $rawScoreUpper = 'A_PLUS' or $rawScoreUpper = 'A PLUS' or $rawScore = 'A+' or $rawScore = 'a+'">
-                                        A+</xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="$rawScoreUpper" />
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:variable>
                             <div class="rating-bar">
                                 <span class="rating-item rating-item-aplus">
-                                    <xsl:if test="$scoreNorm = 'A+'">
+                                    <xsl:if test="$rootNode/score = 'A+'">
                                         <xsl:attribute name="class">rating-item rating-item-aplus rating-active</xsl:attribute>
                                     </xsl:if>
                                     <xsl:text>A+</xsl:text>
                                 </span>
                                 <span class="rating-item rating-item-a">
-                                    <xsl:if test="$scoreNorm = 'A'">
+                                    <xsl:if test="$rootNode/score = 'A'">
                                         <xsl:attribute name="class">rating-item rating-item-a rating-active</xsl:attribute>
                                     </xsl:if>
                                     <xsl:text>A</xsl:text>
                                 </span>
                                 <span class="rating-item rating-item-b">
-                                    <xsl:if test="$scoreNorm = 'B'">
+                                    <xsl:if test="$rootNode/score = 'B'">
                                         <xsl:attribute name="class">rating-item rating-item-b rating-active</xsl:attribute>
                                     </xsl:if>
                                     <xsl:text>B</xsl:text>
                                 </span>
                                 <span class="rating-item rating-item-c">
-                                    <xsl:if test="$scoreNorm = 'C'">
+                                    <xsl:if test="$rootNode/score = 'C'">
                                         <xsl:attribute name="class">rating-item rating-item-c rating-active</xsl:attribute>
                                     </xsl:if>
                                     <xsl:text>C</xsl:text>
                                 </span>
                                 <span class="rating-item rating-item-d">
-                                    <xsl:if test="$scoreNorm = 'D'">
+                                    <xsl:if test="$rootNode/score = 'D'">
                                         <xsl:attribute name="class">rating-item rating-item-d rating-active</xsl:attribute>
                                     </xsl:if>
                                     <xsl:text>D</xsl:text>
                                 </span>
                                 <span class="rating-item rating-item-f">
-                                    <xsl:if test="$scoreNorm = 'F'">
+                                    <xsl:if test="$rootNode/score = 'F'">
                                         <xsl:attribute name="class">rating-item rating-item-f rating-active</xsl:attribute>
                                     </xsl:if>
                                     <xsl:text>F</xsl:text>
