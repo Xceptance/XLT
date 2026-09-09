@@ -85,7 +85,7 @@
         <xsl:if test="configuration/loadProfile">
             <xsl:call-template name="load-profile">
                 <xsl:with-param name="rootNode" select="configuration" />
-                <xsl:with-param name="loadMeter" select="'false'" />
+                <xsl:with-param name="showLoadMeter" select="'false'" />
             </xsl:call-template>
         </xsl:if>
 

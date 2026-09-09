@@ -162,7 +162,7 @@
 
     <xsl:template name="load-profile-table">
         <xsl:param name="rootNode"/>
-        <xsl:param name="loadMeter" select="'true'"/>
+        <xsl:param name="showLoadMeter" select="'true'"/>
 
         <table class="">
             <thead>
@@ -276,7 +276,7 @@
                                     <xsl:value-of select="numberOfUsers"/>
                                 </td>
                                 <td class="value number">
-                                    <xsl:if test="$loadMeter != 'false'">
+                                    <xsl:if test="$showLoadMeter != 'false'">
                                         <xsl:attribute name="class">value number load-meter</xsl:attribute>
                                         <xsl:attribute name="style">--loadp:<xsl:value-of select="numberOfUsersPercentage"/></xsl:attribute>
                                     </xsl:if>
@@ -316,7 +316,7 @@
                                	<xsl:choose>
                                     <xsl:when test="string-length(arrivalRate) != 0">
                                         <td class="value number">
-                                            <xsl:if test="$loadMeter != 'false'">
+                                            <xsl:if test="$showLoadMeter != 'false'">
                                                 <xsl:attribute name="class">value number load-meter</xsl:attribute>
                                                 <xsl:attribute name="style">--loadp:<xsl:value-of select="arrivalRatePercentage"/></xsl:attribute>
                                             </xsl:if>
