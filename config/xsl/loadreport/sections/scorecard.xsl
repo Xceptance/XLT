@@ -22,7 +22,6 @@
             <xsl:variable name="ratingDef" select="$config/ratings/rating[@id = $ratingId]" />
             <xsl:variable name="error" select="$outcome/error" />
 
-            <div class="page-break"></div>
             <div class="section" id="scorecard-section">
                 <h2>Scorecard Summary</h2>
                 <div class="description">

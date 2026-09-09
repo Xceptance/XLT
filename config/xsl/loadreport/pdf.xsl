@@ -123,6 +123,7 @@
 
         <!-- Scorecard Summary (if present) -->
         <xsl:if test="$scorecardPresent = true() or $scorecardPresent = 'true'">
+            <div class="page-break"></div>
             <xsl:call-template name="scorecard-summary">
                 <xsl:with-param name="scorecardXmlUrl" select="$scorecardXmlUrl" />
             </xsl:call-template>
