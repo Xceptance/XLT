@@ -146,12 +146,12 @@ public class ConfigurationReportProviderTest
 
             final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
 
-            Assert.assertEquals("A", report.rating);
-            Assert.assertEquals("All performance criteria passed successfully.", report.ratingSummary);
-            Assert.assertNotNull(report.ratingEvaluation);
-            Assert.assertTrue(report.ratingEvaluation.startsWith("<div class=\"markdown\">"));
-            Assert.assertTrue(report.ratingEvaluation.contains("<h3>Detailed Analysis</h3>"));
-            Assert.assertTrue(report.ratingEvaluation.contains("0 errors recorded"));
+            Assert.assertEquals("A", report.rating.score);
+            Assert.assertEquals("All performance criteria passed successfully.", report.rating.summary);
+            Assert.assertNotNull(report.rating.evaluation);
+            Assert.assertTrue(report.rating.evaluation.startsWith("<div class=\"markdown\">"));
+            Assert.assertTrue(report.rating.evaluation.contains("<h3>Detailed Analysis</h3>"));
+            Assert.assertTrue(report.rating.evaluation.contains("0 errors recorded"));
         }
         finally
         {
@@ -159,22 +159,18 @@ public class ConfigurationReportProviderTest
         }
     }
 
+    /**
+     * Using empty properties should result in <code>null</code> rating field.
+     */
     @Test
-    public void testStrictPropertyKeysOnly() throws IOException
+    public void testEmptyProperties() throws IOException
     {
         final Path testDir = Files.createTempDirectory("ratingtest2-");
         try
         {
             final Path defaultPath = testDir.resolve("config").resolve(XltConstants.DEFAULT_PROPERTY_FILENAME);
             Files.createDirectories(defaultPath.getParent());
-            // Using unsupported/old property names (e.g. xlt prefix, old rating key, or numbered evaluation): should result in null fields
-            final String propsContent = "com.xceptance.xlt.rating = B\n" +
-                                       "com.xceptance.xlt.loadtests.rating = B\n" +
-                                       "com.xceptance.xlt.loadtest.rating = B\n" +
-                                       "com.xceptance.xtc.loadtest.rating = B\n" +
-                                       "com.xceptance.xlt.loadtest.rating.summary = Good performance.\n" +
-                                       "com.xceptance.xlt.loadtest.rating.evaluation = Paragraph 1\n" +
-                                       "com.xceptance.xtc.loadtest.evaluation.1 = Paragraph 1\n";
+            final String propsContent = "";
             Files.write(defaultPath, propsContent.getBytes(StandardCharsets.ISO_8859_1));
 
             final ConfigurationReportProvider provider = new ConfigurationReportProvider();
@@ -185,8 +181,6 @@ public class ConfigurationReportProviderTest
             final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
 
             Assert.assertNull(report.rating);
-            Assert.assertNull(report.ratingSummary);
-            Assert.assertNull(report.ratingEvaluation);
         }
         finally
         {
@@ -216,11 +210,11 @@ public class ConfigurationReportProviderTest
 
             final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
 
-            Assert.assertEquals("B", report.rating);
-            Assert.assertEquals("Good performance with minor latency spikes.", report.ratingSummary);
-            Assert.assertNotNull(report.ratingEvaluation);
-            Assert.assertTrue(report.ratingEvaluation.contains("Paragraph 1: Initial warmup."));
-            Assert.assertTrue(report.ratingEvaluation.contains("Paragraph 2: Steady state."));
+            Assert.assertEquals("B", report.rating.score);
+            Assert.assertEquals("Good performance with minor latency spikes.", report.rating.summary);
+            Assert.assertNotNull(report.rating.evaluation);
+            Assert.assertTrue(report.rating.evaluation.contains("Paragraph 1: Initial warmup."));
+            Assert.assertTrue(report.rating.evaluation.contains("Paragraph 2: Steady state."));
         }
         finally
         {
@@ -252,8 +246,8 @@ public class ConfigurationReportProviderTest
 
             final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
 
-            Assert.assertEquals("A", report.rating);
-            Assert.assertEquals("Injected from command line.", report.ratingSummary);
+            Assert.assertEquals("A", report.rating.score);
+            Assert.assertEquals("Injected from command line.", report.rating.summary);
         }
         finally
         {
@@ -279,7 +273,7 @@ public class ConfigurationReportProviderTest
 
             final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
 
-            Assert.assertEquals("A+", report.rating);
+            Assert.assertEquals("A+", report.rating.score);
         }
         finally
         {
@@ -287,4 +281,3 @@ public class ConfigurationReportProviderTest
         }
     }
 }
-

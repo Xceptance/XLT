@@ -90,9 +90,11 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     @Override
     public Object createReportFragment()
     {
+        final ReportGeneratorConfiguration reportGeneratorConfiguration = (ReportGeneratorConfiguration) getConfiguration();
+
         final ConfigurationReport report = new ConfigurationReport();
 
-        final File reportDirectory = getConfiguration().getReportDirectory();
+        final File reportDirectory = reportGeneratorConfiguration.getReportDirectory();
         final File configDir = new File(reportDirectory, XltConstants.CONFIG_DIR_NAME);
 
         final XltPropertiesImpl props;
@@ -106,8 +108,6 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         }
         catch (PropertyFileNotFoundException | PropertiesIOException | PropertiesConfigurationException | FileSystemException e)
         {
-            System.err.println();
-
             return report;
         }
 
@@ -117,7 +117,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         report.properties.putAll(mask(props.getProperties()));
 
         // add relevant report generator settings
-        report.reportGeneratorConfiguration = new ReportGeneratorConfigurationReport((ReportGeneratorConfiguration) getConfiguration());
+        report.reportGeneratorConfiguration = new ReportGeneratorConfigurationReport(reportGeneratorConfiguration);
 
         // add product information for later output
         report.version = ProductInformation.getProductInformation();
@@ -140,26 +140,17 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             report.comments.add(processComment(entry.getValue()));
         }
 
-        // get rating, rating summary, and rating evaluation (command-line/report configuration takes precedence over suite properties)
-        String rawRating = null;
-        String rawSummary = null;
-        String rawEvaluation = null;
+        // get rating score, rating summary, and rating evaluation (command-line/report configuration takes precedence
+        // over suite properties)
+        final Properties configProps = reportGeneratorConfiguration.getProperties();
 
-        if (getConfiguration() != null && getConfiguration().getProperties() != null)
-        {
-            final Properties configProps = getConfiguration().getProperties();
-            rawRating = configProps.getProperty(XltConstants.PROPERTY_RATING_SCORE);
-            rawSummary = configProps.getProperty(XltConstants.PROPERTY_RATING_SUMMARY);
-            rawEvaluation = configProps.getProperty(XltConstants.PROPERTY_RATING_EVALUATION);
-            if (StringUtils.isBlank(rawEvaluation))
-            {
-                rawEvaluation = configProps.getProperty("com.xceptance.xtc.loadtest.evaluation");
-            }
-        }
+        String rawScore = configProps.getProperty(XltConstants.PROPERTY_RATING_SCORE);
+        String rawSummary = configProps.getProperty(XltConstants.PROPERTY_RATING_SUMMARY);
+        String rawEvaluation = configProps.getProperty(XltConstants.PROPERTY_RATING_EVALUATION);
 
-        if (StringUtils.isBlank(rawRating))
+        if (StringUtils.isBlank(rawScore))
         {
-            rawRating = props.getProperty(XltConstants.PROPERTY_RATING_SCORE);
+            rawScore = props.getProperty(XltConstants.PROPERTY_RATING_SCORE);
         }
         if (StringUtils.isBlank(rawSummary))
         {
@@ -168,33 +159,22 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         if (StringUtils.isBlank(rawEvaluation))
         {
             rawEvaluation = props.getProperty(XltConstants.PROPERTY_RATING_EVALUATION);
-            if (StringUtils.isBlank(rawEvaluation))
-            {
-                rawEvaluation = props.getProperty("com.xceptance.xtc.loadtest.evaluation");
-            }
         }
 
-        report.rating = normalizeRatingScore(rawRating);
-        report.ratingSummary = StringUtils.isNotBlank(rawSummary) ? rawSummary.trim() : null;
+        final RatingReport rating = new RatingReport();
+        rating.score = normalizeRatingScore(rawScore);
+        rating.summary = StringUtils.stripToNull(rawSummary);
+        rating.evaluation = processRatingEvaluation(rawEvaluation);
 
-        if (StringUtils.isNotBlank(rawEvaluation))
+        if (!StringUtils.isAllBlank(rating.score, rating.summary, rating.evaluation))
         {
-            String evalMarkdown = rawEvaluation.strip();
-            if (evalMarkdown.contains("\\n"))
-            {
-                evalMarkdown = evalMarkdown.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t");
-            }
-            if (evalMarkdown.length() >= MARKDOWN_PREFIX.length() &&
-                evalMarkdown.substring(0, MARKDOWN_PREFIX.length()).equalsIgnoreCase(MARKDOWN_PREFIX))
-            {
-                evalMarkdown = evalMarkdown.substring(MARKDOWN_PREFIX.length());
-            }
-            report.ratingEvaluation = renderMarkdown(evalMarkdown);
+            // only set the rating sub object if we have any details
+            report.rating = rating;
         }
 
         // add project name
         final String projectName = props.getProperty(XltConstants.PROJECT_NAME_PROPERTY);
-        report.projectName = StringUtils.isNotBlank(projectName) ? projectName.trim() : null;
+        report.projectName = StringUtils.stripToNull(projectName);
 
         // add the load profile
         try
@@ -220,8 +200,8 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             System.err.println("Failed to get custom JVM arguments. Cause: " + ioe.getMessage());
         }
 
-        report.chartHeight = getConfiguration().getChartHeight();
-        report.chartWidth = getConfiguration().getChartWidth();
+        report.chartHeight = reportGeneratorConfiguration.getChartHeight();
+        report.chartWidth = reportGeneratorConfiguration.getChartWidth();
 
         return report;
     }
@@ -329,6 +309,35 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     }
 
     /**
+     * Processes a rating evaluation string. If the evaluation starts with the marker {@value #MARKDOWN_PREFIX}
+     * (case-insensitive), it will be removed. The remaining text is treated as Markdown and converted to HTML, wrapped
+     * in a div with class "markdown".
+     *
+     * @param evaluation
+     *            the evaluation string to process
+     * @return the processed evaluation
+     */
+    static String processRatingEvaluation(final String evaluation)
+    {
+        if (StringUtils.isBlank(evaluation))
+        {
+            return null;
+        }
+
+        String evalMarkdown = evaluation.strip();
+        if (evalMarkdown.contains("\\n"))
+        {
+            evalMarkdown = evalMarkdown.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t");
+        }
+        if (StringUtils.startsWithIgnoreCase(evaluation, MARKDOWN_PREFIX))
+        {
+            evalMarkdown = evalMarkdown.substring(MARKDOWN_PREFIX.length());
+        }
+
+        return renderMarkdown(evalMarkdown);
+    }
+
+    /**
      * Processes a comment string. If the comment starts with the marker {@value #MARKDOWN_PREFIX} (case-insensitive),
      * the remainder is treated as Markdown and converted to HTML, wrapped in a div with class "markdown". Otherwise the
      * raw string is returned unchanged.
@@ -400,7 +409,8 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     /**
      * Normalizes a rating score string (e.g. Aplus -> A+, case-insensitive).
      *
-     * @param raw the raw rating string
+     * @param raw
+     *            the raw rating string
      * @return normalized rating score or null
      */
     static String normalizeRatingScore(final String raw)

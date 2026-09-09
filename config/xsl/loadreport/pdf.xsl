@@ -91,7 +91,7 @@
 
         <!-- Rating -->
         <xsl:call-template name="rating-section">
-            <xsl:with-param name="rootNode" select="configuration" />
+            <xsl:with-param name="rootNode" select="configuration/rating" />
         </xsl:call-template>
 
         <!-- Test Comment -->

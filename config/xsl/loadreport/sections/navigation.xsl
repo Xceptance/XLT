@@ -10,7 +10,7 @@
             <li><a href="index.html">Overview</a>
                 <ul>
                     <li><a href="index.html#load-profile">Load Profile</a></li>
-                    <xsl:if test="string-length(normalize-space(//configuration/rating)) > 0 or string-length(normalize-space(//configuration/ratingSummary)) > 0 or string-length(normalize-space(//configuration/ratingEvaluation)) > 0">
+                    <xsl:if test="/testreport/configuration/rating">
                         <li><a href="index.html#rating">Rating</a></li>
                     </xsl:if>
                     <li><a href="index.html#comment">Test Comment</a></li>
@@ -72,7 +72,7 @@
                 <li><a href="scorecard.html">Scorecard</a></li>
             </xsl:if>
             <xsl:if test="$pdfReportPresent">
-                <li><a href="load-report.pdf">Download PDF</a></li>
+                <li><a href="load-report.pdf">PDF</a></li>
             </xsl:if>
             <li><a href="ai-data.md">AI Data</a></li>
         </ul>
