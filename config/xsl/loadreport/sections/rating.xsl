@@ -8,6 +8,8 @@
                 <xsl:call-template name="headline-rating" />
 
                 <div class="content">
+                    <xsl:call-template name="description-rating"/>
+
                     <div class="rating-container">
                         <xsl:if test="$rootNode/score">
                             <xsl:variable name="rawScore" select="normalize-space($rootNode/score)" />
