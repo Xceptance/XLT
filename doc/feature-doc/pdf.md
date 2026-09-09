@@ -24,11 +24,11 @@ You can also enable PDF generation persistently or via property override:
 
 - In `config/reportgenerator.properties`:
   ```properties
-  com.xceptance.xlt.reportgenerator.pdf = true
+  com.xceptance.xlt.reportgenerator.pdf.enabled = true
   ```
 - Or on the command line via `-D`:
   ```bash
-  ./bin/create_report.sh -Dcom.xceptance.xlt.reportgenerator.pdf=true ./results/20260901-100000
+  ./bin/create_report.sh -Dcom.xceptance.xlt.reportgenerator.pdf.enabled=true ./results/20260901-100000
   ```
 
 When enabled, the report generator will output `load-report.pdf` in the root of the generated report directory (e.g. `reports/<date>/load-report.pdf`).
@@ -39,7 +39,7 @@ When enabled, the report generator will output `load-report.pdf` in the root of 
 
 When PDF generation is enabled, the PDF report is integrated into the HTML report navigation bar:
 
-- A **"PDF Report"** download link appears on the top navigation bar.
+- A **PDF** report download link appears on the top navigation bar.
 - The link opens or downloads `load-report.pdf`.
 - If PDF generation was not enabled, the download link is automatically omitted from the navigation bar.
 

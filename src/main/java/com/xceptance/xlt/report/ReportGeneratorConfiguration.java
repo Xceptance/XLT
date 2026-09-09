@@ -244,7 +244,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_PREFIX + "dynamicCharts.enabled";
 
-    private static final String PROP_PDF_REPORT_ENABLED = PROP_PREFIX + "pdf.enable";
+    private static final String PROP_PDF_REPORT_ENABLED = PROP_PREFIX + "pdf.enabled";
 
     static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" +
                                                       PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
