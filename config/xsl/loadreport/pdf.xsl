@@ -142,7 +142,7 @@
                     <xsl:with-param name="summaryElement" select="summary/transactions"/>
                     <xsl:with-param name="tableRowHeader" select="'Transaction Name'"/>
                     <xsl:with-param name="type" select="'transaction'"/>
-                    <xsl:with-param name="hasLinks" select="'false'"/>
+                    <xsl:with-param name="showLinks" select="'false'"/>
                 </xsl:call-template>
             </div>
         </xsl:if>
@@ -161,7 +161,7 @@
                     <xsl:with-param name="summaryElement" select="summary/actions"/>
                     <xsl:with-param name="tableRowHeader" select="'Action Name'"/>
                     <xsl:with-param name="type" select="'action'"/>
-                    <xsl:with-param name="hasLinks" select="'false'"/>
+                    <xsl:with-param name="showLinks" select="'false'"/>
                 </xsl:call-template>
             </div>
         </xsl:if>
@@ -181,7 +181,7 @@
                     <xsl:with-param name="tableRowHeader" select="'Request Name'"/>
                     <xsl:with-param name="runtimeIntervalsNode" select="testReportConfig/runtimeIntervals"/>
                     <xsl:with-param name="type" select="'request'"/>
-                    <xsl:with-param name="hasLinks" select="'false'"/>
+                    <xsl:with-param name="showLinks" select="'false'"/>
                 </xsl:call-template>
             </div>
         </xsl:if>
@@ -200,7 +200,7 @@
                     <xsl:with-param name="summaryElement" select="summary/customTimers"/>
                     <xsl:with-param name="tableRowHeader" select="'Timer Name'"/>
                     <xsl:with-param name="type" select="'custom'"/>
-                    <xsl:with-param name="hasLinks" select="'false'"/>
+                    <xsl:with-param name="showLinks" select="'false'"/>
                 </xsl:call-template>
             </div>
         </xsl:if>

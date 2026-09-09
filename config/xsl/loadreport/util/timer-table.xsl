@@ -20,7 +20,7 @@
         <xsl:param name="tableRowHeader"/>
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
-        <xsl:param name="hasLinks" select="'true'"/>
+        <xsl:param name="showLinks" select="'true'"/>
 
         <xsl:variable name="percentileCount" select="count(/testreport/testReportConfig/runtimePercentiles/string)"/>
         <xsl:variable name="intervalCount" select="count(/testreport/testReportConfig/runtimeIntervals/interval)"/>
@@ -151,7 +151,7 @@
                             <xsl:sort select="name" data-type="number"/>
                             <xsl:call-template name="timer-row">
                                 <xsl:with-param name="type" select="$type"/>
-                                <xsl:with-param name="hasLinks" select="$hasLinks"/>
+                                <xsl:with-param name="showLinks" select="$showLinks"/>
                             </xsl:call-template>
                         </xsl:for-each>
                     </tbody>

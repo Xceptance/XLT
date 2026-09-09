@@ -4,7 +4,7 @@
 
 	<xsl:template name="timer-row">
 		<xsl:param name="type" />
-		<xsl:param name="hasLinks" select="'true'" />
+		<xsl:param name="showLinks" select="'true'" />
 
 		<xsl:variable name="gid" select="generate-id(.)" />
 
@@ -12,7 +12,7 @@
 			<!-- name -->
 			<td class="key colgroup1 forcewordbreak">
 				<xsl:choose>
-					<xsl:when test="$hasLinks = 'false' or not($hasLinks)">
+					<xsl:when test="$showLinks = 'false' or not($showLinks)">
 						<xsl:value-of select="name" />
 					</xsl:when>
 					<xsl:otherwise>
