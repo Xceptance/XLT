@@ -134,7 +134,7 @@ public class ConfigurationReportProviderTest
         {
             final Path defaultPath = testDir.resolve("config").resolve(XltConstants.DEFAULT_PROPERTY_FILENAME);
             Files.createDirectories(defaultPath.getParent());
-            final String propsContent = "com.xceptance.xtc.loadtest.rating = A\n" +
+            final String propsContent = "com.xceptance.xtc.loadtest.rating.score = A\n" +
                                        "com.xceptance.xtc.loadtest.rating.summary = All performance criteria passed successfully.\n" +
                                        "com.xceptance.xtc.loadtest.rating.evaluation = ### Detailed Analysis\\n* 0 errors recorded\\n* TPS exceeded target\n";
             Files.write(defaultPath, propsContent.getBytes(StandardCharsets.ISO_8859_1));
@@ -167,10 +167,11 @@ public class ConfigurationReportProviderTest
         {
             final Path defaultPath = testDir.resolve("config").resolve(XltConstants.DEFAULT_PROPERTY_FILENAME);
             Files.createDirectories(defaultPath.getParent());
-            // Using unsupported/old property names (e.g. xlt prefix or numbered evaluation): should result in null fields
+            // Using unsupported/old property names (e.g. xlt prefix, old rating key, or numbered evaluation): should result in null fields
             final String propsContent = "com.xceptance.xlt.rating = B\n" +
                                        "com.xceptance.xlt.loadtests.rating = B\n" +
                                        "com.xceptance.xlt.loadtest.rating = B\n" +
+                                       "com.xceptance.xtc.loadtest.rating = B\n" +
                                        "com.xceptance.xlt.loadtest.rating.summary = Good performance.\n" +
                                        "com.xceptance.xlt.loadtest.rating.evaluation = Paragraph 1\n" +
                                        "com.xceptance.xtc.loadtest.evaluation.1 = Paragraph 1\n";
@@ -202,7 +203,7 @@ public class ConfigurationReportProviderTest
             final Path defaultPath = testDir.resolve("config").resolve(XltConstants.DEFAULT_PROPERTY_FILENAME);
             Files.createDirectories(defaultPath.getParent());
             // Standard multiline continuation in .properties file with trailing backslash
-            final String propsContent = "com.xceptance.xtc.loadtest.rating = B\n" +
+            final String propsContent = "com.xceptance.xtc.loadtest.rating.score = B\n" +
                                        "com.xceptance.xtc.loadtest.rating.summary = Good performance with minor latency spikes.\n" +
                                        "com.xceptance.xtc.loadtest.rating.evaluation = Paragraph 1: Initial warmup.\\n\\\n" +
                                        "                                               Paragraph 2: Steady state.\n";
@@ -235,13 +236,13 @@ public class ConfigurationReportProviderTest
         {
             final Path defaultPath = testDir.resolve("config").resolve(XltConstants.DEFAULT_PROPERTY_FILENAME);
             Files.createDirectories(defaultPath.getParent());
-            final String propsContent = "com.xceptance.xtc.loadtest.rating = C\n" +
+            final String propsContent = "com.xceptance.xtc.loadtest.rating.score = C\n" +
                                        "com.xceptance.xtc.loadtest.rating.summary = From file summary.\n";
             Files.write(defaultPath, propsContent.getBytes(StandardCharsets.ISO_8859_1));
 
             final ConfigurationReportProvider provider = new ConfigurationReportProvider();
             final Properties cliProperties = new Properties();
-            cliProperties.setProperty("com.xceptance.xtc.loadtest.rating", "A");
+            cliProperties.setProperty("com.xceptance.xtc.loadtest.rating.score", "A");
             cliProperties.setProperty("com.xceptance.xtc.loadtest.rating.summary", "Injected from command line.");
 
             final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
@@ -253,6 +254,32 @@ public class ConfigurationReportProviderTest
 
             Assert.assertEquals("A", report.rating);
             Assert.assertEquals("Injected from command line.", report.ratingSummary);
+        }
+        finally
+        {
+            FileUtils.deleteDirectoryRelaxed(testDir.toFile());
+        }
+    }
+
+    @Test
+    public void testRatingNormalizationAplus() throws IOException
+    {
+        final Path testDir = Files.createTempDirectory("ratingtest5-");
+        try
+        {
+            final Path defaultPath = testDir.resolve("config").resolve(XltConstants.DEFAULT_PROPERTY_FILENAME);
+            Files.createDirectories(defaultPath.getParent());
+            final String propsContent = "com.xceptance.xtc.loadtest.rating.score = Aplus\n";
+            Files.write(defaultPath, propsContent.getBytes(StandardCharsets.ISO_8859_1));
+
+            final ConfigurationReportProvider provider = new ConfigurationReportProvider();
+            final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+            config.setReportDirectory(testDir.toFile());
+            provider.setConfiguration(config);
+
+            final ConfigurationReport report = (ConfigurationReport) provider.createReportFragment();
+
+            Assert.assertEquals("A+", report.rating);
         }
         finally
         {

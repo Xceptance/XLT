@@ -48,7 +48,7 @@ public class ReportGeneratorMain_CommandLineOptionsTest
     public void testRatingShortOption() throws Exception
     {
         final String[] args = new String[] {
-            "-rating", "A",
+            "-rating-score", "A",
             "-rating-summary", "Test summary short opt",
             tempDir.toString()
         };
@@ -58,7 +58,7 @@ public class ReportGeneratorMain_CommandLineOptionsTest
 
         final Properties props = rgm.getCommandLineProperties();
         Assert.assertNotNull(props);
-        Assert.assertEquals("A", props.getProperty("com.xceptance.xtc.loadtest.rating"));
+        Assert.assertEquals("A", props.getProperty("com.xceptance.xtc.loadtest.rating.score"));
         Assert.assertEquals("Test summary short opt", props.getProperty("com.xceptance.xtc.loadtest.rating.summary"));
     }
 
@@ -66,7 +66,7 @@ public class ReportGeneratorMain_CommandLineOptionsTest
     public void testRatingLongOption() throws Exception
     {
         final String[] args = new String[] {
-            "--rating", "B",
+            "--rating-score", "B",
             "--rating-summary", "Test summary long opt",
             "--pdf",
             tempDir.toString()
@@ -77,16 +77,32 @@ public class ReportGeneratorMain_CommandLineOptionsTest
 
         final Properties props = rgm.getCommandLineProperties();
         Assert.assertNotNull(props);
-        Assert.assertEquals("B", props.getProperty("com.xceptance.xtc.loadtest.rating"));
+        Assert.assertEquals("B", props.getProperty("com.xceptance.xtc.loadtest.rating.score"));
         Assert.assertEquals("Test summary long opt", props.getProperty("com.xceptance.xtc.loadtest.rating.summary"));
         Assert.assertTrue(rgm.isPdfReport());
+    }
+
+    @Test
+    public void testRatingAplusOption() throws Exception
+    {
+        final String[] args = new String[] {
+            "--rating-score", "Aplus",
+            tempDir.toString()
+        };
+
+        final ReportGeneratorMain rgm = new ReportGeneratorMain();
+        rgm.init(args);
+
+        final Properties props = rgm.getCommandLineProperties();
+        Assert.assertNotNull(props);
+        Assert.assertEquals("Aplus", props.getProperty("com.xceptance.xtc.loadtest.rating.score"));
     }
 
     @Test
     public void testPropertyDefinitionOption() throws Exception
     {
         final String[] args = new String[] {
-            "-Dcom.xceptance.xtc.loadtest.rating=C",
+            "-Dcom.xceptance.xtc.loadtest.rating.score=C",
             "-Dcom.xceptance.xtc.loadtest.rating.summary=Injected via -D",
             tempDir.toString()
         };
@@ -96,7 +112,7 @@ public class ReportGeneratorMain_CommandLineOptionsTest
 
         final Properties props = rgm.getCommandLineProperties();
         Assert.assertNotNull(props);
-        Assert.assertEquals("C", props.getProperty("com.xceptance.xtc.loadtest.rating"));
+        Assert.assertEquals("C", props.getProperty("com.xceptance.xtc.loadtest.rating.score"));
         Assert.assertEquals("Injected via -D", props.getProperty("com.xceptance.xtc.loadtest.rating.summary"));
     }
 }

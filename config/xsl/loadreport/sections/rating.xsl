@@ -11,11 +11,15 @@
 				<div class="content">
 					<div class="rating-container">
 						<xsl:if test="string-length(normalize-space($rootNode/rating)) > 0">
-							<xsl:variable name="score" select="normalize-space($rootNode/rating)" />
-							<xsl:variable name="scoreLower" select="translate($score, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')" />
-							<div class="rating-badge rating-badge-{$scoreLower}">
-								<span class="rating-letter"><xsl:value-of select="$score" /></span>
-							</div>
+							<xsl:variable name="rawScore" select="normalize-space($rootNode/rating)" />
+							<xsl:variable name="rawScoreUpper" select="translate($rawScore, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')" />
+							<xsl:variable name="scoreNorm">
+								<xsl:choose>
+									<xsl:when test="$rawScoreUpper = 'APLUS' or $rawScoreUpper = 'A_PLUS' or $rawScoreUpper = 'A PLUS' or $rawScore = 'A+' or $rawScore = 'a+'">A+</xsl:when>
+									<xsl:otherwise><xsl:value-of select="$rawScoreUpper" /></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							<div class="rating-bar"><span class="rating-item rating-item-aplus"><xsl:if test="$scoreNorm = 'A+'"><xsl:attribute name="class">rating-item rating-item-aplus rating-active</xsl:attribute></xsl:if><xsl:text>A+</xsl:text></span><span class="rating-item rating-item-a"><xsl:if test="$scoreNorm = 'A'"><xsl:attribute name="class">rating-item rating-item-a rating-active</xsl:attribute></xsl:if><xsl:text>A</xsl:text></span><span class="rating-item rating-item-b"><xsl:if test="$scoreNorm = 'B'"><xsl:attribute name="class">rating-item rating-item-b rating-active</xsl:attribute></xsl:if><xsl:text>B</xsl:text></span><span class="rating-item rating-item-c"><xsl:if test="$scoreNorm = 'C'"><xsl:attribute name="class">rating-item rating-item-c rating-active</xsl:attribute></xsl:if><xsl:text>C</xsl:text></span><span class="rating-item rating-item-d"><xsl:if test="$scoreNorm = 'D'"><xsl:attribute name="class">rating-item rating-item-d rating-active</xsl:attribute></xsl:if><xsl:text>D</xsl:text></span><span class="rating-item rating-item-f"><xsl:if test="$scoreNorm = 'F'"><xsl:attribute name="class">rating-item rating-item-f rating-active</xsl:attribute></xsl:if><xsl:text>F</xsl:text></span></div>
 						</xsl:if>
 						<xsl:if test="string-length(normalize-space($rootNode/ratingSummary)) > 0">
 							<div class="rating-summary">

@@ -148,9 +148,9 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         if (getConfiguration() != null && getConfiguration().getProperties() != null)
         {
             final Properties configProps = getConfiguration().getProperties();
-            rawRating = configProps.getProperty("com.xceptance.xtc.loadtest.rating");
-            rawSummary = configProps.getProperty("com.xceptance.xtc.loadtest.rating.summary");
-            rawEvaluation = configProps.getProperty("com.xceptance.xtc.loadtest.rating.evaluation");
+            rawRating = configProps.getProperty(XltConstants.PROPERTY_RATING_SCORE);
+            rawSummary = configProps.getProperty(XltConstants.PROPERTY_RATING_SUMMARY);
+            rawEvaluation = configProps.getProperty(XltConstants.PROPERTY_RATING_EVALUATION);
             if (StringUtils.isBlank(rawEvaluation))
             {
                 rawEvaluation = configProps.getProperty("com.xceptance.xtc.loadtest.evaluation");
@@ -159,22 +159,22 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
         if (StringUtils.isBlank(rawRating))
         {
-            rawRating = props.getProperty("com.xceptance.xtc.loadtest.rating");
+            rawRating = props.getProperty(XltConstants.PROPERTY_RATING_SCORE);
         }
         if (StringUtils.isBlank(rawSummary))
         {
-            rawSummary = props.getProperty("com.xceptance.xtc.loadtest.rating.summary");
+            rawSummary = props.getProperty(XltConstants.PROPERTY_RATING_SUMMARY);
         }
         if (StringUtils.isBlank(rawEvaluation))
         {
-            rawEvaluation = props.getProperty("com.xceptance.xtc.loadtest.rating.evaluation");
+            rawEvaluation = props.getProperty(XltConstants.PROPERTY_RATING_EVALUATION);
             if (StringUtils.isBlank(rawEvaluation))
             {
                 rawEvaluation = props.getProperty("com.xceptance.xtc.loadtest.evaluation");
             }
         }
 
-        report.rating = StringUtils.isNotBlank(rawRating) ? rawRating.trim() : null;
+        report.rating = normalizeRatingScore(rawRating);
         report.ratingSummary = StringUtils.isNotBlank(rawSummary) ? rawSummary.trim() : null;
 
         if (StringUtils.isNotBlank(rawEvaluation))
@@ -395,5 +395,26 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         }
 
         return jvmArgs;
+    }
+
+    /**
+     * Normalizes a rating score string (e.g. Aplus -> A+, case-insensitive).
+     *
+     * @param raw the raw rating string
+     * @return normalized rating score or null
+     */
+    static String normalizeRatingScore(final String raw)
+    {
+        if (StringUtils.isBlank(raw))
+        {
+            return null;
+        }
+        final String trimmed = raw.trim();
+        final String clean = trimmed.replace(" ", "").replace("_", "").toLowerCase();
+        if ("aplus".equals(clean) || "a+".equals(clean))
+        {
+            return "A+";
+        }
+        return trimmed.toUpperCase();
     }
 }

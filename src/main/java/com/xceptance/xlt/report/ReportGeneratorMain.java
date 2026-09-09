@@ -308,9 +308,10 @@ public class ReportGeneratorMain
         final Option pdfReport = new Option(XltConstants.COMMANDLINE_OPTION_PDF, "pdf", false, "enables generation of PDF summary report");
         options.addOption(pdfReport);
 
-        final Option rating = new Option(XltConstants.COMMANDLINE_OPTION_RATING, "rating", true, "the rating score for the test report (e.g. A-F)");
-        rating.setArgName("rating");
-        options.addOption(rating);
+        final Option ratingScore = new Option(XltConstants.COMMANDLINE_OPTION_RATING_SCORE, "rating-score", true,
+                                              "the rating score for the test report (A+, A, B, C, D, F)");
+        ratingScore.setArgName("score");
+        options.addOption(ratingScore);
 
         final Option ratingSummary = new Option(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY, "rating-summary", true,
                                                 "the rating summary for the test report");
@@ -472,16 +473,16 @@ public class ReportGeneratorMain
                                               Boolean.toString(linkToResults.booleanValue()));
         }
 
-        // get rating and rating summary command line overrides
-        if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING))
+        // get rating score and rating summary command line overrides
+        if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING_SCORE))
         {
-            final String ratingVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING);
-            commandLineProperties.setProperty("com.xceptance.xtc.loadtest.rating", ratingVal);
+            final String ratingVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING_SCORE);
+            commandLineProperties.setProperty(XltConstants.PROPERTY_RATING_SCORE, ratingVal);
         }
         if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY))
         {
             final String summaryVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY);
-            commandLineProperties.setProperty("com.xceptance.xtc.loadtest.rating.summary", summaryVal);
+            commandLineProperties.setProperty(XltConstants.PROPERTY_RATING_SUMMARY, summaryVal);
         }
 
         // get test case include/exclude patterns

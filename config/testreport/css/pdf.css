@@ -202,6 +202,84 @@ td.no-data, p.no-data {
 }
 
 /* Scorecard */
+.scorecard-verdict-banner {
+    padding: 6px 10px;
+    margin: 6px 0 10px 0;
+    background-color: #f8f9fa;
+    border: 1px solid #d0d6dc;
+    border-left: 4px solid #2f4782;
+    page-break-inside: avoid;
+}
+
+.scorecard-verdict-banner.failed {
+    border-left-color: #dc3545;
+}
+
+.scorecard-verdict-banner.passed {
+    border-left-color: #28a745;
+}
+
+.scorecard-verdict-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-weight: bold;
+    font-size: 8.5pt;
+    color: #ffffff;
+    border-radius: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.scorecard-verdict-badge.passed {
+    background-color: #28a745;
+}
+
+.scorecard-verdict-badge.failed {
+    background-color: #dc3545;
+}
+
+.scorecard-verdict-text {
+    vertical-align: middle;
+    font-size: 8pt;
+    color: #333333;
+}
+
+.scorecard-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 6.5pt;
+    font-weight: bold;
+    border-radius: 2px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.scorecard-badge.passed {
+    background-color: #28a745;
+}
+
+.scorecard-badge.failed {
+    background-color: #dc3545;
+}
+
+.scorecard-badge.skipped {
+    background-color: #6c757d;
+}
+
+.scorecard-badge.error {
+    background-color: #d9534f;
+}
+
+.scorecard-issues-note {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 2px;
+    padding: 4px 8px;
+    font-size: 7pt;
+    margin: 6px 0;
+}
+
 .scorecard-group {
     margin-bottom: 10px;
     page-break-inside: avoid;
@@ -231,42 +309,90 @@ td.no-data, p.no-data {
 
 /* Rating */
 .rating-container {
-    margin: 6px 0 10px 0;
+    margin: 8px 0 12px 0;
 }
 
-.rating-badge {
+.rating-bar {
     display: inline-block;
-    width: 32px;
-    height: 32px;
-    line-height: 32px;
+    vertical-align: middle;
+    margin-right: 14px;
+    white-space: nowrap;
+    font-size: 0;
+}
+
+.rating-item {
+    display: inline-block;
+    width: 28px;
+    height: 24px;
+    line-height: 24px;
     text-align: center;
-    border-radius: 4px;
-    font-size: 18pt;
+    vertical-align: middle;
+    font-size: 9.5pt;
     font-weight: bold;
     color: #ffffff;
-    background-color: #6c757d;
-    vertical-align: middle;
-    margin-right: 10px;
+    margin: 0;
+    padding: 0;
 }
 
-.rating-badge-a {
-    background-color: #28a745;
+.rating-item-aplus {
+    background-color: #c7d9d2;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
 }
 
-.rating-badge-b {
-    background-color: #5cb85c;
+.rating-item-a {
+    background-color: #c7d9d2;
 }
 
-.rating-badge-c {
-    background-color: #f0ad4e;
+.rating-item-b {
+    background-color: #d6ebe2;
 }
 
-.rating-badge-d {
+.rating-item-c {
+    background-color: #fff5cf;
+}
+
+.rating-item-d {
+    background-color: #fee8c5;
+}
+
+.rating-item-f {
+    background-color: #f7cec7;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.rating-item.rating-active {
+    width: 36px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 13.5pt;
+    border-radius: 2px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+.rating-item-aplus.rating-active {
+    background-color: #137333;
+}
+
+.rating-item-a.rating-active {
+    background-color: #1a7a3e;
+}
+
+.rating-item-b.rating-active {
+    background-color: #38a169;
+}
+
+.rating-item-c.rating-active {
+    background-color: #e6a817;
+}
+
+.rating-item-d.rating-active {
     background-color: #e67e22;
 }
 
-.rating-badge-e, .rating-badge-f {
-    background-color: #d9534f;
+.rating-item-f.rating-active {
+    background-color: #dc3545;
 }
 
 .rating-summary {
@@ -288,15 +414,35 @@ td.no-data, p.no-data {
 }
 
 /* Overview Charts */
-.chart-container {
+.chart-container,
+.charts,
+.chart {
     text-align: center;
-    margin: 8px 0 12px 0;
+    margin: 8px auto 12px auto;
     page-break-inside: avoid;
 }
 
-.chart-container img {
+.chart-container img,
+.charts img,
+.chart img {
     max-width: 98%;
-    max-height: 380px;
+    max-height: 300px;
+    height: auto;
+}
+
+#network {
+    page-break-inside: avoid;
+}
+
+/* Descriptions */
+.description {
+    margin: 4px 0 8px 0;
+}
+
+.description p {
+    color: #444444;
+    font-size: 8pt;
+    margin: 3px 0 6px 0;
 }
 
 /* Info grid / General definition list */
@@ -312,7 +458,7 @@ td.no-data, p.no-data {
 }
 
 /* Hide interactive components */
-input, button, form, .filter, .clear-input, .c-tabs-nav, .backlink, .no-print, .more, .more-show, a.cluetip {
+input, button, form, .filter, .clear-input, .c-tabs-nav, .backlink, .no-print, .more, .more-show, .more-hide, a.cluetip {
     display: none;
 }
 

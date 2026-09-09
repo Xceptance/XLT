@@ -27,6 +27,7 @@
 
 <xsl:include href="sections/load-profile.xsl" />
 <xsl:include href="sections/rating.xsl" />
+<xsl:include href="sections/scorecard.xsl" />
 <xsl:include href="sections/comment.xsl" />
 <xsl:include href="sections/general.xsl" />
 <xsl:include href="sections/summary.xsl" />
@@ -40,6 +41,8 @@
 <xsl:param name="productVersion" select="''" />
 <xsl:param name="productUrl" select="'https://www.xceptance.com'" />
 <xsl:param name="projectName" select="''" />
+<xsl:param name="scorecardPresent" select="false()" />
+<xsl:param name="scorecardXmlUrl" select="''" />
 
 <xsl:template match="/testreport">
 <html lang="en">
@@ -118,11 +121,19 @@
             <xsl:with-param name="rootNode" select="general" />
         </xsl:call-template>
 
+        <!-- Scorecard Summary (if present) -->
+        <xsl:if test="$scorecardPresent = true() or $scorecardPresent = 'true'">
+            <xsl:call-template name="scorecard-summary">
+                <xsl:with-param name="scorecardXmlUrl" select="$scorecardXmlUrl" />
+            </xsl:call-template>
+        </xsl:if>
+
         <!-- Transactions Table -->
         <xsl:if test="count(transactions/*) &gt; 0">
             <div class="page-break"></div>
             <div class="section" id="transactions-section">
                 <h2>Transactions</h2>
+                <xsl:call-template name="description-transaction-summary"/>
                 <div class="chart-container">
                     <img src="charts/transactions/All%20Transactions.webp" alt="Transactions Overview Chart" />
                 </div>
@@ -141,6 +152,7 @@
             <div class="page-break"></div>
             <div class="section" id="actions-section">
                 <h2>Actions</h2>
+                <xsl:call-template name="description-action-summary"/>
                 <div class="chart-container">
                     <img src="charts/actions/All%20Actions.webp" alt="Actions Overview Chart" />
                 </div>
@@ -159,6 +171,7 @@
             <div class="page-break"></div>
             <div class="section" id="requests-section">
                 <h2>Requests</h2>
+                <xsl:call-template name="description-request-summary"/>
                 <div class="chart-container">
                     <img src="charts/requests/All%20Requests.webp" alt="Requests Overview Chart" />
                 </div>
@@ -178,6 +191,7 @@
             <div class="page-break"></div>
             <div class="section" id="custom-timers-section">
                 <h2>Custom Timers</h2>
+                <xsl:call-template name="description-custom-timer-summary"/>
                 <div class="chart-container">
                     <img src="charts/custom/All%20Custom%20Timers.webp" alt="Custom Timers Overview Chart" />
                 </div>
@@ -193,8 +207,10 @@
 
         <!-- Error Summary (Stats only, no stacktraces) -->
         <xsl:if test="count(errors/error) &gt; 0">
+            <div class="page-break"></div>
             <div class="section" id="error-overview-section">
                 <h2>Error Overview</h2>
+                <xsl:call-template name="description-error-summary"/>
                 <table>
                     <thead>
                         <tr>
@@ -236,8 +252,10 @@
 
         <!-- Event Summary (Stats only) -->
         <xsl:if test="count(events/event) &gt; 0">
+            <div class="page-break"></div>
             <div class="section" id="event-overview-section">
                 <h2>Event Overview</h2>
+                <xsl:call-template name="description-event-summary"/>
                 <table>
                     <thead>
                         <tr>

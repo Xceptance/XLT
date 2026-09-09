@@ -55,16 +55,19 @@ The rating score and summary line can be passed directly as command-line argumen
 
 | Argument (Short) | Argument (Long) | Description | Property Injected |
 |---|---|---|---|
-| `-rating <score>` | `--rating <score>` | Grade from `A` to `F` (e.g., `A`, `B`, `C`, `D`, `E`, `F`) | `com.xceptance.xtc.loadtest.rating` |
+| `-rating-score <score>` | `--rating-score <score>` | Grade score: `Aplus` / `A+`, `A`, `B`, `C`, `D`, `F` (no `E`) | `com.xceptance.xtc.loadtest.rating.score` |
 | `-rating-summary <summary>` | `--rating-summary <summary>` | Single-line summary description | `com.xceptance.xtc.loadtest.rating.summary` |
 
 **Example:**
 ```bash
 ./bin/create_report.sh --pdf \
-    --rating A \
+    --rating-score A \
     --rating-summary "All SLAs met; response times well below the 500ms target." \
     ./results/20260901-100000
 ```
+
+> [!NOTE]
+> Both `Aplus` and `A+` (case-insensitive) are accepted and normalized to `A+`.
 
 ### Configuration Properties
 
@@ -72,8 +75,8 @@ Alternatively, you can set the rating in `default.properties` within the test su
 
 | Property Key | Type | Description |
 |---|---|---|
-| `com.xceptance.xtc.loadtest.rating` | String (`A`–`F`) | Letter grade badge displayed with color-coding (A=Green, B=Light Green, C=Amber, D=Orange, E/F=Red). |
-| `com.xceptance.xtc.loadtest.rating.summary` | String | A concise summary text displayed alongside the badge. |
+| `com.xceptance.xtc.loadtest.rating.score` | String (`A+`, `A`, `B`, `C`, `D`, `F`) | Rating grade highlighted on the 6-segment rating bar. Accepts `Aplus` or `A+`. |
+| `com.xceptance.xtc.loadtest.rating.summary` | String | A concise summary text displayed alongside the rating bar. |
 | `com.xceptance.xtc.loadtest.rating.evaluation` | Markdown | Multi-paragraph assessment rendered from Markdown to formatted HTML. |
 
 #### Evaluation Markdown Format in Properties
@@ -81,7 +84,7 @@ Alternatively, you can set the rating in `default.properties` within the test su
 When supplying `com.xceptance.xtc.loadtest.rating.evaluation` in a `.properties` file, use standard Java properties newline escaping (`\n` or trailing `\` for multiline continuation):
 
 ```properties
-com.xceptance.xtc.loadtest.rating = B
+com.xceptance.xtc.loadtest.rating.score = B
 com.xceptance.xtc.loadtest.rating.summary = Performance acceptable with minor latency spikes during peak load.
 com.xceptance.xtc.loadtest.rating.evaluation = ### Executive Summary\n\n\
   - **Peak Throughput**: 1,450 req/s\n\
@@ -92,7 +95,7 @@ com.xceptance.xtc.loadtest.rating.evaluation = ### Executive Summary\n\n\
 ```
 
 > [!NOTE]
-> Command-line options (`--rating`, `--rating-summary`, or `-D...`) take precedence over values loaded from the test result property files.
+> Command-line options (`--rating-score`, `--rating-summary`, or `-D...`) take precedence over values loaded from the test result property files.
 
 ---
 
@@ -103,7 +106,7 @@ The PDF report is designed as an executive document that captures all essential 
 1. **Header & Metadata**:
    - Report title, test start/end dates, total elapsed duration (`hh:mm:ss`).
 2. **Rating & Assessment** *(if present)*:
-   - Color-coded letter grade badge (`A` through `F`).
+   - 6-segment rating scale (`A+`, `A`, `B`, `C`, `D`, `F`) with active grade elevated and highlighted.
    - Summary text.
    - Rendered Markdown evaluation sections (tables, bullet points, bold/italic text).
 3. **Test Comments**:
@@ -112,26 +115,37 @@ The PDF report is designed as an executive document that captures all essential 
    - Configured test cases, user counts, ramp-up times, measurement durations, and percentages.
 5. **General Information & Charts**:
    - Key test execution parameters, total hits, sent/received bytes.
-   - Concurrent Users chart, Requests per Second chart, and Request Runtime chart.
+   - Concurrent Users chart, Requests per Second chart, and Request Runtime chart (centered layout).
 6. **Agent Summary & Utilization**:
    - Agent instances, total transactions/actions/requests executed per agent.
-   - All Agents CPU Usage chart.
+   - All Agents CPU Usage chart (centered layout).
 7. **Performance Summary & Network**:
    - High-level KPI summary table (Transactions, Actions, Requests, Custom Timers counts, error rates, runtime percentiles).
    - Incoming/outgoing network throughput statistics.
-8. **Transactions**:
+8. **Scorecard Summary** *(if present)*:
+   - Executive verdict banner (PASSED / FAILED badge, points, percentage, rating definition).
+   - Rule groups summary table (group name, status badge, points, message).
+   - Failed rules table (group name, rule name, status, failure message/details).
+   - Evaluation issues notification if applicable.
+9. **Transactions**:
+   - Introductory section explanation.
    - Overview runtime chart (`All Transactions.webp` with runtime scatter plot, moving average, error rates, and event distribution).
    - Detailed transaction statistics table (count, rates, errors, min/max/mean/dev, P50 through P99.9 percentiles).
-9. **Actions**:
-   - Overview runtime chart (`All Actions.webp`).
-   - Detailed action performance table.
-10. **Requests**:
+10. **Actions**:
+    - Introductory section explanation.
+    - Overview runtime chart (`All Actions.webp`).
+    - Detailed action performance table.
+11. **Requests**:
+    - Introductory section explanation.
     - Overview runtime chart (`All Requests.webp`).
     - Detailed request performance table including runtime intervals/segmentation.
-11. **Custom Timers** *(if present)*:
+12. **Custom Timers** *(if present)*:
+    - Introductory section explanation.
     - Overview runtime chart (`All Custom Timers.webp`).
     - Detailed custom timers performance table.
-12. **Errors & Events Overview**:
+13. **Error Overview & Event Overview**:
+    - Dedicated page breaks before each overview section.
+    - Introductory section explanations.
     - Aggregated error counts, error rates, and event summaries.
 
 ---

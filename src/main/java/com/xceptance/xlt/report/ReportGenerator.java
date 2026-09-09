@@ -761,6 +761,15 @@ public class ReportGenerator
         parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
         parameters.put("pdfReportPresent", Boolean.TRUE);
 
+        if (scorecardPresent)
+        {
+            final File scorecardXmlFile = new File(outputDir, XltConstants.SCORECARD_REPORT_XML_FILENAME);
+            if (scorecardXmlFile.exists())
+            {
+                parameters.put("scorecardXmlUrl", scorecardXmlFile.toURI().toString());
+            }
+        }
+
         final long start = TimerUtils.get().getStartTime();
         try
         {

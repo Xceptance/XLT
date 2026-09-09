@@ -47,7 +47,16 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     public void setup() throws java.io.IOException
     {
         super.setup();
-        sampleReportDir = new File("reports/xlt-result-ariat-lt-2025-315-20251119-165727");
+        final File reportsDir = new File("reports");
+        final File[] matching = reportsDir.listFiles(f -> f.isDirectory() && f.getName().startsWith("xlt-result-"));
+        if (matching != null && matching.length > 0)
+        {
+            sampleReportDir = matching[0];
+        }
+        else
+        {
+            sampleReportDir = new File("reports/xlt-result-xc-advanced-posters-20260211-163803");
+        }
         sampleXmlFile = new File(sampleReportDir, "testreport.xml");
         styleSheetFile = new File("config/xsl/loadreport/pdf.xsl");
     }
@@ -144,6 +153,30 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
 
         Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
         Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
+    }
+
+    /**
+     * Verifies that PDF report can be generated directly for the sample report directory.
+     */
+    @Test
+    public void testGeneratePdfReportForSampleDirectory() throws Exception
+    {
+        final File targetDir = new File("reports/xlt-result-xc-advanced-posters-20260211-163803");
+        if (targetDir.exists())
+        {
+            final File outputPdfFile = new File(targetDir, "load-report.pdf");
+            final Map<String, Object> parameters = new HashMap<>();
+            parameters.put("productName", "XLT");
+            parameters.put("productVersion", "10.0.0");
+            parameters.put("productUrl", "https://www.xceptance.com");
+            parameters.put("scorecardPresent", Boolean.TRUE);
+            parameters.put("scorecardXmlUrl", new File(targetDir, "scorecard.xml").toURI().toString());
+            parameters.put("pdfReportPresent", Boolean.TRUE);
+
+            PdfReportGenerator.generatePdfReport(new File(targetDir, "testreport.xml"), targetDir, styleSheetFile, outputPdfFile, parameters);
+            Assert.assertTrue(outputPdfFile.exists());
+            Assert.assertTrue(outputPdfFile.length() > 0);
+        }
     }
 
     /**
