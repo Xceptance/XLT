@@ -50,6 +50,7 @@ public class ReportGeneratorMain_CommandLineOptionsTest
         final String[] args = new String[] {
             "-rating-score", "A",
             "-rating-summary", "Test summary short opt",
+            "-pdf",
             tempDir.toString()
         };
 
@@ -60,6 +61,7 @@ public class ReportGeneratorMain_CommandLineOptionsTest
         Assert.assertNotNull(props);
         Assert.assertEquals("A", props.getProperty("com.xceptance.xtc.loadtest.rating.score"));
         Assert.assertEquals("Test summary short opt", props.getProperty("com.xceptance.xtc.loadtest.rating.summary"));
+        Assert.assertTrue(rgm.isPdfReport());
     }
 
     @Test
