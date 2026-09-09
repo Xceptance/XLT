@@ -238,6 +238,10 @@ td.no-data, p.no-data {
     background-color: #dc3545;
 }
 
+.scorecard-verdict-badge.error {
+    background-color: #dc3545;
+}
+
 .scorecard-verdict-text {
     vertical-align: middle;
     font-size: 8pt;
@@ -268,6 +272,34 @@ td.no-data, p.no-data {
 
 .scorecard-badge.error {
     background-color: #d9534f;
+}
+
+.scorecard-error-box {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background-color: #fdf2f2;
+    border-left: 3px solid #dc3545;
+    border-radius: 2px;
+    page-break-inside: avoid;
+}
+
+.scorecard-error-box p {
+    margin: 0 0 6px 0;
+    color: #721c24;
+    font-size: 8pt;
+}
+
+.scorecard-error-message {
+    margin: 0;
+    padding: 6px 8px;
+    background-color: #ffffff;
+    border: 1px solid #f5c6cb;
+    border-radius: 2px;
+    color: #721c24;
+    font-family: monospace;
+    font-size: 7pt;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .scorecard-issues-note {

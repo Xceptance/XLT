@@ -180,6 +180,47 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     }
 
     /**
+     * Verifies that PDF report is generated correctly when scorecard evaluation contains an error.
+     */
+    @Test
+    public void testGeneratePdfReportWithBrokenScorecard() throws Exception
+    {
+        final File targetDir = tempFolder.newFolder("report-output-broken-scorecard");
+        final File cssDir = new File(targetDir, "css");
+        cssDir.mkdirs();
+        FileUtils.copyFileToDirectory(new File("config/testreport/css/pdf.css"), cssDir);
+        FileUtils.copyFileToDirectory(new File("config/testreport/css/default.css"), cssDir);
+
+        final File testXmlFile = new File(targetDir, "testreport.xml");
+        FileUtils.copyFile(sampleXmlFile, testXmlFile);
+
+        final String brokenScorecardXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                          "<scorecard>\n" +
+                                          "  <outcome testFailed=\"false\">\n" +
+                                          "    <error>\n" +
+                                          "      <message>Failed to evaluate Groovy configuration: No such property: metrics</message>\n" +
+                                          "      <log>ValidationException: Failed to evaluate Groovy configuration</log>\n" +
+                                          "    </error>\n" +
+                                          "  </outcome>\n" +
+                                          "</scorecard>";
+        final File scorecardXmlFile = new File(targetDir, "scorecard.xml");
+        org.apache.commons.io.FileUtils.writeStringToFile(scorecardXmlFile, brokenScorecardXml, java.nio.charset.StandardCharsets.UTF_8);
+
+        final File outputPdfFile = new File(targetDir, "load-report.pdf");
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("productName", "XLT");
+        parameters.put("productVersion", "10.0.0");
+        parameters.put("productUrl", "https://www.xceptance.com");
+        parameters.put("scorecardPresent", Boolean.TRUE);
+        parameters.put("scorecardXmlUrl", scorecardXmlFile.toURI().toString());
+        parameters.put("pdfReportPresent", Boolean.TRUE);
+
+        PdfReportGenerator.generatePdfReport(testXmlFile, targetDir, styleSheetFile, outputPdfFile, parameters);
+        Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
+        Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
+    }
+
+    /**
      * Tests that the configuration default for PDF report is false.
      */
     @Test
