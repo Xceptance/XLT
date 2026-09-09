@@ -108,8 +108,8 @@ public class ReportGenerator
                            final String agentExcludePatternList)
         throws Exception
     {
-        this(inputDir, outputDir, noCharts, noAgentCharts, false, overridePropertyFile, commandLineProperties,
-             testCaseIncludePatternList, testCaseExcludePatternList, agentIncludePatternList, agentExcludePatternList);
+        this(inputDir, outputDir, noCharts, noAgentCharts, false, overridePropertyFile, commandLineProperties, testCaseIncludePatternList,
+             testCaseExcludePatternList, agentIncludePatternList, agentExcludePatternList);
     }
 
     /**
@@ -964,12 +964,18 @@ public class ReportGenerator
         }
 
         // create some dynamic parameters
-        final Map<String, Object> parameters = Map.of("productName", ProductInformation.getProductInformation().getProductName(),
-                                                      "productVersion", ProductInformation.getProductInformation().getVersion(),
-                                                      "productUrl", ProductInformation.getProductInformation().getProductURL(),
-                                                      "projectName", projectName, "scorecardPresent", Boolean.TRUE, "xtcOrganization",
-                                                      organization, "xtcProject", project, "xtcLoadTestId", loadTestId, "xtcResultId",
-                                                      resultId, "xtcReportId", reportId);
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+        parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+        parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+        parameters.put("projectName", projectName);
+        parameters.put("scorecardPresent", Boolean.TRUE);
+        parameters.put("pdfReportPresent", Boolean.valueOf(config.isPdfReportEnabled()));
+        parameters.put("xtcOrganization", organization);
+        parameters.put("xtcProject", project);
+        parameters.put("xtcLoadTestId", loadTestId);
+        parameters.put("xtcResultId", resultId);
+        parameters.put("xtcReportId", reportId);
 
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(List.of(outputFile), List.of(styleSheetFile), parameters);
