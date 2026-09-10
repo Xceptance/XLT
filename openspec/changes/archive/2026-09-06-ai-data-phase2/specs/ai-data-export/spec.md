@@ -1,10 +1,4 @@
-# AI Data Export
-
-## Purpose
-
-Provides AI-friendly data alongside the standard HTML and XML load test reports. The file (`ai-data.md`) is a YAML and Markdown hybrid, written to be read by a language model rather than a person: it states its own units, carries the rules that constrain what may be concluded from it, and covers the run's statistics, its network distributions, its errors grouped by message, and a coarse time series.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: AI Summary File Generation
 The system SHALL generate an `ai-data.md` file in the load report output directory during report
@@ -201,61 +195,6 @@ themselves affected the measurements.
 - **THEN** it SHALL state that agent saturation inflates all measured times and that response
   times should then be read as upper bounds
 
----
-
-### Requirement: AI Summary Content — Events
-The AI summary SHALL include event data extracted from the `EventsReport` fragment.
-
-#### Scenario: Events present
-- **WHEN** the report contains event data
-- **THEN** the AI summary SHALL include a summary of events with name and count
-
-#### Scenario: No events
-- **WHEN** no events are present
-- **THEN** the events section SHALL be omitted
-
----
-
-### Requirement: AI Summary Content — Page Load Timings
-The AI summary SHALL include page load timing data extracted from the `PageLoadTimingsReport` fragment.
-
-#### Scenario: Page load timing data present
-- **WHEN** the report contains page load timing data
-- **THEN** the AI summary SHALL include a Markdown table with name, count, min, max, mean, median, and configured percentiles
-
----
-
-### Requirement: AI Summary Content — Web Vitals
-The AI summary SHALL include web vitals data extracted from the `WebVitalsReports` fragment.
-
-#### Scenario: Web vitals data present
-- **WHEN** the report contains web vitals data
-- **THEN** the AI summary SHALL include a Markdown table with the web vitals metrics
-
----
-
-### Requirement: AI Summary Content — Custom Timers and Values
-The AI summary SHALL include custom timer and custom value data from `CustomTimersReport` and `CustomValuesReportProvider` fragments.
-
-#### Scenario: Custom timers present
-- **WHEN** the report contains custom timer data
-- **THEN** the AI summary SHALL include a Markdown table with name, count, min, max, mean, median, and configured percentiles
-
-#### Scenario: Custom values present
-- **WHEN** the report contains custom value data
-- **THEN** the AI summary SHALL include a Markdown table with the custom value statistics
-
----
-
-### Requirement: AI Summary Content — Load Profile
-The AI summary SHALL include load profile configuration data extracted from the `ConfigurationReport` fragment.
-
-#### Scenario: Load profile present
-- **WHEN** the report contains load profile configuration
-- **THEN** the AI summary SHALL include a YAML or table section listing each test case with its configured user count, iterations, and duration
-
----
-
 ### Requirement: Navigation Link
 The report navigation SHALL include an "AI Data" link to `ai-data.md` in load reports.
 
@@ -289,6 +228,8 @@ rendering pipeline, reading data from `testreport.xml`.
   regular expressions in this stylesheet require
 
 ---
+
+## ADDED Requirements
 
 ### Requirement: AI Data Content — Reading Rules
 The AI data file SHALL include a section stating the rules required to interpret it correctly,
@@ -535,4 +476,3 @@ or the report XML.
 - **WHEN** the documentation is reviewed
 - **THEN** it SHALL contain no reference to `ai-summary.md`, to a FreeMarker template, or to
   configuration keys that do not exist
-

@@ -36,6 +36,19 @@ public class IntMinMaxValueSetTest
     }
 
     @Test
+    public void testFirstSecondSurvivesARealTimestamp()
+    {
+        // firstSecond is an int, so "firstSecond * 1000" overflowed for any timestamp past 1970-01-25.
+        // The other tests here use small values, where the overflow does not show.
+        final long from = 1763571456000L;
+
+        final IntMinMaxValueSet set = new IntMinMaxValueSet(100);
+        set.addOrUpdateValue(from, 42);
+
+        Assert.assertEquals(from, set.getFirstSecond());
+    }
+
+    @Test
     public void testBasics()
     {
         final IntMinMaxValueSet minMaxValueSet = new IntMinMaxValueSet();

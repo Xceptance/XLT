@@ -39,5 +39,14 @@ public class XltPropertyNames
             
             public static final String STACKTRACES_LIMIT = BASE + "stackTracesLimit";
         }
+
+        public static class AiData
+        {
+            private static final String BASE = ReportGenerator.BASE + "aiData.";
+
+            public static final String TRACES_INCLUDED_FOR = BASE + "tracesIncludedFor";
+
+            public static final String TRACE_FRAMES = BASE + "traceFrames";
+        }
     }
 }

@@ -111,5 +111,55 @@ public class ConfigurationReportProviderTest
         // prefix only with no content should be returned unchanged
         Assert.assertEquals("<div class=\"markdown\"></div>", ConfigurationReportProvider.processComment("::markdown::"));
     }
+
+    // --- rawComment tests ---
+
+    @Test
+    public void testRawComment_plainString()
+    {
+        Assert.assertEquals("Hello World", ConfigurationReportProvider.rawComment("Hello World"));
+    }
+
+    @Test
+    public void testRawComment_rawHtmlUnchanged()
+    {
+        Assert.assertEquals("<b>Bold</b>", ConfigurationReportProvider.rawComment("<b>Bold</b>"));
+    }
+
+    @Test
+    public void testRawComment_keepsMarkdownSource()
+    {
+        // the marker goes, the Markdown stays as authored - no HTML rendering
+        Assert.assertEquals("**bold** text", ConfigurationReportProvider.rawComment("::markdown::**bold** text"));
+    }
+
+    @Test
+    public void testRawComment_caseInsensitive()
+    {
+        Assert.assertEquals("**bold**", ConfigurationReportProvider.rawComment("::Markdown::**bold**"));
+        Assert.assertEquals("**bold**", ConfigurationReportProvider.rawComment("::MARKDOWN::**bold**"));
+    }
+
+    @Test
+    public void testRawComment_null()
+    {
+        Assert.assertNull(ConfigurationReportProvider.rawComment(null));
+    }
+
+    @Test
+    public void testRawComment_prefixOnly()
+    {
+        Assert.assertEquals("", ConfigurationReportProvider.rawComment("::markdown::"));
+    }
+
+    @Test
+    public void testRawComment_leavesProcessCommentUntouched()
+    {
+        // both views of the same comment must stay available and independent
+        final String comment = "::markdown::**bold** text";
+
+        Assert.assertEquals("**bold** text", ConfigurationReportProvider.rawComment(comment));
+        Assert.assertTrue(ConfigurationReportProvider.processComment(comment).contains("<strong>bold</strong>"));
+    }
 }
 

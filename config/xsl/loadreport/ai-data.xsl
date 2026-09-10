@@ -1,172 +1,953 @@
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<?xml version="1.0"?>
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns:ai="urn:xlt:ai-data"
+                exclude-result-prefixes="xs ai">
     <xsl:output method="text" encoding="UTF-8" />
     <xsl:strip-space elements="*" />
 
+    <xsl:include href="text/ai-descriptions.xsl" />
+
     <!--
-    AI Summary Template — generates ai-data.md
-    Hybrid YAML+Markdown format optimized for LLM token efficiency.
+    Generates ai-data.md - a YAML+Markdown hybrid meant to be read by a language model
+    rather than a person.
+
+    REQUIRES XSLT 3.0. Unlike every other stylesheet here this one uses xsl:function,
+    for-each-group, tokenize, replace and "every ... satisfies". XLT resolves Saxon-HE as
+    its TransformerFactory, which supports all of it. On a JDK-default Xalan (XSLT 1.0)
+    this file does not run. AiDataStylesheetTest asserts the processor so a swap fails
+    loudly instead of quietly emitting nonsense.
+
+    All literal output goes through xsl:text. Bare literals in the template body would
+    carry their own indentation into the output, which is where the 106 stray whitespace
+    lines in the previous version came from.
     -->
+
+    <!-- how many error groups get a stack trace -->
+    <xsl:param name="tracesIncludedFor" select="10" />
+
+    <!-- how many leading frames of a stack trace to keep -->
+    <xsl:param name="traceFrames" select="8" />
+
+    <!-- ============================================================ helpers -->
+
+    <!--
+    A response time, rounded to whole milliseconds. The source carries three decimals on
+    a measurement whose resolution is one millisecond, so they are noise.
+    -->
+    <xsl:function name="ai:ms" as="xs:string">
+        <xsl:param name="value" />
+        <xsl:sequence select="if (string($value) = '') then '' else format-number(number($value), '0')" />
+    </xsl:function>
+
+    <!--
+    A rate or a percentage. Two decimals at most, no trailing zeros, so 0.000 prints as 0
+    and 0.037 as 0.04.
+    -->
+    <xsl:function name="ai:num" as="xs:string">
+        <xsl:param name="value" />
+        <xsl:sequence select="if (string($value) = '') then '' else format-number(number($value), '0.##')" />
+    </xsl:function>
+
+    <!--
+    A count. Plain integer, never with grouping separators - a comma is a decimal
+    separator in half of Europe and ambiguous inside a pipe table.
+    -->
+    <xsl:function name="ai:int" as="xs:string">
+        <xsl:param name="value" />
+        <xsl:sequence select="if (string($value) = '') then '' else format-number(number(replace(string($value), ',', '')), '0')" />
+    </xsl:function>
+
+    <!-- A share of a total, as a percentage with two decimals. -->
+    <xsl:function name="ai:share" as="xs:string">
+        <xsl:param name="value" />
+        <xsl:param name="total" />
+        <xsl:sequence select="if (number($total) = 0) then '' else format-number(number($value) div number($total) * 100, '0.##')" />
+    </xsl:function>
+
+    <!-- One table row. -->
+    <xsl:function name="ai:row" as="xs:string">
+        <xsl:param name="cells" as="xs:string*" />
+        <xsl:sequence select="concat('| ', string-join($cells, ' | '), ' |&#10;')" />
+    </xsl:function>
+
+    <!--
+    The separator row. The first column holds a name and stays left aligned, everything
+    after it is a number and gets right aligned.
+    -->
+    <xsl:function name="ai:separator" as="xs:string">
+        <xsl:param name="cells" as="xs:string*" />
+        <xsl:sequence select="concat('| --- | ', string-join(for $i in 2 to count($cells) return '---:', ' | '), ' |&#10;')" />
+    </xsl:function>
+
+    <!-- A table header plus its separator row. -->
+    <xsl:function name="ai:header" as="xs:string">
+        <xsl:param name="cells" as="xs:string*" />
+        <xsl:sequence select="concat(ai:row($cells), ai:separator($cells))" />
+    </xsl:function>
+
+    <!--
+    Cell text that came from the test run. A pipe would end the cell early and shift every
+    column after it, and a newline would end the row.
+    -->
+    <xsl:function name="ai:cell" as="xs:string">
+        <xsl:param name="value" />
+        <xsl:sequence select="normalize-space(replace(string($value), '\|', '\\|'))" />
+    </xsl:function>
+
+    <!--
+    True when the given element renders as zero for every row.
+
+    Rounds before comparing, deliberately. The raw values decide nothing here - what matters
+    is what the reader sees. Three requests in a sample report had DNS means of 0.318, 0.169
+    and 0.021: non-zero, so a raw comparison kept the column, and then all eighty rows
+    printed "0" anyway.
+    -->
+    <xsl:function name="ai:all-zero" as="xs:boolean">
+        <xsl:param name="values" as="node()*" />
+        <xsl:sequence select="every $v in $values satisfies (string($v) = '' or round(number($v)) = 0)" />
+    </xsl:function>
+
+    <!-- ============================================================ document -->
+
     <xsl:template match="/testreport">
-        <xsl:if test="general">
-# Test Metadata
+        <xsl:text># XLT Load Test Report - AI Data&#10;</xsl:text>
 
-```yaml
-startTime: "<xsl:value-of select="general/startTime" />"
-endTime: "<xsl:value-of select="general/endTime" />"
-duration: <xsl:value-of select="general/duration" />
-bytesSent: <xsl:value-of select="general/bytesSent" />
-bytesReceived: <xsl:value-of select="general/bytesReceived" />
-hits: <xsl:value-of select="general/hits" />
-```
-        </xsl:if>
+        <xsl:call-template name="header" />
+        <xsl:call-template name="ai-reading-rules" />
+        <xsl:call-template name="comments" />
+        <xsl:call-template name="summary" />
+        <xsl:call-template name="time-series" />
+        <xsl:call-template name="load-profile" />
+        <xsl:call-template name="timer-section">
+            <xsl:with-param name="title" select="'Transactions'" />
+            <xsl:with-param name="elements" select="transactions/*" />
+            <xsl:with-param name="description" select="'transactions'" />
+        </xsl:call-template>
+        <xsl:call-template name="timer-section">
+            <xsl:with-param name="title" select="'Actions'" />
+            <xsl:with-param name="elements" select="actions/*" />
+            <xsl:with-param name="description" select="'actions'" />
+        </xsl:call-template>
+        <xsl:call-template name="requests" />
+        <xsl:call-template name="timer-section">
+            <xsl:with-param name="title" select="'Page Load Timings'" />
+            <xsl:with-param name="elements" select="pageLoadTimings/*" />
+        </xsl:call-template>
+        <xsl:call-template name="timer-section">
+            <xsl:with-param name="title" select="'Custom Timers'" />
+            <xsl:with-param name="elements" select="customTimers/*" />
+        </xsl:call-template>
+        <xsl:call-template name="custom-values" />
+        <xsl:call-template name="response-codes" />
+        <xsl:call-template name="content-types" />
+        <xsl:call-template name="hosts" />
+        <xsl:call-template name="request-methods" />
+        <xsl:call-template name="errors" />
+        <xsl:call-template name="events" />
+        <xsl:call-template name="agents" />
+        <xsl:call-template name="web-vitals" />
+    </xsl:template>
 
-        <!-- Configuration -->
+    <!-- ============================================================ header -->
+
+    <!--
+    One YAML block instead of the four separate fragments this file used to open with.
+    The units mapping is the important part: most values are milliseconds but not all,
+    and without it a model has to infer the unit of every column on every read.
+    -->
+    <xsl:template name="header">
+        <xsl:variable name="props" select="configuration/properties" />
+
+        <xsl:text>&#10;```yaml&#10;</xsl:text>
+        <!--
+        Version 2. Version 1 is the layout that shipped before this one: four separate YAML
+        fragments, no units, no time series, ungrouped errors. This is an extension of it,
+        not a replacement, so consumers can tell the two apart.
+        -->
+        <xsl:text>schemaVersion: 2&#10;</xsl:text>
+
+        <xsl:text>units:&#10;</xsl:text>
+        <xsl:text>  responseTimes: ms      # min, max, mean, dev, all P* columns, all network timings&#10;</xsl:text>
+        <xsl:text>  periods: s             # duration, rampUp, measurement, shutdown&#10;</xsl:text>
+        <xsl:text>  thinkTime: ms&#10;</xsl:text>
+        <xsl:text>  sizes: bytes&#10;</xsl:text>
+        <xsl:text>  rates: per second&#10;</xsl:text>
+        <xsl:text>  webVitals: "CLS unitless score; FCP/LCP/INP/TTFB ms"&#10;</xsl:text>
+
         <xsl:if test="configuration/version">
-# XLT Version
-
-```yaml
-product: "<xsl:value-of select="configuration/version/productName" />"
-version: "<xsl:value-of select="configuration/version/version" />"
-```
+            <xsl:text>product: "</xsl:text>
+            <xsl:value-of select="configuration/version/productName" />
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="configuration/version/version" />
+            <xsl:text>"&#10;</xsl:text>
         </xsl:if>
 
-        <!-- Project -->
         <xsl:if test="configuration/projectName != ''">
-# Project
-
-```yaml
-name: "<xsl:value-of select="configuration/projectName" />"
-```
+            <xsl:text>project: "</xsl:text>
+            <xsl:value-of select="configuration/projectName" />
+            <xsl:text>"&#10;</xsl:text>
         </xsl:if>
 
-        <!-- Comments -->
-        <xsl:if test="configuration/comments/string">
-# Comments
-            <xsl:for-each select="configuration/comments/string">
-- <xsl:value-of select="." />
+        <xsl:if test="general">
+            <xsl:text>startTime: "</xsl:text>
+            <xsl:value-of select="general/startTime" />
+            <xsl:text>"&#10;endTime: "</xsl:text>
+            <xsl:value-of select="general/endTime" />
+            <xsl:text>"&#10;duration: </xsl:text>
+            <xsl:value-of select="ai:int(general/duration)" />
+            <xsl:text>&#10;</xsl:text>
+
+            <!--
+            Carried up from the load profile so that ramp-up contamination of the
+            run-wide rates is visible without cross-referencing that table.
+            -->
+            <xsl:if test="configuration/loadProfile/testCase">
+                <xsl:text>rampUpPeriod: </xsl:text>
+                <xsl:value-of select="ai:int(max(configuration/loadProfile/testCase/rampUpPeriod/number(.)))" />
+                <xsl:text>&#10;</xsl:text>
+            </xsl:if>
+
+            <xsl:text>hits: </xsl:text>
+            <xsl:value-of select="ai:int(general/hits)" />
+            <xsl:text>&#10;bytesSent: </xsl:text>
+            <xsl:value-of select="ai:int(general/bytesSent)" />
+            <xsl:text>&#10;bytesReceived: </xsl:text>
+            <xsl:value-of select="ai:int(general/bytesReceived)" />
+            <xsl:text>&#10;</xsl:text>
+        </xsl:if>
+
+        <!--
+        Identifies the run in XTC. Omitted whole for runs that did not come from XTC,
+        rather than written out as empty strings.
+        -->
+        <xsl:if test="$props/property[@name = 'com.xceptance.xtc.organization']/@value != ''">
+            <xsl:text>xtc:&#10;  organization: "</xsl:text>
+            <xsl:value-of select="$props/property[@name = 'com.xceptance.xtc.organization']/@value" />
+            <xsl:text>"&#10;  project: "</xsl:text>
+            <xsl:value-of select="$props/property[@name = 'com.xceptance.xtc.project']/@value" />
+            <xsl:text>"&#10;  loadTestRunId: "</xsl:text>
+            <xsl:value-of select="$props/property[@name = 'com.xceptance.xtc.loadtest.run.id']/@value" />
+            <xsl:text>"&#10;  resultId: "</xsl:text>
+            <xsl:value-of select="$props/property[@name = 'com.xceptance.xtc.loadtest.result.id']/@value" />
+            <xsl:text>"&#10;  reportId: "</xsl:text>
+            <xsl:value-of select="$props/property[@name = 'com.xceptance.xtc.loadtest.report.id']/@value" />
+            <xsl:text>"&#10;</xsl:text>
+        </xsl:if>
+
+        <xsl:text>```&#10;</xsl:text>
+    </xsl:template>
+
+    <!-- ============================================================ comments -->
+
+    <!--
+    Comments are free text written by whoever configured the run, and they land in an LLM
+    prompt. A comment containing "# Errors" would forge a section heading and split the
+    document, so every line is blockquoted.
+
+    rawComments holds the text as authored; comments holds the rendered HTML. Prefer the
+    raw form, fall back to the rendered one for reports generated before rawComments
+    existed. Tags are stripped either way, because a comment without the ::markdown::
+    marker may legitimately be raw HTML.
+    -->
+    <xsl:template name="comments">
+        <xsl:variable name="source"
+                      select="if (configuration/rawComments/string) then configuration/rawComments/string
+                              else configuration/comments/string" />
+
+        <xsl:if test="$source">
+            <xsl:text>&#10;## Comments&#10;&#10;</xsl:text>
+            <xsl:for-each select="$source">
+                <xsl:variable name="plain" select="normalize-space(replace(string(.), '&lt;[^&gt;]*&gt;', ' '))" />
+                <xsl:if test="$plain != ''">
+                    <xsl:text>&gt; </xsl:text>
+                    <xsl:value-of select="$plain" />
+                    <xsl:text>&#10;</xsl:text>
+                </xsl:if>
             </xsl:for-each>
         </xsl:if>
+    </xsl:template>
 
-        <!-- Load Profile -->
+    <!-- ============================================================ summary -->
+
+    <!--
+    The top level picture, five rows. Nothing else in the file states the overall counts
+    and error rates without the reader adding up a table first.
+    -->
+    <xsl:template name="summary">
+        <!--
+        A scope the run never measured would otherwise print as four zeros, and "zero page
+        loads were recorded" is a different statement from "page loads were not measured".
+        A model cannot tell them apart from a table, so the row is left out.
+        -->
+        <xsl:if test="summary/*[number(count) &gt; 0]">
+            <xsl:variable name="headers" as="xs:string*"
+                          select="'Scope', 'Count', 'Count/s', 'Errors', 'Error%'" />
+
+            <xsl:text>&#10;## Summary&#10;&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="summary/*[number(count) &gt; 0]">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="string(name)" />
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:num(countPerSecond)" />
+                    <xsl:sequence select="ai:int(errors)" />
+                    <xsl:sequence select="ai:num(errorPercentage)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ time series -->
+
+    <!--
+    One table for all three scopes rather than one table each. The elapsed and wall clock
+    columns would otherwise be repeated three times, and side by side on a row the three
+    means say which layer slowed down.
+    -->
+    <xsl:template name="time-series">
+        <xsl:if test="summary/timeSeries/rows/row">
+            <xsl:variable name="series" select="summary/timeSeries" />
+
+            <xsl:text>&#10;## Time Series&#10;</xsl:text>
+            <xsl:call-template name="ai-desc-time-series" />
+
+            <xsl:text>&#10;```yaml&#10;interval: </xsl:text>
+            <xsl:value-of select="ai:int($series/interval)" />
+            <xsl:text>&#10;buckets: </xsl:text>
+            <xsl:value-of select="ai:int($series/buckets)" />
+            <xsl:text>&#10;sourceResolution: </xsl:text>
+            <xsl:value-of select="ai:int($series/sourceResolution)" />
+            <xsl:text>&#10;```&#10;&#10;</xsl:text>
+
+            <!--
+            Spelled out rather than abbreviated. The header row is written once, so the
+            abbreviations saved almost nothing, and "Act" reads as "act" as easily as
+            "action".
+            -->
+            <xsl:value-of select="ai:header(('Elapsed', 'Time',
+                                             'Transaction Mean', 'Transactions/s', 'Transaction Errors/s',
+                                             'Action Mean',
+                                             'Request Mean', 'Requests/s'))" />
+
+            <xsl:for-each select="$series/rows/row">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="ai:int(elapsed)" />
+                    <!--
+                    The rendered timestamp carries the date and zone too, which are already in the
+                    header. Seconds stay because a short test gets sub-minute buckets, and without
+                    them consecutive rows would show the same clock time.
+                    -->
+                    <xsl:sequence select="substring(string(time), 12, 8)" />
+                    <xsl:sequence select="ai:ms(transactionMean)" />
+                    <xsl:sequence select="ai:num(transactionCountPerSecond)" />
+                    <xsl:sequence select="ai:num(transactionErrorsPerSecond)" />
+                    <xsl:sequence select="ai:ms(actionMean)" />
+                    <xsl:sequence select="ai:ms(requestMean)" />
+                    <xsl:sequence select="ai:num(requestCountPerSecond)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ network distributions -->
+
+    <!--
+    None of these reached the AI file before, which meant a run could serve ten thousand
+    404s and thousands of redirects with no trace of it anywhere: nothing asserted on
+    them, so they never became errors.
+    -->
+    <xsl:template name="response-codes">
+        <xsl:if test="responseCodes/responseCode">
+            <xsl:variable name="hits" select="general/hits" />
+            <xsl:variable name="headers" as="xs:string*" select="'Code', 'Status', 'Count', 'Share%'" />
+
+            <xsl:text>&#10;## Response Codes&#10;</xsl:text>
+            <xsl:call-template name="ai-desc-network" />
+            <xsl:text>&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="responseCodes/responseCode">
+                <xsl:sort select="number(count)" order="descending" />
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="ai:int(code)" />
+                    <xsl:sequence select="string(statusText)" />
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:share(count, $hits)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="content-types">
+        <xsl:if test="contentTypes/contentType">
+            <xsl:variable name="hits" select="general/hits" />
+            <xsl:variable name="headers" as="xs:string*" select="'Content Type', 'Count', 'Share%'" />
+
+            <xsl:text>&#10;## Content Types&#10;&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="contentTypes/contentType">
+                <xsl:sort select="number(count)" order="descending" />
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="if (contentType != '') then string(contentType) else '(none)'" />
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:share(count, $hits)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="hosts">
+        <xsl:if test="hosts/host">
+            <xsl:variable name="hits" select="general/hits" />
+            <xsl:variable name="headers" as="xs:string*" select="'Host', 'Count', 'Share%'" />
+
+            <xsl:text>&#10;## Hosts&#10;&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="hosts/host">
+                <xsl:sort select="number(count)" order="descending" />
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="string(name)" />
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:share(count, $hits)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="request-methods">
+        <xsl:if test="requestMethods/requestMethod">
+            <xsl:variable name="hits" select="general/hits" />
+            <xsl:variable name="headers" as="xs:string*" select="'Method', 'Count', 'Share%'" />
+
+            <xsl:text>&#10;## Request Methods&#10;&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="requestMethods/requestMethod">
+                <xsl:sort select="number(count)" order="descending" />
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="string(method)" />
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:share(count, $hits)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ load profile -->
+
+    <xsl:template name="load-profile">
         <xsl:if test="configuration/loadProfile/testCase">
-# Load Profile
+            <xsl:variable name="cases" select="configuration/loadProfile/testCase" />
 
-| Test Case | Users | Iterations | Measurement [s] | Ramp-Up [s] | Shutdown [s] |
-| --- | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="configuration/loadProfile/testCase">| <xsl:choose><xsl:when test="userName != ''"><xsl:value-of select="userName" /></xsl:when><xsl:otherwise><xsl:value-of select="testCaseClassName" /></xsl:otherwise></xsl:choose> | <xsl:value-of select="numberOfUsers" /> | <xsl:value-of select="numberOfIterations" /> | <xsl:value-of select="measurementPeriod" /> | <xsl:value-of select="rampUpPeriod" /> | <xsl:value-of select="shutdownPeriod" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
-        </xsl:if>
+            <!--
+            A column whose value is the same in every row invites a comparison that cannot be
+            made. Most runs configure one measurement period, ramp-up and shutdown for all test
+            cases, so those get stated once above the table and only become columns when a run
+            actually varies them.
+            -->
+            <xsl:variable name="varyMeasurement" select="count(distinct-values($cases/measurementPeriod)) &gt; 1" />
+            <xsl:variable name="varyRampUp" select="count(distinct-values($cases/rampUpPeriod)) &gt; 1" />
+            <xsl:variable name="varyShutdown" select="count(distinct-values($cases/shutdownPeriod)) &gt; 1" />
 
-        <!-- Transactions -->
-        <xsl:if test="transactions/*">
-# Transactions
+            <!--
+            Iterations is zero for every row unless iteration mode is in use, and zero there does
+            not mean "none completed", it means "not configured". A model reads it literally.
+            -->
+            <xsl:variable name="showIterations" select="not(ai:all-zero($cases/numberOfIterations))" />
 
-<xsl:call-template name="timer-table">
-    <xsl:with-param name="elements" select="transactions/*" />
-</xsl:call-template>
-        </xsl:if>
+            <!-- the shape only matters when a load function actually changes over the run -->
+            <xsl:variable name="showUserProfile" select="exists($cases/numberOfUsersProfile[. != ''])" />
+            <xsl:variable name="showRateProfile" select="exists($cases/arrivalRateProfile[. != ''])" />
+            <xsl:variable name="showRate" select="exists($cases/arrivalRateMax)" />
 
-        <!-- Actions -->
-        <xsl:if test="actions/*">
-# Actions
+            <xsl:text>&#10;## Load Profile&#10;</xsl:text>
 
-<xsl:call-template name="timer-table">
-    <xsl:with-param name="elements" select="actions/*" />
-</xsl:call-template>
-        </xsl:if>
+            <xsl:variable name="constants" as="xs:string*">
+                <xsl:if test="not($varyMeasurement)">
+                    <xsl:sequence select="concat('measurement ', ai:int($cases[1]/measurementPeriod), ' s')" />
+                </xsl:if>
+                <xsl:if test="not($varyRampUp)">
+                    <xsl:sequence select="concat('ramp-up ', ai:int($cases[1]/rampUpPeriod), ' s')" />
+                </xsl:if>
+                <xsl:if test="not($varyShutdown)">
+                    <xsl:sequence select="concat('shutdown ', ai:int($cases[1]/shutdownPeriod), ' s')" />
+                </xsl:if>
+            </xsl:variable>
 
-        <!-- Requests -->
-        <xsl:if test="requests/*">
-# Requests
+            <xsl:if test="exists($constants)">
+                <xsl:text>&#10;Same for every test case: </xsl:text>
+                <xsl:value-of select="string-join($constants, ', ')" />
+                <xsl:text>.&#10;</xsl:text>
+            </xsl:if>
 
-| Name | Count | Count/s | Errors | Error% | Min | Max | Mean | Median | Dev | <xsl:for-each select="requests/*[1]/percentiles/*">P<xsl:value-of select="substring-after(name(), 'p')" /> | </xsl:for-each>DNS | Connect | Send | ServerBusy | Receive | TTFB | BytesSent | BytesRecv |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | <xsl:for-each select="requests/*[1]/percentiles/*">---: | </xsl:for-each>---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="requests/*">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="errors" /> | <xsl:value-of select="errorPercentage" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="median" /> | <xsl:value-of select="deviation" /> | <xsl:for-each select="percentiles/*"><xsl:value-of select="." /> | </xsl:for-each><xsl:value-of select="dnsTime/mean" /> | <xsl:value-of select="connectTime/mean" /> | <xsl:value-of select="sendTime/mean" /> | <xsl:value-of select="serverBusyTime/mean" /> | <xsl:value-of select="receiveTime/mean" /> | <xsl:value-of select="timeToFirstBytes/mean" /> | <xsl:value-of select="bytesSent/mean" /> | <xsl:value-of select="bytesReceived/mean" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
-        </xsl:if>
+            <xsl:if test="$showUserProfile or $showRateProfile">
+                <xsl:call-template name="ai-desc-load-profile" />
+            </xsl:if>
 
-        <!-- Page Load Timings -->
-        <xsl:if test="pageLoadTimings/*">
-# Page Load Timings
+            <xsl:variable name="headers" as="xs:string*">
+                <xsl:sequence select="'Test Case', 'Users'" />
+                <xsl:if test="$showUserProfile">
+                    <xsl:sequence select="'Users Over Time'" />
+                </xsl:if>
+                <xsl:if test="$showRate">
+                    <xsl:sequence select="'Arrival Rate'" />
+                </xsl:if>
+                <xsl:if test="$showRateProfile">
+                    <xsl:sequence select="'Arrival Rate Over Time'" />
+                </xsl:if>
+                <xsl:if test="$showIterations">
+                    <xsl:sequence select="'Iterations'" />
+                </xsl:if>
+                <xsl:if test="$varyMeasurement">
+                    <xsl:sequence select="'Measurement'" />
+                </xsl:if>
+                <xsl:if test="$varyRampUp">
+                    <xsl:sequence select="'Ramp-Up'" />
+                </xsl:if>
+                <xsl:if test="$varyShutdown">
+                    <xsl:sequence select="'Shutdown'" />
+                </xsl:if>
+            </xsl:variable>
 
-<xsl:call-template name="timer-table">
-    <xsl:with-param name="elements" select="pageLoadTimings/*" />
-</xsl:call-template>
-        </xsl:if>
+            <xsl:text>&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
 
-        <!-- Custom Timers -->
-        <xsl:if test="customTimers/*">
-# Custom Timers
-
-<xsl:call-template name="timer-table">
-    <xsl:with-param name="elements" select="customTimers/*" />
-</xsl:call-template>
-        </xsl:if>
-        
-        <!-- Custom Values -->
-        <xsl:if test="customValues/*">
-# Custom Values
-
-| Name | Count | Count/s | Min | Max | Mean | StdDev |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-<xsl:for-each select="customValues/*">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="standardDeviation" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
-        </xsl:if>
-
-        <!-- Errors -->
-# Errors
-        <xsl:choose>
-            <xsl:when test="errors/error">
-                <xsl:for-each select="errors/error">
-## Error: <xsl:value-of select="message" />
-
-- **Test Case**: <xsl:value-of select="testCaseName" />
-- **Action**: <xsl:choose><xsl:when test="actionName != ''"><xsl:value-of select="actionName" /></xsl:when><xsl:otherwise>n/a</xsl:otherwise></xsl:choose>
-- **Count**: <xsl:value-of select="count" />
-                    <xsl:if test="trace != ''">
-
-### Stack Trace
-```
-<xsl:value-of select="substring(trace, 1, 1000)" /><xsl:if test="string-length(trace) > 1000">...</xsl:if>
-```
+            <xsl:for-each select="$cases">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="if (userName != '') then ai:cell(userName) else ai:cell(testCaseClassName)" />
+                    <xsl:sequence select="ai:int(numberOfUsersMax)" />
+                    <xsl:if test="$showUserProfile">
+                        <xsl:sequence select="string(numberOfUsersProfile)" />
                     </xsl:if>
-                </xsl:for-each>
-            </xsl:when>
-            <xsl:otherwise>
-No errors recorded.
-            </xsl:otherwise>
-        </xsl:choose>
-
-        <!-- Events -->
-        <xsl:if test="events/event">
-# Events
-
-| Test Case | Event Name | Count |
-| --- | --- | ---: |
-<xsl:for-each select="events/event">| <xsl:choose><xsl:when test="testCaseName != ''"><xsl:value-of select="testCaseName" /></xsl:when><xsl:otherwise>n/a</xsl:otherwise></xsl:choose> | <xsl:value-of select="name" /> | <xsl:value-of select="totalCount" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+                    <xsl:if test="$showRate">
+                        <xsl:sequence select="ai:int(arrivalRateMax)" />
+                    </xsl:if>
+                    <xsl:if test="$showRateProfile">
+                        <xsl:sequence select="string(arrivalRateProfile)" />
+                    </xsl:if>
+                    <xsl:if test="$showIterations">
+                        <xsl:sequence select="ai:int(numberOfIterations)" />
+                    </xsl:if>
+                    <xsl:if test="$varyMeasurement">
+                        <xsl:sequence select="ai:int(measurementPeriod)" />
+                    </xsl:if>
+                    <xsl:if test="$varyRampUp">
+                        <xsl:sequence select="ai:int(rampUpPeriod)" />
+                    </xsl:if>
+                    <xsl:if test="$varyShutdown">
+                        <xsl:sequence select="ai:int(shutdownPeriod)" />
+                    </xsl:if>
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
         </xsl:if>
+    </xsl:template>
 
-        <!-- Agents -->
-        <xsl:if test="agents/agent">
-# Agents
+    <!-- ============================================================ timer tables -->
 
-| Agent | Transactions | Errors | Error% | CPU% (Mean) |
-| --- | ---: | ---: | ---: | ---: |
-<xsl:for-each select="agents/agent">| <xsl:value-of select="name" /> | <xsl:value-of select="transactions" /> | <xsl:value-of select="transactionErrors" /> | <xsl:value-of select="transactionErrorPercentage" /> | <xsl:value-of select="cpuUsage/mean" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
-        </xsl:if>
+    <xsl:template name="timer-section">
+        <xsl:param name="title" />
+        <xsl:param name="elements" />
+        <xsl:param name="description" select="''" />
 
-        <!-- Web Vitals -->
-        <xsl:if test="webVitalsList/webVitals">
-# Web Vitals
-
-| Action | CLS Score | CLS Rating | FCP Score | FCP Rating | LCP Score | LCP Rating | INP Score | INP Rating | TTFB Score | TTFB Rating |
-| --- | ---: | --- | ---: | --- | ---: | --- | ---: | --- | ---: | --- |
-<xsl:for-each select="webVitalsList/webVitals">| <xsl:value-of select="name" /> | <xsl:value-of select="cls/score" /> | <xsl:value-of select="cls/rating" /> | <xsl:value-of select="fcp/score" /> | <xsl:value-of select="fcp/rating" /> | <xsl:value-of select="lcp/score" /> | <xsl:value-of select="lcp/rating" /> | <xsl:value-of select="inp/score" /> | <xsl:value-of select="inp/rating" /> | <xsl:value-of select="ttfb/score" /> | <xsl:value-of select="ttfb/rating" /> |<xsl:text>&#10;</xsl:text></xsl:for-each>
+        <xsl:if test="$elements">
+            <xsl:text>&#10;## </xsl:text>
+            <xsl:value-of select="$title" />
+            <xsl:text>&#10;</xsl:text>
+            <xsl:if test="$description = 'transactions'">
+                <xsl:call-template name="ai-desc-transactions" />
+            </xsl:if>
+            <xsl:if test="$description = 'actions'">
+                <xsl:call-template name="ai-desc-actions" />
+            </xsl:if>
+            <xsl:text>&#10;</xsl:text>
+            <xsl:call-template name="timer-table">
+                <xsl:with-param name="elements" select="$elements" />
+            </xsl:call-template>
         </xsl:if>
     </xsl:template>
 
     <xsl:template name="timer-table">
         <xsl:param name="elements" />
-| Name | Count | Count/s | Errors | Error% | Min | Max | Mean | Median | Dev | <xsl:for-each select="$elements[1]/percentiles/*">P<xsl:value-of select="substring-after(name(), 'p')" /> | </xsl:for-each>
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | <xsl:for-each select="$elements[1]/percentiles/*">---: | </xsl:for-each><xsl:text>&#10;</xsl:text>
-<xsl:for-each select="$elements">| <xsl:value-of select="name" /> | <xsl:value-of select="count" /> | <xsl:value-of select="countPerSecond" /> | <xsl:value-of select="errors" /> | <xsl:value-of select="errorPercentage" /> | <xsl:value-of select="min" /> | <xsl:value-of select="max" /> | <xsl:value-of select="mean" /> | <xsl:value-of select="median" /> | <xsl:value-of select="deviation" /> | <xsl:for-each select="percentiles/*"><xsl:value-of select="." /> | </xsl:for-each><xsl:text>&#10;</xsl:text></xsl:for-each>
+
+        <xsl:variable name="percentiles" select="$elements[1]/percentiles/*" />
+
+        <!-- Median duplicates P50 in every row, so it only appears when P50 does not. -->
+        <xsl:variable name="showMedian" select="empty($elements[1]/percentiles/p50)" />
+
+        <!-- labeling rules can label any timer, not just requests; shown only where used -->
+        <xsl:variable name="showLabels" select="exists($elements/labels[normalize-space(.) != ''])" />
+
+        <xsl:variable name="headers" as="xs:string*">
+            <xsl:sequence select="'Name'" />
+            <xsl:if test="$showLabels">
+                <xsl:sequence select="'Labels'" />
+            </xsl:if>
+            <xsl:sequence select="'Count', 'Count/s', 'Errors', 'Error%', 'Min', 'Max', 'Mean'" />
+            <xsl:if test="$showMedian">
+                <xsl:sequence select="'Median'" />
+            </xsl:if>
+            <xsl:sequence select="'Dev'" />
+            <xsl:for-each select="$percentiles">
+                <xsl:sequence select="concat('P', substring-after(name(), 'p'))" />
+            </xsl:for-each>
+        </xsl:variable>
+
+        <xsl:value-of select="ai:header($headers)" />
+
+        <xsl:for-each select="$elements">
+            <xsl:variable name="cells" as="xs:string*">
+                <xsl:sequence select="ai:cell(name)" />
+                <xsl:if test="$showLabels">
+                    <xsl:sequence select="ai:cell(labels)" />
+                </xsl:if>
+                <xsl:sequence select="ai:int(count)" />
+                <xsl:sequence select="ai:num(countPerSecond)" />
+                <xsl:sequence select="ai:int(errors)" />
+                <xsl:sequence select="ai:num(errorPercentage)" />
+                <xsl:sequence select="ai:ms(min)" />
+                <xsl:sequence select="ai:ms(max)" />
+                <xsl:sequence select="ai:ms(mean)" />
+                <xsl:if test="$showMedian">
+                    <xsl:sequence select="ai:ms(median)" />
+                </xsl:if>
+                <xsl:sequence select="ai:ms(deviation)" />
+                <xsl:for-each select="percentiles/*">
+                    <xsl:sequence select="ai:ms(.)" />
+                </xsl:for-each>
+            </xsl:variable>
+            <xsl:value-of select="ai:row($cells)" />
+        </xsl:for-each>
     </xsl:template>
-    
+
+    <!-- ============================================================ requests -->
+
+    <xsl:template name="requests">
+        <xsl:if test="requests/*">
+            <xsl:variable name="rows" select="requests/*" />
+            <xsl:variable name="percentiles" select="$rows[1]/percentiles/*" />
+            <xsl:variable name="showMedian" select="empty($rows[1]/percentiles/p50)" />
+
+            <!--
+            A timing column that is zero for every request carries nothing. DNS and
+            connect are routinely zero under keep-alive, and printing "0" 80 times costs
+            tokens and invites the model to reason about it.
+            -->
+            <xsl:variable name="showDns" select="not(ai:all-zero($rows/dnsTime/mean))" />
+            <xsl:variable name="showConnect" select="not(ai:all-zero($rows/connectTime/mean))" />
+            <xsl:variable name="showSend" select="not(ai:all-zero($rows/sendTime/mean))" />
+            <xsl:variable name="showBusy" select="not(ai:all-zero($rows/serverBusyTime/mean))" />
+            <xsl:variable name="showReceive" select="not(ai:all-zero($rows/receiveTime/mean))" />
+            <xsl:variable name="showTtfb" select="not(ai:all-zero($rows/timeToFirstBytes/mean))" />
+
+            <!--
+            Labels come from the report's labeling rules and are how a run qualifies its
+            requests - by business area, page type, whatever the rules assign. Only shown
+            when the run actually assigned some, so it costs nothing when unused.
+            -->
+            <xsl:variable name="showLabels" select="exists($rows/labels[normalize-space(.) != ''])" />
+
+            <xsl:variable name="headers" as="xs:string*">
+                <xsl:sequence select="'Name'" />
+                <xsl:if test="$showLabels">
+                    <xsl:sequence select="'Labels'" />
+                </xsl:if>
+                <xsl:sequence select="'Count', 'Count/s', 'Errors', 'Error%', 'Min', 'Max', 'Mean'" />
+                <xsl:if test="$showMedian">
+                    <xsl:sequence select="'Median'" />
+                </xsl:if>
+                <xsl:sequence select="'Dev'" />
+                <xsl:for-each select="$percentiles">
+                    <xsl:sequence select="concat('P', substring-after(name(), 'p'))" />
+                </xsl:for-each>
+                <xsl:if test="$showDns">
+                    <xsl:sequence select="'DNS'" />
+                </xsl:if>
+                <xsl:if test="$showConnect">
+                    <xsl:sequence select="'Connect'" />
+                </xsl:if>
+                <xsl:if test="$showSend">
+                    <xsl:sequence select="'Send'" />
+                </xsl:if>
+                <xsl:if test="$showBusy">
+                    <xsl:sequence select="'ServerBusy'" />
+                </xsl:if>
+                <xsl:if test="$showReceive">
+                    <xsl:sequence select="'Receive'" />
+                </xsl:if>
+                <xsl:if test="$showTtfb">
+                    <xsl:sequence select="'TTFB'" />
+                </xsl:if>
+                <xsl:sequence select="'BytesSent', 'BytesRecv'" />
+            </xsl:variable>
+
+            <xsl:text>&#10;## Requests&#10;</xsl:text>
+            <xsl:call-template name="ai-desc-requests" />
+            <xsl:if test="$showLabels">
+                <xsl:call-template name="ai-desc-labels" />
+            </xsl:if>
+            <xsl:text>&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="$rows">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="ai:cell(name)" />
+                    <xsl:if test="$showLabels">
+                        <xsl:sequence select="ai:cell(labels)" />
+                    </xsl:if>
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:num(countPerSecond)" />
+                    <xsl:sequence select="ai:int(errors)" />
+                    <xsl:sequence select="ai:num(errorPercentage)" />
+                    <xsl:sequence select="ai:ms(min)" />
+                    <xsl:sequence select="ai:ms(max)" />
+                    <xsl:sequence select="ai:ms(mean)" />
+                    <xsl:if test="$showMedian">
+                        <xsl:sequence select="ai:ms(median)" />
+                    </xsl:if>
+                    <xsl:sequence select="ai:ms(deviation)" />
+                    <xsl:for-each select="percentiles/*">
+                        <xsl:sequence select="ai:ms(.)" />
+                    </xsl:for-each>
+                    <xsl:if test="$showDns">
+                        <xsl:sequence select="ai:ms(dnsTime/mean)" />
+                    </xsl:if>
+                    <xsl:if test="$showConnect">
+                        <xsl:sequence select="ai:ms(connectTime/mean)" />
+                    </xsl:if>
+                    <xsl:if test="$showSend">
+                        <xsl:sequence select="ai:ms(sendTime/mean)" />
+                    </xsl:if>
+                    <xsl:if test="$showBusy">
+                        <xsl:sequence select="ai:ms(serverBusyTime/mean)" />
+                    </xsl:if>
+                    <xsl:if test="$showReceive">
+                        <xsl:sequence select="ai:ms(receiveTime/mean)" />
+                    </xsl:if>
+                    <xsl:if test="$showTtfb">
+                        <xsl:sequence select="ai:ms(timeToFirstBytes/mean)" />
+                    </xsl:if>
+                    <xsl:sequence select="ai:ms(bytesSent/mean)" />
+                    <xsl:sequence select="ai:ms(bytesReceived/mean)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ custom values -->
+
+    <xsl:template name="custom-values">
+        <xsl:if test="customValues/*">
+            <xsl:variable name="headers" as="xs:string*"
+                          select="'Name', 'Count', 'Count/s', 'Min', 'Max', 'Mean', 'StdDev'" />
+
+            <xsl:text>&#10;## Custom Values&#10;&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="customValues/*">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="string(name)" />
+                    <xsl:sequence select="ai:int(count)" />
+                    <xsl:sequence select="ai:num(countPerSecond)" />
+                    <xsl:sequence select="ai:num(min)" />
+                    <xsl:sequence select="ai:num(max)" />
+                    <xsl:sequence select="ai:num(mean)" />
+                    <xsl:sequence select="ai:num(standardDeviation)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ errors -->
+
+    <xsl:template name="errors">
+        <xsl:text>&#10;## Errors&#10;</xsl:text>
+        <xsl:call-template name="ai-desc-errors" />
+
+        <xsl:choose>
+            <xsl:when test="errors/error">
+                <xsl:variable name="entries" select="errors/error" />
+                <xsl:variable name="messages" select="distinct-values($entries/message)" />
+                <xsl:variable name="groupCount" select="count($messages)" />
+
+                <xsl:text>&#10;```yaml&#10;</xsl:text>
+                <xsl:text>totalErrors: </xsl:text>
+                <xsl:value-of select="ai:int(sum($entries/count/number(.)))" />
+                <xsl:text>&#10;distinctEntries: </xsl:text>
+                <xsl:value-of select="ai:int(count($entries))" />
+                <xsl:text>&#10;distinctMessages: </xsl:text>
+                <xsl:value-of select="ai:int($groupCount)" />
+                <xsl:text>&#10;tracesIncludedFor: </xsl:text>
+                <xsl:value-of select="ai:int(min(($tracesIncludedFor, $groupCount)))" />
+                <xsl:text>&#10;```&#10;&#10;</xsl:text>
+
+                <!-- overview first, so the shape is clear before any trace -->
+                <xsl:value-of select="ai:header(('#', 'Message', 'Count', 'Test Cases', 'Actions'))" />
+
+                <xsl:for-each-group select="$entries" group-by="string(message)">
+                    <xsl:sort select="sum(current-group()/count/number(.))" order="descending" data-type="number" />
+                    <xsl:variable name="cells" as="xs:string*">
+                        <xsl:sequence select="ai:int(position())" />
+                        <xsl:sequence select="ai:cell(current-grouping-key())" />
+                        <xsl:sequence select="ai:int(sum(current-group()/count/number(.)))" />
+                        <xsl:sequence select="ai:int(count(distinct-values(current-group()/testCaseName)))" />
+                        <xsl:sequence select="ai:int(count(distinct-values(current-group()/actionName)))" />
+                    </xsl:variable>
+                    <xsl:value-of select="ai:row($cells)" />
+                </xsl:for-each-group>
+
+                <!-- then each group in the same order, with a trace for the largest few -->
+                <xsl:for-each-group select="$entries" group-by="string(message)">
+                    <xsl:sort select="sum(current-group()/count/number(.))" order="descending" data-type="number" />
+
+                    <xsl:text>&#10;### </xsl:text>
+                    <xsl:value-of select="position()" />
+                    <xsl:text>. </xsl:text>
+                    <xsl:value-of select="current-grouping-key()" />
+                    <xsl:text> - </xsl:text>
+                    <xsl:value-of select="ai:int(sum(current-group()/count/number(.)))" />
+                    <xsl:text>&#10;&#10;</xsl:text>
+
+                    <xsl:value-of select="ai:header(('Test Case', 'Action', 'Count'))" />
+                    <xsl:for-each select="current-group()">
+                        <xsl:sort select="number(count)" order="descending" />
+                        <xsl:variable name="cells" as="xs:string*">
+                            <xsl:sequence select="if (testCaseName != '') then ai:cell(testCaseName) else 'n/a'" />
+                            <xsl:sequence select="if (actionName != '') then ai:cell(actionName) else 'n/a'" />
+                            <xsl:sequence select="ai:int(count)" />
+                        </xsl:variable>
+                        <xsl:value-of select="ai:row($cells)" />
+                    </xsl:for-each>
+
+                    <!--
+                    Only the largest groups carry a trace, and only its leading frames.
+                    The old file spent 100 KB on 100 traces padded to a 1000 character cap,
+                    almost all of it framework frames that diagnose nothing.
+                    -->
+                    <xsl:if test="position() &lt;= $tracesIncludedFor">
+                        <xsl:variable name="trace" select="(current-group()[count = max(current-group()/count/number(.))])[1]/trace" />
+                        <xsl:if test="$trace != ''">
+                            <xsl:variable name="lines" select="tokenize(string($trace), '&#10;')" />
+                            <xsl:text>&#10;```&#10;</xsl:text>
+                            <xsl:value-of select="string-join($lines[position() &lt;= $traceFrames], '&#10;')" />
+                            <xsl:if test="count($lines) &gt; $traceFrames">
+                                <xsl:text>&#10;&#9;... </xsl:text>
+                                <xsl:value-of select="count($lines) - $traceFrames" />
+                                <xsl:text> more frames</xsl:text>
+                            </xsl:if>
+                            <xsl:text>&#10;```&#10;</xsl:text>
+                        </xsl:if>
+                    </xsl:if>
+                </xsl:for-each-group>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>&#10;No errors recorded.&#10;</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <!-- ============================================================ events -->
+
+    <xsl:template name="events">
+        <xsl:if test="events/event">
+            <xsl:variable name="headers" as="xs:string*" select="'Test Case', 'Event Name', 'Count'" />
+
+            <xsl:text>&#10;## Events&#10;&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <!-- loudest first, same reasoning as the error section -->
+            <xsl:for-each select="events/event">
+                <xsl:sort select="number(totalCount)" order="descending" />
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="if (testCaseName != '') then string(testCaseName) else 'n/a'" />
+                    <xsl:sequence select="string(name)" />
+                    <xsl:sequence select="ai:int(totalCount)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ agents -->
+
+    <xsl:template name="agents">
+        <xsl:if test="agents/agent">
+            <xsl:variable name="headers" as="xs:string*"
+                          select="'Agent', 'Transactions', 'Errors', 'Error%', 'CPU% Mean', 'CPU% Max',
+                                  'FullGC', 'FullGC Time', 'MinorGC', 'MinorGC Time'" />
+
+            <xsl:text>&#10;## Agents&#10;</xsl:text>
+            <xsl:call-template name="ai-desc-agents" />
+            <xsl:text>&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="agents/agent">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="string(name)" />
+                    <xsl:sequence select="ai:int(transactions)" />
+                    <xsl:sequence select="ai:int(transactionErrors)" />
+                    <xsl:sequence select="ai:num(transactionErrorPercentage)" />
+                    <!-- a mean of 33% hides an agent that was pegged during peak, so max comes too -->
+                    <xsl:sequence select="ai:num(cpuUsage/mean)" />
+                    <xsl:sequence select="ai:num(cpuUsage/max)" />
+                    <xsl:sequence select="ai:int(fullGcCount)" />
+                    <xsl:sequence select="ai:ms(fullGcTime)" />
+                    <xsl:sequence select="ai:int(minorGcCount)" />
+                    <xsl:sequence select="ai:ms(minorGcTime)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
+    <!-- ============================================================ web vitals -->
+
+    <xsl:template name="web-vitals">
+        <xsl:if test="webVitalsList/webVitals">
+            <xsl:variable name="headers" as="xs:string*">
+                <xsl:sequence select="'Action'" />
+                <xsl:sequence select="'CLS', 'CLS Rating'" />
+                <xsl:sequence select="'FCP', 'FCP Rating'" />
+                <xsl:sequence select="'LCP', 'LCP Rating'" />
+                <xsl:sequence select="'INP', 'INP Rating'" />
+                <xsl:sequence select="'TTFB', 'TTFB Rating'" />
+            </xsl:variable>
+
+            <xsl:text>&#10;## Web Vitals&#10;</xsl:text>
+            <xsl:call-template name="ai-desc-web-vitals" />
+            <xsl:text>&#10;</xsl:text>
+            <xsl:value-of select="ai:header($headers)" />
+
+            <xsl:for-each select="webVitalsList/webVitals">
+                <xsl:variable name="cells" as="xs:string*">
+                    <xsl:sequence select="string(name)" />
+                    <!-- CLS is a unitless layout shift score, the rest are milliseconds -->
+                    <xsl:sequence select="ai:num(cls/score)" />
+                    <xsl:sequence select="string(cls/rating)" />
+                    <xsl:sequence select="ai:ms(fcp/score)" />
+                    <xsl:sequence select="string(fcp/rating)" />
+                    <xsl:sequence select="ai:ms(lcp/score)" />
+                    <xsl:sequence select="string(lcp/rating)" />
+                    <xsl:sequence select="ai:ms(inp/score)" />
+                    <xsl:sequence select="string(inp/rating)" />
+                    <xsl:sequence select="ai:ms(ttfb/score)" />
+                    <xsl:sequence select="string(ttfb/rating)" />
+                </xsl:variable>
+                <xsl:value-of select="ai:row($cells)" />
+            </xsl:for-each>
+        </xsl:if>
+    </xsl:template>
+
 </xsl:stylesheet>
