@@ -155,6 +155,32 @@ public final class PropertiesUtils
      */
     public static String substituteVariables(final String value, final Properties properties) throws IllegalArgumentException
     {
+        return substituteVariables(value, properties, true);
+    }
+
+    /**
+     * Performs variable substitution in string <code>value</code> from the values of keys found in the system
+     * properties, with optional support for Groovy expressions.
+     * <p>
+     * Variable substitution uses <b>${...}</b> syntax. When <code>evaluateGroovy</code> is <code>true</code>, Groovy
+     * expressions use <b>#{...}</b> syntax and are evaluated after variable substitution. Property values referenced
+     * inside Groovy expressions must use the {@code ${...}} syntax which is resolved before Groovy evaluation.
+     * </p>
+     *
+     * @param value
+     *            the string on which variable substitution is performed
+     * @param properties
+     *            properties object to be used for variable lookup
+     * @param evaluateGroovy
+     *            whether to evaluate #{...} Groovy expressions
+     * @return argument string where variables and optionally Groovy expressions have been substituted
+     * @throws IllegalArgumentException
+     *             if <code>value</code> is malformed or Groovy evaluation fails
+     * @since 10.0.0
+     */
+    public static String substituteVariables(final String value, final Properties properties, final boolean evaluateGroovy)
+        throws IllegalArgumentException
+    {
         // parameter validation
         ParameterCheckUtils.isNotNull(value, "value");
         ParameterCheckUtils.isNotNull(properties, "props");
@@ -168,11 +194,11 @@ public final class PropertiesUtils
         String result = value;
         if (properties.size() > 0)
         {
-            result = resolveVariables(value, properties, new HashSet<>());
+            result = resolveVariables(value, properties, new HashSet<>(), evaluateGroovy);
         }
 
         // Step 2: Evaluate #{...} Groovy expressions
-        if (result.contains("#{"))
+        if (evaluateGroovy && result.contains("#{"))
         {
             result = GroovyPropertyEvaluator.evaluateGroovyExpressions(result);
         }
@@ -190,9 +216,12 @@ public final class PropertiesUtils
      *            properties object to be used to resolve the variable reference
      * @param variables
      *            set of already known variables in current lookup path
+     * @param evaluateGroovy
+     *            whether to evaluate #{...} Groovy expressions in resolved substitutions
      * @return resolved variable reference
      */
-    private static String resolveVariables(final String value, final Properties props, final Set<String> variables)
+    private static String resolveVariables(final String value, final Properties props, final Set<String> variables,
+                                           final boolean evaluateGroovy)
     {
         String result = value;
 
@@ -230,12 +259,12 @@ public final class PropertiesUtils
             if (substitution != null)
             {
                 // recursively replace any variable in the substitution string
-                substitution = resolveVariables(substitution, props, new HashSet<>(variables));
+                substitution = resolveVariables(substitution, props, new HashSet<>(variables), evaluateGroovy);
 
                 // evaluate any Groovy expressions in the resolved substitution so that
                 // chained references (e.g. bum=${baz} where baz=#{...}) are fully resolved
                 // before being pasted into the surrounding value
-                if (substitution.contains("#{"))
+                if (evaluateGroovy && substitution.contains("#{"))
                 {
                     substitution = GroovyPropertyEvaluator.evaluateGroovyExpressions(substitution);
                 }

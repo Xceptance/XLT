@@ -286,4 +286,30 @@ public class PropertiesUtilsTest extends AbstractXLTTestCase
 
         Assert.assertEquals("200", PropertiesUtils.substituteVariables(props.getProperty("qux"), props));
     }
+
+    // =========================================================================
+    // Disabled Groovy Evaluation Tests (e.g. for Regex / Merge Rules)
+    // =========================================================================
+
+    /**
+     * When evaluateGroovy is false, Groovy expressions like #{.*} should not be evaluated and remain intact.
+     */
+    @Test
+    public void testSubstituteVariables_disableGroovyEvaluation()
+    {
+        Assert.assertEquals("#{.*}", PropertiesUtils.substituteVariables("#{.*}", props, false));
+        Assert.assertEquals(".*/page#{1,3}", PropertiesUtils.substituteVariables(".*/page#{1,3}", props, false));
+        Assert.assertEquals("#{ 1 + 1 }", PropertiesUtils.substituteVariables("#{ 1 + 1 }", props, false));
+    }
+
+    /**
+     * When evaluateGroovy is false, standard ${...} variable substitution should still work.
+     */
+    @Test
+    public void testSubstituteVariables_disableGroovyWithVariableSubstitution()
+    {
+        props.setProperty("base.url", "http://example.com");
+        Assert.assertEquals("http://example.com/page#{1,3}",
+                            PropertiesUtils.substituteVariables("${base.url}/page#{1,3}", props, false));
+    }
 }
