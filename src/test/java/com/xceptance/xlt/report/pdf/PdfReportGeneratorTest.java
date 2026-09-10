@@ -242,7 +242,7 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         final ReportGeneratorConfiguration config = readReportGeneratorProperties();
         Assert.assertFalse("Initial PDF report enabled should be false", config.isPdfReportEnabled());
 
-        appendPropertyToFile("com.xceptance.xlt.reportgenerator.pdf.enable", "true");
+        appendPropertyToFile("com.xceptance.xlt.reportgenerator.pdf.enabled", "true");
 
         final ReportGeneratorConfiguration loadedConfig = readReportGeneratorProperties();
         Assert.assertTrue("PDF report should be enabled when configured in properties", loadedConfig.isPdfReportEnabled());
