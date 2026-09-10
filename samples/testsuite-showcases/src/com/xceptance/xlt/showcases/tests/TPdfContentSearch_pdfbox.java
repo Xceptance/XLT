@@ -19,9 +19,10 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.htmlunit.html.HtmlAnchor;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class TPdfContentSearch_pdfbox extends AbstractTestCase
         final URL urlFile = new URL(url);
 
         // create a parser for the file
-        final PDFParser parser = new PDFParser(urlFile.openStream());
+        final PDFParser parser = new PDFParser(new RandomAccessBufferedFileInputStream(urlFile.openStream()));
 
         // parse the file
         parser.parse();
