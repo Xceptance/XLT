@@ -325,10 +325,10 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         }
 
         String evalMarkdown = evaluation.strip();
-        if (evalMarkdown.contains("\\n"))
-        {
-            evalMarkdown = evalMarkdown.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t");
-        }
+
+        // replace literal "\"+"n" sequences passed via the command line to real newlines (and more)
+        evalMarkdown = evalMarkdown.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t");
+
         if (StringUtils.startsWithIgnoreCase(evaluation, MARKDOWN_PREFIX))
         {
             evalMarkdown = evalMarkdown.substring(MARKDOWN_PREFIX.length());
