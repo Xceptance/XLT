@@ -43,7 +43,7 @@
                                         <tr>
                                             <td class="key">
                                                 <xsl:value-of select="code"/>
-                                                <xsl:text disable-output-escaping="yes"> &amp;ndash; </xsl:text>
+                                                <xsl:text> &#x2013; </xsl:text>
                                                 <xsl:value-of select="statusText"/>
                                             </td>
                                             <td class="value">

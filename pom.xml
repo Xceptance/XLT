@@ -64,6 +64,7 @@
         <selenium.version>4.29.0</selenium.version>
         <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
         <otel.version>1.46.0</otel.version>
+        <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
         <!-- plugin versions -->
         <license-maven-plugin.version>4.1</license-maven-plugin.version>
         <dependency-check-maven.version>12.1.0</dependency-check-maven.version>
@@ -667,11 +668,16 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-        <!-- Groovy for property expression evaluation -->
+        <!-- OpenHTMLtoPDF for PDF report generation -->
         <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>5.0.6</version>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-core</artifactId>
+            <version>${openhtmltopdf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>${openhtmltopdf.version}</version>
         </dependency>
 
         <!-- ================= -->

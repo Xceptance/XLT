@@ -43,6 +43,7 @@
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
 <xsl:param name="scorecardPresent" />
+<xsl:param name="pdfReportPresent" />
 
 <xsl:template match="/testreport">
 
@@ -59,6 +60,7 @@
     <div id="content">
         <xsl:call-template name="header">
             <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
+            <xsl:with-param name="pdfReportPresent" select="$pdfReportPresent" />
         </xsl:call-template>
 
         <div id="data-content">

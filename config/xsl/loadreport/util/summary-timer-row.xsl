@@ -64,7 +64,7 @@
                         <xsl:value-of select="format-number($element/events, '#,##0')"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                        <xsl:text>&#x2013;</xsl:text>
                     </xsl:otherwise>
                 </xsl:choose>
             </td>

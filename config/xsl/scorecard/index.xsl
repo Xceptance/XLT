@@ -30,6 +30,7 @@
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
 <xsl:param name="scorecardPresent" />
+<xsl:param name="pdfReportPresent" />
 
 <!-- XTC specific parameters -->
 <xsl:param name="xtcOrganization" />
@@ -103,6 +104,7 @@
             <xsl:with-param name="productUrl" select="$productUrl" />
             <xsl:with-param name="projectName" select="$projectName" />
             <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
+            <xsl:with-param name="pdfReportPresent" select="$pdfReportPresent" />
             <!-- XTC specific parameters -->
             <xsl:with-param name="xtcOrganization" select="$xtcOrganization" />
             <xsl:with-param name="xtcProject" select="$xtcProject" />
