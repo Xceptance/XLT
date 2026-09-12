@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,8 +39,8 @@ import com.xceptance.xlt.report.ReportGeneratorConfigurationTestBase;
  */
 public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
 {
-    private File sampleReportDir;
     private File sampleXmlFile;
+
     private File styleSheetFile;
 
     @Before
@@ -47,17 +48,18 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     public void setup() throws java.io.IOException
     {
         super.setup();
-        final File reportsDir = new File("reports");
-        final File[] matching = reportsDir.listFiles(f -> f.isDirectory() && f.getName().startsWith("xlt-result-"));
-        if (matching != null && matching.length > 0)
+
+        // Resolve sample XML report from test classpath resources
+        try
         {
-            sampleReportDir = matching[0];
+            sampleXmlFile = new File(getClass().getResource("/testreport.xml").toURI());
         }
-        else
+        catch (URISyntaxException e)
         {
-            sampleReportDir = new File("reports/xlt-result-xc-advanced-posters-20260211-163803");
+            Assert.fail("Cannot find required testreport.xml");
         }
-        sampleXmlFile = new File(sampleReportDir, "testreport.xml");
+
+        // Locate the main PDF generation XSLT stylesheet
         styleSheetFile = new File("config/xsl/loadreport/pdf.xsl");
     }
 
@@ -67,23 +69,18 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     @Test
     public void testGeneratePdfReport() throws Exception
     {
+        // Ensure required input fixtures exist
         Assert.assertTrue("Sample XML file must exist", sampleXmlFile.exists());
         Assert.assertTrue("Stylesheet file must exist", styleSheetFile.exists());
 
-        // Prepare target folder with necessary assets (css, charts)
+        // Prepare target folder with necessary assets (css)
         final File targetDir = tempFolder.newFolder("report-output");
         final File cssDir = new File(targetDir, "css");
         cssDir.mkdirs();
         FileUtils.copyFileToDirectory(new File("config/testreport/css/pdf.css"), cssDir);
         FileUtils.copyFileToDirectory(new File("config/testreport/css/default.css"), cssDir);
 
-        final File sampleChartsDir = new File(sampleReportDir, "charts");
-        if (sampleChartsDir.exists())
-        {
-            FileUtils.copyDirectory(sampleChartsDir, new File(targetDir, "charts"));
-        }
-
-        // Generate a synthetic WebP chart image to verify WebP transcoding & embedding
+        // Generate a synthetic WebP chart image to verify on-the-fly WebP transcoding & embedding
         final File txChartDir = new File(targetDir, "charts/transactions");
         txChartDir.mkdirs();
         final BufferedImage img = new BufferedImage(800, 450, BufferedImage.TYPE_INT_RGB);
@@ -95,8 +92,10 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         g.dispose();
         ImageIO.write(img, "webp", new File(txChartDir, "Transactions.webp"));
 
+        // Define expected output PDF file location
         final File outputPdfFile = new File(targetDir, PdfReportGenerator.DEFAULT_PDF_FILENAME);
 
+        // Configure parameters passed to the XSL transformation
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("productName", "XLT");
         parameters.put("productVersion", "10.0.0");
@@ -104,8 +103,10 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         parameters.put("scorecardPresent", Boolean.FALSE);
         parameters.put("pdfReportPresent", Boolean.TRUE);
 
+        // Execute report generation pipeline (XML -> XHTML -> PDF)
         PdfReportGenerator.generatePdfReport(sampleXmlFile, targetDir, styleSheetFile, outputPdfFile, parameters);
 
+        // Verify that the PDF file was generated and is non-empty
         Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
         Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
 
@@ -125,6 +126,7 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     @Test
     public void testGeneratePdfReportWithRating() throws Exception
     {
+        // Set up isolated output directory and copy required CSS stylesheets
         final File targetDir = tempFolder.newFolder("report-output-rating");
         final File cssDir = new File(targetDir, "css");
         cssDir.mkdirs();
@@ -133,14 +135,15 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
 
         // Read sample xml and inject rating elements into configuration
         String xmlContent = org.apache.commons.io.FileUtils.readFileToString(sampleXmlFile, java.nio.charset.StandardCharsets.UTF_8);
-        final String ratingXml = "<rating>A</rating>\n" +
-                                 "<ratingSummary>Excellent performance achieved.</ratingSummary>\n" +
+        final String ratingXml = "<rating>A</rating>\n" + "<ratingSummary>Excellent performance achieved.</ratingSummary>\n" +
                                  "<ratingEvaluation>&lt;div class=\"markdown\"&gt;&lt;h3&gt;Key Findings&lt;/h3&gt;&lt;p&gt;No SLA breaches observed.&lt;/p&gt;&lt;/div&gt;</ratingEvaluation>\n";
         xmlContent = xmlContent.replace("</configuration>", ratingXml + "</configuration>");
 
+        // Write modified XML to target directory
         final File ratingXmlFile = new File(targetDir, "testreport.xml");
         org.apache.commons.io.FileUtils.writeStringToFile(ratingXmlFile, xmlContent, java.nio.charset.StandardCharsets.UTF_8);
 
+        // Set up parameters and output file
         final File outputPdfFile = new File(targetDir, "load-report.pdf");
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("productName", "XLT");
@@ -149,63 +152,46 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         parameters.put("scorecardPresent", Boolean.FALSE);
         parameters.put("pdfReportPresent", Boolean.TRUE);
 
+        // Generate PDF report with rating included
         PdfReportGenerator.generatePdfReport(ratingXmlFile, targetDir, styleSheetFile, outputPdfFile, parameters);
 
+        // Verify PDF report generation succeeded
         Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
         Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
     }
 
     /**
-     * Verifies that PDF report can be generated directly for the sample report directory.
+     * Verifies that PDF report is generated correctly when scorecard evaluation is present.
      */
     @Test
-    public void testGeneratePdfReportForSampleDirectory() throws Exception
+    public void testGeneratePdfReportWithScorecard() throws Exception
     {
-        final File targetDir = new File("reports/xlt-result-xc-advanced-posters-20260211-163803");
-        if (targetDir.exists())
-        {
-            final File outputPdfFile = new File(targetDir, "load-report.pdf");
-            final Map<String, Object> parameters = new HashMap<>();
-            parameters.put("productName", "XLT");
-            parameters.put("productVersion", "10.0.0");
-            parameters.put("productUrl", "https://www.xceptance.com");
-            parameters.put("scorecardPresent", Boolean.TRUE);
-            parameters.put("scorecardXmlUrl", new File(targetDir, "scorecard.xml").toURI().toString());
-            parameters.put("pdfReportPresent", Boolean.TRUE);
-
-            PdfReportGenerator.generatePdfReport(new File(targetDir, "testreport.xml"), targetDir, styleSheetFile, outputPdfFile, parameters);
-            Assert.assertTrue(outputPdfFile.exists());
-            Assert.assertTrue(outputPdfFile.length() > 0);
-        }
-    }
-
-    /**
-     * Verifies that PDF report is generated correctly when scorecard evaluation contains an error.
-     */
-    @Test
-    public void testGeneratePdfReportWithBrokenScorecard() throws Exception
-    {
-        final File targetDir = tempFolder.newFolder("report-output-broken-scorecard");
+        // Set up isolated output directory and copy required CSS stylesheets
+        final File targetDir = tempFolder.newFolder("report-output-scorecard");
         final File cssDir = new File(targetDir, "css");
         cssDir.mkdirs();
         FileUtils.copyFileToDirectory(new File("config/testreport/css/pdf.css"), cssDir);
         FileUtils.copyFileToDirectory(new File("config/testreport/css/default.css"), cssDir);
 
+        // Copy sample testreport.xml to target directory
         final File testXmlFile = new File(targetDir, "testreport.xml");
         FileUtils.copyFile(sampleXmlFile, testXmlFile);
 
-        final String brokenScorecardXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                          "<scorecard>\n" +
-                                          "  <outcome testFailed=\"false\">\n" +
-                                          "    <error>\n" +
-                                          "      <message>Failed to evaluate Groovy configuration: No such property: metrics</message>\n" +
-                                          "      <log>ValidationException: Failed to evaluate Groovy configuration</log>\n" +
-                                          "    </error>\n" +
-                                          "  </outcome>\n" +
-                                          "</scorecard>";
+        // Create a synthetic valid scorecard.xml defining verdict, points, groups, and ratings
+        final String scorecardXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<scorecard>\n" +
+                                    "  <outcome testFailed=\"false\" points=\"95\" totalPoints=\"100\" pointsPercentage=\"95\">\n" +
+                                    "    <rating>A</rating>\n" + "    <groups>\n" +
+                                    "      <group ref-id=\"performance\" points=\"95\" totalPoints=\"100\">\n" +
+                                    "        <result>Passed</result>\n" + "        <message>All checks passed</message>\n" +
+                                    "      </group>\n" + "    </groups>\n" + "  </outcome>\n" + "  <configuration version=\"2\">\n" +
+                                    "    <ratings>\n" + "      <rating id=\"A\" name=\"A\">\n" +
+                                    "        <description>Excellent</description>\n" + "      </rating>\n" + "    </ratings>\n" +
+                                    "    <groups>\n" + "      <group id=\"performance\" name=\"Performance\"/>\n" + "    </groups>\n" +
+                                    "  </configuration>\n" + "</scorecard>";
         final File scorecardXmlFile = new File(targetDir, "scorecard.xml");
-        org.apache.commons.io.FileUtils.writeStringToFile(scorecardXmlFile, brokenScorecardXml, java.nio.charset.StandardCharsets.UTF_8);
+        org.apache.commons.io.FileUtils.writeStringToFile(scorecardXmlFile, scorecardXml, java.nio.charset.StandardCharsets.UTF_8);
 
+        // Configure parameters to enable scorecard and point to scorecard XML URI
         final File outputPdfFile = new File(targetDir, "load-report.pdf");
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("productName", "XLT");
@@ -215,6 +201,49 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         parameters.put("scorecardXmlUrl", scorecardXmlFile.toURI().toString());
         parameters.put("pdfReportPresent", Boolean.TRUE);
 
+        // Generate PDF report and verify it renders successfully with scorecard
+        PdfReportGenerator.generatePdfReport(testXmlFile, targetDir, styleSheetFile, outputPdfFile, parameters);
+        Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
+        Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
+    }
+
+    /**
+     * Verifies that PDF report is generated correctly when scorecard evaluation contains an error.
+     */
+    @Test
+    public void testGeneratePdfReportWithBrokenScorecard() throws Exception
+    {
+        // Set up isolated output directory and copy required CSS stylesheets
+        final File targetDir = tempFolder.newFolder("report-output-broken-scorecard");
+        final File cssDir = new File(targetDir, "css");
+        cssDir.mkdirs();
+        FileUtils.copyFileToDirectory(new File("config/testreport/css/pdf.css"), cssDir);
+        FileUtils.copyFileToDirectory(new File("config/testreport/css/default.css"), cssDir);
+
+        // Copy sample testreport.xml to target directory
+        final File testXmlFile = new File(targetDir, "testreport.xml");
+        FileUtils.copyFile(sampleXmlFile, testXmlFile);
+
+        // Create a scorecard XML simulating an evaluation error with message and log
+        final String brokenScorecardXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<scorecard>\n" +
+                                          "  <outcome testFailed=\"false\">\n" + "    <error>\n" +
+                                          "      <message>Failed to evaluate Groovy configuration: No such property: metrics</message>\n" +
+                                          "      <log>ValidationException: Failed to evaluate Groovy configuration</log>\n" +
+                                          "    </error>\n" + "  </outcome>\n" + "</scorecard>";
+        final File scorecardXmlFile = new File(targetDir, "scorecard.xml");
+        org.apache.commons.io.FileUtils.writeStringToFile(scorecardXmlFile, brokenScorecardXml, java.nio.charset.StandardCharsets.UTF_8);
+
+        // Configure parameters pointing to broken scorecard
+        final File outputPdfFile = new File(targetDir, "load-report.pdf");
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("productName", "XLT");
+        parameters.put("productVersion", "10.0.0");
+        parameters.put("productUrl", "https://www.xceptance.com");
+        parameters.put("scorecardPresent", Boolean.TRUE);
+        parameters.put("scorecardXmlUrl", scorecardXmlFile.toURI().toString());
+        parameters.put("pdfReportPresent", Boolean.TRUE);
+
+        // Verify PDF report generation succeeds and handles scorecard error section gracefully
         PdfReportGenerator.generatePdfReport(testXmlFile, targetDir, styleSheetFile, outputPdfFile, parameters);
         Assert.assertTrue("Output PDF file should exist", outputPdfFile.exists());
         Assert.assertTrue("Output PDF file size should be > 0", outputPdfFile.length() > 0);
@@ -226,9 +255,11 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     @Test
     public void testConfigurationDefault()
     {
+        // Read initial configuration from empty test property file
         final ReportGeneratorConfiguration config = readReportGeneratorProperties();
         Assert.assertFalse("PDF report should be disabled by default", config.isPdfReportEnabled());
 
+        // Verify programmatic update via setter
         config.setPdfReportEnabled(true);
         Assert.assertTrue("PDF report should be enabled after setter call", config.isPdfReportEnabled());
     }
@@ -239,11 +270,14 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
     @Test
     public void testConfigurationPropertyFromFile()
     {
+        // Verify default configuration before appending property
         final ReportGeneratorConfiguration config = readReportGeneratorProperties();
         Assert.assertFalse("Initial PDF report enabled should be false", config.isPdfReportEnabled());
 
+        // Append property setting to the test reportgenerator.properties file
         appendPropertyToFile("com.xceptance.xlt.reportgenerator.pdf.enabled", "true");
 
+        // Reload configuration and verify that property is picked up
         final ReportGeneratorConfiguration loadedConfig = readReportGeneratorProperties();
         Assert.assertTrue("PDF report should be enabled when configured in properties", loadedConfig.isPdfReportEnabled());
     }
