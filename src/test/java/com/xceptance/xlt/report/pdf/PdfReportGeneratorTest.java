@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -134,14 +135,19 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         FileUtils.copyFileToDirectory(new File("config/testreport/css/default.css"), cssDir);
 
         // Read sample xml and inject rating elements into configuration
-        String xmlContent = org.apache.commons.io.FileUtils.readFileToString(sampleXmlFile, java.nio.charset.StandardCharsets.UTF_8);
-        final String ratingXml = "<rating>A</rating>\n" + "<ratingSummary>Excellent performance achieved.</ratingSummary>\n" +
-                                 "<ratingEvaluation>&lt;div class=\"markdown\"&gt;&lt;h3&gt;Key Findings&lt;/h3&gt;&lt;p&gt;No SLA breaches observed.&lt;/p&gt;&lt;/div&gt;</ratingEvaluation>\n";
+        String xmlContent = FileUtils.readFileToString(sampleXmlFile, StandardCharsets.UTF_8);
+        final String ratingXml = """
+            <rating>
+                <score>A</score>
+                <summary>Excellent performance achieved.</summary>
+                <evaluation>&lt;div class="markdown"&gt;&lt;h3&gt;Key Findings&lt;/h3&gt;&lt;p&gt;No SLA breaches observed.&lt;/p&gt;&lt;/div&gt;</evaluation>
+            </rating>
+            """;
         xmlContent = xmlContent.replace("</configuration>", ratingXml + "</configuration>");
 
         // Write modified XML to target directory
         final File ratingXmlFile = new File(targetDir, "testreport.xml");
-        org.apache.commons.io.FileUtils.writeStringToFile(ratingXmlFile, xmlContent, java.nio.charset.StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(ratingXmlFile, xmlContent, StandardCharsets.UTF_8);
 
         // Set up parameters and output file
         final File outputPdfFile = new File(targetDir, "load-report.pdf");
@@ -178,18 +184,32 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         FileUtils.copyFile(sampleXmlFile, testXmlFile);
 
         // Create a synthetic valid scorecard.xml defining verdict, points, groups, and ratings
-        final String scorecardXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<scorecard>\n" +
-                                    "  <outcome testFailed=\"false\" points=\"95\" totalPoints=\"100\" pointsPercentage=\"95\">\n" +
-                                    "    <rating>A</rating>\n" + "    <groups>\n" +
-                                    "      <group ref-id=\"performance\" points=\"95\" totalPoints=\"100\">\n" +
-                                    "        <result>Passed</result>\n" + "        <message>All checks passed</message>\n" +
-                                    "      </group>\n" + "    </groups>\n" + "  </outcome>\n" + "  <configuration version=\"2\">\n" +
-                                    "    <ratings>\n" + "      <rating id=\"A\" name=\"A\">\n" +
-                                    "        <description>Excellent</description>\n" + "      </rating>\n" + "    </ratings>\n" +
-                                    "    <groups>\n" + "      <group id=\"performance\" name=\"Performance\"/>\n" + "    </groups>\n" +
-                                    "  </configuration>\n" + "</scorecard>";
+        final String scorecardXml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <scorecard>
+                <outcome testFailed="false" points="95" totalPoints="100" pointsPercentage="95">
+                    <rating>A</rating>
+                    <groups>
+                        <group ref-id="performance" points="95" totalPoints="100">
+                            <result>Passed</result>
+                            <message>All checks passed</message>
+                        </group>
+                    </groups>
+                </outcome>
+                <configuration version="2">
+                    <ratings>
+                        <rating id="A" name="A">
+                            <description>Excellent</description>
+                        </rating>
+                    </ratings>
+                        <groups>
+                            <group id="performance" name="Performance"/>
+                        </groups>
+                </configuration>
+            </scorecard>
+            """;
         final File scorecardXmlFile = new File(targetDir, "scorecard.xml");
-        org.apache.commons.io.FileUtils.writeStringToFile(scorecardXmlFile, scorecardXml, java.nio.charset.StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(scorecardXmlFile, scorecardXml, StandardCharsets.UTF_8);
 
         // Configure parameters to enable scorecard and point to scorecard XML URI
         final File outputPdfFile = new File(targetDir, "load-report.pdf");
@@ -225,13 +245,19 @@ public class PdfReportGeneratorTest extends ReportGeneratorConfigurationTestBase
         FileUtils.copyFile(sampleXmlFile, testXmlFile);
 
         // Create a scorecard XML simulating an evaluation error with message and log
-        final String brokenScorecardXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<scorecard>\n" +
-                                          "  <outcome testFailed=\"false\">\n" + "    <error>\n" +
-                                          "      <message>Failed to evaluate Groovy configuration: No such property: metrics</message>\n" +
-                                          "      <log>ValidationException: Failed to evaluate Groovy configuration</log>\n" +
-                                          "    </error>\n" + "  </outcome>\n" + "</scorecard>";
+        final String brokenScorecardXml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <scorecard>
+                <outcome testFailed="false">
+                    <error>
+                        <message>Failed to evaluate Groovy configuration: No such property: metrics</message>
+                        <log>ValidationException: Failed to evaluate Groovy configuration</log>
+                    </error>
+                </outcome>
+            </scorecard>
+            """;
         final File scorecardXmlFile = new File(targetDir, "scorecard.xml");
-        org.apache.commons.io.FileUtils.writeStringToFile(scorecardXmlFile, brokenScorecardXml, java.nio.charset.StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(scorecardXmlFile, brokenScorecardXml, StandardCharsets.UTF_8);
 
         // Configure parameters pointing to broken scorecard
         final File outputPdfFile = new File(targetDir, "load-report.pdf");

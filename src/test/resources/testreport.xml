@@ -583,8 +583,6 @@ Below you find basic characteristics of the load test: start time, end time, and
 &lt;/blockquote&gt;
 &lt;/div&gt;</string>
     </comments>
-    <rating>A</rating>
-    <ratingSummary>Test</ratingSummary>
     <chartHeight>300</chartHeight>
     <chartWidth>900</chartWidth>
   </configuration>
