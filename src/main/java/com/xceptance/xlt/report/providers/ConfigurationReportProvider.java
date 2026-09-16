@@ -200,9 +200,6 @@ public class ConfigurationReportProvider extends AbstractReportProvider
             System.err.println("Failed to get custom JVM arguments. Cause: " + ioe.getMessage());
         }
 
-        report.chartHeight = reportGeneratorConfiguration.getChartHeight();
-        report.chartWidth = reportGeneratorConfiguration.getChartWidth();
-
         return report;
     }
 
