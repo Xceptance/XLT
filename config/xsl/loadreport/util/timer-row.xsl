@@ -10,13 +10,13 @@
         <tr>
             <!-- name -->
             <td class="key colgroup1 forcewordbreak">
-                <div class="trunc-cell">
-                    <span class="trunc-text">
-                        <xsl:choose>
-                            <xsl:when test="$showLinks = 'false' or not($showLinks)">
-                                <xsl:value-of select="name" />
-                            </xsl:when>
-                            <xsl:otherwise>
+                <xsl:choose>
+                    <xsl:when test="$showLinks = 'false' or not($showLinks)">
+                        <xsl:value-of select="name" />
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <div class="trunc-cell">
+                            <span class="trunc-text">
                                 <a>
                                     <xsl:attribute name="href">#chart-<xsl:value-of select="$gid" /></xsl:attribute>
                                     <xsl:attribute name="data-id">tableEntry-<xsl:value-of select="$gid" /></xsl:attribute>
@@ -27,44 +27,42 @@
                                             <xsl:attribute name="class">cluetip</xsl:attribute>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:attribute name="title">
-                                                <xsl:value-of
-                                                    select="normalize-space(name)" /></xsl:attribute>
+                                            <xsl:attribute name="title"><xsl:value-of select="normalize-space(name)" /></xsl:attribute>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                     <xsl:value-of select="name" />
                                 </a>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </span>
-                </div>
-                <xsl:text></xsl:text>
-                <xsl:if test="count(urls) &gt; 0">
-                    <div id="url-listing-{$gid}" class="cluetip-data">
-                        <h4>
-                            <xsl:value-of select="name" />
-                        </h4>
-                        <ul class="urls">
-                            <xsl:for-each select="urls/list/string">
-                                <li>
-                                    <a href="{.}" target="_blank">
-                                        <xsl:value-of select="." />
-                                    </a>
-                                </li>
-                            </xsl:for-each>
-                        </ul>
-                    </div>
-                </xsl:if>
+                            </span>
+                        </div>
+                        <xsl:text></xsl:text>
+                        <xsl:if test="count(urls) &gt; 0">
+                            <div id="url-listing-{$gid}" class="cluetip-data">
+                                <h4>
+                                    <xsl:value-of select="name" />
+                                </h4>
+                                <ul class="urls">
+                                    <xsl:for-each select="urls/list/string">
+                                        <li>
+                                            <a href="{.}" target="_blank">
+                                                <xsl:value-of select="." />
+                                            </a>
+                                        </li>
+                                    </xsl:for-each>
+                                </ul>
+                            </div>
+                        </xsl:if>
+                    </xsl:otherwise>
+                </xsl:choose>
             </td>
 
             <!-- labels -->
             <xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
                 <td class="text colgroup1">
                     <xsl:attribute name="data-cell-value">
-                        <xsl:value-of select="normalize-space(labels)"/>
+                        <xsl:value-of select="normalize-space(labels)" />
                     </xsl:attribute>
                     <xsl:call-template name="timer-labels">
-                        <xsl:with-param name="labelString" select="labels"/>
+                        <xsl:with-param name="labelString" select="labels" />
                     </xsl:call-template>
                 </td>
             </xsl:if>
@@ -133,12 +131,9 @@
                     <xsl:call-template name="colorize">
                         <xsl:with-param name="classNames" select="$classNames" />
                         <xsl:with-param name="runtime" select="mean" />
-                        <xsl:with-param name="targetAverage"
-                            select="number($colorizationConfig/rules/rule[@id='mean']/@target)" />
-                        <xsl:with-param name="targetFrom"
-                            select="number($colorizationConfig/rules/rule[@id='mean']/@from)" />
-                        <xsl:with-param name="targetTo"
-                            select="number($colorizationConfig/rules/rule[@id='mean']/@to)" />
+                        <xsl:with-param name="targetAverage" select="number($colorizationConfig/rules/rule[@id='mean']/@target)" />
+                        <xsl:with-param name="targetFrom" select="number($colorizationConfig/rules/rule[@id='mean']/@from)" />
+                        <xsl:with-param name="targetTo" select="number($colorizationConfig/rules/rule[@id='mean']/@to)" />
                     </xsl:call-template>
                 </xsl:if>
 
@@ -153,12 +148,9 @@
                     <xsl:call-template name="colorize">
                         <xsl:with-param name="classNames" select="$classNames" />
                         <xsl:with-param name="runtime" select="min" />
-                        <xsl:with-param name="targetAverage"
-                            select="number($colorizationConfig/rules/rule[@id='min']/@target)" />
-                        <xsl:with-param name="targetFrom"
-                            select="number($colorizationConfig/rules/rule[@id='min']/@from)" />
-                        <xsl:with-param name="targetTo"
-                            select="number($colorizationConfig/rules/rule[@id='min']/@to)" />
+                        <xsl:with-param name="targetAverage" select="number($colorizationConfig/rules/rule[@id='min']/@target)" />
+                        <xsl:with-param name="targetFrom" select="number($colorizationConfig/rules/rule[@id='min']/@from)" />
+                        <xsl:with-param name="targetTo" select="number($colorizationConfig/rules/rule[@id='min']/@to)" />
                     </xsl:call-template>
                 </xsl:if>
 
@@ -172,12 +164,9 @@
                     <xsl:call-template name="colorize">
                         <xsl:with-param name="classNames" select="$classNames" />
                         <xsl:with-param name="runtime" select="max" />
-            <xsl:with-param name="targetAverage"
-              select="number($colorizationConfig/rules/rule[@id='max']/@target)" />
-            <xsl:with-param name="targetFrom"
-              select="number($colorizationConfig/rules/rule[@id='max']/@from)" />
-            <xsl:with-param name="targetTo"
-              select="number($colorizationConfig/rules/rule[@id='max']/@to)" />
+                        <xsl:with-param name="targetAverage" select="number($colorizationConfig/rules/rule[@id='max']/@target)" />
+                        <xsl:with-param name="targetFrom" select="number($colorizationConfig/rules/rule[@id='max']/@from)" />
+                        <xsl:with-param name="targetTo" select="number($colorizationConfig/rules/rule[@id='max']/@to)" />
                     </xsl:call-template>
                 </xsl:if>
 
@@ -229,10 +218,8 @@
                 <xsl:for-each select="countPerInterval/int">
                     <xsl:variable name="position" select="position()" />
                     <xsl:variable name="count" select="count(../int)" />
-          <xsl:variable name="id"
-            select="/testreport/testReportConfig/runtimeIntervals/interval[$position]/@to" />
-          <xsl:variable name="percentage"
-            select="../../percentagePerInterval/big-decimal[$position]" />
+                    <xsl:variable name="id" select="/testreport/testReportConfig/runtimeIntervals/interval[$position]/@to" />
+                    <xsl:variable name="percentage" select="../../percentagePerInterval/big-decimal[$position]" />
                     <xsl:variable name="classNames" select="string('value number')" />
 
                     <td class="{$classNames}">
@@ -253,11 +240,9 @@
 
                         <span>
                             <xsl:attribute name="title">
-                                <xsl:value-of
-                select="format-number(current(), '#,##0')" />
+                                <xsl:value-of select="format-number(current(), '#,##0')" />
                                 <xsl:text> (</xsl:text>
-                                <xsl:value-of
-                select="format-number($percentage, '#,##0.00')" />
+                                <xsl:value-of select="format-number($percentage, '#,##0.00')" />
                                 <xsl:text>%)</xsl:text>
                             </xsl:attribute>
                             <xsl:value-of select="format-number($percentage, '#,##0.00')" />
@@ -303,25 +288,21 @@
         </xsl:variable>
 
         <!-- find and set the color class attribute -->
-    <xsl:if
-      test="$targetAverage &gt;= 0 and $targetFrom &gt;= 0 and $targetTo &gt;= 0">
+        <xsl:if test="$targetAverage &gt;= 0 and $targetFrom &gt;= 0 and $targetTo &gt;= 0">
             <xsl:choose>
                 <xsl:when test="$runtime &gt; $targetAverage">
-          <xsl:variable name="percent"
-            select="floor(($runtime - $targetAverage) * (100 div ($targetTo - $targetAverage)) )" />
+                    <xsl:variable name="percent" select="floor(($runtime - $targetAverage) * (100 div ($targetTo - $targetAverage)) )" />
                     <xsl:choose>
                         <xsl:when test="$percent &gt;= 100">
                             <xsl:call-template name="extendClass">
-                <xsl:with-param name="classNames"
-                  select="concat($classNames, ' ', concat($negativePrefix, '100'))"></xsl:with-param>
+                                <xsl:with-param name="classNames" select="concat($classNames, ' ', concat($negativePrefix, '100'))"></xsl:with-param>
                             </xsl:call-template>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
                                 <xsl:when test="$percent &lt;= 0">
                                     <xsl:call-template name="extendClass">
-                    <xsl:with-param name="classNames"
-                      select="concat($classNames, ' ', concat($negativePrefix, '0'))"></xsl:with-param>
+                                        <xsl:with-param name="classNames" select="concat($classNames, ' ', concat($negativePrefix, '0'))"></xsl:with-param>
                                     </xsl:call-template>
                                 </xsl:when>
                                 <xsl:otherwise>
@@ -335,21 +316,18 @@
                     </xsl:choose>
                 </xsl:when>
                 <xsl:otherwise>
-          <xsl:variable name="percent"
-            select="floor(($runtime - $targetAverage) * (100 div ($targetFrom - $targetAverage)))" />
+                    <xsl:variable name="percent" select="floor(($runtime - $targetAverage) * (100 div ($targetFrom - $targetAverage)))" />
                     <xsl:choose>
                         <xsl:when test="$percent &gt;= 100">
                             <xsl:call-template name="extendClass">
-                <xsl:with-param name="classNames"
-                  select="concat($classNames, ' ', concat($positivePrefix, '100'))"></xsl:with-param>
+                                <xsl:with-param name="classNames" select="concat($classNames, ' ', concat($positivePrefix, '100'))"></xsl:with-param>
                             </xsl:call-template>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
                                 <xsl:when test="$percent &lt;= 0">
                                     <xsl:call-template name="extendClass">
-                    <xsl:with-param name="classNames"
-                      select="concat($classNames, ' ', concat($positivePrefix, '0'))"></xsl:with-param>
+                                        <xsl:with-param name="classNames" select="concat($classNames, ' ', concat($positivePrefix, '0'))"></xsl:with-param>
                                     </xsl:call-template>
                                 </xsl:when>
                                 <xsl:otherwise>
