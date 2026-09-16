@@ -13,19 +13,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * NOTE: This file is generated. Do not edit! Your changes will be lost.
- */
 package posters.functional.errorChecking;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
-import com.xceptance.xlt.api.engine.scripting.ScriptName;
+import org.junit.Test;
+import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
+import posters.functional.modules.OpenHomepage;
+import posters.functional.modules.OpenLoginForm;
 
 /**
  * <p>Verifies that an error is shown if the user types a wrong password while log-in.</p>
  */
-@ScriptName
-("posters.functional.errorChecking.TLoginWrongPassword")
-public class TLoginWrongPassword extends AbstractScriptTestCase
+public class TLoginWrongPassword extends AbstractWebDriverScriptTestCase
 {
+
+    /**
+     * Constructor.
+     */
+    public TLoginWrongPassword()
+    {
+        super("https://localhost:8443");
+    }
+
+
+    /**
+     * Executes the test.
+     *
+     * @throws Throwable if anything went wrong
+     */
+    @Test
+    public void test() throws Throwable
+    {
+        OpenHomepage.execute();
+
+        OpenLoginForm.execute();
+
+        //
+        // ~~~ TryLogin ~~~
+        //
+        startAction("TryLogin");
+        type("id=email", "${email}");
+        type("id=password", "wrongpassword");
+        clickAndWait("id=btnSignIn");
+        // validate
+        assertVisible("id=errorMessage");
+        assertText("id=errorMessage", "× The password you entered is incorrect. Please try again.");
+        assertText("id=email", "${email}");
+
+    }
+
 }

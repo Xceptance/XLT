@@ -13,19 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * NOTE: This file is generated. Do not edit! Your changes will be lost.
- */
 package posters.functional.scenarios;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
-import com.xceptance.xlt.api.engine.scripting.ScriptName;
+import org.junit.Test;
+import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
+import posters.functional.modules.Browse;
+import posters.functional.modules.OpenHomepage;
 
 /**
  * <p>Simulates browsing the catalog.</p>
  */
-@ScriptName
-("posters.functional.scenarios.TBrowse")
-public class TBrowse extends AbstractScriptTestCase
+public class TBrowse extends AbstractWebDriverScriptTestCase
 {
+
+    /**
+     * Constructor.
+     */
+    public TBrowse()
+    {
+        super("https://localhost:8443");
+    }
+
+
+    /**
+     * Executes the test.
+     *
+     * @throws Throwable if anything went wrong
+     */
+    @Test
+    public void test() throws Throwable
+    {
+        OpenHomepage.execute();
+
+        Browse.execute();
+
+        Browse.execute();
+
+        Browse.execute();
+
+
+    }
+
 }

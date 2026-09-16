@@ -123,11 +123,6 @@ flexmark-java
   * Homepage: https://github.com/vsch/flexmark-java
   * More information in folder: doc/3rd-party-licenses/flexmark-java
 
-freemarker
-
-  * License: Apache License 2.0
-  * Homepage: https://freemarker.apache.org/
-  * More information in folder: doc/3rd-party-licenses/freemarker
 
 google-api-services-compute
 
@@ -278,12 +273,6 @@ openhtmltopdf
   * License: GNU Lesser General Public License 2.1
   * Homepage: https://github.com/danfickle/openhtmltopdf
   * More information in folder: doc/3rd-party-licenses/openhtmltopdf
-
-pegdown
-
-  * License: Apache License 2.0
-  * Homepage: https://github.com/sirthias/pegdown
-  * More information in folder: doc/3rd-party-licenses/pegdown
 
 progressbar
 

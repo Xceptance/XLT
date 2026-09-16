@@ -43,7 +43,7 @@
     -->
     <target name="compile">
         <mkdir dir="${test.classes.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" source="21" target="21">
+        <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="21" target="21">
             <classpath refid="test.suite.class.path" />
         </javac>
         <copy todir="${test.classes.dir}">
@@ -63,7 +63,7 @@
     <!--
         Performs a functional test by running the configured Java test cases.
     -->
-    <target name="test.java" depends="test.init">
+    <target name="test" depends="test.init">
         <!--
             Run the junit tests. 
         -->
@@ -81,54 +81,12 @@
 
             <!-- execute all configured tests -->
             <batchtest fork="yes" todir="${test.results.dir}">
-                <fileset dir="${test.src.dir}" includes="${test.cases.java}" />
+                <fileset dir="${test.src.dir}" includes="${test.cases}" />
             </batchtest>
         </junit>
-    </target>
-
-    <!--
-        Performs a functional test by running the configured script test cases.
-    -->
-    <target name="test.script" depends="test.init">
-        <!--
-            Determine the test scripts to run from the configuration.
-        -->
-        <fileset id="scripts" dir="${test.scripts.dir}" includes="${test.cases.script}" excludes="**/*_data.xml **/*_datasets.xml" />
-        <pathconvert pathsep=" " dirsep="/" property="scripts" refid="scripts">
-            <globmapper from="${test.scripts.dir}/*.xml" to="*" handledirsep="true" />
-        </pathconvert>
 
         <!--
-            Run the generic script test case suite.
-        -->
-        <junit forkmode="once" printsummary="on">
-            <!-- build the class path -->
-            <classpath refid="test.suite.class.path" />
-
-            <!-- configure the environment for XLT-based test cases -->
-            <sysproperty key="com.xceptance.xlt.home" value="${basedir}" />
-            <sysproperty key="com.xceptance.xlt.data.directory" value="${test.config.dir}/data" />
-            <sysproperty key="log4j.configuration" value="file:${test.config.dir}/dev-log4j.properties" />
-
-            <!-- configure the test result formatter -->
-            <formatter type="xml" />
-
-            <!-- configure the tests to run -->
-            <sysproperty key="com.xceptance.xlt.api.engine.scripting.ScriptTestCaseSuite.testCases" value="${scripts}" />
-
-            <!-- execute all configured tests -->
-            <batchtest fork="yes" todir="${test.results.dir}">
-                <javaresource name="com/xceptance/xlt/api/engine/scripting/ScriptTestCaseSuite.class" classpathref="xlt.class.path" />
-            </batchtest>
-        </junit>
-    </target>
-
-    <!--
-        Performs all the functional tests and creates a JUnit test report.
-    -->
-    <target name="test" depends="test.java, test.script">
-        <!--
-            Create a test report from the test results. 
+            Create a test report from the test results.
         -->
         <junitreport todir="${test.results.dir}">
             <!-- determine the test result files -->
@@ -157,7 +115,7 @@
             Run the master controller using an embedded agent controller.
         -->
         <exec executable="${xlt.bin.dir}/${command}" failonerror="true">
-            <arg line="-auto -embedded -report" />
+            <arg line="-auto -embedded -report -Dcom.xceptance.xlt.mastercontroller.testSuitePath=${basedir}" />
         </exec>
     </target>
 
