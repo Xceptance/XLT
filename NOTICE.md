@@ -273,6 +273,12 @@ opentelemetry
   * Homepage: https://github.com/open-telemetry
   * More information in folder: doc/3rd-party-licenses/opentelemetry
 
+openhtmltopdf
+
+  * License: GNU Lesser General Public License 2.1
+  * Homepage: https://github.com/danfickle/openhtmltopdf
+  * More information in folder: doc/3rd-party-licenses/openhtmltopdf
+
 pegdown
 
   * License: Apache License 2.0

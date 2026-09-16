@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.report.scorecard;
 
-enum TestFailTrigger
+public enum TestFailTrigger
 {
     PASSED,
     NOTPASSED;

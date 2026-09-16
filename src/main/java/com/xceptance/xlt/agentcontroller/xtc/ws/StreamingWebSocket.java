@@ -23,7 +23,8 @@ import java.io.PipedOutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import org.java_websocket.WebSocket;
+import org.apache.commons.io.IOUtils;
+import org.java_websocket.WebSocketImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class StreamingWebSocket
 {
     private static final Logger log = LoggerFactory.getLogger(StreamingWebSocket.class);
 
-    private final StreamingWebSocketClient streamingWebSocketClient;
+    private final WebSocketImpl webSocket;
 
     private final PipedOutputStream pipeOut;
 
@@ -47,25 +48,24 @@ public class StreamingWebSocket
 
     private boolean outputShutDown;
 
-    StreamingWebSocket(final StreamingWebSocketClient streamingWebSocketClient) throws IOException
+    StreamingWebSocket(final WebSocketImpl webSocket) throws IOException
     {
-        this.streamingWebSocketClient = streamingWebSocketClient;
-
+        this.webSocket = webSocket;
+        
         pipeOut = new PipedOutputStream();
         in = new PipedInputStream(pipeOut);
-        out = new WebSocketOutputStream(streamingWebSocketClient);
+        out = new WebSocketOutputStream(webSocket);
     }
 
-    @Override
-    public void close() throws IOException
+    public void close()
     {
-        try
+        IOUtils.closeQuietly(pipeOut);
+        IOUtils.closeQuietly(in);
+        IOUtils.closeQuietly(out);
+
+        if (!webSocket.isClosed())
         {
-            streamingWebSocketClient.closeBlocking();
-        }
-        catch (final InterruptedException ex)
-        {
-            throw new IOException("Interrupted while closing underlying web socket", ex);
+            webSocket.close();
         }
     }
 
@@ -92,7 +92,7 @@ public class StreamingWebSocket
         if (!outputShutDown)
         {
             // send an empty data array to indicate EOF
-            streamingWebSocketClient.send(new byte[0]);
+            out.write(new byte[0]);
             outputShutDown = true;
         }
     }
@@ -107,7 +107,7 @@ public class StreamingWebSocket
             if (data.length == 0)
             {
                 // an empty data array indicates EOF
-                pipeOut.close();
+                IOUtils.closeQuietly(pipeOut);
             }
             else
             {
@@ -118,45 +118,6 @@ public class StreamingWebSocket
         catch (final IOException e)
         {
             log.error("Error piping data to input stream", e);
-        }
-    }
-
-    void handleClose()
-    {
-        try
-        {
-            pipeOut.close();
-        }
-        catch (final IOException ignored)
-        {
-        }
-    }
-
-    /**
-     * Sends bytes written to this output stream as binary messages to the wrapped web socket.
-     */
-    private static class WebSocketOutputStream extends OutputStream
-    {
-        private final WebSocket webSocket;
-
-        public WebSocketOutputStream(final WebSocket webSocket)
-        {
-            this.webSocket = webSocket;
-        }
-
-        @Override
-        public void write(final int b) throws IOException
-        {
-            webSocket.send(new byte[]
-                {
-                    (byte) b
-                });
-        }
-
-        @Override
-        public void write(final byte[] b, final int off, final int len)
-        {
-            webSocket.send(ByteBuffer.wrap(b, off, len));
         }
     }
 }
