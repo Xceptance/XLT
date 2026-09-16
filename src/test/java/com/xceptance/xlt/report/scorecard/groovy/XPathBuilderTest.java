@@ -1,0 +1,125 @@
+/*
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.xceptance.xlt.report.scorecard.groovy;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class XPathBuilderTest
+{
+    private final XPathBuilder metrics = new XPathBuilder();
+
+    @Test
+    public void testGlobalCountPerHour()
+    {
+        Assert.assertEquals("/testreport/summary/transactions/countPerHour", metrics.globalCountPerHour("transactions"));
+        Assert.assertEquals("/testreport/summary/requests/countPerHour", metrics.globalCountPerHour("requests"));
+    }
+
+    @Test
+    public void testHttpErrorCount()
+    {
+        // 5.. regex against responseCode/code
+        Assert.assertEquals("sum(//responseCodes/responseCode[matches(code, '^5..$')]/count)", metrics.httpErrorCount("5.."));
+
+        // Exact 404 or 400
+        Assert.assertEquals("sum(//responseCodes/responseCode[matches(code, '^404|400$')]/count)", metrics.httpErrorCount("404|400"));
+    }
+
+    @Test
+    public void testPerHour()
+    {
+        Assert.assertEquals("((sum(//some/path)) div (number(/testreport/general/duration) div 3600))",
+                             metrics.perHour("sum(//some/path)"));
+    }
+
+    @Test
+    public void testRequestP95WithExcludeName()
+    {
+        Map<String, Object> args = new HashMap<>();
+        args.put("excludeName", "^OrderSubmit");
+
+        Assert.assertEquals("max(//requests/request[not(matches(name, '^OrderSubmit'))]/percentiles/p95)", metrics.requestP95(args));
+    }
+
+    @Test
+    public void testRequestP95WithExcludeLabel()
+    {
+        Map<String, Object> args = new HashMap<>();
+        args.put("excludeLabel", "cached");
+
+        Assert.assertEquals("max(//requests/request[labels != 'cached']/percentiles/p95)", metrics.requestP95(args));
+    }
+
+    @Test
+    public void testRequestP95Combined()
+    {
+        Map<String, Object> args = new HashMap<>();
+        args.put("name", "^Homepage");
+        args.put("excludeName", "^Homepage_Static");
+        args.put("label", "critical");
+        args.put("excludeLabel", "cached");
+
+        // Note: Map keys are processed in a specific order in aggregateValue:
+        // name, excludeName, label, excludeLabel
+        Assert.assertEquals("max(//requests/request[matches(name, '^Homepage') and not(matches(name, '^Homepage_Static')) and labels = 'critical' and labels != 'cached']/percentiles/p95)",
+                             metrics.requestP95(args));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEmptyArgsThrowsException()
+    {
+        metrics.requestP95(new HashMap<>());
+    }
+
+    @Test
+    public void testGeneralStringMethodsViaReflection() throws Exception
+    {
+        // To achieve high coverage without massive boilerplate, we dynamically invoke
+        // all methods that take a single String regex (e.g., requestP95(String), actionMean(String)).
+        Method[] methods = XPathBuilder.class.getDeclaredMethods();
+        for (Method method : methods)
+        {
+            String name = method.getName();
+            // Match methods like requestP50, transactionMean, actionErrors, customTimerMax
+            if ((name.startsWith("request") || name.startsWith("transaction") || name.startsWith("action") ||
+                 name.startsWith("customTimer")) &&
+                method.getParameterCount() == 1 && method.getParameterTypes()[0] == String.class)
+            {
+                // We just want to ensure it successfully generates an XPath without crashing.
+                String result = (String) method.invoke(metrics, "^MyRegex$");
+
+                // Verify basic structure of the output
+                Assert.assertTrue(result.startsWith("max(//"));
+                Assert.assertTrue(result.contains("matches(name, '^MyRegex$')"));
+            }
+        }
+    }
+
+    @Test
+    public void testAgentHelpers()
+    {
+        Assert.assertEquals("max(//agents/agent/totalCpuUsage/max)", metrics.agentCpuMax());
+        Assert.assertEquals("count(//agents/agent/totalCpuUsage/mean[number() > 80])", metrics.agentCountCpuMeanAbove(80));
+        Assert.assertEquals("count(//agents/agent)", metrics.agentCount());
+        Assert.assertEquals("count(//agents/agent[transactionErrors > 0])", metrics.agentCountWithErrors());
+        Assert.assertEquals("/testreport/summary/agents/transactionErrors", metrics.agentTransactionErrorsTotal());
+    }
+}

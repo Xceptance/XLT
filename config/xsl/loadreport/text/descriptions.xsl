@@ -17,6 +17,18 @@
         </div>
     </xsl:template>
 
+    <!-- ## Description: Rating ## -->
+    <xsl:template name="headline-rating">
+        <h2>Rating</h2>
+    </xsl:template>
+    <xsl:template name="description-rating">
+        <div class="description">
+            <p>
+                Overall performance assessment and test evaluation.
+            </p>
+        </div>
+    </xsl:template>
+
     <!-- ## Description: Test comment ## -->
     <xsl:template name="headline-testcomment">
         <h2>Test Comment</h2>
