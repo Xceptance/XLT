@@ -13,19 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * NOTE: This file is generated. Do not edit! Your changes will be lost.
- */
 package posters.functional.errorChecking;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
-import com.xceptance.xlt.api.engine.scripting.ScriptName;
+import org.junit.Test;
+import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
+import posters.functional.modules.OpenHomepage;
 
 /**
  * <p>Verifies that an info message is shown after a search for an empty search term.</p>
  */
-@ScriptName
-("posters.functional.errorChecking.TEmptySearch")
-public class TEmptySearch extends AbstractScriptTestCase
+public class TEmptySearch extends AbstractWebDriverScriptTestCase
 {
+
+    /**
+     * Constructor.
+     */
+    public TEmptySearch()
+    {
+        super("https://localhost:8443");
+    }
+
+
+    /**
+     * Executes the test.
+     *
+     * @throws Throwable if anything went wrong
+     */
+    @Test
+    public void test() throws Throwable
+    {
+        OpenHomepage.execute();
+
+        //
+        // ~~~ Search-NoHits ~~~
+        //
+        startAction("Search_NoHits");
+        // Cick the the search button to submit
+        click("id=header-search-trigger");
+        waitForElementPresent("id=header-menu-search");
+        type("id=s", "");
+        // Cick the the search button to submit
+        click("id=btnSearch");
+        assertNotVisible("id=errorMessage");
+        // Assert presence of info maessage element
+        assertElementPresent("id=header-search-trigger");
+
+    }
+
 }

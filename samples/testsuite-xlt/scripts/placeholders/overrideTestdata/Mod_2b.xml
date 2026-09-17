@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <description>Use test data and define them.</description>
-  <module name="placeholders.overrideTestdata.Mod_2c"/>
-  <command name="assertText" target="id=specialchar_1" value="${gtd1}"/>
-  <command name="type" target="id=in_txt_1" value="${t1} - 2"/>
-</scriptmodule>

@@ -686,26 +686,28 @@ public class LRUClockMapTest
         assertEquals(maxSize, map.size());
 
         // Access "k1". This should set its 'secondChance' flag to true.
-        map.get("k");
+        map.get("k1");
 
         // Add a fifth element ("k5") to trigger eviction.
-        map.put("k", 5); // broken as reminder
+        map.put("k5", 5);
 
         // we cleared one item out...
         assertEquals(maxSize, map.size()); // Size should remain capped.
+        assertEquals(maxSize, map.trueSize()); 
 
         // Check that k1 is still present.
         assertEquals(1, map.get("k1").intValue());
-        // Check that k4 (the newly added item) is present.
-        assertEquals(4, map.get("k4").intValue());
+        // Check that k5 (the newly added item) is present.
+        assertEquals(5, map.get("k5").intValue());
 
-        // Check that exactly one of the unaccessed original items (k2, k3) was evicted.
+        // Check that exactly one of the unaccessed original items (k2, k3, k4) was evicted.
         Collection<String> keysAfterEviction = map.keys();
-        boolean k2Present = keysAfterEviction.contains("k2");
-        boolean k3Present = keysAfterEviction.contains("k3");
+        int r = keysAfterEviction.contains("k2") ? 1 : 0;
+        r += keysAfterEviction.contains("k3") ? 1 : 0;
+        r += keysAfterEviction.contains("k4") ? 1 : 0;
 
-        // Exactly one of k2 or k3 should be missing.
-        assertTrue(k2Present ^ k3Present);
+        // we should have only 2 items found
+        assertEquals(2, r);
     }
 
     // --- Clear Tests ---

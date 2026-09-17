@@ -16,10 +16,17 @@
             <xsl:call-template name="description-scorecard" />
 
             <xsl:choose>
-                <xsl:when test="string-length($error) &gt; 0">
+                <xsl:when test="$error">
                     <div class="error">
                        The test could not be evaluated for the following reason:
-                       <pre><xsl:value-of select="$error" /></pre>
+                       <pre>
+                            <xsl:value-of select="$error/message" />
+                       </pre>
+                       <xsl:if test="string-length($error/log) &gt; 0">
+                           <pre>
+                                <xsl:value-of select="$error/log" />
+                           </pre>
+                       </xsl:if>
                     </div><!-- /error -->
                 </xsl:when>
                 <xsl:otherwise>
@@ -83,6 +90,13 @@
                             </xsl:choose>
 
                     </div><!-- /paragraph -->
+                    <xsl:if test="count($rootNode/issues/issue) &gt; 0">
+                        <div class="scorecard-issues-hint">
+                            <span class="warning-icon">&#9888;</span>
+                            There were non-fatal evaluation issues with some of the scorecard rules.
+                            <a href="#scorecard-issues">View details at the bottom of the page</a>.
+                        </div>
+                    </xsl:if>
                 </xsl:otherwise>
             </xsl:choose>
 

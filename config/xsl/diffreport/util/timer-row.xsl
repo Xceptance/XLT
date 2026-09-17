@@ -93,7 +93,14 @@
 
         <tr>
             <!-- name -->
-            <td class="key"><xsl:value-of select="name"/></td>
+            <td class="key">
+                <div class="trunc-cell">
+                    <span class="trunc-text">
+                        <xsl:attribute name="title"><xsl:value-of select="normalize-space(name)" /></xsl:attribute>
+                        <xsl:value-of select="name" />
+                    </span>
+                </div>
+            </td>
             
             <xsl:call-template name="timer-row-value-tds">
                 <xsl:with-param name="type" select="$type"/>
