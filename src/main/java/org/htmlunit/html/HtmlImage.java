@@ -288,9 +288,9 @@ public class HtmlImage extends HtmlElement {
                     // if the download was a success
                     if (imageWebResponse_.isSuccess()) {
                         if (imageWebResponse_.getStatusCode() != HttpStatus.NO_CONTENT_204) {
-                        loadSuccessful = true; // Trigger the onload handler
+                            loadSuccessful = true; // Trigger the onload handler
+                        }
                     }
-                }
                 }
                 catch (final IOException e) {
                     if (LOG.isDebugEnabled()) {

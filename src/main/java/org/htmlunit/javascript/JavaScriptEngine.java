@@ -167,7 +167,12 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * Returns the web client that this engine is associated with.
      * @return the web client
      */
+    // XC start
+    /*
+    private WebClient getWebClient() {
+    */
     protected WebClient getWebClient() {
+    // XC end
         return webClient_;
     }
 
@@ -308,7 +313,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
             final String extendedClassName =
                     StringUtils.isEmptyOrNull(config.getExtendedClassName()) ? null : config.getExtendedClassName();
 
-        // setup the prototypes
+            // setup the prototypes
             if (config == scopeConfig) {
                 if (extendedClassName == null) {
                     prototype.setPrototype(objectPrototype);
@@ -324,8 +329,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                 // adjust prototype if needed
                 if (extendedClassName != null) {
                     scopeContructorFunctionObject.setPrototype(ctorPrototypesPerJSName.get(extendedClassName));
+                }
             }
-        }
             else {
                 final HtmlUnitScriptable classPrototype = configureClass(config, scope);
                 prototypes.put(config.getHostClass(), classPrototype);
@@ -334,8 +339,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
                 if (extendedClassName == null) {
                     classPrototype.setPrototype(objectPrototype);
-            }
-            else {
+                }
+                else {
                     classPrototype.setPrototype(prototypesPerJSName.get(extendedClassName));
                 }
 
@@ -350,8 +355,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
 
                         if (config.isJsObject()) {
                             globalThis.defineProperty(jsClassName, constructor, ScriptableObject.DONTENUM);
-            }
-        }
+                        }
+                    }
                     else {
                         final FunctionObject function = new FunctionObject(jsConstructor.getKey(), jsConstructor.getValue(), scope);
                         ctorPrototypesPerJSName.put(jsClassName, function);
@@ -364,13 +369,13 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                             // addAsConstructor(..) registeres the ctor in the scope already
                             // therefore we have to remove here
                             globalThis.delete(prototype.getClassName());
-            }
+                        }
 
                         // adjust prototype if needed
                         if (extendedClassName != null) {
                             function.setPrototype(ctorPrototypesPerJSName.get(extendedClassName));
                         }
-                }
+                    }
                 }
             }
         }

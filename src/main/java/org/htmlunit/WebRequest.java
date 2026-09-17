@@ -644,7 +644,7 @@ public class WebRequest implements Serializable {
     public void setRequestParameters(final List<NameValuePair> requestParameters) throws RuntimeException {
         if (requestBody_ != null) {
             final String msg = "Trying to set the request parameters, but the request body has already been specified;"
-                             + "the two are mutually exclusive!";
+                    + "the two are mutually exclusive!";
             throw new RuntimeException(msg);
         }
         requestParameters_ = requestParameters;

@@ -488,7 +488,12 @@ public class HttpWebConnection implements WebConnection {
      * @param uri the uri being used
      * @return a new HttpClient HTTP method based on the specified parameters
      */
+    // XC start
+    /*
+    private static HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri) {
+    */
     protected HttpRequestBase buildHttpMethod(final HttpMethod submitMethod, final URI uri) {
+    // XC end
         final HttpRequestBase method = switch (submitMethod) {
             case GET -> new HttpGet(uri);
             case POST -> new HttpPost(uri);
@@ -653,7 +658,12 @@ public class HttpWebConnection implements WebConnection {
         usedOptions_.setProxyConfig(options.getProxyConfig());
     }
 
+    // XC start
+    /*
+    private void configureHttpProcessorBuilder(final HttpClientBuilder builder, final WebRequest webRequest) {
+    */
     protected void configureHttpProcessorBuilder(final HttpClientBuilder builder, final WebRequest webRequest) {
+    // XC end
         final HttpProcessorBuilder b = HttpProcessorBuilder.create();
         for (final HttpRequestInterceptor i : getHttpRequestInterceptors(webRequest)) {
             b.add(i);
@@ -1054,8 +1064,8 @@ public class HttpWebConnection implements WebConnection {
                 // (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-UA)
                 if (isSecureContext) {
                     String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA);
-                if (headerValue != null) {
-                    list.add(new SecClientHintUserAgentHeaderHttpRequestInterceptor(headerValue));
+                    if (headerValue != null) {
+                        list.add(new SecClientHintUserAgentHeaderHttpRequestInterceptor(headerValue));
                         requestHeaders.remove(HttpHeader.SEC_CH_UA);
                     }
                     else {
@@ -1068,9 +1078,9 @@ public class HttpWebConnection implements WebConnection {
             }
             else if (HttpHeader.SEC_CH_UA_MOBILE.equals(header)) {
                 if (isSecureContext) {
-                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE);
-                if (headerValue != null) {
-                    list.add(new SecClientHintUserAgentMobileHeaderHttpRequestInterceptor(headerValue));
+                    final String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_MOBILE);
+                    if (headerValue != null) {
+                        list.add(new SecClientHintUserAgentMobileHeaderHttpRequestInterceptor(headerValue));
                         requestHeaders.remove(HttpHeader.SEC_CH_UA_MOBILE);
                     }
                     else {
@@ -1083,8 +1093,8 @@ public class HttpWebConnection implements WebConnection {
             else if (HttpHeader.SEC_CH_UA_PLATFORM.equals(header)) {
                 if (isSecureContext) {
                     String headerValue = webRequest.getAdditionalHeader(HttpHeader.SEC_CH_UA_PLATFORM);
-                if (headerValue != null) {
-                    list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
+                    if (headerValue != null) {
+                        list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
                         requestHeaders.remove(HttpHeader.SEC_CH_UA_PLATFORM);
                     }
                     else {

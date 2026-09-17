@@ -1446,27 +1446,27 @@ public class HtmlPage extends SgmlPage {
                     if (urlPart.toLowerCase().startsWith("=")) {
                         urlPart = urlPart.substring(1);
                         urlPart = urlPart.trim();
+                    }
                 }
-            }
 
                 if (org.htmlunit.util.StringUtils.isBlank(urlPart)) {
-                //content='10; URL=' is treated as content='10'
-                url = getUrl();
-            }
-            else {
+                    //content='10; URL=' is treated as content='10'
+                    url = getUrl();
+                }
+                else {
                     if (urlPart.charAt(0) == '"' || urlPart.charAt(0) == 0x27) {
                         urlPart = urlPart.substring(1);
-                }
+                    }
                     if (urlPart.charAt(urlPart.length() - 1) == '"' || urlPart.charAt(urlPart.length() - 1) == 0x27) {
                         urlPart = urlPart.substring(0, urlPart.length() - 1);
-                }
-                try {
-                        url = getFullyQualifiedUrl(urlPart);
-                }
-                catch (final MalformedURLException e) {
-                    if (LOG.isErrorEnabled()) {
-                        LOG.error("Malformed URL in refresh string: " + refreshString, e);
                     }
+                    try {
+                        url = getFullyQualifiedUrl(urlPart);
+                    }
+                    catch (final MalformedURLException e) {
+                        if (LOG.isErrorEnabled()) {
+                            LOG.error("Malformed URL in refresh string: " + refreshString, e);
+                        }
                         return;
                     }
                 }
@@ -1476,11 +1476,11 @@ public class HtmlPage extends SgmlPage {
                     LOG.error("Malformed refresh string (separator after time missing): " + refreshString);
                 }
                 return;
-                }
             }
+        }
 
         processRefresh(url, time);
-        }
+    }
 
     // this is different from what is done in org.htmlunit.WebClient.loadWebResponseFromWebConnection(WebRequest, int)
     // because there we are directly replacing the response before loading the response into the window
@@ -1493,10 +1493,10 @@ public class HtmlPage extends SgmlPage {
             final WebResponse webResponse = getWebResponse();
             throw new FailingHttpStatusCodeException("Too many redirects for "
                     + webResponse.getWebRequest().getUrl(), webResponse);
-    }
+        }
 
         if (refreshLimit >= 0) {
-        final StackTraceElement[] elements = new Exception().getStackTrace();
+            final StackTraceElement[] elements = new Exception().getStackTrace();
             int count = 0;
             final int elementCountLimit = refreshLimit > 50 ? 400 : refreshLimit > 10 ? 80 : 5;
             final int elementCount = elements.length;
@@ -1672,12 +1672,12 @@ public class HtmlPage extends SgmlPage {
             }
             else if (index == elements.size() - 1) {
                 // if at last jump to start
-                    elementToGiveFocus = elements.get(0);
-                }
-                else {
-                    elementToGiveFocus = elements.get(index + 1);
-                }
+                elementToGiveFocus = elements.get(0);
             }
+            else {
+                elementToGiveFocus = elements.get(index + 1);
+            }
+        }
 
         setFocusedElement(elementToGiveFocus);
         return elementToGiveFocus;
@@ -1709,12 +1709,12 @@ public class HtmlPage extends SgmlPage {
             }
             else if (index == 0) {
                 // first; back to the last
-                    elementToGiveFocus = elements.get(elements.size() - 1);
-                }
-                else {
-                    elementToGiveFocus = elements.get(index - 1);
-                }
+                elementToGiveFocus = elements.get(elements.size() - 1);
             }
+            else {
+                elementToGiveFocus = elements.get(index - 1);
+            }
+        }
 
         setFocusedElement(elementToGiveFocus);
         return elementToGiveFocus;
@@ -3042,7 +3042,7 @@ public class HtmlPage extends SgmlPage {
 
         void add(final DomElement element) {
             if (elements_.indexOf(element) == -1) {
-            elements_.add(element);
+                elements_.add(element);
                 sorted_ = elements_.size() < 2;
             }
         }

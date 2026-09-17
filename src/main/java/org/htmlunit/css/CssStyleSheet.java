@@ -704,7 +704,7 @@ public class CssStyleSheet implements Serializable {
                         return true;
                     }
                 }
-                        return false;
+                return false;
 
             case WHERE_PSEUDO_CLASS_CONDITION:
                 // same as is
@@ -720,7 +720,7 @@ public class CssStyleSheet implements Serializable {
                 final HasPseudoClassCondition conditionHasPseudo = (HasPseudoClassCondition) condition;
                 for (final Selector selector : conditionHasPseudo.getSelectors()) {
                     if (selects(browserVersion, selector, element, null, fromQuerySelectorAll, throwOnSyntax)) {
-                return true;
+                        return true;
                     }
                 }
                 return false;
