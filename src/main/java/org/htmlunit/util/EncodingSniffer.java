@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static java.nio.charset.StandardCharsets.UTF_16BE;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -32,7 +31,6 @@ import java.util.Locale;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.HttpHeader;
@@ -40,7 +38,7 @@ import org.htmlunit.cyberneko.xerces.util.StandardEncodingTranslator;
 
 /**
  * Sniffs encoding settings from HTML, XML or other content. The HTML encoding sniffing algorithm is based on the
- * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#determining-the-character-encoding">HTML5
+ * <a href="https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding">HTML5
  * encoding sniffing algorithm</a>.
  *
  * @author Daniel Gredler
@@ -61,7 +59,7 @@ public final class EncodingSniffer {
         new byte[] {'-'}
     };
 
-    /** Sequence(s) of bytes indicating the beginning of a <code>meta</code> HTML tag. */
+    /** Sequence(s) of bytes indicating the beginning of a {@code meta} HTML tag. */
     private static final byte[][] META_START = {
         new byte[] {'<'},
         new byte[] {'m', 'M'},
@@ -96,13 +94,13 @@ public final class EncodingSniffer {
     private static final byte[] CSS_CHARSET_DECLARATION_PREFIX = "@charset \"".getBytes(US_ASCII);
 
     /**
-     * The number of HTML bytes to sniff for encoding info embedded in <code>meta</code> tags;
+     * The number of HTML bytes to sniff for encoding info embedded in {@code meta} tags.
      */
     private static final int SIZE_OF_HTML_CONTENT_SNIFFED = 1024;
 
     /**
      * The number of XML bytes to sniff for encoding info embedded in the XML declaration;
-     * relatively small because it's always at the very beginning of the file.
+     * relatively small because it is always at the very beginning of the file.
      */
     private static final int SIZE_OF_XML_CONTENT_SNIFFED = 512;
 
@@ -116,84 +114,12 @@ public final class EncodingSniffer {
     }
 
     /**
-     * <p>If the specified content is HTML content, this method sniffs encoding settings
-     * from the specified HTML content and/or the corresponding HTTP headers based on the
-     * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#determining-the-character-encoding">HTML5
-     * encoding sniffing algorithm</a>.</p>
-     *
-     * <p>If the specified content is XML content, this method sniffs encoding settings
-     * from the specified XML content and/or the corresponding HTTP headers using a custom algorithm.</p>
-     *
-     * <p>Otherwise, this method sniffs encoding settings from the specified content of unknown type by looking for
-     * <code>Content-Type</code> information in the HTTP headers and
-     * <a href="http://en.wikipedia.org/wiki/Byte_Order_Mark">Byte Order Mark</a> information in the content.</p>
-     *
-     * <p>Note that if an encoding is found but it is not supported on the current platform, this method returns
-     * {@code null}, as if no encoding had been found.</p>
-     *
-     * @param headers the HTTP response headers sent back with the content to be sniffed
-     * @param content the content to be sniffed
-     * @return the encoding sniffed from the specified content and/or the corresponding HTTP headers,
-     *         or {@code null} if the encoding could not be determined
-     * @throws IOException if an IO error occurs
-     *
-     * @deprecated as of version 4.0.0; depending on the content use {@link #sniffEncodingFromMetaTag(InputStream)},
-     * {@link #sniffEncodingFromXmlDeclaration(InputStream)}, or {@link #sniffEncodingFromCssDeclaration(InputStream) }
-     * instead
-     */
-    @Deprecated
-    public static Charset sniffEncoding(final List<NameValuePair> headers, final InputStream content)
-        throws IOException {
-        final Charset charset;
-        if (isHtml(headers)) {
-            charset = sniffHtmlEncoding(headers, content);
-        }
-        else if (isXml(headers)) {
-            charset = sniffXmlEncoding(headers, content);
-        }
-        else if (contentTypeEndsWith(headers, MimeType.TEXT_CSS)) {
-            charset = sniffCssEncoding(headers, content);
-        }
-        else {
-            charset = sniffUnknownContentTypeEncoding(headers, content);
-        }
-        return charset;
-    }
-
-    /**
-     * Returns {@code true} if the specified HTTP response headers indicate an HTML response.
-     *
-     * @param headers the HTTP response headers
-     * @return {@code true} if the specified HTTP response headers indicate an HTML response
-     *
-     * @deprecated as of version 4.0.0; method will be removed without replacement
-     */
-    @Deprecated
-    static boolean isHtml(final List<NameValuePair> headers) {
-        return contentTypeEndsWith(headers, MimeType.TEXT_HTML);
-    }
-
-    /**
-     * Returns {@code true} if the specified HTTP response headers indicate an XML response.
-     *
-     * @param headers the HTTP response headers
-     * @return {@code true} if the specified HTTP response headers indicate an XML response
-     *
-     * @deprecated as of version 4.0.0; method will be removed without replacement
-     */
-    @Deprecated
-    static boolean isXml(final List<NameValuePair> headers) {
-        return contentTypeEndsWith(headers, MimeType.TEXT_XML, MimeType.APPLICATION_XML, "text/vnd.wap.wml", "+xml");
-    }
-
-    /**
-     * Returns {@code true} if the specified HTTP response headers contain a <code>Content-Type</code> that
+     * Returns {@code true} if the specified HTTP response headers contain a {@code Content-Type} that
      * ends with one of the specified strings.
      *
      * @param headers the HTTP response headers
      * @param contentTypeEndings the content type endings to search for
-     * @return {@code true} if the specified HTTP response headers contain a <code>Content-Type</code> that
-     *         ends with one of the specified strings
+     * @return {@code true} if the {@code Content-Type} header ends with one of the specified strings
      */
     static boolean contentTypeEndsWith(final List<NameValuePair> headers, final String... contentTypeEndings) {
         for (final NameValuePair pair : headers) {
@@ -217,173 +143,12 @@ public final class EncodingSniffer {
     }
 
     /**
-     * <p>Sniffs encoding settings from the specified HTML content and/or the corresponding HTTP headers based on the
-     * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#determining-the-character-encoding">HTML5
-     * encoding sniffing algorithm</a>.</p>
-     *
-     * <p>Note that if an encoding is found but it is not supported on the current platform, this method returns
-     * {@code null}, as if no encoding had been found.</p>
-     *
-     * @param headers the HTTP response headers sent back with the HTML content to be sniffed
-     * @param content the HTML content to be sniffed
-     * @return the encoding sniffed from the specified HTML content and/or the corresponding HTTP headers,
-     *         or {@code null} if the encoding could not be determined
-     * @throws IOException if an IO error occurs
-     *
-     * @deprecated as of version 4.0.0; depending on the content use {@link #sniffEncodingFromMetaTag(InputStream)},
-     * {@link #sniffEncodingFromXmlDeclaration(InputStream)}, or {@link #sniffEncodingFromCssDeclaration(InputStream) }
-     * instead
-     */
-    @Deprecated
-    public static Charset sniffHtmlEncoding(final List<NameValuePair> headers, final InputStream content)
-        throws IOException {
-
-        byte[] bytes = read(content, 3);
-        Charset encoding = sniffEncodingFromUnicodeBom(bytes);
-        if (encoding != null) {
-            return encoding;
-        }
-
-        encoding = sniffEncodingFromHttpHeaders(headers);
-        if (encoding != null || content == null) {
-            return encoding;
-        }
-
-        bytes = readAndPrepend(content, SIZE_OF_HTML_CONTENT_SNIFFED, bytes);
-        encoding = sniffEncodingFromMetaTag(bytes);
-        return encoding;
-    }
-
-    /**
-     * <p>Sniffs encoding settings from the specified XML content and/or the corresponding HTTP headers using
-     * a custom algorithm.</p>
-     *
-     * <p>Note that if an encoding is found but it is not supported on the current platform, this method returns
-     * {@code null}, as if no encoding had been found.</p>
-     *
-     * @param headers the HTTP response headers sent back with the XML content to be sniffed
-     * @param content the XML content to be sniffed
-     * @return the encoding sniffed from the specified XML content and/or the corresponding HTTP headers,
-     *         or {@code null} if the encoding could not be determined
-     * @throws IOException if an IO error occurs
-     *
-     * @deprecated as of version 4.0.0; depending on the content use {@link #sniffEncodingFromMetaTag(InputStream)},
-     * {@link #sniffEncodingFromXmlDeclaration(InputStream)}, or {@link #sniffEncodingFromCssDeclaration(InputStream) }
-     * instead
-     */
-    @Deprecated
-    public static Charset sniffXmlEncoding(final List<NameValuePair> headers, final InputStream content)
-        throws IOException {
-
-        byte[] bytes = read(content, 3);
-        Charset encoding = sniffEncodingFromUnicodeBom(bytes);
-        if (encoding != null) {
-            return encoding;
-        }
-
-        encoding = sniffEncodingFromHttpHeaders(headers);
-        if (encoding != null || content == null) {
-            return encoding;
-        }
-
-        bytes = readAndPrepend(content, SIZE_OF_XML_CONTENT_SNIFFED, bytes);
-        encoding = sniffEncodingFromXmlDeclaration(bytes);
-        return encoding;
-    }
-
-   /**
-     * @deprecated as of version 4.0.0; depending on the content use {@link #sniffEncodingFromMetaTag(InputStream)},
-     * {@link #sniffEncodingFromXmlDeclaration(InputStream)}, or {@link #sniffEncodingFromCssDeclaration(InputStream) }
-     * instead
-    */
-    @Deprecated
-    private static Charset sniffCssEncoding(final List<NameValuePair> headers, final InputStream content)
-        throws IOException {
-
-        byte[] bytes = read(content, 3);
-        Charset encoding = sniffEncodingFromUnicodeBom(bytes);
-        if (encoding != null) {
-            return encoding;
-        }
-
-        encoding = sniffEncodingFromHttpHeaders(headers);
-        if (encoding != null || content == null) {
-            return encoding;
-        }
-
-        bytes = readAndPrepend(content, SIZE_OF_CSS_CONTENT_SNIFFED, bytes);
-        encoding = sniffEncodingFromCssDeclaration(bytes);
-        return encoding;
-    }
-
-    /**
-     * <p>Sniffs encoding settings from the specified content of unknown type by looking for <code>Content-Type</code>
-     * information in the HTTP headers and <a href="http://en.wikipedia.org/wiki/Byte_Order_Mark">Byte Order Mark</a>
-     * information in the content.</p>
-     *
-     * <p>Note that if an encoding is found but it is not supported on the current platform, this method returns
-     * {@code null}, as if no encoding had been found.</p>
-     *
-     * @param headers the HTTP response headers sent back with the content to be sniffed
-     * @param content the content to be sniffed
-     * @return the encoding sniffed from the specified content and/or the corresponding HTTP headers,
-     *         or {@code null} if the encoding could not be determined
-     * @throws IOException if an IO error occurs
-     *
-     * @deprecated as of version 4.0.0; depending on the content use {@link #sniffEncodingFromMetaTag(InputStream)},
-     * {@link #sniffEncodingFromXmlDeclaration(InputStream)}, or {@link #sniffEncodingFromCssDeclaration(InputStream) }
-     * instead
-     */
-    @Deprecated
-    public static Charset sniffUnknownContentTypeEncoding(final List<NameValuePair> headers, final InputStream content)
-        throws IOException {
-
-        final byte[] bytes = read(content, 3);
-        Charset encoding = sniffEncodingFromUnicodeBom(bytes);
-        if (encoding != null) {
-            return encoding;
-        }
-
-        encoding = sniffEncodingFromHttpHeaders(headers);
-        if (encoding != null || content == null) {
-            return encoding;
-        }
-        return encoding;
-    }
-
-    /**
-     * Attempts to sniff an encoding from the specified HTTP headers.
-     *
-     * @param headers the HTTP headers to examine
-     * @return the encoding sniffed from the specified HTTP headers, or {@code null} if the encoding
-     *         could not be determined
-     *
-     * @deprecated as of version 4.0.0; method will be removed without replacement
-     */
-    @Deprecated
-    public static Charset sniffEncodingFromHttpHeaders(final List<NameValuePair> headers) {
-        for (final NameValuePair pair : headers) {
-            final String name = pair.getName();
-            if (HttpHeader.CONTENT_TYPE_LC.equalsIgnoreCase(name)) {
-                final Charset encoding = extractEncodingFromContentType(pair.getValue());
-                if (encoding != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Encoding found in HTTP headers: '" + encoding + "'.");
-                    }
-                    return encoding;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Attempts to sniff an encoding from a <a href="http://en.wikipedia.org/wiki/Byte_Order_Mark">Byte Order Mark</a>
+     * Attempts to sniff an encoding from a
+     * <a href="https://en.wikipedia.org/wiki/Byte_order_mark">Byte Order Mark</a>
      * in the specified byte array.
      *
      * @param bytes the bytes to check for a Byte Order Mark
-     * @return the encoding sniffed from the specified bytes, or {@code null} if the encoding
-     *         could not be determined
+     * @return the encoding sniffed from the specified bytes, or {@code null} if it could not be determined
      */
     static Charset sniffEncodingFromUnicodeBom(final byte[] bytes) {
         if (bytes == null) {
@@ -408,10 +173,11 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Returns whether the specified byte array starts with the given {@link ByteOrderMark}, or not.
+     * Returns whether the specified byte array starts with the given {@link ByteOrderMark}.
+     *
      * @param bytes the byte array to check
-     * @param bom the {@link ByteOrderMark}
-     * @return whether the specified byte array starts with the given {@link ByteOrderMark}, or not
+     * @param bom the {@link ByteOrderMark} to look for
+     * @return {@code true} if the byte array starts with the given {@link ByteOrderMark}
      */
     private static boolean startsWith(final byte[] bytes, final ByteOrderMark bom) {
         final byte[] bomBytes = bom.getBytes();
@@ -420,26 +186,11 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Attempts to sniff an encoding from an HTML <code>meta</code> tag in the specified byte array.
+     * Attempts to sniff an encoding from an HTML {@code meta} tag in the specified input stream.
      *
-     * @param bytes the bytes to check for an HTML <code>meta</code> tag
-     * @return the encoding sniffed from the specified bytes, or {@code null} if the encoding
-     *         could not be determined
-     *
-     * @deprecated as of version 4.0.0; method will be removed without replacement
-     */
-    @Deprecated
-    static Charset sniffEncodingFromMetaTag(final byte[] bytes)throws IOException {
-        return sniffEncodingFromMetaTag(new ByteArrayInputStream(bytes));
-    }
-
-    /**
-     * Attempts to sniff an encoding from an HTML <code>meta</code> tag in the specified byte array.
-     *
-     * @param is the content stream to check for an HTML <code>meta</code> tag
-     * @return the encoding sniffed from the specified bytes, or {@code null} if the encoding
-     *         could not be determined
-     * @throws IOException if an IO error occurs
+     * @param is the content stream to check for an HTML {@code meta} tag
+     * @return the encoding sniffed from the stream, or {@code null} if it could not be determined
+     * @throws IOException if an I/O error occurs
      */
     public static Charset sniffEncodingFromMetaTag(final InputStream is) throws IOException {
         final byte[] bytes = read(is, SIZE_OF_HTML_CONTENT_SNIFFED);
@@ -456,8 +207,8 @@ public final class EncodingSniffer {
                 for (Attribute att = getAttribute(bytes, i); att != null; att = getAttribute(bytes, i)) {
                     i = att.getUpdatedIndex();
                     final String name = att.getName().toLowerCase(Locale.ROOT);
-                    final String value = att.getValue().toLowerCase(Locale.ROOT);
                     if ("charset".equals(name) || "content".equals(name)) {
+                        final String value = att.getValue().toLowerCase(Locale.ROOT);
                         Charset charset = null;
                         if ("charset".equals(name)) {
                             charset = toCharset(value);
@@ -521,13 +272,13 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Extracts an attribute from the specified byte array, starting at the specified index, using the
-     * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#concept-get-attributes-when-sniffing">HTML5
+     * Extracts an attribute from the specified byte array starting at the specified index, using the
+     * <a href="https://html.spec.whatwg.org/multipage/parsing.html#concept-get-attributes-when-sniffing">HTML5
      * attribute algorithm</a>.
      *
      * @param bytes the byte array to extract an attribute from
      * @param startFrom the index to start searching from
-     * @return the next attribute in the specified byte array, or {@code null} if one is not available
+     * @return the next attribute in the specified byte array, or {@code null} if none is available
      */
     static Attribute getAttribute(final byte[] bytes, final int startFrom) {
         if (startFrom >= bytes.length) {
@@ -626,13 +377,12 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Extracts an encoding from the specified <code>Content-Type</code> value using
-     * <a href="http://ietfreport.isoc.org/idref/draft-abarth-mime-sniff/">the IETF algorithm</a>; if
-     * no encoding is found, this method returns {@code null}.
+     * Extracts an encoding from the specified {@code Content-Type} value using
+     * <a href="https://www.ietf.org/rfc/rfc2616.txt">the IETF algorithm</a>; if
+     * no encoding is found, returns {@code null}.
      *
-     * @param s the <code>Content-Type</code> value to search for an encoding
-     * @return the encoding found in the specified <code>Content-Type</code> value, or {@code null} if no
-     *         encoding was found
+     * @param s the {@code Content-Type} value to search for an encoding
+     * @return the encoding found in the specified value, or {@code null} if none was found
      */
     public static Charset extractEncodingFromContentType(final String s) {
         if (s == null) {
@@ -658,16 +408,14 @@ public final class EncodingSniffer {
         if (bytes[i] != '=') {
             return null;
         }
-        i++;
-        if (i == bytes.length) {
-            return null;
-        }
-        while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20) {
+        do {
             i++;
             if (i == bytes.length) {
                 return null;
             }
         }
+        while (bytes[i] == 0x09 || bytes[i] == 0x0A || bytes[i] == 0x0C || bytes[i] == 0x0D || bytes[i] == 0x20);
+
         if (bytes[i] == '"') {
             if (bytes.length <= i + 1) {
                 return null;
@@ -702,23 +450,9 @@ public final class EncodingSniffer {
      * Searches the specified XML content for an XML declaration and returns the encoding if found,
      * otherwise returns {@code null}.
      *
-     * @param bytes the XML content to sniff
+     * @param is the content stream to check for a charset declaration
      * @return the encoding of the specified XML content, or {@code null} if it could not be determined
-     *
-     * @deprecated as of version 4.0.0; use {@link #sniffEncodingFromXmlDeclaration(InputStream)} instead
-     */
-    @Deprecated
-    static Charset sniffEncodingFromXmlDeclaration(final byte[] bytes) throws IOException {
-        return sniffEncodingFromXmlDeclaration(new ByteArrayInputStream(bytes));
-    }
-
-    /**
-     * Searches the specified XML content for an XML declaration and returns the encoding if found,
-     * otherwise returns {@code null}.
-     *
-     * @param is the content stream to check for the charset declaration
-     * @return the encoding of the specified XML content, or {@code null} if it could not be determined
-     * @throws IOException if an IO error occurs
+     * @throws IOException if an I/O error occurs
      */
     public static Charset sniffEncodingFromXmlDeclaration(final InputStream is) throws IOException {
         final byte[] bytes = read(is, SIZE_OF_XML_CONTENT_SNIFFED);
@@ -736,7 +470,7 @@ public final class EncodingSniffer {
                 int start = declaration.indexOf("encoding");
                 if (start != -1) {
                     start += 8;
-                    char delimiter;
+                    final char delimiter;
                 outer:
                     while (true) {
                         switch (declaration.charAt(start)) {
@@ -762,28 +496,13 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Parses and returns the charset declaration at the start of a css file if any, otherwise returns {@code null}.
-     * @param bytes the input bytes to sniff the encoding from
-     * @return the charset declaration at the start of a css file if any, otherwise returns {@code null}.
-     *
-     * <p>e.g. <pre>@charset "UTF-8"</pre>
-     *
-     * @deprecated as of version 4.0.0; depending on the content use {@link #sniffEncodingFromMetaTag(InputStream)},
-     * {@link #sniffEncodingFromXmlDeclaration(InputStream)}, or {@link #sniffEncodingFromCssDeclaration(InputStream) }
-     * instead
-     */
-    @Deprecated
-    static Charset sniffEncodingFromCssDeclaration(final byte[] bytes) throws IOException {
-        return sniffEncodingFromXmlDeclaration(new ByteArrayInputStream(bytes));
-    }
-
-    /**
-     * Parses and returns the charset declaration at the start of a css file if any, otherwise returns {@code null}.
-     * <p>e.g. <pre>@charset "UTF-8"</pre>
+     * Parses and returns the charset declaration at the start of a CSS file if present,
+     * otherwise returns {@code null}.
+     * e.g. {@code @charset "UTF-8"}
      *
      * @param is the input stream to parse
-     * @return the charset declaration at the start of a css file if any, otherwise returns {@code null}.
-     * @throws IOException if an IO error occurs
+     * @return the charset found at the start of the CSS file, or {@code null} if none
+     * @throws IOException if an I/O error occurs
      */
     public static Charset sniffEncodingFromCssDeclaration(final InputStream is) throws IOException {
         final byte[] bytes = read(is, SIZE_OF_CSS_CONTENT_SNIFFED);
@@ -809,10 +528,11 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Returns {@code Charset} if the specified charset name is supported on this platform.
+     * Returns the {@link Charset} for the specified charset name if it is supported on this platform,
+     * or {@code null} if it is not.
      *
-     * @param charsetName the charset name to check
-     * @return {@code Charset} if the specified charset name is supported on this platform
+     * @param charsetName the charset name to look up
+     * @return the {@link Charset} for the given name, or {@code null} if unsupported
      */
     public static Charset toCharset(final String charsetName) {
         final String nameFromLabel = translateEncodingLabel(charsetName);
@@ -828,14 +548,13 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Returns {@code true} if the byte in the specified byte array at the specified index matches one of the
-     * specified byte array patterns.
+     * Returns {@code true} if the byte in the specified byte array at the specified index matches
+     * one of the specified byte array patterns.
      *
      * @param bytes the byte array to search in
      * @param i the index at which to search
      * @param sought the byte array patterns to search for
-     * @return {@code true} if the byte in the specified byte array at the specified index matches one of the
-     *         specified byte array patterns
+     * @return {@code true} if the byte at index {@code i} matches one of the patterns
      */
     static boolean matches(final byte[] bytes, final int i, final byte[][] sought) {
         if (i + sought.length > bytes.length) {
@@ -858,18 +577,18 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Skips ahead to the first occurrence of any of the specified targets within the specified array,
-     * starting at the specified index. This method returns <code>-1</code> if none of the targets are found.
+     * Skips ahead to the first occurrence of any of the specified target bytes within the specified array,
+     * starting at the specified index. Returns {@code -1} if none of the targets are found.
      *
      * @param bytes the array to search through
-     * @param startFrom the index to start looking at
-     * @param targets the targets to search for
-     * @return the index of the first occurrence of the specified targets within the specified array
+     * @param startFrom the index to start looking from
+     * @param targets the target bytes to search for
+     * @return the index of the first occurrence of any target byte, or {@code -1} if not found
      */
     static int skipToAnyOf(final byte[] bytes, final int startFrom, final byte[] targets) {
         int i = startFrom;
         for ( ; i < bytes.length; i++) {
-            if (ArrayUtils.contains(targets, bytes[i])) {
+            if (org.htmlunit.util.ArrayUtils.contains(targets, bytes[i])) {
                 break;
             }
         }
@@ -881,12 +600,12 @@ public final class EncodingSniffer {
 
     /**
      * Finds the first index of the specified sub-array inside the specified array, starting at the
-     * specified index. This method returns <code>-1</code> if the specified sub-array cannot be found.
+     * specified index. Returns {@code -1} if the sub-array cannot be found.
      *
-     * @param array the array to traverse for looking for the sub-array
+     * @param array the array to traverse
      * @param subarray the sub-array to find
-     * @param startIndex the start index to traverse forwards from
-     * @return the index of the sub-array within the array
+     * @param startIndex the index to start traversing from
+     * @return the index of the sub-array within the array, or {@code -1} if not found
      */
     static int indexOfSubArray(final byte[] array, final byte[] subarray, final int startIndex) {
         for (int i = startIndex; i < array.length; i++) {
@@ -910,19 +629,19 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Attempts to read <code>size</code> bytes from the specified input stream. Note that this method is not guaranteed
-     * to be able to read <code>size</code> bytes; however, the returned byte array will always be the exact length of the
-     * number of bytes read.
+     * Attempts to read {@code size} bytes from the specified input stream. Note that this method is not guaranteed
+     * to read exactly {@code size} bytes; however, the returned byte array will always be the exact length of the
+     * number of bytes actually read.
      *
      * @param content the input stream to read from
      * @param size the number of bytes to try to read
      * @return the bytes read from the specified input stream
-     * @throws IOException if an IO error occurs
+     * @throws IOException if an I/O error occurs
      */
     static byte[] read(final InputStream content, final int size) throws IOException {
         byte[] bytes = new byte[size];
         // using IOUtils guarantees that it will read as many bytes as possible before giving up;
-        // this may not always be the case for subclasses of InputStream} - eg. GZIPInputStream
+        // this may not always be the case for subclasses of InputStream - e.g. GZIPInputStream
         final int count = IOUtils.read(content, bytes);
         if (count < size) {
             final byte[] smaller = new byte[count];
@@ -933,23 +652,22 @@ public final class EncodingSniffer {
     }
 
     /**
-     * Attempts to read <code>size</code> bytes from the specified input stream and then prepends the specified prefix to
-     * the bytes read, returning the resultant byte array. Note that this method is not guaranteed to be able to read
-     * <code>size</code> bytes; however, the returned byte array will always be the exact length of the number of bytes
-     * read plus the length of the prefix array.
+     * Attempts to read {@code size} bytes from the specified input stream and then prepends the specified prefix,
+     * returning the resulting byte array. Note that this method is not guaranteed to read exactly {@code size} bytes;
+     * however, the returned byte array will always be the exact length of the number of bytes read plus the prefix length.
      *
      * @param content the input stream to read from
      * @param size the number of bytes to try to read
-     * @param prefix the byte array to prepend to the bytes read from the specified input stream
-     * @return the bytes read from the specified input stream, prefixed by the specified prefix
-     * @throws IOException if an IO error occurs
+     * @param prefix the byte array to prepend to the bytes read
+     * @return the bytes read from the input stream, prepended by the specified prefix
+     * @throws IOException if an I/O error occurs
      */
     static byte[] readAndPrepend(final InputStream content, final int size, final byte[] prefix) throws IOException {
         final int prefixLength = prefix.length;
         final byte[] joined = new byte[prefixLength + size];
 
         // using IOUtils guarantees that it will read as many bytes as possible before giving up;
-        // this may not always be the case for subclasses of InputStream} - eg. GZIPInputStream
+        // this may not always be the case for subclasses of InputStream - e.g. GZIPInputStream
         final int count = IOUtils.read(content, joined, prefixLength, joined.length - prefixLength);
         if (count < size) {
             final byte[] smaller = new byte[prefixLength + count];
@@ -966,17 +684,21 @@ public final class EncodingSniffer {
         private final String name_;
         private final String value_;
         private final int updatedIndex_;
+
         Attribute(final String name, final String value, final int updatedIndex) {
             name_ = name;
             value_ = value;
             updatedIndex_ = updatedIndex;
         }
+
         String getName() {
             return name_;
         }
+
         String getValue() {
             return value_;
         }
+
         int getUpdatedIndex() {
             return updatedIndex_;
         }
@@ -984,25 +706,13 @@ public final class EncodingSniffer {
 
     /**
      * Translates the given encoding label into a normalized form
-     * according to <a href="http://encoding.spec.whatwg.org/#encodings">Reference</a>.
-     * @param encodingLabel the label to translate
-     * @return the normalized encoding name or null if not found
+     * according to the <a href="https://encoding.spec.whatwg.org/#encodings">WHATWG Encoding specification</a>.
      *
-     * @deprecated as of version 4.0.0; method will be removed without replacement
-     */
-    @Deprecated
-    public static String translateEncodingLabel(final Charset encodingLabel) {
-        return translateEncodingLabel(encodingLabel.name());
-    }
-
-    /**
-     * Translates the given encoding label into a normalized form
-     * according to <a href="http://encoding.spec.whatwg.org/#encodings">Reference</a>.
      * @param encodingLabel the label to translate
-     * @return the normalized encoding name or null if not found
+     * @return the normalized encoding name, or {@code null} if not found
      */
     public static String translateEncodingLabel(final String encodingLabel) {
-        if (StringUtils.isEmpty(encodingLabel)) {
+        if (StringUtils.isEmptyOrNull(encodingLabel)) {
             return null;
         }
 

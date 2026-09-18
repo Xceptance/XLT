@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.htmlunit.javascript.host.dom.NodeList;
 /**
  * The JavaScript object {@code HTMLTextAreaElement}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Marc Guillemot
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -35,6 +35,8 @@ import org.htmlunit.javascript.host.dom.NodeList;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Carsten Steul
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlTextArea.class)
 public class HTMLTextAreaElement extends HTMLElement {
@@ -85,7 +87,7 @@ public class HTMLTextAreaElement extends HTMLElement {
     @JsxSetter
     @Override
     public void setValue(final Object value) {
-        if (null == value) {
+        if (value == null) {
             getDomNodeOrDie().setText("");
             return;
         }
@@ -164,7 +166,7 @@ public class HTMLTextAreaElement extends HTMLElement {
     /**
      * Returns the textarea's default value, used if the containing form gets reset.
      * @return the textarea's default value, used if the containing form gets reset
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533718.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement/defaultValue">MDN Documentation</a>
      */
     @JsxGetter
     public String getDefaultValue() {
@@ -174,7 +176,7 @@ public class HTMLTextAreaElement extends HTMLElement {
     /**
      * Sets the textarea's default value, used if the containing form gets reset.
      * @param defaultValue the textarea's default value, used if the containing form gets reset
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533718.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement/defaultValue">MDN Documentation</a>
      */
     @JsxSetter
     public void setDefaultValue(final String defaultValue) {
@@ -281,7 +283,7 @@ public class HTMLTextAreaElement extends HTMLElement {
 
     /**
      * Sets maximum number of characters in this text area.
-     * @param maxLength maximum number of characters in this text area.
+     * @param maxLength maximum number of characters in this text area
      */
     @JsxSetter
     public void setMaxLength(final String maxLength) {
@@ -318,7 +320,7 @@ public class HTMLTextAreaElement extends HTMLElement {
 
     /**
      * Sets minimum number of characters in this text area.
-     * @param minLength minimum number of characters in this text area.
+     * @param minLength minimum number of characters in this text area
      */
     @JsxSetter
     public void setMinLength(final String minLength) {
@@ -368,11 +370,20 @@ public class HTMLTextAreaElement extends HTMLElement {
 
     /**
      * Checks whether the element has any constraints and whether it satisfies them.
-     * @return if the element is valid
+     * @return {@code true} if the element is valid
      */
     @JsxFunction
     public boolean checkValidity() {
-        return getDomNodeOrDie().isValid();
+        return ValidatableHTMLElement.doCheckValidity(getDomNodeOrDie());
+    }
+
+    /**
+     * Performs the same validity checking steps as the checkValidity() method.
+     * @return {@code true} if the element is valid
+     */
+    @JsxFunction
+    public boolean reportValidity() {
+        return ValidatableHTMLElement.doReportValidity(getDomNodeOrDie());
     }
 
     /**
@@ -391,6 +402,16 @@ public class HTMLTextAreaElement extends HTMLElement {
     @JsxSetter
     public void setRequired(final boolean required) {
         getDomNodeOrDie().setRequired(required);
+    }
+
+    /**
+     * Returns the message describing why the element's value fails constraint
+     * validation, or "" if it's valid or barred from validation.
+     * @return the validation message
+     */
+    @JsxGetter
+    public String getValidationMessage() {
+        return ValidatableHTMLElement.getValidationMessage(getDomNodeOrDie());
     }
 
     /**
@@ -439,15 +460,17 @@ public class HTMLTextAreaElement extends HTMLElement {
     }
 
     /**
+     * Returns whether the element is a candidate for constraint validation.
      * @return whether the element is a candidate for constraint validation
      */
     @JsxGetter
-    public boolean getWillValidate() {
+    public boolean isWillValidate() {
         return getDomNodeOrDie().willValidate();
     }
 
     /**
-     * @return a ValidityState with the validity states that this element is in.
+     * Returns a {@link ValidityState} object representing the validity states of this element.
+     * @return a {@link ValidityState} object representing the validity states of this element
      */
     @JsxGetter
     public ValidityState getValidity() {

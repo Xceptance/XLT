@@ -110,7 +110,7 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
 })
 @PowerMockIgnore(
     {
-        "javax.*", "org.xml.*", "org.w3c.dom.*", "org.apache.commons.vfs2.*"
+        "javax.*", "org.xml.*", "org.w3c.dom.*", "com.sun.*", "org.apache.commons.vfs2.*"
 })
 public class DataRecordLoggingTest
 {

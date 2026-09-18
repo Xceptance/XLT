@@ -37,7 +37,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
     {
         XltExecutionContext.class, System.class
     })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*", "com.sun.*"})
 public class XltExecutionContextTest
 {
     private static class TestObjectCreationException extends Exception

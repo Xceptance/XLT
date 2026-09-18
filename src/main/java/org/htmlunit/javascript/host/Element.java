@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_THROWS_FOR_DETACHED;
+import static org.htmlunit.BrowserVersionFeatures.EVENT_SCROLL_UIEVENT;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
@@ -23,6 +23,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,10 +37,15 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
+import org.htmlunit.corejs.javascript.WithScope;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.ElementCssStyleDeclaration;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomCDataSection;
 import org.htmlunit.html.DomCharacterData;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomElement;
@@ -63,6 +69,7 @@ import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventHandler;
+import org.htmlunit.javascript.host.event.UIEvent;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLElement.ProxyDomNode;
@@ -73,7 +80,7 @@ import org.htmlunit.util.StringUtils;
 import org.xml.sax.SAXException;
 
 /**
- * A JavaScript object for {@code Element}.
+ * JavaScript host object for {@code Element}.
  *
  * @author Ahmed Ashour
  * @author Marc Guillemot
@@ -81,6 +88,8 @@ import org.xml.sax.SAXException;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Anton Demydenko
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">MDN Documentation</a>
  */
 @JsxClass(domClass = DomElement.class)
 public class Element extends Node {
@@ -101,7 +110,7 @@ public class Element extends Node {
     private CSSStyleDeclaration style_;
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -111,18 +120,20 @@ public class Element extends Node {
 
     /**
      * Sets the DOM node that corresponds to this JavaScript object.
+     *
      * @param domNode the DOM node
      */
     @Override
     public void setDomNode(final DomNode domNode) {
         super.setDomNode(domNode);
 
-        setParentScope(getWindow().getDocument());
+        final Window window = getWindow();
+        setParentScope(new WithScope(getTopLevelScope(getParentScope()), window.getDocument()));
         // CSSStyleDeclaration uses the parent scope
         style_ = new CSSStyleDeclaration(this, new ElementCssStyleDeclaration(getDomNodeOrDie()));
 
         // Convert JavaScript snippets defined in the attribute map to executable event handlers.
-        //Should be called only on construction.
+        // Should be called only on construction.
         final DomElement htmlElt = (DomElement) domNode;
         for (final DomAttr attr : htmlElt.getAttributesMap().values()) {
             final String eventName = StringUtils.toRootLowerCase(attr.getName());
@@ -133,19 +144,24 @@ public class Element extends Node {
     }
 
     /**
-     * Create the event handler function from the attribute value.
-     * @param eventName the event name (ex: "onclick")
+     * Creates the event handler function from the attribute value.
+     *
+     * @param eventName the event name (e.g. {@code onclick})
      * @param attrValue the attribute value
      */
     protected void createEventHandler(final String eventName, final String attrValue) {
         final DomElement htmlElt = getDomNodeOrDie();
+
         // TODO: check that it is an "allowed" event for the browser, and take care to the case
         final BaseFunction eventHandler = new EventHandler(htmlElt, eventName, attrValue);
+        eventHandler.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), "Function"));
+
         setEventHandler(eventName, eventHandler);
     }
 
     /**
      * Returns the tag name of this element.
+     *
      * @return the tag name
      */
     @JsxGetter
@@ -155,8 +171,9 @@ public class Element extends Node {
 
     /**
      * Returns the attributes of this XML element.
-     * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/Node.attributes">Gecko DOM Reference</a>
+     *
      * @return the attributes of this XML element
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes">MDN Documentation</a>
      */
     @Override
     @JsxGetter
@@ -168,7 +185,8 @@ public class Element extends Node {
     }
 
     /**
-     * Creates the JS object for the property attributes. This object will the be cached.
+     * Creates the JS object for the {@code attributes} property. This object will be cached.
+     *
      * @return the JS object
      */
     protected NamedNodeMap createAttributesObject() {
@@ -176,8 +194,10 @@ public class Element extends Node {
     }
 
     /**
-     * @param attributeName attribute name
-     * @return the value of the specified attribute, {@code null} if the attribute is not defined
+     * Returns the value of the specified attribute, or {@code null} if the attribute is not defined.
+     *
+     * @param attributeName the name of the attribute to retrieve
+     * @return the value of the specified attribute, or {@code null} if not defined
      */
     @JsxFunction
     public String getAttribute(final String attributeName) {
@@ -191,10 +211,10 @@ public class Element extends Node {
     }
 
     /**
-     * Sets an attribute.
+     * Sets the specified attribute to the given value.
      *
-     * @param name Name of the attribute to set
-     * @param value Value to set the attribute to
+     * @param name the name of the attribute to set
+     * @param value the value to set the attribute to
      */
     @JsxFunction
     public void setAttribute(final String name, final String value) {
@@ -202,9 +222,10 @@ public class Element extends Node {
     }
 
     /**
-     * Returns all the descendant elements with the specified tag name.
-     * @param tagName the name to search for
-     * @return all the descendant elements with the specified tag name
+     * Returns all descendant elements with the specified tag name.
+     *
+     * @param tagName the tag name to search for
+     * @return all descendant elements with the specified tag name
      */
     @JsxFunction
     public HTMLCollection getElementsByTagName(final String tagName) {
@@ -258,8 +279,9 @@ public class Element extends Node {
 
     /**
      * Retrieves an attribute node by name.
+     *
      * @param name the name of the attribute to retrieve
-     * @return the XMLAttr node with the specified name or {@code null} if there is no such attribute
+     * @return the {@link Attr} node with the specified name, or {@code null} if there is no such attribute
      */
     @JsxFunction
     public HtmlUnitScriptable getAttributeNode(final String name) {
@@ -273,11 +295,11 @@ public class Element extends Node {
     }
 
     /**
-     * Returns a list of elements with the given tag name belonging to the given namespace.
+     * Returns a live {@link HTMLCollection} of elements with the given tag name belonging to the given namespace.
+     *
      * @param namespaceURI the namespace URI of elements to look for
-     * @param localName is either the local name of elements to look for or the special value "*",
-     *                  which matches all elements.
-     * @return a live NodeList of found elements in the order they appear in the tree
+     * @param localName the local name of elements to look for, or {@code "*"} to match all elements
+     * @return a live {@link HTMLCollection} of found elements in document order
      */
     @JsxFunction
     public HTMLCollection getElementsByTagNameNS(final Object namespaceURI, final String localName) {
@@ -290,11 +312,10 @@ public class Element extends Node {
     }
 
     /**
-     * Returns true when an attribute with a given name is specified on this element or has a default value.
-     * See also <a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-ElHasAttr">
-     * the DOM reference</a>
+     * Returns {@code true} when an attribute with the given name is specified on this element or has a default value.
+     *
      * @param name the name of the attribute to look for
-     * @return true if an attribute with the given name is specified on this element or has a default value
+     * @return {@code true} if the attribute exists or has a default value
      */
     @JsxFunction
     public boolean hasAttribute(final String name) {
@@ -319,7 +340,8 @@ public class Element extends Node {
     }
 
     /**
-     * Removes the specified attribute.
+     * Removes the attribute with the specified name.
+     *
      * @param name the name of the attribute to remove
      */
     @JsxFunction
@@ -328,14 +350,15 @@ public class Element extends Node {
     }
 
     /**
-     * Retrieves an object that specifies the bounds of a collection of TextRectangle objects.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536433.aspx">MSDN doc</a>
-     * @return an object that specifies the bounds of a collection of TextRectangle objects
+     * Returns the bounding rectangle of this element relative to the viewport.
+     *
+     * @return a {@link DOMRect} object describing the element's size and position
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect">MDN Documentation</a>
      */
     @JsxFunction
-    public ClientRect getBoundingClientRect() {
-        final ClientRect textRectangle = new ClientRect(1, 1, 1, 1);
-        textRectangle.setParentScope(getWindow());
+    public DOMRect getBoundingClientRect() {
+        final DOMRect textRectangle = new DOMRect(1, 1, 0, 0);
+        textRectangle.setParentScope(getTopLevelScope(getParentScope()));
         textRectangle.setPrototype(getPrototype(textRectangle.getClass()));
         return textRectangle;
     }
@@ -368,8 +391,9 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the next element sibling.
-     * @return the next element sibling
+     * Returns the next sibling that is an element.
+     *
+     * @return the next element sibling, or {@code null} if none
      */
     @JsxGetter
     public Element getNextElementSibling() {
@@ -381,8 +405,9 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the previous element sibling.
-     * @return the previous element sibling
+     * Returns the previous sibling that is an element.
+     *
+     * @return the previous element sibling, or {@code null} if none
      */
     @JsxGetter
     public Element getPreviousElementSibling() {
@@ -394,8 +419,8 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the first ancestor instance of {@link Element}. It is mostly identical
-     * to {@link #getParent()} except that it skips non {@link Element} nodes.
+     * Returns the first ancestor that is an {@link Element}. Skips non-{@link Element} nodes.
+     *
      * @return the parent element
      * @see #getParent()
      */
@@ -418,8 +443,9 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the token list of class attribute.
-     * @return the token list of class attribute
+     * Returns the token list of the {@code class} attribute.
+     *
+     * @return the token list of the {@code class} attribute
      */
     @JsxGetter
     public DOMTokenList getClassList() {
@@ -427,10 +453,12 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the specified attribute.
+     * Returns the value of the specified attribute in the given namespace,
+     * or {@code null} if the attribute is not defined.
+     *
      * @param namespaceURI the namespace URI
-     * @param localName the local name of the attribute to look for
-     * @return the value of the specified attribute, {@code null} if the attribute is not defined
+     * @param localName the local name of the attribute to retrieve
+     * @return the attribute value, or {@code null} if not found
      */
     @JsxFunction
     public String getAttributeNS(final String namespaceURI, final String localName) {
@@ -442,13 +470,11 @@ public class Element extends Node {
     }
 
     /**
-     * Test for attribute.
-     * See also <a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-ElHasAttrNS">
-     * the DOM reference</a>
+     * Returns {@code true} if the element has an attribute with the given namespace URI and local name.
      *
      * @param namespaceURI the namespace URI
      * @param localName the local name of the attribute to look for
-     * @return {@code true} if the node has this attribute
+     * @return {@code true} if the attribute exists
      */
     @JsxFunction
     public boolean hasAttributeNS(final String namespaceURI, final String localName) {
@@ -456,9 +482,10 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the specified attribute.
+     * Sets the attribute with the given namespace URI and qualified name to the given value.
+     *
      * @param namespaceURI the namespace URI
-     * @param qualifiedName the qualified name of the attribute to look for
+     * @param qualifiedName the qualified name of the attribute
      * @param value the new attribute value
      */
     @JsxFunction
@@ -467,7 +494,8 @@ public class Element extends Node {
     }
 
     /**
-     * Removes the specified attribute.
+     * Removes the attribute with the given namespace URI and local name.
+     *
      * @param namespaceURI the namespace URI of the attribute to remove
      * @param localName the local name of the attribute to remove
      */
@@ -477,8 +505,9 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the attribute node for the specified attribute.
-     * @param newAtt the attribute to set
+     * Sets the attribute node for the specified attribute, replacing the existing node if present.
+     *
+     * @param newAtt the attribute node to set
      * @return the replaced attribute node, if any
      */
     @JsxFunction
@@ -497,16 +526,15 @@ public class Element extends Node {
     }
 
     /**
-     * Retrieves all element nodes from descendants of the starting element node that match any selector
-     * within the supplied selector strings.
-     * The NodeList object returned by the querySelectorAll() method must be static, not live.
-     * @param selectors the selectors
-     * @return the static node list
+     * Returns a static {@link NodeList} of all descendant elements matching the given CSS selector(s).
+     *
+     * @param selectors the CSS selector(s)
+     * @return the static node list of matching elements
      */
     @JsxFunction
     public NodeList querySelectorAll(final String selectors) {
         try {
-            return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
+            return NodeList.staticNodeList(getParentScope(), getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
@@ -518,9 +546,11 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the first element within the document that matches the specified group of selectors.
-     * @param selectors the selectors
-     * @return null if no matches are found; otherwise, it returns the first matching element
+     * Returns the first descendant element that matches the specified CSS selector,
+     * or {@code null} if no matches are found.
+     *
+     * @param selectors the CSS selector(s)
+     * @return the first matching element, or {@code null}
      */
     @JsxFunction
     public Node querySelector(final String selectors) {
@@ -541,7 +571,8 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the class defined for this element.
+     * Returns the value of the {@code class} attribute.
+     *
      * @return the class name
      */
     @JsxGetter(propertyName = "className")
@@ -550,7 +581,8 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the class attribute for this element.
+     * Sets the {@code class} attribute for this element.
+     *
      * @param className the new class name
      */
     @JsxSetter(propertyName = "className")
@@ -559,8 +591,9 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the {@code clientHeight} attribute.
-     * @return the {@code clientHeight} attribute
+     * Returns the {@code clientHeight} property.
+     *
+     * @return the {@code clientHeight} property
      */
     @JsxGetter
     public int getClientHeight() {
@@ -569,8 +602,9 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the {@code clientWidth} attribute.
-     * @return the {@code clientWidth} attribute
+     * Returns the {@code clientWidth} property.
+     *
+     * @return the {@code clientWidth} property
      */
     @JsxGetter
     public int getClientWidth() {
@@ -579,8 +613,9 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the {@code clientLeft} attribute.
-     * @return the {@code clientLeft} attribute
+     * Returns the {@code clientLeft} property.
+     *
+     * @return the {@code clientLeft} property
      */
     @JsxGetter
     public int getClientLeft() {
@@ -589,8 +624,9 @@ public class Element extends Node {
     }
 
     /**
-     * Returns {@code clientTop} attribute.
-     * @return the {@code clientTop} attribute
+     * Returns the {@code clientTop} property.
+     *
+     * @return the {@code clientTop} property
      */
     @JsxGetter
     public int getClientTop() {
@@ -599,10 +635,11 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the specified attribute.
+     * Returns the attribute node with the given namespace URI and local name.
+     *
      * @param namespaceURI the namespace URI
-     * @param localName the local name of the attribute to look for
-     * @return the specified attribute, {@code null} if the attribute is not defined
+     * @param localName the local name of the attribute to retrieve
+     * @return the specified attribute node, or {@code null} if not found
      */
     @JsxFunction
     public HtmlUnitScriptable getAttributeNodeNS(final String namespaceURI, final String localName) {
@@ -610,9 +647,10 @@ public class Element extends Node {
     }
 
     /**
-     * Returns all the descendant elements with the specified class.
-     * @param className the name to search for
-     * @return all the descendant elements with the specified class name
+     * Returns all descendant elements that have the specified class name(s).
+     *
+     * @param className the class name(s) to search for (space-separated)
+     * @return all descendant elements with the specified class name(s)
      */
     @JsxFunction
     public HTMLCollection getElementsByClassName(final String className) {
@@ -629,7 +667,7 @@ public class Element extends Node {
                     }
                     String classAttribute = ((HtmlElement) node).getAttributeDirect("class");
                     if (ATTRIBUTE_NOT_DEFINED == classAttribute) {
-                        return false; // probably better performance as most of elements won't have a class attribute
+                        return false; // probably better performance as most elements won't have a class attribute
                     }
 
                     classAttribute = " " + classAttribute + " ";
@@ -645,20 +683,21 @@ public class Element extends Node {
     }
 
     /**
-     * Retrieves a collection of rectangles that describes the layout of the contents of an object
-     * or range within the client. Each rectangle describes a single line.
-     * @return a collection of rectangles that describes the layout of the contents
+     * Returns a collection of {@link DOMRect} objects that describe the layout of the element's
+     * content on screen. Each rectangle represents one line of the element's content.
+     *
+     * @return a {@link DOMRectList} describing the element's line boxes
      */
     @JsxFunction
-    public ClientRectList getClientRects() {
-        final Window w = getWindow();
-        final ClientRectList rectList = new ClientRectList();
-        rectList.setParentScope(w);
+    public DOMRectList getClientRects() {
+        final TopLevel topScope = getTopLevelScope(getParentScope());
+        final DOMRectList rectList = new DOMRectList();
+        rectList.setParentScope(topScope);
         rectList.setPrototype(getPrototype(rectList.getClass()));
 
         if (!isDisplayNone() && getDomNodeOrDie().isAttachedToPage()) {
-            final ClientRect rect = new ClientRect(0, 0, 1, 1);
-            rect.setParentScope(w);
+            final DOMRect rect = new DOMRect(0, 0, 1, 1);
+            rect.setParentScope(topScope);
             rect.setPrototype(getPrototype(rect.getClass()));
             rectList.add(rect);
         }
@@ -667,8 +706,31 @@ public class Element extends Node {
     }
 
     /**
-     * Returns whether the {@code display} is {@code none} or not.
-     * @return whether the {@code display} is {@code none} or not
+     * Returns the attribute names of this element as an array of strings.
+     * Returns an empty array if the element has no attributes.
+     *
+     * @return the attribute names as an array
+     */
+    @JsxFunction
+    public Scriptable getAttributeNames() {
+        final org.w3c.dom.NamedNodeMap attributes = getDomNodeOrDie().getAttributes();
+
+        if (attributes.getLength() == 0) {
+            return JavaScriptEngine.newArray(getParentScope(), 0);
+        }
+
+        final ArrayList<String> res = new ArrayList<>();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            res.add(attributes.item(i).getNodeName());
+        }
+
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
+    }
+
+    /**
+     * Returns whether the {@code display} style of this element or any ancestor is {@code none}.
+     *
+     * @return {@code true} if the element or any ancestor has {@code display: none}
      */
     protected final boolean isDisplayNone() {
         Element element = this;
@@ -684,18 +746,17 @@ public class Element extends Node {
     }
 
     /**
-     * Inserts the given element into the element at the location.
-     * @param where specifies where to insert the element, using one of the following values (case-insensitive):
-     *        beforebegin, afterbegin, beforeend, afterend
-     * @param insertedElement the element to be inserted
-     * @return an element object
+     * Inserts the given element at the specified position relative to this element.
      *
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536451.aspx">MSDN</a>
+     * @param where specifies where to insert the element; one of {@code beforebegin},
+     *        {@code afterbegin}, {@code beforeend}, or {@code afterend} (case-insensitive)
+     * @param insertedElement the element to insert
+     * @return the inserted element
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement">MDN Documentation</a>
      */
     @JsxFunction
     public Node insertAdjacentElement(final String where, final Object insertedElement) {
-        if (insertedElement instanceof Node) {
-            final Node insertedElementNode = (Node) insertedElement;
+        if (insertedElement instanceof Node insertedElementNode) {
             final DomNode childNode = insertedElementNode.getDomNodeOrDie();
             final Object[] values = getInsertAdjacentLocation(where);
             final DomNode node = (DomNode) values[0];
@@ -713,12 +774,12 @@ public class Element extends Node {
     }
 
     /**
-     * Inserts the given text into the element at the specified location.
-     * @param where specifies where to insert the text, using one of the following values (case-insensitive):
-     *      beforebegin, afterbegin, beforeend, afterend
-     * @param text the text to insert
+     * Inserts the given text at the specified position relative to this element.
      *
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536453.aspx">MSDN</a>
+     * @param where specifies where to insert the text; one of {@code beforebegin},
+     *        {@code afterbegin}, {@code beforeend}, or {@code afterend} (case-insensitive)
+     * @param text the text to insert
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText">MDN Documentation</a>
      */
     @JsxFunction
     public void insertAdjacentText(final String where, final String text) {
@@ -737,13 +798,14 @@ public class Element extends Node {
     }
 
     /**
-     * Returns where and how to add the new node.
+     * Returns the target node and insertion mode for the given adjacent position string.
      * Used by {@link #insertAdjacentHTML(String, String)},
-     * {@link #insertAdjacentElement(String, Object)} and
+     * {@link #insertAdjacentElement(String, Object)}, and
      * {@link #insertAdjacentText(String, String)}.
-     * @param where specifies where to insert the element, using one of the following values (case-insensitive):
-     *        beforebegin, afterbegin, beforeend, afterend
-     * @return an array of 1-DomNode:parentNode and 2-Boolean:append
+     *
+     * @param where specifies where to insert; one of {@code beforebegin},
+     *        {@code afterbegin}, {@code beforeend}, or {@code afterend} (case-insensitive)
+     * @return an array of [{@link DomNode} parentNode, {@link Boolean} append]
      */
     private Object[] getInsertAdjacentLocation(final String where) {
         final DomNode currentNode = getDomNodeOrDie();
@@ -753,7 +815,7 @@ public class Element extends Node {
         // compute the where and how the new nodes should be added
         if (POSITION_AFTER_BEGIN.equalsIgnoreCase(where)) {
             if (currentNode.getFirstChild() == null) {
-                // new nodes should appended to the children of current node
+                // new nodes should append to the children of current node
                 node = currentNode;
                 append = true;
             }
@@ -769,13 +831,13 @@ public class Element extends Node {
             append = false;
         }
         else if (POSITION_BEFORE_END.equalsIgnoreCase(where)) {
-            // new nodes should appended to the children of current node
+            // new nodes should append to the children of current node
             node = currentNode;
             append = true;
         }
         else if (POSITION_AFTER_END.equalsIgnoreCase(where)) {
             if (currentNode.getNextSibling() == null) {
-                // new nodes should appended to the children of parent node
+                // new nodes should append to the children of parent node
                 node = currentNode.getParentNode();
                 append = true;
             }
@@ -796,17 +858,12 @@ public class Element extends Node {
     }
 
     /**
-     * Parses the given text as HTML or XML and inserts the resulting nodes into the tree in the position given by the
-     * position argument.
-     * @param position specifies where to insert the nodes, using one of the following values (case-insensitive):
-     *        <code>beforebegin</code>, <code>afterbegin</code>, <code>beforeend</code>, <code>afterend</code>
-     * @param text the text to parse
+     * Parses the given text as HTML or XML and inserts the resulting nodes at the specified position.
      *
-     * @see <a href="http://www.w3.org/TR/DOM-Parsing/#methods-2">W3C Spec</a>
-     * @see <a href="http://domparsing.spec.whatwg.org/#dom-element-insertadjacenthtml">WhatWG Spec</a>
-     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element.insertAdjacentHTML"
-     *      >Mozilla Developer Network</a>
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536452.aspx">MSDN</a>
+     * @param position specifies where to insert the nodes; one of {@code beforebegin},
+     *        {@code afterbegin}, {@code beforeend}, or {@code afterend} (case-insensitive)
+     * @param text the HTML or XML text to parse and insert
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML">MDN Documentation</a>
      */
     @JsxFunction
     public void insertAdjacentHTML(final String position, final String text) {
@@ -820,9 +877,25 @@ public class Element extends Node {
     }
 
     /**
-     * Parses the specified HTML source code, appending the resulting content at the specified target location.
+     * Moves a given node inside this element as a direct child, before a given reference node.
+     *
+     * @param context the JavaScript context
+     * @param scope the scope
+     * @param thisObj the scriptable
+     * @param args the arguments passed into the method
+     * @param function the function
+     */
+    @JsxFunction({CHROME, EDGE, FF})
+    public static void moveBefore(final Context context, final VarScope scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.moveBefore(context, scope, thisObj, args, function);
+    }
+
+    /**
+     * Parses the specified HTML source code and appends the resulting content at the specified target location.
+     *
      * @param target the node indicating the position at which the parsed content should be placed
-     * @param source the HTML code extract to parse
+     * @param source the HTML code to parse
      */
     private static void parseHtmlSnippet(final DomNode target, final String source) {
         try {
@@ -836,17 +909,19 @@ public class Element extends Node {
     }
 
     /**
-     * The {@code getHTML} function.
+     * Returns the contents of this node as HTML, ignoring shadow DOM parameters as shadow DOM is not supported.
+     *
      * @return the contents of this node as HTML
      */
-    @JsxFunction({CHROME, EDGE, FF})
+    @JsxFunction
     public String getHTML() {
         // ignore the params because we have no shadow dom support so far
         return getInnerHTML();
     }
 
     /**
-     * Gets the {@code innerHTML} attribute.
+     * Returns the {@code innerHTML} of this element.
+     *
      * @return the contents of this node as HTML
      */
     @JsxGetter
@@ -864,8 +939,9 @@ public class Element extends Node {
     }
 
     /**
-     * Replaces all child elements of this element with the supplied value.
-     * @param value the new value for the contents of this element
+     * Replaces all child elements of this element with the supplied HTML value.
+     *
+     * @param value the new HTML content for this element
      */
     @JsxSetter
     public void setInnerHTML(final Object value) {
@@ -896,8 +972,9 @@ public class Element extends Node {
     }
 
     /**
-     * Helper for getInnerHtml (to be reuses bei HTMLTemplate.
-     * @param domNode the node
+     * Helper for {@code getInnerHTML}, reusable by {@code HTMLTemplateElement}.
+     *
+     * @param domNode the node to serialize
      * @return the contents of this node as HTML
      */
     protected String getInnerHTML(final DomNode domNode) {
@@ -914,9 +991,10 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the outerHTML of the node.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534310.aspx">MSDN documentation</a>
-     * @return the contents of this node as HTML
+     * Returns the {@code outerHTML} of this element, including the element's own tags.
+     *
+     * @return the contents of this node as HTML, including the opening and closing tags
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML">MDN Documentation</a>
      */
     @JsxGetter
     public String getOuterHTML() {
@@ -927,20 +1005,15 @@ public class Element extends Node {
     }
 
     /**
-     * Replaces this element (including all child elements) with the supplied value.
-     * @param value the new value for replacing this element
+     * Replaces this element (including all child elements) with the supplied HTML value.
+     *
+     * @param value the new HTML to replace this element
      */
     @JsxSetter
     public void setOuterHTML(final Object value) {
         final DomNode domNode = getDomNodeOrDie();
         final DomNode parent = domNode.getParentNode();
-        if (null == parent) {
-            if (getBrowserVersion().hasFeature(JS_OUTER_HTML_THROWS_FOR_DETACHED)) {
-                throw JavaScriptEngine.asJavaScriptException(
-                        getWindow(),
-                        "outerHTML is readonly for detached nodes",
-                        DOMException.NO_MODIFICATION_ALLOWED_ERR);
-            }
+        if (parent == null) {
             return;
         }
 
@@ -974,14 +1047,14 @@ public class Element extends Node {
     }
 
     /**
-     * Helper for getting code back from nodes.
+     * Serializes the children of the given node to the provided builder.
+     *
      * @param builder the builder to write to
-     * @param node the node to be serialized
-     * @param html flag
+     * @param node the node whose children are to be serialized
+     * @param html whether to use HTML serialization
      */
     protected final void printChildren(final StringBuilder builder, final DomNode node, final boolean html) {
-        if (node instanceof HtmlTemplate) {
-            final HtmlTemplate template = (HtmlTemplate) node;
+        if (node instanceof HtmlTemplate template) {
 
             for (final DomNode child : template.getContent().getChildren()) {
                 printNode(builder, child, html);
@@ -1001,6 +1074,9 @@ public class Element extends Node {
                 final String s = PRINT_NODE_PATTERN.matcher(node.getNodeValue()).replaceAll(" ");
                 builder.append("<!--").append(s).append("-->");
             }
+        }
+        else if (node instanceof DomCDataSection) {
+            builder.append("<![CDATA[").append(node.getNodeValue()).append("]]>");
         }
         else if (node instanceof DomCharacterData) {
             // Remove whitespace sequences, possibly escape XML characters.
@@ -1034,13 +1110,12 @@ public class Element extends Node {
             final boolean isHtml = !(scriptObject instanceof HTMLScriptElement)
                     && !(scriptObject instanceof HTMLStyleElement);
             printChildren(builder, node, isHtml);
-            if (null == htmlElement || !htmlElement.isEndTagForbidden()) {
+            if (htmlElement == null || !htmlElement.isEndTagForbidden()) {
                 builder.append("</").append(tag).append('>');
             }
         }
         else {
-            if (node instanceof HtmlElement) {
-                final HtmlElement element = (HtmlElement) node;
+            if (node instanceof HtmlElement element) {
                 if (StringUtils.equalsChar('p', element.getTagName())) {
                     int i = builder.length() - 1;
                     while (i >= 0 && Character.isWhitespace(builder.charAt(i))) {
@@ -1057,9 +1132,10 @@ public class Element extends Node {
     }
 
     /**
-     * Returns whether the end tag is forbidden or not.
+     * Returns whether the end tag is forbidden for this element.
+     *
+     * @return whether the end tag is forbidden
      * @see <a href="http://www.w3.org/TR/html4/index/elements.html">HTML 4 specs</a>
-     * @return whether the end tag is forbidden or not
      */
     protected boolean isEndTagForbidden() {
         return false;
@@ -1067,6 +1143,7 @@ public class Element extends Node {
 
     /**
      * Returns the element ID.
+     *
      * @return the ID of this element
      */
     @JsxGetter
@@ -1075,8 +1152,9 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the id value for this element.
-     * @param newId the newId value for this element
+     * Sets the ID of this element.
+     *
+     * @param newId the new ID value for this element
      */
     @JsxSetter
     public void setId(final String newId) {
@@ -1084,8 +1162,9 @@ public class Element extends Node {
     }
 
     /**
-     * Removes the specified attribute.
-     * @param attribute the attribute to remove
+     * Removes the specified attribute node from this element.
+     *
+     * @param attribute the attribute node to remove
      */
     @JsxFunction
     public void removeAttributeNode(final Attr attribute) {
@@ -1095,9 +1174,10 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the scrollTop value for this element.
-     * @return the scrollTop value for this element
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534618.aspx">MSDN documentation</a>
+     * Returns the {@code scrollTop} value for this element.
+     *
+     * @return the {@code scrollTop} value
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop">MDN Documentation</a>
      */
     @JsxGetter
     public int getScrollTop() {
@@ -1117,8 +1197,9 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the scrollTop value for this element.
-     * @param scroll the scrollTop value for this element
+     * Sets the {@code scrollTop} value for this element.
+     *
+     * @param scroll the new {@code scrollTop} value
      */
     @JsxSetter
     public void setScrollTop(final int scroll) {
@@ -1126,9 +1207,10 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the scrollLeft value for this element.
-     * @return the scrollLeft value for this element
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534617.aspx">MSDN documentation</a>
+     * Returns the {@code scrollLeft} value for this element.
+     *
+     * @return the {@code scrollLeft} value
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft">MDN Documentation</a>
      */
     @JsxGetter
     public int getScrollLeft() {
@@ -1148,8 +1230,9 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the scrollLeft value for this element.
-     * @param scroll the scrollLeft value for this element
+     * Sets the {@code scrollLeft} value for this element.
+     *
+     * @param scroll the new {@code scrollLeft} value
      */
     @JsxSetter
     public void setScrollLeft(final int scroll) {
@@ -1157,9 +1240,11 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the scrollHeight for this element.
-     * @return at the moment the same as client height
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534615.aspx">MSDN documentation</a>
+     * Returns the {@code scrollHeight} for this element.
+     * Currently returns the same value as {@link #getClientHeight()}.
+     *
+     * @return the scroll height
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight">MDN Documentation</a>
      */
     @JsxGetter
     public int getScrollHeight() {
@@ -1167,9 +1252,11 @@ public class Element extends Node {
     }
 
     /**
-     * Gets the scrollWidth for this element.
-     * @return a dummy value of 10
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534619.aspx">MSDN documentation</a>
+     * Returns the {@code scrollWidth} for this element.
+     * Currently returns the same value as {@link #getClientWidth()}.
+     *
+     * @return the scroll width
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth">MDN Documentation</a>
      */
     @JsxGetter
     public int getScrollWidth() {
@@ -1178,6 +1265,7 @@ public class Element extends Node {
 
     /**
      * Returns the style object for this element.
+     *
      * @return the style object for this element
      */
     protected CSSStyleDeclaration getStyle() {
@@ -1185,17 +1273,19 @@ public class Element extends Node {
     }
 
     /**
-     * Sets the styles for this element.
-     * @param style the style of the element
+     * Sets the CSS text for this element's inline style.
+     *
+     * @param style the new CSS style text
      */
     protected void setStyle(final String style) {
         getStyle().setCssText(style);
     }
 
     /**
-     * Scrolls to a particular set of coordinates inside a given element.
-     * @param x the horizontal pixel value that you want to scroll to
-     * @param y the vertical pixel value that you want to scroll to
+     * Scrolls to a particular set of coordinates inside this element.
+     *
+     * @param x the horizontal pixel value to scroll to
+     * @param y the vertical pixel value to scroll to
      */
     @JsxFunction
     public void scroll(final Scriptable x, final Scriptable y) {
@@ -1204,8 +1294,9 @@ public class Element extends Node {
 
     /**
      * Scrolls the element by the given amount.
-     * @param x the horizontal pixel value that you want to scroll by
-     * @param y the vertical pixel value that you want to scroll by
+     *
+     * @param x the horizontal pixel value to scroll by
+     * @param y the vertical pixel value to scroll by
      */
     @JsxFunction
     public void scrollBy(final Scriptable x, final Scriptable y) {
@@ -1230,14 +1321,39 @@ public class Element extends Node {
         setScrollLeft(getScrollLeft() + xOff);
         setScrollTop(getScrollTop() + yOff);
 
-        final Event event = new Event(this, Event.TYPE_SCROLL);
-        fireEvent(event);
+        fireScrollEvent(this);
+    }
+
+    private void fireScrollEvent(final Node node) {
+        final Event event;
+        if (getBrowserVersion().hasFeature(EVENT_SCROLL_UIEVENT)) {
+            event = new UIEvent(node, Event.TYPE_SCROLL);
+        }
+        else {
+            event = new Event(node, Event.TYPE_SCROLL);
+            event.setCancelable(false);
+        }
+        event.setBubbles(false);
+        node.fireEvent(event);
+    }
+
+    private void fireScrollEvent(final Window window) {
+        final Event event;
+        if (getBrowserVersion().hasFeature(EVENT_SCROLL_UIEVENT)) {
+            event = new UIEvent(window.getDocument(), Event.TYPE_SCROLL);
+        }
+        else {
+            event = new Event(window.getDocument(), Event.TYPE_SCROLL);
+            event.setCancelable(false);
+        }
+        window.fireEvent(event);
     }
 
     /**
-     * Scrolls to a particular set of coordinates inside a given element.
-     * @param x the horizontal pixel value that you want to scroll to
-     * @param y the vertical pixel value that you want to scroll to
+     * Scrolls to a particular set of coordinates inside this element.
+     *
+     * @param x the horizontal pixel value to scroll to
+     * @param y the vertical pixel value to scroll to
      */
     @JsxFunction
     public void scrollTo(final Scriptable x, final Scriptable y) {
@@ -1265,23 +1381,34 @@ public class Element extends Node {
         setScrollLeft(xOff);
         setScrollTop(yOff);
 
-        final Event event = new Event(this, Event.TYPE_SCROLL);
-        fireEvent(event);
+        fireScrollEvent(this);
     }
 
     /**
-     * Implement the {@code scrollIntoView()} JavaScript function but don't actually do
-     * anything. The requirement
-     * is just to prevent scripts that call that method from failing
+     * Scrolls the element into the visible area of the browser window.
+     * This implementation triggers the scroll event but does not actually scroll
+     * (headless environment).
      */
     @JsxFunction
     public void scrollIntoView() {
-        /* do nothing at the moment */
+        // do nothing at the moment, only trigger the scroll event
+
+        // we do not really handle scrollable elements (we are headless)
+        // we trigger the event for the whole parent tree (to inform all)
+        Node parent = getParent();
+        while (parent != null) {
+            if (parent instanceof HTMLElement) {
+                fireScrollEvent(parent);
+            }
+
+            parent = parent.getParent();
+        }
+        fireScrollEvent(getWindow());
     }
 
     /**
-     * Implement the {@code scrollIntoViewIfNeeded()} JavaScript function but don't actually do
-     * anything.
+     * Scrolls the element into the visible area if needed.
+     * This is a no-op implementation.
      */
     @JsxFunction({CHROME, EDGE})
     public void scrollIntoViewIfNeeded() {
@@ -1317,6 +1444,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onbeforecopy} event handler for this element.
+     *
      * @return the {@code onbeforecopy} event handler for this element
      */
     @JsxGetter({CHROME, EDGE})
@@ -1326,6 +1454,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onbeforecopy} event handler for this element.
+     *
      * @param onbeforecopy the {@code onbeforecopy} event handler for this element
      */
     @JsxSetter({CHROME, EDGE})
@@ -1335,6 +1464,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onbeforecut} event handler for this element.
+     *
      * @return the {@code onbeforecut} event handler for this element
      */
     @JsxGetter({CHROME, EDGE})
@@ -1344,6 +1474,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onbeforecut} event handler for this element.
+     *
      * @param onbeforecut the {@code onbeforecut} event handler for this element
      */
     @JsxSetter({CHROME, EDGE})
@@ -1353,6 +1484,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onbeforepaste} event handler for this element.
+     *
      * @return the {@code onbeforepaste} event handler for this element
      */
     @JsxGetter({CHROME, EDGE})
@@ -1362,6 +1494,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onbeforepaste} event handler for this element.
+     *
      * @param onbeforepaste the {@code onbeforepaste} event handler for this element
      */
     @JsxSetter({CHROME, EDGE})
@@ -1371,6 +1504,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onsearch} event handler for this element.
+     *
      * @return the {@code onsearch} event handler for this element
      */
     @JsxGetter({CHROME, EDGE})
@@ -1380,6 +1514,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onsearch} event handler for this element.
+     *
      * @param onsearch the {@code onsearch} event handler for this element
      */
     @JsxSetter({CHROME, EDGE})
@@ -1389,6 +1524,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onwebkitfullscreenchange} event handler for this element.
+     *
      * @return the {@code onwebkitfullscreenchange} event handler for this element
      */
     @JsxGetter({CHROME, EDGE})
@@ -1398,6 +1534,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onwebkitfullscreenchange} event handler for this element.
+     *
      * @param onwebkitfullscreenchange the {@code onwebkitfullscreenchange} event handler for this element
      */
     @JsxSetter({CHROME, EDGE})
@@ -1407,6 +1544,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onwebkitfullscreenerror} event handler for this element.
+     *
      * @return the {@code onwebkitfullscreenerror} event handler for this element
      */
     @JsxGetter({CHROME, EDGE})
@@ -1416,6 +1554,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onwebkitfullscreenerror} event handler for this element.
+     *
      * @param onwebkitfullscreenerror the {@code onwebkitfullscreenerror} event handler for this element
      */
     @JsxSetter({CHROME, EDGE})
@@ -1425,6 +1564,7 @@ public class Element extends Node {
 
     /**
      * Returns the {@code onwheel} event handler for this element.
+     *
      * @return the {@code onwheel} event handler for this element
      */
     public Function getOnwheel() {
@@ -1433,6 +1573,7 @@ public class Element extends Node {
 
     /**
      * Sets the {@code onwheel} event handler for this element.
+     *
      * @param onwheel the {@code onwheel} event handler for this element
      */
     public void setOnwheel(final Object onwheel) {
@@ -1449,9 +1590,11 @@ public class Element extends Node {
     }
 
     /**
-     * Mock for the moment.
-     * @param retargetToElement if true, all events are targeted directly to this element;
-     * if false, events can also fire at descendants of this element
+     * Sets mouse capture to the object that belongs to the current document.
+     * This is a mock implementation.
+     *
+     * @param retargetToElement if {@code true}, all events are targeted directly to this element;
+     *        if {@code false}, events can also fire at descendants of this element
      */
     @JsxFunction({FF, FF_ESR})
     public void setCapture(final boolean retargetToElement) {
@@ -1459,7 +1602,8 @@ public class Element extends Node {
     }
 
     /**
-     * Mock for the moment.
+     * Releases mouse capture from the object in the current document.
+     * This is a mock implementation.
      */
     @JsxFunction({FF, FF_ESR})
     public void releaseCapture() {
@@ -1467,8 +1611,9 @@ public class Element extends Node {
     }
 
     /**
-     * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
-     * just before this ChildNode.
+     * Inserts a set of {@link Node} or {@code DOMString} objects in the children list of this node's parent,
+     * just before this node.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1476,14 +1621,15 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void before(final Context context, final Scriptable scope,
+    public static void before(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
     }
 
     /**
-     * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
-     * just after this ChildNode.
+     * Inserts a set of {@link Node} or {@code DOMString} objects in the children list of this node's parent,
+     * just after this node.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1491,13 +1637,14 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void after(final Context context, final Scriptable scope,
+    public static void after(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
 
     /**
-     * Replaces the node with a set of Node or DOMString objects.
+     * Replaces this node with a set of {@link Node} or {@code DOMString} objects.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1505,22 +1652,23 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceWith(final Context context, final Scriptable scope,
+    public static void replaceWith(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }
 
     /**
-     * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
+     * Returns {@code true} if the element would be selected by the specified CSS selector string.
+     *
      * @param context the JavaScript context
      * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
-     * @return the value
+     * @return {@code true} if the element matches the selector
      */
     @JsxFunction
-    public static boolean matches(final Context context, final Scriptable scope,
+    public static boolean matches(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1533,7 +1681,7 @@ public class Element extends Node {
         }
         catch (final CSSException e) {
             throw JavaScriptEngine.asJavaScriptException(
-                    (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                    (HtmlUnitScriptable) getTopLevelScope(scope).getGlobalThis(),
                     "An invalid or illegal selector was specified (selector: '"
                             + selectorString + "' error: " + e.getMessage() + ").",
                     DOMException.SYNTAX_ERR);
@@ -1541,37 +1689,51 @@ public class Element extends Node {
     }
 
     /**
-     * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
+     * Returns {@code true} if the element would be selected by the specified CSS selector string.
+     * Firefox-specific alias for {@link #matches}.
+     *
      * @param context the JavaScript context
      * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
-     * @return the value
+     * @return {@code true} if the element matches the selector
      */
     @JsxFunction({FF, FF_ESR})
-    public static boolean mozMatchesSelector(final Context context, final Scriptable scope,
+    public static boolean mozMatchesSelector(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
 
     /**
-     * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
+     * Returns {@code true} if the element would be selected by the specified CSS selector string.
+     * WebKit-specific alias for {@link #matches}.
+     *
      * @param context the JavaScript context
      * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
-     * @return the value
+     * @return {@code true} if the element matches the selector
      */
     @JsxFunction
-    public static boolean webkitMatchesSelector(final Context context, final Scriptable scope,
+    public static boolean webkitMatchesSelector(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
 
+    /**
+     * Traverses this element and its ancestors until it finds a node that matches the specified CSS selector.
+     *
+     * @param context the context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     * @return the closest matching ancestor element, or {@code null} if none found
+     */
     @JsxFunction
-    public static Element closest(final Context context, final Scriptable scope,
+    public static Element closest(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1597,19 +1759,14 @@ public class Element extends Node {
     }
 
     /**
-     * The <code>toggleAttribute()</code> method of the Element interface toggles a
-     * Boolean attribute (removing it if it is present and adding it if it is not
-     * present) on the given element. If <code>force</code> is <code>true</code>, adds
-     * boolean attribute with <code>name</code>. If <code>force</code> is <code>false</code>,
-     * removes attribute with <code>name</code>.
+     * Toggles a Boolean attribute on this element. If {@code force} is {@code true}, adds
+     * the attribute. If {@code force} is {@code false}, removes the attribute.
+     * If {@code force} is not specified, the attribute is toggled.
      *
-     * @param name the name of the attribute to be toggled.
-     * The attribute name is automatically converted to all lower-case when toggleAttribute()
-     * is called on an HTML element in an HTML document.
-     * @param force if true, the toggleAttribute method adds an attribute named name
-     * @return true if attribute name is eventually present, and false otherwise
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute">Element.toggleAttribute()</a>
+     * @param name the name of the attribute to toggle; automatically converted to lower-case for HTML elements
+     * @param force if {@code true}, adds the attribute; if {@code false}, removes it
+     * @return {@code true} if the attribute is present after the call, {@code false} otherwise
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute">MDN Documentation</a>
      */
     @JsxFunction
     public boolean toggleAttribute(final String name, final Object force) {
@@ -1630,8 +1787,9 @@ public class Element extends Node {
     }
 
     /**
-     * Inserts a set of Node objects or string objects after the last child of the Element.
-     * String objects are inserted as equivalent Text nodes.
+     * Inserts a set of {@link Node} objects or string objects after the last child of this element.
+     * String objects are inserted as equivalent {@code Text} nodes.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1639,7 +1797,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void append(final Context context, final Scriptable scope,
+    public static void append(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1649,8 +1807,9 @@ public class Element extends Node {
     }
 
     /**
-     * Inserts a set of Node objects or string objects before the first child of the Element.
-     * String objects are inserted as equivalent Text nodes.
+     * Inserts a set of {@link Node} objects or string objects before the first child of this element.
+     * String objects are inserted as equivalent {@code Text} nodes.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1658,7 +1817,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void prepend(final Context context, final Scriptable scope,
+    public static void prepend(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
@@ -1668,8 +1827,9 @@ public class Element extends Node {
     }
 
     /**
-     * Replaces the existing children of a Node with a specified new set of children.
-     * These can be string or Node objects.
+     * Replaces the existing children of this element with a specified new set of children.
+     * These can be string or {@link Node} objects.
+     *
      * @param context the context
      * @param scope the scope
      * @param thisObj this object
@@ -1677,7 +1837,7 @@ public class Element extends Node {
      * @param function the function
      */
     @JsxFunction
-    public static void replaceChildren(final Context context, final Scriptable scope,
+    public static void replaceChildren(final Context context, final VarScope scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
             throw JavaScriptEngine.typeError("Illegal invocation");

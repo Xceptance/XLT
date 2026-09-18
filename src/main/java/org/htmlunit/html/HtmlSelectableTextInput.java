@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,11 @@ public abstract class HtmlSelectableTextInput extends HtmlInput implements Selec
      */
     @Override
     public void setValue(final String newValue) {
+        final String oldValue = getValue();
         super.setValue(newValue);
 
         final SgmlPage page = getPage();
-        if (page != null && page.isHtmlPage()) {
+        if (page != null && page.isHtmlPage() && !newValue.equals(oldValue)) {
             final int pos = newValue.length();
             setSelectionStart(pos);
             setSelectionEnd(pos);
@@ -147,16 +148,6 @@ public abstract class HtmlSelectableTextInput extends HtmlInput implements Selec
     @Override
     public void setSelectionEnd(final int selectionEnd) {
         selectionDelegate_.setSelectionEnd(selectionEnd);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see HtmlInput#reset()
-     */
-    @Override
-    public void reset() {
-        super.reset();
-        setSelectionEnd(0);
     }
 
     /**

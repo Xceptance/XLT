@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/RadioNodeList">MDN Documentation</a>
  */
 @JsxClass
 public class RadioNodeList extends NodeList {
@@ -59,7 +61,7 @@ public class RadioNodeList extends NodeList {
      *
      * @param domNode the {@link DomNode}
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of domNode changes (attribute added, modified or removed)
      */
     public RadioNodeList(final DomNode domNode, final boolean attributeChangeSensitive) {
         super(domNode, attributeChangeSensitive);
@@ -86,14 +88,14 @@ public class RadioNodeList extends NodeList {
     /**
      * Returns the value of the first checked radio button represented by radioNodeList.
      * @return the value of the first checked radio button represented by radioNodeList ("on" if value attribute
-     * is not defined) or an empty string if no radio button is checked.
+     *         is not defined) or an empty string if no radio button is checked.
      * @see <a href="https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#the-htmlformcontrolscollection-interface">HTML Standard</a>
      */
     @JsxGetter
     public String getValue() {
         for (final DomNode node : getElements()) {
-            if (node instanceof HtmlRadioButtonInput && ((HtmlRadioButtonInput) node).isChecked()) {
-                final String value = ((HtmlRadioButtonInput) node).getValueAttribute();
+            if (node instanceof HtmlRadioButtonInput input && input.isChecked()) {
+                final String value = input.getValueAttribute();
                 return value == ATTRIBUTE_NOT_DEFINED ? "on" : value;
             }
         }
@@ -109,19 +111,23 @@ public class RadioNodeList extends NodeList {
     @JsxSetter
     public void setValue(final String newValue) {
         for (final DomNode node : getElements()) {
-            if (node instanceof HtmlRadioButtonInput) {
-                String value = ((HtmlRadioButtonInput) node).getValueAttribute();
+            if (node instanceof HtmlRadioButtonInput input) {
+                String value = input.getValueAttribute();
                 if (value == ATTRIBUTE_NOT_DEFINED) {
                     value = "on";
                 }
                 if (newValue.equals(value)) {
-                    ((HtmlRadioButtonInput) node).setChecked(true);
+                    input.setChecked(true);
                     break;
                 }
             }
         }
     }
 
+    /**
+     * Returns the {@code Symbol.iterator} function that allows iterating over this collection.
+     * @return the Iterator symbol
+     */
     @JsxSymbol
     public Scriptable iterator() {
         return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.htmlunit.util.StringUtils;
  * @author Ahmed Ashour
  * @author Daniel Gredler
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLSpanElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlSpan.class)
 public class HTMLSpanElement extends HTMLElement {
@@ -63,8 +65,8 @@ public class HTMLSpanElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the {@code cite} property.
-     * @param cite the value
+     * Sets the value of the {@code cite} property.
+     * @param cite the {@code cite} property value
      */
     public void setCite(final String cite) {
         getDomNodeOrDie().setAttribute("cite", cite);
@@ -79,8 +81,8 @@ public class HTMLSpanElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the {@code dateTime} property.
-     * @param dateTime the value
+     * Sets the value of the {@code dateTime} property.
+     * @param dateTime the {@code dateTime} property value
      */
     public void setDateTime(final String dateTime) {
         getDomNodeOrDie().setAttribute("datetime", dateTime);

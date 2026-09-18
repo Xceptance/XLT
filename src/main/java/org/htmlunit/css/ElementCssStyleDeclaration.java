@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import org.htmlunit.util.StringUtils;
 /**
  * A css StyleDeclaration backed by a {@link DomElement}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -144,8 +144,13 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
             return "";
         }
 
+        final Map<String, StyleElement> styles = getStyleMap();
+        if (index >= styles.size()) {
+            return "";
+        }
+
         int i = 0;
-        final Iterator<StyleElement> values = domElement_.getStyleMap().values().iterator();
+        final Iterator<StyleElement> values = styles.values().iterator();
         while (values.hasNext()) {
             if (index == i) {
                 return values.next().getName();
@@ -188,6 +193,11 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
         return domElement_.getStyleMap();
     }
 
+    /**
+     * Returns the {@link DomElement} associated with this.
+     *
+     * @return the {@link DomElement} associated with this
+     */
     public DomElement getDomElement() {
         return domElement_;
     }

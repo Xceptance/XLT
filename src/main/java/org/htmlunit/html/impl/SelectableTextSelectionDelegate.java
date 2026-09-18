@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.htmlunit.html.DomNode;
  * Contains standard selection-related functionality used by various input elements.
  *
  * <p>From <a href="http://www.whatwg.org/specs/web-apps/current-work/#selection">the HTML5 spec</a>:
- *
+ * </p>
  * <blockquote>Mostly for historical reasons, in addition to the browsing context's selection, each
  * textarea and input element has an independent selection. These are the text field selections.</blockquote>
  *

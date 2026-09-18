@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebRequest;
+import org.htmlunit.corejs.javascript.ClassDescriptor;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.TopLevel;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -37,26 +38,32 @@ import org.htmlunit.javascript.host.file.Blob;
 import org.htmlunit.javascript.host.file.File;
 import org.htmlunit.javascript.host.html.HTMLFormElement;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 
 /**
- * A JavaScript object for {@code FormData}.
+ * JavaScript host object for {@code FormData}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Thorsten Wendelmuth
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">MDN Documentation</a>
  */
 @JsxClass
 public class FormData extends HtmlUnitScriptable {
 
     /** Constant used to register the prototype in the context. */
-    public static final String FORM_DATA_TAG = "FormData";
+    private static final String FORM_DATA_ITERATOR_TAG = "FormData Iterator";
 
     private final List<NameValuePair> requestParameters_ = new ArrayList<>();
 
     /**
-     * FormDate iterator support.
+     * Iterator support for {@code FormData}.
      */
     public static final class FormDataIterator extends ES6Iterator {
+        private static final ClassDescriptor DESCRIPTOR =
+                ES6Iterator.makeDescriptor(FORM_DATA_ITERATOR_TAG, FORM_DATA_ITERATOR_TAG);
+
         enum Type { KEYS, VALUES, BOTH }
 
         private final Type type_;
@@ -65,17 +72,19 @@ public class FormData extends HtmlUnitScriptable {
         private int index_;
 
         /**
-         * JS initializer.
+         * Initializes the iterator prototype.
          *
+         * @param cx the {@link Context}
          * @param scope the scope
          * @param className the class name
          */
-        public static void init(final ScriptableObject scope, final String className) {
-            ES6Iterator.init(scope, false, new FormDataIterator(className), FORM_DATA_TAG);
+        public static void init(final Context cx, final TopLevel scope, final String className) {
+            ES6Iterator.initialize(
+                    DESCRIPTOR, cx, scope, new FormDataIterator(className), false, FORM_DATA_ITERATOR_TAG);
         }
 
         /**
-         * Ctor.
+         * Creates an instance with an empty list (used for prototype initialization).
          *
          * @param className the class name
          */
@@ -89,16 +98,16 @@ public class FormData extends HtmlUnitScriptable {
         }
 
         /**
-         * Ctor.
+         * Creates an instance for iterating over the given list of name-value pairs.
          *
          * @param scope the scope
          * @param className the class name
-         * @param type the type
-         * @param nameValuePairList the list of name value pairs
+         * @param type the iteration type (keys, values, or both)
+         * @param nameValuePairList the list of name-value pairs to iterate
          */
-        public FormDataIterator(final Scriptable scope, final String className, final Type type,
+        public FormDataIterator(final VarScope scope, final String className, final Type type,
                 final List<NameValuePair> nameValuePairList) {
-            super(scope, FORM_DATA_TAG);
+            super(scope, className);
             type_ = type;
             index_ = 0;
             nameValuePairList_ = nameValuePairList;
@@ -117,7 +126,7 @@ public class FormData extends HtmlUnitScriptable {
          * {@inheritDoc}
          */
         @Override
-        protected boolean isDone(final Context cx, final Scriptable scope) {
+        protected boolean isDone(final Context cx, final VarScope scope) {
             return index_ >= nameValuePairList_.size();
         }
 
@@ -125,54 +134,49 @@ public class FormData extends HtmlUnitScriptable {
          * {@inheritDoc}
          */
         @Override
-        protected Object nextValue(final Context cx, final Scriptable scope) {
+        protected Object nextValue(final Context cx, final VarScope scope) {
             if (isDone(cx, scope)) {
                 return Context.getUndefinedValue();
             }
 
             final NameValuePair nextNameValuePair = nameValuePairList_.get(index_++);
-            switch (type_) {
-                case KEYS:
-                    return nextNameValuePair.getName();
-                case VALUES:
-                    return nextNameValuePair.getValue();
-                case BOTH:
-                    return cx.newArray(scope, new Object[] {nextNameValuePair.getName(), nextNameValuePair.getValue()});
-                default:
-                    throw new AssertionError();
-            }
+            return switch (type_) {
+                case KEYS -> nextNameValuePair.getName();
+                case VALUES -> nextNameValuePair.getValue();
+                case BOTH ->
+                    cx.newArray(scope, new Object[]{nextNameValuePair.getName(), nextNameValuePair.getValue()});
+            };
         }
     }
 
     /**
-     * Constructor.
-     * @param formObj a form
+     * Creates an instance of this object, optionally pre-populated from the given form.
+     *
+     * @param formObj an {@link HTMLFormElement} to initialize the data from, or {@code undefined}
      */
     @JsxConstructor
     public void jsConstructor(final Object formObj) {
-        if (formObj instanceof HTMLFormElement) {
-            final HTMLFormElement form = (HTMLFormElement) formObj;
+        if (formObj instanceof HTMLFormElement form) {
             requestParameters_.addAll(form.getHtmlForm().getParameterListForSubmit(null));
         }
     }
 
     /**
-     * Appends a new value onto an existing key inside a {@code FormData} object,
-     * or adds the key if it does not already exist.
-     * @param name the name of the field whose data is contained in {@code value}
+     * Appends a new value for an existing key, or adds the key if it does not already exist.
+     *
+     * @param name the name of the field
      * @param value the field's value
      * @param filename the filename reported to the server (optional)
      */
     @JsxFunction
     public void append(final String name, final Object value, final Object filename) {
-        if (value instanceof Blob) {
-            final Blob blob = (Blob) value;
+        if (value instanceof Blob blob) {
             String fileName = "blob";
             if (value instanceof File) {
                 fileName = null;
             }
-            if (filename instanceof String) {
-                fileName = (String) filename;
+            if (filename instanceof String string) {
+                fileName = string;
             }
             requestParameters_.add(blob.getKeyDataPair(name, fileName));
             return;
@@ -181,12 +185,13 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * Removes the entry (if exists).
+     * Removes the entry with the given name, if it exists.
+     *
      * @param name the name of the field to remove
      */
     @JsxFunction(functionName = "delete")
     public void delete_js(final String name) {
-        if (StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmptyOrNull(name)) {
             return;
         }
 
@@ -194,12 +199,14 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * @param name the name of the field to check
-     * @return the first value found for the give name
+     * Returns the first value associated with the given name.
+     *
+     * @param name the name of the field to retrieve
+     * @return the first value found, or {@code null} if not found
      */
     @JsxFunction
     public String get(final String name) {
-        if (StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmptyOrNull(name)) {
             return null;
         }
 
@@ -212,13 +219,15 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * @param name the name of the field to check
-     * @return the values found for the give name
+     * Returns all values associated with the given name.
+     *
+     * @param name the name of the field to retrieve
+     * @return an array of all values found for the given name
      */
     @JsxFunction
     public Scriptable getAll(final String name) {
-        if (StringUtils.isEmpty(name)) {
-            return JavaScriptEngine.newArray(this, 0);
+        if (StringUtils.isEmptyOrNull(name)) {
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final List<Object> values = new ArrayList<>();
@@ -229,16 +238,18 @@ public class FormData extends HtmlUnitScriptable {
         }
 
         final Object[] stringValues = values.toArray(new Object[0]);
-        return JavaScriptEngine.newArray(this, stringValues);
+        return JavaScriptEngine.newArray(getParentScope(), stringValues);
     }
 
     /**
+     * Returns whether an entry with the given name exists.
+     *
      * @param name the name of the field to check
-     * @return true if the name exists
+     * @return {@code true} if the name exists, {@code false} otherwise
      */
     @JsxFunction
     public boolean has(final String name) {
-        if (StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmptyOrNull(name)) {
             return false;
         }
 
@@ -251,15 +262,16 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets a new value for an existing key inside a {@code FormData} object,
+     * Sets a new value for an existing key, replacing all existing values for that key,
      * or adds the key if it does not already exist.
-     * @param name the name of the field whose data is contained in {@code value}
+     *
+     * @param name the name of the field
      * @param value the field's value
      * @param filename the filename reported to the server (optional)
      */
     @JsxFunction
     public void set(final String name, final Object value, final Object filename) {
-        if (StringUtils.isEmpty(name)) {
+        if (StringUtils.isEmptyOrNull(name)) {
             return;
         }
 
@@ -282,14 +294,13 @@ public class FormData extends HtmlUnitScriptable {
             pos = requestParameters_.size();
         }
 
-        if (value instanceof Blob) {
-            final Blob blob = (Blob) value;
+        if (value instanceof Blob blob) {
             String fileName = "blob";
             if (value instanceof File) {
                 fileName = null;
             }
-            if (filename instanceof String) {
-                fileName = (String) filename;
+            if (filename instanceof String string) {
+                fileName = string;
             }
             requestParameters_.add(pos, blob.getKeyDataPair(name, fileName));
         }
@@ -299,16 +310,20 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * @return An Iterator that contains all the requestParameters name[0] and value[1]
+     * Returns an iterator over all name/value pairs contained in this {@code FormData}.
+     *
+     * @return an iterator of {@code [name, value]} arrays
      */
     @JsxFunction
     @JsxSymbol(symbolName = "iterator")
     public Scriptable entries() {
-        return new FormDataIterator(this, "FormData Iterator", FormDataIterator.Type.BOTH, requestParameters_);
+        return new FormDataIterator(getParentScope(),
+                FORM_DATA_ITERATOR_TAG, FormDataIterator.Type.BOTH, requestParameters_);
     }
 
     /**
-     * Sets the specified request with the parameters in this {@code FormData}.
+     * Populates the given {@link WebRequest} with the parameters from this {@code FormData}.
+     *
      * @param webRequest the web request to fill
      */
     public void fillRequest(final WebRequest webRequest) {
@@ -317,18 +332,16 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * The FormData.forEach() method allows iteration through
-     * all key/value pairs contained in this object via a callback function.
-     * @param callback Function to execute on each key/value pairs
+     * Iterates over all key/value pairs in this {@code FormData}, calling the given callback for each.
+     *
+     * @param callback the function to execute for each key/value pair
      */
     @JsxFunction
     public void forEach(final Object callback) {
-        if (!(callback instanceof Function)) {
+        if (!(callback instanceof Function fun)) {
             throw JavaScriptEngine.typeError(
                     "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
-
-        final Function fun = (Function) callback;
 
         // This must be indexes instead of iterator() for correct behavior when of list changes while iterating
         for (int i = 0;; i++) {
@@ -343,26 +356,24 @@ public class FormData extends HtmlUnitScriptable {
     }
 
     /**
-     * The FormData.keys() method returns an iterator allowing to go through
-     * all keys contained in this object. The keys are USVString objects.
+     * Returns an iterator over all keys in this {@code FormData}.
      *
-     * @return an iterator.
+     * @return an iterator of key strings
      */
     @JsxFunction
     public FormDataIterator keys() {
         return new FormDataIterator(getParentScope(),
-                "FormData Iterator", FormDataIterator.Type.KEYS, requestParameters_);
+                FORM_DATA_ITERATOR_TAG, FormDataIterator.Type.KEYS, requestParameters_);
     }
 
     /**
-     * The URLSearchParams.values() method returns an iterator allowing to go through
-     * all values contained in this object. The values are USVString objects.
+     * Returns an iterator over all values in this {@code FormData}.
      *
-     * @return an iterator.
+     * @return an iterator of value strings
      */
     @JsxFunction
     public FormDataIterator values() {
         return new FormDataIterator(getParentScope(),
-                "FormData Iterator", FormDataIterator.Type.VALUES, requestParameters_);
+                FORM_DATA_ITERATOR_TAG, FormDataIterator.Type.VALUES, requestParameters_);
     }
 }

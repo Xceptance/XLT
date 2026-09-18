@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -28,11 +27,14 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.network.NetworkInformation;
+import org.htmlunit.util.StringUtils;
 
 /**
- * A JavaScript object for WorkerNavigator.
+ * JavaScript host object for {@code WorkerNavigator}.
  *
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerNavigator">MDN Documentation</a>
  */
 @JsxClass
 public class WorkerNavigator extends HtmlUnitScriptable {
@@ -53,7 +55,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
     }
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -70,6 +72,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code appCodeName} property.
+     *
      * @return the {@code appCodeName} property
      */
     @JsxGetter
@@ -79,6 +82,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code appName} property.
+     *
      * @return the {@code appName} property
      */
     @JsxGetter
@@ -88,6 +92,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code appVersion} property.
+     *
      * @return the {@code appVersion} property
      */
     @JsxGetter
@@ -97,7 +102,8 @@ public class WorkerNavigator extends HtmlUnitScriptable {
 
     /**
      * Returns the language of the browser.
-     * @return the language
+     *
+     * @return the browser language
      */
     @JsxGetter
     public String getLanguage() {
@@ -105,32 +111,34 @@ public class WorkerNavigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the language of the browser.
-     * @return the language
+     * Returns the preferred languages of the browser as an array.
+     *
+     * @return the languages array
      */
     @JsxGetter
     public Scriptable getLanguages() {
         final String acceptLang = getBrowserVersion().getAcceptLanguageHeader();
-        if (StringUtils.isEmpty(acceptLang)) {
-            return JavaScriptEngine.newArray(this, 0);
+        if (StringUtils.isEmptyOrNull(acceptLang)) {
+            return JavaScriptEngine.newArray(getParentScope(), 0);
         }
 
         final ArrayList<String> res = new ArrayList<>();
-        final String[] parts = org.htmlunit.util.StringUtils.splitAtComma(acceptLang);
+        final String[] parts = StringUtils.splitAtComma(acceptLang);
         for (final String part : parts) {
-            if (!StringUtils.isEmpty(part)) {
+            if (!StringUtils.isEmptyOrNull(part)) {
                 final String lang = StringUtils.substringBefore(part, ";").trim();
-                if (!StringUtils.isEmpty(part)) {
+                if (!StringUtils.isEmptyOrNull(part)) {
                     res.add(lang);
                 }
             }
         }
 
-        return JavaScriptEngine.newArray(this, res.toArray());
+        return JavaScriptEngine.newArray(getParentScope(), res.toArray());
     }
 
     /**
      * Returns the {@code platform} property.
+     *
      * @return the {@code platform} property
      */
     @JsxGetter
@@ -140,6 +148,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code product} property.
+     *
      * @return the {@code product} property
      */
     @JsxGetter
@@ -148,8 +157,9 @@ public class WorkerNavigator extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the property {@code userAgent}.
-     * @return the property {@code userAgent}
+     * Returns the {@code userAgent} property.
+     *
+     * @return the {@code userAgent} property
      */
     @JsxGetter
     public String getUserAgent() {
@@ -158,6 +168,7 @@ public class WorkerNavigator extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code connection} property.
+     *
      * @return the {@code connection} property
      */
     @JsxGetter({CHROME, EDGE})

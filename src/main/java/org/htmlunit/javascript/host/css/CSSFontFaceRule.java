@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Ahmed Ashour
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSFontFaceRule">MDN Documentation</a>
  */
 @JsxClass
 public class CSSFontFaceRule extends CSSRule {

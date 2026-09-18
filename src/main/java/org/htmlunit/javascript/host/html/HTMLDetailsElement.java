@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-
 import org.htmlunit.html.HtmlDetails;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -30,6 +26,8 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLDetailsElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlDetails.class)
 public class HTMLDetailsElement extends HTMLElement {
@@ -53,7 +51,7 @@ public class HTMLDetailsElement extends HTMLElement {
     }
 
     /**
-     * Sets the open attribute.
+     * Sets the {@code open} property.
      * @param newValue the new value to set
      */
     @JsxSetter
@@ -67,14 +65,14 @@ public class HTMLDetailsElement extends HTMLElement {
      * Returns the {@code name} property.
      * @return the {@code name} property
      */
-    @JsxGetter({CHROME, EDGE, FF})
+    @JsxGetter
     @Override
     public String getName() {
         return super.getName();
     }
 
     /**
-     * Sets the name attribute.
+     * Sets the {@code name} property.
      * @param newValue the new value to set
      */
     @JsxSetter

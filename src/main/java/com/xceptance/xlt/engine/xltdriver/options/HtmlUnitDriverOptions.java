@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+//   https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -15,13 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
+import static org.openqa.selenium.htmlunit.HtmlUnitDriver.DOWNLOAD_IMAGES_CAPABILITY;
+import static org.openqa.selenium.htmlunit.HtmlUnitDriver.JAVASCRIPT_ENABLED;
 import static org.openqa.selenium.remote.Browser.HTMLUNIT;
-import static com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver.JAVASCRIPT_ENABLED;
-import static com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver.DOWNLOAD_IMAGES_CAPABILITY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,17 +29,19 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ProxyConfig;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebClientOptions;
 import org.htmlunit.util.UrlUtils;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.MutableCapabilities;
-import com.xceptance.xlt.engine.xltdriver.BrowserVersionDeterminer;
-import com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver;
+import org.openqa.selenium.htmlunit.BrowserVersionDeterminer;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.internal.Require;
 import org.openqa.selenium.remote.AbstractDriverOptions;
 import org.openqa.selenium.remote.CapabilityType;
@@ -126,9 +128,38 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
      */
     public static final String HTMLUNIT_OPTIONS = "garg:htmlunitOptions";
 
+    /**
+     * Key used to store the browser version in a {@link Capabilities} object.
+     * <p>
+     * This key includes the "garg:" vendor prefix so that the Grid Distributor
+     * will ignore it. Using the standard "browserVersion" key instead results
+     * in slot match failures, because the distributor requires the version
+     * specified in the requested capabilities to match the version specified
+     * by the slot stereotype.
+     */
+    public static final String BROWSER_VERSION = "garg:browserVersion";
+
+    /** List of capability keys used for storing browser version. */
+    private static final List<String> BROWSER_VERSION_KEYS =
+        List.of(BROWSER_VERSION, CapabilityType.BROWSER_VERSION);
+
+    /** Configuration options for the underlying {@link WebClient} instance. */
     private WebClientOptions webClientOptions_ = new WebClientOptions();
+    /** The {@link BrowserVersion} used by the underlying {@link WebClient}. */
     private BrowserVersion webClientVersion_ = BrowserVersion.BEST_SUPPORTED;
 
+    /**
+     * Default constructor.
+     * <p>
+     * Initializes HtmlUnitDriverOptions with default capabilities:
+     * <ul>
+     *   <li>Browser name set to "htmlunit"</li>
+     *   <li>Home page set to "about:blank"</li>
+     *   <li>Exceptions on failing status codes disabled</li>
+     *   <li>Print content on failing status code disabled</li>
+     *   <li>Use insecure SSL enabled</li>
+     * </ul>
+     */
     public HtmlUnitDriverOptions() {
         setCapability(CapabilityType.BROWSER_NAME, HTMLUNIT.browserName());
         webClientOptions_.setHomePage(UrlUtils.URL_ABOUT_BLANK.toString());
@@ -137,17 +168,38 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
         webClientOptions_.setUseInsecureSSL(true);
     }
 
+    /**
+     * Constructs HtmlUnitDriverOptions with a specific {@link BrowserVersion}.
+     *
+     * @param version the browser version to use
+     */
     public HtmlUnitDriverOptions(final BrowserVersion version) {
         this();
         setWebClientVersion(version);
     }
 
+    /**
+     * Constructs HtmlUnitDriverOptions with a specific {@link BrowserVersion} and
+     * JavaScript support enabled/disabled.
+     *
+     * @param version the browser version to use
+     * @param enableJavascript true to enable JavaScript support, false to disable
+     */
     public HtmlUnitDriverOptions(final BrowserVersion version, final boolean enableJavascript) {
         this();
         setWebClientVersion(version);
         setJavaScriptEnabled(enableJavascript);
     }
 
+    /**
+     * Constructs HtmlUnitDriverOptions from an existing {@link Capabilities} object.
+     * <p>
+     * Transfers mapped capabilities and legacy HtmlUnit options. If the source is
+     * another HtmlUnitDriverOptions instance, copies the {@link WebClientOptions}
+     * and {@link BrowserVersion} from it.
+     *
+     * @param source source capabilities to copy
+     */
     public HtmlUnitDriverOptions(final Capabilities source) {
         this();
         if (source != null) {
@@ -196,8 +248,24 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
         }
     }
 
+    /**
+     * Constructs HtmlUnitDriverOptions from a map of options.
+     *
+     * @param optionsMap map containing option key-value pairs
+     */
     public HtmlUnitDriverOptions(final Map<String, Object> optionsMap) {
         this(new MutableCapabilities(Require.nonNull("Source options map", optionsMap)));
+    }
+
+    @Override
+    public HtmlUnitDriverOptions setBrowserVersion(final String browserVersion) {
+        super.setCapability(BROWSER_VERSION, (Object) browserVersion);
+        return this;
+    }
+
+    @Override
+    public String getBrowserVersion() {
+        return BrowserVersionDeterminer.getBrowserVersion(this);
     }
 
     @Override
@@ -205,6 +273,9 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
         Require.nonNull("Capability name", capabilityName);
         if (HTMLUNIT_OPTIONS.equals(capabilityName)) {
             return exportOptions();
+        }
+        if (BROWSER_VERSION_KEYS.contains(capabilityName)) {
+            return getBrowserVersion();
         }
         final HtmlUnitOption option = HtmlUnitOption.fromCapabilityKey(capabilityName);
         if (option != null) {
@@ -232,16 +303,18 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
             importOptions(value);
             return;
         }
+        if (BROWSER_VERSION_KEYS.contains(capabilityName)) {
+            setBrowserVersion(value != null ? String.valueOf(value) : null);
+            return;
+        }
         final HtmlUnitOption option = HtmlUnitOption.fromCapabilityKey(capabilityName);
         if (option != null) {
-            switch (option) {
-                case WEB_CLIENT_VERSION:
-                    webClientVersion_ = (BrowserVersion) option.decode(value);
-                    return;
-                default:
-                    option.insert(webClientOptions_, value);
-                    return;
+            if (option == HtmlUnitOption.WEB_CLIENT_VERSION) {
+                webClientVersion_ = (BrowserVersion) option.decode(value);
+                return;
             }
+            option.insert(webClientOptions_, value);
+            return;
         }
         if (BrowserVersionTrait.fromCapabilityKey(capabilityName) != null) {
             throw new UnsupportedOperationException(
@@ -284,40 +357,90 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
         transfer(webClientOptions_, target);
     }
 
+    /**
+     * Returns whether JavaScript execution is enabled.
+     *
+     * @return {@code true} if JavaScript is enabled; {@code false} otherwise
+     */
     public boolean isJavaScriptEnabled() {
         return webClientOptions_.isJavaScriptEnabled();
     }
 
+    /**
+     * Enables or disables JavaScript execution.
+     *
+     * @param enableJavascript {@code true} to enable JavaScript; {@code false} to disable it
+     * @return this options instance
+     */
     public HtmlUnitDriverOptions setJavaScriptEnabled(final boolean enableJavascript) {
         webClientOptions_.setJavaScriptEnabled(enableJavascript);
         return this;
     }
 
+    /**
+     * Returns whether images are downloaded automatically.
+     *
+     * @return {@code true} if image downloading is enabled; {@code false} otherwise
+     */
     public boolean isDownloadImages() {
         return webClientOptions_.isDownloadImages();
     }
 
+    /**
+     * Enables or disables automatic image downloading.
+     *
+     * @param downloadImages {@code true} to download images; {@code false} otherwise
+     * @return this options instance
+     */
     public HtmlUnitDriverOptions setDownloadImages(final boolean downloadImages) {
         webClientOptions_.setDownloadImages(downloadImages);
         return this;
     }
 
+    /**
+     * Returns the configured {@link BrowserVersion} used by the underlying WebClient.
+     *
+     * @return the current web client browser version
+     */
     public BrowserVersion getWebClientVersion() {
         return webClientVersion_;
     }
 
+    /**
+     * Sets the {@link BrowserVersion} used by the underlying WebClient.
+     *
+     * @param webClientVersion the browser version to use
+     * @return this options instance
+     * @throws NullPointerException if {@code webClientVersion} is {@code null}
+     */
     public HtmlUnitDriverOptions setWebClientVersion(final BrowserVersion webClientVersion) {
         Require.nonNull("Web client version", webClientVersion);
-        this.webClientVersion_ = webClientVersion;
+        webClientVersion_ = webClientVersion;
         return this;
     }
 
+    /**
+     * Sets the SSL client certificate key store from an existing {@link KeyStore}.
+     *
+     * @param keyStore the key store containing the client certificate
+     * @param keyStorePassword the password for the key store
+     * @return this options instance
+     */
     public HtmlUnitDriverOptions setSSLClientCertificateKeyStore(final KeyStore keyStore,
             final char[] keyStorePassword) {
         webClientOptions_.setSSLClientCertificateKeyStore(keyStore, keyStorePassword);
         return this;
     }
 
+    /**
+     * Sets the SSL client certificate key store using a URL.
+     *
+     * @param keyStoreUrl the URL to the key store
+     * @param keyStorePassword the key store password
+     * @param keyStoreType the key store type (e.g., {@code "PKCS12"})
+     * @return this options instance
+     * @throws NullPointerException if {@code keyStoreUrl} is {@code null}
+     */
     public HtmlUnitDriverOptions setSSLClientCertificateKeyStore(final URL keyStoreUrl, final String keyStorePassword,
             final String keyStoreType) {
         Require.nonNull("Key store URL", keyStoreUrl);
@@ -325,12 +448,29 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
         return this;
     }
 
+    /**
+     * Sets the SSL client certificate key store from an {@link InputStream}.
+     *
+     * @param keyStoreInputStream the input stream providing the key store
+     * @param keyStorePassword the key store password
+     * @param keyStoreType the key store type (e.g., {@code "PKCS12"})
+     * @return this options instance
+     */
     public HtmlUnitDriverOptions setSSLClientCertificateKeyStore(final InputStream keyStoreInputStream,
             final String keyStorePassword, final String keyStoreType) {
         webClientOptions_.setSSLClientCertificateKeyStore(keyStoreInputStream, keyStorePassword, keyStoreType);
         return this;
     }
 
+    /**
+     * Sets the SSL trust store using a URL.
+     *
+     * @param sslTrustStoreUrl the URL to the trust store
+     * @param sslTrustStorePassword the trust store password
+     * @param sslTrustStoreType the trust store type (e.g., {@code "JKS"})
+     * @return this options instance
+     * @throws NullPointerException if {@code sslTrustStoreUrl} is {@code null}
+     */
     public HtmlUnitDriverOptions setSSLTrustStore(final URL sslTrustStoreUrl, final String sslTrustStorePassword,
             final String sslTrustStoreType) {
         Require.nonNull("Trust store URL", sslTrustStoreUrl);
@@ -437,9 +577,7 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
         target.setScreenHeight(source.getScreenHeight());
         target.setWebSocketEnabled(source.isWebSocketEnabled());
         target.setWebSocketMaxTextMessageSize(source.getWebSocketMaxTextMessageSize());
-        target.setWebSocketMaxTextMessageBufferSize(source.getWebSocketMaxTextMessageBufferSize());
         target.setWebSocketMaxBinaryMessageSize(source.getWebSocketMaxBinaryMessageSize());
-        target.setWebSocketMaxBinaryMessageBufferSize(source.getWebSocketMaxBinaryMessageBufferSize());
         target.setFetchPolyfillEnabled(source.isFetchPolyfillEnabled());
     }
 

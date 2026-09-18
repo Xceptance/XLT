@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 
 /**
- * A JavaScript object for {@code SVGSVGElement}.
+ * JavaScript host object for {@code SVGSVGElement}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlSvg.class)
 public class SVGSVGElement extends SVGGraphicsElement {
@@ -40,7 +42,7 @@ public class SVGSVGElement extends SVGGraphicsElement {
     public static final int SVG_ZOOMANDPAN_MAGNIFY = 2;
 
     /**
-     * Creates an instance.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -50,24 +52,27 @@ public class SVGSVGElement extends SVGGraphicsElement {
 
     /**
      * Creates a new {@link SVGMatrix}.
+     *
      * @return the new matrix
      */
     @JsxFunction
     public SVGMatrix createSVGMatrix() {
-        return new SVGMatrix(getWindow());
+        return new SVGMatrix(getParentScope());
     }
 
     /**
-     * Creates a new {@link SVGMatrix}.
-     * @return the new matrix
+     * Returns the transformation matrix from the current user units to the device for the nearest viewport element.
+     *
+     * @return the screen CTM matrix
      */
     @JsxFunction
     public SVGMatrix getScreenCTM() {
-        return new SVGMatrix(getWindow());
+        return new SVGMatrix(getParentScope());
     }
 
     /**
      * Creates a new {@link SVGRect}.
+     *
      * @return the new rect
      */
     @JsxFunction

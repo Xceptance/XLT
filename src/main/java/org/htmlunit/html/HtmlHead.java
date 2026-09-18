@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.html;
 
+import java.io.PrintWriter;
 import java.util.Map;
 
 import org.htmlunit.SgmlPage;
@@ -21,10 +22,11 @@ import org.htmlunit.SgmlPage;
 /**
  * Wrapper for the HTML element "head".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Mike Bowler
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  */
 public class HtmlHead extends HtmlElement {
 
@@ -68,5 +70,14 @@ public class HtmlHead extends HtmlElement {
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.NONE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean printXml(final String indent, final boolean indentBefore, final PrintWriter printWriter) {
+        // enforce always a line break before
+        return super.printXml(indent, true, printWriter);
     }
 }

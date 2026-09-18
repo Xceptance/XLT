@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,11 @@ import org.htmlunit.corejs.javascript.debug.DebuggableScript;
  * {@link HtmlUnitContextFactory#setDebugger(org.htmlunit.corejs.javascript.debug.Debugger)}, passing in
  * an instance of this class, and make sure your loggers are configured to output <code>TRACE</code> level log messages.
  * </p>
- *
- * @author Daniel Gredler
  * @see DebugFrameImpl
  * @see HtmlUnitContextFactory#setDebugger(org.htmlunit.corejs.javascript.debug.Debugger)
+ *
+ * @author Daniel Gredler
+ * @author Ronald Brill
  */
 public class DebuggerImpl extends DebuggerAdapter {
 
