@@ -117,15 +117,22 @@ public class SummaryReportProvider extends AbstractReportProvider
         final long firstSecond = startTime / 1000;
 
         final int[] transactionMeans = TimeSeriesDownsampler.meanPerBucket(transactionRunTimes, firstSecond, buckets, interval);
-        final int[] actionMeans = TimeSeriesDownsampler.meanPerBucket(actionRunTimes, firstSecond, buckets, interval);
-        final int[] requestMeans = TimeSeriesDownsampler.meanPerBucket(requestRunTimes, firstSecond, buckets, interval);
-
         final double[] transactionRates = TimeSeriesDownsampler.ratePerBucket(transactionDataProcessor.getCountPerSecondValueSet(),
-                                                                             firstSecond, buckets, interval);
+                                                                              firstSecond, buckets, interval);
         final double[] transactionErrorRates = TimeSeriesDownsampler.ratePerBucket(transactionDataProcessor.getErrorsPerSecondValueSet(),
                                                                                    firstSecond, buckets, interval);
+
+        final int[] actionMeans = TimeSeriesDownsampler.meanPerBucket(actionRunTimes, firstSecond, buckets, interval);
+        final double[] actionRates = TimeSeriesDownsampler.ratePerBucket(actionDataProcessor.getCountPerSecondValueSet(),
+                                                                          firstSecond, buckets, interval);
+        final double[] actionErrorRates = TimeSeriesDownsampler.ratePerBucket(actionDataProcessor.getErrorsPerSecondValueSet(),
+                                                                          firstSecond, buckets, interval);
+        
+        final int[] requestMeans = TimeSeriesDownsampler.meanPerBucket(requestRunTimes, firstSecond, buckets, interval);
         final double[] requestRates = TimeSeriesDownsampler.ratePerBucket(requestDataProcessor.getCountPerSecondValueSet(),
-                                                                         firstSecond, buckets, interval);
+                                                                          firstSecond, buckets, interval);
+        final double[] requestErrorRates = TimeSeriesDownsampler.ratePerBucket(requestDataProcessor.getErrorsPerSecondValueSet(),
+                                                                          firstSecond, buckets, interval);
 
         final TimeSeriesReport series = new TimeSeriesReport();
         series.interval = interval;
@@ -138,12 +145,18 @@ public class SummaryReportProvider extends AbstractReportProvider
 
             row.elapsed = (long) i * interval;
             row.time = new Date(startTime + row.elapsed * 1000);
+
             row.transactionMean = transactionMeans[i];
             row.transactionCountPerSecond = ReportUtils.convertToBigDecimal(transactionRates[i]);
             row.transactionErrorsPerSecond = ReportUtils.convertToBigDecimal(transactionErrorRates[i]);
+
             row.actionMean = actionMeans[i];
+            row.actionCountPerSecond = ReportUtils.convertToBigDecimal(actionRates[i]);
+            row.actionErrorsPerSecond = ReportUtils.convertToBigDecimal(actionErrorRates[i]);
+
             row.requestMean = requestMeans[i];
             row.requestCountPerSecond = ReportUtils.convertToBigDecimal(requestRates[i]);
+            row.requestErrorsPerSecond = ReportUtils.convertToBigDecimal(requestErrorRates[i]);
 
             series.rows.add(row);
         }

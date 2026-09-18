@@ -58,6 +58,16 @@ public class TimeSeriesRowReport
     public int actionMean;
 
     /**
+     * Completed actions per second in this bucket.
+     */
+    public BigDecimal actionCountPerSecond;
+
+    /**
+     * Failed actions per second in this bucket. Tells a burst apart from a steady trickle.
+     */
+    public BigDecimal actionErrorsPerSecond;
+
+    /**
      * Mean request runtime in this bucket, in milliseconds.
      */
     public int requestMean;
@@ -66,4 +76,9 @@ public class TimeSeriesRowReport
      * Requests per second in this bucket.
      */
     public BigDecimal requestCountPerSecond;
+
+    /**
+     * Failed requests per second in this bucket. Tells a burst apart from a steady trickle.
+     */
+    public BigDecimal requestErrorsPerSecond;
 }
