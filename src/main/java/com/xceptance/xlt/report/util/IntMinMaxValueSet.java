@@ -199,9 +199,11 @@ public class IntMinMaxValueSet
     }
 
     /**
-     * Returns the smallest second for which a min/max value exists in this set.
+     * Returns the smallest second for which a min/max value exists in this set, as milliseconds since the epoch.
+     * <p>
+     * Note the unit: this returns milliseconds, unlike {@link ValueSet#getFirstSecond()} which returns seconds.
      *
-     * @return the first second
+     * @return the first second, in milliseconds
      */
     public long getFirstSecond()
     {
@@ -210,7 +212,8 @@ public class IntMinMaxValueSet
             throw new IllegalStateException("No first second available as no values have been added so far.");
         }
 
-        return firstSecond * 1000;
+        // 1000L, not 1000: firstSecond is an int, so int arithmetic overflows for any real epoch timestamp
+        return firstSecond * 1000L;
     }
 
     /**

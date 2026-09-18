@@ -34,4 +34,10 @@ public class SummaryReport
     public CustomTimerReport customTimers;
 
     public AgentReport agents;
+
+    /**
+     * A coarse time series over the whole run. Everything else in the report is a single aggregate, so this is the only
+     * place that says how the run behaved over time.
+     */
+    public TimeSeriesReport timeSeries;
 }

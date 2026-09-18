@@ -706,6 +706,8 @@ public class ReportGenerator
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
         parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
         parameters.put("pdfReportPresent", Boolean.valueOf(config.isPdfReportEnabled()));
+        parameters.put("maxExportedTraces", Integer.valueOf(config.getAiDataMaxExportedTraces()));
+        parameters.put("maxFramesPerTrace", Integer.valueOf(config.getAiDataMaxFramesPerTrace()));
 
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
