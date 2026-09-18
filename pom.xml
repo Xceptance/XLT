@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>10.0.0-beta-4</version>
+    <version>10.0.0-beta-5</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -94,6 +94,7 @@
                             </includes>
                             <excludes>
                                 <!-- These have their own license header. -->
+                                <exclude>src/main/module-info/module-info.java</exclude>
                                 <exclude>src/main/java/org/htmlunit/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/common/lang/OpenStringBuilder.java</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
@@ -101,8 +102,6 @@
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/lucene/BitUtil.java</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/lucene/OpenBitSet.java</exclude>
                                 <exclude>src/main/java/it/unimi/dsi/util/SplitMix64RandomGenerator.java</exclude>
-                                <exclude>src/main/java/netscape/**/*</exclude>
-                                <exclude>src/test-hu/**/*</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>
