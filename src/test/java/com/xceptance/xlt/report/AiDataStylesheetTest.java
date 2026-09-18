@@ -16,7 +16,6 @@
 package com.xceptance.xlt.report;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,8 +45,8 @@ public class AiDataStylesheetTest
     @BeforeClass
     public static void transformSampleReport() throws Exception
     {
-        Assert.assertTrue("Stylesheet not found - are the tests running from the project root? " +
-                          STYLESHEET.getAbsolutePath(), STYLESHEET.isFile());
+        Assert.assertTrue("Stylesheet not found - are the tests running from the project root? " + STYLESHEET.getAbsolutePath(),
+                          STYLESHEET.isFile());
 
         final Path testDir = Files.createTempDirectory("aidatatest-");
         try
@@ -112,8 +111,7 @@ public class AiDataStylesheetTest
         Assert.assertFalse("HTML markup survived into the comment", output.contains("<div"));
         Assert.assertFalse("HTML markup survived into the comment", output.contains("<strong>"));
 
-        final String commentLine = output.lines().filter(l -> l.contains("Load Test") && l.startsWith(">")).findFirst()
-                                         .orElse(null);
+        final String commentLine = output.lines().filter(l -> l.contains("Load Test") && l.startsWith(">")).findFirst().orElse(null);
         Assert.assertNotNull("Comment is not blockquoted", commentLine);
     }
 
@@ -211,8 +209,7 @@ public class AiDataStylesheetTest
     {
         final String header = tableHeader("## Load Profile");
 
-        Assert.assertFalse("Iterations is zero for every row and should be dropped: " + header,
-                           header.contains("Iterations"));
+        Assert.assertFalse("Iterations is zero for every row and should be dropped: " + header, header.contains("Iterations"));
     }
 
     @Test
@@ -265,8 +262,7 @@ public class AiDataStylesheetTest
 
         // dns is 0.318 in the fixture - non-zero, but it renders as 0, and a column of zeros is
         // noise whatever the underlying value was
-        Assert.assertFalse("DNS rounds to zero everywhere and should be dropped: " + header,
-                           header.contains("DNS"));
+        Assert.assertFalse("DNS rounds to zero everywhere and should be dropped: " + header, header.contains("DNS"));
         Assert.assertFalse("Connect should be dropped: " + header, header.contains("Connect"));
         Assert.assertTrue("ServerBusy carries data and must stay: " + header, header.contains("ServerBusy"));
     }
@@ -317,7 +313,7 @@ public class AiDataStylesheetTest
     public void testTimeSeriesRowsCarryAllThreeScopes()
     {
         Assert.assertTrue("Row not rendered as expected:\n" + output,
-                          output.contains("| 30 | 10:00:30 | 41683 | 22.5 | 0.02 | 640 | 121 | 201.4 |"));
+                          output.contains("| 30 | 10:00:30 | 41683 | 22.5 | 0.02 | 640 | 201.4 | 0.01 | 121 | 201.4 | 0.01 |"));
     }
 
     @Test
@@ -351,7 +347,7 @@ public class AiDataStylesheetTest
         Assert.assertTrue("totalErrors missing", output.contains("totalErrors: 903"));
         Assert.assertTrue("distinctEntries missing", output.contains("distinctEntries: 3"));
         Assert.assertTrue("distinctMessages missing", output.contains("distinctMessages: 2"));
-        Assert.assertTrue("tracesIncludedFor missing", output.contains("tracesIncludedFor: 2"));
+        Assert.assertTrue("tracesIncludedFor missing", output.contains("maxExportedTraces: 2"));
     }
 
     @Test
@@ -373,13 +369,11 @@ public class AiDataStylesheetTest
             final File result = testDir.resolve("ai-data.md").toFile();
 
             Files.write(input.toPath(), sampleReport().getBytes(StandardCharsets.UTF_8));
-            XSLTUtils.transform(input, result, STYLESHEET, java.util.Map.of("tracesIncludedFor", 1, "traceFrames", 3));
+            XSLTUtils.transform(input, result, STYLESHEET, java.util.Map.of("maxExportedTraces", 1, "maxFramesPerTrace", 3));
 
             final String customOutput = Files.readString(result.toPath(), StandardCharsets.UTF_8);
-            Assert.assertTrue("Custom tracesIncludedFor parameter not applied",
-                              customOutput.contains("tracesIncludedFor: 1"));
-            Assert.assertTrue("Custom traceFrames parameter not applied",
-                              customOutput.contains("... 8 more frames"));
+            Assert.assertTrue("Custom maxExportedTraces parameter not applied", customOutput.contains("maxExportedTraces: 1"));
+            Assert.assertTrue("Custom maxFramesPerTrace parameter not applied", customOutput.contains("... 8 more frames"));
         }
         finally
         {
@@ -408,205 +402,211 @@ public class AiDataStylesheetTest
     private static String sampleReport()
     {
         return """
-               <?xml version="1.0" encoding="UTF-8"?>
-               <testreport>
-                 <configuration>
-                   <projectName>Fixture</projectName>
-                   <version>
-                     <productName>Xceptance LoadTest</productName>
-                     <version>10.0.0</version>
-                   </version>
-                   <comments>
-                     <string>&lt;div class="markdown"&gt;&lt;strong&gt;Load Test&lt;/strong&gt;&lt;/div&gt;</string>
-                   </comments>
-                   <loadProfile>
-                     <testCase>
-                       <arrivalRateMin>1</arrivalRateMin>
-                       <arrivalRateMax>3535</arrivalRateMax>
-                       <arrivalRate>1...3,535</arrivalRate>
-                       <numberOfUsersMin>1021</numberOfUsersMin>
-                       <numberOfUsersMax>1021</numberOfUsersMax>
-                       <numberOfUsers>1,021</numberOfUsers>
-                       <numberOfIterations>0</numberOfIterations>
-                       <measurementPeriod>3600</measurementPeriod>
-                       <rampUpPeriod>300</rampUpPeriod>
-                       <shutdownPeriod>0</shutdownPeriod>
-                       <userName>TFixture</userName>
-                     </testCase>
-                     <testCase>
-                       <arrivalRateMin>1</arrivalRateMin>
-                       <arrivalRateMax>500</arrivalRateMax>
-                       <arrivalRateProfile>0:1 600:500 1200:100</arrivalRateProfile>
-                       <arrivalRate>1...500</arrivalRate>
-                       <numberOfUsersMin>10</numberOfUsersMin>
-                       <numberOfUsersMax>10</numberOfUsersMax>
-                       <numberOfUsers>10</numberOfUsers>
-                       <numberOfIterations>0</numberOfIterations>
-                       <measurementPeriod>1800</measurementPeriod>
-                       <rampUpPeriod>120</rampUpPeriod>
-                       <shutdownPeriod>0</shutdownPeriod>
-                       <userName>TStepped</userName>
-                     </testCase>
-                   </loadProfile>
-                 </configuration>
-                 <general>
-                   <bytesSent>100</bytesSent>
-                   <bytesReceived>200</bytesReceived>
-                   <hits>5250</hits>
-                   <startTime>2026-01-01 10:00:00 CET</startTime>
-                   <endTime>2026-01-01 11:00:00 CET</endTime>
-                   <duration>3600</duration>
-                 </general>
-                 <transactions>
-                   <transaction>
-                     <name>TFixture</name>
-                     <labels>checkout</labels>
-                     <count>5250</count>
-                     <countPerSecond>1.458</countPerSecond>
-                     <errors>0</errors>
-                     <errorPercentage>0.000</errorPercentage>
-                     <min>24184</min>
-                     <max>46949</max>
-                     <median>31525.000</median>
-                     <mean>31529.106</mean>
-                     <deviation>2361.687</deviation>
-                     <percentiles>
-                       <p50>31525.000</p50>
-                       <p95>35420.000</p95>
-                     </percentiles>
-                   </transaction>
-                 </transactions>
-                 <events>
-                   <event>
-                     <testCaseName>TFixture</testCaseName>
-                     <name>QuietEvent</name>
-                     <totalCount>2</totalCount>
-                   </event>
-                   <event>
-                     <testCaseName>TFixture</testCaseName>
-                     <name>LoudEvent</name>
-                     <totalCount>900</totalCount>
-                   </event>
-                 </events>
-                 <requests>
-                   <request>
-                     <name>Homepage</name>
-                     <labels>checkout guest</labels>
-                     <count>100</count>
-                     <countPerSecond>0.5</countPerSecond>
-                     <errors>0</errors>
-                     <errorPercentage>0.000</errorPercentage>
-                     <min>10</min>
-                     <max>90</max>
-                     <median>40.000</median>
-                     <mean>44.000</mean>
-                     <deviation>5.000</deviation>
-                     <percentiles>
-                       <p50>40.000</p50>
-                       <p95>80.000</p95>
-                     </percentiles>
-                     <bytesSent><mean>100</mean></bytesSent>
-                     <bytesReceived><mean>200</mean></bytesReceived>
-                     <dnsTime><mean>0.318</mean></dnsTime>
-                     <connectTime><mean>0.000</mean></connectTime>
-                     <sendTime><mean>0.000</mean></sendTime>
-                     <serverBusyTime><mean>30.000</mean></serverBusyTime>
-                     <receiveTime><mean>4.000</mean></receiveTime>
-                     <timeToFirstBytes><mean>30.000</mean></timeToFirstBytes>
-                   </request>
-                 </requests>
-                 <summary>
-                   <transactions>
-                     <name>All Transactions</name>
-                     <count>5250</count>
-                     <countPerSecond>1.458</countPerSecond>
-                     <errors>903</errors>
-                     <errorPercentage>17.2</errorPercentage>
-                   </transactions>
-                   <pageLoadTimings>
-                     <name>All Page Load Timings</name>
-                     <count>0</count>
-                     <countPerSecond>0</countPerSecond>
-                     <errors>0</errors>
-                     <errorPercentage>0</errorPercentage>
-                   </pageLoadTimings>
-                   <timeSeries>
-                     <interval>30</interval>
-                     <buckets>2</buckets>
-                     <sourceResolution>4</sourceResolution>
-                     <rows>
-                       <row>
-                         <elapsed>0</elapsed>
-                         <time>2026-01-01 10:00:00 CET</time>
-                         <transactionMean>31529</transactionMean>
-                         <transactionCountPerSecond>0.5</transactionCountPerSecond>
-                         <transactionErrorsPerSecond>0.0</transactionErrorsPerSecond>
-                         <actionMean>512</actionMean>
-                         <requestMean>98</requestMean>
-                         <requestCountPerSecond>20.1</requestCountPerSecond>
-                       </row>
-                       <row>
-                         <elapsed>30</elapsed>
-                         <time>2026-01-01 10:00:30 CET</time>
-                         <transactionMean>41683</transactionMean>
-                         <transactionCountPerSecond>22.5</transactionCountPerSecond>
-                         <transactionErrorsPerSecond>0.02</transactionErrorsPerSecond>
-                         <actionMean>640</actionMean>
-                         <requestMean>121</requestMean>
-                         <requestCountPerSecond>201.4</requestCountPerSecond>
-                       </row>
-                     </rows>
-                   </timeSeries>
-                 </summary>
-                 <responseCodes>
-                   <responseCode>
-                     <code>200</code>
-                     <statusText>OK</statusText>
-                     <count>5000</count>
-                   </responseCode>
-                   <responseCode>
-                     <code>404</code>
-                     <statusText>Not Found</statusText>
-                     <count>250</count>
-                   </responseCode>
-                 </responseCodes>
-                 <errors>
-                   <error>
-                     <count>3</count>
-                     <testCaseName>TFixture</testCaseName>
-                     <actionName>RareAction</actionName>
-                     <message>Rare problem</message>
-                     <trace>java.lang.AssertionError: Rare problem
-               	at a.A.one(A.java:1)
-               	at a.A.two(A.java:2)</trace>
-                   </error>
-                   <error>
-                     <count>500</count>
-                     <testCaseName>TFixture</testCaseName>
-                     <actionName>HotAction</actionName>
-                     <message>Common problem</message>
-                     <trace>java.lang.AssertionError: Common problem
-               	at b.B.f1(B.java:1)
-               	at b.B.f2(B.java:2)
-               	at b.B.f3(B.java:3)
-               	at b.B.f4(B.java:4)
-               	at b.B.f5(B.java:5)
-               	at b.B.f6(B.java:6)
-               	at b.B.f7(B.java:7)
-               	at b.B.f8(B.java:8)
-               	at b.B.f9(B.java:9)
-               	at b.B.f10(B.java:10)</trace>
-                   </error>
-                   <error>
-                     <count>400</count>
-                     <testCaseName>TOther</testCaseName>
-                     <actionName>HotAction</actionName>
-                     <message>Common problem</message>
-                     <trace>java.lang.AssertionError: Common problem
-               	at b.B.f1(B.java:1)</trace>
-                   </error>
-                 </errors>
-               </testreport>
-               """;
+            <?xml version="1.0" encoding="UTF-8"?>
+            <testreport>
+              <configuration>
+                <projectName>Fixture</projectName>
+                <version>
+                  <productName>Xceptance LoadTest</productName>
+                  <version>10.0.0</version>
+                </version>
+                <comments>
+                  <string>&lt;div class="markdown"&gt;&lt;strong&gt;Load Test&lt;/strong&gt;&lt;/div&gt;</string>
+                </comments>
+                <loadProfile>
+                  <testCase>
+                    <arrivalRateMin>1</arrivalRateMin>
+                    <arrivalRateMax>3535</arrivalRateMax>
+                    <arrivalRate>1...3,535</arrivalRate>
+                    <numberOfUsersMin>1021</numberOfUsersMin>
+                    <numberOfUsersMax>1021</numberOfUsersMax>
+                    <numberOfUsers>1,021</numberOfUsers>
+                    <numberOfIterations>0</numberOfIterations>
+                    <measurementPeriod>3600</measurementPeriod>
+                    <rampUpPeriod>300</rampUpPeriod>
+                    <shutdownPeriod>0</shutdownPeriod>
+                    <userName>TFixture</userName>
+                  </testCase>
+                  <testCase>
+                    <arrivalRateMin>1</arrivalRateMin>
+                    <arrivalRateMax>500</arrivalRateMax>
+                    <arrivalRateProfile>0:1 600:500 1200:100</arrivalRateProfile>
+                    <arrivalRate>1...500</arrivalRate>
+                    <numberOfUsersMin>10</numberOfUsersMin>
+                    <numberOfUsersMax>10</numberOfUsersMax>
+                    <numberOfUsers>10</numberOfUsers>
+                    <numberOfIterations>0</numberOfIterations>
+                    <measurementPeriod>1800</measurementPeriod>
+                    <rampUpPeriod>120</rampUpPeriod>
+                    <shutdownPeriod>0</shutdownPeriod>
+                    <userName>TStepped</userName>
+                  </testCase>
+                </loadProfile>
+              </configuration>
+              <general>
+                <bytesSent>100</bytesSent>
+                <bytesReceived>200</bytesReceived>
+                <hits>5250</hits>
+                <startTime>2026-01-01 10:00:00 CET</startTime>
+                <endTime>2026-01-01 11:00:00 CET</endTime>
+                <duration>3600</duration>
+              </general>
+              <transactions>
+                <transaction>
+                  <name>TFixture</name>
+                  <labels>checkout</labels>
+                  <count>5250</count>
+                  <countPerSecond>1.458</countPerSecond>
+                  <errors>0</errors>
+                  <errorPercentage>0.000</errorPercentage>
+                  <min>24184</min>
+                  <max>46949</max>
+                  <median>31525.000</median>
+                  <mean>31529.106</mean>
+                  <deviation>2361.687</deviation>
+                  <percentiles>
+                    <p50>31525.000</p50>
+                    <p95>35420.000</p95>
+                  </percentiles>
+                </transaction>
+              </transactions>
+              <events>
+                <event>
+                  <testCaseName>TFixture</testCaseName>
+                  <name>QuietEvent</name>
+                  <totalCount>2</totalCount>
+                </event>
+                <event>
+                  <testCaseName>TFixture</testCaseName>
+                  <name>LoudEvent</name>
+                  <totalCount>900</totalCount>
+                </event>
+              </events>
+              <requests>
+                <request>
+                  <name>Homepage</name>
+                  <labels>checkout guest</labels>
+                  <count>100</count>
+                  <countPerSecond>0.5</countPerSecond>
+                  <errors>0</errors>
+                  <errorPercentage>0.000</errorPercentage>
+                  <min>10</min>
+                  <max>90</max>
+                  <median>40.000</median>
+                  <mean>44.000</mean>
+                  <deviation>5.000</deviation>
+                  <percentiles>
+                    <p50>40.000</p50>
+                    <p95>80.000</p95>
+                  </percentiles>
+                  <bytesSent><mean>100</mean></bytesSent>
+                  <bytesReceived><mean>200</mean></bytesReceived>
+                  <dnsTime><mean>0.318</mean></dnsTime>
+                  <connectTime><mean>0.000</mean></connectTime>
+                  <sendTime><mean>0.000</mean></sendTime>
+                  <serverBusyTime><mean>30.000</mean></serverBusyTime>
+                  <receiveTime><mean>4.000</mean></receiveTime>
+                  <timeToFirstBytes><mean>30.000</mean></timeToFirstBytes>
+                </request>
+              </requests>
+              <summary>
+                <transactions>
+                  <name>All Transactions</name>
+                  <count>5250</count>
+                  <countPerSecond>1.458</countPerSecond>
+                  <errors>903</errors>
+                  <errorPercentage>17.2</errorPercentage>
+                </transactions>
+                <pageLoadTimings>
+                  <name>All Page Load Timings</name>
+                  <count>0</count>
+                  <countPerSecond>0</countPerSecond>
+                  <errors>0</errors>
+                  <errorPercentage>0</errorPercentage>
+                </pageLoadTimings>
+                <timeSeries>
+                  <interval>30</interval>
+                  <buckets>2</buckets>
+                  <sourceResolution>4</sourceResolution>
+                  <rows>
+                    <row>
+                      <elapsed>0</elapsed>
+                      <time>2026-01-01 10:00:00 CET</time>
+                      <transactionMean>31529</transactionMean>
+                      <transactionCountPerSecond>0.5</transactionCountPerSecond>
+                      <transactionErrorsPerSecond>0.0</transactionErrorsPerSecond>
+                      <actionMean>512</actionMean>
+                      <actionCountPerSecond>201.4</actionCountPerSecond>
+                      <actionErrorsPerSecond>0.01</actionErrorsPerSecond>
+                      <requestMean>98</requestMean>
+                      <requestCountPerSecond>20.1</requestCountPerSecond>
+                      <requestErrorsPerSecond>0.01</requestErrorsPerSecond>
+                    </row>
+                    <row>
+                      <elapsed>30</elapsed>
+                      <time>2026-01-01 10:00:30 CET</time>
+                      <transactionMean>41683</transactionMean>
+                      <transactionCountPerSecond>22.5</transactionCountPerSecond>
+                      <transactionErrorsPerSecond>0.02</transactionErrorsPerSecond>
+                      <actionMean>640</actionMean>
+                      <actionCountPerSecond>201.4</actionCountPerSecond>
+                      <actionErrorsPerSecond>0.01</actionErrorsPerSecond>
+                      <requestMean>121</requestMean>
+                      <requestCountPerSecond>201.4</requestCountPerSecond>
+                      <requestErrorsPerSecond>0.01</requestErrorsPerSecond>
+                    </row>
+                  </rows>
+                </timeSeries>
+              </summary>
+              <responseCodes>
+                <responseCode>
+                  <code>200</code>
+                  <statusText>OK</statusText>
+                  <count>5000</count>
+                </responseCode>
+                <responseCode>
+                  <code>404</code>
+                  <statusText>Not Found</statusText>
+                  <count>250</count>
+                </responseCode>
+              </responseCodes>
+              <errors>
+                <error>
+                  <count>3</count>
+                  <testCaseName>TFixture</testCaseName>
+                  <actionName>RareAction</actionName>
+                  <message>Rare problem</message>
+                  <trace>java.lang.AssertionError: Rare problem
+            	at a.A.one(A.java:1)
+            	at a.A.two(A.java:2)</trace>
+                </error>
+                <error>
+                  <count>500</count>
+                  <testCaseName>TFixture</testCaseName>
+                  <actionName>HotAction</actionName>
+                  <message>Common problem</message>
+                  <trace>java.lang.AssertionError: Common problem
+            	at b.B.f1(B.java:1)
+            	at b.B.f2(B.java:2)
+            	at b.B.f3(B.java:3)
+            	at b.B.f4(B.java:4)
+            	at b.B.f5(B.java:5)
+            	at b.B.f6(B.java:6)
+            	at b.B.f7(B.java:7)
+            	at b.B.f8(B.java:8)
+            	at b.B.f9(B.java:9)
+            	at b.B.f10(B.java:10)</trace>
+                </error>
+                <error>
+                  <count>400</count>
+                  <testCaseName>TOther</testCaseName>
+                  <actionName>HotAction</actionName>
+                  <message>Common problem</message>
+                  <trace>java.lang.AssertionError: Common problem
+            	at b.B.f1(B.java:1)</trace>
+                </error>
+              </errors>
+            </testreport>
+            """;
     }
 }
