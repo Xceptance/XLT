@@ -268,7 +268,7 @@ The section opens with counters so the shape is clear before any detail:
 totalErrors: 7306
 distinctEntries: 100
 distinctMessages: 19
-tracesIncludedFor: 10
+maxExportedTraces: 10
 ```
 
 ## What you cannot conclude from this file
@@ -323,14 +323,14 @@ Stack trace inclusion is configurable in `config/reportgenerator.properties`:
 
 ```properties
 ## The maximum number of error groups to include stack traces for in the AI data export (10 by default).
-# com.xceptance.xlt.reportgenerator.aiData.tracesIncludedFor = 10
+# com.xceptance.xlt.reportgenerator.aiData.maxExportedTraces = 10
 
 ## The maximum number of leading stack trace frames to include per trace in the AI data export (8 by default).
-# com.xceptance.xlt.reportgenerator.aiData.traceFrames = 8
+# com.xceptance.xlt.reportgenerator.aiData.maxFramesPerTrace = 8
 ```
 
-- `tracesIncludedFor` is how many of the largest error groups get a stack trace.
-- `traceFrames` is how many leading frames each of those keeps.
+- `maxExportedTraces` is how many of the largest error groups get a stack trace.
+- `maxFramesPerTrace` is how many leading frames each of those keeps.
 
 Raise them when you are chasing a specific failure and want more of the stack, and remember that
 traces dominate the file size.
@@ -338,8 +338,8 @@ traces dominate the file size.
 These properties are passed into `config/xsl/loadreport/ai-data.xsl` as stylesheet parameters:
 
 ```xml
-<xsl:param name="tracesIncludedFor" select="10" />
-<xsl:param name="traceFrames" select="8" />
+<xsl:param name="maxExportedTraces" select="10" />
+<xsl:param name="maxFramesPerTrace" select="8" />
 ```
 
 ### Changing what it contains
