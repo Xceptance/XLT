@@ -109,6 +109,9 @@ public class XSLTUtilsTest extends AbstractXLTTestCase
         stylesheet.delete();
 
         testDir.delete();
+        
+        // quick fix to undo any mocking
+        XSLTUtils.setTransformerFactory(TransformerFactory.newInstance());
     }
 
     /**
