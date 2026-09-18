@@ -371,9 +371,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final int stackTracesLimit;
 
-    private final int aiDataTracesIncludedFor;
+    private final int maxExportedTraces;
 
-    private final int aiDataTraceFrames;
+    private final int maxFramesPerTrace;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
@@ -532,8 +532,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         stackTracesLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.STACKTRACES_LIMIT, 500);
 
         // ai-data settings
-        aiDataTracesIncludedFor = getIntProperty(XltPropertyNames.ReportGenerator.AiData.TRACES_INCLUDED_FOR, 10);
-        aiDataTraceFrames = getIntProperty(XltPropertyNames.ReportGenerator.AiData.TRACE_FRAMES, 8);
+        maxExportedTraces = getIntProperty(XltPropertyNames.ReportGenerator.AiData.MAX_EXPORTED_TRACES, 10);
+        maxFramesPerTrace = getIntProperty(XltPropertyNames.ReportGenerator.AiData.MAX_FRAMES_PER_TRACE, 8);
 
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
@@ -1005,17 +1005,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * @return the maximum number of error groups to include stack traces for in the AI data export
      */
-    public int getAiDataTracesIncludedFor()
+    public int getAiDataMaxExportedTraces()
     {
-        return aiDataTracesIncludedFor;
+        return maxExportedTraces;
     }
 
     /**
      * @return the maximum number of leading frames to include per error trace in the AI data export
      */
-    public int getAiDataTraceFrames()
+    public int getAiDataMaxFramesPerTrace()
     {
-        return aiDataTraceFrames;
+        return maxFramesPerTrace;
     }
 
     /**

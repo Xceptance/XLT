@@ -24,10 +24,10 @@
     -->
 
     <!-- how many error groups get a stack trace -->
-    <xsl:param name="tracesIncludedFor" select="10" />
+    <xsl:param name="maxExportedTraces" select="10" />
 
     <!-- how many leading frames of a stack trace to keep -->
-    <xsl:param name="traceFrames" select="8" />
+    <xsl:param name="maxFramesPerTrace" select="8" />
 
     <!-- ============================================================ helpers -->
 
@@ -329,8 +329,8 @@
             -->
             <xsl:value-of select="ai:header(('Elapsed', 'Time',
                                              'Transaction Mean', 'Transactions/s', 'Transaction Errors/s',
-                                             'Action Mean',
-                                             'Request Mean', 'Requests/s'))" />
+                                             'Action Mean', 'Actions/s', 'Action Errors/s',
+                                             'Request Mean', 'Requests/s', 'Request Errors/s'))" />
 
             <xsl:for-each select="$series/rows/row">
                 <xsl:variable name="cells" as="xs:string*">
@@ -345,8 +345,11 @@
                     <xsl:sequence select="ai:num(transactionCountPerSecond)" />
                     <xsl:sequence select="ai:num(transactionErrorsPerSecond)" />
                     <xsl:sequence select="ai:ms(actionMean)" />
+                    <xsl:sequence select="ai:num(actionCountPerSecond)" />
+                    <xsl:sequence select="ai:num(actionErrorsPerSecond)" />
                     <xsl:sequence select="ai:ms(requestMean)" />
                     <xsl:sequence select="ai:num(requestCountPerSecond)" />
+                    <xsl:sequence select="ai:num(requestErrorsPerSecond)" />
                 </xsl:variable>
                 <xsl:value-of select="ai:row($cells)" />
             </xsl:for-each>
@@ -789,8 +792,8 @@
                 <xsl:value-of select="ai:int(count($entries))" />
                 <xsl:text>&#10;distinctMessages: </xsl:text>
                 <xsl:value-of select="ai:int($groupCount)" />
-                <xsl:text>&#10;tracesIncludedFor: </xsl:text>
-                <xsl:value-of select="ai:int(min(($tracesIncludedFor, $groupCount)))" />
+                <xsl:text>&#10;maxExportedTraces: </xsl:text>
+                <xsl:value-of select="ai:int(min(($maxExportedTraces, $groupCount)))" />
                 <xsl:text>&#10;```&#10;&#10;</xsl:text>
 
                 <!-- overview first, so the shape is clear before any trace -->
@@ -836,15 +839,15 @@
                     The old file spent 100 KB on 100 traces padded to a 1000 character cap,
                     almost all of it framework frames that diagnose nothing.
                     -->
-                    <xsl:if test="position() &lt;= $tracesIncludedFor">
+                    <xsl:if test="position() &lt;= $maxExportedTraces">
                         <xsl:variable name="trace" select="(current-group()[count = max(current-group()/count/number(.))])[1]/trace" />
                         <xsl:if test="$trace != ''">
                             <xsl:variable name="lines" select="tokenize(string($trace), '&#10;')" />
                             <xsl:text>&#10;```&#10;</xsl:text>
-                            <xsl:value-of select="string-join($lines[position() &lt;= $traceFrames], '&#10;')" />
-                            <xsl:if test="count($lines) &gt; $traceFrames">
+                            <xsl:value-of select="string-join($lines[position() &lt;= $maxFramesPerTrace], '&#10;')" />
+                            <xsl:if test="count($lines) &gt; $maxFramesPerTrace">
                                 <xsl:text>&#10;&#9;... </xsl:text>
-                                <xsl:value-of select="count($lines) - $traceFrames" />
+                                <xsl:value-of select="count($lines) - $maxFramesPerTrace" />
                                 <xsl:text> more frames</xsl:text>
                             </xsl:if>
                             <xsl:text>&#10;```&#10;</xsl:text>

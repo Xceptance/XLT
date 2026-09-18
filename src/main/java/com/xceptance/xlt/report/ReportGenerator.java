@@ -664,8 +664,8 @@ public class ReportGenerator
         parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
         parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
-        parameters.put("tracesIncludedFor", Integer.valueOf(config.getAiDataTracesIncludedFor()));
-        parameters.put("traceFrames", Integer.valueOf(config.getAiDataTraceFrames()));
+        parameters.put("maxExportedTraces", Integer.valueOf(config.getAiDataMaxExportedTraces()));
+        parameters.put("maxFramesPerTrace", Integer.valueOf(config.getAiDataMaxFramesPerTrace()));
 
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);

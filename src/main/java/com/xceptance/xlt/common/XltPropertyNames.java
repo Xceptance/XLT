@@ -44,9 +44,9 @@ public class XltPropertyNames
         {
             private static final String BASE = ReportGenerator.BASE + "aiData.";
 
-            public static final String TRACES_INCLUDED_FOR = BASE + "tracesIncludedFor";
+            public static final String MAX_EXPORTED_TRACES = BASE + "maxExportedTraces";
 
-            public static final String TRACE_FRAMES = BASE + "traceFrames";
+            public static final String MAX_FRAMES_PER_TRACE = BASE + "maxFramesPerTrace";
         }
     }
 }
