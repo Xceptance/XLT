@@ -59,6 +59,10 @@ public class AiDataStylesheetTest
 
             output = Files.readString(result.toPath(), StandardCharsets.UTF_8);
         }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         finally
         {
             FileUtils.deleteDirectoryRelaxed(testDir.toFile());
