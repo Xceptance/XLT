@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.w3c.dom.Node;
  * @param <E> The element type
  *
  * @author Daniel Gredler
- * @author <a href="mailto:tom.anderson@univ.oxon.org">Tom Anderson</a>
+ * @author Tom Anderson
  * @author Ronald Brill
  */
 public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractList<E>
@@ -77,7 +77,7 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
      * @return the nodes in this node list
      */
     private List<E> getNodes() {
-        // a bit of a hack but i like to avoid synchronization
+        // a bit of a hack, but I like to avoid synchronization
         // see https://github.com/HtmlUnit/htmlunit/issues/882
         //
         // there is a small chance that the cachedElements_ are

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -32,8 +33,6 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -52,17 +51,19 @@ import org.htmlunit.http.HttpUtils;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.SubmitEvent;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 
 /**
  * Wrapper for the HTML element "form".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
  * @author Brad Clarke
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author George Murnock
  * @author Kent Tong
@@ -91,6 +92,13 @@ public class HtmlForm extends HtmlElement {
     private static final Pattern SUBMIT_CHARSET_PATTERN = Pattern.compile("[ ,].*");
 
     private boolean isPreventDefault_;
+
+    /**
+     * A map that holds past names (name or id attribute) to elements belonging to this form.
+     * @see <a href="https://html.spec.whatwg.org/multipage/forms.html#the-form-element:the-form-element-10">
+     *     HTML spec - past names map</a>
+     */
+    private Map<String, HtmlElement> pastNamesMap_;
 
     /**
      * Creates an instance.
@@ -126,12 +134,11 @@ public class HtmlForm extends HtmlElement {
                 isPreventDefault_ = false;
 
                 boolean validate = true;
-                if (submitElement instanceof HtmlSubmitInput
-                        && ((HtmlSubmitInput) submitElement).isFormNoValidate()) {
+                if (submitElement instanceof HtmlSubmitInput input
+                        && input.isFormNoValidate()) {
                     validate = false;
                 }
-                else if (submitElement instanceof HtmlButton) {
-                    final HtmlButton htmlButton = (HtmlButton) submitElement;
+                else if (submitElement instanceof HtmlButton htmlButton) {
                     if ("submit".equalsIgnoreCase(htmlButton.getType())
                             && htmlButton.isFormNoValidate()) {
                         validate = false;
@@ -191,18 +198,17 @@ public class HtmlForm extends HtmlElement {
 
         final WebWindow webWindow = htmlPage.getEnclosingWindow();
         // Calling form.submit() twice forces double download.
-        webClient.download(webWindow, target, request, false, false, null, "JS form.submit()");
+        webClient.download(webWindow, target, request, false, null, "JS form.submit()");
     }
 
     /**
      * Check if element which cause submit contains new html5 attributes
      * (formaction, formmethod, formtarget, formenctype)
-     * and override existing values
+     * and override existing values.
      * @param submitElement the element to update
      */
     private void updateHtml5Attributes(final SubmittableElement submitElement) {
-        if (submitElement instanceof HtmlElement) {
-            final HtmlElement element = (HtmlElement) submitElement;
+        if (submitElement instanceof HtmlElement element) {
 
             final String type = element.getAttributeDirect(TYPE_ATTRIBUTE);
             boolean typeImage = false;
@@ -329,16 +335,11 @@ public class HtmlForm extends HtmlElement {
         request.setRequestParameters(parameters);
         if (HttpMethod.POST == method) {
             request.setEncodingType(FormEncodingType.getInstance(getEnctypeAttribute()));
-        }
-        request.setCharset(enc);
 
-        // forms are ignoring the rel='noreferrer'
-        if (browser.hasFeature(FORM_IGNORE_REL_NOREFERRER)
-                || !relContainsNoreferrer()) {
-            request.setRefererHeader(htmlPage.getUrl());
-        }
+            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
+                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
+            }
 
-        if (HttpMethod.POST == method) {
             try {
                 request.setAdditionalHeader(HttpHeader.ORIGIN,
                         UrlUtils.getUrlWithProtocolAndAuthority(htmlPage.getUrl()).toExternalForm());
@@ -349,10 +350,23 @@ public class HtmlForm extends HtmlElement {
                 }
             }
         }
-        if (HttpMethod.POST == method) {
-            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
-                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
-            }
+        request.setCharset(enc);
+
+        // Sec-Fetch-* support (https://www.w3.org/TR/fetch-metadata/):
+        // a form submission is a top-level navigation, initiated by the page
+        // containing the form. The initiator must be set regardless of
+        // "noreferrer", since Sec-Fetch-Site reflects the true relationship
+        // between initiator and target even when the Referer header itself is
+        // suppressed. Unlike anchor clicks, this method actually knows whether
+        // the submission was caused by a real submit control (submitElement != null,
+        // e.g. a click on a submit button/input) or triggered purely by script
+        // (submitElement == null, e.g. form.submit()) - see this method's javadoc -
+        // so Sec-Fetch-User can be set correctly rather than hardcoded.
+        request.markAsNavigation(htmlPage.getUrl(), submitElement != null);
+
+        // forms are ignoring the rel='noreferrer'
+        if (browser.hasFeature(FORM_IGNORE_REL_NOREFERRER) || !relContainsNoreferrer()) {
+            request.setRefererHeader(htmlPage.getUrl());
         }
 
         return request;
@@ -362,7 +376,7 @@ public class HtmlForm extends HtmlElement {
         String rel = getRelAttribute();
         if (rel != null) {
             rel = rel.toLowerCase(Locale.ROOT);
-            return ArrayUtils.contains(org.htmlunit.util.StringUtils.splitAtBlank(rel), "noreferrer");
+            return ArrayUtils.contains(StringUtils.splitAtBlank(rel), "noreferrer");
         }
         return false;
     }
@@ -414,19 +428,19 @@ public class HtmlForm extends HtmlElement {
      * @return the page contained by this form's window after the reset
      */
     public Page reset() {
-        final SgmlPage htmlPage = getPage();
+        final SgmlPage sgmlPage = getPage();
         final ScriptResult scriptResult = fireEvent(Event.TYPE_RESET);
         if (ScriptResult.isFalse(scriptResult)) {
-            return htmlPage.getWebClient().getCurrentWindow().getEnclosedPage();
+            return sgmlPage.getWebClient().getCurrentWindow().getEnclosedPage();
         }
 
         for (final HtmlElement next : getHtmlElementDescendants()) {
-            if (next instanceof SubmittableElement) {
-                ((SubmittableElement) next).reset();
+            if (next instanceof SubmittableElement element) {
+                element.reset();
             }
         }
 
-        return htmlPage;
+        return sgmlPage;
     }
 
     /**
@@ -477,18 +491,17 @@ public class HtmlForm extends HtmlElement {
             return false;
         }
 
-        if (org.htmlunit.util.StringUtils.isEmptyString(element.getAttributeDirect(NAME_ATTRIBUTE))) {
+        if (StringUtils.isEmptyString(element.getAttributeDirect(NAME_ATTRIBUTE))) {
             return false;
         }
 
-        if (element instanceof HtmlInput) {
-            final HtmlInput input = (HtmlInput) element;
+        if (element instanceof HtmlInput input) {
             if (input.isCheckable()) {
-                return ((HtmlInput) element).isChecked();
+                return input.isChecked();
             }
         }
-        if (HtmlSelect.TAG_NAME.equals(tagName)) {
-            return ((HtmlSelect) element).isValidForSubmission();
+        if (element instanceof HtmlSelect select) {
+            return select.isValidForSubmission();
         }
         return true;
     }
@@ -511,8 +524,7 @@ public class HtmlForm extends HtmlElement {
         if (element == submitElement) {
             return true;
         }
-        if (element instanceof HtmlInput) {
-            final HtmlInput input = (HtmlInput) element;
+        if (element instanceof HtmlInput input) {
             if (!input.isSubmitable()) {
                 return false;
             }
@@ -541,36 +553,19 @@ public class HtmlForm extends HtmlElement {
             final String attributeName,
             final String attributeValue) {
 
-        final List<E> list = new ArrayList<>();
-        final String lowerCaseTagName = elementName.toLowerCase(Locale.ROOT);
-
-        for (final HtmlElement element : getElements()) {
-            if (element.getTagName().equals(lowerCaseTagName)) {
-                final String attValue = element.getAttribute(attributeName);
-                if (attValue.equals(attributeValue)) {
-                    list.add((E) element);
-                }
-            }
-        }
-        return list;
+        return (List<E>) getElements(htmlElement ->
+                                htmlElement.getTagName().equals(elementName)
+                                && htmlElement.getAttribute(attributeName).equals(attributeValue));
     }
 
     /**
-     * @return returns a list of all form controls contained in the &lt;form&gt; element or referenced by formId
-     *         but ignoring elements that are contained in a nested form
-     * @deprecated as of version 4.4.0; use {@link #getFormElements()}, {@link #getElementsJS()} instead
-     */
-    @Deprecated
-    public List<HtmlElement> getElements() {
-        return getElements(htmlElement -> SUBMITTABLE_TAG_NAMES.contains(htmlElement.getTagName()));
-    }
-
-    /**
-     * @return A List containing all form controls in the form.
-     * The form controls in the returned collection are in the same order
-     * in which they appear in the form by following a preorder,
-     * depth-first traversal of the tree. This is called tree order. Only the following elements are returned:
-     * button, fieldset, input, object, output, select, textarea.
+     * Returns the form controls contained in this form.
+     *
+     * @return a list containing all form controls in tree order (preorder,
+     *         depth-first traversal). Only the following elements are
+     *         included: {@code button}, {@code fieldset}, {@code input},
+     *         {@code object}, {@code output}, {@code select}, and
+     *         {@code textarea}
      */
     public List<HtmlElement> getFormElements() {
         return getElements(htmlElement -> {
@@ -590,12 +585,13 @@ public class HtmlForm extends HtmlElement {
      * see https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/elements
      *
      * @return A List containing all non-image controls in the form.
-     * The form controls in the returned collection are in the same order
-     * in which they appear in the form by following a preorder,
-     * depth-first traversal of the tree. This is called tree order. Only the following elements are returned:
-     * button, fieldset,
-     * input (with the exception that any whose type is "image" are omitted for historical reasons),
-     * object, output, select, textarea.
+     *         The form controls in the returned collection are in the same order
+     *         in which they appear in the form by following a preorder,
+     *         depth-first traversal of the tree. This is called tree order.
+     *         Only the following elements are returned:
+     *         button, fieldset,
+     *         input (with the exception that any whose type is "image" are omitted for historical reasons),
+     *         object, output, select, textarea.
      */
     public List<HtmlElement> getElementsJS() {
         return getElements(htmlElement -> {
@@ -614,8 +610,10 @@ public class HtmlForm extends HtmlElement {
     }
 
     /**
-     * @param filter a predicate to filter the element
-     * @return all elements attached to this form and matching the filter predicate
+     * Returns the form elements that match the specified filter.
+     *
+     * @param filter the predicate used to select elements
+     * @return a list of form elements matching the specified filter
      */
     public List<HtmlElement> getElements(final Predicate<HtmlElement> filter) {
         final List<HtmlElement> elements = new ArrayList<>();
@@ -645,7 +643,7 @@ public class HtmlForm extends HtmlElement {
      * @param name the input name to search for
      * @param <I> the input type
      * @return the first input element which is a member of this form and has the specified name
-     * @throws ElementNotFoundException if there is not input in this form with the specified name
+     * @throws ElementNotFoundException if there is no input in this form with the specified name
      */
     @SuppressWarnings("unchecked")
     public final <I extends HtmlInput> I getInputByName(final String name) throws ElementNotFoundException {
@@ -747,8 +745,8 @@ public class HtmlForm extends HtmlElement {
         final List<HtmlRadioButtonInput> results = new ArrayList<>();
 
         for (final HtmlElement element : getInputsByName(name)) {
-            if (element instanceof HtmlRadioButtonInput) {
-                results.add((HtmlRadioButtonInput) element);
+            if (element instanceof HtmlRadioButtonInput input) {
+                results.add(input);
             }
         }
 
@@ -1007,7 +1005,9 @@ public class HtmlForm extends HtmlElement {
     }
 
     /**
-     * @return the value of the attribute {@code novalidate} or an empty string if that attribute isn't defined
+     * Returns whether form validation is disabled.
+     *
+     * @return {@code true} if the {@code novalidate} attribute is present
      */
     public final boolean isNoValidate() {
         return hasAttribute(ATTRIBUTE_NOVALIDATE);
@@ -1025,5 +1025,35 @@ public class HtmlForm extends HtmlElement {
         else {
             removeAttribute(ATTRIBUTE_NOVALIDATE);
         }
+    }
+
+    /**
+     * Register an element to the past names map with the specified name.
+     * @param name name or id attribute of the element
+     * @param element the element to register
+     */
+    public void registerPastName(final String name, final HtmlElement element) {
+        if (pastNamesMap_ == null) {
+            pastNamesMap_ = new HashMap<>();
+        }
+        pastNamesMap_.put(name, element);
+    }
+
+    /**
+     * Return the element registered in the past names map with the specified name.
+     * If the element is no longer owned by this form, the entry is removed and null is returned.
+     * @param name name or id attribute of the element
+     * @return the element, or null if not found or no longer owned by this form
+     */
+    public HtmlElement getNamedElement(final String name) {
+        if (pastNamesMap_ == null) {
+            return null;
+        }
+        final HtmlElement element = pastNamesMap_.get(name);
+        if (element != null && element.getEnclosingForm() != this) {
+            pastNamesMap_.remove(name);
+            return null;
+        }
+        return element;
     }
 }

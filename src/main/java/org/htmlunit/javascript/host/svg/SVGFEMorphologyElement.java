@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.svg.SvgFeMorphology;
 
 /**
- * A JavaScript object for {@code SVGFEMorphologyElement}.
+ * JavaScript host object for {@code SVGFEMorphologyElement}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGFEMorphologyElement">MDN Documentation</a>
  */
 @JsxClass(domClass = SvgFeMorphology.class)
 public class SVGFEMorphologyElement extends SVGElement {
@@ -39,7 +41,7 @@ public class SVGFEMorphologyElement extends SVGElement {
     public static final int SVG_MORPHOLOGY_OPERATOR_DILATE = 2;
 
     /**
-     * Creates an instance.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
-  <command name="waitForElementPresent" target="id=buttonDelete"/>
-  <command name="click" target="id=buttonDelete"/>
-</scriptmodule>

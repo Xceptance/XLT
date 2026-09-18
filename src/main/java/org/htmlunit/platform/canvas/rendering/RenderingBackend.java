@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,38 @@ import org.htmlunit.javascript.host.canvas.Path2D;
  */
 public interface RenderingBackend {
 
+    /**
+     * WindingRule to be used while rendering.
+     */
     enum WindingRule {
         /** WindingRule.NON_ZERO. */
         NON_ZERO,
         /** WindingRule.EVEN_ODD. */
         EVEN_ODD
+    }
+
+    /**
+     * LineJoin to be used while rendering.
+     */
+    enum LineJoin {
+        /** LineJoin.MITER. */
+        MITER,
+        /** LineJoin.ROUND. */
+        ROUND,
+        /** LineJoin.BEVEL. */
+        BEVEL
+    }
+
+    /**
+     * LineCap to be used while rendering.
+     */
+    enum LineCap {
+        /** LineCap.BUTT. */
+        BUTT,
+        /** LineCap.ROUND. */
+        ROUND,
+        /** LineCap.SQUARE. */
+        SQUARE
     }
 
     /**
@@ -124,8 +151,9 @@ public interface RenderingBackend {
 
     /**
      * Fills the current or given path with the current fillStyle.
+     * @param windingRule the {@link WindingRule}
      */
-    void fill();
+    void fill(RenderingBackend.WindingRule windingRule);
 
     /**
      * Paints the specified rectangular area.
@@ -134,7 +162,7 @@ public interface RenderingBackend {
      * @param w the width
      * @param h the height
      */
-    void fillRect(int x, int y, int w, int h);
+    void fillRect(double x, double y, double w, double h);
 
     /**
      * Fills a given text at the given (x, y) position.
@@ -174,20 +202,20 @@ public interface RenderingBackend {
     /**
      * Paints data from the given ImageData object onto the canvas.
      * @param imageDataBytes an array of pixel values
-     * @param imageDataHeight the height of the imageData
      * @param imageDataWidth the width of the imageData
+     * @param imageDataHeight the height of the imageData
      * @param dx horizontal position (x coordinate) at which to place the image data in the destination canvas
      * @param dy vertical position (y coordinate) at which to place the image data in the destination canvas
      * @param dirtyX horizontal position (x coordinate) of the top-left corner
-     *  from which the image data will be extracted. Defaults to 0.
+     *        from which the image data will be extracted. Defaults to 0.
      * @param dirtyY vertical position (y coordinate) of the top-left corner
-     *  from which the image data will be extracted. Defaults to 0.
+     *        from which the image data will be extracted. Defaults to 0.
      * @param dirtyWidth width of the rectangle to be painted.
-     *  Defaults to the width of the image data.
+     *        Defaults to the width of the image data.
      * @param dirtyHeight height of the rectangle to be painted.
-     *  Defaults to the height of the image data.
+     *        Defaults to the height of the image data.
      */
-    void putImageData(byte[] imageDataBytes, int imageDataHeight, int imageDataWidth,
+    void putImageData(byte[] imageDataBytes, int imageDataWidth, int imageDataHeight,
             int dx, int dy, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight);
 
     /**
@@ -247,13 +275,13 @@ public interface RenderingBackend {
      * Returns the {@code lineWidth} property.
      * @return the {@code lineWidth} property
      */
-    int getLineWidth();
+    float getLineWidth();
 
     /**
      * Sets the {@code lineWidth} property.
      * @param lineWidth the {@code lineWidth} property
      */
-    void setLineWidth(int lineWidth);
+    void setLineWidth(float lineWidth);
 
     /**
      * Resets (overrides) the current transformation to the identity matrix,
@@ -280,7 +308,7 @@ public interface RenderingBackend {
      * @param w the width
      * @param h the height
      */
-    void strokeRect(int x, int y, int w, int h);
+    void strokeRect(double x, double y, double w, double h);
 
     /**
      * Multiplies the current transformation with the matrix described by the
@@ -300,13 +328,13 @@ public interface RenderingBackend {
      * @param x the x
      * @param y the y
      */
-    void translate(int x, int y);
+    void translate(double x, double y);
 
     /**
      * Turns the current or given path into the current clipping region.
      * It replaces any previous clipping region.
      * @param windingRule the RenderingBackend.WindingRule {@link WindingRule}
-     * to be used
+     *        to be used
      * @param path the path or null if the current path should be used
      */
     void clip(RenderingBackend.WindingRule windingRule, Path2D path);
@@ -318,8 +346,11 @@ public interface RenderingBackend {
     void closePath();
 
     /**
+     * Returns the alpha (transparency) value that is applied to shapes and images
+     *         before they are drawn onto the canvas.
+     *
      * @return the alpha (transparency) value that is applied to shapes and images
-     * before they are drawn onto the canvas.
+     *         before they are drawn onto the canvas.
      */
     double getGlobalAlpha();
 
@@ -329,4 +360,32 @@ public interface RenderingBackend {
      * @param globalAlpha the new alpha
      */
     void setGlobalAlpha(double globalAlpha);
+
+    /**
+     * Returns the the shape used to join two line segments where they meet.
+     * There are three possible values for this property: "round", "bevel",
+     * and "miter". The default is "miter".
+     *
+     * @return the the shape used to join two line segments
+     */
+    LineJoin getLineJoin();
+
+    /**
+     * Sets the {@code lineJoin} property.
+     * @param lineJoin the {@code lineJoin} property value
+     */
+    void setLineJoin(LineJoin lineJoin);
+
+    /**
+     * Returns the shape used to draw the end points of lines.
+     *
+     * @return the shape used to draw the end points of lines.
+     */
+    LineCap getLineCap();
+
+    /**
+     * Sets the {@code lineCap} property.
+     * @param lineCap the {@code lineCap} property value
+     */
+    void setLineCap(LineCap lineCap);
 }

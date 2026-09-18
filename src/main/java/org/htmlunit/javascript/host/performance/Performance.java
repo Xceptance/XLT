@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,19 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.event.EventTarget;
 
 /**
- * A JavaScript object for {@code Performance}.
+ * JavaScript host object for {@code Performance}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance">MDN Documentation</a>
  */
 @JsxClass
 public class Performance extends EventTarget {
     private PerformanceTiming timing_;
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -43,6 +45,7 @@ public class Performance extends EventTarget {
 
     /**
      * Returns the {@code navigation} property.
+     *
      * @return the {@code navigation} property
      */
     @JsxGetter
@@ -55,6 +58,7 @@ public class Performance extends EventTarget {
 
     /**
      * Returns the {@code timing} property.
+     *
      * @return the {@code timing} property
      */
     @JsxGetter
@@ -70,7 +74,9 @@ public class Performance extends EventTarget {
     }
 
     /**
-     * @return a timestamp
+     * Returns a high-resolution timestamp representing the time elapsed since the time origin.
+     *
+     * @return a timestamp in milliseconds
      */
     @JsxFunction
     public double now() {
@@ -78,36 +84,42 @@ public class Performance extends EventTarget {
     }
 
     /**
-     * @return a list of all PerformanceEntry objects for the page.
-     * The list's members (entries) can be created by making performance marks
-     * or measures (for example by calling the mark() method) at explicit points in time.
+     * Returns a list of all {@link PerformanceEntry} objects for the page.
+     * The entries can be created by making performance marks or measures (for example
+     * by calling the {@code mark()} method) at explicit points in time.
      * If you are only interested in performance entries of certain types or that have
-     * certain names, see getEntriesByType() and getEntriesByName().
+     * certain names, see {@code getEntriesByType()} and {@code getEntriesByName()}.
+     *
+     * @return a list of all {@link PerformanceEntry} objects
      */
     @JsxFunction
     public Scriptable getEntries() {
-        return JavaScriptEngine.newArray(this, 0);
+        return JavaScriptEngine.newArray(getParentScope(), 0);
     }
 
     /**
-     * @return a list of all PerformanceEntry objects for the page.
-     * The list's members (entries) can be created by making performance marks
-     * or measures (for example by calling the mark() method) at explicit points in time.
-     * If you are only interested in performance entries of certain types or that have
-     * certain names, see getEntriesByType() and getEntriesByName().
+     * Returns a list of all {@link PerformanceEntry} objects for the page with the given name.
+     * The entries can be created by making performance marks or measures (for example
+     * by calling the {@code mark()} method) at explicit points in time.
+     * If you are only interested in performance entries of certain types, see
+     * {@code getEntriesByType()}.
+     *
+     * @return a list of {@link PerformanceEntry} objects matching the given name
      */
     @JsxFunction
     public Scriptable getEntriesByName() {
-        return JavaScriptEngine.newArray(this, 0);
+        return JavaScriptEngine.newArray(getParentScope(), 0);
     }
 
     /**
-     * @return a list of PerformanceEntry objects for a given type. The list's
-     * members (entries) can be created by making performance marks or measures
-     * (for example by calling the mark() method) at explicit points in time.
+     * Returns a list of {@link PerformanceEntry} objects of the given type.
+     * The entries can be created by making performance marks or measures
+     * (for example by calling the {@code mark()} method) at explicit points in time.
+     *
+     * @return a list of {@link PerformanceEntry} objects of the given type
      */
     @JsxFunction
     public Scriptable getEntriesByType() {
-        return JavaScriptEngine.newArray(this, 0);
+        return JavaScriptEngine.newArray(getParentScope(), 0);
     }
 }

@@ -22,6 +22,7 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeFunction;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.corejs.javascript.debug.DebuggableScript;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
@@ -84,7 +85,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Object callFunction(final HtmlPage htmlPage, final Function function, final Scriptable scope, final Scriptable thisObject,
+    public Object callFunction(final HtmlPage htmlPage, final Function function, final VarScope scope, final Scriptable thisObject,
                                final Object[] args)
     {
         final Object result;
@@ -124,7 +125,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Script compile(final HtmlPage owningPage, final Scriptable scope, final String sourceCode, final String sourceName,
+    public Script compile(final HtmlPage owningPage, final VarScope scope, final String sourceCode, final String sourceName,
                           final int startLine)
     {
         Script script;
@@ -166,7 +167,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Object execute(final HtmlPage htmlPage, final Scriptable scope, final Script script)
+    public Object execute(final HtmlPage htmlPage, final VarScope scope, final Script script)
     {
         final Object result;
 
@@ -226,7 +227,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      *            the source file name to use for logging
      * @return the generated script
      */
-    private Script compileScript(final HtmlPage owningPage, final Scriptable scope, final String sourceCode, final String sourceName,
+    private Script compileScript(final HtmlPage owningPage, final VarScope scope, final String sourceCode, final String sourceName,
                                  final int startLine, String sourceFileName)
     {
         final Script script;

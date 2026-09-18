@@ -161,10 +161,10 @@
                 clazz += ' key';
             }
 
-            var text = '(filtered, ' + numberOfMatchingEntries + " matching entries)";
+            var text = '(filtered, ' + numberOfMatchingEntries + " entries)";
             if (skipTotalsCalculation ) {
                 if(numberOfMatchingEntries === 1) {
-                    text = '(filtered, 1 matching entry)';
+                    text = '(filtered, 1 entry)';
                 }
             }
             else {

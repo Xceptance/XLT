@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 package org.htmlunit.javascript.host.html;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomElement;
@@ -32,29 +30,17 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 /**
  * The JavaScript object {@code HTMLImageElement}.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
- * @author <a href="mailto:george@murnock.com">George Murnock</a>
+ * @author Mike Bowler
+ * @author George Murnock
  * @author Chris Erskine
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlImage.class)
 public class HTMLImageElement extends HTMLElement {
-    private static final Map<String, String> NORMALIZED_ALIGN_VALUES;
-    static {
-        NORMALIZED_ALIGN_VALUES = new HashMap<>();
-        NORMALIZED_ALIGN_VALUES.put("center", "center");
-        NORMALIZED_ALIGN_VALUES.put("left", "left");
-        NORMALIZED_ALIGN_VALUES.put("right", "right");
-        NORMALIZED_ALIGN_VALUES.put("bottom", "bottom");
-        NORMALIZED_ALIGN_VALUES.put("middle", "middle");
-        NORMALIZED_ALIGN_VALUES.put("top", "top");
-        NORMALIZED_ALIGN_VALUES.put("absbottom", "absBottom");
-        NORMALIZED_ALIGN_VALUES.put("absmiddle", "absMiddle");
-        NORMALIZED_ALIGN_VALUES.put("baseline", "baseline");
-        NORMALIZED_ALIGN_VALUES.put("texttop", "textTop");
-    }
 
     private boolean endTagForbidden_ = true;
 
@@ -134,7 +120,7 @@ public class HTMLImageElement extends HTMLElement {
 
     /**
      * Sets the value of the {@code alt} property.
-     * @param alt the value
+     * @param alt the {@code alt} property value
      */
     @JsxSetter
     public void setAlt(final String alt) {
@@ -152,7 +138,7 @@ public class HTMLImageElement extends HTMLElement {
 
     /**
      * Sets the {@code border} attribute.
-     * @param border the {@code border} attribute
+     * @param border the {@code border} attribute value
      */
     @JsxSetter
     public void setBorder(final String border) {
@@ -224,7 +210,7 @@ public class HTMLImageElement extends HTMLElement {
     }
 
     /**
-     * Support for the image.complete property.
+     * Support for the image.complete() property.
      * @return the value of the {@code complete} property
      */
     @JsxGetter

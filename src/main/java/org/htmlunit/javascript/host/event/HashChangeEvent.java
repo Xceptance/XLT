@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
- * JavaScript object representing the HashChangeEvent.
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/window.onhashchange">Mozilla Developer Network</a>
- * @see <a href="http://msdn.microsoft.com/en-us/library/cc288209.aspx">MSDN</a>
+ * JavaScript host object for {@code HashChangeEvent}.
  *
  * @author Ronald Brill
  * @author Marc Guillemot
  * @author Frank Danek
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent">MDN Documentation</a>
  */
 @JsxClass
 public class HashChangeEvent extends Event {
@@ -39,8 +39,7 @@ public class HashChangeEvent extends Event {
      * Creates a new event instance.
      */
     public HashChangeEvent() {
-        super();
-        setEventType("");
+        super("");
     }
 
     /**
@@ -69,18 +68,20 @@ public class HashChangeEvent extends Event {
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        String oldURL = "";
-        String newURL = "";
         if (details != null && !JavaScriptEngine.isUndefined(details)) {
-            oldURL = (String) details.get("oldURL");
-            newURL = (String) details.get("newURL");
+            if (details.has("oldURL", details)) {
+                oldURL_ = JavaScriptEngine.toString(details.get("oldURL"));
+            }
+
+            if (details.has("newURL", details)) {
+                newURL_ = JavaScriptEngine.toString(details.get("newURL"));
+            }
         }
-        oldURL_ = oldURL;
-        newURL_ = newURL;
     }
 
     /**
-     * Returns the old URL.
+     * Returns the old URL before the hash change.
+     *
      * @return the old URL
      */
     @JsxGetter
@@ -89,7 +90,8 @@ public class HashChangeEvent extends Event {
     }
 
     /**
-     * Returns the new URL.
+     * Returns the new URL after the hash change.
+     *
      * @return the new URL
      */
     @JsxGetter

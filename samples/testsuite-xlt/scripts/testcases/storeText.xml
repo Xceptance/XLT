@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080/">
-  <module name="modules.Open_ExamplePage"/>
-  <command name="storeText" target="id=specialchar_1" value="storeText_sc1"/>
-  <command name="assertText" target="id=specialchar_1" value="${storeText_sc1}"/>
-  <command name="assertNotText" target="id=specialchar_2" value="${storeText_sc1}"/>
-</testcase>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,12 @@
  */
 package org.htmlunit.javascript.host.html;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -24,15 +29,14 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxSymbol;
 import org.htmlunit.javascript.host.dom.RadioNodeList;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A JavaScript object for {@code HTMLFormControlsCollection}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Lai Quang Duong
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection">MDN Documentation</a>
  */
 @JsxClass
 public class HTMLFormControlsCollection extends HTMLCollection {
@@ -46,9 +50,9 @@ public class HTMLFormControlsCollection extends HTMLCollection {
 
     /**
      * Creates an instance.
-     * @param domNode parent scope
+     * @param domNode the parent scope
      * @param attributeChangeSensitive indicates if the content of the collection may change when an attribute
-     * of a descendant node of parentScope changes (attribute added, modified or removed)
+     *        of a descendant node of domNode changes (attribute added, modified or removed)
      */
     public HTMLFormControlsCollection(final DomNode domNode, final boolean attributeChangeSensitive) {
         super(domNode, attributeChangeSensitive);
@@ -73,9 +77,9 @@ public class HTMLFormControlsCollection extends HTMLCollection {
     }
 
     /**
-     * Returns the element with ID or name match the specified value from the collection.
+     * Returns the element whose ID or name matches the specified value, from the collection.
      * If there are multiple matching elements, then a RadioNodeList object containing all those elements is returned.
-     * @param name the name or id the element or elements to return
+     * @param name the name or id of the element or elements to return
      * @return the element or elements corresponding to the specified name or id
      * @see <a href="https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#the-htmlformcontrolscollection-interface">HTML Standard</a>
      */
@@ -88,8 +92,7 @@ public class HTMLFormControlsCollection extends HTMLCollection {
 
         final List<DomNode> elements = new ArrayList<>();
         for (final Object next : getElements()) {
-            if (next instanceof DomElement) {
-                final DomElement elem = (DomElement) next;
+            if (next instanceof DomElement elem) {
                 final String nodeName = elem.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     elements.add(elem);
@@ -115,6 +118,33 @@ public class HTMLFormControlsCollection extends HTMLCollection {
         return nodeList;
     }
 
+    /**
+     * Overridden to allow the retrieval of certain form elements by ID or name.
+     *
+     * @param cx {@inheritDoc}
+     * @param id {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected DescriptorInfo getOwnPropertyDescriptor(final Context cx, final Object id) {
+        final DescriptorInfo descInfo = super.getOwnPropertyDescriptor(cx, id);
+        if (descInfo != null) {
+            return descInfo;
+        }
+
+        if (id instanceof CharSequence) {
+            final Scriptable element = namedItem(id.toString());
+            if (element != null) {
+                return ScriptableObject.buildDataDescriptor(element, ScriptableObject.READONLY);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @JsxSymbol
     @Override
     public Scriptable iterator() {

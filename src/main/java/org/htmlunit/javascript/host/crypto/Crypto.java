@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,14 @@ import org.htmlunit.javascript.host.dom.DOMException;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto">MDN Documentation</a>
  */
 @JsxClass
 public class Crypto extends HtmlUnitScriptable {
 
     static final SecureRandom RANDOM = new SecureRandom();
+    private SubtleCrypto subtle_;
 
     /**
      * Creates an instance.
@@ -60,7 +63,7 @@ public class Crypto extends HtmlUnitScriptable {
      */
     public Crypto(final Window window) {
         this();
-        setParentScope(window);
+        setParentScope(getTopLevelScope(window.getParentScope()));
         setPrototype(window.getPrototype(Crypto.class));
     }
 
@@ -85,7 +88,8 @@ public class Crypto extends HtmlUnitScriptable {
                     DOMException.QUOTA_EXCEEDED_ERR);
         }
 
-        for (int i = 0; i < array.getByteLength() / array.getBytesPerElement(); i++) {
+        final int length = array.getByteLength() / array.getBytesPerElement();
+        for (int i = 0; i < length; i++) {
             array.put(i, array, RANDOM.nextInt());
         }
         return array;
@@ -93,17 +97,24 @@ public class Crypto extends HtmlUnitScriptable {
 
     /**
      * Returns the {@code subtle} property.
-     * @return the {@code stuble} property
+     * @return the {@code subtle} property
      */
     @JsxGetter
     public SubtleCrypto getSubtle() {
-        final SubtleCrypto stuble = new SubtleCrypto();
-        final Window window = getWindow();
-        stuble.setParentScope(window);
-        stuble.setPrototype(window.getPrototype(SubtleCrypto.class));
-        return stuble;
+        if (subtle_ != null) {
+            return subtle_;
+        }
+        final SubtleCrypto subtle = new SubtleCrypto();
+        subtle.setParentScope(getParentScope());
+        subtle.setPrototype(getWindow().getPrototype(SubtleCrypto.class));
+        subtle_ = subtle;
+        return subtle_;
     }
 
+    /**
+     * Generates a random UUID.
+     * @return a v4 UUID generated using a cryptographically secure random number generator
+     */
     @JsxFunction
     public String randomUUID() {
         // Let bytes be a byte sequence of length 16.
@@ -116,7 +127,7 @@ public class Crypto extends HtmlUnitScriptable {
         bytes[6] = (byte) (bytes[6] & 0b01001111);
         // Set the 2 most significant bits of bytes[8], which represent the UUID variant, to 10.
         bytes[8] = (byte) (bytes[8] | 0b10000000);
-        bytes[8] = (byte) (bytes[6] & 0b10111111);
+        bytes[8] = (byte) (bytes[8] & 0b10111111);
 
         final StringBuilder result = new StringBuilder()
                                             .append(toHex(bytes[0]))
@@ -143,6 +154,6 @@ public class Crypto extends HtmlUnitScriptable {
     }
 
     private static String toHex(final byte b) {
-        return String.format("%02X ", b).trim().toLowerCase(Locale.ROOT);
+        return "%02X ".formatted(b).trim().toLowerCase(Locale.ROOT);
     }
 }

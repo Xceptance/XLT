@@ -244,6 +244,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_PREFIX + "dynamicCharts.enabled";
 
+    private static final String PROP_PDF_REPORT_ENABLED = PROP_PREFIX + "pdf.enabled";
+
     static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" +
                                                       PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
 
@@ -371,6 +373,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final int stackTracesLimit;
 
+    private final int maxExportedTraces;
+
+    private final int maxFramesPerTrace;
+
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
     private double defaultApdexThreshold;
@@ -399,6 +405,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * Whether dynamic/interactive charts are enabled.
      */
     private boolean dynamicChartsEnabled;
+
+    /**
+     * Whether PDF report generation is enabled.
+     */
+    private boolean pdfReportEnabled;
 
     /**
      * Creates a new ReportGeneratorConfiguration object.
@@ -527,6 +538,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         stackTracesLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.STACKTRACES_LIMIT, 500);
 
+        // ai-data settings
+        maxExportedTraces = getIntProperty(XltPropertyNames.ReportGenerator.AiData.MAX_EXPORTED_TRACES, 10);
+        maxFramesPerTrace = getIntProperty(XltPropertyNames.ReportGenerator.AiData.MAX_FRAMES_PER_TRACE, 8);
+
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -556,6 +571,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         additionalMovingAverages = readAdditionalMovingAverageConfigurations(new ArrayList<>());
 
         dynamicChartsEnabled = getBooleanProperty(PROP_DYNAMIC_CHARTS_ENABLED, true);
+        pdfReportEnabled = getBooleanProperty(PROP_PDF_REPORT_ENABLED, false);
 
         readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
         parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
@@ -995,6 +1011,22 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
+     * @return the maximum number of error groups to include stack traces for in the AI data export
+     */
+    public int getAiDataMaxExportedTraces()
+    {
+        return maxExportedTraces;
+    }
+
+    /**
+     * @return the maximum number of leading frames to include per error trace in the AI data export
+     */
+    public int getAiDataMaxFramesPerTrace()
+    {
+        return maxFramesPerTrace;
+    }
+
+    /**
      * If true then the error details charts should be created.
      *
      * @return true if the error detail charts should be generated otherwise false
@@ -1140,6 +1172,27 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public boolean dynamicChartsEnabled()
     {
         return !noCharts && dynamicChartsEnabled;
+    }
+
+    /**
+     * Returns whether PDF report generation is enabled.
+     *
+     * @return <code>true</code> if PDF report generation is enabled, <code>false</code> otherwise
+     */
+    public boolean isPdfReportEnabled()
+    {
+        return pdfReportEnabled;
+    }
+
+    /**
+     * Sets whether PDF report generation is enabled.
+     *
+     * @param enabled
+     *            <code>true</code> to enable PDF report generation, <code>false</code> otherwise
+     */
+    public void setPdfReportEnabled(final boolean enabled)
+    {
+        pdfReportEnabled = enabled;
     }
 
     /**
@@ -1298,14 +1351,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                 else
                 {
                     // get name and label patterns
-                    namePattern = getStringProperty(namePatternProperty, "");
-                    labelPattern = getStringProperty(labelPatternProperty, "");
+                    namePattern = getStringProperty(namePatternProperty, "", false);
+                    labelPattern = getStringProperty(labelPatternProperty, "", false);
 
                     // if name pattern is blank, check the deprecated property name as a fallback
                     if (StringUtils.isBlank(namePattern))
                     {
                         useDeprecatedNameProperty = true;
-                        namePattern = getStringProperty(deprecatedNamePatternProperty, "");
+                        namePattern = getStringProperty(deprecatedNamePatternProperty, "", false);
                     }
 
                     // validate that at least one pattern was provided
@@ -1625,7 +1678,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         final Map<String, String> oldMergeRulesComplete = new HashMap<>();
         for (final String key : oldMergeRuleKeys)
         {
-            oldMergeRulesComplete.put(key, getStringProperty(key));
+            oldMergeRulesComplete.put(key, getStringProperty(key, false));
             getProperties().remove(key);
         }
 
@@ -1659,40 +1712,40 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String basePropertyName = PROP_REQUEST_MERGE_RULES_PREFIX + i;
 
             // general stuff
-            final var newName = new NewName(getStringProperty(basePropertyName + ".newName", ""));
+            final var newName = new NewName(getStringProperty(basePropertyName + ".newName", "", false));
             final var stopOnMatch = new StopOnMatch(getBooleanProperty(basePropertyName + ".stopOnMatch", true));
             final var dropOnMatch = new DropOnMatch(getBooleanProperty(basePropertyName + ".dropOnMatch", false));
             final var continueOnMatchAtId = new ContinueOnMatchAtId(getIntProperty(basePropertyName + ".continueOnMatchAtId", i));
             final var continueOnNoMatchAtId = new ContinueOnNoMatchAtId(getIntProperty(basePropertyName + ".continueOnNoMatchAtId", i));
 
             // include patterns
-            final var urlPattern = new UrlPattern(getStringProperty(basePropertyName + ".urlPattern", ""));
-            final var contentTypePattern = new ContentTypePattern(getStringProperty(basePropertyName + ".contentTypePattern", ""));
-            final var statusCodePattern = new StatusCodePattern(getStringProperty(basePropertyName + ".statusCodePattern", ""));
-            final var requestNamePattern = new NamePattern(getStringProperty(basePropertyName + ".namePattern", ""));
-            final var agentNamePattern = new AgentNamePattern(getStringProperty(basePropertyName + ".agentPattern", ""));
-            final var transactionNamePattern = new TransactionNamePattern(getStringProperty(basePropertyName + ".transactionPattern", ""));
-            final var httpMethodPattern = new HttpMethodPattern(getStringProperty(basePropertyName + ".methodPattern", ""));
-            final var runTimeRanges = new RunTimeRanges(getStringProperty(basePropertyName + ".runTimeRanges", ""));
+            final var urlPattern = new UrlPattern(getStringProperty(basePropertyName + ".urlPattern", "", false));
+            final var contentTypePattern = new ContentTypePattern(getStringProperty(basePropertyName + ".contentTypePattern", "", false));
+            final var statusCodePattern = new StatusCodePattern(getStringProperty(basePropertyName + ".statusCodePattern", "", false));
+            final var requestNamePattern = new NamePattern(getStringProperty(basePropertyName + ".namePattern", "", false));
+            final var agentNamePattern = new AgentNamePattern(getStringProperty(basePropertyName + ".agentPattern", "", false));
+            final var transactionNamePattern = new TransactionNamePattern(getStringProperty(basePropertyName + ".transactionPattern", "", false));
+            final var httpMethodPattern = new HttpMethodPattern(getStringProperty(basePropertyName + ".methodPattern", "", false));
+            final var runTimeRanges = new RunTimeRanges(getStringProperty(basePropertyName + ".runTimeRanges", "", false));
 
             // performance check pattern
-            final var urlText = new UrlText(getStringProperty(basePropertyName + ".urlText", ""));
-            final var urlTextExclude = new UrlTextExclude(getStringProperty(basePropertyName + ".urlText.exclude", ""));
+            final var urlText = new UrlText(getStringProperty(basePropertyName + ".urlText", "", false));
+            final var urlTextExclude = new UrlTextExclude(getStringProperty(basePropertyName + ".urlText.exclude", "", false));
 
             // exclude patterns
-            final var urlExcludePattern = new UrlExcludePattern(getStringProperty(basePropertyName + ".urlPattern.exclude", ""));
+            final var urlExcludePattern = new UrlExcludePattern(getStringProperty(basePropertyName + ".urlPattern.exclude", "", false));
             final var contentTypeExcludePattern = new ContentTypeExcludePattern(getStringProperty(basePropertyName +
-                                                                                                  ".contentTypePattern.exclude", ""));
+                                                                                                  ".contentTypePattern.exclude", "", false));
             final var statusCodeExcludePattern = new StatusCodeExcludePattern(getStringProperty(basePropertyName +
-                                                                                                ".statusCodePattern.exclude", ""));
-            final var requestNameExcludePattern = new NameExcludePattern(getStringProperty(basePropertyName + ".namePattern.exclude", ""));
+                                                                                                ".statusCodePattern.exclude", "", false));
+            final var requestNameExcludePattern = new NameExcludePattern(getStringProperty(basePropertyName + ".namePattern.exclude", "", false));
             final var agentNameExcludePattern = new AgentNameExcludePattern(getStringProperty(basePropertyName + ".agentPattern.exclude",
-                                                                                              ""));
+                                                                                              "", false));
             final var transactionNameExcludePattern = new TransactionNameExcludePattern(getStringProperty(basePropertyName +
                                                                                                           ".transactionPattern.exclude",
-                                                                                                          ""));
+                                                                                                          "", false));
             final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude",
-                                                                                                ""));
+                                                                                                "", false));
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName.value()) == dropOnMatch.value())
             {
@@ -1751,17 +1804,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String basePropertyName = PROP_LABELING_RULES_PREFIX + i;
 
             // general stuff
-            final String newLabels = getStringProperty(basePropertyName + ".newLabels", "");
-            final String typeString = getStringProperty(basePropertyName + ".types", "");
+            final String newLabels = getStringProperty(basePropertyName + ".newLabels", "", false);
+            final String typeString = getStringProperty(basePropertyName + ".types", "", false);
             final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
 
             // include patterns
-            final String namePattern = getStringProperty(basePropertyName + ".namePattern", "");
-            final String labelPattern = getStringProperty(basePropertyName + ".labelPattern", "");
+            final String namePattern = getStringProperty(basePropertyName + ".namePattern", "", false);
+            final String labelPattern = getStringProperty(basePropertyName + ".labelPattern", "", false);
 
             // exclude patterns
-            final String nameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
-            final String labelExcludePattern = getStringProperty(basePropertyName + ".labelPattern.exclude", "");
+            final String nameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "", false);
+            final String labelExcludePattern = getStringProperty(basePropertyName + ".labelPattern.exclude", "", false);
 
             // create and validate the rules
             try
@@ -1811,7 +1864,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String thresholdPropertyName = PROP_APDEX_PREFIX + actionGroup + ".threshold";
             final double threshold = getDoubleProperty(thresholdPropertyName, Double.NaN);
             final String actionsPropertyName = PROP_APDEX_PREFIX + actionGroup + ".actions";
-            final String actionNamePattern = getStringProperty(actionsPropertyName, "");
+            final String actionNamePattern = getStringProperty(actionsPropertyName, "", false);
 
             // check if both threshold and actions were defined
             if (!Double.isNaN(threshold) && StringUtils.isNotBlank(actionNamePattern))

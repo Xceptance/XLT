@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,18 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
- * A JavaScript object for {@code TextEncoder}.
+ * JavaScript host object for {@code TextEncoder}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder">MDN Documentation</a>
  */
 @JsxClass
 public class TextEncoder extends HtmlUnitScriptable {
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -44,7 +46,9 @@ public class TextEncoder extends HtmlUnitScriptable {
     }
 
     /**
-     * @return always "utf-8"
+     * Returns the encoding used by this encoder, which is always {@code "utf-8"}.
+     *
+     * @return {@code "utf-8"}
      */
     @JsxGetter
     public String getEncoding() {
@@ -52,15 +56,17 @@ public class TextEncoder extends HtmlUnitScriptable {
     }
 
     /**
+     * Encodes the given string as a {@code Uint8Array} using UTF-8 encoding.
+     *
      * @param toEncode the string to encode
-     * @return returns a Uint8Array containing the text given encoded .
+     * @return a {@code Uint8Array} containing the UTF-8 encoded bytes
      */
     @JsxFunction
     public NativeUint8Array encode(final Object toEncode) {
         if (JavaScriptEngine.isUndefined(toEncode)) {
             final NativeUint8Array result = new NativeUint8Array(0);
             result.setParentScope(getParentScope());
-            result.setPrototype(ScriptableObject.getClassPrototype(getWindow(this), result.getClassName()));
+            result.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), result.getClassName()));
             return result;
         }
 
@@ -79,7 +85,7 @@ public class TextEncoder extends HtmlUnitScriptable {
 
         final NativeUint8Array result = new NativeUint8Array(arrayBuffer, 0, bytes.length);
         result.setParentScope(getParentScope());
-        result.setPrototype(ScriptableObject.getClassPrototype(getWindow(this), result.getClassName()));
+        result.setPrototype(ScriptableObject.getClassPrototype(getParentScope(), result.getClassName()));
         return result;
     }
 }

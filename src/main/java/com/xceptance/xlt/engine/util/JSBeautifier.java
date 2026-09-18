@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.TopLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +123,7 @@ public class JSBeautifier
             ctx.setLanguageVersion(Context.VERSION_1_6);
 
             // make sure that all js-native objects are defined (as Array, String etc.)
-            final Scriptable scope = ctx.initStandardObjects();
+            final TopLevel scope = ctx.initStandardObjects();
             // create 'global namespace'
             scope.put("global", scope, ctx.newObject(scope));
             // ... and evaluate js-beautify code

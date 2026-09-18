@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>10.0.0-beta-4</version>
+    <version>10.0.0-beta-5</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -56,14 +56,14 @@
         <maven.compiler.target>21</maven.compiler.target>
         <asm.version>9.7.1</asm.version>
         <flexmark.version>0.64.8</flexmark.version>
-        <htmlunit.version>4.10.0</htmlunit.version>
+        <htmlunit.version>5.4.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
         <log4j.version>2.24.3</log4j.version>
-        <powermock.version>2.0.9</powermock.version>
-        <selenium.version>4.29.0</selenium.version>
-        <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
+        <selenium.version>4.47.0</selenium.version>
+        <htmlunitdriver.version>4.47.0</htmlunitdriver.version>
         <otel.version>1.46.0</otel.version>
+        <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
         <!-- plugin versions -->
         <license-maven-plugin.version>4.1</license-maven-plugin.version>
         <dependency-check-maven.version>12.1.0</dependency-check-maven.version>
@@ -94,6 +94,7 @@
                             </includes>
                             <excludes>
                                 <!-- These have their own license header. -->
+                                <exclude>src/main/module-info/module-info.java</exclude>
                                 <exclude>src/main/java/org/htmlunit/**/*</exclude>
                                 <exclude>src/main/java/com/xceptance/common/lang/OpenStringBuilder.java</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/engine/xltdriver/**/*</exclude>
@@ -101,8 +102,6 @@
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/lucene/BitUtil.java</exclude>
                                 <exclude>src/main/java/com/xceptance/xlt/report/util/lucene/OpenBitSet.java</exclude>
                                 <exclude>src/main/java/it/unimi/dsi/util/SplitMix64RandomGenerator.java</exclude>
-                                <exclude>src/main/java/netscape/**/*</exclude>
-                                <exclude>src/test-hu/**/*</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>
@@ -255,22 +254,17 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.18.0</version>
+            <version>2.22.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <version>3.20.0</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.3.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.brotli</groupId>
-            <artifactId>dec</artifactId>
-            <version>0.1.2</version>
+            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlunit</groupId>
@@ -316,18 +310,6 @@
             <groupId>org.htmlunit</groupId>
             <artifactId>neko-htmlunit</artifactId>
             <version>${htmlunit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.12.2</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- XLT -->
         <dependency>
@@ -523,7 +505,7 @@
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
         </dependency>
-        <!-- byte-buddy is used by Selenium, Mockito and PowerMock. Ensure that the highest version wins. -->
+        <!-- byte-buddy is used by Selenium and Mockito. Ensure that the highest version wins. -->
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
@@ -540,28 +522,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.16</version>
-        </dependency>
-        <!-- Script-Doc Generator -->
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.34</version>
-        </dependency>
-        <dependency>
-            <groupId>org.pegdown</groupId>
-            <artifactId>pegdown</artifactId>
-            <version>1.6.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.parboiled</groupId>
-                    <artifactId>parboiled-java</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.parboiled</groupId>
-            <artifactId>parboiled-java</artifactId>
-            <version>1.4.1</version>
         </dependency>
         <!-- flexmark-java for Markdown-to-HTML conversion (report comments) -->
         <dependency>
@@ -656,7 +616,7 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
         </dependency>
-        <!-- javassist is used by Checkstyle, Powermock, and Reflections. Use latest version for Java 21 support. -->
+        <!-- javassist is used by Checkstyle and Reflections. Use latest version for Java 21 support. -->
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
@@ -667,11 +627,16 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-        <!-- Groovy for property expression evaluation -->
+        <!-- OpenHTMLtoPDF for PDF report generation -->
         <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>5.0.6</version>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-core</artifactId>
+            <version>${openhtmltopdf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>${openhtmltopdf.version}</version>
         </dependency>
 
         <!-- ================= -->
@@ -691,38 +656,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- ATTENTION: Used versions of mocking frameworks EasyMock and Mockito needs to be supported by PowerMock. -->
         <!-- Mockito -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.3</version> <!-- Last supported version of PowerMock 2.x.x -->
-            <scope>test</scope>
-        </dependency>
-        <!-- Easymock -->
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>4.0.1</version> <!-- Last supported version of PowerMock 2.x.x -->
-            <scope>test</scope>
-        </dependency>
-        <!-- Powermock -->
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-easymock</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
+            <version>5.23.0</version>
             <scope>test</scope>
         </dependency>
         <!-- PMD -->
@@ -749,107 +687,6 @@
                     <artifactId>Saxon-HE</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- HtmlUnit -->
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit4</artifactId>
-            <version>1.4.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-batik</artifactId>
-            <version>3.12.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>xmlgraphics-commons</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-transcoder</artifactId>
-            <version>1.18</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <!-- Exclude XML APIs as these would clash with the java.xml module. -->
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis-ext</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <scope>test</scope>
-            <version>1.6.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.romankh3</groupId>
-            <artifactId>image-comparison</artifactId>
-            <version>4.4.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty.websocket</groupId>
-            <artifactId>websocket-server</artifactId>
-            <version>${jetty.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.caucho</groupId>
-            <artifactId>quercus</artifactId>
-            <version>4.0.66</version>
-            <scope>test</scope>
         </dependency>
         <!-- Checkstyle -->
         <dependency>
@@ -940,6 +777,12 @@
             <groupId>net.sf.trove4j</groupId>
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${jetty.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

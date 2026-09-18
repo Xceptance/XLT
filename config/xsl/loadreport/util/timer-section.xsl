@@ -160,19 +160,23 @@
 
                                             <tr>
                                                 <td class="key colgroup1 forcewordbreak">
-                                                    <a>
-                                                        <xsl:attribute name="href">#chart-<xsl:value-of
-                                                            select="$gid"/></xsl:attribute>
-                                                        <xsl:attribute name="data-id">tableEntry-<xsl:value-of
-                                                            select="$gid"/></xsl:attribute>
-                                                        <xsl:if test="count(urls) &gt; 0">
-                                                            <!-- title and class only for requests with urls -->
-                                                            <xsl:attribute name="data-rel">#url-listing-<xsl:value-of
-                                                                select="$gid"/></xsl:attribute>
-                                                            <xsl:attribute name="class">cluetip</xsl:attribute>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="name"/>
-                                                    </a>
+                                                    <div class="trunc-cell">
+                                                        <span class="trunc-text">
+                                                            <a>
+                                                                <xsl:attribute name="href">#chart-<xsl:value-of
+                                                                    select="$gid"/></xsl:attribute>
+                                                                <xsl:attribute name="data-id">tableEntry-<xsl:value-of
+                                                                    select="$gid"/></xsl:attribute>
+                                                                <xsl:if test="count(urls) &gt; 0">
+                                                                    <!-- title and class only for requests with urls -->
+                                                                    <xsl:attribute name="data-rel">#url-listing-<xsl:value-of
+                                                                        select="$gid"/></xsl:attribute>
+                                                                    <xsl:attribute name="class">cluetip</xsl:attribute>
+                                                                </xsl:if>
+                                                                <xsl:value-of select="name"/>
+                                                            </a>
+                                                        </span>
+                                                    </div>
                                                 </td>
 
                                                 <td class="colgroup1">
@@ -424,19 +428,23 @@
 
                                             <tr>
                                                 <td class="key colgroup1 forcewordbreak">
-                                                    <a>
-                                                        <xsl:attribute name="href">#chart-<xsl:value-of
-                                                            select="$gid"/></xsl:attribute>
-                                                        <xsl:attribute name="data-id">tableEntry-<xsl:value-of
-                                                            select="$gid"/></xsl:attribute>
-                                                        <xsl:if test="count(urls) &gt; 0">
-                                                            <!-- title and class only for requests with urls -->
-                                                            <xsl:attribute name="data-rel">#url-listing-<xsl:value-of
-                                                                select="$gid"/></xsl:attribute>
-                                                            <xsl:attribute name="class">cluetip</xsl:attribute>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="name"/>
-                                                    </a>
+                                                    <div class="trunc-cell">
+                                                        <span class="trunc-text">
+                                                            <a>
+                                                                <xsl:attribute name="href">#chart-<xsl:value-of
+                                                                    select="$gid"/></xsl:attribute>
+                                                                <xsl:attribute name="data-id">tableEntry-<xsl:value-of
+                                                                    select="$gid"/></xsl:attribute>
+                                                                <xsl:if test="count(urls) &gt; 0">
+                                                                    <!-- title and class only for requests with urls -->
+                                                                    <xsl:attribute name="data-rel">#url-listing-<xsl:value-of
+                                                                        select="$gid"/></xsl:attribute>
+                                                                    <xsl:attribute name="class">cluetip</xsl:attribute>
+                                                                </xsl:if>
+                                                                <xsl:value-of select="name"/>
+                                                            </a>
+                                                        </span>
+                                                    </div>
                                                 </td>
 
                                                 <td class="colgroup1">

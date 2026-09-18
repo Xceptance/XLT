@@ -59,17 +59,18 @@ public class ConfigurationReport
     public List<String> comments = new ArrayList<String>();
 
     /**
+     * The test comments as authored, before any Markdown rendering. Index-aligned with {@link #comments}. Consumers
+     * that need the source text instead of the rendered HTML (the AI data export, for instance) read this list.
+     */
+    public List<String> rawComments = new ArrayList<String>();
+
+    /**
+     * The rating details.
+     */
+    public RatingReport rating;
+
+    /**
      * The name of the (test) project.
      */
     public String projectName;
-
-    /**
-     * The target height for charts.
-     */
-    public int chartHeight;
-
-    /**
-     * The target width for charts.
-     */
-    public int chartWidth;
 }

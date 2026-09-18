@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package org.htmlunit.html.serializer;
 
+import static org.htmlunit.BrowserVersionFeatures.JS_INNER_TEXT_SELECT_EMPTY;
 import static org.htmlunit.BrowserVersionFeatures.JS_INNER_TEXT_SVG_NL;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebWindow;
@@ -26,12 +26,15 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlBreak;
+import org.htmlunit.html.HtmlDefinitionTerm;
 import org.htmlunit.html.HtmlDetails;
 import org.htmlunit.html.HtmlHead;
 import org.htmlunit.html.HtmlListItem;
 import org.htmlunit.html.HtmlNoFrames;
+import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlParagraph;
 import org.htmlunit.html.HtmlScript;
+import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlStyle;
 import org.htmlunit.html.HtmlSummary;
 import org.htmlunit.html.HtmlSvg;
@@ -40,6 +43,7 @@ import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.html.ScriptElement;
 import org.htmlunit.html.serializer.HtmlSerializerInnerOuterText.HtmlSerializerTextBuilder.Mode;
 import org.htmlunit.svg.SvgTitle;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Special serializer to generate the output we need
@@ -74,7 +78,7 @@ public class HtmlSerializerInnerOuterText {
         // included scripts are ignored, but if we ask for the script itself....
         if (node instanceof ScriptElement) {
             final HtmlSerializerTextBuilder builder = new HtmlSerializerTextBuilder();
-            appendChildren(builder, node, Mode.WHITE_SPACE_NORMAL, false);
+            appendChildren(builder, node, Mode.WHITE_SPACE_NORMAL, false, false);
             return builder.getText();
         }
 
@@ -82,7 +86,7 @@ public class HtmlSerializerInnerOuterText {
         final boolean insideHead = node instanceof HtmlTitle;
 
         final HtmlSerializerTextBuilder builder = new HtmlSerializerTextBuilder();
-        appendNode(builder, node, whiteSpaceStyle(node, Mode.WHITE_SPACE_NORMAL), insideHead);
+        appendNode(builder, node, whiteSpaceStyle(node, Mode.WHITE_SPACE_NORMAL), insideHead, false);
         return builder.getText();
     }
 
@@ -93,11 +97,12 @@ public class HtmlSerializerInnerOuterText {
      * @param node the node to process
      * @param mode the {@link Mode} to use for processing
      * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
      */
     protected void appendChildren(final HtmlSerializerTextBuilder builder, final DomNode node,
-            final Mode mode, final boolean insideHead) {
+            final Mode mode, final boolean insideHead, final boolean insideSelect) {
         for (final DomNode child : node.getChildren()) {
-            appendNode(builder, child, mode, insideHead);
+            appendNode(builder, child, mode, insideHead, insideSelect);
         }
     }
 
@@ -109,29 +114,34 @@ public class HtmlSerializerInnerOuterText {
      * @param node the node to process
      * @param mode the {@link Mode} to use for processing
      * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
      */
     protected void appendNode(final HtmlSerializerTextBuilder builder, final DomNode node,
-            final Mode mode, final boolean insideHead) {
-        if (node instanceof DomText) {
-            appendText(builder, (DomText) node, mode);
+            final Mode mode, final boolean insideHead, final boolean insideSelect) {
+        if (insideSelect && node instanceof HtmlBreak) {
+            return;
         }
-        else if (node instanceof HtmlBreak) {
-            appendBreak(builder, (HtmlBreak) node);
+
+        if (node instanceof DomText text) {
+            appendText(builder, text, mode);
         }
-        else if (node instanceof HtmlParagraph) {
-            appendParagraph(builder, (HtmlParagraph) node, mode, insideHead);
+        else if (node instanceof HtmlBreak break1) {
+            appendBreak(builder, break1);
         }
-        else if (node instanceof HtmlListItem) {
-            appendListItem(builder, (HtmlListItem) node, mode, insideHead);
+        else if (node instanceof HtmlParagraph paragraph) {
+            appendParagraph(builder, paragraph, mode, insideHead, insideSelect);
         }
-        else if (node instanceof HtmlDetails) {
-            appendDetails(builder, (HtmlDetails) node, mode, insideHead);
+        else if (node instanceof HtmlListItem item) {
+            appendListItem(builder, item, mode, insideHead, insideSelect);
+        }
+        else if (node instanceof HtmlDetails details) {
+            appendDetails(builder, details, mode, insideHead, insideSelect);
         }
         else if (node instanceof HtmlHead) {
-            appendChildren(builder, node, mode, true);
+            appendChildren(builder, node, mode, true, insideSelect);
         }
         else if (node instanceof HtmlNoFrames) {
-            appendChildren(builder, node, Mode.PLAIN, insideHead);
+            appendChildren(builder, node, Mode.PLAIN, insideHead, insideSelect);
         }
         else if (node instanceof HtmlTitle && !insideHead) {
             // nothing to do
@@ -141,24 +151,30 @@ public class HtmlSerializerInnerOuterText {
         }
         else if (node instanceof ScriptElement) {
             if (insideHead) {
-                appendChildren(builder, node, mode, insideHead);
+                appendChildren(builder, node, mode, insideHead, insideSelect);
             }
+        }
+        else if (node instanceof HtmlSelect select) {
+            appendSelect(builder, select, mode, insideHead, insideSelect);
+        }
+        else if (node instanceof HtmlDefinitionTerm item) {
+            appendDefinitionTerm(builder, item, mode, insideHead, insideSelect);
         }
         else if (node instanceof HtmlSvg) {
             if (browserVersion_.hasFeature(JS_INNER_TEXT_SVG_NL)) {
                 builder.appendRequiredLineBreak();
-                appendChildren(builder, node, mode, insideHead);
+                appendChildren(builder, node, mode, insideHead, insideSelect);
                 builder.appendRequiredLineBreak();
             }
             else {
-                appendChildren(builder, node, mode, insideHead);
+                appendChildren(builder, node, mode, insideHead, insideSelect);
             }
         }
         else if (node instanceof SvgTitle) {
             // nothing to do
         }
         else {
-            appendChildren(builder, node, mode, insideHead);
+            appendChildren(builder, node, mode, insideHead, insideSelect);
         }
     }
 
@@ -197,17 +213,18 @@ public class HtmlSerializerInnerOuterText {
     }
 
     /**
-     * Process {@link HtmlListItem}.
+     * Process {@link HtmlParagraph}.
      *
      * @param builder the StringBuilder to add to
      * @param htmlParagraph the target to process
      * @param mode the {@link Mode} to use for processing
      * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
      */
     protected void appendParagraph(final HtmlSerializerTextBuilder builder,
-            final HtmlParagraph htmlParagraph, final Mode mode, final boolean insideHead) {
+            final HtmlParagraph htmlParagraph, final Mode mode, final boolean insideHead, final boolean insideSelect) {
         builder.appendRequiredLineBreak();
-        appendChildren(builder, htmlParagraph, mode, insideHead);
+        appendChildren(builder, htmlParagraph, mode, insideHead, insideSelect);
         builder.appendRequiredLineBreak();
     }
 
@@ -218,11 +235,12 @@ public class HtmlSerializerInnerOuterText {
      * @param htmlListItem the target to process
      * @param mode the {@link Mode} to use for processing
      * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
      */
     protected void appendListItem(final HtmlSerializerTextBuilder builder,
-            final HtmlListItem htmlListItem, final Mode mode, final boolean insideHead) {
+            final HtmlListItem htmlListItem, final Mode mode, final boolean insideHead, final boolean insideSelect) {
         builder.appendRequiredLineBreak();
-        appendChildren(builder, htmlListItem, mode, insideHead);
+        appendChildren(builder, htmlListItem, mode, insideHead, insideSelect);
         builder.appendRequiredLineBreak();
     }
 
@@ -232,17 +250,82 @@ public class HtmlSerializerInnerOuterText {
      * @param htmlDetails the target to process
      * @param mode the {@link Mode} to use for processing
      * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
      */
     protected void appendDetails(final HtmlSerializerTextBuilder builder,
-                    final HtmlDetails htmlDetails, final Mode mode, final boolean insideHead) {
+                    final HtmlDetails htmlDetails, final Mode mode,
+                    final boolean insideHead, final boolean insideSelect) {
         if (htmlDetails.isOpen()) {
-            appendChildren(builder, htmlDetails, mode, insideHead);
+            appendChildren(builder, htmlDetails, mode, insideHead, insideSelect);
             return;
         }
 
         for (final DomNode child : htmlDetails.getChildren()) {
             if (child instanceof HtmlSummary) {
-                appendNode(builder, child, mode, insideHead);
+                appendNode(builder, child, mode, insideHead, insideSelect);
+            }
+        }
+    }
+
+    /**
+     * Process {@link HtmlDefinitionTerm}.
+     *
+     * @param builder the StringBuilder to add to
+     * @param htmlDefinitionTerm the target to process
+     * @param mode the {@link Mode} to use for processing
+     * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
+     */
+    protected void appendDefinitionTerm(final HtmlSerializerTextBuilder builder,
+            final HtmlDefinitionTerm htmlDefinitionTerm, final Mode mode,
+            final boolean insideHead, final boolean insideSelect) {
+        builder.appendRequiredLineBreak();
+        appendChildren(builder, htmlDefinitionTerm, mode, insideHead, insideSelect);
+        builder.appendRequiredLineBreak();
+    }
+
+    /**
+     * Process {@link HtmlSelect}.
+     * <p>
+     * Select and its Option children are rendered as native form-control widgets in real browsers,
+     * not as normal inline/block boxes. The widget's internal text drawing doesn't go through the
+     * same CSS text-layout pipeline that divs or spans use,
+     * so properties like white-space: pre on a &lt;select&gt; or &lt;option&gt; get ignored by Chrome/Firefox/etc.
+     * </p>
+     *
+     * @param builder the StringBuilder to add to
+     * @param htmlSelect the target to process
+     * @param mode the {@link Mode} to use for processing
+     * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
+     */
+    protected void appendSelect(final HtmlSerializerTextBuilder builder,
+            final HtmlSelect htmlSelect, final Mode mode, final boolean insideHead, final boolean insideSelect) {
+        if (browserVersion_.hasFeature(JS_INNER_TEXT_SELECT_EMPTY)) {
+            return;
+        }
+
+        appendDescendantOptions(builder, htmlSelect, Mode.WHITE_SPACE_NORMAL, insideHead, true);
+    }
+
+    /**
+     * Iterate over all descendant options.
+     *
+     * @param builder the StringBuilder to add to
+     * @param node the node to process
+     * @param mode the {@link Mode} to use for processing
+     * @param insideHead true if inside head section
+     * @param insideSelect true if inside a select
+     */
+    protected void appendDescendantOptions(final HtmlSerializerTextBuilder builder, final DomNode node,
+            final Mode mode, final boolean insideHead, final boolean insideSelect) {
+        for (final DomNode child : node.getChildNodes()) {
+            if (child instanceof HtmlOption) {
+                builder.appendRequiredLineBreak();
+                appendChildren(builder, child, Mode.WHITE_SPACE_NORMAL, insideHead, true);
+            }
+            else {
+                appendDescendantOptions(builder, child, Mode.WHITE_SPACE_NORMAL, insideHead, true);
             }
         }
     }
@@ -254,14 +337,14 @@ public class HtmlSerializerInnerOuterText {
                 if (page.getWebClient().getOptions().isCssEnabled()) {
                     DomNode node = domNode;
                     while (node != null) {
-                        if (node instanceof DomElement) {
+                        if (node instanceof DomElement domElement) {
                             final WebWindow window = page.getEnclosingWindow();
                             if (window != null) {
                                 final ComputedCssStyleDeclaration style =
-                                        window.getComputedStyle((DomElement) domNode, null);
+                                        window.getComputedStyle(domElement, null);
                                 final String value = style.getStyleAttribute(Definition.WHITE_SPACE, false);
 
-                                if (StringUtils.isNoneEmpty(value)) {
+                                if (!StringUtils.isEmptyOrNull(value)) {
                                     if ("normal".equalsIgnoreCase(value)) {
                                         return Mode.WHITE_SPACE_NORMAL;
                                     }
@@ -315,7 +398,7 @@ public class HtmlSerializerInnerOuterText {
 
             /**
              * Sequences of white space are collapsed. Lines are broken
-             * at newline characters, at <br>, and as necessary
+             * at newline characters, at <br> and as necessary
              * to fill line boxes.
              */
             WHITE_SPACE_PRE_LINE
@@ -387,9 +470,9 @@ public class HtmlSerializerInnerOuterText {
             }
 
             length--;
-            int i = -1;
-            for (char c : content.toCharArray()) {
-                i++;
+            final int contentLength = content.length();
+            for (int i = 0; i < contentLength; i++) {
+                char c = content.charAt(i);
 
                 // handle \r
                 if (c == '\r') {
@@ -505,6 +588,8 @@ public class HtmlSerializerInnerOuterText {
         }
 
         /**
+         * Returns the constructed text.
+         *
          * @return the constructed text.
          */
         public String getText() {

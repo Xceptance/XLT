@@ -33,6 +33,27 @@ public class LoadProfileConfigurationReport
     @XStreamConverter(LoadFunctionXStreamConverter.class)
     public int[][] arrivalRate;
 
+    /**
+     * The lowest arrival rate of the load function, or <code>null</code> if no arrival rate is configured. The
+     * {@link #arrivalRate} field is rendered for human readers as "1...3,535", complete with grouping separators;
+     * this field and {@link #arrivalRateMax} carry the same information as plain numbers.
+     */
+    public Integer arrivalRateMin = null;
+
+    /**
+     * The highest arrival rate of the load function, or <code>null</code> if no arrival rate is configured.
+     *
+     * @see #arrivalRateMin
+     */
+    public Integer arrivalRateMax = null;
+
+    /**
+     * The arrival rate load function as <code>second:value</code> pairs, or <code>null</code> when the rate does not
+     * change over the run. Min and max only say where the function starts and ends, which loses the shape of anything
+     * more interesting than a single ramp - a stepped or spiky profile looks the same as a smooth climb.
+     */
+    public String arrivalRateProfile = null;
+
     public BigDecimal arrivalRatePercentage = null;
 
     @XStreamConverter(ComplexLoadFunctionXStreamConverter.class)
@@ -46,6 +67,28 @@ public class LoadProfileConfigurationReport
 
     @XStreamConverter(LoadFunctionXStreamConverter.class)
     public int[][] numberOfUsers;
+
+    /**
+     * The lowest user count of the load function, or <code>null</code> if no user count is configured.
+     *
+     * @see #arrivalRateMin
+     */
+    public Integer numberOfUsersMin = null;
+
+    /**
+     * The highest user count of the load function, or <code>null</code> if no user count is configured.
+     *
+     * @see #arrivalRateMin
+     */
+    public Integer numberOfUsersMax = null;
+
+    /**
+     * The user count load function as <code>second:value</code> pairs, or <code>null</code> when the count does not
+     * change over the run.
+     *
+     * @see #arrivalRateProfile
+     */
+    public String numberOfUsersProfile = null;
 
     public BigDecimal numberOfUsersPercentage = null;
 
@@ -78,5 +121,121 @@ public class LoadProfileConfigurationReport
         this.warmUpPeriod = tcConfig.getWarmUpPeriod();
         this.actionThinkTime = tcConfig.getActionThinkTime();
         this.actionThinkTimeDeviation = tcConfig.getActionThinkTimeDeviation();
+
+        this.arrivalRateMin = minOfLoadFunction(this.arrivalRate);
+        this.arrivalRateMax = maxOfLoadFunction(this.arrivalRate);
+        this.arrivalRateProfile = profileOfLoadFunction(this.arrivalRate, this.rampUpPeriod);
+        this.numberOfUsersMin = minOfLoadFunction(this.numberOfUsers);
+        this.numberOfUsersMax = maxOfLoadFunction(this.numberOfUsers);
+        this.numberOfUsersProfile = profileOfLoadFunction(this.numberOfUsers, this.rampUpPeriod);
+    }
+
+    /**
+     * Renders a load function as <code>second:value</code> pairs, so that a profile which changes over the run keeps
+     * its shape instead of collapsing to a min and a max.
+     *
+     * @param loadFunction
+     *            the load function, may be <code>null</code>
+     * @param rampUpPeriod
+     *            the configured ramp-up period, used to recognise a plain ramp-up
+     * @return the pairs, or <code>null</code> when the function does not change over time, or changes only in the way
+     *         the ramp-up period already describes
+     */
+    private static String profileOfLoadFunction(final int[][] loadFunction, final int rampUpPeriod)
+    {
+        if (loadFunction == null || loadFunction.length < 2)
+        {
+            return null;
+        }
+
+        if (isPlainRampUp(loadFunction, rampUpPeriod))
+        {
+            return null;
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        for (final int[] point : loadFunction)
+        {
+            if (sb.length() > 0)
+            {
+                sb.append(' ');
+            }
+            sb.append(point[0]).append(':').append(point[1]);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Tells whether the given function is nothing more than the configured ramp-up: two points, climbing from the
+     * lowest value at the start of the run to the highest at the end of the ramp-up.
+     * <p>
+     * Such a function is already fully described by the peak value and the ramp-up period, both of which the report
+     * states elsewhere, so spelling it out again would say nothing new.
+     *
+     * @param loadFunction
+     *            the load function
+     * @param rampUpPeriod
+     *            the configured ramp-up period
+     * @return whether the function is a plain ramp-up
+     */
+    private static boolean isPlainRampUp(final int[][] loadFunction, final int rampUpPeriod)
+    {
+        if (loadFunction.length != 2 || rampUpPeriod <= 0)
+        {
+            return false;
+        }
+
+        final int[] first = loadFunction[0];
+        final int[] second = loadFunction[1];
+
+        return first[0] == 0 && second[0] == rampUpPeriod && first[1] <= second[1];
+    }
+
+    /**
+     * Returns the lowest value of the given load function.
+     *
+     * @param loadFunction
+     *            the load function, may be <code>null</code>
+     * @return the minimum, or <code>null</code> if there is no load function
+     */
+    private static Integer minOfLoadFunction(final int[][] loadFunction)
+    {
+        if (loadFunction == null || loadFunction.length == 0)
+        {
+            return null;
+        }
+
+        // see LoadFunctionXStreamConverter, which renders the same values for human readers
+        int minimum = Integer.MAX_VALUE;
+        for (final int[] array : loadFunction)
+        {
+            minimum = Math.min(minimum, array[1]);
+        }
+
+        return minimum;
+    }
+
+    /**
+     * Returns the highest value of the given load function.
+     *
+     * @param loadFunction
+     *            the load function, may be <code>null</code>
+     * @return the maximum, or <code>null</code> if there is no load function
+     */
+    private static Integer maxOfLoadFunction(final int[][] loadFunction)
+    {
+        if (loadFunction == null || loadFunction.length == 0)
+        {
+            return null;
+        }
+
+        int maximum = 0;
+        for (final int[] array : loadFunction)
+        {
+            maximum = Math.max(maximum, array[1]);
+        }
+
+        return maximum;
     }
 }

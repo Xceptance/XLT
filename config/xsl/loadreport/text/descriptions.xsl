@@ -17,6 +17,18 @@
         </div>
     </xsl:template>
 
+    <!-- ## Description: Rating ## -->
+    <xsl:template name="headline-rating">
+        <h2>Rating</h2>
+    </xsl:template>
+    <xsl:template name="description-rating">
+        <div class="description">
+            <p>
+                Overall performance assessment and test evaluation.
+            </p>
+        </div>
+    </xsl:template>
+
     <!-- ## Description: Test comment ## -->
     <xsl:template name="headline-testcomment">
         <h2>Test Comment</h2>
@@ -419,8 +431,9 @@
                         Receive Time: Time spent receiving data from the first to the last bytes received.
                     </li>
                     <li>
-                        Time to First Bytes: Total time from the connection start until the first bytes are received. Includes
-                        Connect, Send, Server Busy, and Receive Time.
+                        Time to First Bytes: Total time from the connection start until the first bytes are received.
+                        Includes Connect, Send, and Server Busy Time. It does not include Receive Time, which only
+                        starts once the first bytes have arrived.
                     </li>
                     <li>
                         Time to Last Bytes: Total time from the connection start until the last bytes are received. This is the
@@ -536,8 +549,9 @@
                         Receive Time: Time spent receiving data from the first to the last bytes received.
                     </li>
                     <li>
-                        Time to First Bytes: Total time from the connection start until the first bytes are received. Includes
-                        Connect, Send, Server Busy, and Receive Time.
+                        Time to First Bytes: Total time from the connection start until the first bytes are received.
+                        Includes Connect, Send, and Server Busy Time. It does not include Receive Time, which only
+                        starts once the first bytes have arrived.
                     </li>
                     <li>
                         Time to Last Bytes: Total time from the connection start until the last bytes are received. This is the

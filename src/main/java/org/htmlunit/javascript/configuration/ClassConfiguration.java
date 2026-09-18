@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.htmlunit.javascript.HtmlUnitScriptable;
 /**
  * A container for all the JavaScript configuration information for one class.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Chris Erskine
  * @author Ahmed Ashour
  * @author Ronald Brill
@@ -47,7 +47,7 @@ public final class ClassConfiguration {
     private final String hostClassSimpleName_;
 
     /**
-     * The constructor method in the {@link #hostClass_}
+     * The constructor method in the {@link #hostClass_}.
      */
     private Map.Entry<String, Member> jsConstructor_;
     private String jsConstructorAlias_;
@@ -247,6 +247,8 @@ public final class ClassConfiguration {
     }
 
     /**
+     * Returns the extendedClass.
+     *
      * @return the extendedClass
      */
     public String getExtendedClassName() {
@@ -262,6 +264,7 @@ public final class ClassConfiguration {
     }
 
     /**
+     * Returns the hostClassSimpleName.
      * @return the hostClassSimpleName
      */
     public String getHostClassSimpleName() {
@@ -277,8 +280,10 @@ public final class ClassConfiguration {
     }
 
     /**
+     * Returns the JavaScript constructor method alias.
+     *
      * @return the JavaScript constructor method alias
-     * or null if there is nothing.
+     *         or null if there is nothing.
      */
     public String getJsConstructorAlias() {
         return jsConstructorAlias_;
@@ -294,6 +299,8 @@ public final class ClassConfiguration {
     }
 
     /**
+     * Return the jsObject.
+     *
      * @return the jsObject
      */
     public boolean isJsObject() {
@@ -328,6 +335,8 @@ public final class ClassConfiguration {
         }
 
         /**
+         * Returns the readMethod.
+         *
          * @return the readMethod
          */
         public Method getReadMethod() {
@@ -335,6 +344,8 @@ public final class ClassConfiguration {
         }
 
         /**
+         * Returns the writeMethod.
+         *
          * @return the writeMethod
          */
         public Method getWriteMethod() {
@@ -364,6 +375,8 @@ public final class ClassConfiguration {
         }
 
         /**
+         * Returns the name.
+         *
          * @return the name
          */
         public String getName() {
@@ -371,6 +384,8 @@ public final class ClassConfiguration {
         }
 
         /**
+         * Returns the value.
+         *
          * @return the value
          */
         public Object getValue() {
@@ -378,6 +393,8 @@ public final class ClassConfiguration {
         }
 
         /**
+         * Returns the flag.
+         *
          * @return the flag
          */
         public int getFlag() {
