@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="7">
-  <description>Opens the log-in form.</description>
-  <action name="OpenLoginForm"/>
-  <command name="assertElementPresent" target="id=showUserMenu"/>
-  <command name="click" target="id=showUserMenu"/>
-  <command name="waitForElementPresent" target="id=userMenu"/>
-  <command name="clickAndWait" target="css=#userMenu .goToLogin"/>
-</scriptmodule>

@@ -13,19 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * NOTE: This file is generated. Do not edit! Your changes will be lost.
- */
 package posters.functional.scenarios;
-import com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase;
-import com.xceptance.xlt.api.engine.scripting.ScriptName;
+import org.junit.Test;
+import com.xceptance.xlt.api.engine.scripting.AbstractWebDriverScriptTestCase;
 
+import posters.functional.modules.CreateRandomUser;
+import posters.functional.modules.Login;
+import posters.functional.modules.OpenHomepage;
 
 /**
  * <p>Simulates customer registration.</p>
  */
-@ScriptName
-("posters.functional.scenarios.TRegister")
-public class TRegister extends AbstractScriptTestCase
+public class TRegister extends AbstractWebDriverScriptTestCase
 {
+
+    /**
+     * Constructor.
+     */
+    public TRegister()
+    {
+        super("https://localhost:8443");
+    }
+
+
+    /**
+     * Executes the test.
+     *
+     * @throws Throwable if anything went wrong
+     */
+    @Test
+    public void test() throws Throwable
+    {
+        OpenHomepage.execute();
+
+        CreateRandomUser.execute();
+
+        Login.execute("${generatedEmail}", "${password}", "${firstName}");
+
+
+    }
+
 }

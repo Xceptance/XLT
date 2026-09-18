@@ -1022,7 +1022,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     @Override
     public void download(final WebWindow requestingWindow, final String target, final WebRequest request, final boolean checkHash,
-                         final boolean forceLoad, final String forceAttachmentWithFilename, final String description)
+                         final String forceAttachmentWithFilename, final String description)
     {
         if (requestingWindow.getTopWindow() == requestingWindow)
         {
@@ -1041,7 +1041,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         request.setDocumentRequest();
 
-        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachmentWithFilename, description);
+        super.download(requestingWindow, target, request, checkHash, forceAttachmentWithFilename, description);
     }
 
     /**
@@ -1649,7 +1649,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // load imported style sheet
                 final CssStyleSheet imported = sheet.getCssStyleSheet().getImportedStyleSheet(importRule);
-                final CSSStyleSheet importedSheet = new CSSStyleSheet(sheet.getOwnerNode(), sheet.getWindow(), imported);
+                final CSSStyleSheet importedSheet = new CSSStyleSheet(sheet.getOwnerNode(), sheet.getWindow().getParentScope(), imported);
 
                 // recurse into imported style sheet if there is one
                 if (importedSheet != null)

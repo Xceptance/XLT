@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <command name="type" target="id=in_txt_1" value="${td1} - 1"/>
-  <command name="assertText" target="id=cc_keyup" value="keyup (in_txt_1) fromPkgLvl2 - 1"/>
-  <command name="assertText" target="id=specialchar_1" value="${gtd2}"/>
-  <command name="type" target="id=in_txt_1" value="${td2} - 1"/>
-  <command name="assertText" target="id=cc_keyup" value="keyup (in_txt_1) fromPkgLvl1 - 1"/>
-  <command name="assertText" target="id=specialchar_1" value="${gtd2}"/>
-</scriptmodule>

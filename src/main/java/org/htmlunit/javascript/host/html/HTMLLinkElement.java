@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import org.htmlunit.javascript.host.dom.DOMTokenList;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Sven Strickroth
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlLink.class)
 public class HTMLLinkElement extends HTMLElement {
@@ -65,8 +67,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Sets the href property.
-     * @param href href attribute value
+     * Sets the {@code href} property.
+     * @param href the {@code href} property value
      */
     @JsxSetter
     public void setHref(final String href) {
@@ -74,8 +76,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the href property.
-     * @return the href property
+     * Returns the value of the {@code href} property.
+     * @return the value of the {@code href} property
      */
     @JsxGetter
     public String getHref() {
@@ -93,8 +95,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Sets the rel property.
-     * @param rel rel attribute value
+     * Sets the {@code rel} property.
+     * @param rel the {@code rel} property value
      */
     @JsxSetter
     public void setRel(final String rel) {
@@ -102,8 +104,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rel property.
-     * @return the rel property
+     * Returns the value of the {@code rel} property.
+     * @return the value of the {@code rel} property
      */
     @JsxGetter
     public String getRel() {
@@ -111,8 +113,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Sets the rev property.
-     * @param rel rev attribute value
+     * Sets the {@code rev} property.
+     * @param rel the {@code rev} property value
      */
     @JsxSetter
     public void setRev(final String rel) {
@@ -120,8 +122,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the rev property.
-     * @return the rev property
+     * Returns the value of the {@code rev} property.
+     * @return the value of the {@code rev} property
      */
     @JsxGetter
     public String getRev() {
@@ -129,8 +131,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Sets the type property.
-     * @param type type attribute value
+     * Sets the {@code type} property.
+     * @param type the {@code type} property value
      */
     @JsxSetter
     public void setType(final String type) {
@@ -138,8 +140,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Returns the value of the type property.
-     * @return the type property
+     * Returns the value of the {@code type} property.
+     * @return the value of the {@code type} property
      */
     @JsxGetter
     public String getType() {
@@ -155,7 +157,7 @@ public class HTMLLinkElement extends HTMLElement {
         if (sheet_ == null) {
             try {
                 final CssStyleSheet sheet = getDomNodeOrDie().getSheet();
-                sheet_ = new CSSStyleSheet(this, getWindow(), sheet);
+                sheet_ = new CSSStyleSheet(this, getTopLevelScope(getParentScope()), sheet);
             }
             catch (final RuntimeException e) {
                 // Got something unexpected; we can throw an exception in this case.
@@ -189,8 +191,8 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
-     * Sets the relList property.
-     * @param rel attribute value
+     * Sets the {@code relList} attribute.
+     * @param rel the {@code relList} attribute value
      */
     @JsxSetter
     public void setRelList(final Object rel) {

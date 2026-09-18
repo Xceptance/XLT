@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.htmlunit.FrameContentHandler;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
-import org.htmlunit.WebClientOptions;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebWindow;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
@@ -40,9 +39,9 @@ import org.w3c.dom.Attr;
 /**
  * Base class for frame and iframe.
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Marc Guillemot
  * @author David D. Kilzer
  * @author Stefan Anzinger
@@ -77,7 +76,10 @@ public abstract class BaseFrameElement extends HtmlElement {
             // if created by the HTMLParser the src attribute is not set via setAttribute() or some other method but is
             // part of the given attributes already.
             final String src = getSrcAttribute();
-            if (ATTRIBUTE_NOT_DEFINED != src && !UrlUtils.ABOUT_BLANK.equals(src)) {
+
+            // src-less IFrame or src='about:blank'
+            // these are loaded sync
+            if (ATTRIBUTE_NOT_DEFINED != src && !UrlUtils.ABOUT_BLANK.equals(src.trim())) {
                 loadSrcWhenAddedToPage_ = true;
             }
         }
@@ -159,10 +161,6 @@ public abstract class BaseFrameElement extends HtmlElement {
         contentLoaded_ = true;
     }
 
-    /**
-     * @throws FailingHttpStatusCodeException if the server returns a failing status code AND the property
-     *      {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to true
-     */
     private void loadInnerPageIfPossible(final String src) throws FailingHttpStatusCodeException {
         setContentLoaded();
 
@@ -193,22 +191,35 @@ public abstract class BaseFrameElement extends HtmlElement {
             }
 
             final Charset pageCharset = page.getCharset();
-            final WebRequest request = new WebRequest(url, pageCharset, pageUrl);
 
-            if (isAlreadyLoadedByAncestor(url, request.getCharset())) {
+            if (isAlreadyLoadedByAncestor(url, pageCharset)) {
                 notifyIncorrectness("Recursive src attribute of " + getTagName() + ": url=[" + source + "]. Ignored.");
                 return;
             }
+
+            final WebRequest webRequest = new WebRequest(url, webClient.getBrowserVersion().getHtmlAcceptHeader(),
+                                                            webClient.getBrowserVersion().getAcceptEncodingHeader());
+            webRequest.setCharset(pageCharset);
+            webRequest.setRefererHeader(pageUrl);
 
             // Use parent document's charset as container charset if same origin
             // https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding
             if (Objects.equals(pageUrl.getProtocol(), url.getProtocol())
                     && Objects.equals(pageUrl.getAuthority(), url.getAuthority())) {
-                request.setDefaultResponseContentCharset(pageCharset);
+                webRequest.setDefaultResponseContentCharset(pageCharset);
             }
 
+            // Sec-Fetch-* support (https://www.w3.org/TR/fetch-metadata/): a frame/iframe
+            // load is a navigation initiated by the containing page, but - unlike a click
+            // or form submission - never carries user activation, since there is no
+            // gesture involved in an automatic <iframe>/<frame> load.
+            final WebRequest.FetchDestination fetchDestination = this instanceof HtmlInlineFrame
+                    ? WebRequest.FetchDestination.IFRAME
+                    : WebRequest.FetchDestination.FRAME;
+            webRequest.markAsNavigation(fetchDestination, pageUrl, false);
+
             try {
-                webClient.getPage(enclosedWindow_, request);
+                webClient.getPage(enclosedWindow_, webRequest);
             }
             catch (final IOException e) {
                 if (LOG.isErrorEnabled()) {
@@ -387,26 +398,32 @@ public abstract class BaseFrameElement extends HtmlElement {
      * {@inheritDoc}
      */
     @Override
-    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, String attributeValue,
+    protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObserver) {
         final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+
         if (null != attributeValue && SRC_ATTRIBUTE.equals(qualifiedNameLC)) {
-            attributeValue = attributeValue.trim();
+            final String attributeValueTrimmed = attributeValue.trim();
+
+            super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValueTrimmed, notifyAttributeChangeListeners,
+                    notifyMutationObserver);
+
+            // do not use equals() here
+            // see HTMLIFrameElement2Test.documentCreateElement_onLoad_srcAboutBlank()
+            if (UrlUtils.ABOUT_BLANK != attributeValueTrimmed) {
+                if (isAttachedToPage()) {
+                    loadSrc();
+                }
+                else {
+                    loadSrcWhenAddedToPage_ = true;
+                }
+            }
+
+            return;
         }
 
         super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObserver);
-
-        // do not use equals() here
-        // see HTMLIFrameElement2Test.documentCreateElement_onLoad_srcAboutBlank()
-        if (SRC_ATTRIBUTE.equals(qualifiedNameLC) && UrlUtils.ABOUT_BLANK != attributeValue) {
-            if (isAttachedToPage()) {
-                loadSrc();
-            }
-            else {
-                loadSrcWhenAddedToPage_ = true;
-            }
-        }
     }
 
     /**

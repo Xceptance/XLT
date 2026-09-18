@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.htmlunit.javascript.host.html.HTMLElement;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord">MDN Documentation</a>
  */
 @JsxClass
 public class MutationRecord extends HtmlUnitScriptable {
@@ -127,12 +129,13 @@ public class MutationRecord extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code addedNodes} property.
      * @return the {@code addedNodes} property
      */
     @JsxGetter
     public NodeList getAddedNodes() {
-        if (addedNodes_ == null && target_ instanceof HTMLElement) {
-            final NodeList addedNodes = new NodeList(((HTMLElement) target_).getDomNodeOrDie(), new ArrayList<>());
+        if (addedNodes_ == null && target_ instanceof HTMLElement element) {
+            final NodeList addedNodes = new NodeList(element.getDomNodeOrDie(), new ArrayList<>());
             addedNodes.setParentScope(getParentScope());
             addedNodes.setPrototype(getPrototype(addedNodes.getClass()));
 
@@ -150,12 +153,13 @@ public class MutationRecord extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code removedNodes} property.
      * @return the {@code removedNodes} property
      */
     @JsxGetter
     public NodeList getRemovedNodes() {
-        if (removedNodes_ == null && target_ instanceof HTMLElement) {
-            final NodeList removedNodes = new NodeList(((HTMLElement) target_).getDomNodeOrDie(), new ArrayList<>());
+        if (removedNodes_ == null && target_ instanceof HTMLElement element) {
+            final NodeList removedNodes = new NodeList(element.getDomNodeOrDie(), new ArrayList<>());
             removedNodes.setParentScope(getParentScope());
             removedNodes.setPrototype(getPrototype(removedNodes.getClass()));
 
@@ -173,6 +177,7 @@ public class MutationRecord extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code previousSibling} property.
      * @return the {@code previousSibling} property
      */
     @JsxGetter
@@ -189,6 +194,7 @@ public class MutationRecord extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code nextSibling} property.
      * @return the {@code nextSibling} property
      */
     @JsxGetter

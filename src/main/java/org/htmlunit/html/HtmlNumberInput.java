@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@ import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_ACCEPT_ALL;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.html.parser.HtmlNumberParser;
+import org.htmlunit.util.ArrayUtils;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Wrapper for the HTML element "input" with type is "number".
@@ -38,8 +37,8 @@ import org.htmlunit.SgmlPage;
  */
 public class HtmlNumberInput extends HtmlSelectableTextInput implements LabelableElement {
 
-    private static final char[] VALID_INT_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-'};
-    private static final String VALID_CHARS = "0123456789-+.eE";
+    private static final char[] VALID_INT_CHARS = "0123456789-".toCharArray();
+    private static final char[] VALID_CHARS = "0123456789-+.eE".toCharArray();
 
     /**
      * Creates an instance.
@@ -53,10 +52,11 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
         super(qualifiedName, page, attributes);
 
         final String value = getValueAttribute();
-        if (!value.isEmpty()) {
-            if (!StringUtils.containsOnly(value, VALID_CHARS)) {
-                setRawValue("");
-            }
+        if (!value.isEmpty()
+                // Firefox is more lenient when parsing the INITIAL 'value' ATTRIBUTE specifically
+                && !HtmlNumberParser.isValid(value, false, hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE))) {
+
+            setRawValue("");
         }
     }
 
@@ -81,10 +81,8 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
      */
     @Override
     protected void doType(final char c, final boolean lastType) {
-        if (!hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
-            if (VALID_CHARS.indexOf(c) == -1) {
-                return;
-            }
+        if (!hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL) && !ArrayUtils.contains(VALID_CHARS, c)) {
+            return;
         }
         super.doType(c, lastType);
     }
@@ -94,116 +92,163 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
      */
     @Override
     public String getValue() {
-        final String raw = getRawValue();
+        String raw = getRawValue();
 
         if (StringUtils.isBlank(raw)) {
             return "";
         }
 
-        if (org.htmlunit.util.StringUtils.equalsChar('-', raw)
-                || org.htmlunit.util.StringUtils.equalsChar('+', raw)) {
+        if (StringUtils.equalsChar('-', raw) || StringUtils.equalsChar('+', raw)) {
             return raw;
         }
 
-        try {
-            final String lang = getPage().getWebClient().getBrowserVersion().getBrowserLanguage();
-            final NumberFormat format = NumberFormat.getInstance(Locale.forLanguageTag(lang));
-            format.parse(raw);
-
-            return raw.trim();
-        }
-        catch (final ParseException ignored) {
-            // ignore
+        // Confirmed via real-browser testing (typeIntegerWithDot): mid-typing a
+        // trailing '.' with otherwise-valid digits before it (e.g. "1.") reports
+        // the pre-dot value ("1"), not "" and not the raw "1."
+        if (raw.endsWith(".")) {
+            raw = raw.substring(0, raw.length() - 1);
         }
 
-        if (hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
-            return raw;
+        if (!HtmlNumberParser.isValid(raw, !hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE), false)) {
+            return "";
         }
 
-        return "";
+        if (raw.length() > 1 && raw.charAt(0) == '+') {
+            raw = raw.substring(1, raw.length());
+        }
+
+        return raw;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean isValid() {
-        if (!super.isValid()) {
-            return false;
+    public void setValue(final String newValue) {
+        if (StringUtils.isBlank(newValue) || !HtmlNumberParser.isValid(newValue, false, false)) {
+            super.setValue("");
+            return;
         }
 
-        String rawValue = getRawValue();
-        if (StringUtils.isBlank(rawValue)) {
+        super.setValue(newValue);
+    }
+
+    /**
+     * Parses an attribute string (min/max/step) as a BigDecimal, or
+     * {@code null} if absent or malformed -- consolidates the several
+     * separately-inlined try/catch blocks that used to parse min/max/step
+     * individually in each constraint method.
+     */
+    private static BigDecimal parseAttributeAsBigDecimal(final String attributeValue) {
+        if (attributeValue.isEmpty()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(attributeValue);
+        }
+        catch (final NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * A raw value that isn't even a well-formed number is
+     * {@link #hasBadInputValidityState()}'s concern, not a range violation.
+     */
+    @Override
+    public boolean hasRangeOverflowValidityState() {
+        if (super.hasRangeOverflowValidityState()) {
             return true;
         }
 
-        if (!hasFeature(JS_INPUT_NUMBER_ACCEPT_ALL)) {
-            rawValue = rawValue.replaceAll("\\s", "");
+        final String rawValue = getRawValue();
+        if (StringUtils.isBlank(rawValue)) {
+            return false;
         }
-        if (!rawValue.isEmpty()) {
-            if (org.htmlunit.util.StringUtils.equalsChar('-', rawValue)
-                    || org.htmlunit.util.StringUtils.equalsChar('+', rawValue)) {
-                return false;
-            }
 
-            // if we have no step, the value has to be an integer
-            if (getStep().isEmpty()) {
-                String val = rawValue;
-                final int lastPos = val.length() - 1;
-                if (lastPos >= 0 && val.charAt(lastPos) == '.') {
-                    if (hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE)) {
-                        return false;
-                    }
-                    val = val.substring(0, lastPos);
-                }
-                if (!StringUtils.containsOnly(val, VALID_INT_CHARS)) {
-                    return false;
-                }
-            }
-
-            final BigDecimal value;
-            try {
-                value = new BigDecimal(rawValue);
-            }
-            catch (final NumberFormatException e) {
-                return false;
-            }
-
-            if (!getMin().isEmpty()) {
-                try {
-                    final BigDecimal min = new BigDecimal(getMin());
-                    if (value.compareTo(min) < 0) {
-                        return false;
-                    }
-
-                    if (!getStep().isEmpty()) {
-                        try {
-                            final BigDecimal step = new BigDecimal(getStep());
-                            if (value.subtract(min).abs().remainder(step).doubleValue() > 0.0) {
-                                return false;
-                            }
-                        }
-                        catch (final NumberFormatException ignored) {
-                            // ignore
-                        }
-                    }
-                }
-                catch (final NumberFormatException ignored) {
-                    // ignore
-                }
-            }
-            if (!getMax().isEmpty()) {
-                try {
-                    final BigDecimal max = new BigDecimal(getMax());
-                    if (value.compareTo(max) > 0) {
-                        return false;
-                    }
-                }
-                catch (final NumberFormatException ignored) {
-                    // ignore
-                }
-            }
+        final BigDecimal value = HtmlNumberParser.parse(rawValue, true, true);
+        if (value == null) {
+            return false;
         }
-        return true;
+
+        final BigDecimal max = parseAttributeAsBigDecimal(getMax());
+        return max != null && value.compareTo(max) > 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     * See {@link #hasRangeOverflowValidityState()} for the malformed-value
+     * / badInput distinction.
+     */
+    @Override
+    public boolean hasRangeUnderflowValidityState() {
+        if (super.hasRangeUnderflowValidityState()) {
+            return true;
+        }
+
+        final String rawValue = getRawValue();
+        if (StringUtils.isBlank(rawValue)) {
+            return false;
+        }
+
+        final BigDecimal value = HtmlNumberParser.parse(rawValue, true, true);
+        if (value == null) {
+            return false;
+        }
+
+        final BigDecimal min = parseAttributeAsBigDecimal(getMin());
+        return min != null && value.compareTo(min) < 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     * See {@link #hasRangeOverflowValidityState()} for the malformed-value
+     * / badInput distinction.
+     */
+    @Override
+    public boolean isStepMismatchValidityState() {
+        if (super.isStepMismatchValidityState()) {
+            return true;
+        }
+
+        final String rawValue = getRawValue();
+        if (StringUtils.isBlank(rawValue)) {
+            return false;
+        }
+
+        final BigDecimal value = HtmlNumberParser.parse(rawValue, true, true);
+        if (value == null) {
+            return false;
+        }
+
+        BigDecimal step = parseAttributeAsBigDecimal(getStep());
+        if (step == null) {
+            step = BigDecimal.ONE;
+        }
+
+        BigDecimal min = parseAttributeAsBigDecimal(getMin());
+        if (min == null) {
+            min = BigDecimal.ZERO;
+        }
+
+        return value.subtract(min).abs().remainder(step).doubleValue() > 0.0;
+    }
+
+    /**
+     * {@inheritDoc}
+     * The new home for the malformed-value case that used to make
+     * hasRangeOverflowValidityState()/hasRangeUnderflowValidityState()/
+     * isStepMismatchValidityState() all incorrectly return {@code true}
+     * simultaneously.
+     */
+    @Override
+    public boolean hasBadInputValidityState() {
+        final String rawValue = getRawValue();
+        if (StringUtils.isBlank(rawValue)) {
+            return false;
+        }
+
+        return !HtmlNumberParser.isValid(rawValue, !hasFeature(JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE), true);
     }
 }

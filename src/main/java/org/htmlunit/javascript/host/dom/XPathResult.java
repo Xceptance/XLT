@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,8 +122,11 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
+     * Initializes this XPath result.
+     *
      * @param result the evaluation result
-     * @param type If a specific type is specified, then the result will be returned as the corresponding type
+     * @param type the requested result type; if a specific type is specified,
+     *        the result will be returned as the corresponding type
      */
     void init(final List<?> result, final int type) {
         result_ = result;
@@ -150,7 +153,8 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
-     * The code representing the type of this result, as defined by the type constants.
+     * Returns the type of this result.
+     *
      * @return the code representing the type of this result
      */
     @JsxGetter
@@ -159,7 +163,8 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
-     * The number of nodes in the result snapshot.
+     * Returns the number of nodes in this snapshot.
+     *
      * @return the number of nodes in the result snapshot
      */
     @JsxGetter
@@ -171,8 +176,9 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
-     * The value of this single node result, which may be null.
-     * @return the value of this single node result, which may be null
+     * Returns the value of this single-node result.
+     *
+     * @return the value of this single-node result, which may be {@code null}
      */
     @JsxGetter
     public Node getSingleNodeValue() {
@@ -186,18 +192,22 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
-     * @return signifies that the iterator has become invalid.
-     * It is true if XPathResult.resultType is UNORDERED_NODE_ITERATOR_TYPE or
-     * ORDERED_NODE_ITERATOR_TYPE and the document has been modified since this result was returned.
+     * Returns whether this iterator has become invalid.
+     *
+     * @return {@code true} if {@code resultType} is
+     *         {@link #UNORDERED_NODE_ITERATOR_TYPE} or
+     *         {@link #ORDERED_NODE_ITERATOR_TYPE} and the document has been
+     *         modified since this result was returned
      */
     @JsxGetter
-    public boolean getInvalidIteratorState() {
+    public boolean isInvalidIteratorState() {
         return false;
     }
 
     /**
-     * Iterates and returns the next node from the node set or {@code null} if there are no more nodes.
-     * @return the next node
+     * Returns the next node in the result.
+     *
+     * @return the next node, or {@code null} if there are no more nodes
      */
     @JsxFunction
     public Node iterateNext() {
@@ -211,10 +221,11 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the index<sup>th</sup> item in the snapshot collection.
-     * If index is greater than or equal to the number of nodes in the list, this method returns null.
-     * @param index Index into the snapshot collection
-     * @return the node at the index<sup>th</sup> position in the NodeList, or null if that is not a valid index
+     * Returns the node at the specified index in the snapshot.
+     *
+     * @param index the index into the snapshot collection
+     * @return the node at the specified index, or {@code null} if the index
+     *         is out of range
      */
     @JsxFunction
     public Node snapshotItem(final int index) {
@@ -228,8 +239,9 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the value of this number result.
-     * @return the value of this number result
+     * Returns the value of this numeric result.
+     *
+     * @return the value of this numeric result
      */
     @JsxGetter
     public double getNumberValue() {
@@ -242,8 +254,8 @@ public class XPathResult extends HtmlUnitScriptable {
             if (o instanceof Number) {
                 return ((Double) o).doubleValue();
             }
-            if (o instanceof Boolean) {
-                return ((Boolean) o).booleanValue() ? 1 : 0;
+            if (o instanceof Boolean boolean1) {
+                return boolean1.booleanValue() ? 1 : 0;
             }
         }
 
@@ -260,9 +272,11 @@ public class XPathResult extends HtmlUnitScriptable {
 
     /**
      * Returns the value of this boolean result.
+     *
      * @return the value of this boolean result
      */
     @JsxGetter
+    @SuppressWarnings("PMD.BooleanGetMethodName")
     public boolean getBooleanValue() {
         if (resultType_ != BOOLEAN_TYPE) {
             throw JavaScriptEngine.reportRuntimeError("Cannot get booleanValue for type: " + resultType_);
@@ -278,11 +292,11 @@ public class XPathResult extends HtmlUnitScriptable {
 
                 return 0.0 != d;
             }
-            if (o instanceof String) {
-                return !((String) o).isEmpty();
+            if (o instanceof String string) {
+                return !string.isEmpty();
             }
-            if (o instanceof Boolean) {
-                return ((Boolean) o).booleanValue();
+            if (o instanceof Boolean boolean1) {
+                return boolean1.booleanValue();
             }
         }
 
@@ -291,6 +305,7 @@ public class XPathResult extends HtmlUnitScriptable {
 
     /**
      * Returns the value of this string result.
+     *
      * @return the value of this string result
      */
     @JsxGetter
@@ -307,11 +322,11 @@ public class XPathResult extends HtmlUnitScriptable {
         }
 
         final Object resultObj = result_.get(0);
-        if (resultObj instanceof DomAttr) {
-            return ((DomAttr) resultObj).getValue();
+        if (resultObj instanceof DomAttr attr) {
+            return attr.getValue();
         }
-        if (resultObj instanceof DomNode) {
-            return ((DomNode) resultObj).asNormalizedText();
+        if (resultObj instanceof DomNode node) {
+            return node.asNormalizedText();
         }
         return resultObj.toString();
     }

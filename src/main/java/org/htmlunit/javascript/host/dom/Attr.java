@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  * A JavaScript object for {@code Attr}.
  *
  * @see <a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-63764602">W3C DOM Level 2</a>
- * @see <a href="http://msdn.microsoft.com/en-us/library/ms535187.aspx">MSDN documentation</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Attr">MDN Documentation</a>
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Ahmed Ashour
@@ -177,8 +177,8 @@ public class Attr extends Node {
     }
 
     /**
-     * Returns the owner document.
-     * @return the document
+     * Returns the root node.
+     * @return this attribute itself, since it has no parent node
      */
     @Override
     public Node getRootNode() {

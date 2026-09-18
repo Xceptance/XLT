@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.StringWebResponse;
@@ -38,10 +37,11 @@ import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.svg.SvgElement;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.xml.XmlPage;
 
 /**
- * A JavaScript object for {@code XMLDocument}.
+ * JavaScript host object for {@code XMLDocument}.
  *
  * @author Ahmed Ashour
  * @author Marc Guillemot
@@ -50,6 +50,8 @@ import org.htmlunit.xml.XmlPage;
  * @author Chuck Dumont
  * @author Frank Danek
  * @author Sven Strickroth
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLDocument">MDN Documentation</a>
  */
 @JsxClass
 public class XMLDocument extends Document {
@@ -64,7 +66,7 @@ public class XMLDocument extends Document {
     }
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -73,8 +75,9 @@ public class XMLDocument extends Document {
     }
 
     /**
-     * Creates a new instance, with associated XmlPage.
-     * @param enclosingWindow the window
+     * Creates a new instance with an associated {@link XmlPage}.
+     *
+     * @param enclosingWindow the enclosing window
      */
     public XMLDocument(final WebWindow enclosingWindow) {
         super();
@@ -91,16 +94,16 @@ public class XMLDocument extends Document {
     }
 
     /**
-     * Loads an XML document using the supplied string.
+     * Loads an XML document from the supplied string.
      *
-     * @param strXML A string containing the XML string to load into this XML document object
-     *        This string can contain an entire XML document or a well-formed fragment.
-     * @return true if the load succeeded; false if the load failed
+     * @param strXML a string containing the XML to load into this document;
+     *        this string can contain an entire XML document or a well-formed fragment
+     * @return {@code true} if the load succeeded; {@code false} if the load failed
      */
     public boolean loadXML(final String strXML) {
         final WebWindow webWindow = getWindow().getWebWindow();
         try {
-            if (StringUtils.isEmpty(strXML)) {
+            if (StringUtils.isEmptyOrNull(strXML)) {
                 throw new IOException("Error parsing XML '" + strXML + "'");
             }
 
@@ -174,14 +177,6 @@ public class XMLDocument extends Document {
         scriptable.setParentScope(getParentScope());
         scriptable.setDomNode(domNode);
         return scriptable;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void initParentScope(final DomNode domNode, final HtmlUnitScriptable scriptable) {
-        scriptable.setParentScope(getParentScope());
     }
 
     /**

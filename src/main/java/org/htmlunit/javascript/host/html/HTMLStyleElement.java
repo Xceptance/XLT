@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.htmlunit.javascript.host.css.CSSStyleSheet;
  * @author Marc Guillemot
  * @author Ronald Brill
  * @author Frank Danek
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlStyle.class)
 public class HTMLStyleElement extends HTMLElement {
@@ -46,7 +48,7 @@ public class HTMLStyleElement extends HTMLElement {
 
     /**
      * Gets the associated sheet.
-     * @see <a href="http://www.xulplanet.com/references/objref/HTMLStyleElement.html">Mozilla doc</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement/sheet">MDN Documentation</a>
      * @return the sheet
      */
     @JsxGetter
@@ -56,14 +58,14 @@ public class HTMLStyleElement extends HTMLElement {
         }
 
         final HtmlStyle style = (HtmlStyle) getDomNodeOrDie();
-        sheet_ = new CSSStyleSheet(this, getWindow(), style.getSheet());
+        sheet_ = new CSSStyleSheet(this, getTopLevelScope(getParentScope()), style.getSheet());
 
         return sheet_;
     }
 
     /**
-     * Returns the type of this style.
-     * @return the type
+     * Returns the value of the {@code type} property.
+     * @return the value of the {@code type} property
      */
     @JsxGetter
     public String getType() {
@@ -72,8 +74,8 @@ public class HTMLStyleElement extends HTMLElement {
     }
 
     /**
-     * Sets the type of this style.
-     * @param type the new type
+     * Sets the value of the {@code type} property.
+     * @param type the {@code type} property value
      */
     @JsxSetter
     public void setType(final String type) {
@@ -82,8 +84,8 @@ public class HTMLStyleElement extends HTMLElement {
     }
 
     /**
-     * Returns the media of this style.
-     * @return the media
+     * Returns the value of the {@code media} property.
+     * @return the value of the {@code media} property
      */
     @JsxGetter
     public String getMedia() {
@@ -92,8 +94,8 @@ public class HTMLStyleElement extends HTMLElement {
     }
 
     /**
-     * Sets the media of this style.
-     * @param media the new media
+     * Sets the value of the {@code media} property.
+     * @param media the {@code media} property value
      */
     @JsxSetter
     public void setMedia(final String media) {
@@ -113,7 +115,7 @@ public class HTMLStyleElement extends HTMLElement {
 
     /**
      * Sets the {@code disabled} property.
-     * @param disabled the {@code disabled} property
+     * @param disabled the {@code disabled} property value
      */
     @Override
     @JsxSetter

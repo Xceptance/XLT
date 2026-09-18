@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@ package org.htmlunit.css;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_17;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_18;
-import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_10;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_14;
-import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_154;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RB_17;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RT_9;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RUBY_17;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_157;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
-import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_10;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_14;
 import static org.htmlunit.css.CssStyleSheet.ABSOLUTE;
 import static org.htmlunit.css.CssStyleSheet.AUTO;
@@ -40,10 +41,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.BrowserVersionFeatures;
 import org.htmlunit.Page;
+import org.htmlunit.SgmlPage;
 import org.htmlunit.WebWindow;
 import org.htmlunit.css.CssPixelValueConverter.CssValue;
 import org.htmlunit.css.StyleAttributes.Definition;
@@ -86,7 +87,14 @@ import org.htmlunit.html.HtmlFigure;
 import org.htmlunit.html.HtmlFigureCaption;
 import org.htmlunit.html.HtmlFileInput;
 import org.htmlunit.html.HtmlFooter;
+import org.htmlunit.html.HtmlFrame;
 import org.htmlunit.html.HtmlHeader;
+import org.htmlunit.html.HtmlHeading1;
+import org.htmlunit.html.HtmlHeading2;
+import org.htmlunit.html.HtmlHeading3;
+import org.htmlunit.html.HtmlHeading4;
+import org.htmlunit.html.HtmlHeading5;
+import org.htmlunit.html.HtmlHeading6;
 import org.htmlunit.html.HtmlHiddenInput;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.html.HtmlInlineFrame;
@@ -104,6 +112,7 @@ import org.htmlunit.html.HtmlNoFrames;
 import org.htmlunit.html.HtmlNoLayer;
 import org.htmlunit.html.HtmlNoScript;
 import org.htmlunit.html.HtmlOutput;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPasswordInput;
 import org.htmlunit.html.HtmlPlainText;
 import org.htmlunit.html.HtmlRadioButtonInput;
@@ -136,8 +145,8 @@ import org.htmlunit.html.HtmlUnderlined;
 import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.HtmlVariable;
 import org.htmlunit.html.HtmlWordBreak;
-import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.platform.Platform;
+import org.htmlunit.util.StringUtils;
 
 /**
  * An object for a CSSStyleDeclaration, which is computed.
@@ -186,11 +195,26 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         Definition.WIDOWS,
         Definition.WORD_SPACING);
 
+    /** Default font sizes for heading elements, used when no explicit font-size is set. */
+    private static final Map<Class<? extends HtmlElement>, String> HEADING_DEFAULT_FONT_SIZES = Map.of(
+        HtmlHeading1.class, "32px",
+        HtmlHeading2.class, "24px",
+        HtmlHeading3.class, "19px",
+        HtmlHeading4.class, "16px",
+        HtmlHeading5.class, "13px",
+        HtmlHeading6.class, "11px");
+
     /** Denotes a value which should be returned as is. */
     public static final String EMPTY_FINAL = new String("");
 
     /** The computed, cached width of the element to which this computed style belongs (no padding, borders, etc.). */
     private Integer width_;
+
+    /** The computed, cached shrink-wrapped width (used by getBoundingClientRect()). */
+    private Integer shrinkWrapWidth_;
+
+    /** The computed, cached content width (sum/max of children's widths) of the element. */
+    private Integer contentWidth_;
 
     /**
      * The computed, cached height of the element to which this computed style belongs (no padding, borders, etc.),
@@ -202,7 +226,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * The computed, cached height of the element to which this computed style belongs (no padding, borders, etc.),
      * <b>not</b> taking child elements into account.
      */
-    private Integer height2_;
+    private Integer emptyHeight_;
 
     /** The computed, cached horizontal padding (left + right) of the element to which this computed style belongs. */
     private Integer paddingHorizontal_;
@@ -225,7 +249,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     private final SortedMap<String, StyleElement> localModifications_ = new TreeMap<>();
 
-    /** The wrapped CSSStyleDeclaration */
+    /** The wrapped CSSStyleDeclaration. */
     private final ElementCssStyleDeclaration elementStyleDeclaration_;
 
     /**
@@ -235,7 +259,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     public ComputedCssStyleDeclaration(final ElementCssStyleDeclaration styleDeclaration) {
         super();
         elementStyleDeclaration_ = styleDeclaration;
-        getDomElement().setDefaults(this);
+        elementStyleDeclaration_.getDomElement().setDefaults(this);
     }
 
     /**
@@ -264,7 +288,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             final String value = element.getValue();
             if (!"content".equals(name)
                     && !value.contains("url")) {
-                return org.htmlunit.util.StringUtils.toRootLowerCase(value);
+                return StringUtils.toRootLowerCase(value);
             }
             return value;
         }
@@ -305,10 +329,10 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         String value = decl.getStyleAttribute(definition.getAttributeName());
         if (value.isEmpty()) {
             final DomNode parent = domElem.getParentNode();
-            if (isDefInheritable && parent instanceof DomElement) {
+            if (isDefInheritable && parent instanceof DomElement element) {
                 final WebWindow window = domElem.getPage().getEnclosingWindow();
 
-                queue[0] = window.getComputedStyle((DomElement) parent, null);
+                queue[0] = window.getComputedStyle(element, null);
             }
             else if (getDefaultValueIfEmpty) {
                 value = definition.getDefaultComputedValue(browserVersion);
@@ -319,6 +343,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
+     * Return the string, or {@code toReturnIfEmptyOrDefault}.
+     *
      * @param toReturnIfEmptyOrDefault the value to return if empty or equals the {@code defaultValue}
      * @param defaultValue the default value of the string
      * @return the string, or {@code toReturnIfEmptyOrDefault}
@@ -383,6 +409,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
+     * Returns the width.
+     *
      * @return the width
      */
     @Override
@@ -401,7 +429,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             @Override
             public String get(final ComputedCssStyleDeclaration style) {
                 final String value = style.getStyleAttribute(Definition.WIDTH, true);
-                if (StringUtils.isEmpty(value)) {
+                if (StringUtils.isEmptyOrNull(value)) {
                     final String position = getStyleAttribute(Definition.POSITION, true);
                     if (ABSOLUTE.equals(position) || FIXED.equals(position)) {
                         final String content = domElem.getVisibleText();
@@ -454,29 +482,27 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     public StyleElement getStyleElement(final String name) {
         final StyleElement existent = elementStyleDeclaration_.getStyleElement(name);
 
-        if (localModifications_ != null) {
-            final StyleElement localStyleMod = localModifications_.get(name);
-            if (localStyleMod == null) {
-                return existent;
-            }
+        final StyleElement localStyleMod = localModifications_.get(name);
+        if (localStyleMod == null) {
+            return existent;
+        }
 
-            if (existent == null) {
-                // Local modifications represent either default style elements or style elements
-                // defined in stylesheets; either way, they shouldn't overwrite any style
-                // elements derived directly from the HTML element's "style" attribute.
-                return localStyleMod;
-            }
+        if (existent == null) {
+            // Local modifications represent either default style elements or style elements
+            // defined in stylesheets; either way, they shouldn't overwrite any style
+            // elements derived directly from the HTML element's "style" attribute.
+            return localStyleMod;
+        }
 
-            // replace if !IMPORTANT
-            if (StyleElement.PRIORITY_IMPORTANT.equals(localStyleMod.getPriority())) {
-                if (existent.isImportant()) {
-                    if (existent.getSpecificity().compareTo(localStyleMod.getSpecificity()) < 0) {
-                        return localStyleMod;
-                    }
-                }
-                else {
+        // replace if !IMPORTANT
+        if (StyleElement.PRIORITY_IMPORTANT.equals(localStyleMod.getPriority())) {
+            if (existent.isImportant()) {
+                if (existent.getSpecificity().compareTo(localStyleMod.getSpecificity()) < 0) {
                     return localStyleMod;
                 }
+            }
+            else {
+                return localStyleMod;
             }
         }
         return existent;
@@ -499,8 +525,11 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
+     * Returns the {@link DomElement} the backing {@link ElementCssStyleDeclaration}
+     * is associated with.
+     *
      * @return the {@link DomElement} the backing {@link ElementCssStyleDeclaration}
-     * is associated with
+     *         is associated with
      */
     public DomElement getDomElement() {
         return elementStyleDeclaration_.getDomElement();
@@ -519,8 +548,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     @Override
     public String getBackgroundColor() {
+        if (!getDomElement().isAttachedToPage()) {
+            return EMPTY_FINAL;
+        }
+
         final String value = super.getBackgroundColor();
-        if (StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmptyOrNull(value)) {
             return Definition.BACKGROUND_COLOR.getDefaultComputedValue(getBrowserVersion());
         }
         return CssColors.toRGBColor(value);
@@ -549,6 +582,38 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     @Override
     public String getBackgroundRepeat() {
         return defaultIfEmpty(super.getBackgroundRepeat(), Definition.BACKGROUND_REPEAT);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBlockSize() {
+        if (NONE.equals(getDisplay())) {
+            return defaultIfEmpty(super.getBlockSize(), Definition.BLOCK_SIZE);
+        }
+
+        final DomElement domElem = getDomElement();
+        if (!domElem.isAttachedToPage()) {
+            return defaultIfEmpty(super.getBlockSize(), Definition.BLOCK_SIZE);
+        }
+
+        return CssPixelValueConverter.pixelString(domElem, new CssPixelValueConverter.CssValue(0, 0) {
+            @Override
+            public String get(final ComputedCssStyleDeclaration style) {
+                final String value = style.getStyleAttribute(Definition.HEIGHT, true);
+                if (StringUtils.isEmptyOrNull(value)) {
+                    final String content = domElem.getVisibleText();
+                    // do this only for small content
+                    // at least for empty div's this is more correct
+                    if (content == null) {
+                        return getDefaultValue() + "px";
+                    }
+                    return getEmptyHeight(domElem) + "px";
+                }
+                return value;
+            }
+        });
     }
 
     /**
@@ -648,7 +713,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * @return the bottom setting
+     * {@inheritDoc}
      */
     @Override
     public String getBottom() {
@@ -656,7 +721,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * @return the color setting
+     * {@inheritDoc}
      */
     @Override
     public String getColor() {
@@ -673,7 +738,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * @return the display setting
+     * {@inheritDoc}
      */
     @Override
     public String getDisplay() {
@@ -682,8 +747,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             return "";
         }
 
-        if (domElem instanceof HtmlElement) {
-            if (((HtmlElement) domElem).isHidden()) {
+        if (domElem instanceof HtmlElement element) {
+            if (element.isHidden()) {
                 return DisplayStyle.NONE.value();
             }
         }
@@ -691,9 +756,9 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         // don't use defaultIfEmpty for performance
         // (no need to calculate the default if not empty)
         final String value = getStyleAttribute(Definition.DISPLAY.getAttributeName());
-        if (StringUtils.isEmpty(value)) {
-            if (domElem instanceof HtmlElement) {
-                return ((HtmlElement) domElem).getDefaultStyleDisplay().value();
+        if (StringUtils.isEmptyOrNull(value)) {
+            if (domElem instanceof HtmlElement element) {
+                return element.getDefaultStyleDisplay().value();
             }
             return "";
         }
@@ -701,7 +766,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * @return the font setting
+     * {@inheritDoc}
      */
     @Override
     public String getFont() {
@@ -713,7 +778,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * @return the font family setting
+     * {@inheritDoc}
      */
     @Override
     public String getFontFamily() {
@@ -721,15 +786,11 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * @return the font size setting
+     * {@inheritDoc}
      */
     @Override
     public String getFontSize() {
-        String value = getStyleAttribute(Definition.FONT_SIZE, true);
-        if (!value.isEmpty()) {
-            value = CssPixelValueConverter.pixelValue(value) + "px";
-        }
-        return value;
+        return getStyleAttribute(Definition.FONT_SIZE, true);
     }
 
     /**
@@ -753,16 +814,20 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         if (!elem.isAttachedToPage()) {
             return "";
         }
-        final int windowHeight = elem.getPage().getEnclosingWindow().getInnerHeight();
-        return CssPixelValueConverter
-                .pixelString(elem, new CssPixelValueConverter.CssValue(0, windowHeight) {
-                    @Override
-                    public String get(final ComputedCssStyleDeclaration style) {
-                        // TODO don't reach out to the js peer
-                        final String offsetHeight = ((HTMLElement) elem.getScriptableObject()).getOffsetHeight() + "px";
-                        return defaultIfEmpty(style.getStyleAttribute(Definition.HEIGHT, true), offsetHeight, AUTO);
-                    }
-                });
+
+        final ComputedCssStyleDeclaration style = elem.getPage().getEnclosingWindow().getComputedStyle(elem, null);
+        final String styleValue = style.getStyleAttribute(Definition.HEIGHT, true);
+
+        if (styleValue == null || styleValue.isEmpty() || AUTO.equals(styleValue) || styleValue.endsWith("%")) {
+            final String calculatedHeight = style.getCalculatedHeight(false, false) + "px";
+            return calculatedHeight;
+        }
+
+        if (styleValue.endsWith("px")) {
+            return styleValue;
+        }
+
+        return CssPixelValueConverter.pixelValue(styleValue) + "px";
     }
 
     /**
@@ -770,16 +835,24 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     @Override
     public String getLeft() {
+        if (NONE.equals(getDisplay())) {
+            return AUTO;
+        }
+
+        final DomElement elem = getDomElement();
+        if (!elem.isAttachedToPage()) {
+            return "";
+        }
+
         final String superLeft = super.getLeft();
         if (!superLeft.endsWith("%")) {
             return defaultIfEmpty(superLeft, AUTO, null);
         }
 
-        final DomElement element = getDomElement();
-        return CssPixelValueConverter.pixelString(element, new CssPixelValueConverter.CssValue(0, 0) {
+        return CssPixelValueConverter.pixelString(elem, new CssPixelValueConverter.CssValue(0, 0) {
             @Override
             public String get(final ComputedCssStyleDeclaration style) {
-                if (style.getDomElement() == element) {
+                if (style.getDomElement() == elem) {
                     return style.getStyleAttribute(Definition.LEFT, true);
                 }
                 return style.getStyleAttribute(Definition.WIDTH, true);
@@ -974,19 +1047,24 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     @Override
     public String getTop() {
-        final DomElement element = getDomElement();
-        if (!element.isAttachedToPage()) {
+        if (NONE.equals(getDisplay())) {
+            return AUTO;
+        }
+
+        final DomElement elem = getDomElement();
+        if (!elem.isAttachedToPage()) {
             return "";
         }
+
         final String superTop = super.getTop();
         if (!superTop.endsWith("%")) {
             return defaultIfEmpty(superTop, Definition.TOP);
         }
 
-        return CssPixelValueConverter.pixelString(element, new CssPixelValueConverter.CssValue(0, 0) {
+        return CssPixelValueConverter.pixelString(elem, new CssPixelValueConverter.CssValue(0, 0) {
             @Override
             public String get(final ComputedCssStyleDeclaration style) {
-                if (style.getDomElement() == element) {
+                if (style.getDomElement() == elem) {
                     return style.getStyleAttribute(Definition.TOP, true);
                 }
                 return style.getStyleAttribute(Definition.HEIGHT, true);
@@ -1005,7 +1083,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         Integer cachedTop = getCachedTop();
 
         int top = 0;
-        if (null == cachedTop) {
+        if (cachedTop == null) {
             final String position = getPositionWithInheritance();
             if (ABSOLUTE.equals(position) || FIXED.equals(position)) {
                 top = getTopForAbsolutePositionWithInheritance();
@@ -1157,6 +1235,10 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     @Override
     public String getZIndex() {
+        if (!getDomElement().isAttachedToPage()) {
+            return EMPTY_FINAL;
+        }
+
         final String response = super.getZIndex();
         if (response.isEmpty()) {
             return AUTO;
@@ -1220,8 +1302,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             if (parent == null) {
                 parentWidth = getDomElement().getPage().getEnclosingWindow().getInnerWidth();
             }
-            else if (parent instanceof Page) {
-                parentWidth = ((Page) parent).getEnclosingWindow().getInnerWidth();
+            else if (parent instanceof Page page) {
+                parentWidth = page.getEnclosingWindow().getInnerWidth();
             }
             else {
                 final ComputedCssStyleDeclaration parentStyle =
@@ -1279,7 +1361,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                     final String content = prev.getVisibleText();
                     if (content != null) {
                         left += content.trim().length()
-                                * getDomElement().getPage().getWebClient().getBrowserVersion().getPixesPerChar();
+                                * getDomElement().getPage().getWebClient().getBrowserVersion().getPixelsPerChar();
                     }
                 }
                 prev = prev.getPreviousSibling();
@@ -1416,12 +1498,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         if (!element.isAttachedToPage()) {
             return 0;
         }
-        int height = getCalculatedHeight();
+        int height = getCalculatedHeight(element);
         if (!"border-box".equals(getStyleAttribute(Definition.BOX_SIZING, true))) {
             if (includeBorder) {
                 height += getBorderVertical();
             }
-            else if (isScrollable(true, true) && !(element instanceof HtmlBody)) {
+            else if (isScrollable(element, true, true) && !(element instanceof HtmlBody)) {
                 height -= 17;
             }
 
@@ -1436,16 +1518,14 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * Returns the element's calculated height, taking both relevant CSS and the element's children into account.
      * @return the element's calculated height, taking both relevant CSS and the element's children into account
      */
-    private int getCalculatedHeight() {
+    private int getCalculatedHeight(final DomElement element) {
         final Integer cachedHeight = getCachedHeight();
         if (cachedHeight != null) {
             return cachedHeight.intValue();
         }
 
-        final DomElement element = getDomElement();
-
-        if (element instanceof HtmlImage) {
-            return updateCachedHeight(((HtmlImage) element).getHeightOrDefault());
+        if (element instanceof HtmlImage image) {
+            return updateCachedHeight(image.getHeightOrDefault());
         }
 
         final boolean isInline = INLINE.equals(getDisplay()) && !(element instanceof HtmlInlineFrame);
@@ -1457,27 +1537,72 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             }
         }
 
-        return updateCachedHeight(getEmptyHeight());
+        return updateCachedHeight(getEmptyHeight(element));
     }
 
     /**
      * Returns the element's width in pixels, possibly including its padding and border.
+     *
      * @param includeBorder whether or not to include the border width in the returned value
      * @param includePadding whether or not to include the padding width in the returned value
      * @return the element's width in pixels, possibly including its padding and border
      */
     public int getCalculatedWidth(final boolean includeBorder, final boolean includePadding) {
+        return getCalculatedWidth(includeBorder, includePadding, false);
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
+     * <p>
+     * Returns the calculated width of this element in pixels.
+     * </p>
+     *
+     * <p>This method is the primary entry point for width calculation and is used by both
+     * {@code offsetWidth}/{@code clientWidth} and {@code getBoundingClientRect()}. The
+     * {@code shrinkWrapBlock} flag controls how block elements with no explicit width are sized:
+     * </p>
+     * <ul>
+     *   <li>{@code false} (normal flow): block elements fill their containing block's width,
+     *       matching the behaviour of {@code offsetWidth} and {@code clientWidth}.</li>
+     *   <li>{@code true} (shrink-wrap): block elements that contain only inline/text children
+     *       shrink to their content width instead of filling the parent. This is used by
+     *       {@code getBoundingClientRect()} to approximate the visual bounding box of elements
+     *       such as a plain {@code <div>HelloWorld</div>}, where the rendered width is the
+     *       text width rather than the viewport width.</li>
+     * </ul>
+     *
+     * <p>Note that shrink-wrapping is only applied when {@code shrinkWrapBlock} is {@code true}
+     * AND the element has exclusively inline or text-node children ({@link #hasOnlyInlineOrTextChildren}).
+     * Elements with block-level children always fill the parent width regardless of this flag,
+     * because their children may themselves expand to fill the available space.
+     * </p>
+     * <p>The {@code includeBorder} and {@code includePadding} flags control whether the
+     * element's border and padding are added to the returned value, corresponding to the
+     * difference between {@code clientWidth} (padding included, border excluded) and
+     * {@code offsetWidth} (both included).
+     * </p>
+     *
+     * @param includeBorder {@code true} to add horizontal border widths to the result
+     * @param includePadding {@code true} to add horizontal padding to the result
+     * @param shrinkWrapBlock {@code true} to shrink-wrap block elements to their content width
+     *        when they contain only inline/text children; {@code false} for normal block flow
+     *        where block elements fill the containing block width
+     * @return the calculated width in pixels
+     */
+    public int getCalculatedWidth(final boolean includeBorder, final boolean includePadding,
+                                    final boolean shrinkWrapBlock) {
         final DomElement element = getDomElement();
 
         if (!element.isAttachedToPage()) {
             return 0;
         }
-        int width = getCalculatedWidth();
+
+        int width = getCalculatedWidth(element, shrinkWrapBlock);
         if (!"border-box".equals(getStyleAttribute(Definition.BOX_SIZING, true))) {
             if (includeBorder) {
                 width += getBorderHorizontal();
             }
-            else if (isScrollable(false, true) && !(element instanceof HtmlBody)) {
+            else if (isScrollable(element, false, true) && !(element instanceof HtmlBody)) {
                 width -= 17;
             }
 
@@ -1488,20 +1613,19 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         return width;
     }
 
-    private int getCalculatedWidth() {
-        final Integer cachedWidth = getCachedWidth();
-        if (cachedWidth != null) {
-            return cachedWidth.intValue();
+    private int getCalculatedWidth(final DomElement element, final boolean shrinkWrapBlock) {
+        final Integer cached = shrinkWrapBlock ? getCachedShrinkWrapWidth() : getCachedWidth();
+        if (cached != null) {
+            return cached.intValue();
         }
 
-        final DomElement element = getDomElement();
         if (!element.mayBeDisplayed()) {
-            return updateCachedWidth(0);
+            return shrinkWrapBlock ? updateCachedShrinkWrapWidth(0) : updateCachedWidth(0);
         }
 
         final String display = getDisplay();
         if (NONE.equals(display)) {
-            return updateCachedWidth(0);
+            return shrinkWrapBlock ? updateCachedShrinkWrapWidth(0) : updateCachedWidth(0);
         }
 
         final int width;
@@ -1509,20 +1633,49 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         final DomNode parent = element.getParentNode();
 
         // width is ignored for inline elements
-        if ((INLINE.equals(display) || StringUtils.isEmpty(styleWidth)) && parent instanceof HtmlElement) {
+        if ((INLINE.equals(display) || StringUtils.isEmptyOrNull(styleWidth))
+                && parent instanceof HtmlElement) {
             // hack: TODO find a way to specify default values for different tags
             if (element instanceof HtmlCanvas) {
-                return 300;
+                return shrinkWrapBlock ? updateCachedShrinkWrapWidth(300) : updateCachedWidth(300);
+            }
+
+            // iframes have a default width of 300px (like canvas)
+            if (element instanceof HtmlInlineFrame iframe) {
+                final String widthAttribute = iframe.getAttributeDirect("width");
+                if (DomElement.ATTRIBUTE_NOT_DEFINED != widthAttribute) {
+                    final int w = CssPixelValueConverter.pixelValue(widthAttribute);
+                    return shrinkWrapBlock ? updateCachedShrinkWrapWidth(w) : updateCachedWidth(w);
+                }
+
+                return shrinkWrapBlock ? updateCachedShrinkWrapWidth(300) : updateCachedWidth(300);
+            }
+
+            if (element instanceof HtmlFrame) {
+                final int w = element.getPage().getEnclosingWindow().getInnerWidth();
+                return shrinkWrapBlock ? updateCachedShrinkWrapWidth(w) : updateCachedWidth(w);
             }
 
             // Width not explicitly set.
             final String cssFloat = getCssFloat();
             final String position = getStyleAttribute(Definition.POSITION, true);
-            if ("right".equals(cssFloat) || "left".equals(cssFloat)
-                    || ABSOLUTE.equals(position) || FIXED.equals(position)) {
-                final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
-                // We're floating; simplistic approximation: text content * pixels per character.
-                width = element.getVisibleText().length() * browserVersion.getPixesPerChar();
+            if ("right".equals(cssFloat)
+                    || "left".equals(cssFloat)
+                    || ABSOLUTE.equals(position)
+                    || FIXED.equals(position)) {
+
+                // Shrink-wrap to child content regardless of display type (block, inline, etc.).
+                // An absolutely/fixed-positioned or floated element sizes itself around its children.
+                final int contentWidth = getContentWidth();
+                if (contentWidth > 0) {
+                    width = contentWidth;
+                }
+                else {
+                    // No rendered children – fall back to text content approximation.
+                    final BrowserVersion browserVersion =
+                            getDomElement().getPage().getWebClient().getBrowserVersion();
+                    width = element.getVisibleText().length() * browserVersion.getPixelsPerChar();
+                }
             }
             else if (BLOCK.equals(display)) {
                 final int windowWidth = element.getPage().getEnclosingWindow().getInnerWidth();
@@ -1530,13 +1683,23 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                     width = windowWidth - 16;
                 }
                 else {
-                    // Block elements take up 100% of the parent's width.
-                    width = CssPixelValueConverter.pixelValue((DomElement) parent,
-                                        new CssPixelValueConverter.CssValue(0, windowWidth) {
-                            @Override public String get(final ComputedCssStyleDeclaration style) {
-                                return style.getWidth();
-                            }
-                        }) - (getBorderHorizontal() + getPaddingHorizontal());
+                    final ComputedCssStyleDeclaration parentStyle =
+                            parent.getPage().getEnclosingWindow().getComputedStyle((DomElement) parent, null);
+
+                    final int parentWidth = parentStyle.getCalculatedWidth(false, false)
+                                                - (getBorderHorizontal() + getPaddingHorizontal());
+
+                    // If the block has no explicit width, check if it only contains
+                    // inline/text content — if so, shrink-wrap to content width
+                    // rather than inheriting full parent width.
+                    if (shrinkWrapBlock && hasOnlyInlineOrTextChildren(element)) {
+                        final int contentWidth = getContentWidth();
+                        width = contentWidth > 0 ? contentWidth : parentWidth;
+                    }
+                    else {
+                        // otherwise Block elements take up 100% of the parent's width.
+                        width = parentWidth;
+                    }
                 }
             }
             else if (element instanceof HtmlSubmitInput
@@ -1549,24 +1712,21 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 final String text = element.asNormalizedText();
                 final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
                 // default font for buttons is a bit smaller than the body font size
-                width = 10 + (int) (text.length() * browserVersion.getPixesPerChar() * 0.9);
+                width = 10 + (int) (text.length() * browserVersion.getPixelsPerChar() * 0.9);
             }
             else if (element instanceof HtmlTextInput || element instanceof HtmlPasswordInput) {
                 final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
                 if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_173)) {
                     return 173;
                 }
-                if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_154)) {
-                    return 154;
+                if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_157)) {
+                    return 157;
                 }
                 width = 161; // FF
             }
             else if (element instanceof HtmlRadioButtonInput || element instanceof HtmlCheckBoxInput) {
                 final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
-                if (browserVersion.hasFeature(JS_CLIENTWIDTH_RADIO_CHECKBOX_10)) {
-                    width = 10;
-                }
-                else if (browserVersion.hasFeature(JS_CLIENTWIDTH_RADIO_CHECKBOX_14)) {
+                if (browserVersion.hasFeature(JS_CLIENTWIDTH_RADIO_CHECKBOX_14)) {
                     width = 14;
                 }
                 else {
@@ -1576,8 +1736,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             else if (element instanceof HtmlTextArea) {
                 width = 100; // wild guess
             }
-            else if (element instanceof HtmlImage) {
-                width = ((HtmlImage) element).getWidthOrDefault();
+            else if (element instanceof HtmlImage image) {
+                width = image.getWidthOrDefault();
             }
             else {
                 // Inline elements take up however much space is required by their children.
@@ -1597,7 +1757,20 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 });
         }
 
-        return updateCachedWidth(width);
+        return shrinkWrapBlock ? updateCachedShrinkWrapWidth(width) : updateCachedWidth(width);
+    }
+
+    private static boolean hasOnlyInlineOrTextChildren(final DomElement element) {
+        for (final DomNode child : element.getChildren()) {
+            if (child instanceof HtmlElement e) {
+                final String childDisplay = e.getPage().getEnclosingWindow()
+                        .getComputedStyle(e, null).getDisplay();
+                if (BLOCK.equals(childDisplay)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -1605,73 +1778,101 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @return the total width of the element's children
      */
     public int getContentWidth() {
-        int width = 0;
+        final Integer cachedContentWidth = getCachedContentWidth();
+        if (cachedContentWidth != null) {
+            return cachedContentWidth.intValue();
+        }
+
+        int inlineWidth = 0;
+        int maxBlockWidth = 0;
         final DomElement element = getDomElement();
         Iterable<DomNode> children = element.getChildren();
-        if (element instanceof BaseFrameElement) {
-            final Page enclosedPage = ((BaseFrameElement) element).getEnclosedPage();
+        if (element instanceof BaseFrameElement frameElement) {
+            final Page enclosedPage = frameElement.getEnclosedPage();
             if (enclosedPage != null && enclosedPage.isHtmlPage()) {
                 children = ((DomNode) enclosedPage).getChildren();
             }
         }
         final WebWindow webWindow = element.getPage().getEnclosingWindow();
         for (final DomNode child : children) {
-            if (child instanceof HtmlElement) {
-                final HtmlElement e = (HtmlElement) child;
+            if (child instanceof HtmlElement e) {
                 final ComputedCssStyleDeclaration style = webWindow.getComputedStyle(e, null);
-                final int w = style.getCalculatedWidth(true, true);
-                width += w;
+                final String childDisplay = style.getDisplay();
+                final int w;
+                if (BLOCK.equals(childDisplay)) {
+                    // For block children, only use their full calculated width if they have
+                    // an explicit width set. Otherwise recurse into their own content width
+                    // so that shrink-wrap containers propagate the leaf width all the way up.
+                    final String childStyleWidth = style.getStyleAttribute(Definition.WIDTH, true);
+                    if (StringUtils.isEmptyOrNull(childStyleWidth) || AUTO.equals(childStyleWidth)) {
+                        // No explicit width: the child's contribution is whatever its own
+                        // content needs (recurse), plus its own border/padding.
+                        w = style.getContentWidth()
+                                + style.getBorderHorizontal()
+                                + style.getPaddingHorizontal();
+                    }
+                    else {
+                        w = style.getCalculatedWidth(true, true);
+                    }
+                    if (w > maxBlockWidth) {
+                        maxBlockWidth = w;
+                    }
+                }
+                else {
+                    // Inline / inline-block children sit side-by-side; sum their widths.
+                    w = style.getCalculatedWidth(true, true);
+                    inlineWidth += w;
+                }
             }
             else if (child instanceof DomText) {
                 final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
-
                 final DomNode parent = child.getParentNode();
                 if (parent instanceof HtmlElement) {
                     final ComputedCssStyleDeclaration style = webWindow.getComputedStyle((DomElement) parent, null);
-                    final int height = browserVersion.getFontHeight(style.getFontSize());
-                    width += child.getVisibleText().length() * (int) (height / 1.8f);
+                    final int height = browserVersion.getFontHeight(
+                                        style.getStyleAttribute(Definition.FONT_SIZE, true));
+                    inlineWidth += child.getVisibleText().length() * (int) (height / 1.8f);
                 }
                 else {
-                    width += child.getVisibleText().length() * browserVersion.getPixesPerChar();
+                    inlineWidth += child.getVisibleText().length() * browserVersion.getPixelsPerChar();
                 }
             }
         }
-        return width;
+
+        return updateCachedContentWidth(Math.max(maxBlockWidth, inlineWidth));
     }
 
     /**
      * Returns the element's calculated height taking relevant CSS into account, but <b>not</b> the element's child
-     * elements.
-     *
-     * @return the element's calculated height taking relevant CSS into account, but <b>not</b> the element's child
-     *         elements
+     *         elements.
+     * @return the element's calculated height
      */
-    private int getEmptyHeight() {
-        final Integer cachedHeight2 = getCachedHeight2();
-        if (cachedHeight2 != null) {
-            return cachedHeight2.intValue();
+    private int getEmptyHeight(final DomElement element) {
+        final Integer cachedEmptyHeight = getCachedEmptyHeight();
+        if (cachedEmptyHeight != null) {
+            return cachedEmptyHeight.intValue();
         }
 
-        final DomElement element = getDomElement();
         if (!element.mayBeDisplayed()) {
-            return updateCachedHeight2(0);
+            return updateCachedEmptyHeight(0);
         }
 
         final String display = getDisplay();
         if (NONE.equals(display)) {
-            return updateCachedHeight2(0);
+            return updateCachedEmptyHeight(0);
         }
 
-        final WebWindow webWindow = element.getPage().getEnclosingWindow();
+        final SgmlPage page = element.getPage();
+        final WebWindow webWindow = page.getEnclosingWindow();
         final int windowHeight = webWindow.getInnerHeight();
 
         if (element instanceof HtmlBody) {
-            return updateCachedHeight2(windowHeight);
-        }
+            if (page instanceof HtmlPage htmlPage && htmlPage.isQuirksMode()) {
+                return updateCachedEmptyHeight(windowHeight);
+            }
 
-        final boolean isInline = INLINE.equals(display) && !(element instanceof HtmlInlineFrame);
-        // height is ignored for inline elements
-        final boolean explicitHeightSpecified = !isInline && !super.getHeight().isEmpty();
+            return updateCachedEmptyHeight(0);
+        }
 
         int defaultHeight;
         if ((element instanceof HtmlAbbreviated
@@ -1706,10 +1907,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 || element instanceof HtmlNoLayer
                 || element instanceof HtmlNoScript
                 || element instanceof HtmlPlainText
-                || element instanceof HtmlRuby
-                || element instanceof HtmlRb
                 || element instanceof HtmlRp
-                || element instanceof HtmlRt
                 || element instanceof HtmlRtc
                 || element instanceof HtmlS
                 || element instanceof HtmlSample
@@ -1739,10 +1937,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         else if (element.getFirstChild() == null) {
             if (element instanceof HtmlRadioButtonInput || element instanceof HtmlCheckBoxInput) {
                 final BrowserVersion browser = webWindow.getWebClient().getBrowserVersion();
-                if (browser.hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_10)) {
-                    defaultHeight = 10;
-                }
-                else if (browser.hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_14)) {
+                if (browser.hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_14)) {
                     defaultHeight = 14;
                 }
                 else {
@@ -1770,18 +1965,54 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             else if (element instanceof HtmlTextArea) {
                 defaultHeight = 49;
             }
-            else if (element instanceof HtmlInlineFrame) {
-                defaultHeight = 154;
+            else {
+                defaultHeight = 0;
+            }
+        }
+        else if (element instanceof HtmlRb) {
+            final BrowserVersion browser = webWindow.getWebClient().getBrowserVersion();
+            if (browser.hasFeature(JS_CLIENTHEIGHT_RB_17)) {
+                defaultHeight = 17;
+            }
+            else {
+                defaultHeight = 0;
+            }
+        }
+        else if (element instanceof HtmlRt) {
+            final BrowserVersion browser = webWindow.getWebClient().getBrowserVersion();
+            if (browser.hasFeature(JS_CLIENTHEIGHT_RT_9)) {
+                defaultHeight = 9;
+            }
+            else {
+                defaultHeight = 0;
+            }
+        }
+        else if (element instanceof HtmlRuby) {
+            final BrowserVersion browser = webWindow.getWebClient().getBrowserVersion();
+            if (browser.hasFeature(JS_CLIENTHEIGHT_RUBY_17)) {
+                defaultHeight = 17;
             }
             else {
                 defaultHeight = 0;
             }
         }
         else {
-            final String fontSize = getFontSize();
+            final String headingDefault = HEADING_DEFAULT_FONT_SIZES.get(element.getClass());
+            final boolean isHeading = headingDefault != null;
+
+            final String fontSize;
+            if (isHeading) {
+                final String value = getStyleAttribute(Definition.FONT_SIZE, false);
+                fontSize = value.isEmpty() ? headingDefault : getStyleAttribute(Definition.FONT_SIZE, true);
+            }
+            else {
+                fontSize = getStyleAttribute(Definition.FONT_SIZE, true);
+            }
+
             defaultHeight = webWindow.getWebClient().getBrowserVersion().getFontHeight(fontSize);
 
-            if (element instanceof HtmlDivision
+            if (isHeading
+                    || element instanceof HtmlDivision
                     || element instanceof HtmlSpan) {
                 String width = getStyleAttribute(Definition.WIDTH, false);
 
@@ -1789,8 +2020,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 DomNode parent = getDomElement().getParentNode();
                 final WebWindow win = parent.getPage().getEnclosingWindow();
                 while (width.isEmpty() && parent != null) {
-                    if (parent instanceof DomElement) {
-                        final ComputedCssStyleDeclaration computedCss = win.getComputedStyle((DomElement) parent, null);
+                    if (parent instanceof DomElement domElement) {
+                        final ComputedCssStyleDeclaration computedCss = win.getComputedStyle(domElement, null);
                         width = computedCss.getStyleAttribute(Definition.WIDTH, false);
                     }
                     parent = parent.getParentNode();
@@ -1808,15 +2039,34 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                     defaultHeight *= lineCount;
                 }
                 else {
-                    if (element instanceof HtmlSpan && StringUtils.isEmpty(content)) {
+                    if (element instanceof HtmlSpan && StringUtils.isEmptyOrNull(content)) {
                         defaultHeight = 0;
                     }
                     else {
-                        defaultHeight *= StringUtils.countMatches(content, '\n') + 1;
+                        defaultHeight *= org.apache.commons.lang3.StringUtils.countMatches(content, '\n') + 1;
+                    }
+                }
+
+                final String styleHeight = getStyleAttribute(Definition.HEIGHT, true);
+                if (styleHeight.endsWith("%")) {
+                    if (page instanceof HtmlPage htmlPage && !htmlPage.isQuirksMode()) {
+                        return defaultHeight;
                     }
                 }
             }
         }
+
+        if (element instanceof HtmlInlineFrame iframe) {
+            final String heightAttribute = iframe.getAttributeDirect("height");
+            if (DomElement.ATTRIBUTE_NOT_DEFINED != heightAttribute) {
+                final int height = CssPixelValueConverter.pixelValue(heightAttribute);
+                return updateCachedEmptyHeight(height);
+            }
+
+            defaultHeight = 154;
+        }
+
+        final boolean isInline = INLINE.equals(display) && !(element instanceof HtmlInlineFrame);
 
         final int defaultWindowHeight = element instanceof HtmlCanvas ? 150 : windowHeight;
 
@@ -1835,11 +2085,11 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 }
             });
 
-        if (height == 0 && !explicitHeightSpecified) {
+        if (height == 0 && (isInline || super.getHeight().isEmpty())) {
             height = defaultHeight;
         }
 
-        return updateCachedHeight2(height);
+        return updateCachedEmptyHeight(height);
     }
 
     /**
@@ -1859,8 +2109,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         ComputedCssStyleDeclaration lastFlowing = null;
         final Set<ComputedCssStyleDeclaration> styles = new HashSet<>();
 
-        if (node instanceof HtmlTableRow) {
-            final HtmlTableRow row = (HtmlTableRow) node;
+        if (node instanceof HtmlTableRow row) {
             for (final HtmlTableCell cell : row.getCellIterator()) {
                 if (cell.mayBeDisplayed()) {
                     final ComputedCssStyleDeclaration style =
@@ -1872,8 +2121,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         else {
             for (final DomNode child : node.getChildren()) {
                 if (child.mayBeDisplayed()) {
-                    if (child instanceof HtmlElement) {
-                        final HtmlElement e = (HtmlElement) child;
+                    if (child instanceof HtmlElement e) {
                         final ComputedCssStyleDeclaration style =
                                 e.getPage().getEnclosingWindow().getComputedStyle(e, null);
                         final String position = style.getPositionWithInheritance();
@@ -1909,41 +2157,43 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @return {@code true} if the element is scrollable along the specified axis
      */
     public boolean isScrollable(final boolean horizontal) {
-        return isScrollable(horizontal, false);
+        return isScrollable(getDomElement(), horizontal, false);
     }
 
     /**
+     * Returns true if this element shows a scrollbar.
+     *
      * @param ignoreSize whether to consider the content/calculated width/height
+     * @return true if this element shows a scrollbar
      */
-    private boolean isScrollable(final boolean horizontal, final boolean ignoreSize) {
+    private boolean isScrollable(final DomElement element, final boolean horizontal, final boolean ignoreSize) {
         final boolean scrollable;
-        final DomElement element = getDomElement();
 
         String overflow;
         if (horizontal) {
             overflow = getStyleAttribute(Definition.OVERFLOW_X_, false);
-            if (StringUtils.isEmpty(overflow)) {
+            if (StringUtils.isEmptyOrNull(overflow)) {
                 overflow = getStyleAttribute(Definition.OVERFLOW_X, false);
             }
             // fall back to default
-            if (StringUtils.isEmpty(overflow)) {
+            if (StringUtils.isEmptyOrNull(overflow)) {
                 overflow = getStyleAttribute(Definition.OVERFLOW, true);
             }
             scrollable = (element instanceof HtmlBody || SCROLL.equals(overflow) || AUTO.equals(overflow))
-                && (ignoreSize || getContentWidth() > getCalculatedWidth());
+                && (ignoreSize || getContentWidth() > getCalculatedWidth(element, false));
         }
         else {
             overflow = getStyleAttribute(Definition.OVERFLOW_Y_, false);
-            if (StringUtils.isEmpty(overflow)) {
+            if (StringUtils.isEmptyOrNull(overflow)) {
                 overflow = getStyleAttribute(Definition.OVERFLOW_Y, false);
             }
             // fall back to default
-            if (StringUtils.isEmpty(overflow)) {
+            if (StringUtils.isEmptyOrNull(overflow)) {
                 overflow = getStyleAttribute(Definition.OVERFLOW, true);
             }
 
             scrollable = (element instanceof HtmlBody || SCROLL.equals(overflow) || AUTO.equals(overflow))
-                && (ignoreSize || getContentHeight() > getEmptyHeight());
+                && (ignoreSize || getContentHeight() > getEmptyHeight(element));
         }
         return scrollable;
     }
@@ -2072,6 +2322,42 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
+     * @return the cached width
+     */
+    public Integer getCachedShrinkWrapWidth() {
+        return shrinkWrapWidth_;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
+     * @param width the new value
+     * @return the param width
+     */
+    public int updateCachedShrinkWrapWidth(final int width) {
+        shrinkWrapWidth_ = Integer.valueOf(width);
+        return width;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
+     * @return the cached content width
+     */
+    public Integer getCachedContentWidth() {
+        return contentWidth_;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
+     * @param contentWidth the new value
+     * @return the param contentWidth
+     */
+    public int updateCachedContentWidth(final int contentWidth) {
+        contentWidth_ = Integer.valueOf(contentWidth);
+        return contentWidth;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
      * @return the cached height
      */
     public Integer getCachedHeight() {
@@ -2090,20 +2376,20 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
-     * @return the cached height2
+     * @return the cached emptyHeight
      */
-    public Integer getCachedHeight2() {
-        return height2_;
+    public Integer getCachedEmptyHeight() {
+        return emptyHeight_;
     }
 
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span>
-     * @param height the new value
-     * @return the param height2
+     * @param emptyHeight the new value
+     * @return the param emptyHeight
      */
-    public int updateCachedHeight2(final int height) {
-        height2_ = Integer.valueOf(height);
-        return height;
+    public int updateCachedEmptyHeight(final int emptyHeight) {
+        emptyHeight_ = Integer.valueOf(emptyHeight);
+        return emptyHeight;
     }
 
     /**
@@ -2291,6 +2577,8 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
+     * Returns the string, or {@code toReturnIfEmptyOrDefault}.
+     *
      * @param toReturnIfEmptyOrDefault the value to return if empty or equals the {@code defaultValue}
      * @param defaultValue the default value of the string
      * @return the string, or {@code toReturnIfEmptyOrDefault}
@@ -2308,7 +2596,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     /**
      * Returns the specified length value as a pixel length value.
      * This method does <b>NOT</b> handle percentages correctly;
-     * use {@link CssPixelValueConverter#pixelValue(DomElement, CssValue)} if you need percentage support).
+     * use {@link CssPixelValueConverter#pixelValue(DomElement, CssValue)} if you need percentage support.
      * @param value the length value to convert to a pixel length value
      * @return the specified length value as a pixel length value
      * @see CssPixelValueConverter#pixelString(DomElement, CssValue)

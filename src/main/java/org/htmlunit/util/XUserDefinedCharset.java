@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Simple implementation of the 'x-user-defined' {@link Charset}.
- * @author Ronald Brill
+ * Simple implementation of the {@code x-user-defined} {@link Charset}.
  *
+ * @author Ronald Brill
  */
 public final class XUserDefinedCharset extends Charset {
 
-    /** The single instance. */
+    /** The charset name. */
     public static final String NAME = "x-user-defined";
 
     /** The single instance. */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host.svg;
 
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -21,14 +22,15 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.DOMException;
 
 /**
- * A JavaScript object for {@code SVGMatrix}.
- * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/SVGMatrix">MDN doc</a>
+ * JavaScript host object for {@code SVGMatrix}.
+ *
  * @author Marc Guillemot
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGMatrix">MDN Documentation</a>
  */
 @JsxClass
 public class SVGMatrix extends HtmlUnitScriptable {
@@ -55,7 +57,7 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @JsxConstructor
     public void jsConstructor() {
@@ -63,17 +65,19 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Instantiates and configure scope and prototype.
+     * Instantiates and configures the scope and prototype.
+     *
      * @param scope the parent scope
      */
-    public SVGMatrix(final Window scope) {
+    public SVGMatrix(final VarScope scope) {
         this();
         setParentScope(scope);
         setPrototype(getPrototype(getClass()));
     }
 
     /**
-     * Gets the <code>a</code> entry of the matrix.
+     * Returns the {@code a} entry of the matrix.
+     *
      * @return the field
      */
     @JsxGetter
@@ -82,7 +86,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the <code>b</code> entry of the matrix.
+     * Returns the {@code b} entry of the matrix.
+     *
      * @return the field
      */
     @JsxGetter
@@ -91,7 +96,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the <code>c</code> entry of the matrix.
+     * Returns the {@code c} entry of the matrix.
+     *
      * @return the field
      */
     @JsxGetter
@@ -100,7 +106,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the <code>d</code> entry of the matrix.
+     * Returns the {@code d} entry of the matrix.
+     *
      * @return the field
      */
     @JsxGetter
@@ -109,7 +116,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the <code>e</code> entry of the matrix.
+     * Returns the {@code e} entry of the matrix.
+     *
      * @return the field
      */
     @JsxGetter
@@ -118,7 +126,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the <code>f</code> entry of the matrix.
+     * Returns the {@code f} entry of the matrix.
+     *
      * @return the field
      */
     @JsxGetter
@@ -127,7 +136,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the <code>a</code> entry of the matrix.
+     * Sets the {@code a} entry of the matrix.
+     *
      * @param newValue the new value for the field
      */
     @JsxSetter
@@ -136,7 +146,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the <code>b</code> entry of the matrix.
+     * Sets the {@code b} entry of the matrix.
+     *
      * @param newValue the new value for the field
      */
     @JsxSetter
@@ -145,7 +156,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the <code>c</code> entry of the matrix.
+     * Sets the {@code c} entry of the matrix.
+     *
      * @param newValue the new value for the field
      */
     @JsxSetter
@@ -154,7 +166,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the <code>d</code> entry of the matrix.
+     * Sets the {@code d} entry of the matrix.
+     *
      * @param newValue the new value for the field
      */
     @JsxSetter
@@ -163,7 +176,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the <code>e</code> entry of the matrix.
+     * Sets the {@code e} entry of the matrix.
+     *
      * @param newValue the new value for the field
      */
     @JsxSetter
@@ -172,7 +186,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Sets the <code>f</code> entry of the matrix.
+     * Sets the {@code f} entry of the matrix.
+     *
      * @param newValue the new value for the field
      */
     @JsxSetter
@@ -181,12 +196,13 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
+     * Returns a new matrix that is the result of flipping this matrix along the x-axis.
+     *
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix flipX() {
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
         result.shearX_ = shearX_;
         result.shearY_ = -shearY_;
         result.scaleX_ = -scaleX_;
@@ -198,12 +214,13 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
+     * Returns a new matrix that is the result of flipping this matrix along the y-axis.
+     *
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix flipY() {
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
         result.shearX_ = -shearX_;
         result.shearY_ = shearY_;
         result.scaleX_ = scaleX_;
@@ -215,7 +232,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
+     * Returns the inverse of this matrix.
+     *
      * @return the resulting matrix
      */
     @JsxFunction
@@ -229,7 +247,7 @@ public class SVGMatrix extends HtmlUnitScriptable {
                     DOMException.INVALID_STATE_ERR);
         }
 
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
         result.shearX_ = -shearX_ / determinant;
         result.shearY_ = -shearY_ / determinant;
         result.scaleX_ = scaleY_ / determinant;
@@ -241,13 +259,14 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
+     * Returns a new matrix that is the result of multiplying this matrix by the given matrix.
+     *
      * @param by the matrix to multiply by
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix multiply(final SVGMatrix by) {
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = by.shearX_ * scaleX_ + by.scaleY_ * shearX_;
         result.shearY_ = by.scaleX_ * shearY_ + by.shearY_ * scaleY_;
@@ -260,8 +279,9 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Rotates the matrix.
-     * @param angle the rotation angle
+     * Returns a new matrix that is the result of rotating this matrix by the given angle.
+     *
+     * @param angle the rotation angle in degrees
      * @return the resulting matrix
      */
     @JsxFunction
@@ -270,7 +290,7 @@ public class SVGMatrix extends HtmlUnitScriptable {
         final double sin = Math.sin(theta);
         final double cos = Math.cos(theta);
 
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = -sin * scaleX_ + cos * shearX_;
         result.shearY_ = cos * shearY_ + sin * scaleY_;
@@ -283,7 +303,9 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
+     * Returns a new matrix that is the result of rotating this matrix by the angle
+     * defined by the given vector.
+     *
      * @param x the x-coordinate of the vector
      * @param y the y-coordinate of the vector
      * @return the resulting matrix
@@ -301,7 +323,7 @@ public class SVGMatrix extends HtmlUnitScriptable {
         final double sin = Math.sin(theta);
         final double cos = Math.cos(theta);
 
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = -sin * scaleX_ + cos * shearX_;
         result.shearY_ = cos * shearY_ + sin * scaleY_;
@@ -314,7 +336,8 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
+     * Returns a new matrix that is the result of scaling this matrix uniformly by the given factor.
+     *
      * @param factor the scale factor
      * @return the resulting matrix
      */
@@ -324,14 +347,16 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
-     * @param factorX the factor for the x-axis
-     * @param factorY the factor for the y-axis
+     * Returns a new matrix that is the result of scaling this matrix non-uniformly
+     * by the given factors along each axis.
+     *
+     * @param factorX the scale factor along the x-axis
+     * @param factorY the scale factor along the y-axis
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix scaleNonUniform(final double factorX, final double factorY) {
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = factorY * shearX_;
         result.shearY_ = factorX * shearY_;
@@ -344,15 +369,17 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
-     * @param angle the skew angle
+     * Returns a new matrix that is the result of skewing this matrix along the x-axis
+     * by the given angle.
+     *
+     * @param angle the skew angle in degrees
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix skewX(final double angle) {
         final double shear = Math.tan(Math.toRadians(angle));
 
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = shear * scaleX_ + shearX_;
         result.shearY_ = shearY_;
@@ -365,15 +392,17 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Transforms the matrix.
-     * @param angle the skew angle
+     * Returns a new matrix that is the result of skewing this matrix along the y-axis
+     * by the given angle.
+     *
+     * @param angle the skew angle in degrees
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix skewY(final double angle) {
         final double shear = Math.tan(Math.toRadians(angle));
 
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = shearX_;
         result.shearY_ = shearY_ + shear * scaleY_;
@@ -386,14 +415,15 @@ public class SVGMatrix extends HtmlUnitScriptable {
     }
 
     /**
-     * Translates the matrix.
-     * @param x the distance along the x-axis
-     * @param y the distance along the y-axis
+     * Returns a new matrix that is the result of translating this matrix by the given distances.
+     *
+     * @param x the distance to translate along the x-axis
+     * @param y the distance to translate along the y-axis
      * @return the resulting matrix
      */
     @JsxFunction
     public SVGMatrix translate(final double x, final double y) {
-        final SVGMatrix result = new SVGMatrix(getWindow());
+        final SVGMatrix result = new SVGMatrix(getParentScope());
 
         result.shearX_ = shearX_;
         result.shearY_ = shearY_;

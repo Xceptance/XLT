@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,21 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.util.XUserDefinedCharset;
 
 /**
- * A JavaScript object for {@code TextDecoder}.
+ * JavaScript host object for {@code TextDecoder}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder">MDN Documentation</a>
  */
 @JsxClass
 public class TextDecoder extends HtmlUnitScriptable {
     private String whatwgEncoding_ = "utf-8";
 
     /**
-     * Creates an instance.
-     * @param encodingLabel the encoding
+     * Creates an instance of this object.
+     *
+     * @param encodingLabel the encoding label to use; defaults to {@code "utf-8"} if not specified
      */
     @JsxConstructor
     public void jsConstructor(final Object encodingLabel) {
@@ -63,7 +66,9 @@ public class TextDecoder extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the encoding - default is "utf-8"
+     * Returns the encoding label used by this decoder.
+     *
+     * @return the encoding label; defaults to {@code "utf-8"}
      */
     @JsxGetter
     public String getEncoding() {
@@ -71,8 +76,10 @@ public class TextDecoder extends HtmlUnitScriptable {
     }
 
     /**
-     * @param buffer to be decoded
-     * @return returns the decoded string
+     * Decodes the given buffer and returns the decoded string.
+     *
+     * @param buffer the buffer to decode
+     * @return the decoded string
      */
     @JsxFunction
     public String decode(final Object buffer) {
@@ -80,12 +87,11 @@ public class TextDecoder extends HtmlUnitScriptable {
             return "";
         }
 
-        if (buffer instanceof NativeArrayBuffer) {
-            return new String(((NativeArrayBuffer) buffer).getBuffer(), getEncoding(whatwgEncoding_));
+        if (buffer instanceof NativeArrayBuffer arrayBuffer) {
+            return new String(arrayBuffer.getBuffer(), getEncoding(whatwgEncoding_));
         }
 
-        if (buffer instanceof NativeArrayBufferView) {
-            final NativeArrayBufferView arrayBufferView = (NativeArrayBufferView) buffer;
+        if (buffer instanceof NativeArrayBufferView arrayBufferView) {
             final NativeArrayBuffer arrayBuffer = arrayBufferView.getBuffer();
             if (arrayBuffer != null) {
                 final int byteLength = arrayBufferView.getByteLength();

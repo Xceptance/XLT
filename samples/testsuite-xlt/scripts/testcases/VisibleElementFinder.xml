@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testcase xmlns="http://xlt.xceptance.com/xlt-script/2" version="6" baseURL="http://localhost:8080">
-  <description>Locator points to visible AND invisible elements. The invisible one is listed before the visible one.
-The element finder must choose the visible (second) one.</description>
-  <module name="modules.VisibleElementFinder"/>
-</testcase>

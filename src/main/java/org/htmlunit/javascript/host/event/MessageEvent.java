@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.htmlunit.javascript.host.WindowProxy;
  * For general information on which properties and functions should be supported, see
  * <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#messageevent">
  * Event definitions</a>.
+ * </p>
  *
  * @see <a href="https://developer.mozilla.org/en/WebSockets/WebSockets_reference/MessageEvent">
  *          Mozilla documentation</a>
@@ -98,11 +99,11 @@ public class MessageEvent extends Event {
 
             source_ = null;
             final Object detailSource = details.get("source");
-            if (detailSource instanceof Window) {
-                source_ = (Window) detailSource;
+            if (detailSource instanceof Window window) {
+                source_ = window;
             }
-            else if (detailSource instanceof WindowProxy) {
-                source_ = ((WindowProxy) detailSource).getDelegee();
+            else if (detailSource instanceof WindowProxy proxy) {
+                source_ = proxy.getDelegee();
             }
             ports_ = details.get("ports");
         }
@@ -139,7 +140,7 @@ public class MessageEvent extends Event {
 
         if (JavaScriptEngine.isUndefined(ports)
             || ports instanceof NativeArray
-            || (ports instanceof Scriptable && ScriptableObject.hasProperty((Scriptable) ports, "length"))) {
+            || (ports instanceof Scriptable scriptable && ScriptableObject.hasProperty(scriptable, "length"))) {
             ports_ = ports;
         }
         else {

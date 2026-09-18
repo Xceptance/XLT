@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scriptmodule xmlns="http://xlt.xceptance.com/xlt-script/2" version="6">
-  <parameter name="optionLocator"/>
-  <command name="addSelection" target="name=select_9" value="@{optionLocator}=regexp:select_9_[ae]"/>
-  <command name="assertText" target="id=cc_change" value="change (select_9) select_9_a"/>
-  <command name="removeSelection" target="name=select_9" value="@{optionLocator}=regexp:select_9_[ae]"/>
-  <command name="assertText" target="id=cc_change" value="change (select_9)"/>
-</scriptmodule>
