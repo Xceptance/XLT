@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.html;
 
+import java.io.PrintWriter;
 import java.util.Map;
 
 import org.htmlunit.SgmlPage;
@@ -23,11 +24,12 @@ import org.htmlunit.javascript.host.event.Event;
 /**
  * Wrapper for the HTML element "body".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author Ahmed Ashour
  * @author Frank Danek
+ * @author Ronald Brill
  */
 public class HtmlBody extends HtmlElement {
 
@@ -174,5 +176,16 @@ public class HtmlBody extends HtmlElement {
         style.setDefaultLocalStyleAttribute("margin-right", "8px");
         style.setDefaultLocalStyleAttribute("margin-top", "8px");
         style.setDefaultLocalStyleAttribute("margin-bottom", "8px");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean printXml(final String indent, final boolean indentBefore, final PrintWriter printWriter) {
+        // enforce always a line break before
+        super.printXml(indent, true, printWriter);
+        // enforce always a line break after
+        return true;
     }
 }

@@ -304,8 +304,22 @@ public class AbstractConfiguration
      */
     private String getProperty(final String key)
     {
+        return getProperty(key, true);
+    }
+
+    /**
+     * Returns the value of the given property with optional Groovy evaluation.
+     *
+     * @param key
+     *            the property name
+     * @param evaluateGroovy
+     *            whether to evaluate Groovy expressions
+     * @return the property value
+     */
+    private String getProperty(final String key, final boolean evaluateGroovy)
+    {
         final String propVal = props.getProperty(key);
-        return propVal == null ? null : PropertiesUtils.substituteVariables(propVal.trim(), props);
+        return propVal == null ? null : PropertiesUtils.substituteVariables(propVal.trim(), props, evaluateGroovy);
     }
 
     /**
@@ -512,6 +526,26 @@ public class AbstractConfiguration
     }
 
     /**
+     * Returns the value of the given property. If the property value cannot be found or is empty, an exception will be thrown.
+     *
+     * @param key
+     *            the property name
+     * @return the property value
+     * @throws RuntimeException
+     *             if the value cannot be found or is empty
+     */
+    private String getNonEmptyRequiredProperty(final String key)
+    {
+        final String propVal = getProperty(key);
+        if (propVal == null || propVal.isEmpty())
+        {
+            throw new RuntimeException("No value found for non-empty required property: " + key);
+        }
+
+        return propVal;
+    }
+
+    /**
      * Returns the value of the given property as string value. If the property value cannot be found, an exception will
      * be thrown.
      *
@@ -522,9 +556,33 @@ public class AbstractConfiguration
      *             if the value cannot be found
      * @see #getStringProperty(String, String)
      */
-    public String getStringProperty(final String key)
+     public String getStringProperty(final String key)
+     {
+         return getRequiredProperty(key);
+     }
+
+    /**
+     * Returns the value of the given property as string value, with optional Groovy evaluation. If the property value
+     * cannot be found, an exception will be thrown.
+     *
+     * @param key
+     *            the property name
+     * @param evaluateGroovy
+     *            whether to evaluate Groovy expressions
+     * @return the property value
+     * @throws RuntimeException
+     *             if the value cannot be found
+     * @see #getStringProperty(String, String, boolean)
+     */
+    public String getStringProperty(final String key, final boolean evaluateGroovy)
     {
-        return getRequiredProperty(key);
+        final String propVal = getProperty(key, evaluateGroovy);
+        if (propVal == null)
+        {
+            throw new RuntimeException("No value found for required property: " + key);
+        }
+
+        return propVal;
     }
 
     /**
@@ -541,6 +599,56 @@ public class AbstractConfiguration
     {
         final String propVal = getProperty(key);
         return propVal == null ? defaultValue : propVal;
+    }
+
+    /**
+     * Returns the value of the given property, with optional Groovy evaluation. If the property value cannot be found,
+     * the specified default value is returned instead.
+     *
+     * @param key
+     *            the property name
+     * @param defaultValue
+     *            the default property value
+     * @param evaluateGroovy
+     *            whether to evaluate Groovy expressions
+     * @return the property value
+     */
+    public String getStringProperty(final String key, final String defaultValue, final boolean evaluateGroovy)
+    {
+        final String propVal = getProperty(key, evaluateGroovy);
+        return propVal == null ? defaultValue : propVal;
+    }
+
+    /**
+     * Returns the value of the given property as string value. If the property value cannot be found or is empty, an
+     * exception will be thrown.
+     *
+     * @param key
+     *            the property name
+     * @return the property value
+     * @throws RuntimeException
+     *             if the value cannot be found
+     * @see #getStringProperty(String, String)
+     */
+    public String getNonEmptyStringProperty(final String key)
+    {
+        return getNonEmptyRequiredProperty(key);
+    }
+
+    /**
+     * Returns the value of the given property. If the property value cannot be found or is empty, the specified default
+     * value is returned instead.
+     *
+     * @param key
+     *            the property name
+     * @param defaultValue
+     *            the default property value
+     * @return the property value
+     */
+    public String getNonEmptyStringProperty(final String key, final String defaultValue)
+    {
+        final String propVal = getProperty(key);
+        return propVal == null || propVal.isBlank() ? defaultValue : propVal;
     }
 
     /**

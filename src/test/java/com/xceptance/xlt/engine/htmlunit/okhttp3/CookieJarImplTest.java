@@ -20,7 +20,7 @@ import java.util.Date;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.htmlunit.util.Cookie;
+import org.htmlunit.http.Cookie;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

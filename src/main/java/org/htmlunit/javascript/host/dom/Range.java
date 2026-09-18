@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,17 @@ package org.htmlunit.javascript.host.dom;
 import java.util.HashSet;
 
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
+import org.htmlunit.css.ComputedCssStyleDeclaration;
+import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.html.DomDocumentFragment;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomText;
+import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -28,9 +36,8 @@ import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.host.ClientRect;
-import org.htmlunit.javascript.host.ClientRectList;
-import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.DOMRect;
+import org.htmlunit.javascript.host.DOMRectList;
 import org.htmlunit.javascript.host.html.HTMLElement;
 
 /**
@@ -180,8 +187,8 @@ public class Range extends AbstractRange {
         if (refNode == null) {
             throw JavaScriptEngine.reportRuntimeError("It is illegal to call Range.setEndBefore() with a null node.");
         }
-        internSetStartContainer(refNode.getParent());
-        internSetStartOffset(getPositionInContainer(refNode));
+        internSetEndContainer(refNode.getParent());
+        internSetEndOffset(getPositionInContainer(refNode));
     }
 
     /**
@@ -251,15 +258,17 @@ public class Range extends AbstractRange {
      * @param valueAsString text that contains text and tags to be converted to a document fragment
      * @return a document fragment
      * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/range.createContextualFragment">Mozilla
-     * documentation</a>
+     *     documentation</a>
      */
     @JsxFunction
     public HtmlUnitScriptable createContextualFragment(final String valueAsString) {
         final SgmlPage page = internGetStartContainer().getDomNodeOrDie().getPage();
         final DomDocumentFragment fragment = new DomDocumentFragment(page);
         try {
-            page.getWebClient().getPageCreator().getHtmlParser()
-                    .parseFragment(fragment, internGetStartContainer().getDomNodeOrDie(), valueAsString, false);
+            final WebClient webClient = page.getWebClient();
+            webClient.getPageCreator().getHtmlParser()
+                    .parseFragment(webClient, fragment,
+                            internGetStartContainer().getDomNodeOrDie(), valueAsString, false);
         }
         catch (final Exception e) {
             LogFactory.getLog(Range.class).error("Unexpected exception occurred in createContextualFragment", e);
@@ -289,22 +298,22 @@ public class Range extends AbstractRange {
      * @param how a constant describing the comparison method
      * @param sourceRange the Range to compare boundary points with this range
      * @return -1, 0, or 1, indicating whether the corresponding boundary-point of range is respectively before,
-     * equal to, or after the corresponding boundary-point of sourceRange.
+     *         equal to, or after the corresponding boundary-point of sourceRange.
      */
     @JsxFunction
     public int compareBoundaryPoints(final int how, final Range sourceRange) {
         final Node nodeForThis;
         final int offsetForThis;
-        final int containingMoficator;
+        final int containingModifier;
         if (START_TO_START == how || END_TO_START == how) {
             nodeForThis = internGetStartContainer();
             offsetForThis = internGetStartOffset();
-            containingMoficator = 1;
+            containingModifier = 1;
         }
         else {
             nodeForThis = internGetEndContainer();
             offsetForThis = internGetEndOffset();
-            containingMoficator = -1;
+            containingModifier = -1;
         }
 
         final Node nodeForOther;
@@ -330,7 +339,7 @@ public class Range extends AbstractRange {
 
         final byte nodeComparision = (byte) nodeForThis.compareDocumentPosition(nodeForOther);
         if ((nodeComparision & Node.DOCUMENT_POSITION_CONTAINED_BY) != 0) {
-            return -1 * containingMoficator;
+            return -1 * containingModifier;
         }
         else if ((nodeComparision & Node.DOCUMENT_POSITION_PRECEDING) != 0) {
             return -1;
@@ -438,21 +447,26 @@ public class Range extends AbstractRange {
      * @return a collection of rectangles that describes the layout of the contents
      */
     @JsxFunction
-    public ClientRectList getClientRects() {
-        final Window w = getWindow();
-        final ClientRectList rectList = new ClientRectList();
-        rectList.setParentScope(w);
+    public DOMRectList getClientRects() {
+        final DOMRectList rectList = new DOMRectList();
+        rectList.setParentScope(getParentScope());
         rectList.setPrototype(getPrototype(rectList.getClass()));
 
         try {
             // simple impl for now
             for (final DomNode node : getSimpleRange().containedNodes()) {
                 final HtmlUnitScriptable scriptable = node.getScriptableObject();
-                if (scriptable instanceof HTMLElement) {
-                    final ClientRect rect = new ClientRect(0, 0, 1, 1);
-                    rect.setParentScope(w);
+                if (scriptable instanceof HTMLElement element) {
+                    final DOMRect rect = element.getBoundingClientRect();
+                    rect.setParentScope(getParentScope());
                     rect.setPrototype(getPrototype(rect.getClass()));
                     rectList.add(rect);
+                }
+                else if (node instanceof DomText domText) {
+                    final DOMRect rect = getTextNodeRect(domText);
+                    if (rect != null) {
+                        rectList.add(rect);
+                    }
                 }
             }
 
@@ -469,21 +483,29 @@ public class Range extends AbstractRange {
      * @return an object the bounds the contents of the range
      */
     @JsxFunction
-    public ClientRect getBoundingClientRect() {
-        final ClientRect rect = new ClientRect();
-        rect.setParentScope(getWindow());
+    public DOMRect getBoundingClientRect() {
+        final DOMRect rect = new DOMRect(Integer.MAX_VALUE, Integer.MAX_VALUE, 0, 0);
+        rect.setParentScope(getParentScope());
         rect.setPrototype(getPrototype(rect.getClass()));
 
         try {
             // simple impl for now
             for (final DomNode node : getSimpleRange().containedNodes()) {
                 final HtmlUnitScriptable scriptable = node.getScriptableObject();
-                if (scriptable instanceof HTMLElement) {
-                    final ClientRect childRect = ((HTMLElement) scriptable).getBoundingClientRect();
-                    rect.setTop(Math.min(rect.getTop(), childRect.getTop()));
-                    rect.setLeft(Math.min(rect.getLeft(), childRect.getLeft()));
-                    rect.setRight(Math.max(rect.getRight(), childRect.getRight()));
-                    rect.setBottom(Math.max(rect.getBottom(), childRect.getBottom()));
+
+                DOMRect childRect = null;
+                if (scriptable instanceof HTMLElement element) {
+                    childRect = element.getBoundingClientRect();
+                }
+                else if (node instanceof DomText domText) {
+                    childRect = getTextNodeRect(domText);
+                }
+
+                if (childRect != null) {
+                    rect.setX(Math.min(rect.getX(), childRect.getX()));
+                    rect.setY(Math.min(rect.getY(), childRect.getY()));
+                    rect.setWidth(Math.max(rect.getWidth(), childRect.getWidth()));
+                    rect.setHeight(Math.max(rect.getHeight(), childRect.getHeight()));
                 }
             }
 
@@ -492,5 +514,61 @@ public class Range extends AbstractRange {
         catch (final IllegalStateException e) {
             throw JavaScriptEngine.reportRuntimeError(e.getMessage());
         }
+    }
+
+    private DOMRect getTextNodeRect(final DomText node) {
+        // Text nodes have no scriptable; use to the parent element for some calculation
+        final DomNode parent = node.getParentNode();
+        if (!(parent instanceof HtmlElement parentHtml)) {
+            return null;
+        }
+
+        final HTMLElement parentScriptable = parentHtml.getScriptableObject();
+        final DOMRect parentRect = parentScriptable.getBoundingClientRect();
+
+        final SgmlPage page = parent.getPage();
+        final WebWindow webWindow = page.getEnclosingWindow();
+        final ComputedCssStyleDeclaration style = webWindow.getComputedStyle((DomElement) parent, null);
+        final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
+
+        final int fontHeight = browserVersion.getFontHeight(style.getStyleAttribute(Definition.FONT_SIZE, true));
+        final float pixelsPerChar = fontHeight / 1.8f;
+
+        // Estimate the x offset of the text node's start within the parent.
+        // Sum the widths of all preceding text/inline siblings to get the base offset.
+        float siblingOffset = 0;
+        for (final DomNode sibling : parent.getChildren()) {
+            if (sibling == node) {
+                break;
+            }
+            if (sibling instanceof DomText sibText) {
+                // skip whitespace-only text nodes — they collapse to nothing in HTML
+                final String visible = sibText.getVisibleText().trim();
+                if (!visible.isEmpty()) {
+                    siblingOffset += visible.length() * pixelsPerChar;
+                }
+            }
+            else if (sibling instanceof HtmlElement siblingElement) {
+                final ComputedCssStyleDeclaration sibStyle =
+                        webWindow.getComputedStyle(siblingElement, null);
+                siblingOffset += sibStyle.getCalculatedWidth(true, true, true);
+            }
+        }
+
+        final boolean startIsThisNode = getSimpleRange().getStartContainer() == node;
+        final boolean endIsThisNode   = getSimpleRange().getEndContainer() == node;
+
+        final int startChar = startIsThisNode ? getSimpleRange().getStartOffset() : 0;
+
+        final String visibleText = node.getVisibleText().trim();
+        final int endChar = endIsThisNode ? getSimpleRange().getEndOffset() : visibleText.length();
+
+        final double rectLeft  = parentRect.getX() + siblingOffset + startChar * pixelsPerChar;
+        final double rectWidth = (endChar - startChar) * pixelsPerChar;
+
+        final DOMRect rect = new DOMRect(rectLeft, parentRect.getY(), rectWidth, fontHeight);
+        rect.setParentScope(getParentScope());
+        rect.setPrototype(getPrototype(rect.getClass()));
+        return rect;
     }
 }

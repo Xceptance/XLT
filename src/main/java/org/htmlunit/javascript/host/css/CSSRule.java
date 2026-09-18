@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
- * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
+ * Copyright (c) 2005-2026 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
- * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSRule">MDN doc</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSRule">MDN Documentation</a>
  */
 @JsxClass
 public class CSSRule extends HtmlUnitScriptable {
@@ -103,7 +103,7 @@ public class CSSRule extends HtmlUnitScriptable {
     public static final int KEYFRAME_RULE             = 8;
 
     /**
-     * The rule is a {@code CSSMerginRule}.
+     * The rule is a {@code CSSMarginRule}.
      */
     @JsxConstant({CHROME, EDGE})
     public static final int MARGIN_RULE               = 9;
@@ -127,7 +127,7 @@ public class CSSRule extends HtmlUnitScriptable {
     public static final int SUPPORTS_RULE             = 12;
 
     /**
-     * The rule is a {@code CSSCounterStyleRule}.
+     * The rule is a {@code CSSFontFeatureValuesRule}.
      */
     @JsxConstant
     public static final int FONT_FEATURE_VALUES_RULE  = 14;
@@ -165,28 +165,27 @@ public class CSSRule extends HtmlUnitScriptable {
      * @return a CSSRule subclass according to the rule type
      */
     public static CSSRule create(final CSSStyleSheet stylesheet, final AbstractCSSRuleImpl rule) {
-        if (rule instanceof CSSStyleRuleImpl) {
-            return new CSSStyleRule(stylesheet, (CSSStyleRuleImpl) rule);
+        if (rule instanceof CSSStyleRuleImpl impl) {
+            return new CSSStyleRule(stylesheet, impl);
         }
-        if (rule instanceof CSSImportRuleImpl) {
-            return new CSSImportRule(stylesheet, (CSSImportRuleImpl) rule);
+        if (rule instanceof CSSImportRuleImpl impl) {
+            return new CSSImportRule(stylesheet, impl);
         }
 //        if (rule instanceof CSSCharsetRuleImpl) {
 //            return new CSSCharsetRule(stylesheet, (CSSCharsetRuleImpl) rule);
 //        }
-        if (rule instanceof CSSMediaRuleImpl) {
-            return new CSSMediaRule(stylesheet, (CSSMediaRuleImpl) rule);
+        if (rule instanceof CSSMediaRuleImpl impl) {
+            return new CSSMediaRule(stylesheet, impl);
         }
-        if (rule instanceof CSSFontFaceRuleImpl) {
-            return new CSSFontFaceRule(stylesheet, (CSSFontFaceRuleImpl) rule);
+        if (rule instanceof CSSFontFaceRuleImpl impl) {
+            return new CSSFontFaceRule(stylesheet, impl);
         }
-        if (rule instanceof CSSPageRuleImpl) {
-            return new CSSPageRule(stylesheet, (CSSPageRuleImpl) rule);
+        if (rule instanceof CSSPageRuleImpl impl) {
+            return new CSSPageRule(stylesheet, impl);
         }
-        if (rule instanceof CSSUnknownRuleImpl) {
-            final CSSUnknownRuleImpl unknownRule = (CSSUnknownRuleImpl) rule;
+        if (rule instanceof CSSUnknownRuleImpl unknownRule) {
             if (unknownRule.getCssText().startsWith("@keyframes")) {
-                return new CSSKeyframesRule(stylesheet, (CSSUnknownRuleImpl) rule);
+                return new CSSKeyframesRule(stylesheet, unknownRule);
             }
             if (LOG.isWarnEnabled()) {
                 LOG.warn("Unknown CSSRule " + rule.getClass().getName()
@@ -211,7 +210,7 @@ public class CSSRule extends HtmlUnitScriptable {
         super();
         stylesheet_ = stylesheet;
         rule_ = rule;
-        setParentScope(stylesheet);
+        setParentScope(stylesheet.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
 

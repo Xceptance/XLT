@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 
 /**
- * A JavaScript object for {@code SVGTextContentElement}.
+ * JavaScript host object for {@code SVGTextContentElement}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGTextContentElement">MDN Documentation</a>
  */
 @JsxClass
 public class SVGTextContentElement extends SVGGraphicsElement {
@@ -39,7 +41,7 @@ public class SVGTextContentElement extends SVGGraphicsElement {
     public static final int LENGTHADJUST_SPACINGANDGLYPHS = 2;
 
     /**
-     * Creates an instance.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -48,11 +50,13 @@ public class SVGTextContentElement extends SVGGraphicsElement {
     }
 
     /**
-     * @return the length of the text
+     * Returns the computed text length of the text content.
+     *
+     * @return the computed text length
      */
     @JsxFunction
     public double getComputedTextLength() {
         // simple estimation
-        return getDomNodeOrDie().getTextContent().length() * getBrowserVersion().getPixesPerChar();
+        return getDomNodeOrDie().getTextContent().length() * getBrowserVersion().getPixelsPerChar();
     }
 }

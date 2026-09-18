@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,15 +35,6 @@ public class NoOpImageData implements ImageData {
     @Override
     public IntDimension2D getWidthHeight() throws IOException {
         return new IntDimension2D(0, 0);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        close();
-        super.finalize();
     }
 
     /**

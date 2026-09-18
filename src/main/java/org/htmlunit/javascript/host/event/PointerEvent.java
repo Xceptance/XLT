@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.VarScope;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -32,7 +33,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 /**
  * JavaScript object representing a {@code PointerEvent}.
  * @see <a href="http://www.w3.org/TR/pointerevents/">W3C Spec</a>
- * @see <a href="http://msdn.microsoft.com/en-us/library/ie/hh772103.aspx">MSDN</a>
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent">MDN</a>
  *
  * @author Frank Danek
  * @author Ahmed Ashour
@@ -47,6 +48,8 @@ public class PointerEvent extends MouseEvent {
     private double pressure_;
     private int tiltX_;
     private int tiltY_;
+    private double altitudeAngle_;
+    private double azimuthAngle_;
     private String pointerType_ = "";
     private boolean isPrimary_;
 
@@ -67,13 +70,17 @@ public class PointerEvent extends MouseEvent {
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+    public static Scriptable jsConstructor(final Context cx, final VarScope scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         final PointerEvent event = new PointerEvent();
+
+        event.setBubbles(false);
+        event.setCancelable(false);
+
+        event.altitudeAngle_ = Math.PI / 2d;
+
         if (args.length != 0) {
             event.setType(JavaScriptEngine.toString(args[0]));
-            event.setBubbles(false);
-            event.setCancelable(false);
             event.width_ = 1;
             event.height_ = 1;
         }
@@ -81,6 +88,7 @@ public class PointerEvent extends MouseEvent {
         if (args.length > 1) {
             final NativeObject object = (NativeObject) args[1];
             event.setBubbles((boolean) getValue(object, "bubbles", event.isBubbles()));
+
             event.pointerId_ = (int) getValue(object, "pointerId", event.pointerId_);
             event.width_ = (int) getValue(object, "width", event.width_);
             event.height_ = (int) getValue(object, "height", event.height_);
@@ -89,6 +97,11 @@ public class PointerEvent extends MouseEvent {
             event.tiltY_ = (int) getValue(object, "tiltY", event.tiltY_);
             event.pointerType_ = (String) getValue(object, "pointerType", event.pointerType_);
             event.isPrimary_ = (boolean) getValue(object, "isPrimary", event.isPrimary_);
+
+            if (object.has("tiltX", object) || object.has("tiltY", object)) {
+                event.altitudeAngle_ = 1.4105561004354874;
+                event.azimuthAngle_ = 0.8628261898537035;
+            }
         }
         return event;
     }
@@ -138,7 +151,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pointerId
+     * Returns the pointer identifier.
+     *
+     * @return the pointer identifier
      */
     @JsxGetter
     public long getPointerId() {
@@ -146,7 +161,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the width
+     * Returns the pointer contact width.
+     *
+     * @return the pointer contact width
      */
     @JsxGetter
     public long getWidth() {
@@ -154,7 +171,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the height
+     * Returns the pointer contact height.
+     *
+     * @return the pointer contact height
      */
     @JsxGetter
     public long getHeight() {
@@ -162,7 +181,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pressure
+     * Returns the normalized pointer pressure.
+     *
+     * @return the normalized pointer pressure
      */
     @JsxGetter
     public double getPressure() {
@@ -170,7 +191,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the tiltX
+     * Returns the pointer tilt along the X axis.
+     *
+     * @return the pointer tilt along the X axis
      */
     @JsxGetter
     public long getTiltX() {
@@ -178,7 +201,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the tiltY
+     * Returns the pointer tilt along the Y axis.
+     *
+     * @return the pointer tilt along the Y axis
      */
     @JsxGetter
     public long getTiltY() {
@@ -186,7 +211,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pointerType
+     * Returns the pointer type.
+     *
+     * @return the pointer type
      */
     @JsxGetter
     public String getPointerType() {
@@ -194,7 +221,9 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the isPrimary
+     * Returns whether this is the primary pointer.
+     *
+     * @return whether this is the primary pointer
      */
     @JsxGetter(propertyName = "isPrimary")
     public boolean isPrimary_js() {
@@ -202,19 +231,35 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * @return the pointerType
+     * Returns the pointer altitude angle.
+     *
+     * @return the pointer altitude angle
      */
-    @JsxGetter({CHROME, EDGE, FF})
+    @JsxGetter
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     public double getAltitudeAngle() {
-        return 1.5707963267948966;
+        return altitudeAngle_;
     }
 
     /**
-     * @return the pointerType
+     * Returns the pointer azimuth angle.
+     *
+     * @return the pointer azimuth angle
+     */
+    @JsxGetter
+    public double getAzimuthAngle() {
+        return azimuthAngle_;
+    }
+
+    /**
+     * Returns the persistent device identifier.
+     *
+     * @return the persistent device identifier
      */
     @JsxGetter({CHROME, EDGE, FF})
-    public double getAzimuthAngle() {
+    public double getPersistentDeviceId() {
+        // dummy but valid regarding the spec
+        // https://w3c.github.io/pointerevents/#dom-pointerevent-persistentdeviceid
         return 0d;
     }
 }

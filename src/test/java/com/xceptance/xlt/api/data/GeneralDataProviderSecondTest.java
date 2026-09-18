@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.api.data;
 
+
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
@@ -89,4 +90,5 @@ public class GeneralDataProviderSecondTest
             Assert.assertTrue(provider.getUniqueEmail("", "", 17).matches("^" + uuidString.substring(0, 17) + "@$"));
         }
     }
+
 }

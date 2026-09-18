@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,13 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
 import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 
 import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -36,20 +29,23 @@ import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.regexp.RegExpEngineAccess;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.javascript.host.html.HTMLInputElement;
-import org.htmlunit.javascript.regexp.RegExpJsToJavaConverter;
 import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.StringUtils;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Wrapper for the HTML element "input".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author David D. Kilzer
  * @author Marc Guillemot
  * @author Daniel Gredler
@@ -58,19 +54,31 @@ import org.xml.sax.helpers.AttributesImpl;
  * @author Frank Danek
  * @author Anton Demydenko
  * @author Ronny Shapiro
+ * @author Lai Quang Duong
  */
 public abstract class HtmlInput extends HtmlElement implements DisabledElement, SubmittableElement,
-    FormFieldWithNameHistory, ValidatableElement  {
+    ValidatableHtmlElement  {
 
     private static final Log LOG = LogFactory.getLog(HtmlInput.class);
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "input";
 
+    /**
+     * The element's raw value (spec term), decoupled from the DOM child nodes
+     * once {@link #isValueDirty_} is {@code true}. Mirrors {@code HtmlInput}'s
+     * dirty-value-flag model rather than reading/writing child text nodes directly.
+     */
     private String rawValue_;
+
+    /**
+     * The dirty value flag (spec term). While {@code false}, the raw value tracks
+     * the element's child text content automatically. Once {@code true} (set by
+     * the {@code value} setter, or by a user edit/type), child mutations no
+     * longer affect the raw value until {@link #reset()} clears the flag again.
+     */
     private boolean isValueDirty_;
-    private final String originalName_;
-    private Collection<String> newNames_ = Collections.emptySet();
+
     private boolean valueModifiedByJavascript_;
     private Object valueAtFocus_;
     private String customValidity_;
@@ -96,7 +104,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
         rawValue_ = getValueAttribute();
-        originalName_ = getNameAttribute();
     }
 
     /**
@@ -154,6 +161,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the value.
+     *
      * @return the value
      */
     public String getValue() {
@@ -171,7 +180,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     protected void valueAttributeChanged(final String attributeValue, final boolean isValueDirty) {
-        if (!isValueDirty_) {
+        if (!isValueDirty) {
             setRawValue(attributeValue);
         }
     }
@@ -196,36 +205,15 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        DomNode node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement
-                    && ((DisabledElement) node).isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the value of the attribute {@code readonly}. Refer to the
      * <a href="http://www.w3.org/TR/html401/">HTML 4.01</a>
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code readonly}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getReadOnlyAttribute() {
-        return getAttributeDirect("readonly");
+        return getAttributeDirect(ATTRIBUTE_READONLY);
     }
 
     /**
@@ -234,7 +222,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code size}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getSizeAttribute() {
         return getAttributeDirect("size");
@@ -246,10 +234,10 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code maxlength}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getMaxLengthAttribute() {
-        return getAttribute("maxLength");
+        return getAttributeDirect("maxlength");
     }
 
     /**
@@ -276,10 +264,10 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code minlength}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getMinLengthAttribute() {
-        return getAttribute("minLength");
+        return getAttributeDirect("minlength");
     }
 
     /**
@@ -306,7 +294,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code src}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public String getSrcAttribute() {
         return getSrcAttributeNormalized();
@@ -352,7 +340,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code alt}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getAltAttribute() {
         return getAttributeDirect("alt");
@@ -364,7 +352,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code usemap}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getUseMapAttribute() {
         return getAttributeDirect("usemap");
@@ -376,7 +364,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code tabindex}
-     * or an empty string if that attribute isn't defined.
+     *        or an empty string if that attribute isn't defined.
      */
     public final String getTabIndexAttribute() {
         return getAttributeDirect("tabindex");
@@ -388,7 +376,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code accesskey}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getAccessKeyAttribute() {
         return getAttributeDirect("accesskey");
@@ -400,7 +388,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onfocus}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getOnFocusAttribute() {
         return getAttributeDirect("onfocus");
@@ -412,7 +400,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onblur}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getOnBlurAttribute() {
         return getAttributeDirect("onblur");
@@ -424,7 +412,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onselect}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getOnSelectAttribute() {
         return getAttributeDirect("onselect");
@@ -436,7 +424,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code onchange}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getOnChangeAttribute() {
         return getAttributeDirect("onchange");
@@ -448,7 +436,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code accept}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getAcceptAttribute() {
         return getAttribute(HttpHeader.ACCEPT_LC);
@@ -460,7 +448,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * documentation for details on the use of this attribute.
      *
      * @return the value of the attribute {@code align}
-     * or an empty string if that attribute isn't defined.
+     *         or an empty string if that attribute isn't defined.
      */
     public final String getAlignAttribute() {
         return getAttributeDirect("align");
@@ -473,7 +461,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     @Override
     public void reset() {
         setValue(getDefaultValue());
-        isValueDirty_ = true;
+        isValueDirty_ = false;
     }
 
     /**
@@ -535,7 +523,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return the page that occupies this input's window after setting the attribute
      */
     public Page setChecked(final boolean isChecked) {
-        // By default this returns the current page. Derived classes will override.
+        // By default, this returns the current page. Derived classes will override.
         return getPage();
     }
 
@@ -546,10 +534,10 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     public void setReadOnly(final boolean isReadOnly) {
         if (isReadOnly) {
-            setAttribute("readOnly", "readOnly");
+            setAttribute(ATTRIBUTE_READONLY, "");
         }
         else {
-            removeAttribute("readOnly");
+            removeAttribute(ATTRIBUTE_READONLY);
         }
     }
 
@@ -566,7 +554,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return {@code true} if this element is read only
      */
     public boolean isReadOnly() {
-        return hasAttribute("readOnly");
+        return hasAttribute(ATTRIBUTE_READONLY);
     }
 
     /**
@@ -631,13 +619,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     @Override
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
-        if (NAME_ATTRIBUTE.equals(qualifiedNameLC)) {
-            if (newNames_.isEmpty()) {
-                newNames_ = new HashSet<>();
-            }
-            newNames_.add(attributeValue);
-        }
+        final String qualifiedNameLC = StringUtils.toRootLowerCase(qualifiedName);
 
         if (TYPE_ATTRIBUTE.equals(qualifiedNameLC)) {
             changeType(attributeValue, true);
@@ -654,22 +636,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
         super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObservers);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getOriginalName() {
-        return originalName_;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Collection<String> getNewNames() {
-        return newNames_;
     }
 
     /**
@@ -710,6 +676,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns returns the raw value.
+     *
      * @return returns the raw value
      */
     protected Object getInternalValue() {
@@ -891,20 +859,16 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         return !isValueMissingValidityState()
                 && isCustomValidityValid()
                 && isMaxLengthValid() && isMinLengthValid()
-                && !hasPatternMismatchValidityState();
+                && !hasPatternMismatchValidityState()
+                && !hasTypeMismatchValidityState()
+                && !hasRangeOverflowValidityState()
+                && !hasRangeUnderflowValidityState()
+                && !isStepMismatchValidityState()
+                && !hasBadInputValidityState();
     }
 
     protected boolean isCustomValidityValid() {
-        if (isCustomErrorValidityState()) {
-            final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
-            if (!"button".equals(type)
-                    && !"hidden".equals(type)
-                    && !"reset".equals(type)
-                    && !("image".equals(type) && hasFeature(HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY))) {
-                return false;
-            }
-        }
-        return true;
+        return !isCustomErrorValidityState();
     }
 
     @Override
@@ -923,6 +887,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns if the element executes pattern validation on blank strings.
+     *
      * @return if the element executes pattern validation on blank strings
      */
     protected boolean isBlankPatternValidated() {
@@ -937,17 +903,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     protected boolean isMinMaxLengthSupported() {
         return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DomNode cloneNode(final boolean deep) {
-        final HtmlInput newnode = (HtmlInput) super.cloneNode(deep);
-        newnode.newNames_ = new HashSet<>(newNames_);
-
-        return newnode;
     }
 
     /**
@@ -999,22 +954,29 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         }
 
         final String pattern = getPattern();
-        if (StringUtils.isEmpty(pattern)) {
+        if (StringUtils.isEmptyOrNull(pattern)) {
             return true;
         }
 
         final String value = getValue();
-        if (StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmptyOrNull(value)) {
             return true;
         }
         if (!isBlankPatternValidated() && StringUtils.isBlank(value)) {
             return true;
         }
 
-        final RegExpJsToJavaConverter converter = new RegExpJsToJavaConverter();
-        final String javaPattern = converter.convert(pattern);
-        try {
-            return Pattern.matches(javaPattern, value);
+        try (Context cx = HtmlUnitContextFactory.getGlobal().enterContext()) {
+            // compile the raw pattern first: this is a validity check only (result discarded).
+            // Wrapping with "^(?:...)$ " cannot mask a genuinely invalid pattern -- the wrapper
+            // contributes a balanced open/close pair, so any unmatched parent/bracket or other
+            // structural defect in the raw pattern persists identically once wrapped.
+            RegExpEngineAccess.compile(cx, pattern, "");
+
+            final RegExpEngineAccess.CompiledRegExp compiled
+                    = RegExpEngineAccess.compile(cx, "^(?:" + pattern + ")$", "");
+
+            return RegExpEngineAccess.matches(cx, value, compiled);
         }
         catch (final Exception ignored) {
             // ignore if regex invalid
@@ -1034,20 +996,32 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * {@inheritDoc}
      */
     @Override
+    public String getCustomValidity() {
+        return customValidity_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setCustomValidity(final String message) {
         customValidity_ = message;
     }
 
     /**
+     * Returns whether this is a checkbox or a radio button.
+     *
      * @return whether this is a checkbox or a radio button
      */
     public boolean isCheckable() {
-        final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
-        return "radio".equals(type) || "checkbox".equals(type);
+        final String type = getAttributeDirect(TYPE_ATTRIBUTE);
+        return "radio".equalsIgnoreCase(type) || "checkbox".equalsIgnoreCase(type);
     }
 
     /**
-     * @return false for type submit/resest/image/button otherwise true
+     * Returns false for type submit/reset/image/button otherwise true.
+     *
+     * @return false for type submit/reset/image/button otherwise true
      */
     public boolean isSubmitable() {
         final String type = getAttributeDirect(TYPE_ATTRIBUTE);
@@ -1059,7 +1033,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     @Override
     public boolean isCustomErrorValidityState() {
-        return !StringUtils.isEmpty(customValidity_);
+        return !StringUtils.isEmptyOrNull(customValidity_);
     }
 
     @Override
@@ -1079,13 +1053,30 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         return getValue().length() < getMinLength();
     }
 
+    // no need to override isTooLongValidityState()
+    // The HTML spec (§4.10.18.5) has a deliberate rule: tooLong only fires
+    // if the user has interacted with the field ("the element has a dirty value flag").
+    // A value set via JS (elem.value = '...') that was never touched by the user does
+    // not set the dirty flag, so tooLong stays false regardless of the value length.
+    // see HtmlTextInputTest
+    // maxLengthValidationInvalid()/maxLengthValidationInvalidInitial()/maxLengthValidationValid()
+    //    @Override
+    //    public boolean isTooLongValidityState() {
+    //        return false;
+    //    }
+
     @Override
     public boolean isValidValidityState() {
         return !isCustomErrorValidityState()
                 && !isValueMissingValidityState()
                 && !isTooLongValidityState()
                 && !isTooShortValidityState()
-                && !hasPatternMismatchValidityState();
+                && !hasPatternMismatchValidityState()
+                && !hasTypeMismatchValidityState()
+                && !hasRangeOverflowValidityState()
+                && !hasRangeUnderflowValidityState()
+                && !isStepMismatchValidityState()
+                && !hasBadInputValidityState();
     }
 
     @Override
@@ -1096,6 +1087,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the value of the attribute {@code formnovalidate} or an empty string if that attribute isn't defined.
+     *
      * @return the value of the attribute {@code formnovalidate} or an empty string if that attribute isn't defined
      */
     public final boolean isFormNoValidate() {
@@ -1117,12 +1110,14 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     /**
+     * Returns the {@code type} property.
+     *
      * @return the {@code type} property
      */
     public final String getType() {
         final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
         String type = getTypeAttribute();
-        type = org.htmlunit.util.StringUtils.toRootLowerCase(type);
+        type = StringUtils.toRootLowerCase(type);
         return isSupported(type, browserVersion) ? type : "text";
     }
 
@@ -1145,8 +1140,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         final WebClient webClient = page.getWebClient();
         final BrowserVersion browser = webClient.getBrowserVersion();
         if (!currentType.equalsIgnoreCase(newType)) {
-            if (!isSupported(org.htmlunit.util.StringUtils
-                                    .toRootLowerCase(newType), browser)) {
+            if (!isSupported(StringUtils.toRootLowerCase(newType), browser)) {
                 if (setThroughAttribute) {
                     newType = "text";
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.javascript.host.event.KeyboardEvent;
  * Keeps track of the typed keys.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class Keyboard {
 
@@ -57,6 +58,7 @@ public class Keyboard {
      * <p>
      * An example of predefined values is
      * {@link org.htmlunit.javascript.host.event.KeyboardEvent#DOM_VK_PAGE_DOWN}.
+     * </p>
      *
      * @param keyCode the key code
      */
@@ -72,6 +74,7 @@ public class Keyboard {
      * <p>
      * An example of predefined values is
      * {@link org.htmlunit.javascript.host.event.KeyboardEvent#DOM_VK_PAGE_DOWN}.
+     * </p>
      *
      * @param keyCode the key code.
      */
@@ -91,6 +94,7 @@ public class Keyboard {
      * <p>
      * If the length of the item is 1, then it is a character.
      * If the length of the item is 2, the first is the key code, the second is boolean whether pressing or not
+     * </p>
      *
      * @return the keys
      */

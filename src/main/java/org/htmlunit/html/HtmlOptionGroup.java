@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@ package org.htmlunit.html;
 import java.util.Map;
 
 import org.htmlunit.SgmlPage;
-import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "optgroup".
  *
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author David K. Taylor
- * @author <a href="mailto:cse@dynabean.de">Christian Sell</a>
+ * @author Christian Sell
  * @author David D. Kilzer
  * @author Ahmed Ashour
  * @author Daniel Gredler
@@ -37,7 +36,7 @@ public class HtmlOptionGroup extends HtmlElement implements DisabledElement {
     public static final String TAG_NAME = "optgroup";
 
     /**
-     * Creates an instance of HtmlOptionGroup
+     * Creates an instance of HtmlOptionGroup.
      *
      * @param qualifiedName the qualified name of the element type to instantiate
      * @param page the HtmlPage that contains this element
@@ -46,27 +45,6 @@ public class HtmlOptionGroup extends HtmlElement implements DisabledElement {
     HtmlOptionGroup(final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
-    }
-
-    /**
-     * @return {@code true} if the disabled attribute is set for this element
-     */
-    @Override
-    public final boolean isDisabled() {
-        if (hasAttribute(ATTRIBUTE_DISABLED)) {
-            return true;
-        }
-
-        Node node = getParentNode();
-        while (node != null) {
-            if (node instanceof DisabledElement
-                    && ((DisabledElement) node).isDisabled()) {
-                return true;
-            }
-            node = node.getParentNode();
-        }
-
-        return false;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,28 @@
 package org.htmlunit.javascript.host;
 
 /**
- * The WindowOrWorkerGlobalScope mixin describes several features
- * common to the  {@code Window} and WorkerGlobalScope.
+ * The {@code WindowOrWorkerGlobalScope} mixin describes several features
+ * common to {@link Window} and {@code WorkerGlobalScope}.
  *
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope">MDN Documentation</a>
  */
 public interface WindowOrWorkerGlobalScope {
 
     /**
-     * Decodes a string of data which has been encoded using base-64 encoding.
-     * @param encodedData the encoded string
+     * Decodes a string of data that has been encoded using Base64 encoding.
+     *
+     * @param encodedData the Base64-encoded string to decode
      * @return the decoded value
      */
     String atob(String encodedData);
 
     /**
-     * Creates a base-64 encoded ASCII string from a string of binary data.
-     * @param stringToEncode string to encode
-     * @return the encoded string
+     * Creates a Base64-encoded ASCII string from a string of binary data.
+     *
+     * @param stringToEncode the string to encode
+     * @return the Base64-encoded string
      */
     String btoa(String stringToEncode);
 }

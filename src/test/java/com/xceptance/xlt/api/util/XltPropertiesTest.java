@@ -17,6 +17,7 @@ package com.xceptance.xlt.api.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -121,6 +122,8 @@ public class XltPropertiesTest
             .filter(s -> s.startsWith("secret.")).collect(Collectors.toList());
         keys.forEach(System::clearProperty);
 
+        System.clearProperty("test");
+
         XltPropertiesImpl.getInstance().clear();
     }
 
@@ -145,6 +148,7 @@ public class XltPropertiesTest
 
         // load the happy path defaults, default, project, test, dev, secret, system
         var p = new XltPropertiesImpl(null, null, true, false);
+
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -884,5 +888,232 @@ public class XltPropertiesTest
         p.removeProperty(XltConstants.PROP_DATA_DIRECTORY);
         assertEquals(configDir.getPath(), p.getConfigDirectory());
         assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+    }
+
+    // =============================================
+    // Groovy Property Expansion Tests
+    // =============================================
+    /**
+     * Test that Groovy expressions using ${...} variable substitution work correctly
+     * within the XltProperties integration layer.
+     * @throws FileSystemException 
+     */
+    @Test
+    public void oneFileCalculation() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+
+        // Create instance of XltPropertiesImpl 
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // ask for simple properties first
+        assertEquals(100, p.getProperty("totalUsers", 0));
+
+        // simple evaluation without required larger context
+        assertEquals(400, p.getProperty("TBrowse.users", 0));
+        assertEquals(300, p.getProperty("TSearch.users", 0));
+        assertEquals(200, p.getProperty("TOrder.users", 0));
+        assertEquals(100, p.getProperty("TCheckout.users", 0));
+        
+        // stacked with references to other dynamic props
+        assertEquals(10, p.getProperty("TBrowse2.users", 0));
+        assertEquals(10 * 2, p.getProperty("TSearch2.users", 0));
+        assertEquals(10 * 2 * 3, p.getProperty("TCheckout2.users", 0));
+        assertEquals(10 * 2 * 3 * 4, p.getProperty("TOrder2.users", 0));
+    }
+
+    @Test
+    public void groovyFloatEvaluationFallback() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Inject a property that explicitly evaluates to a floating-point string
+        p.setProperty("float.test", "#{ 100 * 0.405 }");
+        
+        // Assert that the raw string is a float with preserved scale from the multiplier
+        assertEquals("40.500", p.getProperty("float.test"));
+
+        // Assert that getProperty(key, defaultValue) correctly falls back to defaultValue (99)
+        // rather than crashing with NumberFormatException
+        assertEquals(99, p.getProperty("float.test", 99));
+    }
+
+    // =============================================
+    // Doc: "Load Mix Calculation" — .intValue() for clean integer results
+    // =============================================
+    /**
+     * Validates the documented load mix calculation pattern:
+     * {@code #{ (${totalUsers} * 0.40).intValue() }}
+     * Ensures .intValue() produces clean integers without trailing decimals.
+     *
+     * @see PROPERTY_EXPANSION.md "Practical Examples / Load Mix Calculation"
+     */
+    @Test
+    public void loadMixCalculationWithIntValue() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // totalUsers = 100, .intValue() produces clean integers
+        assertEquals(40, p.getProperty("mix.TBrowse.users", 0));
+        assertEquals(30, p.getProperty("mix.TSearch.users", 0));
+        assertEquals(10, p.getProperty("mix.TOrder.users", 0));
+        assertEquals(20, p.getProperty("mix.TCheckout.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Environment-Based Configuration" — multiplier scaling
+    // =============================================
+    /**
+     * Validates the documented environment-based scaling pattern:
+     * {@code #{ (${base.browse.users} * ${load.multiplier}).intValue() }}
+     *
+     * @see PROPERTY_EXPANSION.md "Practical Examples / Environment-Based Configuration"
+     */
+    @Test
+    public void environmentBasedMultiplierScaling() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // base.browse.users = 50, load.multiplier = 1.5 → 75
+        assertEquals(75, p.getProperty("scaled.TBrowse.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Supported Operations — Conditionals"
+    // =============================================
+    /**
+     * Validates that ternary conditional expressions work with ${} substitution.
+     * String values must be quoted when pasted via ${} into Groovy.
+     *
+     * @see PROPERTY_EXPANSION.md "Supported Operations"
+     */
+    @Test
+    public void conditionalTernaryOperator() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // mode=production → quoted as '${mode}' in Groovy → 100
+        assertEquals(100, p.getProperty("conditional.users", 0));
+    }
+
+    // =============================================
+    // Doc: "Supported Operations — Arithmetic"
+    // =============================================
+    /**
+     * Validates that modulo arithmetic works in Groovy expressions.
+     *
+     * @see PROPERTY_EXPANSION.md "Supported Operations"
+     */
+    @Test
+    public void arithmeticModulo() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // 17 % 5 = 2
+        assertEquals(2, p.getProperty("modulo.result", 0));
+    }
+
+    // =============================================
+    // Doc: "Supported Operations — Type conversion"
+    // =============================================
+    /**
+     * Validates the documented type conversion operations: {@code as int}, {@code as double}, {@code as String}.
+     *
+     * @see PROPERTY_EXPANSION.md "Supported Operations"
+     */
+    @Test
+    public void typeConversion() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        assertEquals(42, p.getProperty("typed.int", 0));
+        assertEquals("3.14", p.getProperty("typed.double"));
+        assertEquals("42", p.getProperty("typed.string"));
+    }
+
+    // =============================================
+    // Doc: "Error Handling"
+    // =============================================
+    /**
+     * Validates the documented error handling behavior: invalid Groovy syntax
+     * throws {@link IllegalArgumentException} with the script content in the message.
+     *
+     * @see PROPERTY_EXPANSION.md "Error Handling"
+     */
+    @Test
+    public void invalidGroovySyntaxThrowsWithMessage() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Inject invalid Groovy syntax at runtime
+        p.setProperty("bad.syntax", "#{ this is not valid ++ }");
+
+        try
+        {
+            p.getProperty("bad.syntax");
+            fail("Expected IllegalArgumentException for invalid Groovy syntax");
+        }
+        catch (final IllegalArgumentException e)
+        {
+            assertTrue("Exception message should contain the script",
+                       e.getMessage().contains("this is not valid ++"));
+        }
+    }
+
+    // =============================================
+    // Doc: "Security" — blocked operations
+    // =============================================
+    /**
+     * Validates the documented security sandbox: file system access, network operations,
+     * system access, thread creation, and reflection are all blocked with an
+     * {@link IllegalArgumentException}.
+     *
+     * @see PROPERTY_EXPANSION.md "Security"
+     */
+    @Test
+    public void securitySandboxBlocksDangerousOperations() throws FileSystemException
+    {
+        setup("propertytest_groovy_1", "propertytest_groovy_1/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Doc: "File system access (File, FileReader, etc.)"
+        assertSecurityBlocks(p, "#{ new java.io.File('/etc/passwd') }", "File access");
+
+        // Doc: "Network operations (URL, Socket, etc.)"
+        assertSecurityBlocks(p, "#{ new java.net.URL('http://evil.com') }", "URL access");
+
+        // Doc: "System access (System, Runtime)"
+        assertSecurityBlocks(p, "#{ System.exit(0) }", "System.exit");
+        assertSecurityBlocks(p, "#{ Runtime.getRuntime().exec('ls') }", "Runtime.exec");
+
+        // Doc: "Thread creation"
+        assertSecurityBlocks(p, "#{ new Thread({ }).start() }", "Thread creation");
+
+        // Doc: "Reflection"
+        assertSecurityBlocks(p, "#{ Class.forName('java.lang.Runtime') }", "Reflection");
+    }
+
+    /**
+     * Helper to assert that a Groovy expression is blocked by the security sandbox.
+     */
+    private void assertSecurityBlocks(final XltPropertiesImpl p, final String expression, final String description)
+    {
+        p.setProperty("security.test", expression);
+        try
+        {
+            p.getProperty("security.test");
+            fail("Expected IllegalArgumentException for blocked operation: " + description);
+        }
+        catch (final IllegalArgumentException e)
+        {
+            // Expected — security sandbox blocked it
+        }
     }
 }

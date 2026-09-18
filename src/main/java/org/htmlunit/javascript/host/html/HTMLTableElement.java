@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@ package org.htmlunit.javascript.host.html;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableFooter;
@@ -33,22 +36,25 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.Node;
 
 /**
  * The JavaScript object {@code HTMLTableElement}.
  *
  * @author David D. Kilzer
- * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @author Mike Bowler
  * @author Daniel Gredler
  * @author Chris Erskine
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Frank Danek
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement">MDN Documentation</a>
  */
 @JsxClass(domClass = HtmlTable.class)
-public class HTMLTableElement extends RowContainer {
+public class HTMLTableElement extends HTMLElement {
 
     /**
      * JavaScript constructor.
@@ -79,14 +85,13 @@ public class HTMLTableElement extends RowContainer {
      */
     @JsxSetter
     public void setCaption(final Object o) {
-        if (!(o instanceof HTMLTableCaptionElement)) {
+        if (!(o instanceof HTMLTableCaptionElement caption)) {
             throw JavaScriptEngine.typeError("Not a caption");
         }
 
         // remove old caption (if any)
         deleteCaption();
 
-        final HTMLTableCaptionElement caption = (HTMLTableCaptionElement) o;
         getDomNodeOrDie().appendChild(caption.getDomNodeOrDie());
     }
 
@@ -110,16 +115,15 @@ public class HTMLTableElement extends RowContainer {
      */
     @JsxSetter
     public void setTFoot(final Object o) {
-        if (!(o instanceof HTMLTableSectionElement
-            && "TFOOT".equals(((HTMLTableSectionElement) o).getTagName()))) {
+        if (!(o instanceof HTMLTableSectionElement element
+            && "TFOOT".equals(element.getTagName()))) {
             throw JavaScriptEngine.typeError("Not a tFoot");
         }
 
         // remove old caption (if any)
         deleteTFoot();
 
-        final HTMLTableSectionElement tfoot = (HTMLTableSectionElement) o;
-        getDomNodeOrDie().appendChild(tfoot.getDomNodeOrDie());
+        getDomNodeOrDie().appendChild(element.getDomNodeOrDie());
     }
 
     /**
@@ -142,16 +146,15 @@ public class HTMLTableElement extends RowContainer {
      */
     @JsxSetter
     public void setTHead(final Object o) {
-        if (!(o instanceof HTMLTableSectionElement
-            && "THEAD".equals(((HTMLTableSectionElement) o).getTagName()))) {
+        if (!(o instanceof HTMLTableSectionElement element
+            && "THEAD".equals(element.getTagName()))) {
             throw JavaScriptEngine.typeError("Not a tHead");
         }
 
         // remove old caption (if any)
         deleteTHead();
 
-        final HTMLTableSectionElement thead = (HTMLTableSectionElement) o;
-        getDomNodeOrDie().appendChild(thead.getDomNodeOrDie());
+        getDomNodeOrDie().appendChild(element.getDomNodeOrDie());
     }
 
     /**
@@ -170,7 +173,7 @@ public class HTMLTableElement extends RowContainer {
      * If this table does not have a caption, this method creates an empty table caption,
      * adds it to the table and then returns it. If one or more captions already exist,
      * this method returns the first existing caption.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536381.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/createCaption">MDN Documentation</a>
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
@@ -182,8 +185,8 @@ public class HTMLTableElement extends RowContainer {
      * If this table does not have a tfoot element, this method creates an empty tfoot
      * element, adds it to the table and then returns it. If this table already has a
      * tfoot element, this method returns the existing tfoot element.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536402.aspx">MSDN Documentation</a>
-     * @return a newly added caption if no caption exists, or the first existing caption
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/createTFoot">MDN Documentation</a>
+     * @return a newly added tfoot element if none exists, or the first existing tfoot element
      */
     @JsxFunction
     public HtmlUnitScriptable createTFoot() {
@@ -194,8 +197,8 @@ public class HTMLTableElement extends RowContainer {
      * If this table does not have a tbody element, this method creates an empty tbody
      * element, adds it to the table and then returns it. If this table already has a
      * tbody element, this method returns the existing tbody element.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536402.aspx">MSDN Documentation</a>
-     * @return a newly added caption if no caption exists, or the first existing caption
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/createTBody">MDN Documentation</a>
+     * @return a newly added tbody element if none exists, or the first existing tbody element
      */
     @JsxFunction
     public HtmlUnitScriptable createTBody() {
@@ -206,8 +209,8 @@ public class HTMLTableElement extends RowContainer {
      * If this table does not have a thead element, this method creates an empty
      * thead element, adds it to the table and then returns it. If this table
      * already has a thead element, this method returns the existing thead element.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536403.aspx">MSDN Documentation</a>
-     * @return a newly added caption if no caption exists, or the first existing caption
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/createTHead">MDN Documentation</a>
+     * @return a newly added thead element if none exists, or the first existing thead element
      */
     @JsxFunction
     public HtmlUnitScriptable createTHead() {
@@ -218,7 +221,7 @@ public class HTMLTableElement extends RowContainer {
      * Deletes this table's caption. If the table has multiple captions, this method
      * deletes only the first caption. If this table does not have any captions, this
      * method does nothing.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536405.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/deleteCaption">MDN Documentation</a>
      */
     @JsxFunction
     public void deleteCaption() {
@@ -229,7 +232,7 @@ public class HTMLTableElement extends RowContainer {
      * Deletes this table's tfoot element. If the table has multiple tfoot elements, this
      * method deletes only the first tfoot element. If this table does not have any tfoot
      * elements, this method does nothing.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536409.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/deleteTFoot">MDN Documentation</a>
      */
     @JsxFunction
     public void deleteTFoot() {
@@ -240,7 +243,7 @@ public class HTMLTableElement extends RowContainer {
      * Deletes this table's thead element. If the table has multiple thead elements, this
      * method deletes only the first thead element. If this table does not have any thead
      * elements, this method does nothing.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536410.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/deleteTHead">MDN Documentation</a>
      */
     @JsxFunction
     public void deleteTHead() {
@@ -248,22 +251,46 @@ public class HTMLTableElement extends RowContainer {
     }
 
     /**
-     * Indicates if the row belongs to this container.
-     * @param row the row to test
-     * @return {@code true} if it belongs to this container
+     * Inserts a new row at the specified index in the element's row collection. If the index
+     * is -1 or there is no index specified, then the row is appended at the end of the
+     * element's row collection.
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow">MDN Documentation</a>
+     * @param index specifies where to insert the row in the row's collection.
+     *        The default value is -1, which appends the new row to the end of the rows collection
+     * @return the newly-created row
      */
-    @Override
-    protected boolean isContainedRow(final HtmlTableRow row) {
-        final DomNode parent = row.getParentNode(); // the tbody, thead or tfoo
-        return parent != null
-                && parent.getParentNode() == getDomNodeOrDie();
+    @JsxFunction
+    public HtmlUnitScriptable insertRow(final Object index) {
+        int rowIndex = -1;
+        if (!JavaScriptEngine.isUndefined(index)) {
+            rowIndex = (int) JavaScriptEngine.toNumber(index);
+        }
+        final HTMLCollection rows = getRows();
+        final int rowCount = rows.getLength();
+        final int r;
+        if (rowIndex == -1 || rowIndex == rowCount) {
+            r = Math.max(0, rowCount);
+        }
+        else {
+            r = rowIndex;
+        }
+
+        if (r < 0 || r > rowCount) {
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Index or size is negative or greater than the allowed amount "
+                            + "(index: " + rowIndex + ", " + rowCount + " rows)",
+                    DOMException.INDEX_SIZE_ERR);
+        }
+
+        return insertRow(r);
     }
 
     /**
-     * Handle special case where table is empty.
-     * {@inheritDoc}
+     * Inserts a new row at the given position.
+     * @param index the index where the row should be inserted (0 &lt;= index &lt;= nbRows)
+     * @return the inserted row
      */
-    @Override
     public HtmlUnitScriptable insertRow(final int index) {
         // check if a tbody should be created
         if (index != 0) {
@@ -271,13 +298,34 @@ public class HTMLTableElement extends RowContainer {
                 if (htmlElement instanceof HtmlTableBody
                         || htmlElement instanceof HtmlTableHeader
                         || htmlElement instanceof HtmlTableFooter) {
-                    return super.insertRow(index);
+
+                    final HTMLCollection rows = getRows();
+                    final int rowCount = rows.getLength();
+                    final DomElement newRow = ((HtmlPage) getDomNodeOrDie().getPage()).createElement("tr");
+                    if (rowCount == 0) {
+                        getDomNodeOrDie().appendChild(newRow);
+                    }
+                    else if (index == rowCount) {
+                        final HtmlUnitScriptable row = (HtmlUnitScriptable) rows.item(Integer.valueOf(index - 1));
+                        row.getDomNodeOrDie().getParentNode().appendChild(newRow);
+                    }
+                    else {
+                        final HtmlUnitScriptable row = (HtmlUnitScriptable) rows.item(Integer.valueOf(index));
+                        // if at the end, then in the same "sub-container" as the last existing row
+                        if (index > rowCount - 1) {
+                            row.getDomNodeOrDie().getParentNode().appendChild(newRow);
+                        }
+                        else {
+                            row.getDomNodeOrDie().insertBefore(newRow);
+                        }
+                    }
+                    return getScriptableFor(newRow);
                 }
             }
         }
 
         final HtmlElement tBody = getDomNodeOrDie().appendChildIfNoneExists("tbody");
-        return ((RowContainer) getScriptableFor(tBody)).insertRow(0);
+        return ((HTMLTableSectionElement) getScriptableFor(tBody)).insertRow(0);
     }
 
     /**
@@ -291,7 +339,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Sets the {@code width} property.
-     * @param width the {@code width} property
+     * @param width the {@code width} property value
      */
     @JsxSetter(propertyName = "width")
     public void setWidth_js(final String width) {
@@ -309,7 +357,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Sets the {@code cellSpacing} property.
-     * @param cellSpacing the {@code cellSpacing} property
+     * @param cellSpacing the {@code cellSpacing} property value
      */
     @JsxSetter
     public void setCellSpacing(final String cellSpacing) {
@@ -327,7 +375,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Sets the {@code cellPadding} property.
-     * @param cellPadding the {@code cellPadding} property
+     * @param cellPadding the {@code cellPadding} property value
      */
     @JsxSetter
     public void setCellPadding(final String cellPadding) {
@@ -345,7 +393,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Sets the {@code border} property.
-     * @param border the {@code border} property
+     * @param border the {@code border} property value
      */
     @JsxSetter
     public void setBorder(final String border) {
@@ -355,7 +403,7 @@ public class HTMLTableElement extends RowContainer {
     /**
      * Returns the value of the {@code bgColor} property.
      * @return the value of the {@code bgColor} property
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533505.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement#bgcolor">MDN Documentation</a>
      */
     @JsxGetter
     public String getBgColor() {
@@ -365,7 +413,7 @@ public class HTMLTableElement extends RowContainer {
     /**
      * Sets the value of the {@code bgColor} property.
      * @param bgColor the value of the {@code bgColor} property
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533505.aspx">MSDN Documentation</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement#bgcolor">MDN Documentation</a>
      */
     @JsxSetter
     public void setBgColor(final String bgColor) {
@@ -394,7 +442,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Gets the {@code summary} property.
-     * @return the property
+     * @return the {@code summary} property
      */
     @JsxGetter
     public String getSummary() {
@@ -403,7 +451,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Sets the {@code summary} property.
-     * @param summary the new property
+     * @param summary the {@code summary} property value
      */
     @JsxSetter
     public void setSummary(final String summary) {
@@ -412,7 +460,7 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Gets the {@code rules} property.
-     * @return the property
+     * @return the {@code rules} property
      */
     @JsxGetter
     public String getRules() {
@@ -421,11 +469,71 @@ public class HTMLTableElement extends RowContainer {
 
     /**
      * Sets the {@code rules} property.
-     * @param rules the new property
+     * @param rules the {@code rules} property value
      */
     @JsxSetter
     public void setRules(final String rules) {
         setAttribute("rules", rules);
     }
 
+    /**
+     * Returns the value of the {@code align} property.
+     * @return the value of the {@code align} property
+     */
+    @JsxGetter
+    public String getAlign() {
+        return getAlign(true);
+    }
+
+    /**
+     * Sets the value of the {@code align} property.
+     * @param align the value of the {@code align} property
+     */
+    @JsxSetter
+    public void setAlign(final String align) {
+        setAlign(align, false);
+    }
+
+    /**
+     * Deletes the row at the specified index.
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/deleteRow">MDN Documentation</a>
+     * @param rowIndex the zero-based index of the row to delete
+     */
+    @JsxFunction
+    public void deleteRow(int rowIndex) {
+        final HTMLCollection rows = getRows();
+        final int rowCount = rows.getLength();
+        if (rowIndex == -1) {
+            rowIndex = rowCount - 1;
+        }
+        final boolean rowIndexValid = rowIndex >= 0 && rowIndex < rowCount;
+        if (rowIndexValid) {
+            final HtmlUnitScriptable row = (HtmlUnitScriptable) rows.item(Integer.valueOf(rowIndex));
+            row.getDomNodeOrDie().remove();
+        }
+    }
+
+    /**
+     * Returns the rows in the element.
+     * @return the rows in the element
+     */
+    @JsxGetter
+    public HTMLCollection getRows() {
+        final HTMLCollection rows = new HTMLCollection(getDomNodeOrDie(), false);
+        rows.setIsMatchingPredicate(
+                (Predicate<DomNode> & Serializable)
+                node -> node instanceof HtmlTableRow htr && isContainedRow(htr));
+        return rows;
+    }
+
+    /**
+     * Indicates if the row belongs to this container.
+     * @param row the row to test
+     * @return {@code true} if it belongs to this container
+     */
+    private boolean isContainedRow(final HtmlTableRow row) {
+        final DomNode parent = row.getParentNode(); // the tbody, thead or tfoo
+        return parent != null
+                && parent.getParentNode() == getDomNodeOrDie();
+    }
 }

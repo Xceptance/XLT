@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import java.io.Serializable;
 /**
  * Implementations of this interface receive notifications of changes to the DOM structure.
  *
- * @author Ahmed Ashour
  * @see DomChangeEvent
+ *
+ * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public interface DomChangeListener extends Serializable {
 

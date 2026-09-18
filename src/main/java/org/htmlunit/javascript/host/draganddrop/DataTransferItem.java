@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class DataTransferItem extends HtmlUnitScriptable {
 
     private final String kind_;
     private final String type_;
-    private Object data_;
+    private final Object data_;
 
     /**
      * Ctor.
@@ -61,10 +61,23 @@ public class DataTransferItem extends HtmlUnitScriptable {
         data_ = data;
     }
 
+    /**
+     * Creates a string data transfer item.
+     *
+     * @param data the data
+     * @param type the type
+     * @return a new {@link DataTransferItem}
+     */
     public static DataTransferItem buildStringItem(final CharSequence data, final String type) {
         return new DataTransferItem(KIND_STRING, type, data);
     }
 
+    /**
+     * Creates a file data transfer item.
+     *
+     * @param file the file
+     * @return a new {@link DataTransferItem}
+     */
     public static DataTransferItem buildFileItem(final File file) {
         return new DataTransferItem(KIND_FILE, file.getType(), file);
     }
@@ -78,6 +91,8 @@ public class DataTransferItem extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code type} property.
+     *
      * @return the {@code type} property
      */
     @JsxGetter
@@ -86,6 +101,8 @@ public class DataTransferItem extends HtmlUnitScriptable {
     }
 
     /**
+     * Returns the {@code type} property.
+     *
      * @return the {@code type} property
      */
     @JsxGetter
@@ -94,13 +111,13 @@ public class DataTransferItem extends HtmlUnitScriptable {
     }
 
     /**
-     * Invokes the given callback with the drag data item's string data as the argument
-     * if the item's kind is a Plain unicode string (i.e. kind is string).
+     * Invokes the given callback with the drag data item's string data if the item contains a plain Unicode string.
+     *
      * @param callback Function to execute
      */
     @JsxFunction
     public void getAsString(final Object callback) {
-        if (!(callback instanceof Callable)) {
+        if (!(callback instanceof Callable fun)) {
             throw JavaScriptEngine.typeError(
                     "getAsString callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
@@ -109,7 +126,6 @@ public class DataTransferItem extends HtmlUnitScriptable {
             return;
         }
 
-        final Callable fun = (Callable) callback;
         final Object[] args = {data_};
 
         final WebWindow webWindow = getWindow().getWebWindow();
@@ -125,7 +141,9 @@ public class DataTransferItem extends HtmlUnitScriptable {
     }
 
     /**
-     * @return the drag data item's File object. If the item is not a file, this method returns null.
+     * Returns the file represented by this drag data item.
+     *
+     * @return the drag data item's {@link File}, or {@code null} if this item is not a file
      */
     @JsxFunction
     public File getAsFile() {
@@ -137,7 +155,9 @@ public class DataTransferItem extends HtmlUnitScriptable {
     }
 
     /**
-     * @return true if this is a file
+     * Returns whether this item represents a file.
+     *
+     * @return {@code true} if this item represents a file
      */
     public boolean isFile() {
         return kind_ == KIND_FILE;

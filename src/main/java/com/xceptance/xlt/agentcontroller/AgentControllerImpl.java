@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,8 +36,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.PropertiesConfiguration.JupIOFactory;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -67,10 +64,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.caucho.hessian.server.HessianServlet;
+import com.xceptance.common.util.ssl.EasySSLUtils;
 import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agent.AgentInfo;
 import com.xceptance.xlt.agentcontroller.ResultArchives.ArchiveToken;
 import com.xceptance.xlt.agentcontroller.TestUserStatus.State;
+import com.xceptance.xlt.agentcontroller.xtc.PeriodicRegistrationRefresher;
+import com.xceptance.xlt.agentcontroller.xtc.RelayClient;
+import com.xceptance.xlt.agentcontroller.xtc.RestApiClient;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.util.AgentControllerSystemInfo;
 import com.xceptance.xlt.util.FileReplicationIndex;
@@ -250,6 +251,7 @@ public class AgentControllerImpl implements AgentController
 
         prepare();
         startServlet();
+        startPrivateMachineMode();
     }
 
     /**
@@ -414,6 +416,38 @@ public class AgentControllerImpl implements AgentController
         // modify the agent command line to use the actually chosen port (for the case the configured port was 0 -> ie.
         // choose a free port)
         agentBaseCommandLine[1] = Integer.toString(sslConnector.getLocalPort());
+    }
+
+    /**
+     * Starts all things needed for the agent controller to work in private machine mode.
+     *
+     * @throws Exception
+     *             if anything goes wrong
+     */
+    protected void startPrivateMachineMode() throws Exception
+    {
+        if (!agentControllerConfig.isPrivateMachineModeEnabled())
+        {
+            return;
+        }
+
+        // determine machine name
+        final String machineName = agentControllerConfig.getPrivateMachineName();
+        final String machineId = UUID.randomUUID().toString();
+        final String hostName = machineName + "." + machineId + ".internal";
+
+        // create API client
+        final RestApiClient xtcRestApi = new RestApiClient(agentControllerConfig.getXtcHost(), agentControllerConfig.getXtcPort(),
+                                                           agentControllerConfig.getXtcClientId(),
+                                                           agentControllerConfig.getXtcClientSecret(), agentControllerConfig.getXtcOrg(),
+                                                           agentControllerConfig.getXtcProject());
+
+        // start periodic machine registration with XTC
+        new PeriodicRegistrationRefresher(xtcRestApi, hostName, agentControllerConfig.getPrivateMachineType()).start();
+
+        // start relay client
+        new RelayClient(agentControllerConfig.getXtcRelayHost(), agentControllerConfig.getXtcRelayPort(), agentControllerConfig.getPort(),
+                        hostName, EasySSLUtils.EASY_SSL_SOCKET_FACTORY).start();
     }
 
     /**
@@ -1092,7 +1126,8 @@ public class AgentControllerImpl implements AgentController
                         final IOFileFilter cfgFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.CFG_FILE_EXTENSION);
                         final IOFileFilter xmlFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.XML_FILE_EXTENSION);
                         final IOFileFilter jsonFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.JSON_FILE_EXTENSION);
-                        final IOFileFilter extensionFilter = FileFilterUtils.or(propertiesFilesFilter, cfgFilesFilter, xmlFilesFilter, jsonFilesFilter);
+                        final IOFileFilter extensionFilter = FileFilterUtils.or(propertiesFilesFilter, cfgFilesFilter, xmlFilesFilter,
+                                                                                jsonFilesFilter);
                         final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.INSTANCE, extensionFilter);
 
                         ZipOutputStream out = null;
@@ -1181,13 +1216,12 @@ public class AgentControllerImpl implements AgentController
     private static void maskFile(File inputFile, File outputFile) throws ConfigurationException, IOException
     {
         final StringWriter writer = new StringWriter();
-        try(final SecretPropertiesMask mask = new SecretPropertiesMask(new FileReader(inputFile),writer))
+        try (final SecretPropertiesMask mask = new SecretPropertiesMask(new FileReader(inputFile), writer))
         {
             mask.maskProperties(inputFile.getName().equals(XltConstants.SECRET_PROPERTIES_FILENAME));
         }
         FileUtils.writeStringToFile(outputFile, writer.toString(), StandardCharsets.ISO_8859_1);
     }
-
 
     /**
      * Adds the property files which are included by &quot;include&quot; properties to the argument stream. However all

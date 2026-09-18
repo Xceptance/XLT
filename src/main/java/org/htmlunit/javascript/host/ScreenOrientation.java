@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,18 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 
 /**
- * A JavaScript object for {@code ScreenOrientation}.
+ * JavaScript host object for {@code ScreenOrientation}.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ *
+ * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation">MDN Documentation</a>
  */
 @JsxClass
 public class ScreenOrientation extends EventTarget {
 
     /**
-     * JavaScript constructor.
+     * Creates an instance of this object.
      */
     @Override
     @JsxConstructor
@@ -42,6 +44,7 @@ public class ScreenOrientation extends EventTarget {
 
     /**
      * Returns the {@code angle} property.
+     *
      * @return the {@code angle} property
      */
     @JsxGetter
@@ -51,6 +54,7 @@ public class ScreenOrientation extends EventTarget {
 
     /**
      * Returns the {@code type} property.
+     *
      * @return the {@code type} property
      */
     @JsxGetter
@@ -60,6 +64,7 @@ public class ScreenOrientation extends EventTarget {
 
     /**
      * Returns the {@code onchange} event handler for this element.
+     *
      * @return the {@code onchange} event handler for this element
      */
     @JsxGetter
@@ -68,8 +73,9 @@ public class ScreenOrientation extends EventTarget {
     }
 
     /**
-     * Setter for the {@code onchange} event handler.
-     * @param change the handler
+     * Sets the {@code onchange} event handler.
+     *
+     * @param change the {@code onchange} event handler
      */
     @JsxSetter
     public void setOnchange(final Object change) {

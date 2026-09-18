@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 10.0.0-beta-1
+#Version 10.0.0-beta-4
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -566,348 +566,6 @@ meth public void setValue(double)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds TYPE_CODE,value
 
-CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitActionsModule
-cons public init()
-meth protected abstract com.xceptance.xlt.api.actions.AbstractHtmlPageAction execute(com.xceptance.xlt.api.actions.AbstractHtmlPageAction) throws java.lang.Throwable
-meth public com.xceptance.xlt.api.actions.AbstractHtmlPageAction run(com.xceptance.xlt.api.actions.AbstractHtmlPageAction) throws java.lang.Throwable
-supr com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
-
-CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitCommandsModule
-cons public init()
-meth protected abstract org.htmlunit.html.HtmlPage execute(org.htmlunit.html.HtmlPage) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage checkAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage click(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage clickAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage contextMenu(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage doubleClick(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage doubleClickAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage mouseDown(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseMove(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseOut(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseOver(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseUp(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage open(java.lang.String) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage open(java.net.URL) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage pause(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage pause(long)
-meth protected org.htmlunit.html.HtmlPage removeSelection(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage select(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage selectAndWait(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage selectFrame(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage selectWindow()
-meth protected org.htmlunit.html.HtmlPage selectWindow(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage submit(java.lang.String) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage submitAndWait(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage type(java.lang.String,java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage typeAndWait(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage uncheck(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage uncheckAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForChecked(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForClass(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForElementPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForEval(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotChecked(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotClass(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotElementPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotEval(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedId(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedIndex(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedLabel(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotStyle(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotText(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotTextPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotTitle(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotVisible(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForPageToLoad()
-meth protected org.htmlunit.html.HtmlPage waitForSelectedId(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForSelectedIndex(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForSelectedLabel(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForSelectedValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForStyle(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForText(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForTextPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForTitle(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForVisible(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,java.lang.String)
-meth protected void assertAttribute(java.lang.String,java.lang.String)
-meth protected void assertAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected void assertChecked(java.lang.String)
-meth protected void assertClass(java.lang.String,java.lang.String)
-meth protected void assertElementCount(java.lang.String,int)
-meth protected void assertElementCount(java.lang.String,java.lang.String)
-meth protected void assertElementPresent(java.lang.String)
-meth protected void assertEval(java.lang.String,java.lang.String)
-meth protected void assertLoadTime(java.lang.String)
-meth protected void assertLoadTime(long)
-meth protected void assertNotAttribute(java.lang.String,java.lang.String)
-meth protected void assertNotAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected void assertNotChecked(java.lang.String)
-meth protected void assertNotClass(java.lang.String,java.lang.String)
-meth protected void assertNotElementCount(java.lang.String,int)
-meth protected void assertNotElementCount(java.lang.String,java.lang.String)
-meth protected void assertNotElementPresent(java.lang.String)
-meth protected void assertNotEval(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedId(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedIndex(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedLabel(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedValue(java.lang.String,java.lang.String)
-meth protected void assertNotStyle(java.lang.String,java.lang.String)
-meth protected void assertNotText(java.lang.String,java.lang.String)
-meth protected void assertNotTextPresent(java.lang.String)
-meth protected void assertNotTitle(java.lang.String)
-meth protected void assertNotValue(java.lang.String,java.lang.String)
-meth protected void assertNotVisible(java.lang.String)
-meth protected void assertNotXpathCount(java.lang.String,int)
-meth protected void assertNotXpathCount(java.lang.String,java.lang.String)
-meth protected void assertPageSize(java.lang.String)
-meth protected void assertPageSize(long)
-meth protected void assertSelectedId(java.lang.String,java.lang.String)
-meth protected void assertSelectedIndex(java.lang.String,java.lang.String)
-meth protected void assertSelectedLabel(java.lang.String,java.lang.String)
-meth protected void assertSelectedValue(java.lang.String,java.lang.String)
-meth protected void assertStyle(java.lang.String,java.lang.String)
-meth protected void assertText(java.lang.String,java.lang.String)
-meth protected void assertTextPresent(java.lang.String)
-meth protected void assertTitle(java.lang.String)
-meth protected void assertValue(java.lang.String,java.lang.String)
-meth protected void assertVisible(java.lang.String)
-meth protected void assertXpathCount(java.lang.String,int)
-meth protected void assertXpathCount(java.lang.String,java.lang.String)
-meth protected void close()
-meth protected void createCookie(java.lang.String)
-meth protected void createCookie(java.lang.String,java.lang.String)
-meth protected void deleteAllVisibleCookies()
-meth protected void deleteCookie(java.lang.String)
-meth protected void deleteCookie(java.lang.String,java.lang.String)
-meth protected void echo(java.lang.String)
-meth protected void setTimeout(java.lang.String)
-meth protected void setTimeout(long)
-meth protected void store(java.lang.String,java.lang.String)
-meth protected void storeAttribute(java.lang.String,java.lang.String)
-meth protected void storeAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected void storeElementCount(java.lang.String,java.lang.String)
-meth protected void storeEval(java.lang.String,java.lang.String)
-meth protected void storeText(java.lang.String,java.lang.String)
-meth protected void storeTitle(java.lang.String)
-meth protected void storeValue(java.lang.String,java.lang.String)
-meth protected void storeXpathCount(java.lang.String,java.lang.String)
-meth protected void waitForNotValue(java.lang.String,java.lang.String)
-meth protected void waitForPopUp()
-meth protected void waitForPopUp(java.lang.String)
-meth protected void waitForPopUp(java.lang.String,java.lang.String)
-meth protected void waitForPopUp(java.lang.String,long)
-meth public org.htmlunit.html.HtmlPage run(org.htmlunit.html.HtmlPage) throws java.lang.Exception
-supr com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
-
-CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptAction
-cons public init(com.xceptance.xlt.api.actions.AbstractWebAction)
-cons public init(com.xceptance.xlt.api.actions.AbstractWebAction,java.lang.String)
-cons public init(java.lang.String)
-meth protected boolean evaluatesToTrue(java.lang.String)
-meth protected java.lang.String getBaseUrl()
-meth protected java.lang.String resolve(java.lang.String)
-meth protected java.lang.String resolveKey(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage addSelection(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage check(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage checkAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage click(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage clickAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage contextMenu(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage contextMenuAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage doubleClick(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage doubleClickAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage mouseDown(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage mouseDownAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseMove(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage mouseMoveAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseOut(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseOver(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseUp(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,int,int)
-meth protected org.htmlunit.html.HtmlPage mouseUpAt(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage open(java.lang.String) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage open(java.net.URL) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage pause(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage pause(long)
-meth protected org.htmlunit.html.HtmlPage removeSelection(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage select(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage selectAndWait(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage selectFrame(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage selectWindow()
-meth protected org.htmlunit.html.HtmlPage selectWindow(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage submit(java.lang.String) throws java.lang.Exception
-meth protected org.htmlunit.html.HtmlPage submitAndWait(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage type(java.lang.String,java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage typeAndWait(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage uncheck(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage uncheckAndWait(java.lang.String) throws java.io.IOException
-meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForChecked(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForClass(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForElementCount(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForElementPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForEval(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotChecked(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotClass(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForNotElementCount(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotElementPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotEval(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedId(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedIndex(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedLabel(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotSelectedValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotStyle(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotText(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotTextPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotTitle(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotVisible(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForNotXpathCount(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForPageToLoad()
-meth protected org.htmlunit.html.HtmlPage waitForSelectedId(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForSelectedIndex(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForSelectedLabel(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForSelectedValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForStyle(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForText(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForTextPresent(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForTitle(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForValue(java.lang.String,java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForVisible(java.lang.String)
-meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,int)
-meth protected org.htmlunit.html.HtmlPage waitForXpathCount(java.lang.String,java.lang.String)
-meth protected void assertAttribute(java.lang.String,java.lang.String)
-meth protected void assertAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected void assertChecked(java.lang.String)
-meth protected void assertClass(java.lang.String,java.lang.String)
-meth protected void assertElementCount(java.lang.String,int)
-meth protected void assertElementCount(java.lang.String,java.lang.String)
-meth protected void assertElementPresent(java.lang.String)
-meth protected void assertEval(java.lang.String,java.lang.String)
-meth protected void assertLoadTime(java.lang.String)
-meth protected void assertLoadTime(long)
-meth protected void assertNotAttribute(java.lang.String,java.lang.String)
-meth protected void assertNotAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected void assertNotChecked(java.lang.String)
-meth protected void assertNotClass(java.lang.String,java.lang.String)
-meth protected void assertNotElementCount(java.lang.String,int)
-meth protected void assertNotElementCount(java.lang.String,java.lang.String)
-meth protected void assertNotElementPresent(java.lang.String)
-meth protected void assertNotEval(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedId(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedIndex(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedLabel(java.lang.String,java.lang.String)
-meth protected void assertNotSelectedValue(java.lang.String,java.lang.String)
-meth protected void assertNotStyle(java.lang.String,java.lang.String)
-meth protected void assertNotText(java.lang.String,java.lang.String)
-meth protected void assertNotTextPresent(java.lang.String)
-meth protected void assertNotTitle(java.lang.String)
-meth protected void assertNotValue(java.lang.String,java.lang.String)
-meth protected void assertNotVisible(java.lang.String)
-meth protected void assertNotXpathCount(java.lang.String,int)
-meth protected void assertNotXpathCount(java.lang.String,java.lang.String)
-meth protected void assertPageSize(java.lang.String)
-meth protected void assertPageSize(long)
-meth protected void assertSelectedId(java.lang.String,java.lang.String)
-meth protected void assertSelectedIndex(java.lang.String,java.lang.String)
-meth protected void assertSelectedLabel(java.lang.String,java.lang.String)
-meth protected void assertSelectedValue(java.lang.String,java.lang.String)
-meth protected void assertStyle(java.lang.String,java.lang.String)
-meth protected void assertText(java.lang.String,java.lang.String)
-meth protected void assertTextPresent(java.lang.String)
-meth protected void assertTitle(java.lang.String)
-meth protected void assertValue(java.lang.String,java.lang.String)
-meth protected void assertVisible(java.lang.String)
-meth protected void assertXpathCount(java.lang.String,int)
-meth protected void assertXpathCount(java.lang.String,java.lang.String)
-meth protected void close()
-meth protected void createCookie(java.lang.String)
-meth protected void createCookie(java.lang.String,java.lang.String)
-meth protected void deleteAllVisibleCookies()
-meth protected void deleteCookie(java.lang.String)
-meth protected void deleteCookie(java.lang.String,java.lang.String)
-meth protected void echo(java.lang.String)
-meth protected void setTimeout(java.lang.String)
-meth protected void setTimeout(long)
-meth protected void store(java.lang.String,java.lang.String)
-meth protected void storeAttribute(java.lang.String,java.lang.String)
-meth protected void storeAttribute(java.lang.String,java.lang.String,java.lang.String)
-meth protected void storeElementCount(java.lang.String,java.lang.String)
-meth protected void storeEval(java.lang.String,java.lang.String)
-meth protected void storeText(java.lang.String,java.lang.String)
-meth protected void storeTitle(java.lang.String)
-meth protected void storeValue(java.lang.String,java.lang.String)
-meth protected void storeXpathCount(java.lang.String,java.lang.String)
-meth protected void waitForPopUp()
-meth protected void waitForPopUp(java.lang.String)
-meth protected void waitForPopUp(java.lang.String,java.lang.String)
-meth protected void waitForPopUp(java.lang.String,long)
-supr com.xceptance.xlt.api.actions.AbstractHtmlPageAction
-
-CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptModule
-cons public init()
-meth protected boolean evaluatesToTrue(java.lang.String)
-meth protected java.lang.String resolve(java.lang.String)
-meth protected java.lang.String resolveKey(java.lang.String)
-supr java.lang.Object
-
-CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitScriptTestCase
-cons public init()
-cons public init(java.lang.String)
-meth protected boolean evaluatesToTrue(java.lang.String)
-meth protected java.lang.String resolve(java.lang.String)
-meth protected java.lang.String resolveKey(java.lang.String)
-meth public final void __cleanUpAbstractHtmlUnitScriptTestCase()
-meth public final void __setUpAbstractHtmlUnitScriptTestCase()
-supr com.xceptance.xlt.api.tests.AbstractTestCase
-hfds _adapter
-
-CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractScriptTestCase
-cons public init()
-meth protected void executeScript(java.lang.String) throws java.lang.Exception
-meth public final void __cleanUpAbstractScriptTestCase()
-meth public final void __setUpAbstractScriptTestCase()
-meth public java.lang.String getBaseUrl()
-meth public java.lang.String getScriptName()
-meth public void setBaseUrl(java.lang.String)
-meth public void setScriptName(java.lang.String)
-meth public void setWebDriver(org.openqa.selenium.WebDriver)
-meth public void test() throws java.lang.Exception
-supr com.xceptance.xlt.api.tests.AbstractWebDriverTestCase
-hfds DEFAULT_IMPLICIT_WAIT_TIMEOUT,scriptName
-
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractWebDriverModule
 cons public init()
 intf com.xceptance.xlt.api.engine.scripting.ScriptCommands
@@ -1429,12 +1087,6 @@ CLSS public abstract interface !annotation com.xceptance.xlt.api.engine.scriptin
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.String value()
-
-CLSS public com.xceptance.xlt.api.engine.scripting.ScriptTestCaseSuite
-cons public init()
-meth public static java.util.List<java.lang.String> getTestCases()
-supr java.lang.Object
-hfds PROP_TEST_CASES
 
 CLSS public com.xceptance.xlt.api.engine.scripting.StaticScriptCommands
 cons public init()
@@ -2431,12 +2083,6 @@ meth public {java.util.SequencedCollection%0} getLast()
 meth public {java.util.SequencedCollection%0} removeFirst()
 meth public {java.util.SequencedCollection%0} removeLast()
 
-CLSS public abstract interface !annotation org.jspecify.annotations.NullMarked
- anno 0 java.lang.annotation.Documented()
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[MODULE, PACKAGE, TYPE, METHOD, CONSTRUCTOR])
-intf java.lang.annotation.Annotation
-
 CLSS public abstract interface !annotation org.junit.runner.RunWith
  anno 0 java.lang.annotation.Inherited()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
@@ -2458,9 +2104,14 @@ CLSS public abstract interface org.openqa.selenium.HasCapabilities
 meth public abstract org.openqa.selenium.Capabilities getCapabilities()
 
 CLSS public abstract interface org.openqa.selenium.HasDownloads
+innr public static DownloadedFile
+meth public abstract boolean isDownloadsEnabled()
 meth public abstract java.util.List<java.lang.String> getDownloadableFiles()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
+meth public abstract java.util.List<org.openqa.selenium.HasDownloads$DownloadedFile> getDownloadedFiles()
 meth public abstract void deleteDownloadableFiles()
 meth public abstract void downloadFile(java.lang.String,java.nio.file.Path) throws java.io.IOException
+meth public static boolean isDownloadsEnabled(org.openqa.selenium.Capabilities)
 meth public void requireDownloadsEnabled(org.openqa.selenium.Capabilities)
 
 CLSS public abstract interface org.openqa.selenium.JavascriptExecutor
@@ -2469,20 +2120,22 @@ CLSS public abstract interface org.openqa.selenium.PrintsPage
 meth public abstract org.openqa.selenium.Pdf print(org.openqa.selenium.print.PrintOptions)
 
 CLSS public abstract interface org.openqa.selenium.SearchContext
- anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public abstract org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
 
 CLSS public abstract interface org.openqa.selenium.TakesScreenshot
- anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract <%0 extends java.lang.Object> {%%0} getScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 
 CLSS public abstract interface org.openqa.selenium.WebDriver
 intf org.openqa.selenium.SearchContext
 
 CLSS public abstract interface org.openqa.selenium.bidi.HasBiDi
+ anno 0 org.openqa.selenium.Beta()
 meth public abstract java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="4.46")
+meth public abstract org.openqa.selenium.bidi.Handle getHandle()
 meth public org.openqa.selenium.bidi.BiDi getBiDi()
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="4.46")
 
 CLSS public org.openqa.selenium.chrome.ChromeDriver
 cons public init()
@@ -2490,16 +2143,13 @@ cons public init(org.openqa.selenium.chrome.ChromeDriverService)
 cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions)
 cons public init(org.openqa.selenium.chrome.ChromeDriverService,org.openqa.selenium.chrome.ChromeOptions,org.openqa.selenium.remote.http.ClientConfig)
 cons public init(org.openqa.selenium.chrome.ChromeOptions)
+cons public init(org.openqa.selenium.chrome.ChromeOptions,org.openqa.selenium.remote.http.ClientConfig)
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
 supr org.openqa.selenium.chromium.ChromiumDriver
 hcls ChromeDriverCommandExecutor
 
 CLSS public org.openqa.selenium.chromium.ChromiumDriver
-cons protected init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities,java.lang.String)
-fld protected org.openqa.selenium.chromium.HasCasting casting
-fld protected org.openqa.selenium.chromium.HasCdp cdp
-fld public final static java.util.function.Predicate<java.lang.String> IS_CHROMIUM_BROWSER
 intf org.openqa.selenium.HasAuthentication
 intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.chromium.HasCasting
@@ -2508,42 +2158,8 @@ intf org.openqa.selenium.chromium.HasLaunchApp
 intf org.openqa.selenium.chromium.HasNetworkConditions
 intf org.openqa.selenium.chromium.HasPermissions
 intf org.openqa.selenium.devtools.HasDevTools
-intf org.openqa.selenium.html5.LocationContext
-intf org.openqa.selenium.html5.WebStorage
 intf org.openqa.selenium.logging.HasLogEvents
-meth public !varargs java.lang.Object executeScript(org.openqa.selenium.ScriptKey,java.lang.Object[])
-meth public <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
-meth public java.lang.String getCastIssueMessage()
-meth public java.util.List<java.util.Map<java.lang.String,java.lang.String>> getCastSinks()
-meth public java.util.Map<java.lang.String,java.lang.Object> executeCdpCommand(java.lang.String,java.util.Map<java.lang.String,java.lang.Object>)
-meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
-meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
-meth public java.util.Set<org.openqa.selenium.ScriptKey> getPinnedScripts()
-meth public org.openqa.selenium.Capabilities getCapabilities()
-meth public org.openqa.selenium.ScriptKey pin(java.lang.String)
-meth public org.openqa.selenium.chromium.ChromiumNetworkConditions getNetworkConditions()
-meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.html5.Location location()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public void deleteNetworkConditions()
-meth public void launchApp(java.lang.String)
-meth public void quit()
-meth public void register(java.util.function.Predicate<java.net.URI>,java.util.function.Supplier<org.openqa.selenium.Credentials>)
-meth public void selectCastSink(java.lang.String)
-meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
-meth public void setLocation(org.openqa.selenium.html5.Location)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public void setNetworkConditions(org.openqa.selenium.chromium.ChromiumNetworkConditions)
-meth public void setPermission(java.lang.String,java.lang.String)
-meth public void startDesktopMirroring(java.lang.String)
-meth public void startTabMirroring(java.lang.String)
-meth public void stopCasting(java.lang.String)
-meth public void unpin(org.openqa.selenium.ScriptKey)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,permissions,scriptKeys,webStorage
 
 CLSS public abstract interface org.openqa.selenium.chromium.HasCasting
  anno 0 org.openqa.selenium.Beta()
@@ -2577,10 +2193,6 @@ meth public abstract java.util.Optional<org.openqa.selenium.devtools.DevTools> m
 meth public org.openqa.selenium.devtools.DevTools getDevTools()
 
 CLSS public abstract interface org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
- anno 0 org.openqa.selenium.Beta()
-meth public abstract org.openqa.selenium.federatedcredentialmanagement.FederatedCredentialManagementDialog getFederatedCredentialManagementDialog()
-meth public abstract void resetCooldown()
-meth public abstract void setDelayEnabled(boolean)
 
 CLSS public org.openqa.selenium.firefox.FirefoxDriver
 cons public init()
@@ -2588,23 +2200,17 @@ cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions)
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.selenium.firefox.FirefoxOptions,org.openqa.selenium.remote.http.ClientConfig)
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
+cons public init(org.openqa.selenium.firefox.FirefoxOptions,org.openqa.selenium.remote.http.ClientConfig)
 innr public final static SystemProperty
 intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.firefox.HasContext
 intf org.openqa.selenium.firefox.HasExtensions
 intf org.openqa.selenium.firefox.HasFullPageScreenshot
-intf org.openqa.selenium.html5.WebStorage
 meth public <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
-meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
 meth public org.openqa.selenium.Capabilities getCapabilities()
-meth public org.openqa.selenium.bidi.BiDi getBiDi()
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
-meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
 meth public void quit()
@@ -2612,7 +2218,7 @@ meth public void setContext(org.openqa.selenium.firefox.FirefoxCommandContext)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void uninstallExtension(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,context,extensions,fullPageScreenshot,webStorage
+hfds LOG,capabilities,context,extensions,fullPageScreenshot
 hcls FirefoxDriverCommandExecutor
 
 CLSS public abstract interface org.openqa.selenium.firefox.HasContext
@@ -2630,16 +2236,6 @@ CLSS public abstract interface org.openqa.selenium.firefox.HasFullPageScreenshot
  anno 0 org.openqa.selenium.Beta()
 meth public abstract <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 
-CLSS public abstract interface org.openqa.selenium.html5.LocationContext
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public abstract org.openqa.selenium.html5.Location location()
-meth public abstract void setLocation(org.openqa.selenium.html5.Location)
-
-CLSS public abstract interface org.openqa.selenium.html5.WebStorage
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public abstract org.openqa.selenium.html5.LocalStorage getLocalStorage()
-meth public abstract org.openqa.selenium.html5.SessionStorage getSessionStorage()
-
 CLSS public abstract interface org.openqa.selenium.interactions.Interactive
 meth public abstract void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public abstract void resetInputState()
@@ -2647,89 +2243,20 @@ meth public abstract void resetInputState()
 CLSS public abstract interface org.openqa.selenium.logging.HasLogEvents
 meth public abstract <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
 
-CLSS public abstract interface !annotation org.openqa.selenium.remote.Augmentable
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
-intf java.lang.annotation.Annotation
-
 CLSS public org.openqa.selenium.remote.RemoteWebDriver
-cons protected init()
-cons public init(java.net.URL,org.openqa.selenium.Capabilities)
-cons public init(java.net.URL,org.openqa.selenium.Capabilities,boolean)
-cons public init(org.openqa.selenium.Capabilities)
-cons public init(org.openqa.selenium.Capabilities,boolean)
-cons public init(org.openqa.selenium.remote.CommandExecutor,org.openqa.selenium.Capabilities)
-fld protected org.openqa.selenium.Capabilities capabilities
-innr protected RemoteTargetLocator
-innr protected RemoteWebDriverOptions
-innr public final static !enum When
 intf org.openqa.selenium.HasCapabilities
 intf org.openqa.selenium.HasDownloads
 intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.PrintsPage
 intf org.openqa.selenium.TakesScreenshot
 intf org.openqa.selenium.WebDriver
+intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
 intf org.openqa.selenium.interactions.Interactive
 intf org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
-meth protected org.openqa.selenium.remote.ExecuteMethod getExecuteMethod()
-meth protected org.openqa.selenium.remote.JsonToWebElementConverter getElementConverter()
-meth protected org.openqa.selenium.remote.Response execute(java.lang.String)
-meth protected org.openqa.selenium.remote.Response execute(java.lang.String,java.util.Map<java.lang.String,?>)
-meth protected org.openqa.selenium.remote.Response execute(org.openqa.selenium.remote.CommandPayload)
-meth protected void log(org.openqa.selenium.remote.SessionId,java.lang.String,java.lang.Object,org.openqa.selenium.remote.RemoteWebDriver$When)
-meth protected void setCommandExecutor(org.openqa.selenium.remote.CommandExecutor)
-meth protected void setElementConverter(org.openqa.selenium.remote.JsonToWebElementConverter)
-meth protected void setFoundBy(org.openqa.selenium.SearchContext,org.openqa.selenium.WebElement,java.lang.String,java.lang.String)
-meth protected void setSessionId(java.lang.String)
-meth protected void startSession(org.openqa.selenium.Capabilities)
-meth public !varargs java.lang.Object executeAsyncScript(java.lang.String,java.lang.Object[])
-meth public !varargs java.lang.Object executeScript(java.lang.String,java.lang.Object[])
-meth public <%0 extends java.lang.Object> {%%0} getScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
-meth public java.lang.String getCurrentUrl()
-meth public java.lang.String getPageSource()
-meth public java.lang.String getTitle()
-meth public java.lang.String getWindowHandle()
-meth public java.lang.String toString()
-meth public java.util.List<java.lang.String> getDownloadableFiles()
-meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
-meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.SearchContext,java.util.function.BiFunction<java.lang.String,java.lang.Object,org.openqa.selenium.remote.CommandPayload>,org.openqa.selenium.By)
-meth public java.util.Set<java.lang.String> getWindowHandles()
-meth public org.openqa.selenium.Capabilities getCapabilities()
-meth public org.openqa.selenium.Pdf print(org.openqa.selenium.print.PrintOptions)
-meth public org.openqa.selenium.WebDriver$Navigation navigate()
-meth public org.openqa.selenium.WebDriver$Options manage()
-meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
-meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
-meth public org.openqa.selenium.federatedcredentialmanagement.FederatedCredentialManagementDialog getFederatedCredentialManagementDialog()
-meth public org.openqa.selenium.remote.CommandExecutor getCommandExecutor()
-meth public org.openqa.selenium.remote.ErrorHandler getErrorHandler()
-meth public org.openqa.selenium.remote.FileDetector getFileDetector()
-meth public org.openqa.selenium.remote.Network network()
-meth public org.openqa.selenium.remote.Script script()
-meth public org.openqa.selenium.remote.SessionId getSessionId()
-meth public org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions)
-meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
- anno 0 org.openqa.selenium.Beta()
-meth public void close()
-meth public void deleteDownloadableFiles()
-meth public void downloadFile(java.lang.String,java.nio.file.Path) throws java.io.IOException
-meth public void get(java.lang.String)
-meth public void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
-meth public void quit()
-meth public void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
-meth public void resetCooldown()
-meth public void resetInputState()
-meth public void setDelayEnabled(boolean)
-meth public void setErrorHandler(org.openqa.selenium.remote.ErrorHandler)
-meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
-meth public void setLogLevel(java.util.logging.Level)
 supr java.lang.Object
-hfds LOG,WEBDRIVER_REMOTE_ENABLE_TRACING,converter,elementLocation,errorHandler,executeMethod,executor,fileDetector,level,localLogs,remoteLogs,remoteNetwork,remoteScript,sessionId
-hcls RemoteAlert,RemoteNavigation,RemoteVirtualAuthenticator
 
 CLSS public abstract interface org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
- anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions)
 meth public abstract void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
 

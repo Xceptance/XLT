@@ -123,17 +123,18 @@ flexmark-java
   * Homepage: https://github.com/vsch/flexmark-java
   * More information in folder: doc/3rd-party-licenses/flexmark-java
 
-freemarker
-
-  * License: Apache License 2.0
-  * Homepage: https://freemarker.apache.org/
-  * More information in folder: doc/3rd-party-licenses/freemarker
 
 google-api-services-compute
 
   * License: Apache License 2.0
   * Homepage: https://developers.google.com/api-client-library/java/
   * More information in folder: doc/3rd-party-licenses/google-api-services-compute
+
+groovy
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/apache/groovy
+  * More information in folder: doc/3rd-party-licenses/groovy
 
 hessian
 
@@ -182,6 +183,12 @@ httpmime
   * License: Apache License 2.0
   * Homepage: https://hc.apache.org/
   * More information in folder: doc/3rd-party-licenses/httpmime
+
+java-websocket
+
+  * License: MIT License
+  * Homepage: https://github.com/TooTallNate/Java-WebSocket
+  * More information in folder: doc/3rd-party-licenses/java-websocket
 
 jaxb
 
@@ -237,6 +244,12 @@ memoryfilesystem
   * Homepage: https://github.com/marschall/memoryfilesystem
   * More information in folder: doc/3rd-party-licenses/memoryfilesystem
 
+moby-names-generator
+
+  * License: MIT License
+  * Homepage: https://github.com/schnatterer/moby-names-generator-java
+  * More information in folder: doc/3rd-party-licenses/moby-names-generator
+
 neko-htmlunit
 
   * License: Apache License 2.0
@@ -255,11 +268,11 @@ opentelemetry
   * Homepage: https://github.com/open-telemetry
   * More information in folder: doc/3rd-party-licenses/opentelemetry
 
-pegdown
+openhtmltopdf
 
-  * License: Apache License 2.0
-  * Homepage: https://github.com/sirthias/pegdown
-  * More information in folder: doc/3rd-party-licenses/pegdown
+  * License: GNU Lesser General Public License 2.1
+  * Homepage: https://github.com/danfickle/openhtmltopdf
+  * More information in folder: doc/3rd-party-licenses/openhtmltopdf
 
 progressbar
 
@@ -334,7 +347,7 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
-  
+
 crosshair
 
   * License: MIT License

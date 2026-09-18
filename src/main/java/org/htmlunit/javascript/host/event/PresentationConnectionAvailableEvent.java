@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.htmlunit.javascript.host.event;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 
@@ -24,15 +26,17 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
  * A JavaScript object for {@code PresentationConnectionAvailableEvent}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @JsxClass({CHROME, EDGE})
 public class PresentationConnectionAvailableEvent extends Event {
 
     /**
-     * JavaScript constructor.
+     * {@inheritDoc}
      */
+    @Override
     @JsxConstructor
-    public void jsConstructor() {
-        // nothing to do
+    public void jsConstructor(final String type, final ScriptableObject details) {
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 }

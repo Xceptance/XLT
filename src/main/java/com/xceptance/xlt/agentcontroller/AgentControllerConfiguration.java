@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -28,6 +29,8 @@ import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
+
+import info.schnatterer.mobynamesgenerator.MobyNamesGenerator;
 
 /**
  * The AgentControllerConfiguration is the central place where all configuration information of the agent controller can
@@ -50,6 +53,36 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     private static final String PROP_PORT = PROP_PREFIX + "port";
 
     private static final String PROP_TEMP_DIR = PROP_PREFIX + "tempdir";
+
+    private static final String PROP_PRIVATE_MACHINE_PREFIX = PROP_PREFIX + "privateMachine.";
+
+    private static final String PROP_PRIVATE_MACHINE_ENABLED = PROP_PRIVATE_MACHINE_PREFIX + "enabled";
+
+    private static final String PROP_PRIVATE_MACHINE_NAME = PROP_PRIVATE_MACHINE_PREFIX + "name";
+
+    private static final String PROP_PRIVATE_MACHINE_TYPE = PROP_PRIVATE_MACHINE_PREFIX + "type";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_PREFIX = PROP_PRIVATE_MACHINE_PREFIX + "xtc.";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_HOST = PROP_PRIVATE_MACHINE_XTC_PREFIX + "host";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_PORT = PROP_PRIVATE_MACHINE_XTC_PREFIX + "port";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_RELAY_HOST = PROP_PRIVATE_MACHINE_XTC_PREFIX + "relayHost";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_RELAY_PORT = PROP_PRIVATE_MACHINE_XTC_PREFIX + "relayPort";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_CLIENT_ID = PROP_PRIVATE_MACHINE_XTC_PREFIX + "clientId";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_CLIENT_SECRET = PROP_PRIVATE_MACHINE_XTC_PREFIX + "clientSecret";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_ORG = PROP_PRIVATE_MACHINE_XTC_PREFIX + "org";
+
+    private static final String PROP_PRIVATE_MACHINE_XTC_PROJECT = PROP_PRIVATE_MACHINE_XTC_PREFIX + "project";
+
+    private static final Pattern PRIVATE_MACHINE_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?$");
+
+    private static final String PRIVATE_MACHINE_NAME_ERROR = "Invalid private machine name: '%s'. Valid names must be between 1–63 characters long, contain only alphanumeric characters or hyphens, and cannot start or end with a hyphen.";
 
     private final File agentBinDirectory;
 
@@ -77,9 +110,31 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     private File tempDir;
 
+    private final boolean privateMachineModeEnabled;
+
+    private final String privateMachineName;
+
+    private final PrivateMachineType privateMachineType;
+
+    private final String xtcHost;
+
+    private final int xtcPort;
+
+    private final String xtcRelayHost;
+
+    private final int xtcRelayPort;
+
+    private final String xtcClientId;
+
+    private final String xtcClientSecret;
+
+    private final String xtcOrg;
+
+    private final String xtcProject;
+
     /**
      * Creates a new AgentControllerConfiguration object.
-     * 
+     *
      * @param commandLineProperties
      *            the properties specified on the command line
      * @throws IOException
@@ -142,7 +197,8 @@ public class AgentControllerConfiguration extends AbstractConfiguration
             }
             else
             {
-                throw new XltException("The value '" + hostName + "' of property '" + PROP_HOST + "' does not denote a valid local address");
+                throw new XltException("The value '" + hostName + "' of property '" + PROP_HOST +
+                                       "' does not denote a valid local address");
             }
         }
 
@@ -154,11 +210,51 @@ public class AgentControllerConfiguration extends AbstractConfiguration
                 new File(agentBinDirectory, scriptName).getAbsolutePath(), Integer.toString(port), "<agentControllerName>",
                 "<agentControllerHost>", "<agentNumber>", "<totalAgentCount>", "<acRemoteAddress>"
             };
+
+        // private machine configuration
+        privateMachineModeEnabled = getBooleanProperty(PROP_PRIVATE_MACHINE_ENABLED, false);
+        privateMachineName = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_NAME, getRandomPrivateMachineName());
+        privateMachineType = getEnumProperty(PrivateMachineType.class, PROP_PRIVATE_MACHINE_TYPE, PrivateMachineType.MEDIUM);
+        xtcHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_HOST, "xtc.xceptance.com");
+        xtcPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_PORT, 443);
+        xtcRelayHost = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_HOST, "xtc-xlt-relay.xceptance.com");
+        xtcRelayPort = getIntProperty(PROP_PRIVATE_MACHINE_XTC_RELAY_PORT, 443);
+
+        if (privateMachineModeEnabled)
+        {
+            xtcClientId = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_CLIENT_ID);
+            xtcClientSecret = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_CLIENT_SECRET);
+            xtcOrg = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_ORG);
+            xtcProject = getNonEmptyStringProperty(PROP_PRIVATE_MACHINE_XTC_PROJECT);
+        }
+        else
+        {
+            xtcClientId = null;
+            xtcClientSecret = null;
+            xtcOrg = null;
+            xtcProject = null;
+        }
+
+        validatePrivateMachineName(privateMachineName);
+    }
+
+    static String getRandomPrivateMachineName()
+    {
+        // get a random name, but fix it to use "-" as the separator instead of "_"
+        return MobyNamesGenerator.getRandomName().replace('_', '-');
+    }
+
+    static void validatePrivateMachineName(final String privateMachineName)
+    {
+        if (!PRIVATE_MACHINE_NAME_PATTERN.matcher(privateMachineName).matches())
+        {
+            throw new XltException(String.format(PRIVATE_MACHINE_NAME_ERROR, privateMachineName));
+        }
     }
 
     /**
      * Returns the agent's "bin" directory.
-     * 
+     *
      * @return the bin directory
      */
     public File getAgentBinDirectory()
@@ -168,7 +264,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the command file used to start the agent.
-     * 
+     *
      * @return the command file
      */
     public String[] getAgentCommandLine()
@@ -178,7 +274,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the root directory where all agents are installed to.
-     * 
+     *
      * @return the agents directory
      */
     public File getAgentsDirectory()
@@ -188,7 +284,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's configuration directory.
-     * 
+     *
      * @return the config directory
      */
     public File getConfigDirectory()
@@ -198,7 +294,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's home directory.
-     * 
+     *
      * @return the home directory
      */
     public File getHomeDirectory()
@@ -209,7 +305,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the agent controller's host address, the local network interface to which the agent controller will be
      * bound.
-     * 
+     *
      * @return the host address, or <code>null</code> in case the agent controller is to be bound to all available local
      *         interfaces
      */
@@ -221,7 +317,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the agent controller's host name, the local network interface to which the agent controller will be
      * bound.
-     * 
+     *
      * @return the host name, or <code>null</code> in case the agent controller is to be bound to all available local
      *         interfaces
      */
@@ -232,7 +328,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller key's password.
-     * 
+     *
      * @return the key store password
      */
     public String getKeyPassword()
@@ -242,7 +338,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's key store file.
-     * 
+     *
      * @return the key store file
      */
     public File getKeyStoreFile()
@@ -252,7 +348,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's key store password.
-     * 
+     *
      * @return the key store password
      */
     public String getKeyStorePassword()
@@ -263,7 +359,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the user name that must be provided by the master controller to be allowed to communicate with this agent
      * controller.
-     * 
+     *
      * @return the user name
      */
     public String getUserName()
@@ -274,7 +370,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
     /**
      * Returns the password that must be provided by the master controller to be allowed to communicate with this agent
      * controller.
-     * 
+     *
      * @return the password
      */
     public String getPassword()
@@ -284,7 +380,7 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's port.
-     * 
+     *
      * @return the port
      */
     public int getPort()
@@ -294,11 +390,74 @@ public class AgentControllerConfiguration extends AbstractConfiguration
 
     /**
      * Returns the agent controller's temp directory.
-     * 
+     *
      * @return the temp directory
      */
     public File getTempDir()
     {
         return tempDir;
+    }
+
+    public boolean isPrivateMachineModeEnabled()
+    {
+        return privateMachineModeEnabled;
+    }
+
+    public String getPrivateMachineName()
+    {
+        return privateMachineName;
+    }
+
+    public PrivateMachineType getPrivateMachineType()
+    {
+        return privateMachineType;
+    }
+
+    public String getXtcHost()
+    {
+        return xtcHost;
+    }
+
+    public int getXtcPort()
+    {
+        return xtcPort;
+    }
+
+    public String getXtcRelayHost()
+    {
+        return xtcRelayHost;
+    }
+
+    public int getXtcRelayPort()
+    {
+        return xtcRelayPort;
+    }
+
+    public String getXtcClientId()
+    {
+        return xtcClientId;
+    }
+
+    public String getXtcClientSecret()
+    {
+        return xtcClientSecret;
+    }
+
+    public String getXtcOrg()
+    {
+        return xtcOrg;
+    }
+
+    public String getXtcProject()
+    {
+        return xtcProject;
+    }
+
+    public enum PrivateMachineType
+    {
+        TINY,
+        SMALL,
+        MEDIUM,
+        LARGE
     }
 }

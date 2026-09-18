@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.w3c.dom.TypeInfo;
  * @author Denis N. Antonioli
  * @author David K. Taylor
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public class DomAttr extends DomNamespaceNode implements Attr {
 
@@ -35,7 +36,7 @@ public class DomAttr extends DomNamespaceNode implements Attr {
      * Instantiate a new attribute.
      *
      * @param page the page that the attribute belongs to
-     * @param namespaceURI the namespace that defines the attribute name (may be {@code null})
+     * @param namespaceURI the namespace that defines the attribute name (maybe {@code null})
      * @param qualifiedName the name of the attribute
      * @param value the value of the attribute
      * @param specified {@code true} if this attribute was explicitly given a value in the source document,

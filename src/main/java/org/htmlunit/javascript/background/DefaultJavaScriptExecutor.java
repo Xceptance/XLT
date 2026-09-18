@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ public class DefaultJavaScriptExecutor implements JavaScriptExecutor {
     /** Logging support. */
     private static final Log LOG = LogFactory.getLog(DefaultJavaScriptExecutor.class);
 
-    /** Creates an EventLoop for the webClient.
+    /**
+     * Creates an EventLoop for the webClient.
      *
      * @param webClient the provided webClient
      */

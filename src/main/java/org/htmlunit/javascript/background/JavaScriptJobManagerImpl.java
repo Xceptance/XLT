@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.htmlunit.javascript.background;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,8 +51,6 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
      * by closest target execution time.
      */
     private transient PriorityQueue<JavaScriptJob> scheduledJobsQ_ = new PriorityQueue<>();
-
-    private transient ArrayList<Integer> cancelledJobs_ = new ArrayList<>();
 
     private transient JavaScriptJob currentlyRunningJob_;
 
@@ -142,37 +139,23 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
             final int jobId = job.getId().intValue();
             if (jobId == id) {
                 scheduledJobsQ_.remove(job);
+                notify();
                 break;
             }
         }
-        cancelledJobs_.add(Integer.valueOf(id));
-        notify();
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stopJob(final int id) {
-        for (final JavaScriptJob job : scheduledJobsQ_) {
-            final int jobId = job.getId().intValue();
-            if (jobId == id) {
-                scheduledJobsQ_.remove(job);
-                // TODO: should we try to interrupt the job if it is running?
-                break;
-            }
-        }
-        cancelledJobs_.add(Integer.valueOf(id));
-        notify();
+        // at the moment the same as removeJob(int) because we
+        // do not touch the current job
+        removeJob(id);
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void removeAllJobs() {
-        if (currentlyRunningJob_ != null) {
-            cancelledJobs_.add(currentlyRunningJob_.getId());
-        }
-        for (final JavaScriptJob job : scheduledJobsQ_) {
-            cancelledJobs_.add(job.getId());
-        }
         scheduledJobsQ_.clear();
         notify();
     }
@@ -200,7 +183,7 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
                         // restore interrupted status
                         Thread.currentThread().interrupt();
                     }
-                    // maybe a change triggers the wakup; we have to recalculate the
+                    // maybe a change triggers the wakeup; we have to recalculate the
                     // wait time
                     now = System.currentTimeMillis();
                 }
@@ -216,14 +199,34 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
     /** {@inheritDoc} */
     @Override
     public int waitForJobsStartingBefore(final long delayMillis) {
-        return waitForJobsStartingBefore(delayMillis, null);
+        return waitForJobsStartingBefore(delayMillis, -1, null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int waitForJobsStartingBefore(final long delayMillis, final long timeoutMillis) {
+        return waitForJobsStartingBefore(delayMillis, timeoutMillis, null);
     }
 
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("PMD.GuardLogStatement")
     public int waitForJobsStartingBefore(final long delayMillis, final JavaScriptJobFilter filter) {
+        return waitForJobsStartingBefore(delayMillis, -1, filter);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("PMD.GuardLogStatement")
+    public int waitForJobsStartingBefore(final long delayMillis, final long timeoutMillis,
+            final JavaScriptJobFilter filter) {
         final boolean debug = LOG.isDebugEnabled();
+
+        long now = System.currentTimeMillis();
+        long end = now + timeoutMillis;
+        if (timeoutMillis < 0 || timeoutMillis < delayMillis) {
+            end = -1;
+        }
 
         final long latestExecutionTime = System.currentTimeMillis() + delayMillis;
         if (debug) {
@@ -242,9 +245,12 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
                             && currentlyRunningJob_.getTargetExecutionTime() < latestExecutionTime
                        );
 
-            while (pending) {
+            while (pending && (end == -1 || now < end)) {
                 try {
-                    wait(interval);
+                    final long waitTime = (end == -1)
+                                ? Math.max(40, interval)
+                                : Math.max(40, Math.min(interval, end - now));
+                    wait(waitTime);
                 }
                 catch (final InterruptedException e) {
                     LOG.error("InterruptedException while in waitForJobsStartingBefore", e);
@@ -261,6 +267,9 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
                                 && (filter == null || filter.passes(currentlyRunningJob_))
                                 && currentlyRunningJob_.getTargetExecutionTime() < latestExecutionTime
                            );
+                if (pending) {
+                    now = System.currentTimeMillis();
+                }
             }
         }
 
@@ -400,36 +409,35 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
         if (job.getTargetExecutionTime() > currentTime) {
             return false;
         }
+
+        final boolean debug = LOG.isDebugEnabled();
+
         synchronized (this) {
             if (scheduledJobsQ_.remove(job)) {
                 currentlyRunningJob_ = job;
+                // no need to notify if processing is started
             }
-            // no need to notify if processing is started
-        }
 
-        final boolean debug = LOG.isDebugEnabled();
-        final boolean isPeriodicJob = job.isPeriodic();
-        if (isPeriodicJob) {
-            final long jobPeriod = job.getPeriod().longValue();
+            // we have to do this inside the sync block because the removeJob() methods
+            // only looks at the scheduledJobsQ_
+            if (job.isPeriodic()) {
+                final long jobPeriod = job.getPeriod().longValue();
 
-            // reference: http://ejohn.org/blog/how-javascript-timers-work/
-            long timeDifference = currentTime - job.getTargetExecutionTime();
-            timeDifference = (timeDifference / jobPeriod) * jobPeriod + jobPeriod;
-            job.setTargetExecutionTime(job.getTargetExecutionTime() + timeDifference);
+                // reference: http://ejohn.org/blog/how-javascript-timers-work/
+                final long missedPeriods = (currentTime - job.getTargetExecutionTime()) / jobPeriod + 1;
+                job.setTargetExecutionTime(job.getTargetExecutionTime() + missedPeriods * jobPeriod);
 
-            // queue
-            synchronized (this) {
-                if (!cancelledJobs_.contains(job.getId())) {
-                    if (debug) {
-                        LOG.debug("Reschedulling job " + job);
-                    }
-                    scheduledJobsQ_.add(job);
-                    notify();
+                // queue to run again after the next period
+                if (debug) {
+                    LOG.debug("Rescheduling periodic job " + job);
                 }
+                scheduledJobsQ_.add(job);
+                notify();
             }
         }
+
         if (debug) {
-            final String periodicJob = isPeriodicJob ? "interval " : "";
+            final String periodicJob = job.isPeriodic() ? "interval " : "";
             LOG.debug("Starting " + periodicJob + "job " + job);
         }
         try {
@@ -447,15 +455,16 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
             }
         }
         if (debug) {
-            final String periodicJob = isPeriodicJob ? "interval " : "";
+            final String periodicJob = job.isPeriodic() ? "interval " : "";
             LOG.debug("Finished " + periodicJob + "job " + job);
         }
         return true;
     }
 
     /**
-     * Our own serialization (to handle the weak reference)
-     * @param in the stream to read form
+     * Our own serialization (to handle the weak reference).
+     *
+     * @param in the stream to read from
      * @throws IOException in case of error
      * @throws ClassNotFoundException in case of error
      */
@@ -464,7 +473,6 @@ class JavaScriptJobManagerImpl implements JavaScriptJobManager {
 
         // we do not store the jobs (at the moment)
         scheduledJobsQ_ = new PriorityQueue<>();
-        cancelledJobs_ = new ArrayList<>();
         currentlyRunningJob_ = null;
     }
 }

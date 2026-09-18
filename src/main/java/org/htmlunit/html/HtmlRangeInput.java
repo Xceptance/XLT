@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2002-2026 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.html;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Wrapper for the HTML element "input" where type is "range".
@@ -61,7 +61,10 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
     }
 
     /**
-     * @return the min as double
+     * Returns the numeric value of the {@code min} attribute.
+     *
+     * @return the value of the {@code min} attribute as a {@code double}, or
+     *         {@code 0} if the attribute is not defined or cannot be parsed
      */
     public double getMinNumeric() {
         final String min = getAttributeDirect("min");
@@ -77,7 +80,10 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
     }
 
     /**
-     * @return the max as double
+     * Returns the numeric value of the {@code max} attribute.
+     *
+     * @return the value of the {@code max} attribute as a {@code double}, or
+     *         {@code 100} if the attribute is not defined or cannot be parsed
      */
     public double getMaxNumeric() {
         final String max = getAttributeDirect("max");
@@ -93,7 +99,10 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
     }
 
     /**
-     * @return the max as double
+     * Returns the numeric value of the {@code step} attribute.
+     *
+     * @return the value of the {@code step} attribute as a {@code double}, or
+     *         {@code 1} if the attribute is not defined or cannot be parsed
      */
     public double getStepNumeric() {
         final String step = getAttributeDirect("step");
@@ -122,7 +131,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
     @Override
     public void setValue(final String newValue) {
         try {
-            if (StringUtils.isNotEmpty(newValue)) {
+            if (!StringUtils.isEmptyOrNull(newValue)) {
                 setValue(Double.parseDouble(newValue));
             }
             else {
@@ -177,7 +186,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
         }
 
         try {
-            if (StringUtils.isNotEmpty(attributeValue)) {
+            if (!org.htmlunit.util.StringUtils.isEmptyOrNull(attributeValue)) {
                 setRawValue(Double.parseDouble(attributeValue));
             }
             else {

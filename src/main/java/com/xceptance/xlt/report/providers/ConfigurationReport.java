@@ -59,17 +59,12 @@ public class ConfigurationReport
     public List<String> comments = new ArrayList<String>();
 
     /**
+     * The rating details.
+     */
+    public RatingReport rating;
+
+    /**
      * The name of the (test) project.
      */
     public String projectName;
-
-    /**
-     * The target height for charts.
-     */
-    public int chartHeight;
-
-    /**
-     * The target width for charts.
-     */
-    public int chartWidth;
 }
