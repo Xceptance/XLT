@@ -58,4 +58,28 @@ public class SegmentationValueSet
     {
         return countPerBin;
     }
+
+    /**
+     * Merges another {@link SegmentationValueSet} into this instance.
+     *
+     * @param other
+     *            the other segmentation value set to merge, may be <code>null</code>
+     */
+    public void merge(final SegmentationValueSet other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        if (!java.util.Arrays.equals(this.boundaries, other.boundaries))
+        {
+            throw new IllegalArgumentException("Cannot merge SegmentationValueSet with different boundaries");
+        }
+
+        for (int i = 0; i < countPerBin.length; i++)
+        {
+            this.countPerBin[i] += other.countPerBin[i];
+        }
+    }
 }

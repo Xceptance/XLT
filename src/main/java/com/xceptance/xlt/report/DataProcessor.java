@@ -130,7 +130,7 @@ public class DataProcessor
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
 
         // the one and only data record processor
-        statisticsProcessor = new StatisticsProcessor(reportProviders);
+        statisticsProcessor = new StatisticsProcessor(reportProviders, config);
 
         // create the reader executor
         dataReaderExecutor = Executors.newFixedThreadPool(config.readerThreadCount, new DaemonThreadFactory(i -> "DataReader-" + i, Thread.MAX_PRIORITY));
@@ -197,6 +197,9 @@ public class DataProcessor
             // wait for the data processing to finish
             dispatcher.waitForDataRecordProcessingToComplete();
 
+            // complete processing and merge worker statistics into master providers
+            statisticsProcessor.complete();
+
             final long duration = TimerUtils.get().getElapsedTime(start);
             final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000L);
 
@@ -211,6 +214,9 @@ public class DataProcessor
         }
         finally
         {
+            // ensure all worker statistics are merged into master providers even on partial reads
+            statisticsProcessor.complete();
+
             // stop background threads
             dataParserExecutor.shutdownNow();
             dataReaderExecutor.shutdownNow();

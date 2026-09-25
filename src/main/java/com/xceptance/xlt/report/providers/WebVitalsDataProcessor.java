@@ -101,6 +101,39 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final AbstractDataProcessor other)
+    {
+        if (other instanceof WebVitalsDataProcessor)
+        {
+            merge((WebVitalsDataProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link WebVitalsDataProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final WebVitalsDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        cls.merge(other.cls);
+        fcp.merge(other.fcp);
+        fid.merge(other.fid);
+        inp.merge(other.inp);
+        lcp.merge(other.lcp);
+        ttfb.merge(other.ttfb);
+    }
+
+    /**
      * Extracts the web vital name from an action name (for example, "Foo Action [CLS]" -> "CLS").
      * 
      * @param actionName
@@ -151,7 +184,7 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
         /**
          * Estimates the P75 for a stream of input values.
          */
-        private final PSquarePercentile p75Estimator = new PSquarePercentile(75.0);
+        private PSquarePercentile p75Estimator = new PSquarePercentile(75.0);
 
         /**
          * The number of observations that were rated "good".
@@ -175,6 +208,34 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
         {
             this.threshold1 = threshold1;
             this.threshold2 = threshold2;
+        }
+
+        /**
+         * Merges another {@link WebVitalStatistics} into this instance.
+         *
+         * @param other
+         *            the other statistics to merge
+         */
+        public void merge(final WebVitalStatistics other)
+        {
+            if (other == null || (other.goodCount + other.improveCount + other.poorCount == 0))
+            {
+                return;
+            }
+
+            if (this.goodCount + this.improveCount + this.poorCount == 0)
+            {
+                this.p75Estimator = (PSquarePercentile) other.p75Estimator.copy();
+                this.goodCount = other.goodCount;
+                this.improveCount = other.improveCount;
+                this.poorCount = other.poorCount;
+                return;
+            }
+
+            this.goodCount += other.goodCount;
+            this.improveCount += other.improveCount;
+            this.poorCount += other.poorCount;
+            this.p75Estimator.increment(other.p75Estimator.getResult());
         }
 
         /**

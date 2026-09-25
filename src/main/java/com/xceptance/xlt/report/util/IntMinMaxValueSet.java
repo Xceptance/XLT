@@ -257,6 +257,150 @@ public class IntMinMaxValueSet
     }
 
     /**
+     * Merges another {@link IntMinMaxValueSet} into this instance.
+     *
+     * @param other
+     *            the other min-max value set to merge, may be <code>null</code>
+     */
+    public void merge(final IntMinMaxValueSet other)
+    {
+        if (other == null || other.valueCount == 0)
+        {
+            return;
+        }
+
+        if (this.valueCount == 0)
+        {
+            this.scale = other.scale;
+            this.scale2 = other.scale2;
+
+            final int otherLength = (other.lastSecond - other.firstSecond) / other.scale + 1;
+            for (int i = 0; i < otherLength; i++)
+            {
+                final IntMinMaxValue otherItem = other.values[i];
+                if (otherItem != null)
+                {
+                    final int sec = other.firstSecond + (i << other.scale2);
+                    addOrUpdateItem(sec, otherItem);
+                }
+            }
+
+            this.minimumTime = other.minimumTime;
+            this.maximumTime = other.maximumTime;
+            return;
+        }
+
+        // If other is on a larger scale, scale this instance up until scales match
+        while (this.scale < other.scale)
+        {
+            this.scale = this.scale << 1;
+            this.scale2++;
+
+            shrink();
+
+            final int s1 = ~(this.scale - 1);
+            this.firstSecond = this.firstSecond & s1;
+            this.lastSecond = this.lastSecond & s1;
+        }
+
+        final int otherLength = (other.lastSecond - other.firstSecond) / other.scale + 1;
+        for (int i = 0; i < otherLength; i++)
+        {
+            final IntMinMaxValue otherItem = other.values[i];
+            if (otherItem != null)
+            {
+                final int sec = other.firstSecond + (i << other.scale2);
+                addOrUpdateItem(sec, otherItem);
+            }
+        }
+
+        this.minimumTime = Math.min(this.minimumTime, other.minimumTime);
+        this.maximumTime = Math.max(this.maximumTime, other.maximumTime);
+    }
+
+    /**
+     * Adds or merges a {@link IntMinMaxValue} item for a specific second into this value set.
+     *
+     * @param second
+     *            the second in seconds
+     * @param newItem
+     *            the item to merge
+     */
+    private void addOrUpdateItem(int second, final IntMinMaxValue newItem)
+    {
+        if (newItem == null)
+        {
+            return;
+        }
+
+        second = second & ~(scale - 1);
+
+        if (valueCount == 0)
+        {
+            firstSecond = lastSecond = second;
+            values[0] = new IntMinMaxValue(newItem);
+            valueCount = newItem.getValueCount();
+            return;
+        }
+
+        if (second != firstSecond)
+        {
+            if (second > firstSecond)
+            {
+                while (((second - firstSecond) >> scale2) >= size)
+                {
+                    scale = scale << 1;
+                    scale2++;
+
+                    shrink();
+
+                    final int s1 = ~(scale - 1);
+                    second = second & s1;
+                    firstSecond = firstSecond & s1;
+                    lastSecond = lastSecond & s1;
+                }
+
+                lastSecond = Math.max(lastSecond, second);
+            }
+            else
+            {
+                while (((lastSecond - second) >> scale2) >= size)
+                {
+                    scale = scale << 1;
+                    scale2++;
+
+                    shrink();
+
+                    final int s1 = ~(scale - 1);
+                    second = second & s1;
+                    firstSecond = firstSecond & s1;
+                    lastSecond = lastSecond & s1;
+                }
+
+                if (second < firstSecond)
+                {
+                    final int indexDiff = (firstSecond - second) >> scale2;
+                    shift(indexDiff);
+                    firstSecond = second;
+                }
+            }
+        }
+
+        final int index = (second - firstSecond) >> scale2;
+        final IntMinMaxValue item = values[index];
+        if (item != null)
+        {
+            item.merge(newItem);
+        }
+        else
+        {
+            values[index] = new IntMinMaxValue(newItem);
+        }
+
+        valueCount += newItem.getValueCount();
+    }
+
+    /**
      */
     public int getSize()
     {

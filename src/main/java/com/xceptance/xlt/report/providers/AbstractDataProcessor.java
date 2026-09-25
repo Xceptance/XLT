@@ -210,6 +210,14 @@ public abstract class AbstractDataProcessor
     public abstract void processDataRecord(Data data);
 
     /**
+     * Merges the statistics of another data processor into this one.
+     * 
+     * @param other
+     *            the other data processor to merge
+     */
+    public abstract void merge(AbstractDataProcessor other);
+
+    /**
      * Sets the new value of the 'chartHeight' attribute.
      * 
      * @param chartHeight
@@ -230,7 +238,10 @@ public abstract class AbstractDataProcessor
     {
         this.chartsDir = chartsDir;
 
-        chartsDir.mkdirs();
+        if (chartsDir != null)
+        {
+            chartsDir.mkdirs();
+        }
     }
 
     /**
@@ -254,7 +265,10 @@ public abstract class AbstractDataProcessor
     {
         this.csvDir = csvDir;
 
-        csvDir.mkdirs();
+        if (csvDir != null)
+        {
+            csvDir.mkdirs();
+        }
     }
 
     /**

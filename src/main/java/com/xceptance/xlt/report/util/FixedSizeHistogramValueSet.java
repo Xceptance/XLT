@@ -101,6 +101,57 @@ public class FixedSizeHistogramValueSet
     }
 
     /**
+     * Returns the current width of a bucket.
+     *
+     * @return the bucket width
+     */
+    public int getBucketWidth()
+    {
+        return bucketWidth;
+    }
+
+    /**
+     * Merges another {@link FixedSizeHistogramValueSet} into this instance.
+     *
+     * @param other
+     *            the other histogram value set to merge, may be <code>null</code>
+     */
+    public void merge(final FixedSizeHistogramValueSet other)
+    {
+        if (other == null || other.getMaximumCount() == 0)
+        {
+            return;
+        }
+
+        if (this.bucketCount != other.bucketCount)
+        {
+            throw new IllegalArgumentException("Cannot merge FixedSizeHistogramValueSet with bucket count " + this.bucketCount + " and " + other.bucketCount);
+        }
+
+        if (this.getMaximumCount() == 0)
+        {
+            this.bucketWidth = other.bucketWidth;
+            System.arraycopy(other.countPerBucket, 0, this.countPerBucket, 0, this.bucketCount);
+            return;
+        }
+
+        while (this.bucketWidth < other.bucketWidth)
+        {
+            scale();
+        }
+
+        final int ratio = this.bucketWidth / other.bucketWidth;
+        for (int i = 0; i < other.bucketCount; i++)
+        {
+            final int count = other.countPerBucket[i];
+            if (count > 0)
+            {
+                this.countPerBucket[i / ratio] += count;
+            }
+        }
+    }
+
+    /**
      * Returns the number of values added to each bucket.
      *
      * @return the count per bucket

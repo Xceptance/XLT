@@ -273,6 +273,146 @@ public class DoubleMinMaxValueSet
     }
 
     /**
+     * Merges another {@link DoubleMinMaxValueSet} into this instance.
+     *
+     * @param other
+     *            the other min-max value set to merge, may be <code>null</code>
+     */
+    public void merge(final DoubleMinMaxValueSet other)
+    {
+        if (other == null || other.valueCount == 0)
+        {
+            return;
+        }
+
+        if (this.valueCount == 0)
+        {
+            this.scale = other.scale;
+
+            final int otherLength = (other.lastSecond - other.firstSecond) / other.scale + 1;
+            for (int i = 0; i < otherLength; i++)
+            {
+                final DoubleMinMaxValue otherItem = other.values[i];
+                if (otherItem != null)
+                {
+                    final int sec = other.firstSecond + (i * other.scale);
+                    addOrUpdateItem(sec, otherItem);
+                }
+            }
+
+            this.minimumTime = other.minimumTime;
+            this.maximumTime = other.maximumTime;
+            return;
+        }
+
+        // If other is on a larger scale, scale this instance up until scales match
+        while (this.scale < other.scale)
+        {
+            this.scale = this.scale * 2;
+
+            shrink();
+
+            final int s1 = ~(this.scale - 1);
+            this.firstSecond = this.firstSecond & s1;
+            this.lastSecond = this.lastSecond & s1;
+        }
+
+        final int otherLength = (other.lastSecond - other.firstSecond) / other.scale + 1;
+        for (int i = 0; i < otherLength; i++)
+        {
+            final DoubleMinMaxValue otherItem = other.values[i];
+            if (otherItem != null)
+            {
+                final int sec = other.firstSecond + (i * other.scale);
+                addOrUpdateItem(sec, otherItem);
+            }
+        }
+
+        this.minimumTime = Math.min(this.minimumTime, other.minimumTime);
+        this.maximumTime = Math.max(this.maximumTime, other.maximumTime);
+    }
+
+    /**
+     * Adds or merges a {@link DoubleMinMaxValue} item for a specific second into this value set.
+     *
+     * @param second
+     *            the second in seconds
+     * @param newItem
+     *            the item to merge
+     */
+    private void addOrUpdateItem(int second, final DoubleMinMaxValue newItem)
+    {
+        if (newItem == null)
+        {
+            return;
+        }
+
+        second = second & ~(scale - 1);
+
+        if (valueCount == 0)
+        {
+            firstSecond = lastSecond = second;
+            values[0] = new DoubleMinMaxValue(newItem);
+            valueCount = newItem.getValueCount();
+            return;
+        }
+
+        if (second != firstSecond)
+        {
+            if (second > firstSecond)
+            {
+                while ((second - firstSecond) / scale >= size)
+                {
+                    scale = scale * 2;
+
+                    shrink();
+
+                    final int s1 = ~(scale - 1);
+                    second = second & s1;
+                    firstSecond = firstSecond & s1;
+                    lastSecond = lastSecond & s1;
+                }
+
+                lastSecond = Math.max(lastSecond, second);
+            }
+            else
+            {
+                while ((lastSecond - second) / scale >= size)
+                {
+                    scale = scale * 2;
+
+                    shrink();
+
+                    final int s1 = ~(scale - 1);
+                    second = second & s1;
+                    firstSecond = firstSecond & s1;
+                    lastSecond = lastSecond & s1;
+                }
+
+                if (second < firstSecond)
+                {
+                    final int indexDiff = (firstSecond - second) / scale;
+                    shift(indexDiff);
+                    firstSecond = second;
+                }
+            }
+        }
+
+        final int index = (second - firstSecond) / scale;
+        final DoubleMinMaxValue item = values[index];
+        if (item == null)
+        {
+            values[index] = new DoubleMinMaxValue(newItem);
+        }
+        else
+        {
+            item.merge(newItem);
+        }
+
+        valueCount += newItem.getValueCount();
+    }
+
+    /**
      * Returns the min/max values maintained by this set.
      * 
      * @return the min/max values

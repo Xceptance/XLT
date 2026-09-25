@@ -110,6 +110,47 @@ public class CustomValueProcessor extends AbstractDataProcessor
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final AbstractDataProcessor other)
+    {
+        if (other instanceof CustomValueProcessor)
+        {
+            merge((CustomValueProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link CustomValueProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final CustomValueProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        vSet.merge(other.vSet);
+        stats.merge(other.stats);
+        if (other.stats.getCount() > 0)
+        {
+            median.increment(other.median.getResult());
+            for (final Map.Entry<Double, PSquarePercentile> entry : percentiles.entrySet())
+            {
+                final PSquarePercentile otherPercentile = other.percentiles.get(entry.getKey());
+                if (otherPercentile != null)
+                {
+                    entry.getValue().increment(otherPercentile.getResult());
+                }
+            }
+        }
+    }
+
+    /**
      * create report
      * 
      * @return report fragment

@@ -51,4 +51,46 @@ public class HistogramValueSetTest
         Assert.assertEquals(countPerBin[98], 1); // 99
         Assert.assertEquals(countPerBin[99], 2); // 100 and 101
     }
+
+    @Test
+    public void testMergeNull()
+    {
+        final HistogramValueSet set = new HistogramValueSet(0, 100, 10);
+        set.addValue(5);
+        set.merge(null);
+        Assert.assertEquals(1, set.getCountPerBin()[0]);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMergeIncompatibleBinsThrows()
+    {
+        final HistogramValueSet set1 = new HistogramValueSet(0, 100, 10);
+        final HistogramValueSet set2 = new HistogramValueSet(0, 100, 20);
+        set1.merge(set2);
+    }
+
+    @Test
+    public void testMergeEquivalence()
+    {
+        final HistogramValueSet seq = new HistogramValueSet(0, 100, 10);
+        final HistogramValueSet s1 = new HistogramValueSet(0, 100, 10);
+        final HistogramValueSet s2 = new HistogramValueSet(0, 100, 10);
+
+        final double[] data = { 5.0, 15.0, 25.0, 35.0, 5.0, 95.0, 105.0 };
+        for (int i = 0; i < data.length; i++)
+        {
+            seq.addValue(data[i]);
+            if (i % 2 == 0)
+            {
+                s1.addValue(data[i]);
+            }
+            else
+            {
+                s2.addValue(data[i]);
+            }
+        }
+
+        s1.merge(s2);
+        Assert.assertArrayEquals(seq.getCountPerBin(), s1.getCountPerBin());
+    }
 }

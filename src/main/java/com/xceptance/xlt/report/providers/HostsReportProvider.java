@@ -69,4 +69,47 @@ public class HostsReportProvider extends AbstractReportProvider
             hostReport.count++;
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final com.xceptance.xlt.api.report.ReportProvider other)
+    {
+        if (other instanceof HostsReportProvider)
+        {
+            merge((HostsReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link HostsReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final HostsReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final XltCharBuffer hostName : other.hostReports.keys())
+        {
+            final HostReport otherReport = other.hostReports.get(hostName);
+            HostReport myReport = hostReports.get(hostName);
+            if (myReport == null)
+            {
+                myReport = new HostReport();
+                myReport.name = otherReport.name;
+                myReport.count = otherReport.count;
+                hostReports.put(hostName, myReport);
+            }
+            else
+            {
+                myReport.count += otherReport.count;
+            }
+        }
+    }
 }

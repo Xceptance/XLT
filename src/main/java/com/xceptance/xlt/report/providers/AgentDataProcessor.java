@@ -245,6 +245,55 @@ public class AgentDataProcessor extends AbstractDataProcessor
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final AbstractDataProcessor other)
+    {
+        if (other instanceof AgentDataProcessor)
+        {
+            merge((AgentDataProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link AgentDataProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final AgentDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        blockedThreadsValueSet.merge(other.blockedThreadsValueSet);
+        cpuUsageValueSet.merge(other.cpuUsageValueSet);
+        gcCpuUsageValueSet.merge(other.gcCpuUsageValueSet);
+        runnableThreadsValueSet.merge(other.runnableThreadsValueSet);
+        totalHeapValueSet.merge(other.totalHeapValueSet);
+        totalThreadsValueSet.merge(other.totalThreadsValueSet);
+        usedHeapValueSet.merge(other.usedHeapValueSet);
+        waitingThreadsValueSet.merge(other.waitingThreadsValueSet);
+        minorGcTimeValueSet.merge(other.minorGcTimeValueSet);
+        fullGcTimeValueSet.merge(other.fullGcTimeValueSet);
+        totalCpuUsageValueSet.merge(other.totalCpuUsageValueSet);
+
+        fullGcCpuUsageMean.merge(other.fullGcCpuUsageMean);
+        minorGcCpuUsageMean.merge(other.minorGcCpuUsageMean);
+
+        minorGcCount = Math.max(minorGcCount, other.minorGcCount);
+        minorGcTime = Math.max(minorGcTime, other.minorGcTime);
+        fullGcCount = Math.max(fullGcCount, other.fullGcCount);
+        fullGcTime = Math.max(fullGcTime, other.fullGcTime);
+
+        transactions += other.transactions;
+        transactionErrors += other.transactionErrors;
+    }
+
+    /**
      * Creates a CPU usage chart with the given title and stores it to the passed directory.
      * 
      * @param agentName

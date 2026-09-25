@@ -87,6 +87,47 @@ public class ActionDataProcessor extends BasicTimerDataProcessor
      * {@inheritDoc}
      */
     @Override
+    public void merge(final BasicTimerDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        super.merge(other);
+
+        if (other instanceof ActionDataProcessor)
+        {
+            mergeActionSpecific((ActionDataProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link ActionDataProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final ActionDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        super.merge(other);
+        mergeActionSpecific(other);
+    }
+
+    private void mergeActionSpecific(final ActionDataProcessor other)
+    {
+        apdexCalculator.merge(other.apdexCalculator);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public TimerReport createTimerReport(final boolean generateHistogram)
     {
         final ActionReport timerReport = (ActionReport) super.createTimerReport(generateHistogram);

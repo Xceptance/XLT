@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.datasketches.hll.HllSketch;
 import org.apache.datasketches.hll.TgtHllType;
+import org.apache.datasketches.hll.Union;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPointerAnnotation;
 import org.jfree.chart.axis.NumberAxis;
@@ -76,7 +77,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     /**
      * Using HyperLogLog algorithm for counting distinct urls. We use the 8 bit version which is the fastest.
      */
-    private final HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
+    private HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
@@ -336,7 +337,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
                 // write it only when unknown, saves some operations
                 // we have either something really small and write the same all over again
                 // or we have a lot and stopped writing early
-                if (distinctUrlSet.get(url) == null)
+                if (url != null && distinctUrlSet.get(url) == null)
                 {
                     distinctUrlSet.put(url, url);
                     distinctUrlSetLimitedSize = distinctUrlSet.size();
@@ -353,6 +354,87 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         receiveTimeStatistics.addValue(reqData.getReceiveTime());
         timeToFirstBytesStatistics.addValue(reqData.getTimeToFirstBytes());
         timeToLastBytesStatistics.addValue(reqData.getTimeToLastBytes());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final BasicTimerDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        super.merge(other);
+
+        if (other instanceof RequestDataProcessor)
+        {
+            mergeRequestSpecific((RequestDataProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link RequestDataProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final RequestDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        super.merge(other);
+        mergeRequestSpecific(other);
+    }
+
+    private void mergeRequestSpecific(final RequestDataProcessor other)
+    {
+        responseSizeValueSet.merge(other.responseSizeValueSet);
+
+        if (runTimeHistogramValueSet != null && other.runTimeHistogramValueSet != null)
+        {
+            runTimeHistogramValueSet.merge(other.runTimeHistogramValueSet);
+            countPerSegment.merge(other.countPerSegment);
+        }
+
+        if (countDistinctUrls && other.countDistinctUrls)
+        {
+            final Union union = new Union(20);
+            union.update(distinctUrlsHLL);
+            union.update(other.distinctUrlsHLL);
+            distinctUrlsHLL = union.getResult(TgtHllType.HLL_8);
+
+            for (final XltCharBuffer url : other.distinctUrlSet.keys())
+            {
+                if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
+                {
+                    if (distinctUrlSet.get(url) == null)
+                    {
+                        distinctUrlSet.put(url, url);
+                        distinctUrlSetLimitedSize = distinctUrlSet.size();
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        bytesSentStatistics.merge(other.bytesSentStatistics);
+        bytesReceivedStatistics.merge(other.bytesReceivedStatistics);
+        dnsTimeStatistics.merge(other.dnsTimeStatistics);
+        connectTimeStatistics.merge(other.connectTimeStatistics);
+        sendTimeStatistics.merge(other.sendTimeStatistics);
+        serverBusyTimeStatistics.merge(other.serverBusyTimeStatistics);
+        receiveTimeStatistics.merge(other.receiveTimeStatistics);
+        timeToFirstBytesStatistics.merge(other.timeToFirstBytesStatistics);
+        timeToLastBytesStatistics.merge(other.timeToLastBytesStatistics);
     }
 
     /**

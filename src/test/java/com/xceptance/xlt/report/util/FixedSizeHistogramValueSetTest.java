@@ -172,4 +172,97 @@ public class FixedSizeHistogramValueSetTest
             Assert.assertEquals(values[i] + 1, (int) item.getYHighValue());
         }
     }
+
+    @Test
+    public void testMergeNullOrEmpty()
+    {
+        final FixedSizeHistogramValueSet set1 = new FixedSizeHistogramValueSet(10);
+        set1.addValue(5);
+
+        // merge null
+        set1.merge(null);
+        Assert.assertEquals(1, set1.getMaximumCount());
+
+        // merge empty
+        set1.merge(new FixedSizeHistogramValueSet(10));
+        Assert.assertEquals(1, set1.getMaximumCount());
+
+        // merge into empty
+        final FixedSizeHistogramValueSet empty = new FixedSizeHistogramValueSet(10);
+        empty.merge(set1);
+        Assert.assertEquals(1, empty.getMaximumCount());
+        Assert.assertEquals(set1.getBucketWidth(), empty.getBucketWidth());
+        Assert.assertArrayEquals(set1.getCountPerBucket(), empty.getCountPerBucket());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMergeDifferentBucketCountThrows()
+    {
+        final FixedSizeHistogramValueSet set1 = new FixedSizeHistogramValueSet(10);
+        final FixedSizeHistogramValueSet set2 = new FixedSizeHistogramValueSet(20);
+        set1.addValue(1);
+        set2.addValue(1);
+        set1.merge(set2);
+    }
+
+    @Test
+    public void testMergeSameBucketWidth()
+    {
+        final FixedSizeHistogramValueSet seq = new FixedSizeHistogramValueSet(20);
+        final FixedSizeHistogramValueSet set1 = new FixedSizeHistogramValueSet(20);
+        final FixedSizeHistogramValueSet set2 = new FixedSizeHistogramValueSet(20);
+
+        for (int i = 0; i < 15; i++)
+        {
+            seq.addValue(i);
+            set1.addValue(i);
+        }
+        for (int i = 5; i < 20; i++)
+        {
+            seq.addValue(i);
+            set2.addValue(i);
+        }
+
+        set1.merge(set2);
+        Assert.assertEquals(seq.getBucketWidth(), set1.getBucketWidth());
+        Assert.assertArrayEquals(seq.getCountPerBucket(), set1.getCountPerBucket());
+    }
+
+    @Test
+    public void testMergeDifferentBucketWidth()
+    {
+        // setLarge forces bucketWidth 4
+        final FixedSizeHistogramValueSet setLarge = new FixedSizeHistogramValueSet(10);
+        setLarge.addValue(35); // 35 / 10 -> scales bucketWidth to 4
+        Assert.assertEquals(4, setLarge.getBucketWidth());
+
+        // setSmall has bucketWidth 1
+        final FixedSizeHistogramValueSet setSmall = new FixedSizeHistogramValueSet(10);
+        setSmall.addValue(0);
+        setSmall.addValue(1);
+        setSmall.addValue(2);
+        setSmall.addValue(3);
+        Assert.assertEquals(1, setSmall.getBucketWidth());
+
+        // merge small into large
+        setLarge.merge(setSmall);
+        Assert.assertEquals(4, setLarge.getBucketWidth());
+        // bucket 0 in setLarge (width 4, spanning 0..3) should now have 4 items
+        Assert.assertEquals(4, setLarge.getCountPerBucket()[0]);
+
+        // merge large into small (small should scale up to width 4)
+        final FixedSizeHistogramValueSet setSmall2 = new FixedSizeHistogramValueSet(10);
+        setSmall2.addValue(0);
+        setSmall2.addValue(1);
+        setSmall2.addValue(2);
+        setSmall2.addValue(3);
+
+        final FixedSizeHistogramValueSet setLarge2 = new FixedSizeHistogramValueSet(10);
+        setLarge2.addValue(35);
+
+        setSmall2.merge(setLarge2);
+        Assert.assertEquals(4, setSmall2.getBucketWidth());
+        Assert.assertEquals(4, setSmall2.getCountPerBucket()[0]);
+        Assert.assertArrayEquals(setLarge.getCountPerBucket(), setSmall2.getCountPerBucket());
+    }
 }

@@ -96,6 +96,49 @@ public class EventReport
     }
 
     /**
+     * Merges another {@link EventReport} into this instance.
+     *
+     * @param other
+     *            the other event report to merge
+     * @param limit
+     *            the limit for message details
+     */
+    public void merge(final EventReport other, final int limit)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        this.totalCount += other.totalCount;
+        this.droppedCount += other.droppedCount;
+
+        for (final String msg : other.messageMap.keys())
+        {
+            final EventMessageInfo otherInfo = other.messageMap.get(msg);
+            EventMessageInfo myInfo = this.messageMap.get(msg);
+            if (myInfo == null)
+            {
+                if (this.messageMap.size() < limit)
+                {
+                    myInfo = new EventMessageInfo();
+                    myInfo.info = msg;
+                    myInfo.count = otherInfo.count;
+                    this.messageMap.put(msg, myInfo);
+                }
+                else
+                {
+                    this.droppedCount += otherInfo.count;
+                }
+            }
+            else
+            {
+                myInfo.count += otherInfo.count;
+            }
+        }
+    }
+
+    /**
      * Transform the data for serialization.
      */
     public void prepareSerialization()

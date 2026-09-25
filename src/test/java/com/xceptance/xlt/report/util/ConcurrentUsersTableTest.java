@@ -133,4 +133,60 @@ public class ConcurrentUsersTableTest
         Assert.assertEquals("Wrong toString output",
                             "TAuthor-0|00001|11001|1\n" + "TAuthor-1|11100|00011|1\n" + "TVisitor-0|00011|11111\n", table.toString());
     }
+
+    @Test
+    public void testMergeNullOrEmpty()
+    {
+        final ConcurrentUsersTable t1 = new ConcurrentUsersTable();
+        t1.recordUserActivity(1000, 3000, "UserA", "0");
+
+        t1.merge(null);
+        Assert.assertEquals(3, t1.getConcurrentUsersValueSet().getValueCount());
+
+        t1.merge(new ConcurrentUsersTable());
+        Assert.assertEquals(3, t1.getConcurrentUsersValueSet().getValueCount());
+
+        final ConcurrentUsersTable empty = new ConcurrentUsersTable();
+        empty.merge(t1);
+        Assert.assertEquals(3, empty.getConcurrentUsersValueSet().getValueCount());
+    }
+
+    @Test
+    public void testMergeEquivalence()
+    {
+        final ConcurrentUsersTable tSeq = new ConcurrentUsersTable();
+        final ConcurrentUsersTable t1 = new ConcurrentUsersTable();
+        final ConcurrentUsersTable t2 = new ConcurrentUsersTable();
+
+        // Feed tSeq with all activities
+        tSeq.recordUserActivity(7999, 9999, "TAuthor", "0");
+        tSeq.recordUserActivity(12000, 13999, "TAuthor", "0");
+        tSeq.recordUserActivity(3000, 5500, "TAuthor", "1");
+        tSeq.recordUserActivity(11000, 13500, "TAuthor", "1");
+        tSeq.recordUserActivity(6000, 9100, "TVisitor", "0");
+        tSeq.recordUserActivity(9500, 12500, "TVisitor", "0");
+
+        // Split activities across t1 and t2
+        t1.recordUserActivity(7999, 9999, "TAuthor", "0");
+        t2.recordUserActivity(12000, 13999, "TAuthor", "0");
+        t1.recordUserActivity(3000, 5500, "TAuthor", "1");
+        t2.recordUserActivity(11000, 13500, "TAuthor", "1");
+        t1.recordUserActivity(6000, 9100, "TVisitor", "0");
+        t2.recordUserActivity(9500, 12500, "TVisitor", "0");
+
+        t1.merge(t2);
+
+        final ValueSet vsExpected = tSeq.getConcurrentUsersValueSet();
+        final ValueSet vsMerged = t1.getConcurrentUsersValueSet();
+
+        Assert.assertEquals(vsExpected.getFirstSecond(), vsMerged.getFirstSecond());
+        Assert.assertEquals(vsExpected.getLastSecond(), vsMerged.getLastSecond());
+        Assert.assertEquals(vsExpected.getValueCount(), vsMerged.getValueCount());
+        Assert.assertArrayEquals(vsExpected.getValues(), vsMerged.getValues());
+
+        // Also test by user name
+        final ValueSet vsAuthorExpected = tSeq.getConcurrentUsersValueSet("TAuthor");
+        final ValueSet vsAuthorMerged = t1.getConcurrentUsersValueSet("TAuthor");
+        Assert.assertArrayEquals(vsAuthorExpected.getValues(), vsAuthorMerged.getValues());
+    }
 }

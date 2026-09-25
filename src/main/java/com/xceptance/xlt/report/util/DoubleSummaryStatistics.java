@@ -128,4 +128,44 @@ public class DoubleSummaryStatistics
     {
         return sum;
     }
+
+    /**
+     * Returns the sum of squares of all values added.
+     * 
+     * @return the sum of squares
+     */
+    public double getSumOfSquares()
+    {
+        return sumOfSquares;
+    }
+
+    /**
+     * Merges another {@link DoubleSummaryStatistics} into this instance.
+     * 
+     * @param other
+     *            the other statistics to merge, may be <code>null</code>
+     */
+    public void merge(final DoubleSummaryStatistics other)
+    {
+        if (other == null || other.count == 0)
+        {
+            return;
+        }
+
+        if (this.count == 0)
+        {
+            this.count = other.count;
+            this.sum = other.sum;
+            this.sumOfSquares = other.sumOfSquares;
+            this.minimum = other.minimum;
+            this.maximum = other.maximum;
+            return;
+        }
+
+        this.count += other.count;
+        this.sum += other.sum;
+        this.sumOfSquares += other.sumOfSquares;
+        this.minimum = Math.min(this.minimum, other.minimum);
+        this.maximum = Math.max(this.maximum, other.maximum);
+    }
 }

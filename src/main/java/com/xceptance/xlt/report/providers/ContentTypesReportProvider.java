@@ -74,4 +74,47 @@ public class ContentTypesReportProvider extends AbstractReportProvider
             contentTypeReport.count++;
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final com.xceptance.xlt.api.report.ReportProvider other)
+    {
+        if (other instanceof ContentTypesReportProvider)
+        {
+            merge((ContentTypesReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link ContentTypesReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final ContentTypesReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final XltCharBuffer contentType : other.contentTypeReports.keys())
+        {
+            final ContentTypeReport otherReport = other.contentTypeReports.get(contentType);
+            ContentTypeReport myReport = contentTypeReports.get(contentType);
+            if (myReport == null)
+            {
+                myReport = new ContentTypeReport();
+                myReport.contentType = otherReport.contentType;
+                myReport.count = otherReport.count;
+                contentTypeReports.put(contentType, myReport);
+            }
+            else
+            {
+                myReport.count += otherReport.count;
+            }
+        }
+    }
 }

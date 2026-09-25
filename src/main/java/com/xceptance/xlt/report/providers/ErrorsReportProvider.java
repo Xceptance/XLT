@@ -43,6 +43,7 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
@@ -563,6 +564,88 @@ public class ErrorsReportProvider extends AbstractReportProvider
                         requestErrorOverviewValues.put(responseCode, valueSet);
                     }
                     valueSet.addOrUpdateValue(requestData.getEndTime(), 1);
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final ReportProvider other)
+    {
+        if (other instanceof ErrorsReportProvider)
+        {
+            merge((ErrorsReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link ErrorsReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final ErrorsReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        transactionErrorsPerSecondValueSet.merge(other.transactionErrorsPerSecondValueSet);
+        actionErrorsPerSecondValueSet.merge(other.actionErrorsPerSecondValueSet);
+        requestErrorsPerSecondValueSet.merge(other.requestErrorsPerSecondValueSet);
+
+        for (final Map.Entry<String, ValueSet> entry : other.requestErrorOverviewValues.entrySet())
+        {
+            ValueSet vs = this.requestErrorOverviewValues.get(entry.getKey());
+            if (vs == null)
+            {
+                vs = new ValueSet();
+                this.requestErrorOverviewValues.put(entry.getKey(), vs);
+            }
+            vs.merge(entry.getValue());
+        }
+
+        for (final Map.Entry<Integer, TransactionErrorOverviewValues> entry : other.transactionErrorOverviewValues.entrySet())
+        {
+            TransactionErrorOverviewValues teov = this.transactionErrorOverviewValues.get(entry.getKey());
+            if (teov == null)
+            {
+                this.transactionErrorOverviewValues.put(entry.getKey(), entry.getValue());
+            }
+            else
+            {
+                teov.values.merge(entry.getValue().values);
+            }
+        }
+
+        for (final Map.Entry<String, ErrorValues> entry : other.errorReports.entrySet())
+        {
+            ErrorValues ev = this.errorReports.get(entry.getKey());
+            if (ev == null)
+            {
+                this.errorReports.put(entry.getKey(), entry.getValue());
+            }
+            else
+            {
+                ev.values.merge(entry.getValue().values);
+                ev.errorReport.count += entry.getValue().errorReport.count;
+                for (final String hint : entry.getValue().errorReport.directoryHints)
+                {
+                    if (ev.errorReport.directoryHints.size() < directoryLimitPerError)
+                    {
+                        if (!ev.errorReport.directoryHints.contains(hint))
+                        {
+                            ev.errorReport.directoryHints.add(hint);
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }

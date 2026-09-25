@@ -130,4 +130,44 @@ public class IntSummaryStatistics
     {
         return sum;
     }
+
+    /**
+     * Returns the sum of the square of all values added.
+     * 
+     * @return the sum of squares
+     */
+    public double getSumOfSquares()
+    {
+        return sumOfSquares;
+    }
+
+    /**
+     * Merges another {@link IntSummaryStatistics} into this instance.
+     *
+     * @param other
+     *            the other instance to merge, may be <code>null</code>
+     */
+    public void merge(final IntSummaryStatistics other)
+    {
+        if (other == null || other.count == 0)
+        {
+            return;
+        }
+
+        if (this.count == 0)
+        {
+            this.count = other.count;
+            this.sum = other.sum;
+            this.sumOfSquares = other.sumOfSquares;
+            this.minimum = other.minimum;
+            this.maximum = other.maximum;
+            return;
+        }
+
+        this.sumOfSquares += other.sumOfSquares;
+        this.sum += other.sum;
+        this.maximum = Math.max(this.maximum, other.maximum);
+        this.minimum = Math.min(this.minimum, other.minimum);
+        this.count += other.count;
+    }
 }

@@ -119,4 +119,27 @@ public class ApdexCalculator
 
         return new Apdex(apdex, threshold, totalSamplesCount);
     }
+
+    /**
+     * Merges another {@link ApdexCalculator} into this instance.
+     *
+     * @param other
+     *            the other apdex calculator to merge, may be <code>null</code>
+     */
+    public void merge(final ApdexCalculator other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        if (this.threshold.compareTo(other.threshold) != 0)
+        {
+            throw new IllegalArgumentException("Cannot merge ApdexCalculator with different thresholds: " + this.threshold + " vs " + other.threshold);
+        }
+
+        this.satisfyingSamplesCount += other.satisfyingSamplesCount;
+        this.toleratedSamplesCount += other.toleratedSamplesCount;
+        this.totalSamplesCount += other.totalSamplesCount;
+    }
 }

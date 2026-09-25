@@ -37,7 +37,7 @@ public final class ConcurrentUsersTable
     /**
      * The one and only {@link ConcurrentUsersTable} instance.
      */
-    private static ConcurrentUsersTable singleton = new ConcurrentUsersTable();
+    private static volatile ConcurrentUsersTable singleton = new ConcurrentUsersTable();
 
     /**
      * Returns the one and only {@link ConcurrentUsersTable} instance.
@@ -47,6 +47,17 @@ public final class ConcurrentUsersTable
     public static ConcurrentUsersTable getInstance()
     {
         return singleton;
+    }
+
+    /**
+     * Sets the one and only {@link ConcurrentUsersTable} instance.
+     * 
+     * @param instance
+     *            the instance to set
+     */
+    public static void setInstance(final ConcurrentUsersTable instance)
+    {
+        singleton = instance != null ? instance : new ConcurrentUsersTable();
     }
 
     /**
@@ -65,9 +76,9 @@ public final class ConcurrentUsersTable
     private long start = Long.MAX_VALUE;
 
     /**
-     * Private constructor.
+     * Public constructor.
      */
-    private ConcurrentUsersTable()
+    public ConcurrentUsersTable()
     {
     }
 
@@ -79,6 +90,75 @@ public final class ConcurrentUsersTable
         bitSetsByUserId.clear();
         bitSetsByUserName.clear();
         start = Long.MAX_VALUE;
+    }
+
+    /**
+     * Merges another {@link ConcurrentUsersTable} into this instance.
+     *
+     * @param other
+     *            the other table to merge, may be <code>null</code>
+     */
+    public void merge(final ConcurrentUsersTable other)
+    {
+        if (other == null || other.bitSetsByUserId.isEmpty())
+        {
+            return;
+        }
+
+        if (this.bitSetsByUserId.isEmpty())
+        {
+            this.start = other.start;
+            for (final Entry<String, BitSet> entry : other.bitSetsByUserId.entrySet())
+            {
+                final String userId = entry.getKey();
+                final BitSet bitSet = (BitSet) entry.getValue().clone();
+                this.bitSetsByUserId.put(userId, bitSet);
+
+                final int dashIdx = userId.lastIndexOf('-');
+                final String userName = dashIdx >= 0 ? userId.substring(0, dashIdx) : userId;
+                List<BitSet> bitSets = this.bitSetsByUserName.get(userName);
+                if (bitSets == null)
+                {
+                    bitSets = new ArrayList<BitSet>();
+                    this.bitSetsByUserName.put(userName, bitSets);
+                }
+                bitSets.add(bitSet);
+            }
+            return;
+        }
+
+        final long newStart = Math.min(this.start, other.start);
+        shiftAllBitSetsIfRequired(newStart);
+
+        final int otherOffset = (int) (other.start - newStart);
+
+        for (final Entry<String, BitSet> entry : other.bitSetsByUserId.entrySet())
+        {
+            final String userId = entry.getKey();
+            final BitSet otherBitSet = entry.getValue();
+
+            BitSet thisBitSet = this.bitSetsByUserId.get(userId);
+            if (thisBitSet == null)
+            {
+                thisBitSet = new BitSet();
+                this.bitSetsByUserId.put(userId, thisBitSet);
+
+                final int dashIdx = userId.lastIndexOf('-');
+                final String userName = dashIdx >= 0 ? userId.substring(0, dashIdx) : userId;
+                List<BitSet> bitSets = this.bitSetsByUserName.get(userName);
+                if (bitSets == null)
+                {
+                    bitSets = new ArrayList<BitSet>();
+                    this.bitSetsByUserName.put(userName, bitSets);
+                }
+                bitSets.add(thisBitSet);
+            }
+
+            for (int i = otherBitSet.nextSetBit(0); i >= 0; i = otherBitSet.nextSetBit(i + 1))
+            {
+                thisBitSet.set(otherOffset + i);
+            }
+        }
     }
 
     /**

@@ -175,6 +175,49 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
      * {@inheritDoc}
      */
     @Override
+    public void merge(final BasicTimerDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        super.merge(other);
+
+        if (other instanceof TransactionDataProcessor)
+        {
+            mergeTransactionSpecific((TransactionDataProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link TransactionDataProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final TransactionDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        super.merge(other);
+        mergeTransactionSpecific(other);
+    }
+
+    private void mergeTransactionSpecific(final TransactionDataProcessor other)
+    {
+        eventsPerSecond.merge(other.eventsPerSecond);
+        arrivalsPerHourPerSecond.merge(other.arrivalsPerHourPerSecond);
+        numberOfEvents += other.numberOfEvents;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected JFreeChart createResponseTimeAndErrorsChart(final String name, final TimeSeries responseTimeSeries,
                                                           final TimeSeries responseTimeAverageSeries,
                                                           final XYIntervalSeries responseTimeHistogramSeries, final TimeSeries errorsSeries,

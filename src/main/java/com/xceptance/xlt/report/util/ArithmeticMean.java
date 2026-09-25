@@ -64,4 +64,31 @@ public class ArithmeticMean
     {
         return sum / count;
     }
+
+    /**
+     * Returns the sum of the values added.
+     * 
+     * @return the sum
+     */
+    public double getSum()
+    {
+        return sum;
+    }
+
+    /**
+     * Merges another {@link ArithmeticMean} into this instance.
+     * 
+     * @param other
+     *            the other instance to merge, may be <code>null</code>
+     */
+    public void merge(final ArithmeticMean other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        this.count += other.count;
+        this.sum += other.sum;
+    }
 }

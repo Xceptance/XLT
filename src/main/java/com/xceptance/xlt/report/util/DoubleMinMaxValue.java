@@ -54,6 +54,21 @@ public class DoubleMinMaxValue
     }
 
     /**
+     * Copy constructor.
+     * 
+     * @param other
+     *            the other instance to copy from
+     */
+    public DoubleMinMaxValue(final DoubleMinMaxValue other)
+    {
+        accumulatedValue = other.accumulatedValue;
+        maximum = other.maximum;
+        minimum = other.minimum;
+        valueCount = other.valueCount;
+        valueSet.merge(other.valueSet);
+    }
+
+    /**
      * @return the accumulatedValue
      */
     public double getAccumulatedValue()
@@ -114,7 +129,7 @@ public class DoubleMinMaxValue
     /**
      * @param item
      */
-    DoubleMinMaxValue merge(final DoubleMinMaxValue item)
+    public DoubleMinMaxValue merge(final DoubleMinMaxValue item)
     {
         if (item != null)
         {

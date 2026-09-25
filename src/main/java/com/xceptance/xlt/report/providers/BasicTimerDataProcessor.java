@@ -102,6 +102,40 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final AbstractDataProcessor other)
+    {
+        if (other instanceof BasicTimerDataProcessor)
+        {
+            merge((BasicTimerDataProcessor) other);
+        }
+    }
+
+    /**
+     * Merges another {@link BasicTimerDataProcessor} into this instance.
+     *
+     * @param other
+     *            the other processor to merge
+     */
+    public void merge(final BasicTimerDataProcessor other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        countPerSecondValueSet.merge(other.countPerSecondValueSet);
+        errorsPerSecondValueSet.merge(other.errorsPerSecondValueSet);
+        runTimeStatistics.merge(other.runTimeStatistics);
+        runTimeHistogram.merge(other.runTimeHistogram);
+        runTimeValueSet.merge(other.runTimeValueSet);
+        histogramValueSet.merge(other.histogramValueSet);
+        totalErrors += other.totalErrors;
+    }
+
+    /**
      * Generates a run time timer report from the passed list of data records.
      *
      * @param generateHistogram

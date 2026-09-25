@@ -51,6 +51,24 @@ public class IntMinMaxValue
     }
 
     /**
+     * Copy constructor.
+     * 
+     * @param other
+     *            the other min-max value to copy
+     */
+    public IntMinMaxValue(final IntMinMaxValue other)
+    {
+        if (other != null)
+        {
+            accumulatedValue = other.accumulatedValue;
+            maximum = other.maximum;
+            minimum = other.minimum;
+            valueCount = other.valueCount;
+            valueSet.merge(other.valueSet);
+        }
+    }
+
+    /**
      * Returns the sum of the values added to this min-max value.
      * 
      * @return the accumulated value

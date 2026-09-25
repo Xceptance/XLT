@@ -17,18 +17,23 @@ package com.xceptance.xlt.report;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.report.ReportProvider;
+import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 
 /**
- * Processes parsed data records. Processing means passing a data record to all configured report providers. Since data
- * processing is not thread-safe (yet), there will be only one statistics processor.
+ * Processes parsed data records by delegating to worker copies of configured report providers per thread,
+ * avoiding lock contention completely during processing, and merging them into the master providers when finished.
  */
 class StatisticsProcessor
 {
@@ -38,24 +43,39 @@ class StatisticsProcessor
     private static final Log LOG = LogFactory.getLog(StatisticsProcessor.class);
 
     /**
-     * The update lock
-     */
-    private final ReentrantLock updateLock = new ReentrantLock();
-
-    /**
      * Creation time of last data record.
      */
-    private long maximumTime = 0;
+    private final AtomicLong maximumTime = new AtomicLong(0);
 
     /**
      * Creation time of first data record.
      */
-    private long minimumTime = Long.MAX_VALUE;
+    private final AtomicLong minimumTime = new AtomicLong(Long.MAX_VALUE);
 
     /**
-     * The configured report providers. An array for less overhead.
+     * The master configured report providers.
      */
     private final List<ReportProvider> reportProviders;
+
+    /**
+     * The report provider configuration used to configure worker providers.
+     */
+    private final ReportProviderConfiguration configuration;
+
+    /**
+     * All worker report provider lists instantiated for worker threads.
+     */
+    private final ConcurrentLinkedQueue<List<ReportProvider>> allWorkerProviders = new ConcurrentLinkedQueue<>();
+
+    /**
+     * Thread-local list of worker report providers.
+     */
+    private final ThreadLocal<List<ReportProvider>> threadLocalProviders;
+
+    /**
+     * Flag indicating whether merge completion has already been performed.
+     */
+    private final AtomicBoolean completed = new AtomicBoolean(false);
 
     /**
      * Constructor.
@@ -65,8 +85,64 @@ class StatisticsProcessor
      */
     public StatisticsProcessor(final List<ReportProvider> reportProviders)
     {
+        this(reportProviders, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param reportProviders
+     *            the configured report providers
+     * @param configuration
+     *            the report provider configuration
+     */
+    public StatisticsProcessor(final List<ReportProvider> reportProviders, final ReportProviderConfiguration configuration)
+    {
         // filter the list and take only the provider that really need runtime parsed data
         this.reportProviders = reportProviders.stream().filter(p -> p.wantsDataRecords()).collect(Collectors.toList());
+
+        if (configuration != null)
+        {
+            this.configuration = configuration;
+        }
+        else if (!this.reportProviders.isEmpty() && this.reportProviders.get(0) instanceof AbstractReportProvider)
+        {
+            this.configuration = ((AbstractReportProvider) this.reportProviders.get(0)).getConfiguration();
+        }
+        else
+        {
+            this.configuration = null;
+        }
+
+        this.threadLocalProviders = ThreadLocal.withInitial(this::createWorkerProviders);
+    }
+
+    private List<ReportProvider> createWorkerProviders()
+    {
+        final List<ReportProvider> localList = new ArrayList<>(reportProviders.size());
+        for (final ReportProvider master : reportProviders)
+        {
+            try
+            {
+                final ReportProvider worker = master.getClass().getDeclaredConstructor().newInstance();
+                if (configuration != null)
+                {
+                    worker.setConfiguration(configuration);
+                }
+                else if (master instanceof AbstractReportProvider)
+                {
+                    worker.setConfiguration(((AbstractReportProvider) master).getConfiguration());
+                }
+                localList.add(worker);
+            }
+            catch (final Exception e)
+            {
+                LOG.error("Failed to instantiate worker report provider: " + master.getClass().getName(), e);
+                throw new RuntimeException(e);
+            }
+        }
+        allWorkerProviders.add(localList);
+        return localList;
     }
 
     /**
@@ -74,9 +150,9 @@ class StatisticsProcessor
      *
      * @return maximum time
      */
-    public synchronized long getMaximumTime()
+    public long getMaximumTime()
     {
-        return maximumTime;
+        return maximumTime.get();
     }
 
     /**
@@ -84,15 +160,16 @@ class StatisticsProcessor
      *
      * @return minimum time
      */
-    public synchronized long getMinimumTime()
+    public long getMinimumTime()
     {
-        return (minimumTime == Long.MAX_VALUE) ? 0 : minimumTime;
+        final long min = minimumTime.get();
+        return (min == Long.MAX_VALUE) ? 0 : min;
     }
 
     /**
      * Takes the post-processed data and puts it into the statistics machinery to capture the final data points.
      *
-     * @param data
+     * @param dataContainer
      *            a chunk of post-processed data for final statistics gathering
      */
     public void process(final PostProcessedDataContainer dataContainer)
@@ -103,54 +180,57 @@ class StatisticsProcessor
             return;
         }
 
-        // get your own list
-        final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
+        final List<ReportProvider> localProviders = threadLocalProviders.get();
 
-        // run as long as we have not all data put into the report providers
-        while (providerList.isEmpty() == false)
+        for (int i = 0; i < localProviders.size(); i++)
         {
-            ReportProvider provider = null;
-
-            for (int i = 0; i < providerList.size(); i++)
-            {
-                final boolean wasLocked = providerList.get(i).lock();
-                if (wasLocked)
-                {
-                    provider = providerList.remove(i);
-                    break;
-                }
-            }
-
-            if (provider == null)
-            {
-                // nothing found, try again
-                continue;
-            }
-
-            // we have one, we can process the data
             try
             {
-                provider.processAll(dataContainer);
+                localProviders.get(i).processAll(dataContainer);
             }
             catch (final Throwable t)
             {
-                LOG.error("Failed to process data record, discarding full chunk", t);
-            }
-            finally
-            {
-                provider.unlock();
-
-                // be fair to others and give them a chance
-                Thread.yield();
+                LOG.error("Failed to process data record in worker provider, discarding full chunk", t);
             }
         }
 
-        // get the max and min
-        updateLock.lock();
+        // update max and min
+        minimumTime.accumulateAndGet(dataContainer.getMinimumTime(), Math::min);
+        maximumTime.accumulateAndGet(dataContainer.getMaximumTime(), Math::max);
+    }
+
+    /**
+     * Merges all worker provider statistics into the master report providers.
+     */
+    public void complete()
+    {
+        if (completed.compareAndSet(false, true))
         {
-            minimumTime = Math.min(minimumTime, dataContainer.getMinimumTime());
-            maximumTime = Math.max(maximumTime, dataContainer.getMaximumTime());
+            final List<List<ReportProvider>> workers = new ArrayList<>(allWorkerProviders);
+            allWorkerProviders.clear();
+
+            if (!workers.isEmpty())
+            {
+                IntStream.range(0, reportProviders.size()).parallel().forEach(i -> {
+                    final ReportProvider master = reportProviders.get(i);
+                    for (final List<ReportProvider> workerList : workers)
+                    {
+                        final ReportProvider worker = workerList.get(i);
+                        master.merge(worker);
+                    }
+                });
+            }
         }
-        updateLock.unlock();
+    }
+
+    /**
+     * Returns the master report providers after ensuring all worker statistics have been merged.
+     *
+     * @return the report providers
+     */
+    public List<ReportProvider> getReportProviders()
+    {
+        complete();
+        return reportProviders;
     }
 }

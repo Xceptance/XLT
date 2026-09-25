@@ -229,4 +229,93 @@ public class ValueSetTest
         Assert.assertArrayEquals(expected10, actual10);
     }
 
+    @Test
+    public final void testMergeNullOrEmpty()
+    {
+        final ValueSet set1 = new ValueSet();
+        set1.addOrUpdateValue(1000L, 5);
+
+        // merge null
+        set1.merge(null);
+        Assert.assertEquals(1, set1.getValueCount());
+
+        // merge empty
+        set1.merge(new ValueSet());
+        Assert.assertEquals(1, set1.getValueCount());
+
+        // merge into empty
+        final ValueSet empty = new ValueSet();
+        empty.merge(set1);
+        Assert.assertEquals(1, empty.getValueCount());
+        Assert.assertEquals(set1.getFirstSecond(), empty.getFirstSecond());
+        Assert.assertEquals(set1.getLastSecond(), empty.getLastSecond());
+        Assert.assertArrayEquals(set1.getValues(), empty.getValues());
+    }
+
+    @Test
+    public final void testMergeEarlierAndLater()
+    {
+        final ValueSet sequential = new ValueSet();
+        final ValueSet setMiddle = new ValueSet();
+        final ValueSet setEarlier = new ValueSet();
+        final ValueSet setLater = new ValueSet();
+
+        // 1000000 ms = 1000 s
+        sequential.addOrUpdateValue(1000000L, 10);
+        setMiddle.addOrUpdateValue(1000000L, 10);
+
+        // Earlier: 990000 ms = 990 s (diff = 10s)
+        sequential.addOrUpdateValue(990000L, 20);
+        setEarlier.addOrUpdateValue(990000L, 20);
+
+        // Later: 1020000 ms = 1020 s (diff = 20s)
+        sequential.addOrUpdateValue(1020000L, 30);
+        setLater.addOrUpdateValue(1020000L, 30);
+
+        setMiddle.merge(setEarlier);
+        setMiddle.merge(setLater);
+
+        Assert.assertEquals(sequential.getFirstSecond(), setMiddle.getFirstSecond());
+        Assert.assertEquals(sequential.getLastSecond(), setMiddle.getLastSecond());
+        Assert.assertEquals(sequential.getMinimumTime(), setMiddle.getMinimumTime());
+        Assert.assertEquals(sequential.getMaximumTime(), setMiddle.getMaximumTime());
+        Assert.assertEquals(sequential.getValueCount(), setMiddle.getValueCount());
+        Assert.assertArrayEquals(sequential.getValues(), setMiddle.getValues());
+    }
+
+    @Test
+    public final void testMergeOverlappingAndRandom()
+    {
+        final java.util.Random rng = new java.util.Random(12345);
+        final ValueSet sequential = new ValueSet();
+        final ValueSet setA = new ValueSet();
+        final ValueSet setB = new ValueSet();
+
+        final long baseTime = 1600000000000L;
+
+        for (int i = 0; i < 2000; i++)
+        {
+            final long time = baseTime + rng.nextInt(500) * 1000L + rng.nextInt(1000);
+            final int value = rng.nextInt(100) + 1;
+
+            sequential.addOrUpdateValue(time, value);
+            if (rng.nextBoolean())
+            {
+                setA.addOrUpdateValue(time, value);
+            }
+            else
+            {
+                setB.addOrUpdateValue(time, value);
+            }
+        }
+
+        setA.merge(setB);
+
+        Assert.assertEquals(sequential.getFirstSecond(), setA.getFirstSecond());
+        Assert.assertEquals(sequential.getLastSecond(), setA.getLastSecond());
+        Assert.assertEquals(sequential.getMinimumTime(), setA.getMinimumTime());
+        Assert.assertEquals(sequential.getMaximumTime(), setA.getMaximumTime());
+        Assert.assertEquals(sequential.getValueCount(), setA.getValueCount());
+        Assert.assertArrayEquals(sequential.getValues(), setA.getValues());
+    }
 }

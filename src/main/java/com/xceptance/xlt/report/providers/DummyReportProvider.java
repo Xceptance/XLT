@@ -38,4 +38,13 @@ public class DummyReportProvider extends AbstractReportProvider
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public void merge(final com.xceptance.xlt.api.report.ReportProvider other)
+    {
+        if (other instanceof DummyReportProvider)
+        {
+            this.count += ((DummyReportProvider) other).count;
+        }
+    }
 }

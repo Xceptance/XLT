@@ -106,4 +106,28 @@ public class HistogramValueSet
 
         return series;
     }
+
+    /**
+     * Merges another {@link HistogramValueSet} into this instance.
+     *
+     * @param other
+     *            the other histogram value set to merge, may be <code>null</code>
+     */
+    public void merge(final HistogramValueSet other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        if (this.numberOfBins != other.numberOfBins || Double.compare(this.minValue, other.minValue) != 0 || Double.compare(this.maxValue, other.maxValue) != 0)
+        {
+            throw new IllegalArgumentException("Cannot merge HistogramValueSet with different boundaries or bin count");
+        }
+
+        for (int i = 0; i < numberOfBins; i++)
+        {
+            this.countPerBin[i] += other.countPerBin[i];
+        }
+    }
 }

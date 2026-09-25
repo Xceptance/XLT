@@ -94,4 +94,48 @@ public class IpReportProvider extends AbstractReportProvider
         // update the statistics
         ipReport.count++;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final com.xceptance.xlt.api.report.ReportProvider other)
+    {
+        if (other instanceof IpReportProvider)
+        {
+            merge((IpReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link IpReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final IpReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final XltCharBuffer key : other.ipReports.keys())
+        {
+            final IpReport otherReport = other.ipReports.get(key);
+            IpReport myReport = ipReports.get(key);
+            if (myReport == null)
+            {
+                myReport = new IpReport();
+                myReport.ip = otherReport.ip;
+                myReport.host = otherReport.host;
+                myReport.count = otherReport.count;
+                ipReports.put(key, myReport);
+            }
+            else
+            {
+                myReport.count += otherReport.count;
+            }
+        }
+    }
 }

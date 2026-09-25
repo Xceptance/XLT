@@ -24,6 +24,7 @@ import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 
 /**
@@ -198,6 +199,57 @@ public class SummaryReportProvider extends AbstractReportProvider
         else if (data instanceof JvmResourceUsageData)
         {
             agentDataProcessor.processDataRecord(data);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final ReportProvider other)
+    {
+        if (other instanceof SummaryReportProvider)
+        {
+            merge((SummaryReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link SummaryReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final SummaryReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        if (transactionDataProcessor != null && other.transactionDataProcessor != null)
+        {
+            transactionDataProcessor.merge(other.transactionDataProcessor);
+        }
+        if (actionDataProcessor != null && other.actionDataProcessor != null)
+        {
+            actionDataProcessor.merge(other.actionDataProcessor);
+        }
+        if (requestDataProcessor != null && other.requestDataProcessor != null)
+        {
+            requestDataProcessor.merge(other.requestDataProcessor);
+        }
+        if (pageLoadDataProcessor != null && other.pageLoadDataProcessor != null)
+        {
+            pageLoadDataProcessor.merge(other.pageLoadDataProcessor);
+        }
+        if (customTimerDataProcessor != null && other.customTimerDataProcessor != null)
+        {
+            customTimerDataProcessor.merge(other.customTimerDataProcessor);
+        }
+        if (agentDataProcessor != null && other.agentDataProcessor != null)
+        {
+            agentDataProcessor.merge(other.agentDataProcessor);
         }
     }
 }

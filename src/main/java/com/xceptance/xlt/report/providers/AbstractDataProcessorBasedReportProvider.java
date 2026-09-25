@@ -24,6 +24,7 @@ import java.util.List;
 import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProvider;
 
 /**
  * The {@link AbstractDataProcessorBasedReportProvider} class provides common functionality of a typical report
@@ -111,5 +112,47 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
         }
         
         return Collections.unmodifiableCollection(values);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final ReportProvider other)
+    {
+        if (other instanceof AbstractDataProcessorBasedReportProvider)
+        {
+            @SuppressWarnings("unchecked")
+            final AbstractDataProcessorBasedReportProvider<T> o = (AbstractDataProcessorBasedReportProvider<T>) other;
+            merge(o);
+        }
+    }
+
+    /**
+     * Merges another {@link AbstractDataProcessorBasedReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final AbstractDataProcessorBasedReportProvider<T> other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final String name : other.processors.keys())
+        {
+            final T otherProcessor = other.processors.get(name);
+            final T myProcessor = this.processors.get(name);
+            if (myProcessor == null)
+            {
+                this.processors.put(name, otherProcessor);
+            }
+            else
+            {
+                myProcessor.merge(otherProcessor);
+            }
+        }
     }
 }

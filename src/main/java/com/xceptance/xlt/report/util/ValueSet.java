@@ -170,6 +170,62 @@ public class ValueSet
     }
 
     /**
+     * Merges another {@link ValueSet} into this instance.
+     *
+     * @param other
+     *            the other value set to merge, may be <code>null</code>
+     */
+    public void merge(final ValueSet other)
+    {
+        if (other == null || other.valueCount == 0)
+        {
+            return;
+        }
+
+        if (this.valueCount == 0)
+        {
+            this.firstSecond = other.firstSecond;
+            this.lastSecond = other.lastSecond;
+            this.minimumTime = other.minimumTime;
+            this.maximumTime = other.maximumTime;
+            this.valueCount = other.valueCount;
+            this.size = other.size;
+            this.values = new int[other.values.length];
+            System.arraycopy(other.values, 0, this.values, 0, other.values.length);
+            return;
+        }
+
+        final long newFirstSecond = Math.min(this.firstSecond, other.firstSecond);
+        final long newLastSecond = Math.max(this.lastSecond, other.lastSecond);
+        final long neededSpan = newLastSecond - newFirstSecond + 1;
+
+        while (this.size < neededSpan)
+        {
+            grow();
+        }
+
+        if (newFirstSecond < this.firstSecond)
+        {
+            final int shiftAmount = (int) (this.firstSecond - newFirstSecond);
+            shift(shiftAmount);
+            this.firstSecond = newFirstSecond;
+        }
+
+        this.lastSecond = newLastSecond;
+
+        final int otherOffset = (int) (other.firstSecond - this.firstSecond);
+        final int otherLength = (int) (other.lastSecond - other.firstSecond + 1);
+        for (int i = 0; i < otherLength; i++)
+        {
+            this.values[otherOffset + i] += other.values[i];
+        }
+
+        this.valueCount += other.valueCount;
+        this.minimumTime = Math.min(this.minimumTime, other.minimumTime);
+        this.maximumTime = Math.max(this.maximumTime, other.maximumTime);
+    }
+
+    /**
      * Returns the smallest second [s] for which a value exists in this set.
      *
      * @return the last second (in s)

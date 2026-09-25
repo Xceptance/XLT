@@ -80,4 +80,47 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             requestMethodReport.count++;
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final com.xceptance.xlt.api.report.ReportProvider other)
+    {
+        if (other instanceof RequestMethodsReportProvider)
+        {
+            merge((RequestMethodsReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link RequestMethodsReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final RequestMethodsReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final XltCharBuffer method : other.requestMethodReports.keys())
+        {
+            final RequestMethodReport otherReport = other.requestMethodReports.get(method);
+            RequestMethodReport myReport = requestMethodReports.get(method);
+            if (myReport == null)
+            {
+                myReport = new RequestMethodReport();
+                myReport.method = otherReport.method;
+                myReport.count = otherReport.count;
+                requestMethodReports.put(method, myReport);
+            }
+            else
+            {
+                myReport.count += otherReport.count;
+            }
+        }
+    }
 }

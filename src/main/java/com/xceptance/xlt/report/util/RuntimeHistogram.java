@@ -212,6 +212,66 @@ public class RuntimeHistogram
     }
 
     /**
+     * Returns the number of values added so far to this histogram.
+     *
+     * @return the number of values
+     */
+    public int getValueCount()
+    {
+        return valueCount;
+    }
+
+    /**
+     * Merges another {@link RuntimeHistogram} into this instance.
+     *
+     * @param other
+     *            the other histogram to merge, may be <code>null</code>
+     */
+    public void merge(final RuntimeHistogram other)
+    {
+        if (other == null || other.valueCount == 0)
+        {
+            return;
+        }
+
+        if (this.precision != other.precision)
+        {
+            throw new IllegalArgumentException("Cannot merge RuntimeHistogram with precision " + precision + " and " + other.precision);
+        }
+
+        if (this.valueCount == 0)
+        {
+            this.firstIndex = other.firstIndex;
+            this.lastIndex = other.lastIndex;
+            this.valueCount = other.valueCount;
+            this.countPerBucket = new int[other.countPerBucket.length];
+            System.arraycopy(other.countPerBucket, 0, this.countPerBucket, 0, other.countPerBucket.length);
+            return;
+        }
+
+        final int newFirstIndex = Math.min(this.firstIndex, other.firstIndex);
+        final int newLastIndex = Math.max(this.lastIndex, other.lastIndex);
+        final int newLength = newLastIndex - newFirstIndex + 1;
+
+        if (newLength > this.countPerBucket.length || newFirstIndex < this.firstIndex)
+        {
+            final int[] newCountPerBucket = new int[newLength];
+            System.arraycopy(this.countPerBucket, 0, newCountPerBucket, this.firstIndex - newFirstIndex, this.countPerBucket.length);
+            this.countPerBucket = newCountPerBucket;
+            this.firstIndex = newFirstIndex;
+            this.lastIndex = newLastIndex;
+        }
+
+        final int otherOffset = other.firstIndex - this.firstIndex;
+        for (int i = 0; i < other.countPerBucket.length; i++)
+        {
+            this.countPerBucket[otherOffset + i] += other.countPerBucket[i];
+        }
+
+        this.valueCount += other.valueCount;
+    }
+
+    /**
      * Grows the bucket array by the specified number of buckets.
      *
      * @param delta

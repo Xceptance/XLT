@@ -30,6 +30,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
@@ -58,6 +59,8 @@ public class GeneralReportProvider extends AbstractReportProvider
     private final ValueSet failedTransactionsValueSet = new ValueSet();
 
     private final ValueSet totalTransactionsValueSet = new ValueSet();
+
+    private final ConcurrentUsersTable concurrentUsersTable = new ConcurrentUsersTable();
 
     private IntMinMaxValueSet requestRunTimeValueSet;
 
@@ -124,7 +127,7 @@ public class GeneralReportProvider extends AbstractReportProvider
                 @Override
                 public void run()
                 {
-                    final ValueSet concurrentUsersValueSet = ConcurrentUsersTable.getInstance().getConcurrentUsersValueSet();
+                    final ValueSet concurrentUsersValueSet = concurrentUsersTable.getConcurrentUsersValueSet();
                     final IntMinMaxValueSet concurrentUsers = concurrentUsersValueSet.toMinMaxValueSet(minMaxValueSetSize);
                     createChart(JFreeChartUtils.toMinMaxTimeSeries(concurrentUsers, "Concurrent Users"), true, "Concurrent Users", "Users",
                                 "ConcurrentUsers", chartsDir);
@@ -208,7 +211,7 @@ public class GeneralReportProvider extends AbstractReportProvider
             final long time = txnData.getTime();
             final long endTime = txnData.getEndTime();
 
-            ConcurrentUsersTable.getInstance().recordUserActivity(time, endTime, txnData.getName(), txnData.getTestUserNumber());
+            concurrentUsersTable.recordUserActivity(time, endTime, txnData.getName(), txnData.getTestUserNumber());
 
             // count the transaction at the time it has finished
             totalTransactionsValueSet.addOrUpdateValue(endTime, 1);
@@ -218,6 +221,51 @@ public class GeneralReportProvider extends AbstractReportProvider
                 failedTransactionsValueSet.addOrUpdateValue(endTime, 1);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final ReportProvider other)
+    {
+        if (other instanceof GeneralReportProvider)
+        {
+            merge((GeneralReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link GeneralReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final GeneralReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        bytesReceivedValueSet.merge(other.bytesReceivedValueSet);
+        bytesSentValueSet.merge(other.bytesSentValueSet);
+        requestsValueSet.merge(other.requestsValueSet);
+
+        totalBytesReceived += other.totalBytesReceived;
+        totalBytesSent += other.totalBytesSent;
+        totalRequests += other.totalRequests;
+
+        failedTransactionsValueSet.merge(other.failedTransactionsValueSet);
+        totalTransactionsValueSet.merge(other.totalTransactionsValueSet);
+
+        if (requestRunTimeValueSet != null && other.requestRunTimeValueSet != null)
+        {
+            requestRunTimeValueSet.merge(other.requestRunTimeValueSet);
+        }
+
+        concurrentUsersTable.merge(other.concurrentUsersTable);
+        ConcurrentUsersTable.setInstance(concurrentUsersTable);
     }
 
     /**

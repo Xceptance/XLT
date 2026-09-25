@@ -174,4 +174,54 @@ public class ApdexCalculatorTest
         Assert.assertEquals(numberOfSamples, apdex.getNumberOfSamples());
         Assert.assertEquals(isLowSample, apdex.isLowSample());
     }
+
+    @Test
+    public void testMergeNull()
+    {
+        final ApdexCalculator calc = new ApdexCalculator(1.0);
+        calc.addSample(500, false);
+        calc.merge(null);
+        Assert.assertEquals(1, calc.getApdex().getNumberOfSamples());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMergeDifferentThresholdThrows()
+    {
+        final ApdexCalculator c1 = new ApdexCalculator(1.0);
+        final ApdexCalculator c2 = new ApdexCalculator(2.0);
+        c1.merge(c2);
+    }
+
+    @Test
+    public void testMergeEquivalence()
+    {
+        final ApdexCalculator seq = new ApdexCalculator(1.0);
+        final ApdexCalculator c1 = new ApdexCalculator(1.0);
+        final ApdexCalculator c2 = new ApdexCalculator(1.0);
+
+        final long[] runtimes = { 200, 500, 900, 1500, 2500, 5000, 10000 };
+        final boolean[] failed = { false, false, false, false, false, true, false };
+
+        for (int i = 0; i < runtimes.length; i++)
+        {
+            seq.addSample(runtimes[i], failed[i]);
+            if (i % 2 == 0)
+            {
+                c1.addSample(runtimes[i], failed[i]);
+            }
+            else
+            {
+                c2.addSample(runtimes[i], failed[i]);
+            }
+        }
+
+        c1.merge(c2);
+
+        final Apdex expected = seq.getApdex();
+        final Apdex actual = c1.getApdex();
+
+        Assert.assertEquals(expected.getValue(), actual.getValue());
+        Assert.assertEquals(expected.getLongValue(), actual.getLongValue());
+        Assert.assertEquals(expected.getNumberOfSamples(), actual.getNumberOfSamples());
+    }
 }

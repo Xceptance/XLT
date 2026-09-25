@@ -315,4 +315,93 @@ public class IntMinMaxValueSetTest
         }
         Assert.assertArrayEquals(expected, actual);
     }
+
+    @Test
+    public void testMergeNullOrEmpty()
+    {
+        final IntMinMaxValueSet set = new IntMinMaxValueSet(100);
+        set.addOrUpdateValue(10000L, 50);
+
+        // merge null
+        set.merge(null);
+        Assert.assertEquals(1, set.getValueCount());
+
+        // merge empty
+        set.merge(new IntMinMaxValueSet(100));
+        Assert.assertEquals(1, set.getValueCount());
+
+        // merge into empty
+        final IntMinMaxValueSet empty = new IntMinMaxValueSet(100);
+        empty.merge(set);
+        Assert.assertEquals(1, empty.getValueCount());
+        Assert.assertEquals(set.getFirstSecond(), empty.getFirstSecond());
+        Assert.assertEquals(set.getMinimumTime(), empty.getMinimumTime());
+        Assert.assertEquals(set.getMaximumTime(), empty.getMaximumTime());
+        Assert.assertEquals(set.getScale(), empty.getScale());
+        Assert.assertArrayEquals(set.getValues(), empty.getValues());
+    }
+
+    @Test
+    public void testMergeSameScale()
+    {
+        final int size = 128;
+        final IntMinMaxValueSet sequential = new IntMinMaxValueSet(size);
+        final IntMinMaxValueSet set1 = new IntMinMaxValueSet(size);
+        final IntMinMaxValueSet set2 = new IntMinMaxValueSet(size);
+
+        final long base = 10000000L;
+        // set1: 0 to 40 seconds
+        for (int i = 0; i < 40; i++)
+        {
+            sequential.addOrUpdateValue(base + i * 1000L, 10 + i);
+            set1.addOrUpdateValue(base + i * 1000L, 10 + i);
+        }
+        // set2: 20 to 60 seconds (overlapping 20..40, disjoint 40..60)
+        for (int i = 20; i < 60; i++)
+        {
+            sequential.addOrUpdateValue(base + i * 1000L, 20 + i);
+            set2.addOrUpdateValue(base + i * 1000L, 20 + i);
+        }
+
+        set1.merge(set2);
+
+        Assert.assertEquals(sequential.getValueCount(), set1.getValueCount());
+        Assert.assertEquals(sequential.getFirstSecond(), set1.getFirstSecond());
+        Assert.assertEquals(sequential.getMinimumTime(), set1.getMinimumTime());
+        Assert.assertEquals(sequential.getMaximumTime(), set1.getMaximumTime());
+        Assert.assertEquals(sequential.getScale(), set1.getScale());
+        Assert.assertArrayEquals(sequential.getValues(), set1.getValues());
+    }
+
+    @Test
+    public void testMergeDifferentScale()
+    {
+        final int size = 64;
+        final IntMinMaxValueSet setA = new IntMinMaxValueSet(size);
+        final IntMinMaxValueSet setB = new IntMinMaxValueSet(size);
+
+        final long base = 10000000L;
+        // setA: spread over 200 seconds -> forces scale up
+        for (int i = 0; i < 200; i += 2)
+        {
+            setA.addOrUpdateValue(base + i * 1000L, 50);
+        }
+        Assert.assertTrue(setA.getScale() > 1);
+
+        // setB: only 10 seconds -> scale is 1
+        for (int i = 0; i < 10; i++)
+        {
+            setB.addOrUpdateValue(base + i * 1000L, 30);
+        }
+        Assert.assertEquals(1, setB.getScale());
+
+        final long countA = setA.getValueCount();
+        final long countB = setB.getValueCount();
+
+        // merge B into A
+        setA.merge(setB);
+        Assert.assertEquals(countA + countB, setA.getValueCount());
+        Assert.assertEquals(base, setA.getMinimumTime());
+        Assert.assertEquals(base + 198 * 1000L, setA.getMaximumTime());
+    }
 }

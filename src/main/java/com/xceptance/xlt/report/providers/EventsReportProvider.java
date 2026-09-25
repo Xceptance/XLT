@@ -174,6 +174,69 @@ public class EventsReportProvider extends AbstractReportProvider
      * {@inheritDoc}
      */
     @Override
+    public void merge(final com.xceptance.xlt.api.report.ReportProvider other)
+    {
+        if (other instanceof EventsReportProvider)
+        {
+            merge((EventsReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link EventsReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final EventsReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        eventsPerSecondValueSet.merge(other.eventsPerSecondValueSet);
+        eventsDropped += other.eventsDropped;
+
+        for (final String testCase : other.testCaseToEventMap.keys())
+        {
+            final Map<String, EventReport> otherEvents = other.testCaseToEventMap.get(testCase);
+            Map<String, EventReport> myEvents = this.testCaseToEventMap.get(testCase);
+            if (myEvents == null)
+            {
+                this.testCaseToEventMap.put(testCase, otherEvents);
+            }
+            else
+            {
+                for (final Map.Entry<String, EventReport> entry : otherEvents.entrySet())
+                {
+                    final String eventName = entry.getKey();
+                    final EventReport otherReport = entry.getValue();
+                    EventReport myReport = myEvents.get(eventName);
+                    if (myReport == null)
+                    {
+                        if (myEvents.size() < eventLimitPerTestCase)
+                        {
+                            myEvents.put(eventName, otherReport);
+                        }
+                        else
+                        {
+                            eventsDropped += otherReport.totalCount;
+                        }
+                    }
+                    else
+                    {
+                        myReport.merge(otherReport, messageLimit);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Object createReportFragment()
     {
         if (getConfiguration().shouldChartsGenerated())

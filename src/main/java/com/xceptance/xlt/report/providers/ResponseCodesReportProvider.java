@@ -37,6 +37,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
@@ -99,6 +100,57 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
                 final ValueSet responseCodeValueSet = responseCodeValueSets.computeIfAbsent(code, (__) -> new ValueSet());
                 responseCodeValueSet.addOrUpdateValue(reqData.getEndTime(), 1);
             }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final ReportProvider other)
+    {
+        if (other instanceof ResponseCodesReportProvider)
+        {
+            merge((ResponseCodesReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link ResponseCodesReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final ResponseCodesReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final Map.Entry<Integer, ResponseCodeReport> entry : other.responseCodeReports.entrySet())
+        {
+            final int code = entry.getKey();
+            ResponseCodeReport myReport = responseCodeReports.get(code);
+            if (myReport == null)
+            {
+                myReport = new ResponseCodeReport();
+                myReport.code = code;
+                myReport.statusText = entry.getValue().statusText;
+                myReport.count = entry.getValue().count;
+                responseCodeReports.put(code, myReport);
+            }
+            else
+            {
+                myReport.count += entry.getValue().count;
+            }
+        }
+
+        for (final Map.Entry<Integer, ValueSet> entry : other.responseCodeValueSets.entrySet())
+        {
+            final int code = entry.getKey();
+            final ValueSet mySet = responseCodeValueSets.computeIfAbsent(code, (__) -> new ValueSet());
+            mySet.merge(entry.getValue());
         }
     }
 

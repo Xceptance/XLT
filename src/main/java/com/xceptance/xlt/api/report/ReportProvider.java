@@ -130,4 +130,14 @@ public interface ReportProvider extends ReportCreator
      * Unlocks this provider after data record processing has finished.
      */
     public void unlock();
+
+    /**
+     * Merges another report provider of the same type into this one, if supported.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public default void merge(final ReportProvider other)
+    {
+    }
 }

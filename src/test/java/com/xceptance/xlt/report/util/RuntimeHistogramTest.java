@@ -159,4 +159,109 @@ public class RuntimeHistogramTest
 
         return percentile;
     }
+
+    @Test
+    public void testMergeNullOrEmpty()
+    {
+        final RuntimeHistogram h1 = new RuntimeHistogram();
+        h1.addValue(10);
+        h1.addValue(20);
+
+        // merge null
+        h1.merge(null);
+        Assert.assertEquals(2, h1.getValueCount());
+        Assert.assertEquals(15.0, h1.getMedianValue(), 0.0);
+
+        // merge empty
+        h1.merge(new RuntimeHistogram());
+        Assert.assertEquals(2, h1.getValueCount());
+        Assert.assertEquals(15.0, h1.getMedianValue(), 0.0);
+
+        // merge into empty
+        final RuntimeHistogram empty = new RuntimeHistogram();
+        empty.merge(h1);
+        Assert.assertEquals(2, empty.getValueCount());
+        Assert.assertEquals(15.0, empty.getMedianValue(), 0.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMergeDifferentPrecisionThrows()
+    {
+        final RuntimeHistogram h1 = new RuntimeHistogram(1);
+        final RuntimeHistogram h2 = new RuntimeHistogram(10);
+        h1.addValue(10);
+        h2.addValue(20);
+        h1.merge(h2);
+    }
+
+    @Test
+    public void testMergeOverlappingAndDisjoint()
+    {
+        final RuntimeHistogram sequential = new RuntimeHistogram();
+        final RuntimeHistogram h1 = new RuntimeHistogram();
+        final RuntimeHistogram h2 = new RuntimeHistogram();
+
+        final int[] set1 = { 10, 20, 30, 40, 50 };
+        final int[] set2 = { 35, 45, 55, 100, 200 };
+
+        for (final int v : set1)
+        {
+            sequential.addValue(v);
+            h1.addValue(v);
+        }
+        for (final int v : set2)
+        {
+            sequential.addValue(v);
+            h2.addValue(v);
+        }
+
+        h1.merge(h2);
+
+        Assert.assertEquals(sequential.getValueCount(), h1.getValueCount());
+        for (double p = 1.0; p <= 100.0; p += 1.0)
+        {
+            Assert.assertEquals("Percentile " + p + " mismatch", sequential.getPercentile(p), h1.getPercentile(p), 0.0);
+        }
+    }
+
+    @Test
+    public void testMergeRandomMultiway()
+    {
+        final Random rng = new Random(42);
+        final int precision = 5;
+
+        final RuntimeHistogram sequential = new RuntimeHistogram(precision);
+        final RuntimeHistogram h1 = new RuntimeHistogram(precision);
+        final RuntimeHistogram h2 = new RuntimeHistogram(precision);
+        final RuntimeHistogram h3 = new RuntimeHistogram(precision);
+
+        for (int i = 0; i < 5000; i++)
+        {
+            final int val = rng.nextInt(50000);
+            sequential.addValue(val);
+
+            final int branch = rng.nextInt(3);
+            if (branch == 0)
+            {
+                h1.addValue(val);
+            }
+            else if (branch == 1)
+            {
+                h2.addValue(val);
+            }
+            else
+            {
+                h3.addValue(val);
+            }
+        }
+
+        h1.merge(h2);
+        h1.merge(h3);
+
+        Assert.assertEquals(sequential.getValueCount(), h1.getValueCount());
+        for (double p = 1.0; p <= 100.0; p += 0.5)
+        {
+            Assert.assertEquals("Percentile " + p + " mismatch", sequential.getPercentile(p), h1.getPercentile(p), 0.0);
+        }
+    }
 }

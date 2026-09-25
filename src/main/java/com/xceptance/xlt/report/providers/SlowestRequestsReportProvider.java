@@ -19,6 +19,7 @@ import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 
@@ -144,6 +145,52 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
                         // remove request that is the last after sorting to stay within bucket limit
                         requests.remove(requests.last());
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void merge(final ReportProvider other)
+    {
+        if (other instanceof SlowestRequestsReportProvider)
+        {
+            merge((SlowestRequestsReportProvider) other);
+        }
+    }
+
+    /**
+     * Merges another {@link SlowestRequestsReportProvider} into this instance.
+     *
+     * @param other
+     *            the other provider to merge
+     */
+    public void merge(final SlowestRequestsReportProvider other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        for (final Map.Entry<String, TreeSet<SlowRequestReport>> entry : other.slowestRequestsByBucket.entrySet())
+        {
+            final String bucketName = entry.getKey();
+            TreeSet<SlowRequestReport> requests = slowestRequestsByBucket.get(bucketName);
+            if (requests == null)
+            {
+                requests = new TreeSet<>(SlowRequestReport.BUCKET_COMPARATOR);
+                slowestRequestsByBucket.put(bucketName, requests);
+            }
+
+            for (final SlowRequestReport req : entry.getValue())
+            {
+                requests.add(req);
+                if (requests.size() > requestsPerBucket)
+                {
+                    requests.remove(requests.last());
                 }
             }
         }
