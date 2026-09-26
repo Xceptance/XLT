@@ -175,6 +175,135 @@ public final class TimeSeriesDownsampler
     }
 
     /**
+     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the mean per bucket.
+     *
+     * @param series
+     *            the collected time series
+     * @param firstSecond
+     *            the second the series starts at
+     * @param buckets
+     *            the number of output buckets
+     * @param interval
+     *            the output bucket size in seconds
+     * @return one mean per bucket, or 0 where a bucket holds no data
+     */
+    public static int[] meanPerBucket(final IntTimeSeries series, final long firstSecond, final int buckets,
+                                      final int interval)
+    {
+        final long[] weightedSum = new long[buckets];
+        final long[] weight = new long[buckets];
+
+        if (series != null && series.getCount() > 0)
+        {
+            final IntTimeSeriesEntry[] data = series.getValues();
+            final int slotWidth = series.getSlotWidth();
+            final long start = series.getFirstSecond();
+
+            for (int i = 0; i <= series.getLastPosUsed(); i++)
+            {
+                final IntTimeSeriesEntry value = data[i];
+                if (value == null || value.getCount() == 0)
+                {
+                    continue;
+                }
+
+                final int bucket = bucketOf(start + (long) i * slotWidth, firstSecond, buckets, interval);
+                if (bucket >= 0)
+                {
+                    weightedSum[bucket] += (long) value.getAverageValue() * value.getCount();
+                    weight[bucket] += value.getCount();
+                }
+            }
+        }
+
+        final int[] means = new int[buckets];
+        for (int i = 0; i < buckets; i++)
+        {
+            means[i] = weight[i] == 0 ? 0 : (int) Math.round((double) weightedSum[i] / weight[i]);
+        }
+
+        return means;
+    }
+
+    /**
+     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the per-second count rate in each bucket.
+     */
+    public static double[] countRatePerBucket(final IntTimeSeries series, final long firstSecond, final int buckets,
+                                              final int interval)
+    {
+        final long[] sums = new long[buckets];
+
+        if (series != null && series.getCount() > 0)
+        {
+            final IntTimeSeriesEntry[] data = series.getValues();
+            final int slotWidth = series.getSlotWidth();
+            final long start = series.getFirstSecond();
+
+            for (int i = 0; i <= series.getLastPosUsed(); i++)
+            {
+                final IntTimeSeriesEntry value = data[i];
+                if (value == null || value.getCount() == 0)
+                {
+                    continue;
+                }
+
+                final int bucket = bucketOf(start + (long) i * slotWidth, firstSecond, buckets, interval);
+                if (bucket >= 0)
+                {
+                    sums[bucket] += value.getCount();
+                }
+            }
+        }
+
+        final double[] rates = new double[buckets];
+        for (int i = 0; i < buckets; i++)
+        {
+            rates[i] = (double) sums[i] / interval;
+        }
+
+        return rates;
+    }
+
+    /**
+     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the per-second error rate in each bucket.
+     */
+    public static double[] errorRatePerBucket(final IntTimeSeries series, final long firstSecond, final int buckets,
+                                              final int interval)
+    {
+        final long[] sums = new long[buckets];
+
+        if (series != null && series.getCount() > 0)
+        {
+            final IntTimeSeriesEntry[] data = series.getValues();
+            final int slotWidth = series.getSlotWidth();
+            final long start = series.getFirstSecond();
+
+            for (int i = 0; i <= series.getLastPosUsed(); i++)
+            {
+                final IntTimeSeriesEntry value = data[i];
+                if (value == null || value.getErrorCount() == 0)
+                {
+                    continue;
+                }
+
+                final int bucket = bucketOf(start + (long) i * slotWidth, firstSecond, buckets, interval);
+                if (bucket >= 0)
+                {
+                    sums[bucket] += value.getErrorCount();
+                }
+            }
+        }
+
+        final double[] rates = new double[buckets];
+        for (int i = 0; i < buckets; i++)
+        {
+            rates[i] = (double) sums[i] / interval;
+        }
+
+        return rates;
+    }
+
+    /**
      * Returns the output bucket the given second falls into, or -1 when it falls outside the series.
      */
     private static int bucketOf(final long second, final long firstSecond, final int buckets, final int interval)

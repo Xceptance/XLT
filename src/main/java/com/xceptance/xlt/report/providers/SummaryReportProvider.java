@@ -31,7 +31,7 @@ import com.xceptance.xlt.api.report.ReportProviderConfiguration;
  */
 import java.util.Date;
 
-import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntTimeSeries;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TimeSeriesDownsampler;
 
@@ -105,34 +105,34 @@ public class SummaryReportProvider extends AbstractReportProvider
             return null;
         }
 
-        final IntMinMaxValueSet transactionRunTimes = transactionDataProcessor.getRunTimeValueSet();
-        final IntMinMaxValueSet actionRunTimes = actionDataProcessor.getRunTimeValueSet();
-        final IntMinMaxValueSet requestRunTimes = requestDataProcessor.getRunTimeValueSet();
+        final IntTimeSeries transactionTimeSeries = transactionDataProcessor.getTimeSeries();
+        final IntTimeSeries actionTimeSeries = actionDataProcessor.getTimeSeries();
+        final IntTimeSeries requestTimeSeries = requestDataProcessor.getTimeSeries();
 
         // the values were bucketed as they were collected, and we cannot be finer than that
-        final int sourceResolution = Math.max(1, Math.max(transactionRunTimes.getScale(),
-                                                          Math.max(actionRunTimes.getScale(), requestRunTimes.getScale())));
+        final int sourceResolution = Math.max(1, Math.max(transactionTimeSeries.getSlotWidth(),
+                                                          Math.max(actionTimeSeries.getSlotWidth(), requestTimeSeries.getSlotWidth())));
 
         final int interval = TimeSeriesDownsampler.selectInterval(durationSeconds, sourceResolution);
         final int buckets = (int) ((durationSeconds + interval - 1) / interval);
         final long firstSecond = startTime / 1000;
 
-        final int[] transactionMeans = TimeSeriesDownsampler.meanPerBucket(transactionRunTimes, firstSecond, buckets, interval);
-        final double[] transactionRates = TimeSeriesDownsampler.ratePerBucket(transactionDataProcessor.getCountPerSecondValueSet(),
+        final int[] transactionMeans = TimeSeriesDownsampler.meanPerBucket(transactionTimeSeries, firstSecond, buckets, interval);
+        final double[] transactionRates = TimeSeriesDownsampler.countRatePerBucket(transactionTimeSeries,
                                                                               firstSecond, buckets, interval);
-        final double[] transactionErrorRates = TimeSeriesDownsampler.ratePerBucket(transactionDataProcessor.getErrorsPerSecondValueSet(),
+        final double[] transactionErrorRates = TimeSeriesDownsampler.errorRatePerBucket(transactionTimeSeries,
                                                                                    firstSecond, buckets, interval);
 
-        final int[] actionMeans = TimeSeriesDownsampler.meanPerBucket(actionRunTimes, firstSecond, buckets, interval);
-        final double[] actionRates = TimeSeriesDownsampler.ratePerBucket(actionDataProcessor.getCountPerSecondValueSet(),
+        final int[] actionMeans = TimeSeriesDownsampler.meanPerBucket(actionTimeSeries, firstSecond, buckets, interval);
+        final double[] actionRates = TimeSeriesDownsampler.countRatePerBucket(actionTimeSeries,
                                                                           firstSecond, buckets, interval);
-        final double[] actionErrorRates = TimeSeriesDownsampler.ratePerBucket(actionDataProcessor.getErrorsPerSecondValueSet(),
+        final double[] actionErrorRates = TimeSeriesDownsampler.errorRatePerBucket(actionTimeSeries,
                                                                           firstSecond, buckets, interval);
         
-        final int[] requestMeans = TimeSeriesDownsampler.meanPerBucket(requestRunTimes, firstSecond, buckets, interval);
-        final double[] requestRates = TimeSeriesDownsampler.ratePerBucket(requestDataProcessor.getCountPerSecondValueSet(),
+        final int[] requestMeans = TimeSeriesDownsampler.meanPerBucket(requestTimeSeries, firstSecond, buckets, interval);
+        final double[] requestRates = TimeSeriesDownsampler.countRatePerBucket(requestTimeSeries,
                                                                           firstSecond, buckets, interval);
-        final double[] requestErrorRates = TimeSeriesDownsampler.ratePerBucket(requestDataProcessor.getErrorsPerSecondValueSet(),
+        final double[] requestErrorRates = TimeSeriesDownsampler.errorRatePerBucket(requestTimeSeries,
                                                                           firstSecond, buckets, interval);
 
         final TimeSeriesReport series = new TimeSeriesReport();

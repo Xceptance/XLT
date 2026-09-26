@@ -173,10 +173,22 @@ public class TimeSeriesDownsamplerTest
         Assert.assertArrayEquals(new int[]
             {
                 0, 0
-            }, TimeSeriesDownsampler.meanPerBucket(null, 0, 2, 60));
+            }, TimeSeriesDownsampler.meanPerBucket((IntMinMaxValueSet) null, 0, 2, 60));
+        Assert.assertArrayEquals(new int[]
+            {
+                0, 0
+            }, TimeSeriesDownsampler.meanPerBucket((IntTimeSeries) null, 0, 2, 60));
         Assert.assertArrayEquals(new double[]
             {
                 0.0, 0.0
             }, TimeSeriesDownsampler.ratePerBucket(null, 0, 2, 60), 0.001);
+        Assert.assertArrayEquals(new double[]
+            {
+                0.0, 0.0
+            }, TimeSeriesDownsampler.countRatePerBucket((IntTimeSeries) null, 0, 2, 60), 0.001);
+        Assert.assertArrayEquals(new double[]
+            {
+                0.0, 0.0
+            }, TimeSeriesDownsampler.errorRatePerBucket((IntTimeSeries) null, 0, 2, 60), 0.001);
     }
 }

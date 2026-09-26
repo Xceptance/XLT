@@ -69,6 +69,27 @@ public class IntMinMaxValue
     }
 
     /**
+     * Constructor from IntTimeSeriesEntry.
+     *
+     * @param entry
+     *            the time series entry
+     */
+    public IntMinMaxValue(final IntTimeSeriesEntry entry)
+    {
+        if (entry != null && entry.getCount() > 0)
+        {
+            accumulatedValue = entry.getTotalValue();
+            maximum = entry.getMaximumValue();
+            minimum = entry.getMinimumValue();
+            valueCount = (int) entry.getCount();
+            for (final double v : entry.getValues())
+            {
+                valueSet.addValue((int) v);
+            }
+        }
+    }
+
+    /**
      * Returns the sum of the values added to this min-max value.
      * 
      * @return the accumulated value

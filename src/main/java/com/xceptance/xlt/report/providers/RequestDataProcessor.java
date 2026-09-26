@@ -258,7 +258,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
                     else
                     {
                         // use the unbounded one, maintained by the super class
-                        histogramSeries = getHistogramValueSet().toVerticalSeries(seriesName);
+                        histogramSeries = getTimeSeries().toVerticalHistogramSeries(seriesName, getChartHeight());
                     }
 
                     saveResponseTimeHistogramChart(getName(), histogramSeries, boundaries);

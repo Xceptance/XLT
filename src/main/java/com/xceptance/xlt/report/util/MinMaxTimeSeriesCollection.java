@@ -81,7 +81,7 @@ public class MinMaxTimeSeriesCollection extends TimeSeriesCollection
         final TimeSeriesDataItem dataItem = ts.getDataItem(item);
         if (dataItem instanceof IntMinMaxTimeSeriesDataItem)
         {
-            return ((IntMinMaxTimeSeriesDataItem) dataItem).getMinMaxValue().getMaximumValue();
+            return ((IntMinMaxTimeSeriesDataItem) dataItem).getMaximumValue();
         }
         else if (dataItem instanceof DoubleMinMaxTimeSeriesDataItem)
         {
@@ -104,7 +104,7 @@ public class MinMaxTimeSeriesCollection extends TimeSeriesCollection
         final TimeSeriesDataItem dataItem = ts.getDataItem(item);
         if (dataItem instanceof IntMinMaxTimeSeriesDataItem)
         {
-            return ((IntMinMaxTimeSeriesDataItem) dataItem).getMinMaxValue().getMinimumValue();
+            return ((IntMinMaxTimeSeriesDataItem) dataItem).getMinimumValue();
         }
         else if (dataItem instanceof DoubleMinMaxTimeSeriesDataItem)
         {
@@ -132,7 +132,7 @@ public class MinMaxTimeSeriesCollection extends TimeSeriesCollection
         final TimeSeriesDataItem dataItem = timeSeries.getDataItem(item);
         if (dataItem instanceof IntMinMaxTimeSeriesDataItem)
         {
-            return ((IntMinMaxTimeSeriesDataItem) dataItem).getMinMaxValue().getValues();
+            return ((IntMinMaxTimeSeriesDataItem) dataItem).getValues();
         }
         else if (dataItem instanceof DoubleMinMaxTimeSeriesDataItem)
         {

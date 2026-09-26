@@ -239,9 +239,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
          */
 
         // generate the error rate time series
-        final TimeSeries errorRateTimeSeries = JFreeChartUtils.calculateRateTimeSeries(getErrorsPerSecondValueSet(),
-                                                                                       getCountPerSecondValueSet(), minMaxValueSetSize,
-                                                                                       "Error Rate");
+        final TimeSeries errorRateTimeSeries = getTimeSeries().toErrorRateTimeSeries("Error Rate");
         final TimeSeries errorRateAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(errorRateTimeSeries,
                                                                                                     getCommonMovingAverageConfig());
 

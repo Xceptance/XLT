@@ -53,6 +53,14 @@ public class Proxy
     }
 
     /**
+     * @return the timeSeries
+     */
+    public com.xceptance.xlt.report.util.IntTimeSeries getTimeSeries()
+    {
+        return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "timeSeries");
+    }
+
+    /**
      * @return the countPerSecondValueSet
      */
     public ValueSet getCountPerSecondValueSet()
