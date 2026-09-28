@@ -35,7 +35,7 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     private static final String PROP_PREFIX = XltConstants.XLT_PACKAGE_PATH + ".diffreportgenerator.";
 
     private static final String PROP_REPORTS_ROOT_DIR = PROP_PREFIX + "reports";
-    
+
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
 
     private static final String PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX = ".styleSheetFileName";
@@ -47,7 +47,7 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     private final File homeDirectory;
 
     private final File reportsRootDirectory;
-    
+
     private final List<String> styleSheetFileNames;
 
     private final List<String> outputFileNames;
@@ -66,11 +66,11 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         }
 
         reportsRootDirectory = reportsRootDir;
-        
+
         // load the transformation configuration
         outputFileNames = new ArrayList<String>();
         styleSheetFileNames = new ArrayList<String>();
-        
+
         readTransformations(outputFileNames, styleSheetFileNames);
 
     }
@@ -97,7 +97,14 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         specs.add(new ElementSpecification("/testreport/customTimers/customTimer", "name"));
         specs.add(new ElementSpecification("/testreport/customValues/customValue", "name"));
         specs.add(new ElementSpecification("/testreport/webVitalsList/webVitals", "name"));
-        specs.add(new ElementSpecification("/testreport/summary/*", "name"));
+
+        specs.add(new ElementSpecification("/testreport/summary/transactions", "name"));
+        specs.add(new ElementSpecification("/testreport/summary/actions", "name"));
+        specs.add(new ElementSpecification("/testreport/summary/requests", "name"));
+        specs.add(new ElementSpecification("/testreport/summary/pageLoadTimings", "name"));
+        specs.add(new ElementSpecification("/testreport/summary/customTimers", "name"));
+        specs.add(new ElementSpecification("/testreport/summary/customValues", "name"));
+        specs.add(new ElementSpecification("/testreport/summary/webVitalsList", "name"));
 
         return specs;
     }
@@ -135,7 +142,7 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     {
         return reportsRootDirectory;
     }
-    
+
     /**
      * Return a list of output files names
      * 
@@ -155,7 +162,7 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     {
         return styleSheetFileNames;
     }
-    
+
     /**
      * Reads the transformation configurations. The style sheet file names and output file names for each transformation
      * are added to the respective lists passed as parameters.
