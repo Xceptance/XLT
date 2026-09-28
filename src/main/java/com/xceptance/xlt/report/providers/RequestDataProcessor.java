@@ -80,6 +80,20 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
 
     /**
+     * Direct-mapped 16-entry cache of recently observed URL buffers for this processor.
+     * In typical load tests, request streams and sample URLs alternate between multiple URLs
+     * (e.g. 2-5 distinct URLs per timer name). A 16-slot direct-mapped cache indexed by the
+     * URL buffer hash code ensures hits even when alternating between different URLs, completely
+     * eliminating redundant MurmurHash operations, HyperLogLog updates, and Map lookups.
+     */
+    private final XltCharBuffer[] recentUrls = new XltCharBuffer[16];
+
+    /**
+     * Single-item URL reference cache to bypass hashing and array lookup for consecutive identical URLs.
+     */
+    private XltCharBuffer lastUrl;
+
+    /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
      */
     private final FastHashMap<XltCharBuffer, XltCharBuffer> distinctUrlSet = new FastHashMap<>(2 * MAXIMUM_NUMBER_OF_URLS + 1, 0.5f);
@@ -302,17 +316,26 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     }
 
     /**
-     * {@inheritDoc}
+     * High-performance processing of a strongly typed {@link RequestData} record.
+     * <p>
+     * <b>Performance Design Rationale:</b>
+     * Direct invocation with {@link RequestData} bypasses the generic {@link #processDataRecord(Data)}
+     * interface method, eliminating double-casting (first to {@code TimerData} in the superclass,
+     * then to {@code RequestData} here). All field accesses (endpoints, timestamps, durations, and byte
+     * counts) occur on the direct concrete reference, allowing the JIT compiler to inline and vectorize
+     * accumulator updates.
+     *
+     * @param reqData
+     *            the concrete HTTP request data record to process
      */
-    @Override
-    public void processDataRecord(final Data data)
+    public void processDataRecord(final RequestData reqData)
     {
-        super.processDataRecord(data);
-
-        // special request processing
-        final RequestData reqData = (RequestData) data;
-
+        final long endTime = reqData.getEndTime();
         final int runTime = reqData.getRunTime();
+        final boolean failed = reqData.hasFailed();
+
+        // Record response time data directly into the time series without superclass dispatch
+        timeSeries.addValue(endTime - runTime, endTime, runTime, failed);
 
         if (runTimeHistogramValueSet != null)
         {
@@ -320,28 +343,37 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
             countPerSegment.addValue(runTime);
         }
 
-        responseSizeValueSet.addOrUpdateValue(reqData.getEndTime(), reqData.getBytesReceived());
+        responseSizeValueSet.addOrUpdateValue(endTime, reqData.getBytesReceived());
 
         if (countDistinctUrls)
         {
-            // use a HyperLogLog sketch to count distinct URLs
-            // For backward compatibility, ignore URL fragments (part after '#')
-            // when counting distinct URLs.
-            distinctUrlsHLL.update(reqData.hashCodeOfUrlWithoutFragment());
-
-            // remember some URLs (up to the limit)
-            if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
+            final XltCharBuffer url = reqData.getUrl();
+            if (url != null && url != lastUrl)
             {
-                final XltCharBuffer url = reqData.getUrl();
+                final int slot = url.hashCode() & 15;
+                final XltCharBuffer cached = recentUrls[slot];
 
-                // write it only when unknown, saves some operations
-                // we have either something really small and write the same all over again
-                // or we have a lot and stopped writing early
-                if (url != null && distinctUrlSet.get(url) == null)
+                // Check whether this URL matches the cached URL for this hash slot.
+                // If it matches by identity or equality, we can completely bypass the expensive
+                // HyperLogLog update and Map lookup.
+                if (cached == null || (cached != url && !url.equals(cached)))
                 {
-                    distinctUrlSet.put(url, url);
-                    distinctUrlSetLimitedSize = distinctUrlSet.size();
+                    // New or evicted distinct URL encountered for this processor slot
+                    recentUrls[slot] = url;
+                    distinctUrlsHLL.update(reqData.hashCodeOfUrlWithoutFragment());
+
+                    // remember some URLs (up to the limit)
+                    if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
+                    {
+                        if (distinctUrlSet.get(url) == null)
+                        {
+                            distinctUrlSet.put(url, url);
+                            distinctUrlSetLimitedSize = distinctUrlSet.size();
+                        }
+                    }
                 }
+
+                lastUrl = url;
             }
         }
 
@@ -354,6 +386,22 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         receiveTimeStatistics.addValue(reqData.getReceiveTime());
         timeToFirstBytesStatistics.addValue(reqData.getTimeToFirstBytes());
         timeToLastBytesStatistics.addValue(reqData.getTimeToLastBytes());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void processDataRecord(final Data data)
+    {
+        if (data instanceof RequestData)
+        {
+            processDataRecord((RequestData) data);
+        }
+        else
+        {
+            super.processDataRecord(data);
+        }
     }
 
     /**

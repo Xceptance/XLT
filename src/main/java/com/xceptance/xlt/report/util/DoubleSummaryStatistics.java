@@ -51,18 +51,28 @@ public class DoubleSummaryStatistics
     private double sumOfSquares;
 
     /**
-     * Adds a value.
+     * Adds a value to this double summary statistics accumulator.
+     * <p>
+     * <b>Performance Note:</b> Replaced transcendental {@code Math.pow(value, 2)} with direct
+     * floating-point multiplication {@code value * value} to emit a single {@code mulsd} instruction.
      * 
      * @param value
-     *            the value to add
+     *            the double value to add
      */
     public void addValue(final double value)
     {
-        sumOfSquares += Math.pow(value, 2);
+        // Direct multiplication replaces Math.pow(value, 2) to eliminate transcendental call overhead
+        sumOfSquares += value * value;
         count++;
 
-        maximum = Math.max(maximum, value);
-        minimum = Math.min(minimum, value);
+        if (value > maximum)
+        {
+            maximum = value;
+        }
+        if (value < minimum)
+        {
+            minimum = value;
+        }
 
         sum += value;
     }

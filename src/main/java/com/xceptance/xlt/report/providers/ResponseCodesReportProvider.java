@@ -71,6 +71,109 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
     private final Map<Integer, ValueSet> responseCodeValueSets = new TreeMap<>();
 
     /**
+     * Direct lookup array for fast-path access to {@link ResponseCodeReport} instances for status codes 0..599.
+     * Eliminates Integer boxing and HashMap lookup on every single request record.
+     */
+    private final ResponseCodeReport[] directReports = new ResponseCodeReport[600];
+
+    /**
+     * Direct lookup array for fast-path access to {@link ValueSet} instances for status codes 0..599.
+     * Eliminates Integer boxing and TreeMap search on every single request record.
+     */
+    private final ValueSet[] directValueSets = new ValueSet[600];
+
+    /**
+     * High-performance batch record processing override for HTTP response codes.
+     * <p>
+     * <b>Performance Optimizations:</b>
+     * <ul>
+     *   <li>Retrieves raw internal object array directly from {@link PostProcessedDataContainer#dataList}
+     *       to avoid per-record collection overhead.</li>
+     *   <li>Maintains local register variables {@code lastCode}, {@code lastReport}, and {@code lastValueSet}.
+     *       In successful test runs, 95%+ of consecutive requests share status code 200. This avoids array
+     *       indexing and null-checks on every record.</li>
+     * </ul>
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        if (dataContainer.typeCode != 'R')
+        {
+            super.processAll(dataContainer);
+            return;
+        }
+
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        int lastCode = -1;
+        ResponseCodeReport lastReport = null;
+        ValueSet lastValueSet = null;
+
+        for (int p = 0; p < size; p++)
+        {
+            final RequestData reqData = (RequestData) array[p];
+            final int code = reqData.getResponseCode();
+
+            if (code == lastCode && lastReport != null && lastValueSet != null)
+            {
+                lastReport.count++;
+                lastValueSet.addOrUpdateValue(reqData.getEndTime(), 1);
+            }
+            else
+            {
+                if (code >= 0 && code <= 599)
+                {
+                    ResponseCodeReport responseCodeReport = directReports[code];
+                    if (responseCodeReport == null)
+                    {
+                        responseCodeReport = responseCodeReports.computeIfAbsent(code, c -> {
+                            final ResponseCodeReport r = new ResponseCodeReport();
+                            r.code = c;
+                            r.statusText = getStatusText(c);
+                            return r;
+                        });
+                        directReports[code] = responseCodeReport;
+                    }
+                    responseCodeReport.count++;
+
+                    ValueSet responseCodeValueSet = directValueSets[code];
+                    if (responseCodeValueSet == null)
+                    {
+                        responseCodeValueSet = responseCodeValueSets.computeIfAbsent(code, __ -> new ValueSet());
+                        directValueSets[code] = responseCodeValueSet;
+                    }
+                    responseCodeValueSet.addOrUpdateValue(reqData.getEndTime(), 1);
+
+                    lastCode = code;
+                    lastReport = responseCodeReport;
+                    lastValueSet = responseCodeValueSet;
+                }
+                else
+                {
+                    ResponseCodeReport responseCodeReport = responseCodeReports.get(code);
+                    if (responseCodeReport == null)
+                    {
+                        responseCodeReport = new ResponseCodeReport();
+                        responseCodeReport.code = code;
+                        responseCodeReport.statusText = getStatusText(code);
+                        responseCodeReports.put(code, responseCodeReport);
+                    }
+                    responseCodeReport.count++;
+
+                    lastCode = code;
+                    lastReport = responseCodeReport;
+                    lastValueSet = null;
+                }
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -82,23 +185,42 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
 
             final int code = reqData.getResponseCode();
 
-            ResponseCodeReport responseCodeReport = responseCodeReports.get(code);
-            if (responseCodeReport == null)
-            {
-                responseCodeReport = new ResponseCodeReport();
-                responseCodeReport.code = code;
-                responseCodeReport.statusText = getStatusText(code);
-
-                responseCodeReports.put(code, responseCodeReport);
-            }
-
-            responseCodeReport.count++;
-
-            // track response code occurrences over time, but only in the HTTP response code range plus 0xx
+            // Track response code occurrences over time, but only in the HTTP response code range plus 0xx
             if (code >= 0 && code <= 599)
             {
-                final ValueSet responseCodeValueSet = responseCodeValueSets.computeIfAbsent(code, (__) -> new ValueSet());
+                ResponseCodeReport responseCodeReport = directReports[code];
+                if (responseCodeReport == null)
+                {
+                    responseCodeReport = responseCodeReports.computeIfAbsent(code, c -> {
+                        final ResponseCodeReport r = new ResponseCodeReport();
+                        r.code = c;
+                        r.statusText = getStatusText(c);
+                        return r;
+                    });
+                    directReports[code] = responseCodeReport;
+                }
+                responseCodeReport.count++;
+
+                ValueSet responseCodeValueSet = directValueSets[code];
+                if (responseCodeValueSet == null)
+                {
+                    responseCodeValueSet = responseCodeValueSets.computeIfAbsent(code, __ -> new ValueSet());
+                    directValueSets[code] = responseCodeValueSet;
+                }
                 responseCodeValueSet.addOrUpdateValue(reqData.getEndTime(), 1);
+            }
+            else
+            {
+                // Fallback for non-standard / custom status codes outside 0..599
+                ResponseCodeReport responseCodeReport = responseCodeReports.get(code);
+                if (responseCodeReport == null)
+                {
+                    responseCodeReport = new ResponseCodeReport();
+                    responseCodeReport.code = code;
+                    responseCodeReport.statusText = getStatusText(code);
+                    responseCodeReports.put(code, responseCodeReport);
+                }
+                responseCodeReport.count++;
             }
         }
     }
@@ -313,4 +435,15 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
 
         return (group >= 0 && group <= 5) ? String.valueOf(group) + "xx" : "Other";
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // HTTP response codes are extracted solely from HTTP Request records ('R')
+        return typeCode == 'R';
+    }
 }
+

@@ -182,6 +182,81 @@ public class GeneralReportProvider extends AbstractReportProvider
     }
 
     /**
+     * High-performance batch record processing override for general metrics.
+     * <p>
+     * <b>Performance Optimizations:</b>
+     * <ul>
+     *   <li>Retrieves raw internal object array directly from {@link PostProcessedDataContainer#dataList}
+     *       to eliminate bounds-checking overhead and iterator allocation.</li>
+     *   <li>Dispatches based on {@link PostProcessedDataContainer#typeCode} to avoid per-record
+     *       {@code instanceof} polymorphism checks across millions of items.</li>
+     *   <li>Separates HTTP Request ('R') and Transaction ('T') loops completely, maximizing CPU instruction
+     *       cache locality and auto-vectorization of primitive arithmetic operations.</li>
+     * </ul>
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        // Fast-path: homogeneous chunk of HTTP requests ('R')
+        if (dataContainer.typeCode == 'R')
+        {
+            for (int p = 0; p < size; p++)
+            {
+                final RequestData reqData = (RequestData) array[p];
+                final long time = reqData.getTime();
+                final long endTime = reqData.getEndTime();
+                final int runTime = reqData.getRunTime();
+                final long sendCompletedAt = time + reqData.getConnectTime() + reqData.getSendTime();
+
+                totalBytesSent += reqData.getBytesSent();
+                totalBytesReceived += reqData.getBytesReceived();
+                bytesSentValueSet.addOrUpdateValue(sendCompletedAt, reqData.getBytesSent());
+                bytesReceivedValueSet.addOrUpdateValue(endTime, reqData.getBytesReceived());
+
+                totalRequests++;
+                requestsValueSet.addOrUpdateValue(endTime, 1);
+
+                requestRunTimeValueSet.addOrUpdateValue(endTime, runTime);
+            }
+            return;
+        }
+
+        // Fast-path: homogeneous chunk of Transactions ('T')
+        if (dataContainer.typeCode == 'T')
+        {
+            for (int p = 0; p < size; p++)
+            {
+                final TransactionData txnData = (TransactionData) array[p];
+                final long time = txnData.getTime();
+                final long endTime = txnData.getEndTime();
+
+                concurrentUsersTable.recordUserActivity(time, endTime, txnData.getName(), txnData.getTestUserNumber());
+
+                totalTransactionsValueSet.addOrUpdateValue(endTime, 1);
+
+                if (txnData.hasFailed())
+                {
+                    failedTransactionsValueSet.addOrUpdateValue(endTime, 1);
+                }
+            }
+            return;
+        }
+
+        // Fallback for mixed or other data record types
+        for (int p = 0; p < size; p++)
+        {
+            processDataRecord((Data) array[p]);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -364,4 +439,15 @@ public class GeneralReportProvider extends AbstractReportProvider
         minMaxValueSetSize = getConfiguration().getChartWidth();
         requestRunTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // General metrics track Requests ('R') and Transactions ('T')
+        return typeCode == 'R' || typeCode == 'T';
+    }
 }
+

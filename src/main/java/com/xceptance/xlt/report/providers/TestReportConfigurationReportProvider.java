@@ -74,6 +74,37 @@ public class TestReportConfigurationReportProvider extends AbstractReportProvide
     @Override
     public void processDataRecord(final Data data)
     {
-        // nothing to do here
+        // Static configuration provider does not process runtime data records
+    }
+
+    /**
+     * Declares that this provider does not process runtime data records.
+     * Tells {@link com.xceptance.xlt.report.StatisticsProcessor} to omit this provider
+     * from worker thread provider sets entirely, saving CPU and synchronization overhead.
+     *
+     * @return {@code false} always
+     */
+    @Override
+    public boolean wantsDataRecords()
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        // No-op
     }
 }

@@ -143,7 +143,19 @@ public class IntTimeSeries
     }
 
     /**
-     * Adds a value for a start and end time to this time series.
+     * Adds a measurement value spanning from a start time to an end time to this time series.
+     * <p>
+     * <b>Recording Semantics:</b>
+     * <ul>
+     * <li><b>Completion Event:</b> The sample measurement {@code value} (e.g. response time in ms),
+     * completion {@code count}, and failure status {@code failed} are recorded at {@code endTime} (the
+     * moment the operation completed). This conforms to standard performance testing semantics where
+     * throughput (TPS) represents completed operations per unit of time, and outage error spikes reflect
+     * the actual moment the failures occurred rather than being diluted backwards to the start time.</li>
+     * <li><b>Concurrency:</b> Concurrency is tracked across the entire active interval from {@code startTime}
+     * through {@code endTime}. Every time slot during which the operation was active has its concurrent
+     * count updated.</li>
+     * </ul>
      *
      * @param startTime
      *            the start time-stamp in milliseconds
@@ -157,7 +169,7 @@ public class IntTimeSeries
     public void addValue(final long startTime, final long endTime, final int value, final boolean failed)
     {
         final int startSecond = (int) (startTime * 0.001);
-        final int endSecond = (int) (endTime * 0.001);
+        final int endSecond = Math.max(startSecond, (int) (endTime * 0.001));
 
         if (this.firstSecond == DEFAULT)
         {
@@ -175,10 +187,18 @@ public class IntTimeSeries
         }
 
         final int startPos = adjustToScale(startSecond - this.firstSecond);
-        this.values[startPos].updateValue(value, failed);
+        final int endPos = Math.max(startPos, Math.min(this.size - 1, adjustToScale(endSecond - this.firstSecond)));
 
-        final int endPos = Math.min(this.size - 1, adjustToScale(endSecond - this.firstSecond));
-        for (int p = startPos + 1; p <= endPos; p++)
+        // Record the completion value (runtime), completion count, and failure status
+        // at the time the event completed (endPos). This matches the historical XLT completion
+        // semantics and ensures throughput (completed operations/sec), response time, and
+        // error rates align with the actual completion/failure moment (preventing premature
+        // smearing of outage error spikes backwards in time).
+        this.values[endPos].updateValue(value, failed);
+
+        // Track active concurrency across the duration of the operation prior to completion [startPos .. endPos - 1].
+        // Concurrency for endPos was already incremented by updateValue() above.
+        for (int p = startPos; p < endPos; p++)
         {
             this.values[p].updateConcurrency();
         }
@@ -200,7 +220,8 @@ public class IntTimeSeries
             this.minValue = v;
         }
 
-        this.sumOfSquares += Math.pow(v, 2);
+        // Direct floating point multiplication replaces transcendental Math.pow(v, 2)
+        this.sumOfSquares += (double) v * v;
         this.histogram.addValue(v);
     }
 

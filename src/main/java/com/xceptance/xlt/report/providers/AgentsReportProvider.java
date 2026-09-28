@@ -51,6 +51,64 @@ public class AgentsReportProvider extends AbstractDataProcessorBasedReportProvid
     }
 
     /**
+     * High-performance batch record processing override for agent metrics.
+     * Accurately routes {@link JvmResourceUsageData} and {@link TransactionData}
+     * using agent ID lookups and appropriate processor methods.
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        if (dataContainer.typeCode == 'T')
+        {
+            /*
+             * Specialized tight-loop dispatch for TransactionData ('T') records.
+             * Directly extracts agent name, retrieves or creates the thread-local
+             * AgentDataProcessor, and increments transaction/failure counters without
+             * polymorphic virtual method overhead.
+             */
+            for (int p = 0; p < size; p++)
+            {
+                final TransactionData transactionData = (TransactionData) array[p];
+                final AgentDataProcessor processor = getProcessor(transactionData.getAgentName());
+                processor.incrementTransactionCounters(transactionData.hasFailed());
+            }
+            return;
+        }
+
+        if (dataContainer.typeCode == 'J')
+        {
+            /*
+             * Specialized tight-loop dispatch for JvmResourceUsageData ('J') records.
+             * Processes JVM resource metrics and ensures the processor's display name
+             * is updated to the full agent descriptor (e.g. 'Agent-ac0001_us-east1_00-...').
+             */
+            for (int p = 0; p < size; p++)
+            {
+                final JvmResourceUsageData jvmData = (JvmResourceUsageData) array[p];
+                final AgentDataProcessor processor = getProcessor(jvmData.getAgentName());
+                processor.processDataRecord(jvmData);
+                processor.setName(jvmData.getName());
+            }
+            return;
+        }
+
+        /*
+         * Fallback for heterogeneous or unspecified chunk containers: process record by record.
+         */
+        for (int p = 0; p < size; p++)
+        {
+            processDataRecord((Data) array[p]);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -85,4 +143,15 @@ public class AgentsReportProvider extends AbstractDataProcessorBasedReportProvid
             processor.incrementTransactionCounters(transactionData.hasFailed());
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Agents report provider aggregates JVM usage metrics ('J') and Transaction counts ('T')
+        return typeCode == 'J' || typeCode == 'T';
+    }
 }
+

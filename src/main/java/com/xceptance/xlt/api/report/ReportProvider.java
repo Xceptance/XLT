@@ -140,4 +140,35 @@ public interface ReportProvider extends ReportCreator
     public default void merge(final ReportProvider other)
     {
     }
+
+    /**
+     * Declares whether this report provider processes data records matching the given single-character type code.
+     * <p>
+     * Used by ChunkDB and the statistics pipeline to route chunks directly to interested report providers,
+     * bypassing providers that would otherwise perform millions of useless {@code instanceof} checks and loops.
+     * <p>
+     * Standard type codes:
+     * <ul>
+     *   <li>{@code 'R'} - {@link com.xceptance.xlt.api.engine.RequestData} (HTTP request timings and metrics)</li>
+     *   <li>{@code 'T'} - {@link com.xceptance.xlt.api.engine.TransactionData} (Transaction / scenario timings)</li>
+     *   <li>{@code 'A'} - {@link com.xceptance.xlt.api.engine.ActionData} (Action durations)</li>
+     *   <li>{@code 'C'} - {@link com.xceptance.xlt.api.engine.CustomData} / {@link com.xceptance.xlt.api.engine.CustomValue} (Custom metrics)</li>
+     *   <li>{@code 'E'} - {@link com.xceptance.xlt.api.engine.EventData} (Errors and test events)</li>
+     *   <li>{@code 'P'} - {@link com.xceptance.xlt.api.engine.PageLoadTimingData} (Client-side page load timings)</li>
+     *   <li>{@code 'W'} - {@link com.xceptance.xlt.api.engine.WebVitalData} (Core Web Vitals)</li>
+     *   <li>{@code 'J'} - {@link com.xceptance.xlt.agent.JvmResourceUsageData} (JVM metrics)</li>
+     * </ul>
+     * <p>
+     * The default implementation returns {@code true} for all type codes to ensure full backward compatibility
+     * with custom and third-party report providers.
+     *
+     * @param typeCode
+     *            the data record type code
+     * @return {@code true} if this provider wants to process records of this type, {@code false} to skip them
+     */
+    public default boolean acceptsType(final char typeCode)
+    {
+        return true;
+    }
 }
+

@@ -81,6 +81,20 @@ public class AgentDataProcessor extends AbstractDataProcessor
     private int transactionErrors;
 
     /**
+     * Flag indicating whether an explicit, full agent name (such as
+     * 'Agent-ac0001_us-east1_00-35.227.95.149-8500' provided by {@link JvmResourceUsageData})
+     * has been assigned to this processor.
+     * <p>
+     * When created initially during transaction processing or directory traversal, the processor
+     * is keyed and named by the short agent ID (e.g., 'ac0001_us-east1_00'). Once JVM monitor data
+     * is processed, the processor name is updated via {@link #setName(String)} to the full agent descriptor.
+     * In a multi-threaded reporting architecture where transaction chunks and JVM monitor chunks are handled
+     * by separate worker threads, this flag allows merge operations to safely propagate the full descriptive
+     * name to the merged master processor.
+     */
+    private boolean hasExplicitName = false;
+
+    /**
      * Creates a new {@link AbstractDataProcessor} instance.
      * 
      * @param name
@@ -245,6 +259,37 @@ public class AgentDataProcessor extends AbstractDataProcessor
     }
 
     /**
+     * Sets the display name of this agent processor.
+     * <p>
+     * In addition to updating the underlying name field, this records that an explicit name has been provided
+     * (e.g., from {@link JvmResourceUsageData#getName()}). This distinction is essential for parallel report
+     * generation: worker threads processing transaction records initialize their agent processors using only the
+     * agent directory/ID (e.g., 'ac0001_us-east1_00'), whereas worker threads processing JVM monitor logs receive
+     * the full agent name (e.g., 'Agent-ac0001_us-east1_00-35.227.95.149-8500'). Tracking explicit names ensures
+     * that when thread-local processors are merged into the master report provider, the full descriptive name
+     * is retained regardless of the merge order of the worker threads.
+     *
+     * @param name
+     *            the agent name to set
+     */
+    @Override
+    public void setName(final String name)
+    {
+        super.setName(name);
+        this.hasExplicitName = true;
+    }
+
+    /**
+     * Returns whether this processor has been assigned an explicit, full agent name.
+     *
+     * @return {@code true} if an explicit name was assigned via {@link #setName(String)}, {@code false} otherwise
+     */
+    public boolean hasExplicitName()
+    {
+        return hasExplicitName;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -258,6 +303,10 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
     /**
      * Merges another {@link AgentDataProcessor} into this instance.
+     * <p>
+     * Merges all resource usage value sets, means, GC statistics, and transaction counters.
+     * Furthermore, if the other processor has received an explicit full agent name (or has a canonical
+     * 'Agent-' prefix) and this processor does not yet have one, the full name is propagated here.
      *
      * @param other
      *            the other processor to merge
@@ -267,6 +316,33 @@ public class AgentDataProcessor extends AbstractDataProcessor
         if (other == null)
         {
             return;
+        }
+
+        /*
+         * Propagate the full descriptive agent name across worker threads.
+         *
+         * In parallel report processing, different worker threads process different chunks of data. A thread
+         * processing TransactionData only knows the short agent ID (e.g., 'ac0001_us-east1_00') from the directory
+         * structure, whereas a thread processing JvmResourceUsageData receives the full agent name (e.g.,
+         * 'Agent-ac0001_us-east1_00-35.227.95.149-8500').
+         *
+         * When merging processors across threads into the master provider:
+         * 1. If 'this' processor only has the default short agent ID but 'other' has received the full explicit name
+         *    (or starts with the canonical 'Agent-' prefix), adopt 'other's name.
+         * 2. If 'this' already has the full explicit name, retain it.
+         * 3. This guarantees that regardless of whether transaction-processing threads or JVM-processing threads
+         *    are merged first, the master processor will always hold the complete agent name.
+         */
+        if (!this.hasExplicitName && other.hasExplicitName)
+        {
+            super.setName(other.getName());
+            this.hasExplicitName = true;
+        }
+        else if (other.getName() != null && other.getName().startsWith("Agent-") &&
+                 (getName() == null || !getName().startsWith("Agent-")))
+        {
+            super.setName(other.getName());
+            this.hasExplicitName = true;
         }
 
         blockedThreadsValueSet.merge(other.blockedThreadsValueSet);

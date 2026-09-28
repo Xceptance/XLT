@@ -26,10 +26,13 @@ import java.util.stream.IntStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
+import com.xceptance.xlt.api.util.SimpleArrayList;
 
 /**
  * Processes parsed data records by delegating to worker copies of configured report providers per thread,
@@ -68,9 +71,43 @@ class StatisticsProcessor
     private final ConcurrentLinkedQueue<List<ReportProvider>> allWorkerProviders = new ConcurrentLinkedQueue<>();
 
     /**
-     * Thread-local list of worker report providers.
+     * Internal container managing worker provider instances for a single processing thread.
+     * Provides pre-filtered arrays indexed by character type code (e.g. 'R', 'T', 'A', 'C', 'E')
+     * so that incoming columnar data chunks only dispatch to providers that actually consume that record type.
      */
-    private final ThreadLocal<List<ReportProvider>> threadLocalProviders;
+    private static final class WorkerProviderSet
+    {
+        /** The complete list of worker providers instantiated for this thread. */
+        final List<ReportProvider> allProviders;
+
+        /** Lookup table of providers filtered by ASCII type code (e.g. ['R'], ['T'], ['A']). */
+        final ReportProvider[][] providersByTypeCode;
+
+        WorkerProviderSet(final List<ReportProvider> allProviders)
+        {
+            this.allProviders = allProviders;
+            this.providersByTypeCode = new ReportProvider[128][];
+
+            // Pre-filter providers for each ASCII character code
+            for (char c = 0; c < 128; c++)
+            {
+                final List<ReportProvider> matching = new ArrayList<>();
+                for (final ReportProvider p : allProviders)
+                {
+                    if (p.acceptsType(c))
+                    {
+                        matching.add(p);
+                    }
+                }
+                this.providersByTypeCode[c] = matching.toArray(new ReportProvider[0]);
+            }
+        }
+    }
+
+    /**
+     * Thread-local worker provider sets maintaining per-thread instances and type routing tables.
+     */
+    private final ThreadLocal<WorkerProviderSet> threadLocalProviderSet;
 
     /**
      * Flag indicating whether merge completion has already been performed.
@@ -114,10 +151,16 @@ class StatisticsProcessor
             this.configuration = null;
         }
 
-        this.threadLocalProviders = ThreadLocal.withInitial(this::createWorkerProviders);
+        this.threadLocalProviderSet = ThreadLocal.withInitial(this::createWorkerProviderSet);
     }
 
-    private List<ReportProvider> createWorkerProviders()
+    /**
+     * Instantiates isolated worker report provider instances for the current worker thread,
+     * pre-configuring them and cataloging them by accepted record type code.
+     *
+     * @return the initialized {@link WorkerProviderSet}
+     */
+    private WorkerProviderSet createWorkerProviderSet()
     {
         final List<ReportProvider> localList = new ArrayList<>(reportProviders.size());
         for (final ReportProvider master : reportProviders)
@@ -142,8 +185,9 @@ class StatisticsProcessor
             }
         }
         allWorkerProviders.add(localList);
-        return localList;
+        return new WorkerProviderSet(localList);
     }
+
 
     /**
      * Returns the maximum time.
@@ -167,12 +211,39 @@ class StatisticsProcessor
     }
 
     /**
-     * Takes the post-processed data and puts it into the statistics machinery to capture the final data points.
+     * Takes the post-processed data and puts it into the statistics machinery to capture the final data points,
+     * dispatching to all registered report providers.
      *
      * @param dataContainer
      *            a chunk of post-processed data for final statistics gathering
      */
     public void process(final PostProcessedDataContainer dataContainer)
+    {
+        process(dataContainer, (char) 0);
+    }
+
+    /**
+     * Takes the post-processed data and puts it into the statistics machinery, routing it specifically
+     * to the report providers interested in the given record type code (e.g. 'R' for HTTP Requests,
+     * 'T' for Transactions, 'A' for Actions).
+     * <p>
+     * If {@code typeCode} is non-zero, this lookup executes in O(1) against a precomputed array of providers,
+     * completely eliminating redundant iterations and {@code instanceof} checks across uninterested providers.
+     *
+    /**
+     * Map tracking cumulative CPU nanoseconds per report provider class.
+     */
+    public static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.LongAdder> PROVIDER_TIMES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Takes the data container and passes it to all providers.
+     *
+     * @param dataContainer
+     *            a chunk of post-processed data for final statistics gathering
+     * @param typeCode
+     *            the data record type code ('R', 'T', 'A', 'C', 'E', 'P', 'W', 'J'), or 0 to dispatch to all
+     */
+    public void process(final PostProcessedDataContainer dataContainer, final char typeCode)
     {
         // it might be empty after filtered
         if (dataContainer.data.size() == 0)
@@ -180,17 +251,111 @@ class StatisticsProcessor
             return;
         }
 
-        final List<ReportProvider> localProviders = threadLocalProviders.get();
+        final WorkerProviderSet providerSet = threadLocalProviderSet.get();
+        final ReportProvider[] providers = (typeCode > 0 && typeCode < 128)
+            ? providerSet.providersByTypeCode[typeCode]
+            : null;
 
-        for (int i = 0; i < localProviders.size(); i++)
+        if (providers != null)
         {
-            try
+            for (int i = 0; i < providers.length; i++)
             {
-                localProviders.get(i).processAll(dataContainer);
+                try
+                {
+                    final long p0 = System.nanoTime();
+                    providers[i].processAll(dataContainer);
+                    PROVIDER_TIMES.computeIfAbsent(providers[i].getClass().getSimpleName(), k -> new java.util.concurrent.atomic.LongAdder()).add(System.nanoTime() - p0);
+                }
+                catch (final Throwable t)
+                {
+                    LOG.error("Failed to process data record in worker provider, discarding full chunk", t);
+                }
             }
-            catch (final Throwable t)
+        }
+        else
+        {
+            // Fallback for mixed or untyped chunks (such as heterogeneous CSV log chunks).
+            // Instead of dispatching the entire container to all providers (which would force every provider
+            // to redundantly scan all records), we inspect the type code of each record and dispatch it directly
+            // to only the providers that are registered to accept that record's type.
+            final SimpleArrayList<Data> list = dataContainer.dataList;
+            final Object[] array = list.getInternalArray();
+            final int size = list.size();
+            final ReportProvider[][] byTypeCode = providerSet.providersByTypeCode;
+            final List<ReportProvider> all = providerSet.allProviders;
+
+            for (int p = 0; p < size; p++)
             {
-                LOG.error("Failed to process data record in worker provider, discarding full chunk", t);
+                final Data data = (Data) array[p];
+                final char tc = data.getTypeCode();
+                final ReportProvider[] relevantProviders = (tc < 128) ? byTypeCode[tc] : null;
+
+                if (relevantProviders != null)
+                {
+                    for (int i = 0; i < relevantProviders.length; i++)
+                    {
+                        try
+                        {
+                            relevantProviders[i].processDataRecord(data);
+                        }
+                        catch (final Throwable t)
+                        {
+                            LOG.error("Failed to process data record in worker provider", t);
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < all.size(); i++)
+                    {
+                        try
+                        {
+                            all.get(i).processDataRecord(data);
+                        }
+                        catch (final Throwable t)
+                        {
+                            LOG.error("Failed to process data record in worker provider", t);
+                        }
+                    }
+                }
+            }
+
+            // Compensate for sampling loss if lines were dropped during parsing
+            if (dataContainer.droppedLines > 0)
+            {
+                int droppedLines = dataContainer.droppedLines;
+                final int sampleFactor = dataContainer.sampleFactor;
+                for (int p = 0; p < size; p++)
+                {
+                    final Data data = (Data) array[p];
+                    if (!(data instanceof TransactionData))
+                    {
+                        final char tc = data.getTypeCode();
+                        final ReportProvider[] relevantProviders = (tc < 128) ? byTypeCode[tc] : null;
+                        for (int y = 1; y < sampleFactor; y++)
+                        {
+                            if (relevantProviders != null)
+                            {
+                                for (int i = 0; i < relevantProviders.length; i++)
+                                {
+                                    relevantProviders[i].processDataRecord(data);
+                                }
+                            }
+                            else
+                            {
+                                for (int i = 0; i < all.size(); i++)
+                                {
+                                    all.get(i).processDataRecord(data);
+                                }
+                            }
+                        }
+                        droppedLines--;
+                        if (droppedLines == 0)
+                        {
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -198,6 +363,21 @@ class StatisticsProcessor
         minimumTime.accumulateAndGet(dataContainer.getMinimumTime(), Math::min);
         maximumTime.accumulateAndGet(dataContainer.getMaximumTime(), Math::max);
     }
+
+    /**
+     * Updates global minimum and maximum timestamps directly without requiring per-record inspection.
+     *
+     * @param min
+     *            chunk or batch minimum timestamp
+     * @param max
+     *            chunk or batch maximum timestamp
+     */
+    public void updateMinMax(final long min, final long max)
+    {
+        minimumTime.accumulateAndGet(min, Math::min);
+        maximumTime.accumulateAndGet(max, Math::max);
+    }
+
 
     /**
      * Merges all worker provider statistics into the master report providers.

@@ -70,6 +70,25 @@ public class ActionDataProcessor extends BasicTimerDataProcessor
     }
 
     /**
+     * High-throughput specialized processing for {@link ActionData} records.
+     * Directly accesses timeSeries and apdexCalculator without polymorphic boxing or casting.
+     *
+     * @param data
+     *            the concrete action data record
+     */
+    public void processDataRecord(final ActionData data)
+    {
+        final long endTime = data.getEndTime();
+        final int runTime = data.getRunTime();
+        final boolean failed = data.hasFailed();
+
+        timeSeries.addValue(endTime - runTime, endTime, runTime, failed);
+
+        // apdex
+        apdexCalculator.addSample(runTime, failed);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

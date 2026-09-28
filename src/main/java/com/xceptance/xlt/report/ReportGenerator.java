@@ -355,8 +355,33 @@ public class ReportGenerator
     {
         XltLogger.reportLogger.info(Console.horizontalBar());
         XltLogger.reportLogger.info(Console.startSection("Reading Log Files..."));
-        final long testStartTime = config.getLongProperty(XltConstants.LOAD_TEST_START_DATE, 0);
-        final long elapsedTime = config.getLongProperty(XltConstants.LOAD_TEST_ELAPSED_TIME, 0);
+        long testStartTime = config.getLongProperty(XltConstants.LOAD_TEST_START_DATE, 0);
+        long elapsedTime = config.getLongProperty(XltConstants.LOAD_TEST_ELAPSED_TIME, 0);
+
+        // If relative time offsets (e.g. fromTimeRel / toTimeRel) are specified on the CLI and
+        // the test start timestamp is not explicitly provided in test properties, query the ChunkDB
+        // cache catalog (if available and valid) to determine the exact earliest and latest timestamps
+        // without scanning raw CSV log files.
+        if ((fromTimeRel || toTimeRel) && testStartTime == 0)
+        {
+            try
+            {
+                final java.io.File resultsDir = new java.io.File(inputDir.getName().getPathDecoded());
+                final com.xceptance.xlt.report.storage.cache.CacheManager cm =
+                    new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
+                final long[] range = cm.peekTimeRange();
+                if (range != null)
+                {
+                    testStartTime = range[0];
+                    elapsedTime = range[1] - range[0];
+                }
+            }
+            catch (final Exception e)
+            {
+                // Silently ignore cache reading errors during initial bounds peek;
+                // standard log reader fallback will compute bounds if cache is unavailable.
+            }
+        }
 
         // convert to absolute timestamp
         final long[] timeBoundaries = getTimeBoundaries(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel, testStartTime,
@@ -459,6 +484,79 @@ public class ReportGenerator
      */
     private void read(final long fromTime, final long toTime)
     {
+        // Step 1: Check if transparent persistent ChunkDB disk cache is available and valid.
+        // If valid, skip reading and parsing gigabytes of raw CSV text files across disk threads.
+        // Instead, execute a fast columnar SIMD scan over memory-mapped / buffered compressed binary chunks.
+        if (config.isDataCacheEnabled())
+        {
+            try
+            {
+                final File resultsDir = new File(inputDir.getName().getPath());
+                if (resultsDir.isDirectory())
+                {
+                    final com.xceptance.xlt.report.storage.cache.CacheManager cacheManager =
+                        new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
+                    if (cacheManager.isCacheValid())
+                    {
+                        final long cacheLoadStart = TimerUtils.get().getStartTime();
+                        try (final com.xceptance.xlt.report.storage.ChunkStorage storage = cacheManager.load())
+                        {
+                            if (storage != null)
+                            {
+                                final long cacheLoadDuration = TimerUtils.get().getElapsedTime(cacheLoadStart);
+                                XltLogger.reportLogger.info(String.format("Accelerating report generation using ChunkDB cache from: %s",
+                                                                          cacheManager.getCacheDirectory()));
+
+                                // Create fresh statistics aggregation pipeline
+                                final StatisticsProcessor statisticsProcessor = new StatisticsProcessor(reportProviders, config);
+
+                                // Compile agent and testcase include/exclude CLI patterns into a fast RoaringBitmap set
+                                // using 16-bit dictionary ID lookups
+                                final com.xceptance.common.util.StringMatcher testCaseFilter =
+                                    new com.xceptance.common.util.StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
+                                final com.xceptance.common.util.StringMatcher agentFilter =
+                                    new com.xceptance.common.util.StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
+                                final org.roaringbitmap.RoaringBitmap matchingAgents =
+                                    storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
+
+                                // Construct two-tier query predicate (bounding-box chunk pruning + fine row filter)
+                                final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
+                                    new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
+
+                                // Execute parallel SIMD scan across configured worker thread pool
+                                final long scanStart = TimerUtils.get().getStartTime();
+                                final ChunkQueryEngine queryEngine =
+                                    new ChunkQueryEngine(storage, config.parserThreadCount);
+                                final long recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor);
+                                final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
+                                final long totalDuration = cacheLoadDuration + scanDuration;
+                                final long recordsPerSecond = totalDuration > 0 ? Math.round((recordsProcessed / (double) totalDuration) * 1000L) : 0;
+
+                                XltLogger.reportLogger.info(String.format("%,d records read from cache - %,d ms (load: %,d ms, scan: %,d ms) - %,d records/s",
+                                                                          recordsProcessed, totalDuration, cacheLoadDuration, scanDuration, recordsPerSecond));
+
+                                XltLogger.reportLogger.info(Console.endSection());
+
+                                // Extract global time bounds aggregated across all processed records
+                                final long minTime = statisticsProcessor.getMinimumTime();
+                                final long maxTime = statisticsProcessor.getMaximumTime();
+
+                                config.setChartStartTime(minTime);
+                                config.setChartEndTime(maxTime);
+
+                                processExternalData(minTime, maxTime);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (final Exception e)
+            {
+                XltLogger.reportLogger.warn("Failed to read from ChunkDB cache, falling back to log files: " + e.getMessage(), e);
+            }
+        }
+
         // setup data record factory
         final DataRecordFactory dataRecordFactory = new DataRecordFactory(config.getDataRecordClasses());
 
@@ -476,25 +574,27 @@ public class ReportGenerator
         config.setChartStartTime(minTime);
         config.setChartEndTime(maxTime);
 
-        // external data
+        processExternalData(minTime, maxTime);
+    }
+
+    private void processExternalData(final long minTime, final long maxTime)
+    {
+        try
         {
-            try
-            {
-                XltLogger.reportLogger.info(Console.horizontalBar());
-                XltLogger.reportLogger.info(Console.startSection("Processing External Data Files..."));
+            XltLogger.reportLogger.info(Console.horizontalBar());
+            XltLogger.reportLogger.info(Console.startSection("Processing External Data Files..."));
 
-                final Timer timer = Timer.start();
+            final Timer timer = Timer.start();
 
-                final File externalChartsDir = new File(config.getChartDirectory(), "external");
-                externalChartsDir.mkdirs();
-                repGen.init(minTime, maxTime, inputDir.getName().getPath(), externalChartsDir, config.shouldChartsGenerated());
-                repGen.parse();
-                XltLogger.reportLogger.info(timer.stop().get("...finished"));
-            }
-            catch (final Exception e)
-            {
-                XltLogger.reportLogger.error("Failed to process external data", e);
-            }
+            final File externalChartsDir = new File(config.getChartDirectory(), "external");
+            externalChartsDir.mkdirs();
+            repGen.init(minTime, maxTime, inputDir.getName().getPath(), externalChartsDir, config.shouldChartsGenerated());
+            repGen.parse();
+            XltLogger.reportLogger.info(timer.stop().get("...finished"));
+        }
+        catch (final Exception e)
+        {
+            XltLogger.reportLogger.error("Failed to process external data", e);
         }
     }
 

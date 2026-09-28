@@ -57,7 +57,14 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 {
     private static final Logger log = LoggerFactory.getLogger(JFreeChartUtils.class);
 
-    private final IntTimeSeries timeSeries;
+    /**
+     * The response time series accumulator.
+     * <p>
+     * Protected visibility allows specialized subclasses (such as {@link RequestDataProcessor})
+     * to append values directly during high-throughput unboxed processing loops without
+     * virtual getter overhead.
+     */
+    protected final IntTimeSeries timeSeries;
 
     private final double[] percentiles;
 

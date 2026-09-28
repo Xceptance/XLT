@@ -567,10 +567,12 @@ public class IntTimeSeriesTest
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 1, series.getLastSecond());
 
-        assertEquals(3, series.getValues()[0].getCount());
+        // First two operations finished within second 0 (+500ms and +999ms).
+        // Third operation finished at +1000ms (second 1).
+        assertEquals(2, series.getValues()[0].getCount());
         assertEquals(3, series.getValues()[0].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[1].getCount());
+        assertEquals(1, series.getValues()[1].getCount());
         assertEquals(1, series.getValues()[1].getConcurrentCount());
 
         // neighbor is empty
@@ -589,65 +591,75 @@ public class IntTimeSeriesTest
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC, series.getLastSecond());
 
+        // First operation: starts at 0ms, finishes at 500ms (sec 0)
         assertEquals(1, series.getValues()[0].getCount());
         assertEquals(1, series.getValues()[0].getConcurrentCount());
 
         assertEquals(0, series.getValues()[1].getCount());
         assertEquals(0, series.getValues()[1].getConcurrentCount());
 
+        // Second operation: starts at 0ms (sec 0), finishes at 1500ms (sec 1)
         series.addValue(BASE_TIME_MSEC, BASE_TIME_MSEC + 1500, 20, true);
 
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 1, series.getLastSecond());
 
-        assertEquals(2, series.getValues()[0].getCount());
+        // sec 0: count is 1 (first op completed here), concurrent is 2 (both ops active)
+        assertEquals(1, series.getValues()[0].getCount());
         assertEquals(2, series.getValues()[0].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[1].getCount());
+        // sec 1: count is 1 (second op completed here), concurrent is 1 (second op active)
+        assertEquals(1, series.getValues()[1].getCount());
         assertEquals(1, series.getValues()[1].getConcurrentCount());
 
         assertEquals(0, series.getValues()[2].getCount());
         assertEquals(0, series.getValues()[2].getConcurrentCount());
 
+        // Third operation: starts at 2000ms (sec 2), finishes at 3999ms (sec 3)
         series.addValue(BASE_TIME_MSEC + 2000, BASE_TIME_MSEC + 3999, 30, true);
 
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 3, series.getLastSecond());
 
-        assertEquals(2, series.getValues()[0].getCount());
+        assertEquals(1, series.getValues()[0].getCount());
         assertEquals(2, series.getValues()[0].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[1].getCount());
+        assertEquals(1, series.getValues()[1].getCount());
         assertEquals(1, series.getValues()[1].getConcurrentCount());
 
-        assertEquals(1, series.getValues()[2].getCount());
+        // sec 2: op 3 active, but not completed yet
+        assertEquals(0, series.getValues()[2].getCount());
         assertEquals(1, series.getValues()[2].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[3].getCount());
+        // sec 3: op 3 completed
+        assertEquals(1, series.getValues()[3].getCount());
         assertEquals(1, series.getValues()[3].getConcurrentCount());
 
         assertEquals(0, series.getValues()[4].getCount());
         assertEquals(0, series.getValues()[4].getConcurrentCount());
 
-        // minimally touches the next sec... so what
+        // Fourth operation: starts at 2000ms (sec 2), finishes at 4000ms (sec 4)
         series.addValue(BASE_TIME_MSEC + 2000, BASE_TIME_MSEC + 4000, 30, true);
 
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 4, series.getLastSecond());
 
-        assertEquals(2, series.getValues()[0].getCount());
+        assertEquals(1, series.getValues()[0].getCount());
         assertEquals(2, series.getValues()[0].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[1].getCount());
+        assertEquals(1, series.getValues()[1].getCount());
         assertEquals(1, series.getValues()[1].getConcurrentCount());
 
-        assertEquals(2, series.getValues()[2].getCount());
+        // sec 2: op 3 and op 4 active
+        assertEquals(0, series.getValues()[2].getCount());
         assertEquals(2, series.getValues()[2].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[3].getCount());
+        // sec 3: op 3 completed (count=1), op 3 and op 4 both active (concurrent=2)
+        assertEquals(1, series.getValues()[3].getCount());
         assertEquals(2, series.getValues()[3].getConcurrentCount());
 
-        assertEquals(0, series.getValues()[4].getCount());
+        // sec 4: op 4 completed (count=1), op 4 active (concurrent=1)
+        assertEquals(1, series.getValues()[4].getCount());
         assertEquals(1, series.getValues()[4].getConcurrentCount());
 
         assertEquals(0, series.getValues()[5].getCount());
@@ -661,28 +673,30 @@ public class IntTimeSeriesTest
     public void concurrentCountGrowth_Crossing_StartPushes() 
     {
         final IntTimeSeries series = new IntTimeSeries(16);
+        // starts at 0ms (sec 0), finishes at 1500ms (sec 1)
         series.addValue(BASE_TIME_MSEC, BASE_TIME_MSEC + 1500, 10, true);
 
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 1, series.getLastSecond());
 
         // no growth yet
-        // sec 0
-        assertEquals(1, series.getValues()[0].getCount());
+        // sec 0: active, but not completed yet
+        assertEquals(0, series.getValues()[0].getCount());
         assertEquals(1, series.getValues()[0].getConcurrentCount());
 
-        // sec 1
-        assertEquals(0, series.getValues()[1].getCount());
+        // sec 1: completed
+        assertEquals(1, series.getValues()[1].getCount());
         assertEquals(1, series.getValues()[1].getConcurrentCount());
 
         // trigger growth but just being outside not by going over the end
+        // starts at 16000ms (sec 16), finishes at 16500ms (sec 16)
         series.addValue(BASE_TIME_MSEC + 16000, 
                         BASE_TIME_MSEC + 16000 + 500, 10, true);
 
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 16, series.getLastSecond());
 
-        // sec 0 and 1, we correctly keep concurrent count and don't add it up
+        // sec 0 and 1 condensed into slot 0: total count is 0 + 1 = 1, concurrent count is max(1, 1) = 1
         assertEquals(1, series.getValues()[0].getCount());
         assertEquals(1, series.getValues()[0].getConcurrentCount());
 
@@ -690,7 +704,7 @@ public class IntTimeSeriesTest
         assertEquals(0, series.getValues()[1].getCount());
         assertEquals(0, series.getValues()[1].getConcurrentCount());
 
-        // sec 16 and 17
+        // sec 16 and 17 (slot 8): operation started and finished at sec 16
         assertEquals(1, series.getValues()[8].getCount());
         assertEquals(1, series.getValues()[8].getConcurrentCount());
 
@@ -706,6 +720,7 @@ public class IntTimeSeriesTest
     public void concurrentCountGrowth_Crossing_EndPushes() 
     {
         final IntTimeSeries series = new IntTimeSeries(16);
+        // starts at 0ms (sec 0), finishes at 1500ms (sec 1)
         series.addValue(BASE_TIME_MSEC, BASE_TIME_MSEC + 1500, 10, true);
 
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
@@ -713,15 +728,16 @@ public class IntTimeSeriesTest
         assertEquals(1, series.getScale());
 
         // no growth yet
-        // sec 0
-        assertEquals(1, series.getValues()[0].getCount());
+        // sec 0: active, not completed
+        assertEquals(0, series.getValues()[0].getCount());
         assertEquals(1, series.getValues()[0].getConcurrentCount());
 
-        // sec 1
-        assertEquals(0, series.getValues()[1].getCount());
+        // sec 1: completed
+        assertEquals(1, series.getValues()[1].getCount());
         assertEquals(1, series.getValues()[1].getConcurrentCount());
 
         // trigger growth by being beyond the end with the length
+        // starts at 15500ms (sec 15), finishes at 17000ms (sec 17)
         series.addValue(BASE_TIME_MSEC + 15500, 
                         BASE_TIME_MSEC + 15500 + 1500, 10, true);
 
@@ -729,7 +745,7 @@ public class IntTimeSeriesTest
         assertEquals(BASE_TIME_SEC, series.getFirstSecond());
         assertEquals(BASE_TIME_SEC + 16, series.getLastSecond());
 
-        // sec 0 and 1, we correctly keep concurrent count and don't add it up
+        // sec 0 and 1 condensed into slot 0: total count is 0 + 1 = 1, concurrent count is max(1, 1) = 1
         assertEquals(1, series.getValues()[0].getCount());
         assertEquals(1, series.getValues()[0].getConcurrentCount());
 
@@ -743,12 +759,12 @@ public class IntTimeSeriesTest
             assertEquals(0, series.getValues()[i].getConcurrentCount());
         }
         
-        // sec 14 and 15
-        assertEquals(1, series.getValues()[7].getCount());
+        // sec 14 and 15 (slot 7): operation active during sec 15, but completed in sec 17 (slot 8)
+        assertEquals(0, series.getValues()[7].getCount());
         assertEquals(1, series.getValues()[7].getConcurrentCount());
 
-        // sec 16 and 17
-        assertEquals(0, series.getValues()[8].getCount());
+        // sec 16 and 17 (slot 8): operation completed in sec 17
+        assertEquals(1, series.getValues()[8].getCount());
         assertEquals(1, series.getValues()[8].getConcurrentCount());
 
         // rest

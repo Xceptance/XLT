@@ -260,6 +260,30 @@ class DataParserThread implements Runnable
                     lineNumber++;
                 }
 
+                // Tag container typeCode if non-empty and all records share the same type code.
+                // This allows StatisticsProcessor to route homogeneous CSV chunks directly to registered
+                // type-specific report providers (e.g. only Request providers for 'R' chunks) instead
+                // of iterating over every provider in allProviders.
+                final int chunkRecordCount = postProcessedData.size();
+                if (chunkRecordCount > 0)
+                {
+                    final char firstTypeCode = postProcessedData.dataList.get(0).getTypeCode();
+                    boolean homogeneous = true;
+                    final Object[] internalArr = postProcessedData.dataList.getInternalArray();
+                    for (int k = 1; k < chunkRecordCount; k++)
+                    {
+                        if (((Data) internalArr[k]).getTypeCode() != firstTypeCode)
+                        {
+                            homogeneous = false;
+                            break;
+                        }
+                    }
+                    if (homogeneous)
+                    {
+                        postProcessedData.typeCode = firstTypeCode;
+                    }
+                }
+
                 // deliver the chunk of parsed data records
                 postProcessedData.droppedLines = droppedLines;
                 dispatcher.addPostprocessedData(postProcessedData);

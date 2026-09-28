@@ -46,6 +46,48 @@ public class TransactionsReportProvider extends BasicTimerReportProvider<Transac
     }
 
     /**
+     * High-performance batch record processing override for transaction metrics.
+     * Iterates directly over the raw object array in {@link PostProcessedDataContainer#dataList},
+     * avoiding virtual method dispatch and bounds checking for every record.
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        if (dataContainer.typeCode == 'T')
+        {
+            for (int p = 0; p < size; p++)
+            {
+                final TransactionData td = (TransactionData) array[p];
+                final TransactionDataProcessor processor = getProcessor(td.getName());
+                processor.processDataRecord(td);
+            }
+            return;
+        }
+
+        for (int p = 0; p < size; p++)
+        {
+            final Data data = (Data) array[p];
+            if (data instanceof TransactionData)
+            {
+                final TransactionDataProcessor processor = getProcessor(data.getName());
+                processor.processDataRecord(data);
+            }
+            else if (data instanceof EventData)
+            {
+                final TransactionDataProcessor processor = getProcessor(((EventData) data).getTestCaseName());
+                processor.processDataRecord(data);
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -61,4 +103,15 @@ public class TransactionsReportProvider extends BasicTimerReportProvider<Transac
             processor.processDataRecord(data);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Transactions report provider aggregates TransactionData ('T') and EventData ('E')
+        return typeCode == 'T' || typeCode == 'E';
+    }
 }
+

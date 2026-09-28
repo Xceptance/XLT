@@ -454,6 +454,7 @@
     </target>
 
     <target name="test" depends="compile">
+        <property name="action" value="full" />
         <ant antfile="${test.build.file}" target="test.${action}" inheritall="false" inheritrefs="false">
             <reference refid="classpath" />
             <reference refid="maven-resolver-ant-tasks.classpath" />

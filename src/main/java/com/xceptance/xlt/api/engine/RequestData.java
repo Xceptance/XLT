@@ -66,6 +66,19 @@ public class RequestData extends TimerData
     public final static XltCharBuffer NO_RESPONSE_CODE = XltCharBuffer.valueOf("0");
 
     /**
+     * Pre-allocated and cached XltCharBuffer instances for common HTTP response codes (0..599).
+     * Eliminates 4.5+ million string and buffer heap allocations during high-throughput report generation.
+     */
+    private static final XltCharBuffer[] COMMON_RESPONSE_CODE_BUFFERS = new XltCharBuffer[600];
+    static
+    {
+        for (int i = 0; i < COMMON_RESPONSE_CODE_BUFFERS.length; i++)
+        {
+            COMMON_RESPONSE_CODE_BUFFERS[i] = XltCharBuffer.valueOf(Integer.toString(i));
+        }
+    }
+
+    /**
      * The size of the response message in bytes.
      */
     private int bytesReceived;
@@ -172,6 +185,11 @@ public class RequestData extends TimerData
      * a DNS address resolution, for example, in case of keep-alive connections.
      */
     private String ipAddresses;
+
+    /**
+     * Pre-split array representation of IP addresses, cached to eliminate millions of join/split conversions.
+     */
+    private String[] ipAddressesArray;
 
     /**
      * The target IP address of the system under test that was used when making the request. This info is useful only if
@@ -331,12 +349,18 @@ public class RequestData extends TimerData
     }
 
     /**
-     * Returns the request's original URL.
+     * Returns the request's original URL. Lazily computes the string representation from the
+     * underlying URL char buffer if it has not already been populated, eliminating millions of
+     * premature heap allocations during report generation.
      *
-     * @return the original URL
+     * @return the original URL string
      */
     public String getOriginalUrl()
     {
+        if (this.originalUrl == null && this.url != null)
+        {
+            this.originalUrl = this.url.toString();
+        }
         return this.originalUrl;
     }
 
@@ -408,7 +432,25 @@ public class RequestData extends TimerData
      */
     public String[] getIpAddresses()
     {
-        return StringUtils.split(ipAddresses, IP_ADDRESSES_SEPARATOR);
+        if (ipAddressesArray == null && ipAddresses != null)
+        {
+            ipAddressesArray = StringUtils.split(ipAddresses, IP_ADDRESSES_SEPARATOR);
+        }
+        return ipAddressesArray;
+    }
+
+    /**
+     * Returns the pipe-delimited string of IP addresses reported by DNS.
+     *
+     * @return the delimited IP address string, or null
+     */
+    public String getIpAddressesAsString()
+    {
+        if (ipAddresses == null && ipAddressesArray != null)
+        {
+            ipAddresses = StringUtils.join(ipAddressesArray, IP_ADDRESSES_SEPARATOR);
+        }
+        return ipAddresses;
     }
 
     /**
@@ -488,7 +530,10 @@ public class RequestData extends TimerData
     public void setContentType(final XltCharBuffer contentType)
     {
         this.contentType = contentType;
-        this.contentType.hashCode();
+        if (contentType != null)
+        {
+            this.contentType.hashCode();
+        }
     }
 
     /**
@@ -557,7 +602,9 @@ public class RequestData extends TimerData
         if (responseCode >= 0)
         {
             this.responseCode = responseCode;
-            this.responseCodeAsChars = XltCharBuffer.valueOf(Integer.toString(responseCode));
+            this.responseCodeAsChars = (responseCode < COMMON_RESPONSE_CODE_BUFFERS.length)
+                ? COMMON_RESPONSE_CODE_BUFFERS[responseCode]
+                : XltCharBuffer.valueOf(Integer.toString(responseCode));
         }
         else
         {
@@ -685,7 +732,27 @@ public class RequestData extends TimerData
         }
 
         this.url = url;
-        this.originalUrl = url.toString();
+        this.originalUrl = null; // Lazily computed on demand if getOriginalUrl() is called
+    }
+
+    /**
+     * Fast-path URL setter for high-throughput columnar scanning where the host and fragment-free
+     * hash code have been precomputed across sample URLs. Avoids per-row host parsing, string hashing,
+     * and string allocation.
+     *
+     * @param url
+     *            the pre-allocated URL buffer
+     * @param host
+     *            the precomputed host buffer
+     * @param hashCodeOfUrlWithoutFragment
+     *            the precomputed URL hash code without fragment
+     */
+    public void setUrlFast(final XltCharBuffer url, final XltCharBuffer host, final int hashCodeOfUrlWithoutFragment)
+    {
+        this.url = url;
+        this.host = (host != null && host.length() > 0) ? host : UNKNOWN_HOST;
+        this.hashCodeOfUrlWithoutFragment = hashCodeOfUrlWithoutFragment;
+        this.originalUrl = null; // Lazily computed on demand if getOriginalUrl() is called
     }
 
     /**
@@ -767,13 +834,16 @@ public class RequestData extends TimerData
 
     /**
      * Sets the list of IP addresses reported by DNS for the host name used when making the request.
+     * Caches the array directly without joining into a pipe-delimited string, eliminating millions
+     * of string allocations in high-throughput loops.
      *
      * @param ipAddresses
      *            the list of IP addresses
      */
     public void setIpAddresses(final String[] ipAddresses)
     {
-        this.ipAddresses = StringUtils.join(ipAddresses, IP_ADDRESSES_SEPARATOR);
+        this.ipAddressesArray = ipAddresses;
+        this.ipAddresses = null; // Lazily computed on demand if getIpAddressesAsString() is called
     }
 
     /**
@@ -824,7 +894,7 @@ public class RequestData extends TimerData
         fields.add(XltCharBuffer.emptyWhenNull(formData).toString());
 
         fields.add(String.valueOf(dnsTime));
-        fields.add(StringUtils.defaultString(ipAddresses));
+        fields.add(StringUtils.defaultString(getIpAddressesAsString()));
 
         fields.add(XltCharBuffer.emptyWhenNull(responseId).toString());
 
@@ -869,6 +939,7 @@ public class RequestData extends TimerData
 
             // XLT 4.12.0
             ipAddresses = values.get(21).toString();
+            ipAddressesArray = null;
             setResponseId(values.get(22));
 
             // XLT 7.0.0

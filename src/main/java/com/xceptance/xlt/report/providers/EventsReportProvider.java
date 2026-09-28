@@ -309,4 +309,15 @@ public class EventsReportProvider extends AbstractReportProvider
         // System.out.printf("OK (%,d values, %,d ms)\n", runTimeTimeSeries.getItemCount(), TimerUtils.getTime() -
         // start);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Events report provider only processes EventData ('E')
+        return typeCode == 'E';
+    }
 }
+

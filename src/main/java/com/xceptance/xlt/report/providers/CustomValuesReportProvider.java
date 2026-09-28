@@ -32,6 +32,47 @@ public class CustomValuesReportProvider extends AbstractDataProcessorBasedReport
     }
 
     /**
+     * High-performance batch record processing override for custom values.
+     * Iterates directly over the raw object array in {@link PostProcessedDataContainer#dataList},
+     * avoiding virtual method dispatch and bounds checking for every record.
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        if (dataContainer.typeCode != 'V')
+        {
+            super.processAll(dataContainer);
+            return;
+        }
+
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        String lastName = null;
+        CustomValueProcessor lastProcessor = null;
+
+        for (int p = 0; p < size; p++)
+        {
+            final CustomValue data = (CustomValue) array[p];
+            final String name = data.getName();
+
+            // Local register cache for sequential runs of the same custom value metric name
+            CustomValueProcessor processor = lastProcessor;
+            if (name != lastName || processor == null)
+            {
+                processor = getProcessor(name);
+                lastName = name;
+                lastProcessor = processor;
+            }
+            processor.processDataRecord(data);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -60,4 +101,18 @@ public class CustomValuesReportProvider extends AbstractDataProcessorBasedReport
 
         return reports;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Custom values ({@link CustomValue}) are scalar double measurements serialized exclusively
+     * in double-value chunks ('V'). Custom stopwatch timers ({@link com.xceptance.xlt.api.engine.CustomData})
+     * are stored in timer chunks ('C') and handled separately by {@link CustomTimersReportProvider}.
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        return typeCode == 'V';
+    }
 }
+

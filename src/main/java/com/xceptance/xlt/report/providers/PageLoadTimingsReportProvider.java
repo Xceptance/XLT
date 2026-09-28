@@ -42,6 +42,32 @@ public class PageLoadTimingsReportProvider extends BasicTimerReportProvider<Page
     }
 
     /**
+     * High-performance batch record processing override for page load timing metrics.
+     * Iterates directly over the raw object array in {@link PostProcessedDataContainer#dataList},
+     * avoiding virtual method dispatch and bounds checking for every record.
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        for (int p = 0; p < size; p++)
+        {
+            final Data data = (Data) array[p];
+            if (data instanceof PageLoadTimingData)
+            {
+                final PageLoadTimingDataProcessor processor = getProcessor(data.getName());
+                processor.processDataRecord(data);
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -52,4 +78,15 @@ public class PageLoadTimingsReportProvider extends BasicTimerReportProvider<Page
             super.processDataRecord(data);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Page load timings aggregate PageLoadTimingData ('P')
+        return typeCode == 'P';
+    }
 }
+

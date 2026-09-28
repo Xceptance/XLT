@@ -44,6 +44,47 @@ public class ActionsReportProvider extends BasicTimerReportProvider<ActionDataPr
     }
 
     /**
+     * High-performance batch record processing override for action metrics.
+     * Iterates directly over the raw object array in {@link PostProcessedDataContainer#dataList},
+     * avoiding virtual method dispatch and bounds checking for every record.
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        if (dataContainer.typeCode != 'A')
+        {
+            super.processAll(dataContainer);
+            return;
+        }
+
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        String lastName = null;
+        ActionDataProcessor lastProcessor = null;
+
+        for (int p = 0; p < size; p++)
+        {
+            final ActionData data = (ActionData) array[p];
+            final String name = data.getName();
+
+            // Local register cache for sequential runs of the same action name
+            ActionDataProcessor processor = lastProcessor;
+            if (name != lastName || processor == null)
+            {
+                processor = getProcessor(name);
+                lastName = name;
+                lastProcessor = processor;
+            }
+            processor.processDataRecord(data);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -54,4 +95,15 @@ public class ActionsReportProvider extends BasicTimerReportProvider<ActionDataPr
             super.processDataRecord(data);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Actions report provider aggregates ActionData ('A')
+        return typeCode == 'A';
+    }
 }
+

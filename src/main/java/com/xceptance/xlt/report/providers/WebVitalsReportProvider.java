@@ -65,4 +65,15 @@ public class WebVitalsReportProvider extends AbstractDataProcessorBasedReportPro
 
         return webVitalsReports;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Core Web Vitals aggregate WebVitalData ('W')
+        return typeCode == 'W';
+    }
 }
+

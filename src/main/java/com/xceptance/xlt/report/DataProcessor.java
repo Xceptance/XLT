@@ -89,6 +89,8 @@ public class DataProcessor
      */
     private final StringMatcher agentFilter;
 
+    private final ReportGeneratorConfiguration config;
+
     /**
      * Constructor.
      *
@@ -124,6 +126,7 @@ public class DataProcessor
                      final String testCaseIncludePatternList, final String testCaseExcludePatternList,
                      final String agentIncludePatternList, final String agentExcludePatternList)
     {
+        this.config = config;
         this.inputDir = inputDir;
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
@@ -138,8 +141,25 @@ public class DataProcessor
         // create the data record parser threads
         dataParserExecutor = Executors.newFixedThreadPool(config.parserThreadCount, new DaemonThreadFactory(i -> "DataParser-" + i));
 
+        // initialize chunk collector if caching is enabled and full run
+        // Only full runs (unfiltered by time slice, test cases, or agents) build the persistent cache
+        // to ensure that future runs with arbitrary query filters can reuse the cached database.
+        final boolean isFullRun = (fromTime == 0 && toTime == Long.MAX_VALUE &&
+                                   testCaseIncludePatternList == null && testCaseExcludePatternList == null &&
+                                   agentIncludePatternList == null && agentExcludePatternList == null);
+        if (config.isDataCacheEnabled() && isFullRun)
+        {
+            final java.io.File resultsDir = new java.io.File(inputDir.getName().getPath());
+            final java.io.File cacheDir = config.getDataCacheDirectory(resultsDir);
+            chunkCollector = new com.xceptance.xlt.report.storage.ChunkIngestionCollector(cacheDir);
+        }
+        else
+        {
+            chunkCollector = null;
+        }
+
         // create the dispatcher
-        dispatcher = new Dispatcher(config, statisticsProcessor);
+        dispatcher = new Dispatcher(config, statisticsProcessor, chunkCollector);
 
         // start the threads
         for (int i = 0; i < config.parserThreadCount; i++)
@@ -150,6 +170,12 @@ public class DataProcessor
 
         XltLogger.reportLogger.info(String.format("Input directory: %s", inputDir));
     }
+
+    /**
+     * Ingestion collector accumulating records into compressed columnar ChunkDB chunks concurrently
+     * with standard report statistics aggregation during cold-cache runs.
+     */
+    private final com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
 
     /**
      * Returns the maximum time.
@@ -194,19 +220,45 @@ public class DataProcessor
                 }
             }
 
-            // wait for the data processing to finish
+            // Wait for all data record parsing and thread-local processing to complete
             dispatcher.waitForDataRecordProcessingToComplete();
 
-            // complete processing and merge worker statistics into master providers
+            // Complete processing and merge worker statistics into master providers
             statisticsProcessor.complete();
 
-            final long duration = TimerUtils.get().getElapsedTime(start);
-            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) duration) * 1000L);
+            // Calculate parsing and processing duration and throughput strictly for log reading
+            final long readDuration = TimerUtils.get().getElapsedTime(start);
+            final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) readDuration) * 1000L);
 
+            // Log the parsing throughput strictly representing the record reading and statistical merging phase
             XltLogger.reportLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
                               totalLinesCounter.get(),
-                              duration,
+                              readDuration,
                               linesPerSecond));
+
+            // If transparent caching is active and this was a full cold run, persist the ChunkStorage database
+            // and write a validation fingerprint so subsequent CLI executions can execute via fast SIMD scan.
+            // NOTE: When direct-to-disk streaming is active, chunks were already written to chunks.bin.tmp during
+            // parsing; finishing writes the index table and header. We safely close storage after caching.
+            if (chunkCollector != null)
+            {
+                final long tCacheStart = TimerUtils.get().getStartTime();
+                try (final com.xceptance.xlt.report.storage.ChunkStorage storage = chunkCollector.finish())
+                {
+                    XltLogger.reportLogger.info("Persisting ChunkDB cache to disk...");
+                    final java.io.File resultsDir = new java.io.File(inputDir.getName().getPath());
+                    final com.xceptance.xlt.report.storage.cache.CacheManager cacheManager =
+                        new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
+                    cacheManager.save(storage);
+
+                    final long cacheDuration = TimerUtils.get().getElapsedTime(tCacheStart);
+                    XltLogger.reportLogger.info(String.format("ChunkDB cache persisted - %,d ms", cacheDuration));
+                }
+                catch (final Exception e)
+                {
+                    XltLogger.reportLogger.warn("Failed to persist ChunkDB cache: " + e.getMessage(), e);
+                }
+            }
         }
         catch (final Exception e)
         {

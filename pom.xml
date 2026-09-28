@@ -556,6 +556,18 @@
             <artifactId>datasketches-java</artifactId>
             <version>7.0.1</version>
         </dependency>
+        <!-- SIMD-accelerated integer compression for Stage 2 ChunkDB -->
+        <dependency>
+            <groupId>me.lemire.integercompression</groupId>
+            <artifactId>JavaFastPFOR</artifactId>
+            <version>0.1.12</version>
+        </dependency>
+        <!-- High-performance compressed bitsets for sparsity and chunk indexing -->
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>1.3.0</version>
+        </dependency>
         <!-- Java EE libs -->
         <dependency>
             <groupId>javax.xml.bind</groupId>

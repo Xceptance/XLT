@@ -81,15 +81,14 @@ public abstract class AbstractReportProvider implements ReportProvider
      */
     public void processAll(final PostProcessedDataContainer dataContainer)
     {
-        final List<Data> data = dataContainer.data;
-        int size = data.size();
-        int sampleFactor = dataContainer.sampleFactor;
+        final Object[] array = dataContainer.dataList.getInternalArray();
+        final int size = dataContainer.dataList.size();
+        final int sampleFactor = dataContainer.sampleFactor;
         int droppedLines = dataContainer.droppedLines;
 
-        for (int p = 0; p < size; p = p + 1)
+        for (int p = 0; p < size; p++)
         {
-            final Data d = data.get(p);
-            processDataRecord(d);
+            processDataRecord((Data) array[p]);
         }
 
         // ok, we have to smuggle in additional data to compensate to the sampling loss
@@ -97,10 +96,11 @@ public abstract class AbstractReportProvider implements ReportProvider
         {
             for (int i = 0; i < size; i++)
             {
-                final Data d = data.get(i);
+                final Object obj = array[i];
 
-                if (!(d instanceof TransactionData))
+                if (!(obj instanceof TransactionData))
                 {
+                    final Data d = (Data) obj;
                     for (int y = 1; y < sampleFactor; y++)
                     {
                         processDataRecord(d);

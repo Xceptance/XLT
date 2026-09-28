@@ -97,6 +97,20 @@ public class SimpleArrayList<T> implements List<T>
     }
 
     /**
+     * Returns the internal backing storage array for high-performance direct iteration.
+     * <p>
+     * <b>Performance Note:</b> Callers must only read elements in the range {@code 0 <= index < size()}.
+     * This avoids virtual interface method dispatches (e.g., {@code List.get(i)}) across millions of
+     * inner loop cycles in hot report provider processing routines.
+     *
+     * @return the direct backing Object array containing elements
+     */
+    public Object[] getInternalArray()
+    {
+        return data;
+    }
+
+    /**
      * Returns the size of this list
      */
     public int size()
@@ -214,7 +228,7 @@ public class SimpleArrayList<T> implements List<T>
     @Override
     public boolean isEmpty()
     {
-        throw new UnsupportedOperationException("unimplemented");
+        return size == 0;
     }
 
     @Override

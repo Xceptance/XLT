@@ -166,6 +166,64 @@ public class SummaryReportProvider extends AbstractReportProvider
     }
 
     /**
+     * High-performance batch record processing override for summary metrics.
+     * Uses the chunk container's declared typeCode ('R', 'A', 'T', etc.) to dispatch directly
+     * into a specialized tight loop without per-record {@code instanceof} checks.
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        // Fast path: homogeneous chunk of HTTP requests ('R')
+        if (dataContainer.typeCode == 'R')
+        {
+            final RequestDataProcessor rdp = this.requestDataProcessor;
+            for (int p = 0; p < size; p++)
+            {
+                rdp.processDataRecord((RequestData) array[p]);
+            }
+            return;
+        }
+
+        // Fast path: homogeneous chunk of Actions ('A')
+        if (dataContainer.typeCode == 'A')
+        {
+            final ActionDataProcessor adp = this.actionDataProcessor;
+            for (int p = 0; p < size; p++)
+            {
+                adp.processDataRecord((Data) array[p]);
+            }
+            return;
+        }
+
+        // Fast path: homogeneous chunk of Transactions ('T')
+        if (dataContainer.typeCode == 'T')
+        {
+            final TransactionDataProcessor tdp = this.transactionDataProcessor;
+            final AgentDataProcessor agdp = this.agentDataProcessor;
+            for (int p = 0; p < size; p++)
+            {
+                final TransactionData td = (TransactionData) array[p];
+                tdp.processDataRecord(td);
+                agdp.incrementTransactionCounters(td.hasFailed());
+            }
+            return;
+        }
+
+        // Fallback for mixed or other data record types
+        for (int p = 0; p < size; p++)
+        {
+            processDataRecord((Data) array[p]);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -252,4 +310,16 @@ public class SummaryReportProvider extends AbstractReportProvider
             agentDataProcessor.merge(other.agentDataProcessor);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Summary report provider aggregates summary timers across R, A, T, E, P, C, and J
+        return typeCode == 'R' || typeCode == 'A' || typeCode == 'T' || typeCode == 'E' ||
+               typeCode == 'P' || typeCode == 'C' || typeCode == 'J';
+    }
 }
+

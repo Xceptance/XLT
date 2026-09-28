@@ -39,6 +39,14 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
     private final FastHashMap<XltCharBuffer, RequestMethodReport> requestMethodReports = new FastHashMap<>();
 
     /**
+     * Direct-mapped 8-entry array cache for fast HTTP method lookups.
+     * With fewer than 8 distinct standard HTTP methods (GET, POST, PUT, DELETE, etc.),
+     * an 8-entry hash-indexed array guarantees virtually 100% cache hit rate with zero map queries.
+     */
+    private final XltCharBuffer[] cachedMethods = new XltCharBuffer[8];
+    private final RequestMethodReport[] cachedReports = new RequestMethodReport[8];
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -49,6 +57,83 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
         report.requestMethods = new ArrayList<>(requestMethodReports.values());
 
         return report;
+    }
+
+    /**
+     * High-performance batch record processing override for HTTP request methods.
+     * <p>
+     * <b>Performance Optimizations:</b>
+     * <ul>
+     *   <li>Retrieves raw internal object array directly from {@link PostProcessedDataContainer#dataList}
+     *       to avoid per-record collection overhead.</li>
+     *   <li>Maintains local register variables {@code lastMethod} and {@code lastReport}.
+     *       Because method buffers ("GET", "POST", etc.) are interned singletons, consecutive
+     *       requests compare via reference equality ({@code ==}).</li>
+     *   <li>When {@code method == lastMethod}, it directly increments {@code lastReport.count++},
+     *       completely bypassing hash calculations, bitwise masks, and array cache lookups.</li>
+     * </ul>
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        if (dataContainer.typeCode != 'R')
+        {
+            super.processAll(dataContainer);
+            return;
+        }
+
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        XltCharBuffer lastMethod = null;
+        RequestMethodReport lastReport = null;
+
+        for (int p = 0; p < size; p++)
+        {
+            final RequestData reqData = (RequestData) array[p];
+            XltCharBuffer method = reqData.getHttpMethod();
+            if (method == null || method.length() == 0)
+            {
+                method = UNKNOWN_REQUEST_METHOD;
+            }
+
+            // High-frequency fast path: pointer equality on interned buffer
+            if (method == lastMethod && lastReport != null)
+            {
+                lastReport.count++;
+            }
+            else
+            {
+                final int slot = method.hashCode() & 7;
+                final XltCharBuffer cachedMethod = cachedMethods[slot];
+
+                if (cachedMethod != null && (cachedMethod == method || cachedMethod.equals(method)))
+                {
+                    lastReport = cachedReports[slot];
+                    lastReport.count++;
+                }
+                else
+                {
+                    RequestMethodReport requestMethodReport = requestMethodReports.get(method);
+                    if (requestMethodReport == null)
+                    {
+                        requestMethodReport = new RequestMethodReport();
+                        requestMethodReport.method = method.toString();
+                        requestMethodReports.put(method, requestMethodReport);
+                    }
+                    requestMethodReport.count++;
+
+                    cachedMethods[slot] = method;
+                    cachedReports[slot] = requestMethodReport;
+                    lastReport = requestMethodReport;
+                }
+                lastMethod = method;
+            }
+        }
     }
 
     /**
@@ -68,6 +153,15 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
                 method = UNKNOWN_REQUEST_METHOD;
             }
 
+            final int slot = method.hashCode() & 7;
+            final XltCharBuffer cachedMethod = cachedMethods[slot];
+
+            if (cachedMethod != null && (cachedMethod == method || cachedMethod.equals(method)))
+            {
+                cachedReports[slot].count++;
+                return;
+            }
+
             RequestMethodReport requestMethodReport = requestMethodReports.get(method);
             if (requestMethodReport == null)
             {
@@ -78,6 +172,9 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             }
 
             requestMethodReport.count++;
+
+            cachedMethods[slot] = method;
+            cachedReports[slot] = requestMethodReport;
         }
     }
 
@@ -123,4 +220,15 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // HTTP request methods are extracted solely from HTTP Request records ('R')
+        return typeCode == 'R';
+    }
 }
+

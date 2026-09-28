@@ -118,7 +118,16 @@ public class IntTimeSeriesEntry
             this.minimum = v;
         }
 
-        final int scaled = scaleIfNeeded(v);
+        // Fast-path for sub-128 ms values when scale is zero: avoids method call overhead
+        final int scaled;
+        if (distinctValuesScale == 0 && v < 128)
+        {
+            scaled = v;
+        }
+        else
+        {
+            scaled = scaleIfNeeded(v);
+        }
 
         if (scaled < 64)
         {
@@ -156,9 +165,23 @@ public class IntTimeSeriesEntry
 
     /**
      * Scales up the distinct values bitmap to the target scale.
+     * <p>
+     * Every scale step halves the resolution by merging adjacent bits across the 128-bit
+     * register (low 64-bit and high 64-bit words) using parallel bit compression.
+     * 
+     * @param targetScale
+     *            the target scale factor to reach
      */
     private void scaleUp(final int targetScale)
     {
+        // Fast-path: if no distinct values have been recorded yet, simply jump to targetScale
+        // without executing bitwise compression loops over all-zero bitmasks.
+        if (distinctValuesLow == 0L && distinctValuesHigh == 0L)
+        {
+            distinctValuesScale = targetScale;
+            return;
+        }
+
         while (distinctValuesScale < targetScale)
         {
             long l = BitCompression.combineAdjacentBits(distinctValuesLow);
@@ -176,9 +199,29 @@ public class IntTimeSeriesEntry
 
     /**
      * Scales the bitmap if the value exceeds the 128-slot capacity.
+     * <p>
+     * When recording values into a previously unscaled entry that starts empty, directly calculates
+     * the required scale factor using bit shifts instead of invoking iterative compression passes.
+     * 
+     * @param value
+     *            the sample value to scale
+     * @return the scaled slot index fitting into [0..127]
      */
     private int scaleIfNeeded(final int value)
     {
+        // Fast-path: if the distinct value bitmap is empty, compute target scale directly
+        // without running iterative scaling loops.
+        if (distinctValuesLow == 0L && distinctValuesHigh == 0L)
+        {
+            int v = value;
+            while (v >= 128)
+            {
+                distinctValuesScale++;
+                v >>= 1;
+            }
+            return v;
+        }
+
         int v = value >> distinctValuesScale;
 
         while (v >= 128)

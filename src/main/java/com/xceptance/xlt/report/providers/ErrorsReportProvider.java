@@ -410,11 +410,95 @@ public class ErrorsReportProvider extends AbstractReportProvider
     }
 
     /**
+     * High-performance chunk-level processor override.
+     * <p>
+     * If the current chunk contains no failed records or error response codes (as determined by the
+     * chunk-level roaring bitmap during decompression), this provider skips iterating over all records
+     * in the chunk entirely, reducing processing overhead to zero for successful chunks.
+     * If failed records exist in a request chunk ('R'), it filters records inline using primitive
+     * checks, avoiding virtual method invocations for successful requests.
+     *
+     * @param dataContainer
+     *            the post-processed data container holding the chunk's records
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        // Skip scanning all 65,536 records if the chunk contains no failed transactions or requests
+        if (!dataContainer.hasFailedRecords)
+        {
+            return;
+        }
+
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        if (dataContainer.typeCode == 'R')
+        {
+            for (int p = 0; p < size; p++)
+            {
+                final RequestData req = (RequestData) array[p];
+                final int code = req.getResponseCode();
+                if (req.hasFailed() || code == 0 || code >= 500)
+                {
+                    processDataRecord(req);
+                }
+            }
+            return;
+        }
+
+        if (dataContainer.typeCode == 'T')
+        {
+            for (int p = 0; p < size; p++)
+            {
+                final TransactionData txn = (TransactionData) array[p];
+                if (txn.hasFailed())
+                {
+                    processDataRecord(txn);
+                }
+            }
+            return;
+        }
+
+        if (dataContainer.typeCode == 'A')
+        {
+            for (int p = 0; p < size; p++)
+            {
+                final ActionData act = (ActionData) array[p];
+                if (act.hasFailed())
+                {
+                    processDataRecord(act);
+                }
+            }
+            return;
+        }
+
+        for (int p = 0; p < size; p++)
+        {
+            processDataRecord((Data) array[p]);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public void processDataRecord(final Data stat)
     {
+        // Fast-path: 99.9% of records in typical load tests are successful RequestData.
+        // If a request has not failed and its status code is valid (< 500 and != 0), it has
+        // no errors or failure stack traces to record, so exit immediately.
+        if (stat instanceof RequestData)
+        {
+            final RequestData req = (RequestData) stat;
+            final int code = req.getResponseCode();
+            if (!req.hasFailed() && code != 0 && code < 500)
+            {
+                return;
+            }
+        }
+
         // process error messages/stack traces
         if (stat instanceof TransactionData)
         {
@@ -568,6 +652,17 @@ public class ErrorsReportProvider extends AbstractReportProvider
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Errors are gathered from Transactions ('T'), Actions ('A'), Events ('E'), and Requests ('R')
+        return typeCode == 'T' || typeCode == 'A' || typeCode == 'E' || typeCode == 'R';
+    }
+
 
     /**
      * {@inheritDoc}

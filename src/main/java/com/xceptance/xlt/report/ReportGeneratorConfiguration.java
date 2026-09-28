@@ -197,6 +197,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RESULTS_ROOT_DIR = PROP_PREFIX + "results";
 
+    /** Configuration property key to enable or disable persistent ChunkDB disk caching. */
+    public static final String PROP_DATA_CACHE_ENABLED = PROP_PREFIX + "dataCache.enabled";
+
+    /** Configuration property key specifying the directory name or path for the persistent ChunkDB cache. */
+    public static final String PROP_DATA_CACHE_DIR = PROP_PREFIX + "dataCache.dir";
+
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
     static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
@@ -377,6 +383,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final int maxFramesPerTrace;
 
+    private boolean dataCacheEnabled;
+
+    private String dataCacheDirectoryName;
+
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
     private double defaultApdexThreshold;
@@ -523,6 +533,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             testResultsRootDir = new File(homeDirectory, testResultsRootDir.getPath());
         }
         testResultsRootDirectory = testResultsRootDir;
+
+        // data cache settings
+        dataCacheEnabled = getBooleanProperty(PROP_DATA_CACHE_ENABLED, true);
+        dataCacheDirectoryName = getStringProperty(PROP_DATA_CACHE_DIR, "xlt-cache");
 
         // error settings
         generateErrorLinks = getBooleanProperty(PROP_GENERATE_ERROR_LINKS, false);
@@ -897,6 +911,67 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public String getResultsDirectoryName()
     {
         return resultsDirectoryName;
+    }
+
+    /**
+     * Indicates whether the persistent ChunkDB binary cache is enabled.
+     *
+     * @return {@code true} if caching is enabled, {@code false} otherwise
+     */
+    public boolean isDataCacheEnabled()
+    {
+        return dataCacheEnabled;
+    }
+
+    /**
+     * Enables or disables persistent ChunkDB binary caching.
+     *
+     * @param dataCacheEnabled
+     *            {@code true} to enable caching, {@code false} to disable
+     */
+    public void setDataCacheEnabled(final boolean dataCacheEnabled)
+    {
+        this.dataCacheEnabled = dataCacheEnabled;
+    }
+
+    /**
+     * Returns the configured name or relative/absolute path of the persistent data cache directory.
+     *
+     * @return the cache directory name or path
+     */
+    public String getDataCacheDirectoryName()
+    {
+        return dataCacheDirectoryName;
+    }
+
+    /**
+     * Sets the name or path for the persistent data cache directory.
+     *
+     * @param dataCacheDirectoryName
+     *            the directory name or path
+     */
+    public void setDataCacheDirectoryName(final String dataCacheDirectoryName)
+    {
+        this.dataCacheDirectoryName = dataCacheDirectoryName;
+    }
+
+    /**
+     * Resolves the persistent cache directory for a given test results directory.
+     * If the configured directory name is an absolute path, it is returned directly;
+     * otherwise, it is resolved as a child directory within the test results root.
+     *
+     * @param testResultDir
+     *            the root directory containing test results
+     * @return the resolved cache directory {@link File}
+     */
+    public File getDataCacheDirectory(final File testResultDir)
+    {
+        final File dir = new File(dataCacheDirectoryName);
+        if (dir.isAbsolute())
+        {
+            return dir;
+        }
+        return new File(testResultDir, dataCacheDirectoryName);
     }
 
     public int[] getRuntimeIntervalBoundaries()

@@ -126,6 +126,58 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
     }
 
     /**
+     * High-performance batch record processing override for HTTP requests.
+     * <p>
+     * <b>Performance Optimizations:</b>
+     * <ul>
+     *   <li>Retrieves raw internal object array directly from {@link PostProcessedDataContainer#dataList}
+     *       to avoid bounds checks and iterator allocation.</li>
+     *   <li>Maintains local register variables {@code lastName} and {@code lastProcessor}. Since HTTP
+     *       requests within a chunk often share identical timer names sequentially (e.g., repeating calls
+     *       to the same endpoint), the processor lookup is completely bypassed on matching pointer equality.</li>
+     *   <li>Invokes strongly typed {@link RequestDataProcessor#processDataRecord(RequestData)}, eliminating
+     *       generic {@code (Data)} and {@code (TimerData)} upcasting and downcasting inside the tight loop.</li>
+     * </ul>
+     *
+     * @param dataContainer
+     *            the container holding post-processed records for this chunk
+     */
+    @Override
+    public void processAll(final com.xceptance.xlt.api.report.PostProcessedDataContainer dataContainer)
+    {
+        if (dataContainer.typeCode != 'R')
+        {
+            super.processAll(dataContainer);
+            return;
+        }
+
+        final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
+        final Object[] array = list.getInternalArray();
+        final int size = list.size();
+
+        String lastName = null;
+        RequestDataProcessor lastProcessor = null;
+
+        for (int p = 0; p < size; p++)
+        {
+            final RequestData stat = (RequestData) array[p];
+            final String name = stat.getName();
+            RequestDataProcessor processor = lastProcessor;
+
+            // Fast-path pointer equality check before invoking provider cache
+            if (name != lastName || processor == null)
+            {
+                processor = getProcessor(name);
+                lastName = name;
+                lastProcessor = processor;
+            }
+
+            // Direct invocation of strongly typed RequestData accumulator
+            processor.processDataRecord(stat);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -136,4 +188,15 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
             super.processDataRecord(data);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsType(final char typeCode)
+    {
+        // Requests report provider only aggregates HTTP Request data records ('R')
+        return typeCode == 'R';
+    }
 }
+

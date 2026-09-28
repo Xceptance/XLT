@@ -77,26 +77,45 @@ public class Dispatcher
      */
     private final ProgressBar progressBar = new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
 
-    /**
-     * Where the processed data goes for final result evaluation
-     */
     private final StatisticsProcessor statisticsProcessor;
 
     /**
-     * Creates a new {@link Dispatcher} object with the given thread limit.
+     * Optional collector for streaming parsed records into ChunkDB storage during ingestion.
+     */
+    private final com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
+
+    /**
+     * Creates a new {@link Dispatcher} object with the given configuration and statistics processor.
      *
-     * @param directoriesToBeProcessed
-     *            the number of directories that need to be processed
-     * @param maxActiveThreads
-     *            the maximum number of active threads
+     * @param config
+     *            the report generator configuration
+     * @param statisticsProcessor
+     *            the statistics aggregation pipeline
      */
     public Dispatcher(final ReportGeneratorConfiguration config, final StatisticsProcessor statisticsProcessor)
+    {
+        this(config, statisticsProcessor, null);
+    }
+
+    /**
+     * Creates a new {@link Dispatcher} object with the given configuration, statistics processor, and ChunkDB collector.
+     *
+     * @param config
+     *            the report generator configuration
+     * @param statisticsProcessor
+     *            the statistics aggregation pipeline
+     * @param chunkCollector
+     *            optional {@link com.xceptance.xlt.report.storage.ChunkIngestionCollector} for populating ChunkDB
+     */
+    public Dispatcher(final ReportGeneratorConfiguration config, final StatisticsProcessor statisticsProcessor,
+                      final com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector)
     {
         readDataQueue = new LinkedBlockingQueue<>(config.threadQueueLength);
 
         chunkSize = config.threadQueueBucketSize;
 
         this.statisticsProcessor = statisticsProcessor;
+        this.chunkCollector = chunkCollector;
     }
 
     public void startProgress()
@@ -153,13 +172,20 @@ public class Dispatcher
     }
 
     /**
-     * Delivers a parsed chunk of data and puts it through the statistics processors
+     * Delivers a parsed chunk of data and puts it through the statistics processors.
+     * Also streams the parsed data records into ChunkDB ingestion collector if active.
      *
-     * @param dataRecordChunk
-     *            the data record chunk
+     * @param postprocessedData
+     *            the post-processed data records container
+     * @throws InterruptedException
+     *             if interrupted while queuing or processing
      */
     public void addPostprocessedData(final PostProcessedDataContainer postprocessedData) throws InterruptedException
     {
+        if (chunkCollector != null)
+        {
+            chunkCollector.collect(postprocessedData.data);
+        }
         statisticsProcessor.process(postprocessedData);
         finishedProcessing();
     }
