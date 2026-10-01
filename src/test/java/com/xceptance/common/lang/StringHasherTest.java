@@ -18,7 +18,6 @@ package com.xceptance.common.lang;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 public class StringHasherTest
 {
@@ -27,7 +26,7 @@ public class StringHasherTest
     {
         String s1 = "http://www.com/foobar";
         Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(s1, '#'));
-        Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(XltCharBuffer.valueOf(s1), '#'));
+        Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(new StringBuilder(s1), '#'));
     }
 
     @Test
@@ -37,7 +36,7 @@ public class StringHasherTest
         String s2 = "http://www.com/foobar#nothing";
         
         Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(s2, '#'));
-        Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(XltCharBuffer.valueOf(s2), '#'));
+        Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(new StringBuilder(s2), '#'));
     }
     
     @Test
@@ -45,20 +44,20 @@ public class StringHasherTest
     {
         String s1 = "";
         Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(s1, '#'));
-        Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(XltCharBuffer.valueOf(s1), '#'));
+        Assert.assertEquals(s1.hashCode(), StringHasher.hashCodeWithLimit(new StringBuilder(s1), '#'));
     }    
 
     @Test
     public void handlesOnlyLimited()
     {
         Assert.assertEquals("".hashCode(), StringHasher.hashCodeWithLimit("#", '#'));
-        Assert.assertEquals("".hashCode(), StringHasher.hashCodeWithLimit(XltCharBuffer.valueOf("#"), '#'));
+        Assert.assertEquals("".hashCode(), StringHasher.hashCodeWithLimit(new StringBuilder("#"), '#'));
     }       
     
     @Test
     public void handlesLimiterAtTheEnd()
     {
         Assert.assertEquals("test".hashCode(), StringHasher.hashCodeWithLimit("test#", '#'));
-        Assert.assertEquals("test".hashCode(), StringHasher.hashCodeWithLimit(XltCharBuffer.valueOf("test#"), '#'));
+        Assert.assertEquals("test".hashCode(), StringHasher.hashCodeWithLimit(new StringBuilder("test#"), '#'));
     }    
 }

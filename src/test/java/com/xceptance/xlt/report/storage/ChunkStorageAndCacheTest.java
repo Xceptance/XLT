@@ -45,7 +45,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.common.util.CsvByteColumns;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.storage.cache.CacheFingerprint;
 import com.xceptance.xlt.report.storage.cache.CacheManager;
@@ -88,9 +88,9 @@ public class ChunkStorageAndCacheTest
             r.setFailed(i % 50 == 0);
             r.setBytesSent(128);
             r.setBytesReceived(2048 + i);
-            r.setHttpMethod(XltCharBuffer.valueOf("GET"));
-            r.setContentType(XltCharBuffer.valueOf("text/html"));
-            r.setUrl(XltCharBuffer.valueOf("https://example.com/test?id=" + (i % 10)));
+            r.setHttpMethod("GET");
+            r.setContentType("text/html");
+            r.setUrl("https://example.com/test?id=" + (i % 10));
             r.setAgentName("Agent-" + (i % 2));
             r.setTransactionName("TOrder");
 
@@ -431,6 +431,41 @@ public class ChunkStorageAndCacheTest
     }
 
     /**
+     * Verifies that generic record chunking correctly handles rows whose serialized columns
+     * exceed the initial 4KB row buffer, ensuring rowBuffer expansion preserves all preceding columns.
+     */
+    @Test
+    public void testGenericDataChunkWithLargeRowBufferExpansion() throws Exception
+    {
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+
+        // Create a large 6000-byte payload for extra2, which forces rowBuffer expansion in GenericDataChunkHandler
+        final String largePayload = "X".repeat(6000);
+
+        final CustomLogRecord rec = new CustomLogRecord("CustomTimer-Large",
+                                                        "extra-one-value",
+                                                        largePayload);
+        rec.setTime(1_700_000_000_000L);
+        rec.setAgentName("Agent-1");
+        rec.setTransactionName("TScenario");
+        collector.collect(rec);
+
+        final ChunkStorage storage = collector.finish();
+        Assert.assertNotNull(storage);
+        Assert.assertEquals(1, storage.getTotalRowCount());
+
+        final List<Data> scanned = new ArrayList<>();
+        final ScanPredicate allPred = new ScanPredicate(0, Long.MAX_VALUE, null, null);
+        storage.scan('Z', allPred, scanned::add);
+
+        Assert.assertEquals(1, scanned.size());
+        final CustomLogRecord result = (CustomLogRecord) scanned.get(0);
+        Assert.assertEquals("CustomTimer-Large", result.getName());
+        Assert.assertEquals("extra-one-value", result.getExtra1());
+        Assert.assertEquals(largePayload, result.getExtra2());
+    }
+
+    /**
      * Verifies direct-to-disk streaming ingestion via {@link com.xceptance.xlt.report.storage.chunk.ChunkSpooler},
      * ensuring that lightweight {@link DiskChunk} descriptors are populated during parsing, the V2 header
      * and metadata index table are written without buffer overflow, and queries accurately load payloads on demand.
@@ -454,9 +489,9 @@ public class ChunkStorageAndCacheTest
             r.setFailed(i % 100 == 0);
             r.setBytesSent(256);
             r.setBytesReceived(1024 + i);
-            r.setHttpMethod(XltCharBuffer.valueOf("GET"));
-            r.setContentType(XltCharBuffer.valueOf("text/html"));
-            r.setUrl(XltCharBuffer.valueOf("https://example.com/item?id=" + (i % 25)));
+            r.setHttpMethod("GET");
+            r.setContentType("text/html");
+            r.setUrl("https://example.com/item?id=" + (i % 25));
             r.setAgentName("Agent-" + (i % 4));
             r.setTransactionName("TScenario");
 
@@ -539,15 +574,15 @@ public class ChunkStorageAndCacheTest
         }
 
         @Override
-        public void setRemainingValues(final List<XltCharBuffer> values)
+        public void setRemainingValues(final CsvByteColumns values)
         {
             if (values.size() >= 4)
             {
-                extra1 = values.get(3).toString();
+                extra1 = values.getString(3);
             }
             if (values.size() >= 5)
             {
-                extra2 = values.get(4).toString();
+                extra2 = values.getString(4);
             }
         }
 

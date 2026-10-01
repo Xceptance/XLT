@@ -17,15 +17,16 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.common.util.CsvLineDecoder;
+import com.xceptance.common.util.CsvByteColumns;
+import com.xceptance.common.util.CsvByteLineDecoder;
 import com.xceptance.common.util.CsvUtils;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Test the implementation of {@link RequestData}.
@@ -299,8 +300,8 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(bytesSent, instance.getBytesSent());
         Assert.assertEquals(bytesReceived, instance.getBytesReceived());
         Assert.assertEquals(responseCode, instance.getResponseCode());
-        Assert.assertEquals(XltCharBuffer.valueOf(url), instance.getUrl());
-        Assert.assertEquals(XltCharBuffer.valueOf(contentType), instance.getContentType());
+        Assert.assertEquals(url, instance.getUrl());
+        Assert.assertEquals(contentType, instance.getContentType());
     }
 
     /**
@@ -333,8 +334,8 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(bytesSent, instance.getBytesSent());
         Assert.assertEquals(bytesReceived, instance.getBytesReceived());
         Assert.assertEquals(responseCode, instance.getResponseCode());
-        Assert.assertEquals(XltCharBuffer.valueOf(url), instance.getUrl());
-        Assert.assertEquals(XltCharBuffer.valueOf(contentType), instance.getContentType());
+        Assert.assertEquals(url, instance.getUrl());
+        Assert.assertEquals(contentType, instance.getContentType());
     }
 
     /**
@@ -801,9 +802,9 @@ public class RequestDataTest extends TimerDataTest
             formDataEncoding = this.formDataEncoding;
             formData = this.formData;
         }
-        Assert.assertEquals(XltCharBuffer.valueOf(httpMethod), instance.getHttpMethod());
-        Assert.assertEquals(XltCharBuffer.valueOf(formDataEncoding), instance.getFormDataEncoding());
-        Assert.assertEquals(XltCharBuffer.valueOf(formData), instance.getFormData());
+        Assert.assertEquals(httpMethod, instance.getHttpMethod());
+        Assert.assertEquals(formDataEncoding, instance.getFormDataEncoding());
+        Assert.assertEquals(formData, instance.getFormData());
 
         // XLT 4.7.0
         int dnsTime = (xltVersion < 40700) ? 0 : this.dnsTime;
@@ -827,7 +828,8 @@ public class RequestDataTest extends TimerDataTest
      */
     private static RequestData fromCsv(final String csv)
     {
-        List<XltCharBuffer> elements = CsvLineDecoder.parse(csv);
+        final byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
+        final CsvByteColumns elements = CsvByteLineDecoder.parse(bytes);
 
         RequestData instance = new RequestData();
         instance.setBaseValues(elements);

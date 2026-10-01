@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.common.util.CsvByteColumns;
 
 /**
  * The {@link AbstractData} class may be the super class of a special data record class.
@@ -85,9 +85,9 @@ public abstract class AbstractData implements Data
      * Recreates the full object state at once. Mainly for testing.
      *
      * @param values
-     *            the string list to recreate the object state from
+     *            the byte columns to recreate the object state from
      */
-    public final void setAllValues(final List<XltCharBuffer> values)
+    public final void setAllValues(final CsvByteColumns values)
     {
         setBaseValues(values);
         setRemainingValues(values);
@@ -97,16 +97,19 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public void setBaseValues(final List<XltCharBuffer> values)
+    public void setBaseValues(final CsvByteColumns values)
     {
         // check the type code
-        if (values.get(0).charAt(0) == typeCode)
+        // Decision: We intentionally do not check lengths[0] > 0 before calling byteAt(0, 0).
+        // In XLT result files, column 0 is guaranteed by the engine to contain a valid single-byte
+        // type code, so omitting the extra length check saves a branch on every processed record.
+        if (values.byteAt(0, 0) == (byte) typeCode)
         {
             // read and check the values
-            name = values.get(1).toString();
+            name = values.toString(1);
             name.hashCode(); // create it when it is still hot in the cache
 
-            time = ParseNumbers.parseLong(values.get(2));
+            time = values.parseLong(2);
 
             if (time <= 0)
             {
@@ -115,7 +118,7 @@ public abstract class AbstractData implements Data
         }
         else
         {
-            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values.get(0) +
+            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values.toString(0) +
                                                "' does not match the expected type code '" + typeCode + "'.");
         }
     }
@@ -123,6 +126,10 @@ public abstract class AbstractData implements Data
     /**
      * {@inheritDoc}
      */
+    @Override
+    public void setRemainingValues(final CsvByteColumns values)
+    {
+    }
     @Override
     public String getAgentName()
     {

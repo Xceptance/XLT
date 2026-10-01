@@ -26,7 +26,6 @@ import org.roaringbitmap.RoaringBitmap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -262,7 +261,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
-        final XltCharBuffer[] stringBuffers = dicts.getStringsCharBuffersArray();
+        final String[] stringBuffers = dicts.getStringsArray();
 
         // 3. Linear row scan and reconstitution
         for (int i = 0; i < rowCount; i++)
@@ -396,7 +395,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
-        final XltCharBuffer[] stringBuffers = dicts.getStringsCharBuffersArray();
+        final String[] stringBuffers = dicts.getStringsArray();
 
         long minTime = Long.MAX_VALUE;
         long maxTime = 0;
@@ -411,13 +410,13 @@ public class RequestChunkHandler implements ChunkTypeHandler
         GlobalDictionaries.AgentTestCase lastPair = null;
 
         int lastMethodId = -1;
-        XltCharBuffer lastMethod = null;
+        String lastMethod = null;
 
         int lastTypeId = -1;
-        XltCharBuffer lastType = null;
+        String lastType = null;
 
         int lastUsedIpId = -1;
-        XltCharBuffer lastUsedIp = null;
+        String lastUsedIp = null;
 
         int containerIndex = container.dataList.size();
 

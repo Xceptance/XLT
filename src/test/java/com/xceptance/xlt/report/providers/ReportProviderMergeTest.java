@@ -22,7 +22,6 @@ import org.junit.Test;
 import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Tests the merge behavior of ReportProviders.
@@ -47,7 +46,7 @@ public class ReportProviderMergeTest
         req.setResponseCode(responseCode);
         req.setBytesReceived(bytesReceived);
         req.setBytesSent(128);
-        req.setHttpMethod(XltCharBuffer.valueOf(httpMethod));
+        req.setHttpMethod(httpMethod);
         req.setUrl("http://localhost/" + name);
         return req;
     }

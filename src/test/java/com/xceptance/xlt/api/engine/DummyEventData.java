@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
+import com.xceptance.common.util.CsvByteTestUtils;
 
 /**
  * This class provides a dummy implementation of {@link CustomData} but makes {@link #parseRemainingValues(String[])} public to
@@ -46,10 +46,7 @@ public class DummyEventData extends EventData
     {
         final DummyEventData returnValue = new DummyEventData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
-            {
-                "E", "eventName", "3000", "1", "true", stackTrace
-            }));
+        returnValue.setAllValues(CsvByteTestUtils.toColumns("E", "eventName", "3000", "1", "true", stackTrace));
         returnValue.setAgentName("007");
         return returnValue;
     }

@@ -17,7 +17,7 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.common.util.CsvByteColumns;
 
 /**
  * The {@link Data} interface defines the minimum functionality any data record must implement to be recordable by the
@@ -32,11 +32,11 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
  * <li>it must have a name</li>
  * <li>it must have a time stamp</li>
  * <li>it must be able to serialize its state as a list of strings</li>
- * <li>it must be able to reconstruct its state from a list of strings</li>
+ * <li>it must be able to reconstruct its state from parsed byte columns</li>
  * </ul>
- * Serialization and reconstruction: Note that {@link #toList()} on the one side and {@link #setBaseValues(List)} and
- * {@link #setRemainingValues(List)} on the other side work inversely. The data produced by {@link #toList()} during a
- * load test will later be passed to {@link #setBaseValues(List)} and {@link #setRemainingValues(List)} during report
+ * Serialization and reconstruction: Note that {@link #toList()} on the one side and {@link #setBaseValues(CsvByteColumns)} and
+ * {@link #setRemainingValues(CsvByteColumns)} on the other side work inversely. The data produced by {@link #toList()} during a
+ * load test will later be passed to {@link #setBaseValues(CsvByteColumns)} and {@link #setRemainingValues(CsvByteColumns)} during report
  * creation. It is the programmer's responsibility to ensure that the implementation of these methods is in sync.
  * <p>
  * The data record can be logged using the {@link DataManager}.
@@ -51,36 +51,36 @@ public interface Data
      * order are specific to the concrete implementation class.
      *
      * @return the list of values that form the state of this object
-     * @see #setBaseValues(List)
-     * @see #setRemainingValues(List)
+     * @see #setBaseValues(CsvByteColumns)
+     * @see #setRemainingValues(CsvByteColumns)
      */
     public List<String> toList();
 
     /**
      * Called by XLT during report creation to recreate the base object state (type code, name, and timestamp) from the
-     * passed string list. The remaining values may later be initialized by calling {@link #setRemainingValues(List)}
-     * with the same list of values. Splitting the process of recreating the full object state into two methods is
+     * passed byte columns. The remaining values may later be initialized by calling {@link #setRemainingValues(CsvByteColumns)}
+     * with the same columns. Splitting the process of recreating the full object state into two methods is
      * purely for performance reasons as the second step is not always needed.
      *
      * @param values
-     *            the string list to recreate the object state from
-     * @see #setRemainingValues(List)
+     *            the byte columns to recreate the object state from
+     * @see #setRemainingValues(CsvByteColumns)
      * @see #toList()
      */
-    public void setBaseValues(final List<XltCharBuffer> values);
+    public void setBaseValues(final CsvByteColumns values);
 
     /**
-     * Called by XLT during report creation to recreate the remaining object state from the passed string list. The base
-     * values have already been initialized by calling {@link #setBaseValues(List)} with the same list of values.
+     * Called by XLT during report creation to recreate the remaining object state from the passed byte columns. The base
+     * values have already been initialized by calling {@link #setBaseValues(CsvByteColumns)} with the same columns.
      * Splitting the process of recreating the full object state into two methods is purely for performance reasons as
      * the second step is not always needed.
      *
      * @param values
-     *            the string list to recreate the object state from
-     * @see #setBaseValues(List)
+     *            the byte columns to recreate the object state from
+     * @see #setBaseValues(CsvByteColumns)
      * @see #toList()
      */
-    public void setRemainingValues(final List<XltCharBuffer> values);
+    public void setRemainingValues(final CsvByteColumns values);
 
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.

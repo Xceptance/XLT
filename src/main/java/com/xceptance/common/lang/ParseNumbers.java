@@ -15,6 +15,7 @@
  */
 package com.xceptance.common.lang;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -251,5 +252,201 @@ public final class ParseNumbers
         {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Parses the byte array slice and returns the result as long.
+     *
+     * @param s
+     *            the byte buffer to parse
+     * @param offset
+     *            the start offset in the byte buffer
+     * @param length
+     *            the number of bytes to parse
+     * @return the converted bytes as long
+     * @throws NumberFormatException
+     *             if the bytes cannot be parsed as a long
+     */
+    public static long parseLong(final byte[] s, final int offset, final int length)
+    {
+        if (s == null)
+        {
+            throw new NumberFormatException("null");
+        }
+        if (length <= 0)
+        {
+            throw new NumberFormatException("length = " + length);
+        }
+
+        final byte first = s[offset];
+        final boolean negative = (first == '-');
+        int i = offset;
+        final int end = offset + length;
+
+        if (negative || first == '+')
+        {
+            i++;
+            if (i >= end)
+            {
+                throw new NumberFormatException("Invalid number: " + new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+        }
+
+        long value = 0;
+        while (i < end)
+        {
+            final byte b = s[i++];
+            if (b < '0' || b > '9')
+            {
+                throw new NumberFormatException("Not a long: " + new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+            value = (value << 3) + (value << 1) + (b - DIGITOFFSET);
+        }
+
+        return negative ? -value : value;
+    }
+
+    /**
+     * Parses the byte array slice and returns the result as int.
+     *
+     * @param s
+     *            the byte buffer to parse
+     * @param offset
+     *            the start offset in the byte buffer
+     * @param length
+     *            the number of bytes to parse
+     * @return the converted bytes as int
+     * @throws NumberFormatException
+     *             if the bytes cannot be parsed as an int
+     */
+    public static int parseInt(final byte[] s, final int offset, final int length)
+    {
+        if (s == null)
+        {
+            throw new NumberFormatException("null");
+        }
+        if (length <= 0)
+        {
+            throw new NumberFormatException("length = " + length);
+        }
+
+        final byte first = s[offset];
+        final boolean negative = (first == '-');
+        int i = offset;
+        final int end = offset + length;
+
+        if (negative || first == '+')
+        {
+            i++;
+            if (i >= end)
+            {
+                throw new NumberFormatException("Invalid number: " + new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+        }
+
+        int value = 0;
+        while (i < end)
+        {
+            final byte b = s[i++];
+            if (b < '0' || b > '9')
+            {
+                throw new NumberFormatException("Not an int: " + new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+            value = (value << 3) + (value << 1) + (b - DIGITOFFSET);
+        }
+
+        return negative ? -value : value;
+    }
+
+    /**
+     * Parses the byte array slice and returns the result as double.
+     *
+     * @param s
+     *            the byte buffer to parse
+     * @param offset
+     *            the start offset in the byte buffer
+     * @param length
+     *            the number of bytes to parse
+     * @return the converted bytes as double
+     * @throws NumberFormatException
+     *             if the bytes cannot be parsed as a double
+     */
+    public static double parseDouble(final byte[] s, final int offset, final int length)
+    {
+        if (s == null)
+        {
+            throw new NumberFormatException("null");
+        }
+        if (length <= 0)
+        {
+            throw new NumberFormatException("length = " + length);
+        }
+
+        final byte first = s[offset];
+        final boolean negative = (first == '-');
+        int i = offset;
+        final int end = offset + length;
+
+        if (negative || first == '+')
+        {
+            i++;
+            if (i >= end)
+            {
+                throw new NumberFormatException("Invalid double: " + new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+        }
+
+        long value = 0;
+        int decimalPos = 0;
+
+        // Decision: We intentionally do not check for duplicate decimal points. XLT numeric output
+        // is well-formed, and omitting multi-dot validation avoids unnecessary branch checks in this
+        // ultra-hot number parsing loop.
+        while (i < end)
+        {
+            final byte b = s[i];
+            if (b == '.')
+            {
+                decimalPos = i;
+                i++;
+                continue;
+            }
+            if (b < '0' || b > '9')
+            {
+                return Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+            value = (value << 3) + (value << 1) + (b - DIGITOFFSET);
+            i++;
+        }
+
+        final double result = (decimalPos > 0 && (end - decimalPos) < multipliers.length)
+            ? value * multipliers[end - decimalPos]
+            : (decimalPos > 0 ? Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8)) : value);
+
+        return negative ? -result : result;
+    }
+
+    /**
+     * Parses a boolean directly from a byte slice. Returns {@code true} if the bytes match
+     * "true" (case-insensitive), {@code false} otherwise.
+     *
+     * @param s
+     *            the byte buffer to parse
+     * @param offset
+     *            the start offset in the byte buffer
+     * @param length
+     *            the number of bytes to parse
+     * @return true if matches "true", false otherwise
+     */
+    public static boolean parseBoolean(final byte[] s, final int offset, final int length)
+    {
+        if (s != null && length == 4)
+        {
+            return (s[offset] == 't' || s[offset] == 'T')
+                && (s[offset + 1] == 'r' || s[offset + 1] == 'R')
+                && (s[offset + 2] == 'u' || s[offset + 2] == 'U')
+                && (s[offset + 3] == 'e' || s[offset + 3] == 'E');
+        }
+        return false;
     }
 }

@@ -21,8 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.common.lang.ReflectionUtils;
-import com.xceptance.xlt.api.util.XltCharBuffer;
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
+import com.xceptance.common.util.CsvByteTestUtils;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
@@ -40,10 +39,7 @@ public class TransactionDataSecondTest
         Assert.assertEquals("Default changed, ", null, td.getDumpDirectoryPath());
 
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        final List<XltCharBuffer> values = XltCharBufferUtil.toList(new String[]
-            {
-                "T", "noname", "123", "1", "true", stackTrace
-            });
+        final var values = CsvByteTestUtils.toColumns("T", "noname", "123", "1", "true", stackTrace);
         td.setRemainingValues(values);
 
         final String directoryName = ReflectionUtils.readField(TransactionData.class, td, "directoryName");
@@ -54,18 +50,12 @@ public class TransactionDataSecondTest
 
         Assert.assertEquals("Wrong dump directory", expected, td.getDumpDirectoryPath());
 
-        final List<XltCharBuffer> values2 = XltCharBufferUtil.toList(new String[]
-            {
-                "T", "noname", "123", "1", "true", ""
-            });
+        final var values2 = CsvByteTestUtils.toColumns("T", "noname", "123", "1", "true", "");
         td.setRemainingValues(values2);
 
         Assert.assertEquals("Wrong stack trace", null, td.getFailureStackTrace());
 
-        final List<XltCharBuffer> values3 = XltCharBufferUtil.toList(new String[]
-            {
-                "T", "noname", "123", "1", "true", "neitherMatchingNorEmptySTackTrace"
-            });
+        final var values3 = CsvByteTestUtils.toColumns("T", "noname", "123", "1", "true", "neitherMatchingNorEmptySTackTrace");
         td.setRemainingValues(values3);
     }
 }

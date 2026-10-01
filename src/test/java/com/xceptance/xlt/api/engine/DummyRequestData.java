@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
+import com.xceptance.common.util.CsvByteTestUtils;
 
 /**
  * This class provides a dummy implementation of {@link ActionData} but makes {@link #parseRemainingValues(String[])} public to
@@ -48,10 +48,7 @@ public class DummyRequestData extends RequestData
     {
         final DummyRequestData returnValue = new DummyRequestData();
         // String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
-            {
-                "R", "requestName", "4000", "1", "true", "100", "200", "404"
-            }));
+        returnValue.setAllValues(CsvByteTestUtils.toColumns("R", "requestName", "4000", "1", "true", "100", "200", "404"));
         returnValue.setAgentName("007");
         return returnValue;
     }

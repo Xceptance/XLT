@@ -18,45 +18,63 @@ package com.xceptance.common.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
-
-public class CsvLineDecoderTest
+public class CsvByteLineDecoderTest
 {
-    void test(String s, String... expected)
+    private void test(String s, String... expected)
     {
-        final List<XltCharBuffer> result = CsvLineDecoder.parse(s.replace("'", "\""));
+        final String converted = s.replace("'", "\"");
+        final byte[] bytes = converted.getBytes(StandardCharsets.UTF_8);
+        final CsvByteColumns result = CsvByteLineDecoder.parse(bytes);
 
         Assert.assertEquals(expected.length, result.size());
         for (int i = 0; i < expected.length; i++)
         {
-            Assert.assertEquals(expected[i].replace("'", "\""), result.get(i).toString());
+            Assert.assertEquals(expected[i].replace("'", "\""), result.toString(i));
         }
     }
 
-    void testException(String s, String expected)
+    private void testWithOffset(String s, String... expected)
+    {
+        final String converted = s.replace("'", "\"");
+        final byte[] raw = converted.getBytes(StandardCharsets.UTF_8);
+        final byte[] padded = new byte[raw.length + 10];
+        System.arraycopy(raw, 0, padded, 5, raw.length);
+
+        final CsvByteColumns result = CsvByteLineDecoder.parse(padded, 5, raw.length);
+
+        Assert.assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++)
+        {
+            Assert.assertEquals(expected[i].replace("'", "\""), result.toString(i));
+        }
+    }
+
+    private void testException(String s, String expected)
     {
         try
         {
-            CsvLineDecoder.parse(s.replace("'", "\""));
+            final String converted = s.replace("'", "\"");
+            final byte[] bytes = converted.getBytes(StandardCharsets.UTF_8);
+            CsvByteLineDecoder.parse(bytes);
         }
-        catch(CsvParserException e)
+        catch (CsvParserException e)
         {
-            var msg = e.getMessage();
-            assertEquals(expected, msg);
+            assertEquals(expected, e.getMessage());
             return;
         }
-        fail("No exception was raised");
+        fail("No exception was raised for input: " + s);
     }
 
     @Test
     public void empty()
     {
         test("", "");
+        testWithOffset("", "");
     }
 
     @Test
@@ -113,10 +131,6 @@ public class CsvLineDecoderTest
         test("a, ,b", "a", " ", "b");
     }
 
-    /**
-     * All test cases use ' for definition but will run them with ", just
-     * to aid the visuals here
-     */
     @Test
     public void happyQuoteless()
     {
@@ -127,10 +141,6 @@ public class CsvLineDecoderTest
         test("a,bb,ccc", "a", "bb", "ccc");
         test("a,bb,ccc,ddddd,ee,ffff", "a", "bb", "ccc", "ddddd", "ee", "ffff");
     }
-
-    /*
-     * The part with quotes
-     */
 
     @Test
     public void minimalQuotes()
@@ -155,7 +165,6 @@ public class CsvLineDecoderTest
     public void quotesAndText()
     {
         test("'a','b'", "a", "b");
-
         test("'a'", "a");
         test("'aa'", "aa");
         test("'aaa'", "aaa");
@@ -174,9 +183,6 @@ public class CsvLineDecoderTest
         test("abc1,'1234',45", "abc1", "1234", "45");
     }
 
-    /*
-     * Quoted quotes... things get interesting
-     */
     @Test
     public void quotedQuotesSimple()
     {
@@ -202,7 +208,6 @@ public class CsvLineDecoderTest
         test("'a''b',cb", "a'b", "cb");
         test("'a''b',''''", "a'b", "'");
         test("'''',''''", "'", "'");
-        test("'''',''''", "'", "'");
     }
 
     @Test
@@ -212,7 +217,6 @@ public class CsvLineDecoderTest
         test("',',','", ",", ",");
         test("''','", "',");
         test("','''", ",'");
-
         test("''' '''',''',''", "' '','", "");
     }
 
@@ -223,9 +227,14 @@ public class CsvLineDecoderTest
         test("abc,'123','456',,,,',,,','1012'", "abc", "123", "456", "", "", "", ",,,", "1012");
     }
 
-    /*
-     * All error cases
-     */
+    @Test
+    public void unicodeSupport()
+    {
+        test("München,Größentabelle,€100", "München", "Größentabelle", "€100");
+        test("'München','Größentabelle','€100'", "München", "Größentabelle", "€100");
+        test("'München, Bayern','Größe: ''XL'''", "München, Bayern", "Größe: 'XL'");
+        test("你好,世界", "你好", "世界");
+    }
 
     @Test
     public void noEndQuote()
@@ -250,5 +259,23 @@ public class CsvLineDecoderTest
         testException("'''''", "Quoted field with quotes was not ended properly at: 5");
         testException("'','''", "Quoted field with quotes was not ended properly at: 6");
         testException("'','''',''',''", "Quoted field with quotes was not ended properly at: 14");
+    }
+
+    @Test
+    public void parseLongLine()
+    {
+        final String line = "T,TBrowse,1571766200603,12786,true,\"java.lang.AssertionError: Response code does not match expected:<200> but was:<410> (user: 'TBrowse-165', output: '1571766200603')\\   at org.junit.Assert.fail(Assert.java:88)\\   at org.junit.Assert.failNotEquals(Assert.java:834)\\ at org.junit.Assert.assertEquals(Assert.java:645)\\  at com.xceptance.xlt.api.validators.HttpResponseCodeValidator.validate(HttpResponseCodeValidator.java:51)\\  at com.xceptance.xlt.api.validators.StandardValidator.validate(StandardValidator.java:28)\\  at com.xceptance.xlt.loadtest.validators.Validator.validateBasics(Validator.java:79)\\   at com.xceptance.xlt.loadtest.validators.Validator.validateCommonPage(Validator.java:40)\\   at com.xceptance.xlt.loadtest.validators.Validator.validateCategoryPage(Validator.java:276)\\    at com.xceptance.xlt.loadtest.actions.catalog.RefineByCategory.postValidate(RefineByCategory.java:86)\\  at com.xceptance.xlt.api.actions.AbstractAction.run(AbstractAction.java:383)\\   at com.xceptance.xlt.api.actions.AbstractWebAction.run(AbstractWebAction.java:136)\\ at com.xceptance.xlt.api.actions.AbstractHtmlPageAction.run(AbstractHtmlPageAction.java:124)\\   at com.xceptance.xlt.loadtest.actions.AbstractHtmlPageAction.runIfPossible(AbstractHtmlPageAction.java:297)\\    at com.xceptance.xlt.loadtest.flows.CategoryFlow.refineCategory(CategoryFlow.java:85)\\  at com.xceptance.xlt.loadtest.flows.CategoryFlow.run(CategoryFlow.java:43)\\ at com.xceptance.xlt.loadtest.tests.TBrowse.test(TBrowse.java:31)\\  at com.xceptance.xlt.loadtest.tests.AbstractTestCase.run(AbstractTestCase.java:59)\\ ...\",RefineByCategory";
+        final byte[] bytes = line.getBytes(StandardCharsets.UTF_8);
+        final CsvByteColumns result = CsvByteLineDecoder.parse(bytes);
+
+        Assert.assertEquals(7, result.size());
+        Assert.assertEquals("T", result.getString(0));
+        Assert.assertEquals("TBrowse", result.getString(1));
+        Assert.assertEquals("1571766200603", result.getString(2));
+        Assert.assertEquals("12786", result.getString(3));
+        Assert.assertEquals("true", result.getString(4));
+        Assert.assertTrue(result.getString(5).startsWith("java.lang.AssertionError"));
+        Assert.assertTrue(result.getString(5).endsWith("..."));
+        Assert.assertEquals("RefineByCategory", result.getString(6));
     }
 }

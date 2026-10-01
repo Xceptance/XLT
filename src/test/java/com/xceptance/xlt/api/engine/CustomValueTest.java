@@ -20,7 +20,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
+import com.xceptance.common.util.CsvByteTestUtils;
 
 /**
  * @author Sebastian Oerding
@@ -41,10 +41,7 @@ public class CustomValueTest
     public void testParseValues()
     {
         final CustomValue value = new CustomValue();
-        value.setAllValues(XltCharBufferUtil.toList(new String[]
-            {
-                "V", "null", "123000", "0.0"
-            }));
+        value.setAllValues(CsvByteTestUtils.toColumns("V", "null", "123000", "0.0"));
         Assert.assertTrue("Wrong double value! Expected 0.0d but got " + value.getValue(), Double.compare(0.0, value.getValue()) == 0);
     }
 

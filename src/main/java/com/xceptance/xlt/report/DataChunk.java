@@ -20,8 +20,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.commons.vfs2.FileObject;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
-
 /**
  * Holds a chunk of result lines together with meta and processing information. Both types of info is needed by the
  * parser threads.
@@ -52,13 +50,13 @@ public class DataChunk
 
     private final FileObject file;
 
-    private final List<XltCharBuffer> lines;
+    private final List<byte[]> lines;
 
     private final String testCaseName;
 
     private final String userNumber;
 
-    public DataChunk(final List<XltCharBuffer> lines, final int baseLineNumber, final FileObject file, final String agentName,
+    public DataChunk(final List<byte[]> lines, final int baseLineNumber, final FileObject file, final String agentName,
                      final String testCaseName, final String userNumber, final boolean collectActionNames, final boolean adjustTimerNames,
                      final ConcurrentSkipListMap<Long, String> actionNames)
     {
@@ -103,7 +101,7 @@ public class DataChunk
         return file;
     }
 
-    public List<XltCharBuffer> getLines()
+    public List<byte[]> getLines()
     {
         return lines;
     }

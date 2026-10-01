@@ -31,7 +31,6 @@ import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.WebVitalData;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
 import com.xceptance.xlt.util.XltPropertiesImpl;
@@ -290,7 +289,7 @@ public final class PerformanceDataTransformator
 
         requestData.setName(request.getString("requestId"));
         requestData.setUrl(URLCleaner.removeUserInfoIfNecessaryAsString(request.getString("url")));
-        requestData.setHttpMethod(XltCharBuffer.valueOf(performanceRequest.getHttpMethod()));
+        requestData.setHttpMethod(performanceRequest.getHttpMethod());
 
         requestData.setContentType(cleanContentType(request.optString("contentType")));
         final int statusCode = request.optInt("statusCode", 0);
@@ -313,8 +312,8 @@ public final class PerformanceDataTransformator
         // set additional data only if we need to
         if (XltPropertiesImpl.getInstance().collectAdditonalRequestData())
         {
-            requestData.setFormData(XltCharBuffer.valueOf(performanceRequest.getFormData()));
-            requestData.setFormDataEncoding(XltCharBuffer.valueOf(performanceRequest.getFormDataEncoding()));
+            requestData.setFormData(performanceRequest.getFormData());
+            requestData.setFormDataEncoding(performanceRequest.getFormDataEncoding());
         }
     }
 

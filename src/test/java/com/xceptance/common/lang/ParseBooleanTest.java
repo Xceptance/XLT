@@ -20,44 +20,43 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 public class ParseBooleanTest 
 {
     @Test
     public void normalTrue()
     {
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("true")));
+        assertTrue(ParseBoolean.parse("true"));
     }
 
     @Test
     public void normalFalse()
     {
-        assertFalse(ParseBoolean.parse(XltCharBuffer.valueOf("false")));
-        assertFalse(ParseBoolean.parse(XltCharBuffer.valueOf("trueish")));
-        assertFalse(ParseBoolean.parse(XltCharBuffer.valueOf("wahr")));
-        assertFalse(ParseBoolean.parse(XltCharBuffer.valueOf("")));
+        assertFalse(ParseBoolean.parse("false"));
+        assertFalse(ParseBoolean.parse("trueish"));
+        assertFalse(ParseBoolean.parse("wahr"));
+        assertFalse(ParseBoolean.parse(""));
     }
     
     @Test
     public void slowpath()
     {
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("TRUE")));
+        assertTrue(ParseBoolean.parse("TRUE"));
         
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("truE")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("trUe")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("tRue")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("True")));
+        assertTrue(ParseBoolean.parse("truE"));
+        assertTrue(ParseBoolean.parse("trUe"));
+        assertTrue(ParseBoolean.parse("tRue"));
+        assertTrue(ParseBoolean.parse("True"));
 
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("TRue")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("trUE")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("TruE")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("tRUe")));
+        assertTrue(ParseBoolean.parse("TRue"));
+        assertTrue(ParseBoolean.parse("trUE"));
+        assertTrue(ParseBoolean.parse("TruE"));
+        assertTrue(ParseBoolean.parse("tRUe"));
 
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("TRUe")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("tRUE")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("TRuE")));
-        assertTrue(ParseBoolean.parse(XltCharBuffer.valueOf("tRUe")));
+        assertTrue(ParseBoolean.parse("TRUe"));
+        assertTrue(ParseBoolean.parse("tRUE"));
+        assertTrue(ParseBoolean.parse("TRuE"));
+        assertTrue(ParseBoolean.parse("tRUe"));
     }
     
     @Test(expected = NullPointerException.class)

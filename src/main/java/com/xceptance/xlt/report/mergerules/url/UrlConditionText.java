@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.report.mergerules.url;
 
+import java.nio.charset.StandardCharsets;
+
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -26,6 +28,7 @@ import com.xceptance.xlt.report.mergerules.Condition;
 public class UrlConditionText extends Condition
 {
     private final String text;
+    private final byte[] textBytes;
     
     /**
      * Constructor.
@@ -39,17 +42,24 @@ public class UrlConditionText extends Condition
         super("", 4);
 
         this.text = text;
+        this.textBytes = text != null ? text.getBytes(StandardCharsets.UTF_8) : new byte[0];
     }
 
     @Override
     protected boolean apply(final RequestData requestData)
     {
+        if (requestData.hasUrlBytes())
+        {
+            this.querySlice.set(requestData.getUrlBytes(), requestData.getUrlOffset(), requestData.getUrlLength());
+            return this.querySlice.indexOf(this.textBytes) >= 0;
+        }
+
         // do a simple lookup
         final int pos = requestData.getOriginalUrl().indexOf(this.text);
         
         // if we have a match, check the regex based condition, otherwise return false
         // and abort here
-        return pos >= 0 ? true : false;
+        return pos >= 0;
     }
 
     /**

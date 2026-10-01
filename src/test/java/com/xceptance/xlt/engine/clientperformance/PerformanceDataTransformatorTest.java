@@ -27,7 +27,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.xceptance.common.util.CsvLineDecoder;
+import java.nio.charset.StandardCharsets;
+import com.xceptance.common.util.CsvByteLineDecoder;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceData;
 import com.xceptance.xlt.clientperformance.ClientPerformanceRequest;
@@ -64,7 +65,7 @@ public class PerformanceDataTransformatorTest
         final ClientPerformanceData exampleRequest = new ClientPerformanceData();
         {
             final ClientPerformanceRequest r = new ClientPerformanceRequest();
-            var list = CsvLineDecoder.parse("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
+            var list = CsvByteLineDecoder.parse("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0".getBytes(StandardCharsets.UTF_8));
 
             r.getRequestData().setBaseValues(list);
             r.getRequestData().setRemainingValues(list);

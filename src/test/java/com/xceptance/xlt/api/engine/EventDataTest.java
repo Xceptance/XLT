@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.xceptance.common.util.CsvLineDecoder;
 
 /**
  * Test the implementation of {@link EventData}.
@@ -82,7 +81,7 @@ public class EventDataTest extends AbstractDataTest
     @Test
     public void incrementalParse()
     {
-        var data = CsvLineDecoder.parse("E,Test42,1602817628282,TCName,A message");
+        var data = parse("E,Test42,1602817628282,TCName,A message");
 
         var e = new EventData();
 

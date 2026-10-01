@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
  * Test the implementation of {@link TimerData}.
@@ -132,7 +131,7 @@ public class TimerDataTest extends AbstractDataTest
     @Test
     public void parseValues()
     {
-        var list = XltCharBufferUtil.toList(String.valueOf(TYPECODE), "Name", "1654632508330", "666", "true");
+        var list = parse(TYPECODE + ",Name,1654632508330,666,true");
 
         var d = new TestData(TYPECODE);
         d.setBaseValues(list); // inherited
@@ -149,7 +148,7 @@ public class TimerDataTest extends AbstractDataTest
     @Test
     public void parseValues_negativeRuntime()
     {
-        var list = XltCharBufferUtil.toList(String.valueOf(TYPECODE), "Name", "1654632508330", "-22", "true");
+        var list = parse(TYPECODE + ",Name,1654632508330,-22,true");
 
         var d = new TestData(TYPECODE);
 

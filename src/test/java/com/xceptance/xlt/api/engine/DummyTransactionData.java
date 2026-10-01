@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
+import com.xceptance.common.util.CsvByteTestUtils;
 
 /**
  * This class provides a dummy implementation of {@link TransactionData} but makes {@link #parseRemainingValues(String[])} public
@@ -46,10 +46,7 @@ public class DummyTransactionData extends TransactionData
     {
         final DummyTransactionData returnValue = new DummyTransactionData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
-            {
-                "T", "transactionName", "5000", "1", "true", stackTrace
-            }));
+        returnValue.setAllValues(CsvByteTestUtils.toColumns("T", "transactionName", "5000", "1", "true", stackTrace));
         returnValue.setAgentName("007");
         return returnValue;
     }

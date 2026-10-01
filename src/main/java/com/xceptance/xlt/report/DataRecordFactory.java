@@ -19,7 +19,6 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import com.xceptance.xlt.api.engine.Data;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltException;
 
 /**
@@ -88,21 +87,30 @@ public class DataRecordFactory
     }
 
     /**
-     * Creates a data record object for the given CSV line. Except for the type code character at the beginning, the CSV
-     * line is not parsed yet.
+     * Creates a data record object for the given type code byte.
      *
-     * @param src
-     *            the csv line
+     * @param typeCode
+     *            the type code byte
      * @return a data record object matching the type code
      * @throws Exception
      */
-    public Data createStatistics(final XltCharBuffer src) throws Exception
+    public Data createStatistics(final byte typeCode) throws Exception
     {
-        // TODO: The following may throw NullPointerException or ArrayIndexOutOfBoundsException in case of unknown type
-        // codes.
-        final Constructor<? extends Data> c = constructors[src.charAt(0) - offset];
-        final Data data = c.newInstance();
+        final Constructor<? extends Data> c = constructors[(typeCode & 0xFF) - offset];
+        return c.newInstance();
+    }
 
-        return data;
+    /**
+     * Creates a data record object for the given type code character.
+     *
+     * @param typeCode
+     *            the type code character
+     * @return a data record object matching the type code
+     * @throws Exception
+     */
+    public Data createStatistics(final char typeCode) throws Exception
+    {
+        final Constructor<? extends Data> c = constructors[typeCode - offset];
+        return c.newInstance();
     }
 }

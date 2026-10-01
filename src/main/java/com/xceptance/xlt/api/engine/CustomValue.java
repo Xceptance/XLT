@@ -17,7 +17,7 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.common.util.CsvByteColumns;
 
 /**
  * The {@link CustomValue} can store a single 'double' value.
@@ -93,8 +93,8 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public void setRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final CsvByteColumns values)
     {
-        value = Double.parseDouble(values.get(3).toString());
+        value = values.parseDouble(3);
     }
 }

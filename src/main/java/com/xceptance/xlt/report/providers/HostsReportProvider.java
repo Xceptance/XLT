@@ -19,7 +19,6 @@ import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic statistics for the hosts visited during the test.
@@ -29,14 +28,14 @@ public class HostsReportProvider extends AbstractReportProvider
     /**
      * A mapping from host names to their corresponding {@link HostReport} objects.
      */
-    private final FastHashMap<XltCharBuffer, HostReport> hostReports = new FastHashMap<>(11, 0.5f);
+    private final FastHashMap<String, HostReport> hostReports = new FastHashMap<>(11, 0.5f);
 
     /**
      * Direct-mapped 16-entry array cache for fast host name lookups.
      * Web sessions interleave requests across different subdomains/CDNs. A 16-entry hash-indexed
      * cache eliminates map lookups with a >99.9% hit rate.
      */
-    private final XltCharBuffer[] cachedHostNames = new XltCharBuffer[16];
+    private final String[] cachedHostNames = new String[16];
     private final HostReport[] cachedReports = new HostReport[16];
 
     /**
@@ -81,13 +80,13 @@ public class HostsReportProvider extends AbstractReportProvider
         final Object[] array = list.getInternalArray();
         final int size = list.size();
 
-        XltCharBuffer lastHost = null;
+        String lastHost = null;
         HostReport lastReport = null;
 
         for (int p = 0; p < size; p++)
         {
             final RequestData reqData = (RequestData) array[p];
-            final XltCharBuffer hostName = reqData.getHost();
+            final String hostName = reqData.getHost();
             if (hostName == null)
             {
                 continue;
@@ -101,7 +100,7 @@ public class HostsReportProvider extends AbstractReportProvider
             else
             {
                 final int slot = hostName.hashCode() & 15;
-                final XltCharBuffer cachedName = cachedHostNames[slot];
+                final String cachedName = cachedHostNames[slot];
 
                 if (cachedName != null && (cachedName == hostName || cachedName.equals(hostName)))
                 {
@@ -114,7 +113,7 @@ public class HostsReportProvider extends AbstractReportProvider
                     if (hostReport == null)
                     {
                         hostReport = new HostReport();
-                        hostReport.name = hostName.toString();
+                        hostReport.name = hostName;
                         hostReports.put(hostName, hostReport);
                     }
                     hostReport.count++;
@@ -137,14 +136,14 @@ public class HostsReportProvider extends AbstractReportProvider
         if (data instanceof RequestData)
         {
             final RequestData reqData = (RequestData) data;
-            final XltCharBuffer hostName = reqData.getHost();
+            final String hostName = reqData.getHost();
             if (hostName == null)
             {
                 return;
             }
 
             final int slot = hostName.hashCode() & 15;
-            final XltCharBuffer cachedName = cachedHostNames[slot];
+            final String cachedName = cachedHostNames[slot];
 
             if (cachedName != null && (cachedName == hostName || cachedName.equals(hostName)))
             {
@@ -157,7 +156,7 @@ public class HostsReportProvider extends AbstractReportProvider
             if (hostReport == null)
             {
                 hostReport = new HostReport();
-                hostReport.name = hostName.toString();
+                hostReport.name = hostName;
 
                 hostReports.put(hostName, hostReport);
             }
@@ -195,7 +194,7 @@ public class HostsReportProvider extends AbstractReportProvider
             return;
         }
 
-        for (final XltCharBuffer hostName : other.hostReports.keys())
+        for (final String hostName : other.hostReports.keys())
         {
             final HostReport otherReport = other.hostReports.get(hostName);
             HostReport myReport = hostReports.get(hostName);

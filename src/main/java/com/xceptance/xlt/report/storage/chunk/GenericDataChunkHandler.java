@@ -18,7 +18,9 @@ package com.xceptance.xlt.report.storage.chunk;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +28,8 @@ import java.util.function.Consumer;
 
 import org.roaringbitmap.RoaringBitmap;
 
+import com.xceptance.common.util.CsvByteColumns;
 import com.xceptance.xlt.api.engine.Data;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -260,13 +262,16 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
 
-        // Pre-convert chunk strings to XltCharBuffer instances to eliminate allocations in the row loop
-        final XltCharBuffer[] chunkCharBuffers = new XltCharBuffer[chunkStrings.length];
+        // Pre-convert chunk strings to UTF-8 byte arrays to eliminate conversions in the row loop
+        final byte[][] chunkBytes = new byte[chunkStrings.length][];
         for (int s = 0; s < chunkStrings.length; s++)
         {
             final String str = chunkStrings[s];
-            chunkCharBuffers[s] = (str != null) ? XltCharBuffer.valueOf(str) : XltCharBuffer.EMPTY;
+            chunkBytes[s] = (str != null) ? str.getBytes(StandardCharsets.UTF_8) : new byte[0];
         }
+
+        final CsvByteColumns csvColumns = new CsvByteColumns(colCount);
+        byte[] rowBuffer = new byte[4096];
 
         // 3. Linear row scan and object reconstruction
         for (int i = 0; i < rowCount; i++)
@@ -284,16 +289,31 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
             final Data record = createRecordInstance();
             if (record != null)
             {
-                final List<XltCharBuffer> charBuffers = new ArrayList<>(colCount);
+                int rowOffset = 0;
+                csvColumns.reset(rowBuffer);
                 for (int col = 0; col < colCount; col++)
                 {
                     final int strId = fieldStringIds[col][i];
-                    final XltCharBuffer buf = (strId > 0 && strId <= chunkCharBuffers.length) ? chunkCharBuffers[strId - 1] : XltCharBuffer.EMPTY;
-                    charBuffers.add(buf);
+                    if (strId > 0 && strId <= chunkBytes.length)
+                    {
+                        final byte[] b = chunkBytes[strId - 1];
+                        if (rowOffset + b.length > rowBuffer.length)
+                        {
+                            rowBuffer = Arrays.copyOf(rowBuffer, Math.max(rowBuffer.length * 2, rowOffset + b.length));
+                            csvColumns.setBuffer(rowBuffer);
+                        }
+                        System.arraycopy(b, 0, rowBuffer, rowOffset, b.length);
+                        csvColumns.add(rowOffset, b.length);
+                        rowOffset += b.length;
+                    }
+                    else
+                    {
+                        csvColumns.add(rowOffset, 0);
+                    }
                 }
 
-                record.setBaseValues(charBuffers);
-                record.setRemainingValues(charBuffers);
+                record.setBaseValues(csvColumns);
+                record.setRemainingValues(csvColumns);
                 record.setTime(time);
                 record.setName(timerId >= 0 && timerId < timerNames.length ? timerNames[timerId] : null);
 

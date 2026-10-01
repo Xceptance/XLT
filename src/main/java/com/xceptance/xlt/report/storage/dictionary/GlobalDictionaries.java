@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.roaringbitmap.RoaringBitmap;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
-
 /**
  * Manages low-overhead, thread-safe dictionary interning and ID mappings for high-frequency
  * string metadata across all columnar chunks in ChunkDB.
@@ -84,20 +82,19 @@ public class GlobalDictionaries
      * Caching these per timer eliminates multi-million URL parsing, string hashing, and
      * object allocations in the inner query scanning loop.
      */
-    public record CachedSampleUrl(XltCharBuffer url, XltCharBuffer host, int hashCodeOfUrlWithoutFragment)
+    public record CachedSampleUrl(String url, String host, int hashCodeOfUrlWithoutFragment)
     {
         public CachedSampleUrl(final String urlString)
         {
-            this(XltCharBuffer.valueOf(urlString),
-                 retrieveHost(XltCharBuffer.valueOf(urlString)),
-                 com.xceptance.common.lang.StringHasher.hashCodeWithLimit(XltCharBuffer.valueOf(urlString), '#'));
+            this(urlString,
+                 retrieveHost(urlString),
+                 com.xceptance.common.lang.StringHasher.hashCodeWithLimit(urlString, '#'));
         }
 
-        private static XltCharBuffer retrieveHost(final XltCharBuffer url)
+        private static String retrieveHost(final String url)
         {
-            final XltCharBuffer hostName = com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(url);
-            final XltCharBuffer host = (hostName.length() == 0) ? com.xceptance.xlt.api.engine.RequestData.UNKNOWN_HOST : hostName;
-            host.hashCode(); // warm hash code
+            final String hostName = com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(url);
+            final String host = (hostName == null || hostName.length() == 0) ? com.xceptance.xlt.api.engine.RequestData.UNKNOWN_HOST : hostName;
             return host;
         }
     }
@@ -140,9 +137,6 @@ public class GlobalDictionaries
 
     /** Volatile append-only array indexed by interned ID for lock-free \(O(1)\) reads. */
     private volatile String[] strings = new String[INITIAL_CAPACITY];
-
-    /** Volatile append-only array of pre-built XltCharBuffer wrappers for interned strings. */
-    private volatile XltCharBuffer[] stringsAsCharBuffers = new XltCharBuffer[INITIAL_CAPACITY];
 
     /** Current number of distinct general strings interned. */
     private int stringCount = 0;
@@ -622,10 +616,8 @@ public class GlobalDictionaries
                 {
                     final int newCapacity = Math.max(strings.length * 2, nextId + 1);
                     strings = Arrays.copyOf(strings, newCapacity);
-                    stringsAsCharBuffers = Arrays.copyOf(stringsAsCharBuffers, newCapacity);
                 }
                 strings[nextId] = key;
-                stringsAsCharBuffers[nextId] = XltCharBuffer.valueOf(key);
                 return nextId;
             });
             cache.lastRef = text;
@@ -671,19 +663,6 @@ public class GlobalDictionaries
     public String[] getStringsArray()
     {
         return strings;
-    }
-
-    /**
-     * Returns the raw backing array of interned general strings pre-wrapped as immutable {@link XltCharBuffer}s.
-     * <p>
-     * Callers must treat the returned array as read-only. Accessing elements by direct array index
-     * avoids repeated buffer allocation and bounds check method call overhead in hot loops.
-     *
-     * @return the raw array of interned general strings as {@link XltCharBuffer}
-     */
-    public XltCharBuffer[] getStringsCharBuffersArray()
-    {
-        return stringsAsCharBuffers;
     }
 
     /**
@@ -925,14 +904,12 @@ public class GlobalDictionaries
         // 3. General strings
         final int strCount = in.readInt();
         dict.strings = new String[Math.max(INITIAL_CAPACITY, strCount)];
-        dict.stringsAsCharBuffers = new XltCharBuffer[Math.max(INITIAL_CAPACITY, strCount)];
         dict.splitIpAddresses = new String[Math.max(INITIAL_CAPACITY, strCount)][];
         dict.stringCount = strCount;
         for (int i = 0; i < strCount; i++)
         {
             final String s = in.readUTF();
             dict.strings[i] = s;
-            dict.stringsAsCharBuffers[i] = XltCharBuffer.valueOf(s);
             dict.stringToId.put(s, i);
         }
 

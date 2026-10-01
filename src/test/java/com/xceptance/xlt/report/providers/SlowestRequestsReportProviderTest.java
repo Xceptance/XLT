@@ -16,7 +16,6 @@
 package com.xceptance.xlt.report.providers;
 
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
@@ -128,14 +127,14 @@ public class SlowestRequestsReportProviderTest
             RequestData data = new RequestData();
             data.setName("bucket1");
             data.setRunTime(5_000);
-            data.setRequestId((XltCharBuffer) null);
-            data.setHttpMethod((XltCharBuffer) null);
+            data.setRequestId((String) null);
+            data.setHttpMethod((String) null);
             data.setUrl((String) null);
-            data.setFormDataEncoding((XltCharBuffer) null);
-            data.setFormData((XltCharBuffer) null);
-            data.setResponseId((XltCharBuffer) null);
+            data.setFormDataEncoding((String) null);
+            data.setFormData((String) null);
+            data.setResponseId((String) null);
             data.setContentType((String) null);
-            data.setUsedIpAddress((XltCharBuffer) null);
+            data.setUsedIpAddress((String) null);
             data.setIpAddresses(null);
 
             reportProvider.processDataRecord(data);

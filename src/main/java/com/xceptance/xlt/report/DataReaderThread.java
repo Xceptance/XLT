@@ -16,7 +16,6 @@
 package com.xceptance.xlt.report;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -28,9 +27,8 @@ import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xceptance.common.io.XltBufferedLineReader;
+import com.xceptance.common.io.XltBufferedByteLineReader;
 import com.xceptance.xlt.api.util.SimpleArrayList;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
@@ -201,19 +199,18 @@ class DataReaderThread implements Runnable
         final int chunkSize = dispatcher.chunkSize;
 
         // VFS has no performance impact, so we keep that for the moment
-        try (final XltBufferedLineReader reader = new XltBufferedLineReader(new InputStreamReader(isCompressed ? new GZIPInputStream(file.getContent()
-                                                                                                                                         .getInputStream(),
-                                                                                                                                     1024 * 16)
-                                                                                                               : file.getContent()
-                                                                                                                     .getInputStream(),
-                                                                                                  XltConstants.UTF8_ENCODING)))
+        try (final XltBufferedByteLineReader reader = new XltBufferedByteLineReader(isCompressed ? new GZIPInputStream(file.getContent()
+                                                                                                                         .getInputStream(),
+                                                                                                                     1024 * 16)
+                                                                                               : file.getContent()
+                                                                                                     .getInputStream()))
         {
-            List<XltCharBuffer> lines = new SimpleArrayList<>(chunkSize);
+            List<byte[]> lines = new SimpleArrayList<>(chunkSize);
             int baseLineNumber = 1;  // let line numbering start at 1
             int linesRead = 0;
 
             // read the file line-by-line
-            XltCharBuffer line;
+            byte[] line;
             while ((line = reader.readLine()) != null)
             {
                 linesRead++;

@@ -24,7 +24,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 
-import com.xceptance.common.util.CsvLineDecoder;
+import com.xceptance.common.util.CsvByteColumns;
+import com.xceptance.common.util.CsvByteLineDecoder;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
@@ -32,7 +33,6 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.util.SimpleArrayList;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
 import com.zaxxer.sparsebits.SparseBitSet;
@@ -131,8 +131,8 @@ class DataParserThread implements Runnable
         final SparseBitSet allTimeIndex = new SparseBitSet();
         final SparseBitSet actionTimeIndex = new SparseBitSet();
 
-        // make the list large enough so it does not grow, we reuse it anyway
-        final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
+        // reusable CSV byte columns structure
+        final CsvByteColumns csvColumns = new CsvByteColumns(50);
 
         // our request processing, this is move away from here to test it better
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
@@ -145,7 +145,7 @@ class DataParserThread implements Runnable
                 // get a chunk of lines
                 final DataChunk chunk = dispatcher.retrieveReadData();
 
-                final List<XltCharBuffer> lines = chunk.getLines();
+                final List<byte[]> lines = chunk.getLines();
 
                 final String agentName = chunk.getAgentName();
                 final String testCaseName = chunk.getTestCaseName();
@@ -173,19 +173,19 @@ class DataParserThread implements Runnable
 
                     try
                     {
-                        // parse the data record for minimal data
-                        final XltCharBuffer line = lines.get(i);
+                        final byte[] line = lines.get(i);
+                        if (line.length == 0)
+                        {
+                            lineNumber++;
+                            continue;
+                        }
 
-                        // we want to reuse that array because it is just temp transport and at the end, we will always
-                        // allocate it freshly and might also either allocate too much or have to grow it
-                        csvParseResultBuffer.clear();
-
-                        // parse, the buffer is modified!
-                        CsvLineDecoder.parse(csvParseResultBuffer, line);
+                        // parse, the columns structure is reused
+                        CsvByteLineDecoder.parse(csvColumns, line);
 
                         // get us the minimal data aka type and time
-                        data = dataRecordFactory.createStatistics(line);
-                        data.setBaseValues(csvParseResultBuffer);
+                        data = dataRecordFactory.createStatistics(line[0]);
+                        data.setBaseValues(csvColumns);
 
                         // see if we have to keep it
                         final long time = data.getTime();
@@ -223,12 +223,13 @@ class DataParserThread implements Runnable
                         }
 
                         // finish parsing
-                        data.setRemainingValues(csvParseResultBuffer);
+                        data.setRemainingValues(csvColumns);
                     }
                     catch (final Exception ex)
                     {
-                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber,
-                                                         file, ex, lines.get(i).toString());
+                        final String lineStr = new String(lines.get(i), java.nio.charset.StandardCharsets.UTF_8);
+                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
+                                                         file, ex, lineStr);
                         LOG.error(msg, ex);
 
                         continue;

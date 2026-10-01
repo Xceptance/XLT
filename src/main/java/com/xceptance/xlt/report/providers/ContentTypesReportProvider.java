@@ -19,7 +19,6 @@ import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic content type statistics.
@@ -29,14 +28,14 @@ public class ContentTypesReportProvider extends AbstractReportProvider
     /**
      * A mapping from content types to their corresponding {@link ContentTypeReport} objects.
      */
-    private final FastHashMap<XltCharBuffer, ContentTypeReport> contentTypeReports = new FastHashMap<>(11, 0.5f);
+    private final FastHashMap<String, ContentTypeReport> contentTypeReports = new FastHashMap<>(11, 0.5f);
 
     /**
      * Direct-mapped 16-entry array cache for fast content-type lookups.
      * Content types alternate frequently (e.g. text/html, application/javascript, image/png, text/css).
      * A 16-slot direct-mapped cache indexed by hash code eliminates map lookups with a >99.9% hit rate.
      */
-    private final XltCharBuffer[] cachedContentTypes = new XltCharBuffer[16];
+    private final String[] cachedContentTypes = new String[16];
     private final ContentTypeReport[] cachedReports = new ContentTypeReport[16];
 
     /**
@@ -72,13 +71,13 @@ public class ContentTypesReportProvider extends AbstractReportProvider
         final Object[] array = list.getInternalArray();
         final int size = list.size();
 
-        XltCharBuffer lastContentType = null;
+        String lastContentType = null;
         ContentTypeReport lastReport = null;
 
         for (int p = 0; p < size; p++)
         {
             final RequestData reqStats = (RequestData) array[p];
-            final XltCharBuffer contentType = reqStats.getContentType();
+            final String contentType = reqStats.getContentType();
             if (contentType == null)
             {
                 continue;
@@ -92,7 +91,7 @@ public class ContentTypesReportProvider extends AbstractReportProvider
             }
 
             final int slot = contentType.hashCode() & 15;
-            final XltCharBuffer cachedType = cachedContentTypes[slot];
+            final String cachedType = cachedContentTypes[slot];
 
             if (cachedType != null && (cachedType == contentType || cachedType.equals(contentType)))
             {
@@ -107,7 +106,7 @@ public class ContentTypesReportProvider extends AbstractReportProvider
             if (contentTypeReport == null)
             {
                 contentTypeReport = new ContentTypeReport();
-                contentTypeReport.contentType = contentType.toString();
+                contentTypeReport.contentType = contentType;
 
                 contentTypeReports.put(contentType, contentTypeReport);
             }
@@ -131,14 +130,14 @@ public class ContentTypesReportProvider extends AbstractReportProvider
         if (stat instanceof RequestData)
         {
             final RequestData reqStats = (RequestData) stat;
-            final XltCharBuffer contentType = reqStats.getContentType();
+            final String contentType = reqStats.getContentType();
             if (contentType == null)
             {
                 return;
             }
 
             final int slot = contentType.hashCode() & 15;
-            final XltCharBuffer cachedType = cachedContentTypes[slot];
+            final String cachedType = cachedContentTypes[slot];
 
             if (cachedType != null && (cachedType == contentType || cachedType.equals(contentType)))
             {
@@ -150,7 +149,7 @@ public class ContentTypesReportProvider extends AbstractReportProvider
             if (contentTypeReport == null)
             {
                 contentTypeReport = new ContentTypeReport();
-                contentTypeReport.contentType = contentType.toString();
+                contentTypeReport.contentType = contentType;
 
                 contentTypeReports.put(contentType, contentTypeReport);
             }
@@ -187,7 +186,7 @@ public class ContentTypesReportProvider extends AbstractReportProvider
             return;
         }
 
-        for (final XltCharBuffer contentType : other.contentTypeReports.keys())
+        for (final String contentType : other.contentTypeReports.keys())
         {
             final ContentTypeReport otherReport = other.contentTypeReports.get(contentType);
             ContentTypeReport myReport = contentTypeReports.get(contentType);

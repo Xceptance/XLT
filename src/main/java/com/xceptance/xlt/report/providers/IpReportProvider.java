@@ -21,7 +21,6 @@ import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic statistics for the IP addresses visited during the test.
@@ -29,22 +28,29 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 public class IpReportProvider extends AbstractReportProvider
 {
     /**
+     * Composite key for IP address and host name.
+     */
+    private record IpHostKey(String ip, String host)
+    {
+    }
+
+    /**
      * The key to use if the IP to make the request was not recorded.
      */
-    private static final XltCharBuffer UNKNOWN_IP = XltCharBuffer.valueOf("(unknown)");
+    private static final String UNKNOWN_IP = "(unknown)";
     
     /**
      * A mapping from IP/host names to their corresponding {@link IpReport} objects.
      */
-    private final FastHashMap<XltCharBuffer, IpReport> ipReports = new FastHashMap<>();
+    private final FastHashMap<IpHostKey, IpReport> ipReports = new FastHashMap<>();
 
     /**
      * Direct-mapped 16-entry array cache for fast IP/host combination lookups.
      * Prevents key string buffer allocations and map queries when requests interleave between
      * different hosts/IP addresses.
      */
-    private final XltCharBuffer[] cachedIps = new XltCharBuffer[16];
-    private final XltCharBuffer[] cachedHosts = new XltCharBuffer[16];
+    private final String[] cachedIps = new String[16];
+    private final String[] cachedHosts = new String[16];
     private final IpReport[] cachedIpReports = new IpReport[16];
 
     /**
@@ -90,15 +96,15 @@ public class IpReportProvider extends AbstractReportProvider
         final Object[] array = list.getInternalArray();
         final int size = list.size();
 
-        XltCharBuffer lastIp = null;
-        XltCharBuffer lastHost = null;
+        String lastIp = null;
+        String lastHost = null;
         IpReport lastReport = null;
 
         for (int p = 0; p < size; p++)
         {
             final RequestData reqData = (RequestData) array[p];
-            final XltCharBuffer hostName = reqData.getHost();
-            XltCharBuffer ip = reqData.getUsedIpAddress();
+            final String hostName = reqData.getHost();
+            String ip = reqData.getUsedIpAddress();
             if (ip == null || ip.length() == 0)
             {
                 ip = UNKNOWN_IP;
@@ -131,10 +137,10 @@ public class IpReportProvider extends AbstractReportProvider
             final RequestData reqData = (RequestData) data;
 
             // determine the host name
-            final XltCharBuffer hostName = reqData.getHost(); // never null or empty
+            final String hostName = reqData.getHost(); // never null or empty
 
             // determine used IP address
-            XltCharBuffer ip = reqData.getUsedIpAddress();
+            String ip = reqData.getUsedIpAddress();
             if (ip == null || ip.length() == 0)
             {
                 // legacy result set or IP not recorded
@@ -155,11 +161,11 @@ public class IpReportProvider extends AbstractReportProvider
      * @param host
      *            the target host name buffer
      */
-    private void updateIpCount(final XltCharBuffer ip, final XltCharBuffer host)
+    private void updateIpCount(final String ip, final String host)
     {
         final int slot = (ip.hashCode() ^ host.hashCode()) & 15;
-        final XltCharBuffer cachedIp = cachedIps[slot];
-        final XltCharBuffer cachedHost = cachedHosts[slot];
+        final String cachedIp = cachedIps[slot];
+        final String cachedHost = cachedHosts[slot];
 
         if (cachedIp != null && (cachedIp == ip || cachedIp.equals(ip)) &&
             cachedHost != null && (cachedHost == host || cachedHost.equals(host)))
@@ -168,14 +174,14 @@ public class IpReportProvider extends AbstractReportProvider
             return;
         }
 
-        final XltCharBuffer key = XltCharBuffer.valueOf(ip, host);
+        final IpHostKey key = new IpHostKey(ip, host);
 
         IpReport ipReport = ipReports.get(key);
         if (ipReport == null)
         {
             ipReport = new IpReport();
-            ipReport.ip = ip.toString();
-            ipReport.host = host.toString();
+            ipReport.ip = ip;
+            ipReport.host = host;
 
             ipReports.put(key, ipReport);
         }
@@ -213,7 +219,7 @@ public class IpReportProvider extends AbstractReportProvider
             return;
         }
 
-        for (final XltCharBuffer key : other.ipReports.keys())
+        for (final IpHostKey key : other.ipReports.keys())
         {
             final IpReport otherReport = other.ipReports.get(key);
             IpReport myReport = ipReports.get(key);

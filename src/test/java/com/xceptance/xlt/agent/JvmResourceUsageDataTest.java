@@ -18,7 +18,7 @@ package com.xceptance.xlt.agent;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
+import com.xceptance.common.util.CsvByteTestUtils;
 
 /**
  * @author Sebastian Oerding
@@ -62,7 +62,7 @@ public class JvmResourceUsageDataTest
 
         final JvmResourceUsageData data = new JvmResourceUsageData();
 
-        data.setAllValues(XltCharBufferUtil.toSimpleArrayList(values));
+        data.setAllValues(CsvByteTestUtils.toColumns(values));
 
         checkDoubleIsEqual("CPU", cpuUsage, data.getCpuUsage());
         checkLongIsEqual("committed memory size", committedMemorySize, data.getCommittedMemorySize());

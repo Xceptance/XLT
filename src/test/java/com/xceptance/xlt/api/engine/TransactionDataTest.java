@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
  * Test the implementation of {@link TransactionData}.
@@ -167,7 +166,7 @@ public class TransactionDataTest extends TimerDataTest
         elements.add(failedActionName);
 
         // read in CSV representation and parse it
-        var list = XltCharBufferUtil.toList(elements);
+        var list = parse(com.xceptance.common.util.CsvUtils.encode(elements).toString());
         instance.setBaseValues(list);
         instance.setRemainingValues(list);
         instance.setAgentName(agentName);
@@ -195,7 +194,7 @@ public class TransactionDataTest extends TimerDataTest
         elements.add(directoryName);
 
         // read in CSV representation and parse it
-        var list = XltCharBufferUtil.toList(elements);
+        var list = parse(com.xceptance.common.util.CsvUtils.encode(elements).toString());
         instance.setBaseValues(list);
         instance.setRemainingValues(list);
         instance.setAgentName(agentName);

@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,7 +43,6 @@ import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.labelingrules.LabelingRuleProcessor;
 import com.xceptance.xlt.report.util.HistogramValueSet;
@@ -80,23 +80,23 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
 
     /**
-     * Direct-mapped 16-entry cache of recently observed URL buffers for this processor.
+     * Direct-mapped 16-entry cache of recently observed URL strings for this processor.
      * In typical load tests, request streams and sample URLs alternate between multiple URLs
      * (e.g. 2-5 distinct URLs per timer name). A 16-slot direct-mapped cache indexed by the
-     * URL buffer hash code ensures hits even when alternating between different URLs, completely
+     * URL hash code ensures hits even when alternating between different URLs, completely
      * eliminating redundant MurmurHash operations, HyperLogLog updates, and Map lookups.
      */
-    private final XltCharBuffer[] recentUrls = new XltCharBuffer[16];
+    private final String[] recentUrls = new String[16];
 
     /**
      * Single-item URL reference cache to bypass hashing and array lookup for consecutive identical URLs.
      */
-    private XltCharBuffer lastUrl;
+    private String lastUrl;
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
      */
-    private final FastHashMap<XltCharBuffer, XltCharBuffer> distinctUrlSet = new FastHashMap<>(2 * MAXIMUM_NUMBER_OF_URLS + 1, 0.5f);
+    private final FastHashMap<String, String> distinctUrlSet = new FastHashMap<>(2 * MAXIMUM_NUMBER_OF_URLS + 1, 0.5f);
 
     /**
      * The configured runtime segment boundaries. May be an empty array.
@@ -347,11 +347,11 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         if (countDistinctUrls)
         {
-            final XltCharBuffer url = reqData.getUrl();
+            final String url = reqData.getUrl();
             if (url != null && url != lastUrl)
             {
                 final int slot = url.hashCode() & 15;
-                final XltCharBuffer cached = recentUrls[slot];
+                final String cached = recentUrls[slot];
 
                 // Check whether this URL matches the cached URL for this hash slot.
                 // If it matches by identity or equality, we can completely bypass the expensive
@@ -457,7 +457,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
             union.update(other.distinctUrlsHLL);
             distinctUrlsHLL = union.getResult(TgtHllType.HLL_8);
 
-            for (final XltCharBuffer url : other.distinctUrlSet.keys())
+            for (final String url : other.distinctUrlSet.keys())
             {
                 if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
                 {
@@ -610,12 +610,12 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      *            the total number of distinct URLs
      * @return the URL list
      */
-    private UrlData getUrlList(final FastHashMap<XltCharBuffer, XltCharBuffer> urls, final int totalUrlCount)
+    private UrlData getUrlList(final FastHashMap<String, String> urls, final int totalUrlCount)
     {
         final UrlData urlData = new UrlData();
 
         urlData.total = totalUrlCount;
-        urlData.list = urls.keys().stream().map(XltCharBuffer::toString).collect(Collectors.toList());
+        urlData.list = new ArrayList<>(urls.keys());
 
         return urlData;
     }

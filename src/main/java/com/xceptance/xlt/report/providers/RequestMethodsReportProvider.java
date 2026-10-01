@@ -21,7 +21,6 @@ import com.xceptance.common.collection.FastHashMap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * Provides basic statistics for the HTTP request methods used during the test.
@@ -31,19 +30,19 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
     /**
      * The key to use if the request method was not recorded.
      */
-    private static final XltCharBuffer UNKNOWN_REQUEST_METHOD = XltCharBuffer.valueOf("(unknown)");
+    private static final String UNKNOWN_REQUEST_METHOD = "(unknown)";
 
     /**
      * A mapping from request methods to their corresponding {@link RequestMethodReport} objects.
      */
-    private final FastHashMap<XltCharBuffer, RequestMethodReport> requestMethodReports = new FastHashMap<>();
+    private final FastHashMap<String, RequestMethodReport> requestMethodReports = new FastHashMap<>();
 
     /**
      * Direct-mapped 8-entry array cache for fast HTTP method lookups.
      * With fewer than 8 distinct standard HTTP methods (GET, POST, PUT, DELETE, etc.),
      * an 8-entry hash-indexed array guarantees virtually 100% cache hit rate with zero map queries.
      */
-    private final XltCharBuffer[] cachedMethods = new XltCharBuffer[8];
+    private final String[] cachedMethods = new String[8];
     private final RequestMethodReport[] cachedReports = new RequestMethodReport[8];
 
     /**
@@ -89,13 +88,13 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
         final Object[] array = list.getInternalArray();
         final int size = list.size();
 
-        XltCharBuffer lastMethod = null;
+        String lastMethod = null;
         RequestMethodReport lastReport = null;
 
         for (int p = 0; p < size; p++)
         {
             final RequestData reqData = (RequestData) array[p];
-            XltCharBuffer method = reqData.getHttpMethod();
+            String method = reqData.getHttpMethod();
             if (method == null || method.length() == 0)
             {
                 method = UNKNOWN_REQUEST_METHOD;
@@ -109,7 +108,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             else
             {
                 final int slot = method.hashCode() & 7;
-                final XltCharBuffer cachedMethod = cachedMethods[slot];
+                final String cachedMethod = cachedMethods[slot];
 
                 if (cachedMethod != null && (cachedMethod == method || cachedMethod.equals(method)))
                 {
@@ -122,7 +121,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
                     if (requestMethodReport == null)
                     {
                         requestMethodReport = new RequestMethodReport();
-                        requestMethodReport.method = method.toString();
+                        requestMethodReport.method = method;
                         requestMethodReports.put(method, requestMethodReport);
                     }
                     requestMethodReport.count++;
@@ -146,7 +145,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
         {
             final RequestData reqData = (RequestData) data;
 
-            XltCharBuffer method = reqData.getHttpMethod();
+            String method = reqData.getHttpMethod();
             if (method == null || method.length() == 0)
             {
                 // legacy result set or method not recorded
@@ -154,7 +153,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             }
 
             final int slot = method.hashCode() & 7;
-            final XltCharBuffer cachedMethod = cachedMethods[slot];
+            final String cachedMethod = cachedMethods[slot];
 
             if (cachedMethod != null && (cachedMethod == method || cachedMethod.equals(method)))
             {
@@ -166,7 +165,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             if (requestMethodReport == null)
             {
                 requestMethodReport = new RequestMethodReport();
-                requestMethodReport.method = method.toString();
+                requestMethodReport.method = method;
 
                 requestMethodReports.put(method, requestMethodReport);
             }
@@ -203,7 +202,7 @@ public class RequestMethodsReportProvider extends AbstractReportProvider
             return;
         }
 
-        for (final XltCharBuffer method : other.requestMethodReports.keys())
+        for (final String method : other.requestMethodReports.keys())
         {
             final RequestMethodReport otherReport = other.requestMethodReports.get(method);
             RequestMethodReport myReport = requestMethodReports.get(method);

@@ -19,7 +19,7 @@ import java.util.List;
 
 import com.xceptance.common.lang.ParseBoolean;
 import com.xceptance.common.lang.ParseNumbers;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.common.util.CsvByteColumns;
 
 /**
  * The {@link TimerData} class is the super class for all timer-based data records.
@@ -145,16 +145,16 @@ public abstract class TimerData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public void setRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final CsvByteColumns values)
     {
         // read and check the values
-        runTime = ParseNumbers.parseInt(values.get(3));
+        runTime = values.parseInt(3);
 
         if (runTime < 0)
         {
             throw new IllegalArgumentException("Invalid value for the 'runtime' attribute.");
         }
 
-        failed = ParseBoolean.parse(values.get(4));
+        failed = values.parseBoolean(4);
     }
 }

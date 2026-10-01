@@ -25,8 +25,9 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.xceptance.common.util.CsvLineDecoder;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import java.nio.charset.StandardCharsets;
+import com.xceptance.common.util.CsvByteColumns;
+import com.xceptance.common.util.CsvByteLineDecoder;
 
 /**
  * Test the implementation of {@link AbstractData}.
@@ -40,9 +41,14 @@ public class AbstractDataTest
      */
     private static final char TYPECODE = 'X';
 
+    protected static CsvByteColumns parse(final String s)
+    {
+        return CsvByteLineDecoder.parse(s.getBytes(StandardCharsets.UTF_8));
+    }
+
     private static class TestData extends AbstractData
     {
-        public XltCharBuffer myData;
+        public String myData;
 
         public TestData(String name, char typeCode)
         {
@@ -55,16 +61,16 @@ public class AbstractDataTest
         }
 
         @Override
-        public void setRemainingValues(List<XltCharBuffer> values)
+        public void setRemainingValues(CsvByteColumns values)
         {
-            myData = values.get(3);
+            myData = values.getString(3);
         }
 
         @Override
         public List<String> toList()
         {
             var l = super.toList();
-            l.add(myData.toString());
+            l.add(myData);
 
             return l;
         }
@@ -121,7 +127,7 @@ public class AbstractDataTest
     @Test
     public void complainTypeCode()
     {
-        var data = CsvLineDecoder.parse("Y,Name,123456789,MyData");
+        var data = parse("Y,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
 
@@ -140,7 +146,7 @@ public class AbstractDataTest
     @Test
     public void complainNegativeTime()
     {
-        var data = CsvLineDecoder.parse("X,Name,-5,MyData");
+        var data = parse("X,Name,-5,MyData");
 
         var d = new TestData(TYPECODE);
 
@@ -160,7 +166,7 @@ public class AbstractDataTest
     @Test(expected = IndexOutOfBoundsException.class)
     public void complainFieldCount()
     {
-        var data = CsvLineDecoder.parse("X,Name,87654345");
+        var data = parse("X,Name,87654345");
 
         var d = new TestData(TYPECODE);
 
@@ -172,7 +178,7 @@ public class AbstractDataTest
     @Test
     public void base()
     {
-        var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
+        var data = parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
         d.setBaseValues(data);
@@ -187,7 +193,7 @@ public class AbstractDataTest
     @Test
     public void additionalData()
     {
-        var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
+        var data = parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
         d.setBaseValues(data);
@@ -196,6 +202,18 @@ public class AbstractDataTest
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals(123456789L, d.getTime());
-        assertEquals("MyData", d.myData.toString());
+        assertEquals("MyData", d.myData);
+    }
+
+    /**
+     * Locks in the documented behavior where AbstractData.setBaseValues(CsvByteColumns)
+     * expects a valid type code in column 0 and throws IllegalArgumentException if mismatched.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetBaseValuesMismatchedTypeCode()
+    {
+        var data = parse("Y,Name,123456789,MyData");
+        var d = new TestData(TYPECODE);
+        d.setBaseValues(data);
     }
 }
