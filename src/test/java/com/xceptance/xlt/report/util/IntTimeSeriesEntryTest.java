@@ -727,10 +727,10 @@ public class IntTimeSeriesEntryTest
     public final void _toString()
     {
         final IntTimeSeriesEntry v = new IntTimeSeriesEntry(88, false);
-        assertEquals("1 / 1 / 0 / 88 / 88 / 88 / 88 / [88.0]\n", v.toString());
+        assertEquals("1 / 1 / 0 / 0 / 1 / 88 / 88 / 88 / 88 / [88.0]\n", v.toString());
 
         v.updateValue(12, true);
-        assertEquals("2 / 2 / 1 / 100 / 50 / 12 / 88 / [12.0, 88.0]\n", v.toString());
+        assertEquals("2 / 2 / 1 / 1 / 2 / 100 / 50 / 12 / 88 / [12.0, 88.0]\n", v.toString());
     }
 
     @Test
@@ -903,4 +903,89 @@ public class IntTimeSeriesEntryTest
         assertFalse(v1.equals(v2));
         assertFalse(v2.equals(v1));
     } 
+
+    @Test
+    public final void testMaxErrorCountAndMaxCountTracking()
+    {
+        final IntTimeSeriesEntry entry = new IntTimeSeriesEntry();
+        assertEquals(0, entry.getMaxErrorCount());
+        assertEquals(0, entry.getMaxCount());
+
+        entry.updateValue(100, false);
+        assertEquals(0, entry.getMaxErrorCount());
+        assertEquals(1, entry.getMaxCount());
+
+        entry.updateValue(200, true);
+        assertEquals(1, entry.getMaxErrorCount());
+        assertEquals(2, entry.getMaxCount());
+
+        entry.updateValue(300, true);
+        assertEquals(2, entry.getMaxErrorCount());
+        assertEquals(3, entry.getMaxCount());
+    }
+
+    @Test
+    public final void testMaxErrorCountAndMaxCountMerge()
+    {
+        final IntTimeSeriesEntry e1 = new IntTimeSeriesEntry();
+        e1.updateValue(100, true);
+        e1.updateValue(200, true);
+        assertEquals(2, e1.getMaxErrorCount());
+        assertEquals(2, e1.getMaxCount());
+
+        final IntTimeSeriesEntry e2 = new IntTimeSeriesEntry();
+        e2.updateValue(300, true);
+        e2.updateValue(400, false);
+        e2.updateValue(500, false);
+        assertEquals(1, e2.getMaxErrorCount());
+        assertEquals(3, e2.getMaxCount());
+
+        e1.merge(e2);
+        // Parallel merge across threads sums burst counts occurring in same window: 2 + 1 = 3
+        assertEquals(3, e1.getErrorCount());
+        assertEquals(3, e1.getMaxErrorCount());
+        // Peak count summed: 2 + 3 = 5
+        assertEquals(5, e1.getMaxCount());
+        assertEquals(5, e1.getCount());
+    }
+
+    @Test
+    public final void testCondenseWithPreservesPeakBurst()
+    {
+        final IntTimeSeriesEntry e1 = new IntTimeSeriesEntry();
+        e1.updateValue(100, true);
+        e1.updateValue(200, true);
+        assertEquals(2, e1.getMaxErrorCount());
+        assertEquals(2, e1.getMaxCount());
+
+        final IntTimeSeriesEntry e2 = new IntTimeSeriesEntry();
+        e2.updateValue(300, true);
+        e2.updateValue(400, false);
+        e2.updateValue(500, false);
+        assertEquals(1, e2.getMaxErrorCount());
+        assertEquals(3, e2.getMaxCount());
+
+        e1.condenseWith(e2);
+        // Total errors across adjacent intervals = 2 + 1 = 3
+        assertEquals(3, e1.getErrorCount());
+        // Peak instantaneous 1-second burst preserved across adjacent windows via Math.max(2, 1) = 2
+        assertEquals(2, e1.getMaxErrorCount());
+        // Peak instantaneous 1-second count preserved across adjacent windows via Math.max(2, 3) = 3
+        assertEquals(3, e1.getMaxCount());
+        assertEquals(5, e1.getCount());
+    }
+
+    @Test
+    public final void testCopyConstructorPreservesMaxCounts()
+    {
+        final IntTimeSeriesEntry original = new IntTimeSeriesEntry();
+        original.updateValue(50, true);
+        original.updateValue(60, true);
+
+        final IntTimeSeriesEntry copy = new IntTimeSeriesEntry(original);
+        assertEquals(original.getMaxErrorCount(), copy.getMaxErrorCount());
+        assertEquals(original.getMaxCount(), copy.getMaxCount());
+        assertEquals(original.getErrorCount(), copy.getErrorCount());
+        assertEquals(original, copy);
+    }
 }

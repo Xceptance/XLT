@@ -83,6 +83,25 @@ public class RuntimeHistogram
     }
 
     /**
+     * Copy constructor. Creates an independent deep copy of the given {@link RuntimeHistogram}.
+     *
+     * @param other
+     *            the instance to copy
+     */
+    public RuntimeHistogram(final RuntimeHistogram other)
+    {
+        this.precision = other.precision;
+        this.firstIndexValue = other.firstIndexValue;
+        this.lastIndexValue = other.lastIndexValue;
+        this.valueCount = other.valueCount;
+        if (other.countPerBucket != null)
+        {
+            this.countPerBucket = new int[other.countPerBucket.length];
+            System.arraycopy(other.countPerBucket, 0, this.countPerBucket, 0, other.countPerBucket.length);
+        }
+    }
+
+    /**
      * Adds a value to this histogram.
      *
      * @param value

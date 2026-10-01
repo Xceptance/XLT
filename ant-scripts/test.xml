@@ -78,9 +78,11 @@
             <path refid="classpath" />
         </path>
 
+        <property name="test.pattern" value="**/*Test.java" />
+
         <!-- Fileset that contains all tests. -->
         <fileset id="tests" dir="${src.dir}/test/java">
-            <include name="**/*Test.java" />
+            <include name="${test.pattern}" />
             <exclude name="**/AbstractHtmlUnitTest.java" />
             <exclude name="**/AbstractHtmlTest.java" />
         </fileset>
@@ -314,6 +316,7 @@
             <jvmarg value="--add-opens=java.base/java.util.stream=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/sun.nio.fs=ALL-UNNAMED" />
+            <jvmarg value="-Dnet.bytebuddy.experimental=true" />
 
             <!-- set classpath -->
             <classpath refid="junit.classpath" />

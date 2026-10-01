@@ -225,6 +225,40 @@ public class GeneralReportProvider extends AbstractReportProvider
 
                 requestRunTimeValueSet.addOrUpdateValue(endTime, runTime);
             }
+
+            int droppedLines = dataContainer.droppedLines;
+            final int sampleFactor = dataContainer.sampleFactor;
+            if (droppedLines > 0)
+            {
+                for (int i = 0; i < size; i++)
+                {
+                    final RequestData reqData = (RequestData) array[i];
+                    final long time = reqData.getTime();
+                    final long endTime = reqData.getEndTime();
+                    final int runTime = reqData.getRunTime();
+                    final long sendCompletedAt = time + reqData.getConnectTime() + reqData.getSendTime();
+                    final int bytesSent = reqData.getBytesSent();
+                    final int bytesReceived = reqData.getBytesReceived();
+
+                    for (int y = 1; y < sampleFactor; y++)
+                    {
+                        totalBytesSent += bytesSent;
+                        totalBytesReceived += bytesReceived;
+                        bytesSentValueSet.addOrUpdateValue(sendCompletedAt, bytesSent);
+                        bytesReceivedValueSet.addOrUpdateValue(endTime, bytesReceived);
+
+                        totalRequests++;
+                        requestsValueSet.addOrUpdateValue(endTime, 1);
+
+                        requestRunTimeValueSet.addOrUpdateValue(endTime, runTime);
+                    }
+                    droppedLines--;
+                    if (droppedLines == 0)
+                    {
+                        break;
+                    }
+                }
+            }
             return;
         }
 

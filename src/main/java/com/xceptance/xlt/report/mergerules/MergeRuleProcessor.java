@@ -71,6 +71,8 @@ public class MergeRuleProcessor
         }
     }
     
+    private final java.util.Map<String, String> strippedNamesCache = new java.util.HashMap<>(512);
+
     /**
      * Processes a request according to the configured request processing rules. 
      * Currently, this means renaming or discarding requests.
@@ -82,17 +84,27 @@ public class MergeRuleProcessor
     public RequestData postprocess(final RequestData requestData)
     {
         // fix up the name first (Product.1.2 -> Product) if so configured
-        // this can likely live in RequestData and act on XltCharBuffer instead String
-        // we might want to use a XltCharBuffer and just limit the buffer instead of
-        // copying it
         String requestName = requestData.getName();
         if (removeIndexesFromRequestNames)
         {
-            final int firstDotPos = requestName.indexOf(".");
-            if (firstDotPos > 0)
+            String stripped = strippedNamesCache.get(requestName);
+            if (stripped == null)
             {
-                requestName = requestName.substring(0, firstDotPos);
-                requestData.setName(requestName);
+                final int firstDotPos = requestName.indexOf(".");
+                if (firstDotPos > 0)
+                {
+                    stripped = requestName.substring(0, firstDotPos);
+                }
+                else
+                {
+                    stripped = requestName;
+                }
+                strippedNamesCache.put(requestName, stripped);
+            }
+            if (stripped != requestName)
+            {
+                requestData.setName(stripped);
+                requestName = stripped;
             }
         }
 

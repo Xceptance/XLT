@@ -175,6 +175,34 @@ public class RequestsReportProvider extends BasicTimerReportProvider<RequestData
             // Direct invocation of strongly typed RequestData accumulator
             processor.processDataRecord(stat);
         }
+
+        // Compensate for sampling loss if lines were dropped
+        int droppedLines = dataContainer.droppedLines;
+        final int sampleFactor = dataContainer.sampleFactor;
+        if (droppedLines > 0)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                final RequestData stat = (RequestData) array[i];
+                final String name = stat.getName();
+                RequestDataProcessor processor = lastProcessor;
+                if (name != lastName || processor == null)
+                {
+                    processor = getProcessor(name);
+                    lastName = name;
+                    lastProcessor = processor;
+                }
+                for (int y = 1; y < sampleFactor; y++)
+                {
+                    processor.processDataRecord(stat);
+                }
+                droppedLines--;
+                if (droppedLines == 0)
+                {
+                    break;
+                }
+            }
+        }
     }
 
     /**

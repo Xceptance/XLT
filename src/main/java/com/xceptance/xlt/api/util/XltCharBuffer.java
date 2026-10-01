@@ -731,10 +731,22 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     @Override
     public boolean equals(Object obj)
     {
+        if (this == obj)
+        {
+            return true;
+        }
         // this test is null-safe and highly JVM optimized
         if (obj instanceof XltCharBuffer)
         {
             final XltCharBuffer other = (XltCharBuffer) obj;
+            if (this.length != other.length)
+            {
+                return false;
+            }
+            if (this.hashCode != 0 && other.hashCode != 0 && this.hashCode != other.hashCode)
+            {
+                return false;
+            }
             return Arrays.equals(this.src, 
                                  from, from + length, 
                                  other.src, 

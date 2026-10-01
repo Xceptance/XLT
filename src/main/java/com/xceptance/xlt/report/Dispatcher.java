@@ -38,7 +38,7 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Dispatcher
 {
     /**
-     * The maximum number of lines in a chunk.
+     * The default maximum number of lines in a chunk delivered from reader threads to parser threads.
      */
     public static final int DEFAULT_QUEUE_CHUNK_SIZE = 200;
 
@@ -182,12 +182,34 @@ public class Dispatcher
      */
     public void addPostprocessedData(final PostProcessedDataContainer postprocessedData) throws InterruptedException
     {
+        addPostprocessedData(postprocessedData, true);
+    }
+
+    /**
+     * Delivers a parsed chunk of data and puts it through the statistics processors.
+     * Also streams the parsed data records into ChunkDB ingestion collector if active.
+     *
+     * @param postprocessedData
+     *            the post-processed data records container
+     * @param isLastSubchunk
+     *            whether this is the final subchunk for the raw read chunk (triggers finishedProcessing)
+     * @throws InterruptedException
+     *             if interrupted while queuing or processing
+     */
+    public void addPostprocessedData(final PostProcessedDataContainer postprocessedData, final boolean isLastSubchunk) throws InterruptedException
+    {
         if (chunkCollector != null)
         {
-            chunkCollector.collect(postprocessedData.data);
+            chunkCollector.collect(postprocessedData);
         }
-        statisticsProcessor.process(postprocessedData);
-        finishedProcessing();
+        else
+        {
+            statisticsProcessor.process(postprocessedData);
+        }
+        if (isLastSubchunk)
+        {
+            finishedProcessing();
+        }
     }
 
     /**

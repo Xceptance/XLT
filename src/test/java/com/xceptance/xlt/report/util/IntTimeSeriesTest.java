@@ -16,6 +16,7 @@
 package com.xceptance.xlt.report.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -926,6 +927,197 @@ public class IntTimeSeriesTest
 
         final var hist = s.toHistogramSeries("Distribution", 10);
         assertTrue(hist.getItemCount() > 0);
+    }
+
+    /**
+     * Tests that IntTimeSeries dynamically expands its buffer when scale is 1 and
+     * capacity is less than maxCapacity, avoiding loss of 1-second resolution.
+     */
+    @Test
+    public void testDynamicGrowthUpToMaxCapacity()
+    {
+        final IntTimeSeries s = new IntTimeSeries(16, 64);
+        assertEquals(16, s.getSize());
+        assertEquals(64, s.getMaxCapacity());
+        assertEquals(1, s.getScale());
+
+        s.addValue(msec(0), 100, false);
+        assertEquals(16, s.getSize());
+        assertEquals(1, s.getScale());
+
+        // Span 0..20 requires 21 slots > 16. Should grow to 32 while retaining scale 1!
+        s.addValue(msec(20), 100, false);
+        assertEquals(32, s.getSize());
+        assertEquals(1, s.getScale());
+
+        // Span 0..50 requires 51 slots > 32. Should grow to 64 while retaining scale 1!
+        s.addValue(msec(50), 100, false);
+        assertEquals(64, s.getSize());
+        assertEquals(1, s.getScale());
+
+        // Span 0..100 requires 101 slots > 64 (maxCapacity). Now condensing should occur!
+        s.addValue(msec(100), 100, false);
+        assertEquals(64, s.getSize());
+        assertTrue("Scale must increase when exceeding maxCapacity", s.getScale() >= 2);
+    }
+
+    /**
+     * Tests that toResolution downsamples an independent copy to target display resolution,
+     * while preserving peak 1-second error burst counts.
+     */
+    @Test
+    public void testToResolutionAndPeakErrorCountPreservation()
+    {
+        final IntTimeSeries s = new IntTimeSeries(16, 64);
+        // sec 0: 1 error
+        s.addValue(msec(0), 100, true);
+        // sec 1: 5 errors burst
+        for (int i = 0; i < 5; i++)
+        {
+            s.addValue(msec(1), 100, true);
+        }
+        // sec 2: 0 errors
+        s.addValue(msec(2), 100, false);
+        // sec 3: 2 errors
+        s.addValue(msec(3), 100, true);
+        s.addValue(msec(3), 100, true);
+
+        assertEquals(1, s.getScale());
+        assertEquals(16, s.getSize());
+
+        // Downsample to targetWidth = 2 slots
+        final IntTimeSeries condensed = s.toResolution(2);
+        // Original series remains completely unmodified
+        assertEquals(1, s.getScale());
+        assertEquals(16, s.getSize());
+
+        // Condensed copy has condensed to fit target width
+        assertTrue(condensed.getScale() > 1);
+        final var errTs = condensed.toErrorsPerSecondTimeSeries("Errors/s");
+        assertTrue(errTs.getItemCount() > 0);
+
+        // First condensed slot covers sec 0 and sec 1. Peak burst in that window was 5 errors/s.
+        // It must report 5.0 (preserving peak burst), NOT (1 + 5) / 2 = 3.0.
+        final Number firstSlotErrors = errTs.getValue(0);
+        assertEquals(5.0, firstSlotErrors.doubleValue(), 0.001);
+    }
+
+    /**
+     * Tests that the copy constructor performs a deep copy of entries and histogram.
+     */
+    @Test
+    public void testDeepCopyConstructor()
+    {
+        final IntTimeSeries s = new IntTimeSeries(16, 64);
+        s.addValue(msec(0), 100, true);
+        s.addValue(msec(5), 200, false);
+
+        final IntTimeSeries copy = new IntTimeSeries(s);
+        assertEquals(s.getSize(), copy.getSize());
+        assertEquals(s.getMaxCapacity(), copy.getMaxCapacity());
+        assertEquals(s.getScale(), copy.getScale());
+        assertEquals(s.getCount(), copy.getCount());
+        assertEquals(s.getErrorCount(), copy.getErrorCount());
+        assertEquals(s.getTotalValue(), copy.getTotalValue());
+
+        // Mutate original; copy must remain unaffected
+        s.addValue(msec(10), 300, true);
+        assertEquals(3, s.getCount());
+        assertEquals(2, copy.getCount());
+    }
+
+    /**
+     * Tests that merge dynamically expands capacity when both series are at scale 1.
+     */
+    @Test
+    public void testMergeDynamicGrowth()
+    {
+        final IntTimeSeries s1 = new IntTimeSeries(16, 64);
+        s1.addValue(msec(0), 100, false);
+
+        final IntTimeSeries s2 = new IntTimeSeries(16, 64);
+        s2.addValue(msec(25), 200, true);
+
+        // Merging span 0..25 is 26 seconds > 16. Buffer should grow to 32 while scale remains 1.
+        s1.merge(s2);
+        assertEquals(32, s1.getSize());
+        assertEquals(1, s1.getScale());
+        assertEquals(2, s1.getCount());
+        assertEquals(1, s1.getErrorCount());
+    }
+
+    /**
+     * Tests that newly created time series with large capacities lazily allocate slots upon write,
+     * and chart conversion methods handle sparse/unpopulated slots without throwing NullPointerException.
+     */
+    @Test
+    public void testLazyAllocationAndChartGeneration()
+    {
+        // Allocate a series with 4096 initial capacity
+        final IntTimeSeries s = new IntTimeSeries();
+        assertEquals(4096, s.getSize());
+
+        // Add just two distinct points separated in time
+        s.addValue(msec(10), 150, false);
+        s.addValue(msec(50), 300, true);
+
+        assertEquals(2, s.getCount());
+        assertEquals(1, s.getErrorCount());
+
+        // Verify chart generation methods do not NPE on unpopulated/sparse slots
+        assertNotNull(s.toRunTimeTimeSeries("Runtime"));
+        assertNotNull(s.toCountPerSecondTimeSeries("Count/s"));
+        assertNotNull(s.toErrorsPerSecondTimeSeries("Errors/s"));
+        assertNotNull(s.toErrorRateTimeSeries("Error Rate"));
+
+        // Condensing and resolution downsampling must preserve sparse integrity
+        final IntTimeSeries condensed = s.toResolution(500);
+        assertNotNull(condensed);
+        assertEquals(2, condensed.getCount());
+        assertEquals(1, condensed.getErrorCount());
+    }
+
+    /**
+     * Tests that merging parallel time series (from different worker threads parsing the same timeline)
+     * correctly sums instantaneous burst rates (errors and count) for the same time slot, and that subsequent
+     * resolution downsampling preserves that peak burst across wider intervals.
+     */
+    @Test
+    public void testMergeParallelThreadsSumsBurstCounts()
+    {
+        final IntTimeSeries t1 = new IntTimeSeries(16, 64);
+        final IntTimeSeries t2 = new IntTimeSeries(16, 64);
+
+        // Thread 1 sees 20 errors at sec 5
+        for (int i = 0; i < 20; i++)
+        {
+            t1.addValue(msec(5), 100, true);
+        }
+
+        // Thread 2 sees 25 errors at sec 5
+        for (int i = 0; i < 25; i++)
+        {
+            t2.addValue(msec(5), 100, true);
+        }
+
+        // Merge thread 2 into thread 1
+        t1.merge(t2);
+
+        // At sec 5, total errors across both threads must be 45
+        assertEquals(45, t1.getErrorCount());
+        final var errTs1 = t1.toErrorsPerSecondTimeSeries("Errors/s");
+        assertEquals(1, errTs1.getItemCount());
+        assertEquals(45.0, errTs1.getValue(0).doubleValue(), 0.001);
+
+        // When condensed to fewer slots (e.g. resolution = 4), peak burst across the bucket must still be 45!
+        final IntTimeSeries condensed = t1.toResolution(4);
+        final var errTsCondensed = condensed.toErrorsPerSecondTimeSeries("Errors/s");
+        double maxInCondensed = 0.0;
+        for (int i = 0; i < errTsCondensed.getItemCount(); i++)
+        {
+            maxInCondensed = Math.max(maxInCondensed, errTsCondensed.getValue(i).doubleValue());
+        }
+        assertEquals(45.0, maxInCondensed, 0.001);
     }
 }
 

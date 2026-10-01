@@ -84,6 +84,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
     private FileObject resultsDirectory;
 
     /**
+     * The root directory of the result set as a local File if backed by local filesystem.
+     */
+    private File localResultsDir;
+
+    /**
      * The dump mode used during the load test.
      */
     private final DumpMode dumpMode;
@@ -145,6 +150,24 @@ public class ErrorsReportProvider extends AbstractReportProvider
         directoryReplacementChance = getConfiguration().getDirectoryReplacementChance();
         stackTracesLimit = getConfiguration().getStackTracesLimit();
         resultsDirectory = getConfiguration().getResultsDirectory();
+
+        File localDir = null;
+        try
+        {
+            if (resultsDirectory != null && "file".equals(resultsDirectory.getName().getScheme()))
+            {
+                localDir = new File(resultsDirectory.getName().getPath());
+                if (!localDir.isDirectory())
+                {
+                    localDir = null;
+                }
+            }
+        }
+        catch (final Exception e)
+        {
+            localDir = null;
+        }
+        localResultsDir = localDir;
     }
 
     /**
@@ -571,28 +594,37 @@ public class ErrorsReportProvider extends AbstractReportProvider
                             // either limit not reached yet or replacement chance
                             final String indexFilePath = directoryHint + "/index.html";
 
-                            try
+                            boolean exists = false;
+                            if (localResultsDir != null)
                             {
-                                // check if such a directory exists and contains an index.html file
-                                if (VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists())
+                                exists = new File(localResultsDir, indexFilePath).exists();
+                            }
+                            else
+                            {
+                                try
                                 {
-                                    // now decide what to do with it
-                                    if (safeToAdd)
-                                    {
-                                        // add the directory
-                                        errorReport.directoryHints.add(directoryHint);
-                                    }
-                                    else
-                                    {
-                                        // randomly replace one of the existing hints with the new hint
-                                        errorReport.directoryHints.set(random.nextInt(directoryLimitPerError), directoryHint);
-                                    }
+                                    exists = VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists();
+                                }
+                                catch (final FileSystemException e)
+                                {
+                                    XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", indexFilePath,
+                                                                resultsDirectory.getName().getPath());
                                 }
                             }
-                            catch (final FileSystemException e)
+
+                            if (exists)
                             {
-                                XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", indexFilePath,
-                                                            resultsDirectory.getName().getPath());
+                                // now decide what to do with it
+                                if (safeToAdd)
+                                {
+                                    // add the directory
+                                    errorReport.directoryHints.add(directoryHint);
+                                }
+                                else
+                                {
+                                    // randomly replace one of the existing hints with the new hint
+                                    errorReport.directoryHints.set(random.nextInt(directoryLimitPerError), directoryHint);
+                                }
                             }
                         }
                     }

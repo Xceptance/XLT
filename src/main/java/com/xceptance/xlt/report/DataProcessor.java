@@ -89,6 +89,9 @@ public class DataProcessor
      */
     private final StringMatcher agentFilter;
 
+    private final long fromTime;
+    private final long toTime;
+
     private final ReportGeneratorConfiguration config;
 
     /**
@@ -128,6 +131,8 @@ public class DataProcessor
     {
         this.config = config;
         this.inputDir = inputDir;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
@@ -223,14 +228,11 @@ public class DataProcessor
             // Wait for all data record parsing and thread-local processing to complete
             dispatcher.waitForDataRecordProcessingToComplete();
 
-            // Complete processing and merge worker statistics into master providers
-            statisticsProcessor.complete();
-
             // Calculate parsing and processing duration and throughput strictly for log reading
             final long readDuration = TimerUtils.get().getElapsedTime(start);
             final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) readDuration) * 1000L);
 
-            // Log the parsing throughput strictly representing the record reading and statistical merging phase
+            // Log the parsing throughput strictly representing the record reading and chunk ingestion phase
             XltLogger.reportLogger.info(String.format("%,d records read - %,d ms - %,d lines/s",
                               totalLinesCounter.get(),
                               readDuration,
@@ -253,11 +255,36 @@ public class DataProcessor
 
                     final long cacheDuration = TimerUtils.get().getElapsedTime(tCacheStart);
                     XltLogger.reportLogger.info(String.format("ChunkDB cache persisted - %,d ms", cacheDuration));
+
+                    // Phase 2: Query the sealed ChunkDB concurrently to aggregate report statistics
+                    XltLogger.reportLogger.info("Aggregating report statistics from ChunkDB...");
+                    final long scanStart = TimerUtils.get().getStartTime();
+
+                    final org.roaringbitmap.RoaringBitmap matchingAgents =
+                        storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
+
+                    final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
+                        new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
+
+                    final com.xceptance.xlt.report.ChunkQueryEngine queryEngine =
+                        new com.xceptance.xlt.report.ChunkQueryEngine(storage, config.parserThreadCount);
+                    final long recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor);
+
+                    final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
+                    final long scanRate = scanDuration > 0 ? Math.round((recordsProcessed / (double) scanDuration) * 1000L) : 0;
+                    XltLogger.reportLogger.info(String.format("%,d records aggregated from ChunkDB - %,d ms - %,d records/s",
+                                                              recordsProcessed, scanDuration, scanRate));
                 }
                 catch (final Exception e)
                 {
-                    XltLogger.reportLogger.warn("Failed to persist ChunkDB cache: " + e.getMessage(), e);
+                    XltLogger.reportLogger.error("Failed to persist ChunkDB cache or aggregate report: " + e.getMessage(), e);
+                    throw new RuntimeException("ChunkDB processing failed", e);
                 }
+            }
+            else
+            {
+                // Complete processing and merge worker statistics into master providers
+                statisticsProcessor.complete();
             }
         }
         catch (final Exception e)

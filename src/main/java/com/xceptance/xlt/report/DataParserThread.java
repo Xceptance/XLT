@@ -161,6 +161,7 @@ class DataParserThread implements Runnable
 
                 // parse the chunk of lines and preprocess the results
                 final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(lines.size(), SAMPLEFACTOR);
+                PostProcessedDataContainer nonRequestData = null;
 
                 int lineNumber = chunk.getBaseLineNumber();
 
@@ -254,25 +255,29 @@ class DataParserThread implements Runnable
                         // get us a hashcode for later while the cache is warm
                         // for RequestData, we did that already
                         data.getName().hashCode();
-                        postProcessedData.add(data);
+                        if (nonRequestData == null)
+                        {
+                            nonRequestData = new PostProcessedDataContainer(4, SAMPLEFACTOR);
+                        }
+                        nonRequestData.add(data);
                     }
 
                     lineNumber++;
                 }
 
-                // Tag container typeCode if non-empty and all records share the same type code.
-                // This allows StatisticsProcessor to route homogeneous CSV chunks directly to registered
-                // type-specific report providers (e.g. only Request providers for 'R' chunks) instead
-                // of iterating over every provider in allProviders.
-                final int chunkRecordCount = postProcessedData.size();
-                if (chunkRecordCount > 0)
+                final boolean hasNonReq = nonRequestData != null && nonRequestData.size() > 0;
+                final boolean hasReq = postProcessedData.size() > 0;
+
+                // Deliver non-request records if present (tagged with homogeneous typeCode if applicable)
+                if (hasNonReq)
                 {
-                    final char firstTypeCode = postProcessedData.dataList.get(0).getTypeCode();
+                    final int nonReqCount = nonRequestData.size();
+                    final char firstTc = nonRequestData.dataList.get(0).getTypeCode();
                     boolean homogeneous = true;
-                    final Object[] internalArr = postProcessedData.dataList.getInternalArray();
-                    for (int k = 1; k < chunkRecordCount; k++)
+                    final Object[] internalArr = nonRequestData.dataList.getInternalArray();
+                    for (int k = 1; k < nonReqCount; k++)
                     {
-                        if (((Data) internalArr[k]).getTypeCode() != firstTypeCode)
+                        if (((Data) internalArr[k]).getTypeCode() != firstTc)
                         {
                             homogeneous = false;
                             break;
@@ -280,13 +285,23 @@ class DataParserThread implements Runnable
                     }
                     if (homogeneous)
                     {
-                        postProcessedData.typeCode = firstTypeCode;
+                        nonRequestData.typeCode = firstTc;
                     }
+                    dispatcher.addPostprocessedData(nonRequestData, !hasReq);
                 }
 
-                // deliver the chunk of parsed data records
-                postProcessedData.droppedLines = droppedLines;
-                dispatcher.addPostprocessedData(postProcessedData);
+                // Deliver request records if present (guaranteed 100% homogeneous 'R' chunk)
+                if (hasReq)
+                {
+                    postProcessedData.typeCode = 'R';
+                    postProcessedData.droppedLines = droppedLines;
+                    dispatcher.addPostprocessedData(postProcessedData, true);
+                }
+                else if (!hasNonReq)
+                {
+                    // Neither requests nor non-requests (e.g. all out of time range / sampled)
+                    dispatcher.addPostprocessedData(postProcessedData, true);
+                }
             }
             catch (final InterruptedException e)
             {

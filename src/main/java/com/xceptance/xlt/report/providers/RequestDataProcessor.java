@@ -335,7 +335,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         final boolean failed = reqData.hasFailed();
 
         // Record response time data directly into the time series without superclass dispatch
-        timeSeries.addValue(endTime - runTime, endTime, runTime, failed);
+        timeSeries.addValue(endTime, runTime, failed);
 
         if (runTimeHistogramValueSet != null)
         {

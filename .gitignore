@@ -9,3 +9,5 @@
 /resultbrowser/dist/
 /resultbrowser/.parcel-cache
 .vscode/
+*.jfr
+/charts/

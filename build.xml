@@ -460,6 +460,7 @@
             <reference refid="maven-resolver-ant-tasks.classpath" />
             <propertyset>
                 <propertyref name="build.doc.dir" />
+                <propertyref name="test.pattern" />
             </propertyset>
         </ant>
     </target>

@@ -35,7 +35,21 @@ import org.jfree.data.xy.XYIntervalSeries;
 public class IntTimeSeries
 {
     /**
-     * The default initial value set size.
+     * The default initial capacity of a time series (rounded up to 4096 = ~1.1 hours at 1s resolution).
+     */
+    /**
+     * The default initial capacity of a time series (rounded up to 4096 = ~1.1 hours at 1s resolution).
+     * Slots are lazily instantiated to keep memory minimal.
+     */
+    public static final int DEFAULT_INITIAL_CAPACITY = 4096;
+
+    /**
+     * The default maximum capacity of a time series before condensing kicks in (32768 = ~9.1 hours at 1s resolution).
+     */
+    public static final int DEFAULT_MAX_CAPACITY = 32768;
+
+    /**
+     * The legacy default initial value set size.
      */
     public static final int DEFAULT_SIZE = 3600;
 
@@ -67,13 +81,20 @@ public class IntTimeSeries
 
     /**
      * The min/max/count/error entries maintained by this time series.
+     * Slots are lazily instantiated as records arrive to avoid creating millions of empty
+     * objects across multi-threaded worker report providers.
      */
-    private final IntTimeSeriesEntry[] values;
+    private IntTimeSeriesEntry[] values;
 
     /**
      * The capacity of this time series buffer (always a power of 2).
      */
-    private final int size;
+    private int size;
+
+    /**
+     * The maximum capacity of this time series before condensing kicks in.
+     */
+    private final int maxCapacity;
 
     /**
      * The sum of squares of all values added (used for standard deviation calculation).
@@ -106,31 +127,76 @@ public class IntTimeSeries
     private int maxValue = Integer.MIN_VALUE;
 
     /**
-     * Creates a {@link IntTimeSeries} instance with a size of {@link #DEFAULT_SIZE}.
+     * Creates a {@link IntTimeSeries} instance with {@link #DEFAULT_INITIAL_CAPACITY} (1024)
+     * and dynamic capacity expansion up to {@link #DEFAULT_MAX_CAPACITY} (32768).
      */
     public IntTimeSeries()
     {
-        this(DEFAULT_SIZE);
+        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_MAX_CAPACITY);
     }
 
     /**
-     * Creates a {@link IntTimeSeries} instance with the specified size rounded up to the next power of 2.
+     * Creates a fixed-capacity {@link IntTimeSeries} instance with the specified size rounded up to the next power of 2.
+     * When capacity is reached, it will condense immediately (legacy compatibility).
      *
      * @param size
-     *            the target size
+     *            the target fixed size
      */
     public IntTimeSeries(final int size)
     {
-        this.size = Math.max(2, nextHighestPowerOfTwo(size));
+        this(size, size);
+    }
+
+    /**
+     * Creates a {@link IntTimeSeries} instance with an initial capacity and a maximum capacity
+     * before condensing occurs.
+     *
+     * @param initialCapacity
+     *            the initial buffer capacity
+     * @param maxCapacity
+     *            the maximum capacity before condensing
+     */
+    public IntTimeSeries(final int initialCapacity, final int maxCapacity)
+    {
+        this.size = Math.max(2, nextHighestPowerOfTwo(initialCapacity));
+        this.maxCapacity = Math.max(this.size, nextHighestPowerOfTwo(maxCapacity));
         this.values = new IntTimeSeriesEntry[this.size];
 
         this.histogram = new RuntimeHistogram(8);
 
-        // Pre-fill so slots are never null
-        Arrays.setAll(this.values, __ -> new IntTimeSeriesEntry());
-
+        // Slots are allocated lazily upon first use to keep memory footprint minimal
         this.firstSecond = DEFAULT;
         this.lastPosUsed = -1;
+    }
+
+    /**
+     * Copy constructor. Creates an independent deep copy of the given {@link IntTimeSeries}.
+     *
+     * @param other
+     *            the instance to copy
+     */
+    public IntTimeSeries(final IntTimeSeries other)
+    {
+        this.size = other.size;
+        this.maxCapacity = other.maxCapacity;
+        this.scale = other.scale;
+        this.firstSecond = other.firstSecond;
+        this.lastPosUsed = other.lastPosUsed;
+        this.sumOfSquares = other.sumOfSquares;
+        this.histogram = new RuntimeHistogram(other.histogram);
+        this.totalCount = other.totalCount;
+        this.totalErrors = other.totalErrors;
+        this.totalSum = other.totalSum;
+        this.minValue = other.minValue;
+        this.maxValue = other.maxValue;
+        this.values = new IntTimeSeriesEntry[this.size];
+        for (int i = 0; i <= other.lastPosUsed && i < this.size; i++)
+        {
+            if (other.values[i] != null)
+            {
+                this.values[i] = new IntTimeSeriesEntry(other.values[i]);
+            }
+        }
     }
 
     public static int nextHighestPowerOfTwo(final int n)
@@ -181,6 +247,12 @@ public class IntTimeSeries
             this.firstSecond = startSecond;
         }
 
+        final long requiredSeconds = (long) endSecond - this.firstSecond + 1;
+        if (this.scale == 1 && this.size < this.maxCapacity && requiredSeconds > this.size)
+        {
+            growToCapacity((int) Math.min(this.maxCapacity, requiredSeconds));
+        }
+
         if (endSecond >= this.firstSecond + expandToSeconds(this.size))
         {
             condense(endSecond);
@@ -194,14 +266,27 @@ public class IntTimeSeries
         // semantics and ensures throughput (completed operations/sec), response time, and
         // error rates align with the actual completion/failure moment (preventing premature
         // smearing of outage error spikes backwards in time).
-        this.values[endPos].updateValue(value, failed);
+        IntTimeSeriesEntry endEntry = this.values[endPos];
+        if (endEntry == null)
+        {
+            endEntry = new IntTimeSeriesEntry();
+            this.values[endPos] = endEntry;
+        }
+        endEntry.updateValue(value, failed);
 
         // Track active concurrency across the duration of the operation prior to completion [startPos .. endPos - 1].
         // Concurrency for endPos was already incremented by updateValue() above.
         for (int p = startPos; p < endPos; p++)
         {
-            this.values[p].updateConcurrency();
+            IntTimeSeriesEntry pEntry = this.values[p];
+            if (pEntry == null)
+            {
+                pEntry = new IntTimeSeriesEntry();
+                this.values[p] = pEntry;
+            }
+            pEntry.updateConcurrency();
         }
+
         this.lastPosUsed = Math.max(endPos, this.lastPosUsed);
 
         final int v = value < 0 ? 0 : value;
@@ -261,6 +346,35 @@ public class IntTimeSeries
     }
 
     /**
+     * Expands the capacity of this time series buffer to at least targetCapacity without condensing,
+     * up to {@link #maxCapacity}. Existing entries are retained in their current slots, and newly allocated
+     * slots are left null for lazy instantiation upon first write.
+     *
+     * @param targetCapacity
+     *            the target buffer capacity to achieve
+     */
+    private void growToCapacity(final int targetCapacity)
+    {
+        int newSize = this.size;
+        while (newSize < targetCapacity && newSize < this.maxCapacity)
+        {
+            newSize <<= 1;
+        }
+        if (newSize > this.maxCapacity)
+        {
+            newSize = this.maxCapacity;
+        }
+
+        if (newSize > this.size)
+        {
+            final IntTimeSeriesEntry[] newValues = new IntTimeSeriesEntry[newSize];
+            System.arraycopy(this.values, 0, newValues, 0, this.size);
+            this.values = newValues;
+            this.size = newSize;
+        }
+    }
+
+    /**
      * Shifts entries to the right to make room for an earlier second.
      */
     private void shiftRight(final int second)
@@ -273,6 +387,16 @@ public class IntTimeSeries
         int offset = adjustToScale(this.firstSecond) - adjustToScale(second);
         while (this.lastPosUsed + offset >= this.size)
         {
+            if (this.scale == 1 && this.size < this.maxCapacity)
+            {
+                final int requiredSize = this.lastPosUsed + offset + 1;
+                growToCapacity(Math.min(this.maxCapacity, requiredSize));
+                offset = adjustToScale(this.firstSecond) - adjustToScale(second);
+                if (this.lastPosUsed + offset < this.size)
+                {
+                    break;
+                }
+            }
             condenseOneStep();
             offset = adjustToScale(this.firstSecond) - adjustToScale(second);
         }
@@ -280,12 +404,7 @@ public class IntTimeSeries
         if (offset > 0)
         {
             System.arraycopy(this.values, 0, this.values, offset, this.size - offset);
-
-            for (int i = 0; i < offset; i++)
-            {
-                this.values[i] = new IntTimeSeriesEntry();
-            }
-
+            Arrays.fill(this.values, 0, offset, null);
             this.lastPosUsed = Math.min(this.size - 1, this.lastPosUsed + offset);
         }
     }
@@ -313,12 +432,26 @@ public class IntTimeSeries
         {
             final IntTimeSeriesEntry v1 = this.values[i];
             final IntTimeSeriesEntry v2 = this.values[i + 1];
-            this.values[newPos++] = v1.merge(v2);
+            if (v1 == null && v2 == null)
+            {
+                this.values[newPos++] = null;
+            }
+            else if (v1 == null)
+            {
+                this.values[newPos++] = v2;
+            }
+            else if (v2 == null)
+            {
+                this.values[newPos++] = v1;
+            }
+            else
+            {
+                // Condense adjacent chronological slots into one wider time interval,
+                // preserving peak 1-second burst rates via Math.max
+                this.values[newPos++] = v1.condenseWith(v2);
+            }
         }
-        for (int i = newPos; i < l; i++)
-        {
-            this.values[i] = new IntTimeSeriesEntry();
-        }
+        Arrays.fill(this.values, newPos, l, null);
 
         this.scale++;
         this.lastPosUsed = this.lastPosUsed >> 1;
@@ -336,6 +469,29 @@ public class IntTimeSeries
     }
 
     /**
+     * Returns an independent copy of this time series condensed to fit within the specified target resolution
+     * (e.g. chart width in pixels). If this series already fits within targetWidth (i.e. {@code lastPosUsed < targetWidth}),
+     * returns a copy at current scale. During condensing, peak metrics per second (such as peak error burst rate
+     * and peak throughput) are preserved.
+     *
+     * @param targetWidth
+     *            the target maximum number of slots (e.g. chart width in pixels)
+     * @return a condensed copy suitable for report charts
+     */
+    public IntTimeSeries toResolution(final int targetWidth)
+    {
+        final IntTimeSeries copy = new IntTimeSeries(this);
+        if (targetWidth > 0 && copy.lastPosUsed >= targetWidth)
+        {
+            while (copy.lastPosUsed >= targetWidth)
+            {
+                copy.condenseOneStep();
+            }
+        }
+        return copy;
+    }
+
+    /**
      * Merges another {@link IntTimeSeries} into this instance.
      *
      * @param other
@@ -350,6 +506,10 @@ public class IntTimeSeries
 
         if (this.lastPosUsed == -1)
         {
+            if (other.size > this.size)
+            {
+                this.growToCapacity(other.size);
+            }
             this.firstSecond = other.firstSecond;
             this.scale = other.scale;
             this.lastPosUsed = other.lastPosUsed;
@@ -362,13 +522,25 @@ public class IntTimeSeries
             this.maxValue = other.maxValue;
             for (int i = 0; i <= other.lastPosUsed; i++)
             {
-                this.values[i] = new IntTimeSeriesEntry(other.values[i]);
+                if (other.values[i] != null)
+                {
+                    this.values[i] = new IntTimeSeriesEntry(other.values[i]);
+                }
             }
             return;
         }
 
         final long minSecond = Math.min(this.firstSecond, other.firstSecond);
         final long maxSecond = Math.max(this.getLastSecond(), other.getLastSecond());
+
+        if (this.scale == 1 && other.scale == 1)
+        {
+            final long span = maxSecond - minSecond + 1;
+            if (span > this.size && this.size < this.maxCapacity)
+            {
+                growToCapacity((int) Math.min(this.maxCapacity, span));
+            }
+        }
 
         int targetScale = Math.max(this.scale, other.scale);
         while (maxSecond >= minSecond + ((long) this.size << (targetScale - 1)))
@@ -389,7 +561,7 @@ public class IntTimeSeries
         for (int i = 0; i <= limit; i++)
         {
             final IntTimeSeriesEntry otherEntry = other.values[i];
-            if (otherEntry.getCount() > 0 || otherEntry.getConcurrentCount() > 0)
+            if (otherEntry != null && (otherEntry.getCount() > 0 || otherEntry.getConcurrentCount() > 0))
             {
                 final long entrySecond = other.firstSecond + ((long) i * otherSlotWidth);
                 int targetPos = this.adjustToScale((int) (entrySecond - this.firstSecond));
@@ -401,7 +573,14 @@ public class IntTimeSeries
                 {
                     targetPos = this.size - 1;
                 }
-                this.values[targetPos].merge(otherEntry);
+                if (this.values[targetPos] == null)
+                {
+                    this.values[targetPos] = new IntTimeSeriesEntry(otherEntry);
+                }
+                else
+                {
+                    this.values[targetPos].merge(otherEntry);
+                }
                 this.lastPosUsed = Math.max(this.lastPosUsed, targetPos);
             }
         }
@@ -467,6 +646,16 @@ public class IntTimeSeries
         return size;
     }
 
+    /**
+     * Returns the maximum buffer capacity before condensing kicks in.
+     *
+     * @return the maximum capacity
+     */
+    public int getMaxCapacity()
+    {
+        return maxCapacity;
+    }
+
     public Statistics getStatistics()
     {
         final Statistics stat = new Statistics();
@@ -510,6 +699,13 @@ public class IntTimeSeries
 
     public IntTimeSeriesEntry[] getValues()
     {
+        for (int i = 0; i < this.size; i++)
+        {
+            if (this.values[i] == null)
+            {
+                this.values[i] = new IntTimeSeriesEntry();
+            }
+        }
         return values;
     }
 
@@ -605,7 +801,7 @@ public class IntTimeSeries
             for (int i = 0; i <= this.lastPosUsed; i++)
             {
                 final IntTimeSeriesEntry entry = this.values[i];
-                if (entry.getCount() > 0)
+                if (entry != null && entry.getCount() > 0)
                 {
                     final long timeInSeconds = this.firstSecond + ((long) i * slotWidth);
                     final Second second = JFreeChartUtils.getSecond(timeInSeconds * 1000L);
@@ -615,6 +811,19 @@ public class IntTimeSeries
         }
 
         return timeSeries;
+    }
+
+    /**
+     * Converts to a JFreeChart {@link TimeSeries} where each item is an {@link IntMinMaxTimeSeriesDataItem}.
+     * Generic alias for {@link #toRunTimeTimeSeries(String)} suitable for min/max metric series (e.g. response size).
+     *
+     * @param seriesName
+     *            the name of the time series
+     * @return the time series
+     */
+    public TimeSeries toMinMaxTimeSeries(final String seriesName)
+    {
+        return toRunTimeTimeSeries(seriesName);
     }
 
     /**
@@ -632,7 +841,7 @@ public class IntTimeSeries
                 final IntTimeSeriesEntry entry = this.values[i];
                 final long timeInSeconds = this.firstSecond + ((long) i * slotWidth);
                 final Second second = JFreeChartUtils.getSecond(timeInSeconds * 1000L);
-                final double countPerSec = (double) entry.getCount() / slotWidth;
+                final double countPerSec = entry != null ? (double) entry.getCount() / slotWidth : 0.0;
                 timeSeries.add(new TimeSeriesDataItem(second, countPerSec));
             }
         }
@@ -642,6 +851,10 @@ public class IntTimeSeries
 
     /**
      * Converts to a JFreeChart {@link TimeSeries} representing errors per second.
+     * <p>
+     * For bar charts representing peak outage burst rates, this outputs {@link IntTimeSeriesEntry#getMaxErrorCount()},
+     * preserving the maximum 1-second failure spike observed even when the series has been condensed
+     * for report chart resolution.
      */
     public TimeSeries toErrorsPerSecondTimeSeries(final String seriesName)
     {
@@ -655,7 +868,7 @@ public class IntTimeSeries
                 final IntTimeSeriesEntry entry = this.values[i];
                 final long timeInSeconds = this.firstSecond + ((long) i * slotWidth);
                 final Second second = JFreeChartUtils.getSecond(timeInSeconds * 1000L);
-                final double errorRate = (double) entry.getErrorCount() / slotWidth;
+                final double errorRate = entry != null ? entry.getMaxErrorCount() : 0.0;
                 timeSeries.add(new TimeSeriesDataItem(second, errorRate));
             }
         }

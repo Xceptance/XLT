@@ -80,7 +80,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
     {
         super(name, provider);
 
-        timeSeries = new IntTimeSeries(Math.max(getChartWidth(), 1024));
+        // Retain 1-second resolution during data collection with dynamic expansion up to 32,768s
+        timeSeries = new IntTimeSeries();
 
         // get percentile configuration
         percentiles = ((ReportGeneratorConfiguration) getConfiguration()).getRuntimePercentiles();
@@ -158,8 +159,12 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         if (getConfiguration().shouldChartsGenerated())
         {
+            // Condense to chart resolution (e.g. chart display width) for rendering charts.
+            // The underlying timeSeries retains full 1-second resolution for statistics, percentiles, and AI data export.
+            final IntTimeSeries chartTimeSeries = timeSeries.toResolution(getChartWidth());
+
             // post-process the run time series now as they will be needed for multiple charts
-            final TimeSeries runTimeTimeSeries = timeSeries.toRunTimeTimeSeries("Runtime");
+            final TimeSeries runTimeTimeSeries = chartTimeSeries.toRunTimeTimeSeries("Runtime");
 
             // process common moving average
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
@@ -167,10 +172,10 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
             // process additional moving averages, if they are configured
             final List<TimeSeries> additionalRunTimeAverageTimeSeriesList = getAdditionalMovingAverageConfigs().stream()
                                                                                                                .map(config -> JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
-                                                                                                                                                                             config))
+                                                                                                                                                                            config))
                                                                                                                .toList();
 
-            final TimeSeries countPerSecondTimeSeries = timeSeries.toCountPerSecondTimeSeries("Count/s");
+            final TimeSeries countPerSecondTimeSeries = chartTimeSeries.toCountPerSecondTimeSeries("Count/s");
 
             // create charts asynchronously
             final TaskManager taskManager = TaskManager.getInstance();
@@ -184,9 +189,9 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                     final int chartCappingValue = JFreeChartUtils.getChartCappingValue(getChartCappingInfo(), stats.mean,
                                                                                        stats.maxValue);
 
-                    final XYIntervalSeries runTimeHistogramSeries = timeSeries.toHistogramSeries("Distribution", getChartHeight());
+                    final XYIntervalSeries runTimeHistogramSeries = chartTimeSeries.toHistogramSeries("Distribution", getChartHeight());
 
-                    final TimeSeries errorsPerSecondTimeSeries = timeSeries.toErrorsPerSecondTimeSeries("Errors/s");
+                    final TimeSeries errorsPerSecondTimeSeries = chartTimeSeries.toErrorsPerSecondTimeSeries("Errors/s");
 
                     saveResponseTimeChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, runTimeHistogramSeries,
                                           errorsPerSecondTimeSeries, chartCappingValue);
@@ -235,7 +240,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         final int runTime = timerStats.getRunTime();
         final boolean failed = timerStats.hasFailed();
 
-        timeSeries.addValue(endTime - runTime, endTime, runTime, failed);
+        timeSeries.addValue(endTime, runTime, failed);
     }
 
     /**

@@ -219,7 +219,7 @@ class StatisticsProcessor
      */
     public void process(final PostProcessedDataContainer dataContainer)
     {
-        process(dataContainer, (char) 0);
+        process(dataContainer, dataContainer.typeCode);
     }
 
     /**
@@ -229,14 +229,6 @@ class StatisticsProcessor
      * <p>
      * If {@code typeCode} is non-zero, this lookup executes in O(1) against a precomputed array of providers,
      * completely eliminating redundant iterations and {@code instanceof} checks across uninterested providers.
-     *
-    /**
-     * Map tracking cumulative CPU nanoseconds per report provider class.
-     */
-    public static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.LongAdder> PROVIDER_TIMES = new java.util.concurrent.ConcurrentHashMap<>();
-
-    /**
-     * Takes the data container and passes it to all providers.
      *
      * @param dataContainer
      *            a chunk of post-processed data for final statistics gathering
@@ -262,9 +254,7 @@ class StatisticsProcessor
             {
                 try
                 {
-                    final long p0 = System.nanoTime();
                     providers[i].processAll(dataContainer);
-                    PROVIDER_TIMES.computeIfAbsent(providers[i].getClass().getSimpleName(), k -> new java.util.concurrent.atomic.LongAdder()).add(System.nanoTime() - p0);
                 }
                 catch (final Throwable t)
                 {
