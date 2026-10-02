@@ -30,6 +30,7 @@ import org.roaringbitmap.RoaringBitmap;
 
 import com.xceptance.common.util.CsvByteColumns;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.report.storage.StorageIoUtils;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -123,7 +124,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
 
         // 1. Chunk header metadata
         out.writeChar(c.getTypeCode());
-        out.writeUTF(recordClass != null ? recordClass.getName() : "");
+        StorageIoUtils.writeUtfString(out, recordClass != null ? recordClass.getName() : "");
         out.writeInt(c.getRowCount());
         out.writeLong(c.getMinTime());
         out.writeLong(c.getMaxTime());
@@ -142,7 +143,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         out.writeInt(chunkStrings.length);
         for (final String s : chunkStrings)
         {
-            out.writeUTF(s);
+            StorageIoUtils.writeUtfString(out, s);
         }
 
         // 5. Arbitrary string attribute columns
@@ -170,8 +171,8 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
     {
         // 1. Read header metadata
         final char tc = in.readChar();
-        final String className = in.readUTF();
-        if (!className.isEmpty() && this.recordClass == null)
+        final String className = StorageIoUtils.readUtfString(in);
+        if (className != null && !className.isEmpty() && this.recordClass == null)
         {
             try
             {
@@ -204,7 +205,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         final String[] chunkStrings = new String[stringCount];
         for (int i = 0; i < stringCount; i++)
         {
-            chunkStrings[i] = in.readUTF();
+            chunkStrings[i] = StorageIoUtils.readUtfString(in);
         }
 
         // 5. Read arbitrary string attribute columns

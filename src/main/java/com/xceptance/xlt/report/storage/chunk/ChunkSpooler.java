@@ -24,6 +24,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.roaringbitmap.RoaringBitmap;
@@ -189,45 +193,60 @@ public class ChunkSpooler
             return;
         }
 
-        // 1. Write metadata index table starting at currentOffset
-        final long metadataIndexOffset = currentOffset;
-        final ByteArrayOutputStream metaBaos = new ByteArrayOutputStream(Math.max(4096, catalog.getChunkCount() * 128));
-        final DataOutputStream metaDos = new DataOutputStream(metaBaos);
-
+        // 1. Spool any lingering in-memory chunks to disk so all chunks are uniformly persisted
         final List<Chunk> allChunks = catalog.getAllChunks();
-        metaDos.writeInt(allChunks.size());
-        for (final Chunk c : allChunks)
+        final List<DiskChunk> diskChunks = new ArrayList<>(allChunks.size());
+        for (int i = 0; i < allChunks.size(); i++)
         {
+            final Chunk c = allChunks.get(i);
             if (c instanceof DiskChunk dc)
             {
-                metaDos.writeLong(dc.getFileOffset());
-                metaDos.writeInt(dc.getPayloadLength());
-                metaDos.writeChar(dc.getTypeCode());
-                metaDos.writeInt(dc.getRowCount());
-                metaDos.writeLong(dc.getMinTime());
-                metaDos.writeLong(dc.getMaxTime());
+                diskChunks.add(dc);
+            }
+            else
+            {
+                final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler(c.getTypeCode());
+                final DiskChunk dc = spoolChunk(c, handler);
+                catalog.replaceChunk(i, dc);
+                diskChunks.add(dc);
+            }
+        }
 
-                final RoaringBitmap timers = dc.getTimerNameIds();
-                if (timers != null)
-                {
-                    metaDos.writeBoolean(true);
-                    timers.serialize(metaDos);
-                }
-                else
-                {
-                    metaDos.writeBoolean(false);
-                }
+        // 2. Write metadata index table starting at currentOffset
+        final long metadataIndexOffset = currentOffset;
+        final ByteArrayOutputStream metaBaos = new ByteArrayOutputStream(Math.max(4096, diskChunks.size() * 128));
+        final DataOutputStream metaDos = new DataOutputStream(metaBaos);
 
-                final RoaringBitmap agents = dc.getAgentTestCaseIds();
-                if (agents != null)
-                {
-                    metaDos.writeBoolean(true);
-                    agents.serialize(metaDos);
-                }
-                else
-                {
-                    metaDos.writeBoolean(false);
-                }
+        metaDos.writeInt(diskChunks.size());
+        for (final DiskChunk dc : diskChunks)
+        {
+            metaDos.writeLong(dc.getFileOffset());
+            metaDos.writeInt(dc.getPayloadLength());
+            metaDos.writeChar(dc.getTypeCode());
+            metaDos.writeInt(dc.getRowCount());
+            metaDos.writeLong(dc.getMinTime());
+            metaDos.writeLong(dc.getMaxTime());
+
+            final RoaringBitmap timers = dc.getTimerNameIds();
+            if (timers != null)
+            {
+                metaDos.writeBoolean(true);
+                timers.serialize(metaDos);
+            }
+            else
+            {
+                metaDos.writeBoolean(false);
+            }
+
+            final RoaringBitmap agents = dc.getAgentTestCaseIds();
+            if (agents != null)
+            {
+                metaDos.writeBoolean(true);
+                agents.serialize(metaDos);
+            }
+            else
+            {
+                metaDos.writeBoolean(false);
             }
         }
         metaDos.flush();
@@ -239,14 +258,14 @@ public class ChunkSpooler
             currentOffset += written;
         }
 
-        // 2. Write 44-byte header at offset 0
+        // 3. Write 44-byte header at offset 0
         final ByteBuffer header = ByteBuffer.allocate(ChunkCatalog.HEADER_SIZE);
         header.putInt(ChunkCatalog.MAGIC);
         header.putInt(ChunkCatalog.VERSION);
         header.putLong(catalog.getGlobalMinTime());
         header.putLong(catalog.getGlobalMaxTime());
         header.putLong(catalog.getTotalRowCount());
-        header.putInt(catalog.getChunkCount());
+        header.putInt(diskChunks.size());
         header.putLong(metadataIndexOffset);
         header.flip();
 
@@ -257,17 +276,20 @@ public class ChunkSpooler
         raf.close();
         closed = true;
 
-        // 3. Atomically promote tmpFile to targetFile
-        if (targetFile.exists())
+        // 4. Atomically promote tmpFile to targetFile
+        try
         {
-            targetFile.delete();
+            Files.move(tmpFile.toPath(), targetFile.toPath(),
+                       StandardCopyOption.ATOMIC_MOVE,
+                       StandardCopyOption.REPLACE_EXISTING);
         }
-        if (!tmpFile.renameTo(targetFile))
+        catch (final AtomicMoveNotSupportedException e)
         {
-            throw new IOException(String.format("Failed to rename temporary chunks file %s to %s", tmpFile, targetFile));
+            Files.move(tmpFile.toPath(), targetFile.toPath(),
+                       StandardCopyOption.REPLACE_EXISTING);
         }
 
-        // 4. Save dictionaries
+        // 5. Save dictionaries
         final File dictFile = new File(cacheDir, ChunkStorage.DICTIONARIES_FILE_NAME);
         try (final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dictFile))))
         {

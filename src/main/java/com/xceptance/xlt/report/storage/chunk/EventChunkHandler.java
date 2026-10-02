@@ -19,6 +19,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -232,7 +233,18 @@ public class EventChunkHandler implements ChunkTypeHandler
     private static class EventChunkBuilder implements ChunkBuilder
     {
         private final GlobalDictionaries dicts;
-        private final List<EventData> records = new ArrayList<>(DEFAULT_CHUNK_CAPACITY);
+
+        private int count = 0;
+        private long minTime = Long.MAX_VALUE;
+        private long maxTime = Long.MIN_VALUE;
+
+        private final long[] rawTimes = new long[DEFAULT_CHUNK_CAPACITY];
+        private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
+        private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
+        private final int[] msgArr = new int[DEFAULT_CHUNK_CAPACITY];
+
+        private final RoaringBitmap timerIds = new RoaringBitmap();
+        private final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
 
         EventChunkBuilder(final GlobalDictionaries dicts)
         {
@@ -248,79 +260,70 @@ public class EventChunkHandler implements ChunkTypeHandler
         @Override
         public int getRowCount()
         {
-            return records.size();
+            return count;
         }
 
         @Override
         public boolean isFull()
         {
-            return records.size() >= DEFAULT_CHUNK_CAPACITY;
+            return count >= DEFAULT_CHUNK_CAPACITY;
         }
 
         @Override
         public boolean append(final Data record)
         {
-            if (isFull())
+            if (count >= DEFAULT_CHUNK_CAPACITY)
             {
                 return false;
             }
-            records.add((EventData) record);
+
+            final EventData r = (EventData) record;
+            final int idx = count;
+
+            final long t = r.getTime();
+            if (t < minTime) minTime = t;
+            if (t > maxTime) maxTime = t;
+            rawTimes[idx] = t;
+
+            final int tid = dicts.getOrCreateTimerNameId(r.getName());
+            timerIdArr[idx] = tid;
+            timerIds.add(tid);
+
+            final String testCase = r.getTestCaseName() != null ? r.getTestCaseName() : r.getTransactionName();
+            final int aid = dicts.getOrCreateAgentTestCaseId(r.getAgentName(), testCase);
+            agentTestCaseIdArr[idx] = aid;
+            agentTestCaseIds.add(aid);
+
+            msgArr[idx] = dicts.getOrCreateStringId(r.getMessage());
+
+            count++;
             return true;
         }
 
         @Override
         public Chunk seal()
         {
-            final int size = records.size();
-            long minTime = Long.MAX_VALUE;
-            long maxTime = Long.MIN_VALUE;
-
-            final RoaringBitmap timerIds = new RoaringBitmap();
-            final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
-
-            // 1. Determine bounding timestamps
-            for (int i = 0; i < size; i++)
-            {
-                final EventData r = records.get(i);
-                final long t = r.getTime();
-                if (t < minTime) minTime = t;
-                if (t > maxTime) maxTime = t;
-            }
+            final int size = count;
             if (size == 0)
             {
                 minTime = 0;
                 maxTime = 0;
             }
 
-            // 2. Allocate columnar primitive arrays
             final int[] timeOffsets = new int[size];
-            final int[] timerIdArr = new int[size];
-            final int[] agentTestCaseIdArr = new int[size];
-            final int[] msgArr = new int[size];
-
-            // 3. Populate columnar arrays and dictionaries
             for (int i = 0; i < size; i++)
             {
-                final EventData r = records.get(i);
-                timeOffsets[i] = (int) (r.getTime() - minTime);
-
-                final int tid = dicts.getOrCreateTimerNameId(r.getName());
-                timerIdArr[i] = tid;
-                timerIds.add(tid);
-
-                final String testCase = r.getTestCaseName() != null ? r.getTestCaseName() : r.getTransactionName();
-                final int aid = dicts.getOrCreateAgentTestCaseId(r.getAgentName(), testCase);
-                agentTestCaseIdArr[i] = aid;
-                agentTestCaseIds.add(aid);
-
-                msgArr[i] = dicts.getOrCreateStringId(r.getMessage());
+                timeOffsets[i] = (int) (rawTimes[i] - minTime);
             }
 
-            // 4. Compress columns via FastPFOR
+            final int[] finalTimerIds = size == timerIdArr.length ? timerIdArr : Arrays.copyOf(timerIdArr, size);
+            final int[] finalAgentIds = size == agentTestCaseIdArr.length ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
+            final int[] finalMessages = size == msgArr.length ? msgArr : Arrays.copyOf(msgArr, size);
+
             final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
-            final int[] compTimerNameIds = FastIntegerCodec.compress(timerIdArr);
-            final int[] compAgentTestCaseIds = FastIntegerCodec.compress(agentTestCaseIdArr);
-            final int[] compMessages = FastIntegerCodec.compress(msgArr);
+            final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
+            final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
+            final int[] compMessages = FastIntegerCodec.compress(finalMessages);
 
             return new EventChunk(size, minTime, maxTime, timerIds, agentTestCaseIds,
                                   compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compMessages);

@@ -49,6 +49,13 @@ import com.xceptance.common.util.CsvByteColumns;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.storage.cache.CacheFingerprint;
 import com.xceptance.xlt.report.storage.cache.CacheManager;
+import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
+import com.xceptance.xlt.report.storage.chunk.Chunk;
+import com.xceptance.xlt.report.storage.chunk.ChunkBuilder;
+import com.xceptance.xlt.report.storage.chunk.ChunkSpooler;
+import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
+import com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry;
+import com.xceptance.xlt.report.storage.chunk.DiskChunk;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
@@ -540,6 +547,229 @@ public class ChunkStorageAndCacheTest
             final ScanPredicate allPred = new ScanPredicate(0, Long.MAX_VALUE, null, null);
             loaded.scan('R', allPred, reloadedScanned::add);
             Assert.assertEquals(5000, reloadedScanned.size());
+        }
+    }
+
+    @Test
+    public void testSpoolerWithMixedInMemoryAndDiskChunks() throws Exception
+    {
+        final File spoolDir = new File(tempDir, "mixed-spool-test");
+        spoolDir.mkdirs();
+
+        final ChunkSpooler spooler = new ChunkSpooler(spoolDir);
+        final ChunkCatalog catalog = new ChunkCatalog();
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkTypeRegistry registry = new ChunkTypeRegistry();
+        final ChunkTypeHandler handler = registry.getHandler('R');
+
+        // 1. Spool one chunk to disk
+        final RequestData r1 = new RequestData("R1");
+        r1.setTime(1000L);
+        r1.setRunTime(10);
+        final ChunkBuilder builder1 = handler.newChunkBuilder(dicts);
+        builder1.append(r1);
+        final Chunk chunk1 = builder1.seal();
+        final DiskChunk diskChunk = spooler.spoolChunk(chunk1, handler);
+        catalog.addChunk(diskChunk);
+
+        // 2. Add an in-memory chunk directly to the catalog without spooling
+        final RequestData r2 = new RequestData("R2");
+        r2.setTime(2000L);
+        r2.setRunTime(20);
+        final ChunkBuilder builder2 = handler.newChunkBuilder(dicts);
+        builder2.append(r2);
+        final Chunk inMemoryChunk = builder2.seal();
+        catalog.addChunk(inMemoryChunk);
+
+        // 3. Spooler finish: should handle mixed chunks without throwing EOFException on reload
+        spooler.finish(catalog, dicts);
+
+        // 4. Reload catalog from disk
+        final ChunkCatalog reloaded = ChunkCatalog.readFrom(new File(spoolDir, ChunkStorage.CHUNKS_FILE_NAME), dicts, registry);
+        Assert.assertNotNull(reloaded);
+        Assert.assertTrue("Reloaded catalog should contain chunks", reloaded.getChunkCount() > 0);
+    }
+
+    @Test
+    public void testLargeStringAndStackTraceHandling() throws Exception
+    {
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+
+        // 70,000 characters stack trace (> 65,535 bytes in UTF-8)
+        final String largeStackTrace = "E".repeat(70_000);
+        final TransactionData t = new TransactionData("TOrderLarge");
+        t.setTime(1000L);
+        t.setRunTime(500);
+        t.setFailed(true);
+        t.setFailedActionName("ActionLarge");
+        t.setFailureStackTrace(largeStackTrace);
+        t.setAgentName("Agent-1");
+        t.setTransactionName("TOrderLarge");
+        collector.collect(t);
+
+        // Large custom data payload (> 65,535 bytes)
+        final String largeCustomPayload = "C".repeat(70_000);
+        final CustomLogRecord custom = new CustomLogRecord("CustomLarge", "extra1", largeCustomPayload);
+        custom.setTime(1001L);
+        custom.setAgentName("Agent-1");
+        custom.setTransactionName("TOrderLarge");
+        collector.collect(custom);
+
+        final ChunkStorage storage = collector.finish();
+        Assert.assertNotNull(storage);
+
+        final File largeDir = new File(tempDir, "large-string-test");
+        storage.saveToDirectory(largeDir);
+
+        final ChunkStorage loaded = ChunkStorage.loadFromDirectory(largeDir);
+        Assert.assertNotNull(loaded);
+
+        final List<Data> scannedTx = new ArrayList<>();
+        loaded.scan('T', ScanPredicate.ALL, scannedTx::add);
+        Assert.assertEquals(1, scannedTx.size());
+        final TransactionData loadedTx = (TransactionData) scannedTx.get(0);
+        Assert.assertTrue(loadedTx.hasFailed());
+        Assert.assertEquals(largeStackTrace, loadedTx.getFailureStackTrace());
+
+        final List<Data> scannedCustom = new ArrayList<>();
+        loaded.scan('Z', ScanPredicate.ALL, scannedCustom::add);
+        Assert.assertEquals(1, scannedCustom.size());
+        final CustomLogRecord loadedCustom = (CustomLogRecord) scannedCustom.get(0);
+        Assert.assertEquals(largeCustomPayload, loadedCustom.getExtra2());
+    }
+
+    @Test
+    public void testHighTimerIdSampleUrlCap() throws Exception
+    {
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        // Ingest 4500 distinct timer names, each with multiple requests
+        for (int i = 0; i < 4500; i++)
+        {
+            final String timerName = "Timer-" + i;
+            for (int j = 0; j < 3; j++)
+            {
+                final RequestData r = new RequestData(timerName);
+                r.setTime(1000L + i);
+                r.setRunTime(10);
+                r.setUrl("https://example.com/timer/" + i + "/sample" + j);
+                r.setAgentName("Agent-0");
+                r.setTransactionName("Tx");
+                collector.collect(r);
+            }
+        }
+
+        final ChunkStorage storage = collector.finish();
+        Assert.assertNotNull(storage);
+        final GlobalDictionaries dicts = storage.getDictionaries();
+        Assert.assertTrue("Should have interned over 4096 timer IDs", dicts.getTimerNameCount() >= 4500);
+
+        // Check that sample URLs were capped properly
+        for (int i = 0; i < 4500; i += 500)
+        {
+            final int timerId = dicts.getOrCreateTimerNameId("Timer-" + i);
+            final GlobalDictionaries.CachedSampleUrl[] samples = dicts.getCachedSampleUrls(timerId);
+            Assert.assertNotNull(samples);
+            Assert.assertTrue(samples.length <= 5);
+        }
+    }
+
+    @Test
+    public void testGlobalDictionariesConstructorIsolationOnRead() throws Exception
+    {
+        final GlobalDictionaries original = new GlobalDictionaries();
+        // Add non-default strings
+        final int id1 = original.getOrCreateStringId("custom-app-1");
+        final int id2 = original.getOrCreateStringId("custom-app-2");
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        original.writeTo(new DataOutputStream(baos));
+
+        final GlobalDictionaries restored = GlobalDictionaries.readFrom(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
+        Assert.assertEquals("custom-app-1", restored.getString(id1));
+        Assert.assertEquals("custom-app-2", restored.getString(id2));
+
+        // Interning a new string in the restored dictionary should allocate id = stringCount
+        final int initialCount = restored.getStringCount();
+        final int newId = restored.getOrCreateStringId("custom-app-3");
+        Assert.assertEquals(initialCount, newId);
+        Assert.assertEquals("custom-app-3", restored.getString(newId));
+    }
+
+    @Test
+    public void testConcurrentPositionalFileChannelReads() throws Exception
+    {
+        final File spoolDir = new File(tempDir, "concurrent-reads-test");
+        spoolDir.mkdirs();
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        for (int i = 0; i < 5000; i++)
+        {
+            final RequestData r = new RequestData("Action-" + (i % 10));
+            r.setTime(1000L + i);
+            r.setRunTime(20);
+            r.setAgentName("Agent-1");
+            r.setTransactionName("TOrder");
+            collector.collect(r);
+        }
+
+        final ChunkStorage storage = collector.finish();
+        final int threadCount = 8;
+        final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        final List<Callable<Void>> tasks = new ArrayList<>();
+
+        for (int t = 0; t < threadCount; t++)
+        {
+            tasks.add(() -> {
+                final List<Data> results = new ArrayList<>();
+                storage.scan('R', ScanPredicate.ALL, results::add);
+                Assert.assertEquals(5000, results.size());
+                return null;
+            });
+        }
+
+        final List<Future<Void>> futures = executor.invokeAll(tasks);
+        for (final Future<Void> f : futures)
+        {
+            f.get();
+        }
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        storage.close();
+    }
+
+    @Test
+    public void testUnifiedV2CatalogFormat() throws Exception
+    {
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        for (int i = 0; i < 100; i++)
+        {
+            final RequestData r = new RequestData("R" + i);
+            r.setTime(1000L + i);
+            r.setRunTime(10);
+            r.setAgentName("A");
+            r.setTransactionName("T");
+            collector.collect(r);
+        }
+        final ChunkStorage inMemoryStorage = collector.finish();
+        Assert.assertFalse(inMemoryStorage.isPersisted());
+
+        final File saveDir = new File(tempDir, "v2-unified-test");
+        inMemoryStorage.saveToDirectory(saveDir);
+
+        // Check that chunks.bin starts with V2 MAGIC
+        final File chunksFile = new File(saveDir, ChunkStorage.CHUNKS_FILE_NAME);
+        try (final java.io.DataInputStream in = new java.io.DataInputStream(new java.io.FileInputStream(chunksFile)))
+        {
+            final int magic = in.readInt();
+            Assert.assertEquals("chunks.bin must be saved in V2 format with MAGIC",
+                                ChunkCatalog.MAGIC, magic);
+        }
+
+        // Ensure loadFromDirectory works cleanly
+        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(saveDir))
+        {
+            Assert.assertNotNull(loaded);
+            Assert.assertEquals(100, loaded.getTotalRowCount());
         }
     }
 

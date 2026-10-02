@@ -166,4 +166,39 @@ public class ScanPredicate
 
         return true;
     }
+
+    /**
+     * Checks if all rows of the specified chunk are guaranteed to match this predicate without
+     * needing row-level checks (e.g. if the chunk is completely bounded within [fromTime, toTime]
+     * and no ID filtering is active).
+     *
+     * @param chunk
+     *            the candidate chunk to test
+     * @return {@code true} if every row in the chunk will match; {@code false} otherwise
+     */
+    public boolean matchesAllRows(final Chunk chunk)
+    {
+        return allowedTimerIds == null && allowedAgentTestCaseIds == null
+            && chunk.getMinTime() >= fromTime && chunk.getMaxTime() <= toTime;
+    }
+
+    /**
+     * Returns the allowed timer IDs bitmap, or {@code null} if all timer names are allowed.
+     *
+     * @return bitmap of allowed timer IDs
+     */
+    public RoaringBitmap getAllowedTimerIds()
+    {
+        return allowedTimerIds;
+    }
+
+    /**
+     * Returns the allowed agent/test case IDs bitmap, or {@code null} if all pairs are allowed.
+     *
+     * @return bitmap of allowed agent/test case IDs
+     */
+    public RoaringBitmap getAllowedAgentTestCaseIds()
+    {
+        return allowedAgentTestCaseIds;
+    }
 }

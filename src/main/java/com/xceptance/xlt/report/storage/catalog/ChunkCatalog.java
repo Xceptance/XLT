@@ -194,6 +194,32 @@ public class ChunkCatalog
     }
 
     /**
+     * Atomically replaces a chunk at the specified catalog position, updating internal type partitions.
+     *
+     * @param index
+     *            catalog index to replace
+     * @param newChunk
+     *            the replacement disk-backed chunk descriptor
+     */
+    public synchronized void replaceChunk(final int index, final DiskChunk newChunk)
+    {
+        final Chunk old = chunks.set(index, newChunk);
+        if (storage != null)
+        {
+            newChunk.setStorage(storage);
+        }
+        final List<Chunk> typeList = chunksByType.get(old.getTypeCode());
+        if (typeList != null)
+        {
+            final int tIdx = typeList.indexOf(old);
+            if (tIdx >= 0)
+            {
+                typeList.set(tIdx, newChunk);
+            }
+        }
+    }
+
+    /**
      * Returns the earliest record timestamp across the entire dataset.
      *
      * @return global minimum timestamp in milliseconds since epoch, or 0 if catalog is empty
@@ -287,41 +313,14 @@ public class ChunkCatalog
     }
 
     // -------------------------------------------------------------------------
-    // Serialization / Deserialization
+    // Deserialization (V2 Format with tail index table)
     // -------------------------------------------------------------------------
 
     /**
-     * Serializes the catalog header and all contained chunks to the specified data output stream.
-     *
-     * @param out
-     *            the target {@link DataOutput}
-     * @param registry
-     *            the chunk type registry to locate specialized handlers for each chunk type
-     * @throws IOException
-     *             if an I/O error occurs
-     */
-    public void writeTo(final DataOutput out, final ChunkTypeRegistry registry) throws IOException
-    {
-        // 1. Write global metadata header
-        out.writeLong(globalMinTime);
-        out.writeLong(globalMaxTime);
-        out.writeLong(totalRowCount);
-
-        // 2. Write chunk inventory
-        out.writeInt(chunks.size());
-        for (final Chunk c : chunks)
-        {
-            out.writeChar(c.getTypeCode());
-            final ChunkTypeHandler handler = registry.getHandler(c.getTypeCode());
-            handler.writeChunk(c, out);
-        }
-    }
-
-    /**
-     * Reads a {@link ChunkCatalog} from disk. If the file starts with the V2 header {@link #MAGIC},
-     * this seeks directly to the metadata index table and instantly instantiates {@link DiskChunk}
+     * Reads a {@link ChunkCatalog} from disk using the V2 binary format.
+     * <p>
+     * Seeks directly to the metadata index table and instantly instantiates {@link DiskChunk}
      * descriptors, completing in ~1-2 milliseconds without loading or decompressing columnar data.
-     * If the file is in V1 sequential format, it falls back to streaming sequential deserialization.
      *
      * @param chunksFile
      *            the binary chunks file on disk
@@ -331,144 +330,87 @@ public class ChunkCatalog
      *            the chunk type registry to locate specialized handlers for each chunk type
      * @return fully reconstructed {@link ChunkCatalog} instance
      * @throws IOException
-     *             if an I/O error occurs
+     *             if an I/O error occurs or the file is not in valid V2 ChunkDB format
      */
     public static ChunkCatalog readFrom(final File chunksFile, final GlobalDictionaries dicts, final ChunkTypeRegistry registry) throws IOException
     {
         try (final RandomAccessFile raf = new RandomAccessFile(chunksFile, "r"))
         {
-            if (raf.length() >= HEADER_SIZE)
+            if (raf.length() < HEADER_SIZE)
             {
-                final int magic = raf.readInt();
-                if (magic == MAGIC)
-                {
-                    final int version = raf.readInt();
-                    final ChunkCatalog catalog = new ChunkCatalog();
-                    catalog.globalMinTime = raf.readLong();
-                    catalog.globalMaxTime = raf.readLong();
-                    catalog.totalRowCount = raf.readLong();
-                    final int chunkCount = raf.readInt();
-                    final long metadataIndexOffset = raf.readLong();
-
-                    // Seek to metadata index table
-                    raf.seek(metadataIndexOffset);
-                    final InputStream inStream = Channels.newInputStream(raf.getChannel());
-                    final DataInput in = new DataInputStream(new BufferedInputStream(inStream));
-                    final int indexChunkCount = in.readInt();
-
-                    for (int i = 0; i < indexChunkCount; i++)
-                    {
-                        final long offset = in.readLong();
-                        final int payloadLength = in.readInt();
-                        final char typeCode = in.readChar();
-                        final int rowCount = in.readInt();
-                        final long minTime = in.readLong();
-                        final long maxTime = in.readLong();
-
-                        final boolean hasTimers = in.readBoolean();
-                        final RoaringBitmap timers;
-                        if (hasTimers)
-                        {
-                            timers = new RoaringBitmap();
-                            timers.deserialize(in);
-                        }
-                        else
-                        {
-                            timers = new RoaringBitmap();
-                        }
-
-                        final boolean hasAgents = in.readBoolean();
-                        final RoaringBitmap agents;
-                        if (hasAgents)
-                        {
-                            agents = new RoaringBitmap();
-                            agents.deserialize(in);
-                        }
-                        else
-                        {
-                            agents = new RoaringBitmap();
-                        }
-
-                        final DiskChunk chunk = new DiskChunk(typeCode, rowCount, minTime, maxTime, timers, agents, offset, payloadLength, chunksFile);
-                        catalog.chunks.add(chunk);
-                        catalog.chunksByType.computeIfAbsent(typeCode, k -> Collections.synchronizedList(new ArrayList<>())).add(chunk);
-
-                        for (final int timerId : timers)
-                        {
-                            catalog.timerToChunksIndex.computeIfAbsent(timerId, k -> new RoaringBitmap()).add(i);
-                        }
-                        for (final int agentId : agents)
-                        {
-                            catalog.agentTestCaseToChunksIndex.computeIfAbsent(agentId, k -> new RoaringBitmap()).add(i);
-                        }
-                    }
-
-                    return catalog;
-                }
+                throw new IOException("Corrupted ChunkDB file " + chunksFile + ": file size less than header size " + HEADER_SIZE);
             }
-        }
-
-        // Fallback: V1 sequential read
-        try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(chunksFile))))
-        {
-            return readFrom(in, dicts, registry);
-        }
-    }
-
-    /**
-     * Deserializes a {@link ChunkCatalog} from the specified data input stream and rebuilds
-     * the inverted bitmap indices.
-     *
-     * @param in
-     *            the source {@link DataInput}
-     * @param dicts
-     *            the global dictionaries for resolving interned IDs
-     * @param registry
-     *            the chunk type registry to locate specialized handlers for each chunk type
-     * @return fully reconstructed {@link ChunkCatalog} instance
-     * @throws IOException
-     *             if an I/O error occurs
-     */
-    public static ChunkCatalog readFrom(final DataInput in, final GlobalDictionaries dicts, final ChunkTypeRegistry registry) throws IOException
-    {
-        final ChunkCatalog catalog = new ChunkCatalog();
-
-        // 1. Read global metadata header
-        catalog.globalMinTime = in.readLong();
-        catalog.globalMaxTime = in.readLong();
-        catalog.totalRowCount = in.readLong();
-
-        // 2. Read each chunk sequentially
-        final int chunkCount = in.readInt();
-        for (int i = 0; i < chunkCount; i++)
-        {
-            final char typeCode = in.readChar();
-            final ChunkTypeHandler handler = registry.getHandler(typeCode);
-            final Chunk chunk = handler.readChunk(in, dicts);
-            catalog.chunks.add(chunk);
-            catalog.chunksByType.computeIfAbsent(typeCode, k -> Collections.synchronizedList(new ArrayList<>())).add(chunk);
-
-            // Rebuild inverted indices for timer IDs
-            final RoaringBitmap timers = chunk.getTimerNameIds();
-            if (timers != null)
+            final int magic = raf.readInt();
+            if (magic != MAGIC)
             {
+                throw new IOException(String.format("Invalid ChunkDB file format in %s: magic 0x%08X != 0x%08X", chunksFile, magic, MAGIC));
+            }
+            final int version = raf.readInt();
+            if (version != VERSION)
+            {
+                throw new IOException(String.format("Unsupported ChunkDB file version in %s: version %d != %d", chunksFile, version, VERSION));
+            }
+            final ChunkCatalog catalog = new ChunkCatalog();
+            catalog.globalMinTime = raf.readLong();
+            catalog.globalMaxTime = raf.readLong();
+            catalog.totalRowCount = raf.readLong();
+            final int chunkCount = raf.readInt();
+            final long metadataIndexOffset = raf.readLong();
+
+            // Seek to metadata index table
+            raf.seek(metadataIndexOffset);
+            final InputStream inStream = Channels.newInputStream(raf.getChannel());
+            final DataInput in = new DataInputStream(new BufferedInputStream(inStream));
+            final int indexChunkCount = in.readInt();
+
+            for (int i = 0; i < indexChunkCount; i++)
+            {
+                final long offset = in.readLong();
+                final int payloadLength = in.readInt();
+                final char typeCode = in.readChar();
+                final int rowCount = in.readInt();
+                final long minTime = in.readLong();
+                final long maxTime = in.readLong();
+
+                final boolean hasTimers = in.readBoolean();
+                final RoaringBitmap timers;
+                if (hasTimers)
+                {
+                    timers = new RoaringBitmap();
+                    timers.deserialize(in);
+                }
+                else
+                {
+                    timers = new RoaringBitmap();
+                }
+
+                final boolean hasAgents = in.readBoolean();
+                final RoaringBitmap agents;
+                if (hasAgents)
+                {
+                    agents = new RoaringBitmap();
+                    agents.deserialize(in);
+                }
+                else
+                {
+                    agents = new RoaringBitmap();
+                }
+
+                final DiskChunk chunk = new DiskChunk(typeCode, rowCount, minTime, maxTime, timers, agents, offset, payloadLength, chunksFile);
+                catalog.chunks.add(chunk);
+                catalog.chunksByType.computeIfAbsent(typeCode, k -> Collections.synchronizedList(new ArrayList<>())).add(chunk);
+
                 for (final int timerId : timers)
                 {
                     catalog.timerToChunksIndex.computeIfAbsent(timerId, k -> new RoaringBitmap()).add(i);
                 }
-            }
-
-            // Rebuild inverted indices for agent + test case IDs
-            final RoaringBitmap agents = chunk.getAgentTestCaseIds();
-            if (agents != null)
-            {
                 for (final int agentId : agents)
                 {
                     catalog.agentTestCaseToChunksIndex.computeIfAbsent(agentId, k -> new RoaringBitmap()).add(i);
                 }
             }
-        }
 
-        return catalog;
+            return catalog;
+        }
     }
 }

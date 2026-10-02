@@ -34,6 +34,7 @@ import java.util.function.Consumer;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
 import com.xceptance.xlt.report.storage.chunk.Chunk;
+import com.xceptance.xlt.report.storage.chunk.ChunkSpooler;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
@@ -81,7 +82,7 @@ public class ChunkStorage implements AutoCloseable
     private final FileChannel readChannel;
 
     /** Whether chunks and dictionaries were already persisted directly to disk. */
-    private final boolean isPersisted;
+    private boolean isPersisted;
 
     /**
      * Constructs a new empty {@link ChunkStorage} initialized with default dictionaries,
@@ -349,19 +350,16 @@ public class ChunkStorage implements AutoCloseable
             dir.mkdirs();
         }
 
-        // 1. Serialize interned dictionaries
-        final File dictFile = new File(dir, DICTIONARIES_FILE_NAME);
-        try (final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dictFile))))
+        // Write directly using ChunkSpooler to produce the unified V2 format with tail index table
+        final ChunkSpooler spooler = new ChunkSpooler(dir);
+        final List<Chunk> allChunks = catalog.getAllChunks();
+        for (final Chunk c : allChunks)
         {
-            dictionaries.writeTo(out);
+            final ChunkTypeHandler handler = registry.getHandler(c.getTypeCode());
+            spooler.spoolChunk(c, handler);
         }
-
-        // 2. Serialize chunk catalog, global headers, and compressed columnar blocks
-        final File chunksFile = new File(dir, CHUNKS_FILE_NAME);
-        try (final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(chunksFile))))
-        {
-            catalog.writeTo(out, registry);
-        }
+        spooler.finish(catalog, dictionaries);
+        isPersisted = true;
     }
 
     /**

@@ -113,12 +113,6 @@ public class RequestChunkHandler implements ChunkTypeHandler
         writeIntArray(c.compContentTypes, out);
         writeIntArray(c.compUsedIps, out);
         writeIntArray(c.compIpAddresses, out);
-
-        // 6. Representative sample URLs mapped by timer ID (moved to GlobalDictionaries)
-        out.writeInt(0);
-
-        // 7. Preserved outlier slowest requests (dead code eliminated)
-        out.writeInt(0);
     }
 
     /**
@@ -172,33 +166,6 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int[] compUsedIps = readIntArray(in);
         final int[] compIpAddresses = readIntArray(in);
 
-        // 4. Read representative sample URLs (register directly into GlobalDictionaries)
-        final int sampleCount = in.readInt();
-        for (int i = 0; i < sampleCount; i++)
-        {
-            final int timerId = in.readInt();
-            final int count = in.readInt();
-            for (int j = 0; j < count; j++)
-            {
-                final String u = in.readUTF();
-                if (dicts != null)
-                {
-                    dicts.addSampleUrl(timerId, u);
-                }
-            }
-        }
-
-        // 5. Read slowest requests (skip legacy fields)
-        final int slowestCount = in.readInt();
-        for (int i = 0; i < slowestCount; i++)
-        {
-            final int fieldCount = in.readInt();
-            for (int j = 0; j < fieldCount; j++)
-            {
-                in.readUTF();
-            }
-        }
-
         return new RequestChunk(rowCount, minTime, maxTime, timerIds, agentTestCaseIds, failedRows,
                                 compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
                                 compResponseCodes, compBytesSent, compBytesReceived,
@@ -233,10 +200,30 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int rowCount = c.getRowCount();
         final long baseTime = c.getMinTime();
 
-        // 2. SIMD parallel column decompression via FastPFOR
+        // 2. Filter column decompression
         final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentTestCaseIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+
+        final boolean allMatch = predicate.matchesAllRows(chunk);
+        if (!allMatch)
+        {
+            boolean anyMatch = false;
+            for (int i = 0; i < rowCount; i++)
+            {
+                if (predicate.testRow(baseTime + timeOffsets[i], timerIds[i], agentTestCaseIds[i]))
+                {
+                    anyMatch = true;
+                    break;
+                }
+            }
+            if (!anyMatch)
+            {
+                return;
+            }
+        }
+
+        // 3. Decompress remaining 15 columns only when matching rows exist
         final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
         final int[] responseCodes = FastIntegerCodec.decompress(c.compResponseCodes);
         final int[] bytesSent = FastIntegerCodec.decompress(c.compBytesSent);
@@ -263,7 +250,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
         final String[] stringBuffers = dicts.getStringsArray();
 
-        // 3. Linear row scan and reconstitution
+        // 4. Linear row scan and reconstitution
         for (int i = 0; i < rowCount; i++)
         {
             final long time = baseTime + timeOffsets[i];
@@ -271,7 +258,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             final int agentId = agentTestCaseIds[i];
 
             // Fine-grained row-level check
-            if (!predicate.testRow(time, timerId, agentId))
+            if (!allMatch && !predicate.testRow(time, timerId, agentId))
             {
                 continue;
             }
@@ -353,10 +340,30 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int rowCount = c.getRowCount();
         final long baseTime = c.getMinTime();
 
-        // 2. SIMD parallel column decompression via FastPFOR
+        // 2. Filter column decompression
         final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentTestCaseIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+
+        final boolean allMatch = predicate.matchesAllRows(chunk);
+        if (!allMatch)
+        {
+            boolean anyMatch = false;
+            for (int i = 0; i < rowCount; i++)
+            {
+                if (predicate.testRow(baseTime + timeOffsets[i], timerIds[i], agentTestCaseIds[i]))
+                {
+                    anyMatch = true;
+                    break;
+                }
+            }
+            if (!anyMatch)
+            {
+                return;
+            }
+        }
+
+        // 3. Decompress remaining 15 columns only when matching rows exist
         final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
         final int[] responseCodes = FastIntegerCodec.decompress(c.compResponseCodes);
         final int[] bytesSent = FastIntegerCodec.decompress(c.compBytesSent);
@@ -420,7 +427,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
 
         int containerIndex = container.dataList.size();
 
-        // 3. Linear row scan and zero-allocation reconstitution
+        // 4. Linear row scan and zero-allocation reconstitution
         for (int i = 0; i < rowCount; i++)
         {
             final long time = baseTime + timeOffsets[i];
@@ -428,7 +435,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             final int agentId = agentTestCaseIds[i];
 
             // Fine-grained row-level check
-            if (!predicate.testRow(time, timerId, agentId))
+            if (!allMatch && !predicate.testRow(time, timerId, agentId))
             {
                 continue;
             }
@@ -682,7 +689,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private int lastIpAddressesId = -1;
 
         // Quota gate for sample URLs (zero locks, zero atomics)
-        private final byte[] threadSampleCounts = new byte[4096];
+        private byte[] threadSampleCounts = new byte[4096];
 
         /**
          * Constructs a new chunk builder associated with the given global dictionaries.
@@ -829,16 +836,13 @@ public class RequestChunkHandler implements ChunkTypeHandler
             // 8. Capture sample URLs directly into global dictionaries (capped per thread to eliminate sync overhead)
             if (timerId >= 0)
             {
-                if (timerId < threadSampleCounts.length)
+                if (timerId >= threadSampleCounts.length)
                 {
-                    if (threadSampleCounts[timerId] < 20)
-                    {
-                        threadSampleCounts[timerId]++;
-                        dicts.addSampleUrl(timerId, req.getUrl());
-                    }
+                    threadSampleCounts = Arrays.copyOf(threadSampleCounts, Math.max(threadSampleCounts.length * 2, timerId + 1024));
                 }
-                else
+                if (threadSampleCounts[timerId] < 20)
                 {
+                    threadSampleCounts[timerId]++;
                     dicts.addSampleUrl(timerId, req.getUrl());
                 }
             }

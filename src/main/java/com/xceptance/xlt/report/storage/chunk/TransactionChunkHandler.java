@@ -30,6 +30,7 @@ import org.roaringbitmap.RoaringBitmap;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
+import com.xceptance.xlt.report.storage.StorageIoUtils;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -102,9 +103,9 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         {
             out.writeInt(entry.getKey());
             final TransactionChunk.TransactionError err = entry.getValue();
-            out.writeUTF(err.failedActionName() != null ? err.failedActionName() : "");
-            out.writeUTF(err.stackTrace() != null ? err.stackTrace() : "");
-            out.writeUTF(err.directoryName() != null ? err.directoryName() : "");
+            StorageIoUtils.writeUtfString(out, err.failedActionName());
+            StorageIoUtils.writeUtfString(out, err.stackTrace());
+            StorageIoUtils.writeUtfString(out, err.directoryName());
         }
     }
 
@@ -150,9 +151,9 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         for (int i = 0; i < errCount; i++)
         {
             final int rowIdx = in.readInt();
-            final String action = in.readUTF();
-            final String stack = in.readUTF();
-            final String dir = in.readUTF();
+            final String action = StorageIoUtils.readUtfString(in);
+            final String stack = StorageIoUtils.readUtfString(in);
+            final String dir = StorageIoUtils.readUtfString(in);
             errors.put(rowIdx, new TransactionChunk.TransactionError(action, stack, dir));
         }
 

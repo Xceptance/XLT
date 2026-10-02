@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.roaringbitmap.RoaringBitmap;
 
+import com.xceptance.xlt.report.storage.StorageIoUtils;
+
 /**
  * Manages low-overhead, thread-safe dictionary interning and ID mappings for high-frequency
  * string metadata across all columnar chunks in ChunkDB.
@@ -248,22 +250,34 @@ public class GlobalDictionaries
      */
     public GlobalDictionaries()
     {
-        // Pre-intern standard HTTP methods and content types to guarantee immediate ID assignment
-        getOrCreateStringId("GET");
-        getOrCreateStringId("POST");
-        getOrCreateStringId("PUT");
-        getOrCreateStringId("DELETE");
-        getOrCreateStringId("HEAD");
-        getOrCreateStringId("OPTIONS");
-        getOrCreateStringId("PATCH");
-        getOrCreateStringId("text/html");
-        getOrCreateStringId("application/json");
-        getOrCreateStringId("application/javascript");
-        getOrCreateStringId("text/css");
-        getOrCreateStringId("image/png");
-        getOrCreateStringId("image/jpeg");
-        getOrCreateStringId("image/gif");
-        getOrCreateStringId("image/svg+xml");
+        this(true);
+    }
+
+    /**
+     * Internal constructor with option to suppress pre-interning constants, used during deserialization
+     * to prevent constructor state pollution.
+     */
+    private GlobalDictionaries(final boolean preIntern)
+    {
+        if (preIntern)
+        {
+            // Pre-intern standard HTTP methods and content types to guarantee immediate ID assignment
+            getOrCreateStringId("GET");
+            getOrCreateStringId("POST");
+            getOrCreateStringId("PUT");
+            getOrCreateStringId("DELETE");
+            getOrCreateStringId("HEAD");
+            getOrCreateStringId("OPTIONS");
+            getOrCreateStringId("PATCH");
+            getOrCreateStringId("text/html");
+            getOrCreateStringId("application/json");
+            getOrCreateStringId("application/javascript");
+            getOrCreateStringId("text/css");
+            getOrCreateStringId("image/png");
+            getOrCreateStringId("image/jpeg");
+            getOrCreateStringId("image/gif");
+            getOrCreateStringId("image/svg+xml");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -826,7 +840,7 @@ public class GlobalDictionaries
         final String[] tArr = timerNames;
         for (int i = 0; i < tCount; i++)
         {
-            out.writeUTF(tArr[i]);
+            StorageIoUtils.writeUtfString(out, tArr[i]);
         }
 
         // 2. Agent + TestCase pairs
@@ -836,8 +850,8 @@ public class GlobalDictionaries
         for (int i = 0; i < atCount; i++)
         {
             final AgentTestCase pair = atArr[i];
-            out.writeUTF(pair.agentName());
-            out.writeUTF(pair.testCaseName());
+            StorageIoUtils.writeUtfString(out, pair.agentName());
+            StorageIoUtils.writeUtfString(out, pair.testCaseName());
         }
 
         // 3. General strings
@@ -846,7 +860,7 @@ public class GlobalDictionaries
         final String[] sArr = strings;
         for (int i = 0; i < sCount; i++)
         {
-            out.writeUTF(sArr[i]);
+            StorageIoUtils.writeUtfString(out, sArr[i]);
         }
 
         // 4. Sample URLs by timer ID
@@ -859,7 +873,7 @@ public class GlobalDictionaries
             out.writeInt(list.size());
             for (final String u : list)
             {
-                out.writeUTF(u);
+                StorageIoUtils.writeUtfString(out, u);
             }
         }
     }
@@ -875,7 +889,7 @@ public class GlobalDictionaries
      */
     public static GlobalDictionaries readFrom(final DataInput in) throws IOException
     {
-        final GlobalDictionaries dict = new GlobalDictionaries();
+        final GlobalDictionaries dict = new GlobalDictionaries(false);
 
         // 1. Timer names
         final int timerCount = in.readInt();
@@ -883,7 +897,7 @@ public class GlobalDictionaries
         dict.timerNameCount = timerCount;
         for (int i = 0; i < timerCount; i++)
         {
-            final String s = in.readUTF();
+            final String s = StorageIoUtils.readUtfString(in);
             dict.timerNames[i] = s;
             dict.timerNameToId.put(s, i);
         }
@@ -894,8 +908,8 @@ public class GlobalDictionaries
         dict.agentTestCaseCount = pairCount;
         for (int i = 0; i < pairCount; i++)
         {
-            final String agent = in.readUTF();
-            final String tc = in.readUTF();
+            final String agent = StorageIoUtils.readUtfString(in);
+            final String tc = StorageIoUtils.readUtfString(in);
             final AgentTestCase pair = new AgentTestCase(agent, tc);
             dict.agentTestCases[i] = pair;
             dict.pairToId.put(pair, i);
@@ -908,7 +922,7 @@ public class GlobalDictionaries
         dict.stringCount = strCount;
         for (int i = 0; i < strCount; i++)
         {
-            final String s = in.readUTF();
+            final String s = StorageIoUtils.readUtfString(in);
             dict.strings[i] = s;
             dict.stringToId.put(s, i);
         }
@@ -924,7 +938,7 @@ public class GlobalDictionaries
                 final java.util.List<String> list = new java.util.concurrent.CopyOnWriteArrayList<>();
                 for (int j = 0; j < count; j++)
                 {
-                    list.add(in.readUTF());
+                    list.add(StorageIoUtils.readUtfString(in));
                 }
                 dict.sampleUrlsByTimer.put(timerId, list);
             }

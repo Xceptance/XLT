@@ -488,23 +488,24 @@ public class ChunkIngestionCollector
     public synchronized ChunkStorage finish()
     {
         // 1. Await completion of all pending background chunk compression tasks
-        for (final Future<?> task : pendingCompressionTasks)
+        try
         {
-            try
+            for (final Future<?> task : pendingCompressionTasks)
             {
                 task.get();
             }
-            catch (final Exception e)
-            {
-                throw new RuntimeException("Asynchronous chunk compression failed", e);
-            }
         }
-        pendingCompressionTasks.clear();
+        catch (final Exception e)
+        {
+            throw new RuntimeException("Asynchronous chunk compression failed", e);
+        }
+        finally
+        {
+            pendingCompressionTasks.clear();
+            compressionExecutor.shutdown();
+        }
 
-        // 2. Shut down the background compression executor pool
-        compressionExecutor.shutdown();
-
-        // 3. Collect all non-empty active builders from all worker threads
+        // 2. Collect all non-empty active builders from all worker threads
         final List<ChunkBuilder> remainingBuilders = new ArrayList<>();
         for (final ChunkBuilder[] threadBuilders : allThreadBuilders)
         {
@@ -520,12 +521,12 @@ public class ChunkIngestionCollector
         }
         allThreadBuilders.clear();
 
-        // 4. Seal and compress all remaining builders in parallel
+        // 3. Seal and compress all remaining builders in parallel
         final List<Chunk> sealedChunks = remainingBuilders.parallelStream()
             .map(ChunkBuilder::seal)
             .toList();
 
-        // 5. Register sealed chunks into catalog (spooling to disk if spooler is active)
+        // 4. Register sealed chunks into catalog (spooling to disk if spooler is active)
         for (final Chunk chunk : sealedChunks)
         {
             if (spooler != null)
@@ -545,7 +546,7 @@ public class ChunkIngestionCollector
             catalog.addChunk(chunk);
         }
 
-        // 6. Finalize spooled storage files and attach open file channel for lazy loading
+        // 5. Finalize spooled storage files and attach open file channel for lazy loading
         if (spooler != null)
         {
             try
@@ -559,7 +560,7 @@ public class ChunkIngestionCollector
             }
             catch (final IOException e)
             {
-                XltLogger.runTimeLogger.error("Failed to finalize spooled chunk storage; falling back to in-memory storage: " + e.getMessage());
+                throw new RuntimeException("Failed to finalize spooled chunk storage", e);
             }
         }
 
