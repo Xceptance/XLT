@@ -674,19 +674,37 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private final RoaringBitmap failedRows = new RoaringBitmap();
 
         // ---------------------------------------------------------------------
-        // Thread-Local Register Caches for High-Repetition Protocol Attributes
+        // Thread-Local Register Caches for High-Repetition Attributes
         // ---------------------------------------------------------------------
+        private CharSequence lastTimerRef;
+        private String lastTimerStr;
+        private int lastTimerId = -1;
+
+        private CharSequence lastAgentRef;
+        private CharSequence lastTxnRef;
+        private String lastAgentStr;
+        private String lastTxnStr;
+        private int lastAgentId = -1;
+
+        private CharSequence lastMethodRef;
         private String lastMethodStr;
         private int lastMethodId = -1;
 
+        private CharSequence lastContentTypeRef;
         private String lastContentTypeStr;
         private int lastContentTypeId = -1;
 
+        private CharSequence lastUsedIpRef;
         private String lastUsedIpStr;
         private int lastUsedIpId = -1;
 
+        private String lastIpAddressesRef;
         private String lastIpAddressesStr;
         private int lastIpAddressesId = -1;
+
+        // Bitmasks to avoid redundant RoaringBitmap additions across 64K chunk records
+        private long[] seenTimers = new long[64];
+        private long[] seenAgents = new long[64];
 
         // Quota gate for sample URLs (zero locks, zero atomics)
         private byte[] threadSampleCounts = new byte[4096];
@@ -737,15 +755,76 @@ public class RequestChunkHandler implements ChunkTypeHandler
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;
 
-            // 2. Intern timer name and update bitmap index
-            final int timerId = dicts.getOrCreateTimerNameId(req.getName());
+            // 2. Intern timer name and update bitmap index with register cache
+            final CharSequence timerName = req.getName();
+            final int timerId;
+            if (timerName == lastTimerRef)
+            {
+                timerId = lastTimerId;
+            }
+            else if (lastTimerStr != null && GlobalDictionaries.charSequenceEquals(timerName, lastTimerStr))
+            {
+                timerId = lastTimerId;
+                lastTimerRef = timerName;
+            }
+            else
+            {
+                timerId = dicts.getOrCreateTimerNameId(timerName);
+                lastTimerId = timerId;
+                lastTimerRef = timerName;
+                lastTimerStr = dicts.getTimerName(timerId);
+                final int timerWord = timerId >>> 6;
+                if (timerWord >= seenTimers.length)
+                {
+                    seenTimers = java.util.Arrays.copyOf(seenTimers, Math.max(seenTimers.length * 2, timerWord + 16));
+                }
+                final long timerMask = 1L << timerId;
+                if ((seenTimers[timerWord] & timerMask) == 0L)
+                {
+                    seenTimers[timerWord] |= timerMask;
+                    timerIds.add(timerId);
+                }
+            }
             timerIdArr[idx] = timerId;
-            timerIds.add(timerId);
 
-            // 3. Intern unified agent + scenario pair and update bitmap index
-            final int agentId = dicts.getOrCreateAgentTestCaseId(req.getAgentName(), req.getTransactionName());
+            // 3. Intern unified agent + scenario pair and update bitmap index with register cache
+            final CharSequence agentName = req.getAgentName();
+            final CharSequence txnName = req.getTransactionName();
+            final int agentId;
+            if (agentName == lastAgentRef && txnName == lastTxnRef)
+            {
+                agentId = lastAgentId;
+            }
+            else if (lastAgentStr != null && lastTxnStr != null
+                     && GlobalDictionaries.charSequenceEquals(agentName, lastAgentStr)
+                     && GlobalDictionaries.charSequenceEquals(txnName, lastTxnStr))
+            {
+                agentId = lastAgentId;
+                lastAgentRef = agentName;
+                lastTxnRef = txnName;
+            }
+            else
+            {
+                agentId = dicts.getOrCreateAgentTestCaseId(agentName, txnName);
+                lastAgentId = agentId;
+                lastAgentRef = agentName;
+                lastTxnRef = txnName;
+                final GlobalDictionaries.AgentTestCase pair = dicts.getAgentTestCase(agentId);
+                lastAgentStr = pair != null ? pair.agentName() : null;
+                lastTxnStr = pair != null ? pair.testCaseName() : null;
+                final int agentWord = agentId >>> 6;
+                if (agentWord >= seenAgents.length)
+                {
+                    seenAgents = java.util.Arrays.copyOf(seenAgents, Math.max(seenAgents.length * 2, agentWord + 16));
+                }
+                final long agentMask = 1L << agentId;
+                if ((seenAgents[agentWord] & agentMask) == 0L)
+                {
+                    seenAgents[agentWord] |= agentMask;
+                    agentTestCaseIds.add(agentId);
+                }
+            }
             agentTestCaseIdArr[idx] = agentId;
-            agentTestCaseIds.add(agentId);
 
             // 4. Track failed status
             if (req.hasFailed())
@@ -768,20 +847,26 @@ public class RequestChunkHandler implements ChunkTypeHandler
             timeToFirstBytes[idx] = req.getTimeToFirstBytes();
             timeToLastBytes[idx] = req.getTimeToLastBytes();
 
-            // 7. Intern protocol attributes with thread-local register caches (avoids 400M+ dictionary map lookups)
+            // 7. Intern protocol attributes with register caches (avoids 400M+ dictionary map lookups)
             final CharSequence method = req.getHttpMethod();
             if (method == null)
             {
                 httpMethods[idx] = -1;
             }
+            else if (method == lastMethodRef)
+            {
+                httpMethods[idx] = lastMethodId;
+            }
             else if (lastMethodStr != null && GlobalDictionaries.charSequenceEquals(method, lastMethodStr))
             {
                 httpMethods[idx] = lastMethodId;
+                lastMethodRef = method;
             }
             else
             {
                 lastMethodId = dicts.getOrCreateStringId(method);
                 lastMethodStr = dicts.getString(lastMethodId);
+                lastMethodRef = method;
                 httpMethods[idx] = lastMethodId;
             }
 
@@ -790,14 +875,20 @@ public class RequestChunkHandler implements ChunkTypeHandler
             {
                 contentTypes[idx] = -1;
             }
+            else if (ct == lastContentTypeRef)
+            {
+                contentTypes[idx] = lastContentTypeId;
+            }
             else if (lastContentTypeStr != null && GlobalDictionaries.charSequenceEquals(ct, lastContentTypeStr))
             {
                 contentTypes[idx] = lastContentTypeId;
+                lastContentTypeRef = ct;
             }
             else
             {
                 lastContentTypeId = dicts.getOrCreateStringId(ct);
                 lastContentTypeStr = dicts.getString(lastContentTypeId);
+                lastContentTypeRef = ct;
                 contentTypes[idx] = lastContentTypeId;
             }
 
@@ -806,14 +897,20 @@ public class RequestChunkHandler implements ChunkTypeHandler
             {
                 usedIps[idx] = -1;
             }
+            else if (usedIp == lastUsedIpRef)
+            {
+                usedIps[idx] = lastUsedIpId;
+            }
             else if (lastUsedIpStr != null && GlobalDictionaries.charSequenceEquals(usedIp, lastUsedIpStr))
             {
                 usedIps[idx] = lastUsedIpId;
+                lastUsedIpRef = usedIp;
             }
             else
             {
                 lastUsedIpId = dicts.getOrCreateStringId(usedIp);
                 lastUsedIpStr = dicts.getString(lastUsedIpId);
+                lastUsedIpRef = usedIp;
                 usedIps[idx] = lastUsedIpId;
             }
 
@@ -822,14 +919,20 @@ public class RequestChunkHandler implements ChunkTypeHandler
             {
                 ipAddresses[idx] = -1;
             }
+            else if (ipAddressesStr == lastIpAddressesRef)
+            {
+                ipAddresses[idx] = lastIpAddressesId;
+            }
             else if (lastIpAddressesStr != null && ipAddressesStr.equals(lastIpAddressesStr))
             {
                 ipAddresses[idx] = lastIpAddressesId;
+                lastIpAddressesRef = ipAddressesStr;
             }
             else
             {
                 lastIpAddressesId = dicts.getOrCreateStringId(ipAddressesStr);
                 lastIpAddressesStr = dicts.getString(lastIpAddressesId);
+                lastIpAddressesRef = ipAddressesStr;
                 ipAddresses[idx] = lastIpAddressesId;
             }
 

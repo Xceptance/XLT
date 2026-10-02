@@ -255,37 +255,16 @@ public class DataProcessor
 
                     final long cacheDuration = TimerUtils.get().getElapsedTime(tCacheStart);
                     XltLogger.reportLogger.info(String.format("ChunkDB cache persisted - %,d ms", cacheDuration));
-
-                    // Phase 2: Query the sealed ChunkDB concurrently to aggregate report statistics
-                    XltLogger.reportLogger.info("Aggregating report statistics from ChunkDB...");
-                    final long scanStart = TimerUtils.get().getStartTime();
-
-                    final org.roaringbitmap.RoaringBitmap matchingAgents =
-                        storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
-
-                    final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
-                        new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
-
-                    final com.xceptance.xlt.report.ChunkQueryEngine queryEngine =
-                        new com.xceptance.xlt.report.ChunkQueryEngine(storage, config.parserThreadCount);
-                    final long recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor);
-
-                    final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
-                    final long scanRate = scanDuration > 0 ? Math.round((recordsProcessed / (double) scanDuration) * 1000L) : 0;
-                    XltLogger.reportLogger.info(String.format("%,d records aggregated from ChunkDB - %,d ms - %,d records/s",
-                                                              recordsProcessed, scanDuration, scanRate));
                 }
                 catch (final Exception e)
                 {
-                    XltLogger.reportLogger.error("Failed to persist ChunkDB cache or aggregate report: " + e.getMessage(), e);
+                    XltLogger.reportLogger.error("Failed to persist ChunkDB cache: " + e.getMessage(), e);
                     throw new RuntimeException("ChunkDB processing failed", e);
                 }
             }
-            else
-            {
-                // Complete processing and merge worker statistics into master providers
-                statisticsProcessor.complete();
-            }
+
+            // Complete processing and merge worker statistics into master providers
+            statisticsProcessor.complete();
         }
         catch (final Exception e)
         {

@@ -35,6 +35,29 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.util.concurrent.ForkJoinPool;
+
+import com.xceptance.xlt.api.report.PostProcessedDataContainer;
+import com.xceptance.xlt.api.report.ReportProvider;
+import com.xceptance.xlt.api.report.ReportProviderConfiguration;
+import com.xceptance.xlt.report.ChunkQueryEngine;
+import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.StatisticsProcessor;
+import com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration;
+import com.xceptance.xlt.report.storage.ChunkIngestionCollector;
+import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
+import com.xceptance.xlt.report.storage.chunk.Chunk;
+import com.xceptance.xlt.report.storage.chunk.ChunkBuilder;
+import com.xceptance.xlt.report.storage.chunk.ChunkSpooler;
+import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
+import com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry;
+import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
+import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
+import com.xceptance.xlt.report.storage.query.ScanPredicate;
+import org.roaringbitmap.RoaringBitmap;
 
 import com.sun.management.ThreadMXBean;
 import com.xceptance.common.io.XltBufferedByteLineReader;
@@ -81,6 +104,18 @@ public class BytePipelineBenchmark
         System.out.println("Thread allocated memory tracking supported: " + THREAD_MX.isThreadAllocatedMemorySupported());
         System.out.println();
 
+        // 1. Check for quick diag mode
+        File ariatDir = new File("/home/rschwietzke/projects/loadtest/test-results/xlt-result-ariat-lt-2025-315-20251119-165727");
+        if (args.length > 0 && "diag".equalsIgnoreCase(args[0]))
+        {
+            if (ariatDir.isDirectory())
+            {
+                benchmarkStage1VsStage2Diagnosis(ariatDir, 500, 8);
+                benchmarkChunkIngestionMicroBreakdown(ariatDir);
+            }
+            return;
+        }
+
         // 1. Component Micro-Benchmarks
         benchmarkCsvByteLineDecoder();
         benchmarkParseNumbers();
@@ -99,7 +134,7 @@ public class BytePipelineBenchmark
         }
 
         // 3. Real Large-Scale Test Data (Ariat dataset if present)
-        File ariatDir = new File("/home/rschwietzke/projects/loadtest/test-results/xlt-result-ariat-lt-2025-315-20251119-165727");
+        ariatDir = new File("/home/rschwietzke/projects/loadtest/test-results/xlt-result-ariat-lt-2025-315-20251119-165727");
         if (args.length > 0)
         {
             ariatDir = new File(args[0]);
@@ -109,6 +144,8 @@ public class BytePipelineBenchmark
         {
             benchmarkAriatRealDataset(ariatDir, 100); // 100 timer files (~175k records)
             benchmarkAriatRealDatasetMultiThreaded(ariatDir, 500, 8); // 500 files across 8 worker threads (~880k records)
+            benchmarkStage1VsStage2Diagnosis(ariatDir, 500, 8);
+            benchmarkChunkIngestionMicroBreakdown(ariatDir);
         }
         else
         {
@@ -856,5 +893,443 @@ public class BytePipelineBenchmark
             if (t > 0) sum += t;
         }
         return sum;
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // 8. Stage 1 (Old) vs Stage 2 (New) Ingestion Diagnosis
+    // -----------------------------------------------------------------------------------------------------
+
+    private static StatisticsProcessor createProductionStatisticsProcessor(final ReportProviderConfiguration config)
+    {
+        final List<ReportProvider> providers = new ArrayList<>();
+        final List<Class<? extends ReportProvider>> classes = List.of(
+            com.xceptance.xlt.report.providers.RequestsReportProvider.class,
+            com.xceptance.xlt.report.providers.TransactionsReportProvider.class,
+            com.xceptance.xlt.report.providers.GeneralReportProvider.class,
+            com.xceptance.xlt.report.providers.SlowestRequestsReportProvider.class,
+            com.xceptance.xlt.report.providers.ContentTypesReportProvider.class,
+            com.xceptance.xlt.report.providers.HostsReportProvider.class,
+            com.xceptance.xlt.report.providers.IpReportProvider.class,
+            com.xceptance.xlt.report.providers.RequestMethodsReportProvider.class
+        );
+        for (final Class<? extends ReportProvider> c : classes)
+        {
+            try
+            {
+                final ReportProvider p = c.getDeclaredConstructor().newInstance();
+                p.setConfiguration(config);
+                providers.add(p);
+            }
+            catch (final Exception e)
+            {
+                // ignore
+            }
+        }
+        return new StatisticsProcessor(providers, config);
+    }
+
+    @FunctionalInterface
+    private interface ContainerConsumer
+    {
+        void accept(PostProcessedDataContainer container) throws Exception;
+    }
+
+    private static void flushNonReq(final ContainerConsumer consumer, final PostProcessedDataContainer c) throws Exception
+    {
+        if (c.size() == 0) return;
+        final char first = c.getData().get(0).getTypeCode();
+        boolean homo = true;
+        for (int k = 1; k < c.size(); k++)
+        {
+            if (c.getData().get(k).getTypeCode() != first)
+            {
+                homo = false;
+                break;
+            }
+        }
+        c.typeCode = homo ? first : 0;
+        consumer.accept(c);
+    }
+
+    private static long runMultiThreadedWorkers(final List<File> files, final int numThreads, final ContainerConsumer consumer) throws Exception
+    {
+        final ExecutorService pool = Executors.newFixedThreadPool(numThreads);
+        final int batchSize = (files.size() + numThreads - 1) / numThreads;
+        final List<Callable<Long>> tasks = new ArrayList<>();
+
+        for (int t = 0; t < numThreads; t++)
+        {
+            final int start = t * batchSize;
+            final int end = Math.min(start + batchSize, files.size());
+            if (start < end)
+            {
+                final List<File> subList = files.subList(start, end);
+                tasks.add(() -> {
+                    final CsvByteColumns columns = new CsvByteColumns(50);
+                    final DataRecordFactory factory = createFactory();
+                    long recs = 0;
+                    PostProcessedDataContainer reqContainer = new PostProcessedDataContainer(1000, 1);
+                    reqContainer.typeCode = 'R';
+                    PostProcessedDataContainer nonReqContainer = new PostProcessedDataContainer(1000, 1);
+
+                    for (final File file : subList)
+                    {
+                        try (final XltBufferedByteLineReader reader = new XltBufferedByteLineReader(new GZIPInputStream(new FileInputStream(file), 16384)))
+                        {
+                            byte[] line;
+                            while ((line = reader.readLine()) != null)
+                            {
+                                if (line.length == 0) continue;
+
+                                columns.clear();
+                                CsvByteLineDecoder.parse(columns, line);
+
+                                final Data d = factory.createStatistics(line[0]);
+                                d.setBaseValues(columns);
+                                d.setRemainingValues(columns);
+                                d.setAgentName("Agent-1");
+                                d.setTransactionName("TScenario");
+
+                                if (d instanceof RequestData)
+                                {
+                                    reqContainer.add(d);
+                                    if (reqContainer.size() == 1000)
+                                    {
+                                        consumer.accept(reqContainer);
+                                        reqContainer = new PostProcessedDataContainer(1000, 1);
+                                        reqContainer.typeCode = 'R';
+                                    }
+                                }
+                                else
+                                {
+                                    nonReqContainer.add(d);
+                                    if (nonReqContainer.size() == 1000)
+                                    {
+                                        flushNonReq(consumer, nonReqContainer);
+                                        nonReqContainer = new PostProcessedDataContainer(1000, 1);
+                                    }
+                                }
+                                recs++;
+                            }
+                        }
+                    }
+                    if (reqContainer.size() > 0)
+                    {
+                        consumer.accept(reqContainer);
+                    }
+                    if (nonReqContainer.size() > 0)
+                    {
+                        flushNonReq(consumer, nonReqContainer);
+                    }
+                    return recs;
+                });
+            }
+        }
+
+        final List<Future<Long>> futures = pool.invokeAll(tasks);
+        pool.shutdown();
+
+        long total = 0;
+        for (final Future<Long> f : futures)
+        {
+            total += f.get();
+        }
+        return total;
+    }
+
+    private static void benchmarkStage1VsStage2Diagnosis(final File dir, final int maxFiles, final int numThreads) throws Exception
+    {
+        System.out.printf("--- 8. STAGE 1 (Old) vs STAGE 2 (New) Ingestion Diagnosis (%d Files, %d Threads) ---%n", maxFiles, numThreads);
+
+        final List<File> files = collectTimerFiles(dir, maxFiles);
+        System.out.printf("  Dataset: %,d timers.csv.gz files in %s%n", files.size(), dir.getName());
+
+        final DummyReportGeneratorConfiguration config = DummyReportGeneratorConfiguration.getDefault();
+
+        // -------------------------------------------------------------
+        // Phase A: Baseline (CSV Read + Decode Only)
+        // -------------------------------------------------------------
+        System.out.println("  [Step 1] Baseline: Multi-Threaded CSV Read + Decode into Data objects...");
+        final long baseStart = System.nanoTime();
+        final long baseRecords = runMultiThreadedWorkers(files, numThreads, (container) -> {
+            // No-op sink: just parsing
+        });
+        final long baseDurationNs = System.nanoTime() - baseStart;
+        final double baseRate = (baseRecords * 1e9) / baseDurationNs;
+        System.out.printf("    Baseline: %,d records in %,.1f ms (%,.0f records/s)%n", baseRecords, baseDurationNs / 1e6, baseRate);
+
+        // -------------------------------------------------------------
+        // Phase B: Stage 1 Pipeline (Read + Decode + StatisticsProcessor)
+        // -------------------------------------------------------------
+        System.out.println("  [Step 2] Stage 1 (Old): CSV Read + Decode + StatisticsProcessor.process()...");
+        final StatisticsProcessor stage1Processor = createProductionStatisticsProcessor(config);
+        final long s1Start = System.nanoTime();
+        final long s1Records = runMultiThreadedWorkers(files, numThreads, stage1Processor::process);
+        stage1Processor.complete();
+        final long s1DurationNs = System.nanoTime() - s1Start;
+        final double s1Rate = (s1Records * 1e9) / s1DurationNs;
+        System.out.printf("    Stage 1:  %,d records in %,.1f ms (%,.0f records/s)%n", s1Records, s1DurationNs / 1e6, s1Rate);
+
+        // -------------------------------------------------------------
+        // Phase C: Stage 2 Pipeline - Phase 1 (Read + Decode + ChunkIngestionCollector)
+        // -------------------------------------------------------------
+        System.out.println("  [Step 3] Stage 2 (New - Phase 1): CSV Read + Decode + ChunkIngestionCollector (Disk Spooling)...");
+        final File tmpDir = Files.createTempDirectory("xlt-chunkdb-diag-").toFile();
+        tmpDir.deleteOnExit();
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(tmpDir);
+        final long s2Phase1Start = System.nanoTime();
+        final long s2Records = runMultiThreadedWorkers(files, numThreads, collector::collect);
+        final ChunkStorage storage = collector.finish();
+        final long s2Phase1DurationNs = System.nanoTime() - s2Phase1Start;
+        final double s2Phase1Rate = (s2Records * 1e9) / s2Phase1DurationNs;
+
+        final File chunksFile = new File(tmpDir, "chunks.bin");
+        final long spooledBytes = chunksFile.exists() ? chunksFile.length() : 0L;
+        System.out.printf("    Stage 2 (Phase 1 Ingest): %,d records in %,.1f ms (%,.0f records/s, spooled %,.2f MB, %,d chunks)%n",
+                          s2Records, s2Phase1DurationNs / 1e6, s2Phase1Rate, spooledBytes / (1024.0 * 1024.0), storage.getCatalog().getChunkCount());
+
+        // -------------------------------------------------------------
+        // Phase D: Stage 2 Pipeline - Phase 2 (ChunkDB Query Scan -> StatisticsProcessor)
+        // -------------------------------------------------------------
+        System.out.println("  [Step 4] Stage 2 (New - Phase 2): ChunkDB Scan -> StatisticsProcessor.process()...");
+        final StatisticsProcessor stage2Processor = createProductionStatisticsProcessor(config);
+        final ChunkQueryEngine queryEngine = new ChunkQueryEngine(storage, numThreads);
+        final long s2Phase2Start = System.nanoTime();
+        final long scannedRecords = queryEngine.executeScan(ScanPredicate.ALL, stage2Processor);
+        final long s2Phase2DurationNs = System.nanoTime() - s2Phase2Start;
+        final double s2Phase2Rate = (scannedRecords * 1e9) / s2Phase2DurationNs;
+        System.out.printf("    Stage 2 (Phase 2 Scan):   %,d records in %,.1f ms (%,.0f records/s)%n",
+                          scannedRecords, s2Phase2DurationNs / 1e6, s2Phase2Rate);
+
+        // -------------------------------------------------------------
+        // Phase E: Dual-Feed Single-Pass (Stage 1 Stats + Chunk Ingestion in ONE PASS)
+        // -------------------------------------------------------------
+        System.out.println("  [Step 5] Dual Mode (Stats + Chunk Ingest in SINGLE PASS)...");
+        final File dualTmpDir = Files.createTempDirectory("chunkdb-dual-bench-").toFile();
+        dualTmpDir.deleteOnExit();
+        final StatisticsProcessor dualProcessor = createProductionStatisticsProcessor(config);
+        final ChunkIngestionCollector dualCollector = new ChunkIngestionCollector(dualTmpDir);
+
+        final long dualStart = System.nanoTime();
+        final long dualRecords = runMultiThreadedWorkers(files, numThreads, container -> {
+            dualProcessor.process(container);
+            dualCollector.collect(container);
+        });
+        final ChunkStorage dualStorage = dualCollector.finish();
+        final long dualDurationNs = System.nanoTime() - dualStart;
+        final double dualRate = (dualRecords * 1e9) / dualDurationNs;
+        final double dualMs = dualDurationNs / 1e6;
+        System.out.printf("    Dual Mode (Single Pass):  %,d records in %,.1f ms (%,.0f records/s)%n",
+                          dualRecords, dualMs, dualRate);
+
+        // -------------------------------------------------------------
+        // Summary & Dissection
+        // -------------------------------------------------------------
+        final long s2TotalDurationNs = s2Phase1DurationNs + s2Phase2DurationNs;
+        final double s2TotalMs = s2TotalDurationNs / 1e6;
+        final double s1TotalMs = s1DurationNs / 1e6;
+        final double gapMs = s2TotalMs - s1TotalMs;
+        final double gapPct = (gapMs / s1TotalMs) * 100.0;
+        final double dualGapMs = dualMs - s1TotalMs;
+        final double dualGapPct = (dualGapMs / s1TotalMs) * 100.0;
+
+        System.out.println();
+        System.out.println("  === DIAGNOSTIC COMPARISON SUMMARY ===");
+        System.out.printf("  Stage 1 (Old) Total:                   %,10.1f ms (100.0%%) | %,10.0f records/s%n", s1TotalMs, s1Rate);
+        System.out.printf("  Stage 2 (New) Total (Phase 1 + 2):     %,10.1f ms (%+5.1f%%) | %,10.0f records/s%n", s2TotalMs, gapPct, (s2Records * 1e9) / s2TotalDurationNs);
+        System.out.printf("    |- Phase 1 (CSV Read + Ingest Spool):%,10.1f ms (%5.1f%% of Stage 1)%n", s2Phase1DurationNs / 1e6, (s2Phase1DurationNs * 100.0) / s1DurationNs);
+        System.out.printf("    |- Phase 2 (ChunkDB Decomp + Stats): %,10.1f ms (%5.1f%% of Stage 1)%n", s2Phase2DurationNs / 1e6, (s2Phase2DurationNs * 100.0) / s1DurationNs);
+        System.out.printf("  Dual Mode (New Single-Pass Cold Run):  %,10.1f ms (%+5.1f%%) | %,10.0f records/s%n", dualMs, dualGapPct, dualRate);
+        System.out.printf("  Net Performance Gap (Stage 2 Two-Pass):%,+10.1f ms (%+5.1f%%)%n", gapMs, gapPct);
+        System.out.printf("    |- Ingestion Penalty during CSV read:%,+10.1f ms (Stage 2 P1 vs Stage 1 CSV Crunch)%n", (s2Phase1DurationNs - s1DurationNs) / 1e6);
+        System.out.printf("    |- Redundant Second Pass (Scan):     %,+10.1f ms%n", s2Phase2DurationNs / 1e6);
+        System.out.printf("  Net Performance Gap (Dual Mode):       %,+10.1f ms (%+5.1f%% vs Stage 1)%n", dualGapMs, dualGapPct);
+        System.out.println();
+
+        // Cleanup dual temp cache
+        dualStorage.close();
+        final File dualChunksFile = new File(dualTmpDir, "chunks.bin");
+        if (dualChunksFile.exists()) dualChunksFile.delete();
+        dualTmpDir.delete();
+
+        // Cleanup temp cache
+        storage.close();
+        if (chunksFile.exists()) chunksFile.delete();
+        tmpDir.delete();
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // 9. ChunkIngestionCollector & RequestChunkBuilder Micro-Breakdown
+    // -----------------------------------------------------------------------------------------------------
+
+    private static void benchmarkChunkIngestionMicroBreakdown(final File dir) throws Exception
+    {
+        System.out.println("--- 9. Chunk Ingestion Component Micro-Breakdown (Isolated Profiling) ---");
+
+        // Load 64,000 real RequestData records into memory
+        final List<File> files = collectTimerFiles(dir, 50);
+        final List<RequestData> sampleRequests = new ArrayList<>(64_000);
+        final CsvByteColumns columns = new CsvByteColumns(50);
+        final DataRecordFactory factory = createFactory();
+
+        for (final File file : files)
+        {
+            if (sampleRequests.size() >= 64_000) break;
+            try (final XltBufferedByteLineReader reader = new XltBufferedByteLineReader(new GZIPInputStream(new FileInputStream(file), 16384)))
+            {
+                byte[] line;
+                while ((line = reader.readLine()) != null)
+                {
+                    if (line.length == 0 || line[0] != 'R') continue;
+                    columns.clear();
+                    CsvByteLineDecoder.parse(columns, line);
+                    final Data d = factory.createStatistics(line[0]);
+                    d.setBaseValues(columns);
+                    d.setRemainingValues(columns);
+                    d.setAgentName("Agent-1");
+                    d.setTransactionName("TScenario");
+                    sampleRequests.add((RequestData) d);
+                    if (sampleRequests.size() >= 64_000) break;
+                }
+            }
+        }
+
+        final int N = sampleRequests.size();
+        System.out.printf("  Loaded %,d real RequestData records into memory for micro-benchmarking%n", N);
+
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final int iterations = 10;
+
+        // Micro 1: Raw array writes (no dicts, no bitmaps)
+        final long[] times = new long[N];
+        final int[] runTimes = new int[N];
+        final int[] codes = new int[N];
+        final int[] bytesS = new int[N];
+        final int[] bytesR = new int[N];
+
+        long start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                final RequestData req = sampleRequests.get(i);
+                times[i] = req.getTime();
+                runTimes[i] = req.getRunTime();
+                codes[i] = req.getResponseCode();
+                bytesS[i] = (int) req.getBytesSent();
+                bytesR[i] = (int) req.getBytesReceived();
+            }
+        }
+        long durNs = System.nanoTime() - start;
+        System.out.printf("  1. Field Access & Primitive Array Writes (5 cols): %6.2f ns/record%n", (double) durNs / (iterations * N));
+
+        // Micro 2: Timer dictionary interning
+        start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                dicts.getOrCreateTimerNameId(sampleRequests.get(i).getName());
+            }
+        }
+        durNs = System.nanoTime() - start;
+        System.out.printf("  2. Timer Dictionary Interning (memoized lookup):  %6.2f ns/record%n", (double) durNs / (iterations * N));
+
+        // Micro 3: RoaringBitmap timerIds.add()
+        final RoaringBitmap timerBm = new RoaringBitmap();
+        start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            timerBm.clear();
+            for (int i = 0; i < N; i++)
+            {
+                timerBm.add(i % 100);
+            }
+        }
+        durNs = System.nanoTime() - start;
+        System.out.printf("  3. RoaringBitmap.add() per record (timerIds):      %6.2f ns/record%n", (double) durNs / (iterations * N));
+
+        // Micro 4: Agent + Scenario dictionary interning
+        start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                final RequestData req = sampleRequests.get(i);
+                dicts.getOrCreateAgentTestCaseId(req.getAgentName(), req.getTransactionName());
+            }
+        }
+        durNs = System.nanoTime() - start;
+        System.out.printf("  4. Agent/TestCase Dictionary Interning:           %6.2f ns/record%n", (double) durNs / (iterations * N));
+
+        // Micro 5: Protocol strings check (Method, ContentType, IP)
+        start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                final RequestData req = sampleRequests.get(i);
+                dicts.getOrCreateStringId(req.getHttpMethod());
+                dicts.getOrCreateStringId(req.getContentType());
+                dicts.getOrCreateStringId(req.getUsedIpAddress());
+            }
+        }
+        durNs = System.nanoTime() - start;
+        System.out.printf("  5. Protocol Strings Interning (Method, CT, IP):    %6.2f ns/record%n", (double) durNs / (iterations * N));
+
+        // Micro 6: Full RequestChunkBuilder.append()
+        final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('R');
+        start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            final ChunkBuilder builder = handler.newChunkBuilder(dicts);
+            for (int i = 0; i < N; i++)
+            {
+                builder.append(sampleRequests.get(i));
+            }
+        }
+        durNs = System.nanoTime() - start;
+        final double appendNsPerRec = (double) durNs / (iterations * N);
+        System.out.printf("  6. Full RequestChunkBuilder.append():              %6.2f ns/record (%,.0f records/s)%n",
+                          appendNsPerRec, 1e9 / appendNsPerRec);
+
+        // Micro 7: Full RequestChunkBuilder.seal() (FastPFOR compression across 18 columns)
+        final ChunkBuilder testBuilder = handler.newChunkBuilder(dicts);
+        for (int i = 0; i < N; i++)
+        {
+            testBuilder.append(sampleRequests.get(i));
+        }
+
+        start = System.nanoTime();
+        Chunk sealedChunk = null;
+        for (int it = 0; it < iterations; it++)
+        {
+            sealedChunk = testBuilder.seal();
+        }
+        durNs = System.nanoTime() - start;
+        final double sealNsPerChunk = (double) durNs / iterations;
+        System.out.printf("  7. Full ChunkBuilder.seal() (18-column FastPFOR): %,.2f ms/chunk (%6.2f ns/record, %,.0f recs/s)%n",
+                          sealNsPerChunk / 1e6, sealNsPerChunk / N, (N * 1e9) / sealNsPerChunk);
+
+        // Micro 8: ChunkSpooler.spoolChunk() (Disk write)
+        final File tmpDir = Files.createTempDirectory("xlt-spool-bench-").toFile();
+        tmpDir.deleteOnExit();
+        final ChunkSpooler spooler = new ChunkSpooler(tmpDir);
+        start = System.nanoTime();
+        for (int it = 0; it < iterations; it++)
+        {
+            spooler.spoolChunk(sealedChunk, handler);
+        }
+        durNs = System.nanoTime() - start;
+        final double spoolNsPerChunk = (double) durNs / iterations;
+        System.out.printf("  8. ChunkSpooler.spoolChunk() (Direct Disk I/O):   %,.2f ms/chunk (%6.2f ns/record, %,.0f recs/s)%n",
+                          spoolNsPerChunk / 1e6, spoolNsPerChunk / N, (N * 1e9) / spoolNsPerChunk);
+
+        final ChunkCatalog catalog = new ChunkCatalog();
+        spooler.finish(catalog, dicts);
+        new File(tmpDir, "chunks.bin").delete();
+        tmpDir.delete();
+        System.out.println();
     }
 }

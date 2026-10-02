@@ -38,7 +38,7 @@ import com.xceptance.xlt.api.util.SimpleArrayList;
  * Processes parsed data records by delegating to worker copies of configured report providers per thread,
  * avoiding lock contention completely during processing, and merging them into the master providers when finished.
  */
-class StatisticsProcessor
+public class StatisticsProcessor
 {
     /**
      * Class logger.

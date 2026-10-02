@@ -491,6 +491,22 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         // ---------------------------------------------------------------------
         private final Map<Integer, TransactionChunk.TransactionError> errorMap = new HashMap<>();
 
+        // ---------------------------------------------------------------------
+        // Thread-Local Register Caches & Bitmasks
+        // ---------------------------------------------------------------------
+        private CharSequence lastTimerRef;
+        private String lastTimerStr;
+        private int lastTimerId = -1;
+
+        private CharSequence lastAgentRef;
+        private CharSequence lastTxnRef;
+        private String lastAgentStr;
+        private String lastTxnStr;
+        private int lastAgentId = -1;
+
+        private long[] seenTimers = new long[64];
+        private long[] seenAgents = new long[64];
+
         /**
          * Constructs a new transaction chunk builder associated with global dictionaries.
          *
@@ -537,15 +553,76 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;
 
-            // 2. Intern timer name and update bitmap index
-            final int timerId = dicts.getOrCreateTimerNameId(td.getName());
+            // 2. Intern timer name and update bitmap index with register cache
+            final CharSequence timerName = td.getName();
+            final int timerId;
+            if (timerName == lastTimerRef)
+            {
+                timerId = lastTimerId;
+            }
+            else if (lastTimerStr != null && GlobalDictionaries.charSequenceEquals(timerName, lastTimerStr))
+            {
+                timerId = lastTimerId;
+                lastTimerRef = timerName;
+            }
+            else
+            {
+                timerId = dicts.getOrCreateTimerNameId(timerName);
+                lastTimerId = timerId;
+                lastTimerRef = timerName;
+                lastTimerStr = dicts.getTimerName(timerId);
+                final int timerWord = timerId >>> 6;
+                if (timerWord >= seenTimers.length)
+                {
+                    seenTimers = java.util.Arrays.copyOf(seenTimers, Math.max(seenTimers.length * 2, timerWord + 16));
+                }
+                final long timerMask = 1L << timerId;
+                if ((seenTimers[timerWord] & timerMask) == 0L)
+                {
+                    seenTimers[timerWord] |= timerMask;
+                    timerIds.add(timerId);
+                }
+            }
             timerIdArr[idx] = timerId;
-            timerIds.add(timerId);
 
-            // 3. Intern unified agent + test case pair and update bitmap index
-            final int aid = dicts.getOrCreateAgentTestCaseId(td.getAgentName(), td.getTransactionName());
+            // 3. Intern unified agent + test case pair and update bitmap index with register cache
+            final CharSequence agentName = td.getAgentName();
+            final CharSequence txnName = td.getTransactionName();
+            final int aid;
+            if (agentName == lastAgentRef && txnName == lastTxnRef)
+            {
+                aid = lastAgentId;
+            }
+            else if (lastAgentStr != null && lastTxnStr != null
+                     && GlobalDictionaries.charSequenceEquals(agentName, lastAgentStr)
+                     && GlobalDictionaries.charSequenceEquals(txnName, lastTxnStr))
+            {
+                aid = lastAgentId;
+                lastAgentRef = agentName;
+                lastTxnRef = txnName;
+            }
+            else
+            {
+                aid = dicts.getOrCreateAgentTestCaseId(agentName, txnName);
+                lastAgentId = aid;
+                lastAgentRef = agentName;
+                lastTxnRef = txnName;
+                final GlobalDictionaries.AgentTestCase pair = dicts.getAgentTestCase(aid);
+                lastAgentStr = pair != null ? pair.agentName() : null;
+                lastTxnStr = pair != null ? pair.testCaseName() : null;
+                final int agentWord = aid >>> 6;
+                if (agentWord >= seenAgents.length)
+                {
+                    seenAgents = java.util.Arrays.copyOf(seenAgents, Math.max(seenAgents.length * 2, agentWord + 16));
+                }
+                final long agentMask = 1L << aid;
+                if ((seenAgents[agentWord] & agentMask) == 0L)
+                {
+                    seenAgents[agentWord] |= agentMask;
+                    agentTestCaseIds.add(aid);
+                }
+            }
             agentTestCaseIdArr[idx] = aid;
-            agentTestCaseIds.add(aid);
 
             // 4. Record failure status and diagnostics out-of-band
             if (td.hasFailed())
