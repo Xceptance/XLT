@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.mergerules.url;
 
 import java.nio.charset.StandardCharsets;
 
+import com.xceptance.common.util.ByteSlice;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -29,6 +30,7 @@ public class UrlConditionText extends Condition
 {
     private final String text;
     private final byte[] textBytes;
+    private final ByteSlice querySlice = new ByteSlice();
     
     /**
      * Constructor.

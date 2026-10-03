@@ -41,41 +41,6 @@ public class UrlCondition extends Condition
         super(regex, 2500);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean hasByteData(final RequestData requestData)
-    {
-        return requestData.hasUrlBytes();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected byte[] getByteBuffer(final RequestData requestData)
-    {
-        return requestData.getUrlBytes();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int getByteOffset(final RequestData requestData)
-    {
-        return requestData.getUrlOffset();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int getByteLength(final RequestData requestData)
-    {
-        return requestData.getUrlLength();
-    }
 
     /**
      * {@inheritDoc}

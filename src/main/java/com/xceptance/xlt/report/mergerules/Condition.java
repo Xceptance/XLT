@@ -15,7 +15,6 @@
  */
 package com.xceptance.xlt.report.mergerules;
 
-import java.nio.charset.StandardCharsets;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.collection.LRUClockMap;
 import com.xceptance.common.lang.ThrowableUtils;
-import com.xceptance.common.util.ByteSlice;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 
@@ -45,7 +43,7 @@ public abstract class Condition
     /**
      * Cache the expensive stuff, we are a per thread instance.
      */
-    private final LRUClockMap<Object, MatchResult> cache;
+    private final LRUClockMap<CharSequence, MatchResult> cache;
 
     /**
      * The matcher we use when we don't want to cache anything
@@ -57,11 +55,6 @@ public abstract class Condition
      * stateful, so we can do that. 
      */
     private MatchResult lastFilterState;
-
-    /**
-     * Reusable query slice for zero-allocation cache lookups when byte data is available.
-     */
-    protected final ByteSlice querySlice = new ByteSlice();
 
     /**
      * Constructor.
@@ -100,38 +93,6 @@ public abstract class Condition
     }
 
     /**
-     * Returns whether the passed request data contains raw unmaterialized byte data for this condition.
-     */
-    protected boolean hasByteData(final RequestData requestData)
-    {
-        return false;
-    }
-
-    /**
-     * Returns the raw byte buffer for this condition if present.
-     */
-    protected byte[] getByteBuffer(final RequestData requestData)
-    {
-        return null;
-    }
-
-    /**
-     * Returns the raw byte buffer offset for this condition.
-     */
-    protected int getByteOffset(final RequestData requestData)
-    {
-        return 0;
-    }
-
-    /**
-     * Returns the raw byte buffer length for this condition.
-     */
-    protected int getByteLength(final RequestData requestData)
-    {
-        return 0;
-    }
-
-    /**
      * Returns the text to examine from the passed request data object
      *
      * @return the text to check against
@@ -149,50 +110,7 @@ public abstract class Condition
          * One less if!
          */
         
-        // Fast path: Check byte cache first if raw bytes are available
-        if (hasByteData(requestData))
-        {
-            final byte[] buf = getByteBuffer(requestData);
-            final int off = getByteOffset(requestData);
-            final int len = getByteLength(requestData);
-
-            this.querySlice.set(buf, off, len);
-            MatchResult result = this.cache.get(this.querySlice);
-            if (result != null)
-            {
-                if (result == NULL)
-                {
-                    this.lastFilterState = null;
-                    return false;
-                }
-                else
-                {
-                    this.lastFilterState = result;
-                    return true;
-                }
-            }
-
-            // Cache miss: decode to UTF-8 String only when we need to evaluate the regex
-            final String text = new String(buf, off, len, StandardCharsets.UTF_8);
-            final Matcher m = this.matcher.reset(text);
-            if (m.find())
-            {
-                result = m.toMatchResult();
-                // Store detached copy of bytes in cache to release underlying line buffer
-                this.cache.put(ByteSlice.copyOf(buf, off, len), result);
-                this.lastFilterState = result;
-                return true;
-            }
-            else
-            {
-                // Remember the miss
-                this.cache.put(ByteSlice.copyOf(buf, off, len), NULL);
-                this.lastFilterState = null;
-                return false;
-            }
-        }
-
-        // get the data to match against (String / CharSequence fallback)
+        // get the data to match against (String / CharSequence)
         final CharSequence text = getText(requestData);
 
         // check the cache if we already have done that

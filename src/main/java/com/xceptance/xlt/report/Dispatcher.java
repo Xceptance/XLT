@@ -198,13 +198,13 @@ public class Dispatcher
      */
     public void addPostprocessedData(final PostProcessedDataContainer postprocessedData, final boolean isLastSubchunk) throws InterruptedException
     {
-        if (statisticsProcessor != null)
-        {
-            statisticsProcessor.process(postprocessedData);
-        }
         if (chunkCollector != null)
         {
             chunkCollector.collect(postprocessedData);
+        }
+        else if (statisticsProcessor != null)
+        {
+            statisticsProcessor.process(postprocessedData);
         }
         if (isLastSubchunk)
         {

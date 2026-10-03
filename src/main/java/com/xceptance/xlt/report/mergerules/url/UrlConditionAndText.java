@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.mergerules.url;
 
 import java.nio.charset.StandardCharsets;
 
+import com.xceptance.common.util.ByteSlice;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -29,6 +30,8 @@ public class UrlConditionAndText extends Condition
 {
     private final String text;
     private final byte[] textBytes;
+    
+    private final ByteSlice querySlice = new ByteSlice();
     
     /**
      * Constructor.
@@ -65,42 +68,6 @@ public class UrlConditionAndText extends Condition
         // if we have a match, check the regex based condition, otherwise return false
         // and abort here, so this is effectively an AND operation
         return matchesText ? super.apply(requestData) : false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean hasByteData(final RequestData requestData)
-    {
-        return requestData.hasUrlBytes();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected byte[] getByteBuffer(final RequestData requestData)
-    {
-        return requestData.getUrlBytes();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int getByteOffset(final RequestData requestData)
-    {
-        return requestData.getUrlOffset();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int getByteLength(final RequestData requestData)
-    {
-        return requestData.getUrlLength();
     }
 
     /**

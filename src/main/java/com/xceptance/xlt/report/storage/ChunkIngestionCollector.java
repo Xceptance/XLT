@@ -273,12 +273,11 @@ public class ChunkIngestionCollector
             ChunkBuilder builder = builders[typeCode];
             if (builder == null)
             {
-                final ChunkTypeHandler handler = registry.getHandler(typeCode);
-                if (handler == null)
+                builder = acquireBuilder(typeCode);
+                if (builder == null)
                 {
                     return;
                 }
-                builder = handler.newChunkBuilder(dictionaries);
                 builders[typeCode] = builder;
             }
 
@@ -291,8 +290,7 @@ public class ChunkIngestionCollector
                     if (builder.isFull())
                     {
                         final ChunkBuilder fullBuilder = builder;
-                        final ChunkTypeHandler handler = registry.getHandler(typeCode);
-                        builder = handler != null ? handler.newChunkBuilder(dictionaries) : null;
+                        builder = acquireBuilder(typeCode);
                         builders[typeCode] = builder;
                         sealAndSpool(fullBuilder, typeCode);
                         if (builder == null)

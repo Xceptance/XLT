@@ -106,22 +106,32 @@ public class BytePipelineBenchmark
 
         // 1. Check for quick diag mode
         File ariatDir = new File("/home/rschwietzke/projects/loadtest/test-results/xlt-result-ariat-lt-2025-315-20251119-165727");
-        if (args.length > 1)
-        {
-            ariatDir = new File(args[1]);
-        }
-        else if (args.length > 0 && !"diag".equalsIgnoreCase(args[0]))
-        {
-            ariatDir = new File(args[0]);
-        }
         if (args.length > 0 && "diag".equalsIgnoreCase(args[0]))
         {
+            if (args.length > 1)
+            {
+                ariatDir = new File(args[1]);
+            }
+            int maxFiles = 500;
+            int numThreads = 8;
+            if (args.length > 2)
+            {
+                maxFiles = Integer.parseInt(args[2]);
+            }
+            if (args.length > 3)
+            {
+                numThreads = Integer.parseInt(args[3]);
+            }
             if (ariatDir.isDirectory())
             {
-                benchmarkStage1VsStage2Diagnosis(ariatDir, 500, 8);
+                benchmarkStage1VsStage2Diagnosis(ariatDir, maxFiles, numThreads);
                 benchmarkChunkIngestionMicroBreakdown(ariatDir);
             }
             return;
+        }
+        else if (args.length > 0)
+        {
+            ariatDir = new File(args[0]);
         }
 
         // 1. Component Micro-Benchmarks
