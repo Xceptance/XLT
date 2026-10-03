@@ -54,7 +54,43 @@ Inspecting worker threads via `top -b -n 1 -H -p <pid>`:
 ```
 - **Finding:** `DataParserThread` instances were pinned at 95% CPU, while `DataReaderThread` instances were idle (14% CPU), indicating that parsing and rule evaluation were the CPU bottleneck.
 
-#### Step 4: Component Isolation with `BytePipelineBenchmark`
+#### Step 4: Java Flight Recorder (JFR) Deep-Dive Profiling
+While `top -H` and `jstat` confirmed that CPU was pegged at 95% and Old Gen was filling up, they could not pinpoint *which lines of code* caused the memory allocation rate and CPU burn. JFR was essential for localizing the exact culprit:
+
+- **Enabling High-Fidelity JFR Recording:**
+  ```bash
+  # In bin/create_report.sh or standalone JVM execution:
+  JAVA_OPTIONS="$JAVA_OPTIONS \
+    -XX:+UnlockDiagnosticVMOptions \
+    -XX:+DebugNonSafepoints \
+    -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=profile \
+    -XX:FlightRecorderOptions=stackdepth=1024"
+  ```
+  *(Or dynamically attaching to a running report generator: `jcmd <PID> JFR.start filename=profile.jfr settings=profile`)*
+
+- **Critical Insights Exposed by JFR:**
+  1. **Object Allocation Churn (`jdk.ObjectAllocationSample`, `jdk.PromoteObjectInNewPLAB`)**:
+     Identified massive, unsustainable allocation rates of short-lived `byte[]` arrays originating inside `Condition.java` via `ByteSlice.copyOf(buf, off, len)`.
+  2. **G1 Evacuation Failures (`jdk.EvacuationFailed`)**:
+     JFR recorded over 165 `jdk.EvacuationFailed` events. Under high allocation pressure, G1 GC ran out of survivor regions during young-gen evacuation, causing PLAB promotion failures and escalating directly into 40 catastrophic stop-the-world Full GCs.
+  3. **CPU Execution Flame Graphs (`jdk.ExecutionSample`)**:
+     Execution sample trees showed worker threads (`DataParserThread`) burning over 80% of CPU cycles inside `ByteSlice.hashCode()` (recomputing polynomial hashes over byte buffers repeatedly on every merge rule) and regex `Pattern.matcher` instead of CSV decoding.
+
+- **Analyzing the Resulting `.jfr` Files:**
+  ```bash
+  # Summary of event counts, allocation rates, and GC phases:
+  jfr summary profile.jfr
+
+  # Dump execution and allocation samples:
+  jfr print --events jdk.ExecutionSample,jdk.ObjectAllocationSample profile.jfr
+
+  # Generate flame graphs / heatmaps using async-profiler's jfrconv:
+  jfrconv --alloc profile.jfr > alloc-flamegraph.html
+  jfrconv --cpu-time profile.jfr > cpu-flamegraph.html
+  jfrconv -o heatmap profile.jfr heatmap.html
+  ```
+
+#### Step 5: Component Isolation with `BytePipelineBenchmark`
 Running `BytePipelineBenchmark diag <maxFiles> <numThreads>` isolated individual pipeline stages:
 - **Raw CSV Read + Decode:** 3.1M records/s
 - **ChunkDB Ingestion Spooling:** 2.1M records/s
@@ -130,7 +166,14 @@ top -b -n 1 -H -p <PID>
 # 4. Check live heap object counts (if memory spikes)
 jmap -histo:live <PID> | head -n 30
 
-# 5. Run component-level microbenchmarks
+# 5. Run with Java Flight Recorder (JFR)
+JAVA_OPTIONS="-XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=profile -XX:FlightRecorderOptions=stackdepth=1024" ./bin/create_report.sh /path/to/results
+
+# 6. Analyze JFR Recording
+jfr summary profile.jfr
+jfr print --events jdk.ExecutionSample,jdk.ObjectAllocationSample profile.jfr
+
+# 7. Run component-level microbenchmarks
 JAVA_HOME=~/.sdkman/candidates/java/21.0.6-tem mvn test-compile
 java -cp target/classes:target/test-classes:lib/* \
   com.xceptance.xlt.report.benchmark.BytePipelineBenchmark diag <path_to_results> 1000 16

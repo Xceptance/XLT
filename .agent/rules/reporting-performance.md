@@ -21,4 +21,6 @@ globs: src/main/java/com/xceptance/xlt/report/**/*.java
 ## 3. Profiling & Diagnostics
 - Monitor GC in real-time: `jstat -gcutil <pid> 1000` (FGC must remain 0 during Phase 1).
 - Profile worker thread CPU: `top -b -n 1 -H -p <pid>` (check `DataParserThread` vs. `DataReaderThread`).
+- Profile with JFR: `JAVA_OPTIONS="-XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=profile -XX:FlightRecorderOptions=stackdepth=1024" ./bin/create_report.sh ...`
+- Inspect allocation/CPU hotspots: `jfr summary profile.jfr` or `jfr print --events jdk.ExecutionSample,jdk.ObjectAllocationSample profile.jfr`.
 - Component isolation: Run `BytePipelineBenchmark diag <resultsDir> <maxFiles> <threads>` to isolate CSV reading vs. ChunkDB ingestion vs. scan aggregation.
