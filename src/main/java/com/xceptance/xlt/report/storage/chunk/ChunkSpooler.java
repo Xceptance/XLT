@@ -148,6 +148,10 @@ public class ChunkSpooler
                              offset, payload.length, targetFile);
     }
 
+    /** Reusable output buffer to avoid 1MB+ byte array allocations per spooled chunk. */
+    private final FastByteArrayOutputStream spoolBuffer = new FastByteArrayOutputStream(2 * 1024 * 1024);
+    private final DataOutputStream spoolDataOut = new DataOutputStream(spoolBuffer);
+
     /**
      * Serializes a sealed in-memory chunk using its handler, streams the compressed payload
      * directly to disk, and returns a lightweight {@link DiskChunk} descriptor.
@@ -160,18 +164,78 @@ public class ChunkSpooler
      * @throws IOException
      *             if an I/O error occurs during serialization or disk write
      */
-    public DiskChunk spoolChunk(final Chunk chunk, final ChunkTypeHandler handler) throws IOException
+    public synchronized DiskChunk spoolChunk(final Chunk chunk, final ChunkTypeHandler handler) throws IOException
     {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream(Math.max(4096, chunk.getRowCount() * 4));
-        final DataOutputStream dos = new DataOutputStream(baos);
-        handler.writeChunk(chunk, dos);
-        dos.flush();
-        final byte[] payload = baos.toByteArray();
+        spoolBuffer.reset();
+        handler.writeChunk(chunk, spoolDataOut);
+        spoolDataOut.flush();
 
-        return spoolChunk(chunk.getTypeCode(), chunk.getRowCount(),
-                          chunk.getMinTime(), chunk.getMaxTime(),
-                          chunk.getTimerNameIds(), chunk.getAgentTestCaseIds(),
-                          payload);
+        final int payloadLen = spoolBuffer.size();
+        final long offset = currentOffset;
+        final ByteBuffer buf = ByteBuffer.wrap(spoolBuffer.getBuffer(), 0, payloadLen);
+        while (buf.hasRemaining())
+        {
+            final int written = channel.write(buf, currentOffset);
+            currentOffset += written;
+        }
+
+        return new DiskChunk(chunk.getTypeCode(), chunk.getRowCount(),
+                             chunk.getMinTime(), chunk.getMaxTime(),
+                             chunk.getTimerNameIds(), chunk.getAgentTestCaseIds(),
+                             offset, payloadLen, targetFile);
+    }
+
+    /**
+     * Resettable byte array output stream exposing direct buffer access without defensive copying.
+     */
+    private static final class FastByteArrayOutputStream extends java.io.OutputStream
+    {
+        private byte[] buf;
+        private int count;
+
+        FastByteArrayOutputStream(final int initialCapacity)
+        {
+            this.buf = new byte[initialCapacity];
+        }
+
+        @Override
+        public void write(final int b)
+        {
+            ensureCapacity(count + 1);
+            buf[count++] = (byte) b;
+        }
+
+        @Override
+        public void write(final byte[] b, final int off, final int len)
+        {
+            ensureCapacity(count + len);
+            System.arraycopy(b, off, buf, count, len);
+            count += len;
+        }
+
+        private void ensureCapacity(final int minCapacity)
+        {
+            if (minCapacity > buf.length)
+            {
+                final int newCap = Math.max(buf.length << 1, minCapacity);
+                buf = java.util.Arrays.copyOf(buf, newCap);
+            }
+        }
+
+        public byte[] getBuffer()
+        {
+            return buf;
+        }
+
+        public int size()
+        {
+            return count;
+        }
+
+        public void reset()
+        {
+            count = 0;
+        }
     }
 
     /**

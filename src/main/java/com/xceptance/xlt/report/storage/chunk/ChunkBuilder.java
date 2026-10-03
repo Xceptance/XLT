@@ -71,4 +71,11 @@ public interface ChunkBuilder
      * @return the sealed, immutable columnar chunk
      */
     Chunk seal();
+    /**
+     * Resets the builder state (row count, time bounds, index bitmaps, and caches) to initial empty values,
+     * allowing the allocated primitive array buffers to be safely reused for subsequent chunks without reallocation.
+     */
+    default void reset()
+    {
+    }
 }

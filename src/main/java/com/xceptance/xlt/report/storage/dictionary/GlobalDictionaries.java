@@ -230,6 +230,10 @@ public class GlobalDictionaries
         {
             return false;
         }
+        if (cs instanceof String)
+        {
+            return ((String) cs).equals(s);
+        }
         final int len = cs.length();
         if (len != s.length())
         {
@@ -732,6 +736,24 @@ public class GlobalDictionaries
     // -------------------------------------------------------------------------
 
     /**
+     * Checks whether the representative sample URL quota has already been met for the specified timer ID.
+     * Lock-free O(1) check allowing caller threads to bypass URL string construction entirely.
+     *
+     * @param timerId
+     *            the interned timer name ID
+     * @return {@code true} if quota reached; {@code false} otherwise
+     */
+    public boolean hasSufficientSamples(final int timerId)
+    {
+        if (timerId < 0)
+        {
+            return true;
+        }
+        final java.util.List<String> existing = sampleUrlsByTimer.get(timerId);
+        return existing != null && existing.size() >= MAX_SAMPLE_URLS_PER_TIMER;
+    }
+
+    /**
      * Registers a representative sample URL for the specified timer ID if the maximum quota
      * ({@value #MAX_SAMPLE_URLS_PER_TIMER} URLs per timer) has not yet been reached across the dataset.
      *
@@ -747,19 +769,19 @@ public class GlobalDictionaries
             return;
         }
 
-        final java.util.List<String> existing = sampleUrlsByTimer.get(timerId);
-        if (existing != null && existing.size() >= MAX_SAMPLE_URLS_PER_TIMER)
-        {
-            return;
-        }
-
-        final java.util.List<String> list = sampleUrlsByTimer.computeIfAbsent(timerId, k -> new java.util.concurrent.CopyOnWriteArrayList<>());
+        final java.util.List<String> list = sampleUrlsByTimer.computeIfAbsent(timerId, k -> new java.util.ArrayList<>(MAX_SAMPLE_URLS_PER_TIMER));
         if (list.size() < MAX_SAMPLE_URLS_PER_TIMER)
         {
-            final String urlStr = url.toString();
-            if (!list.contains(urlStr))
+            synchronized (list)
             {
-                list.add(urlStr);
+                if (list.size() < MAX_SAMPLE_URLS_PER_TIMER)
+                {
+                    final String urlStr = url.toString();
+                    if (!list.contains(urlStr))
+                    {
+                        list.add(urlStr);
+                    }
+                }
             }
         }
     }

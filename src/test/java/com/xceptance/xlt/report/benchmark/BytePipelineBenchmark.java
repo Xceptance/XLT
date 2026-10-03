@@ -106,6 +106,14 @@ public class BytePipelineBenchmark
 
         // 1. Check for quick diag mode
         File ariatDir = new File("/home/rschwietzke/projects/loadtest/test-results/xlt-result-ariat-lt-2025-315-20251119-165727");
+        if (args.length > 1)
+        {
+            ariatDir = new File(args[1]);
+        }
+        else if (args.length > 0 && !"diag".equalsIgnoreCase(args[0]))
+        {
+            ariatDir = new File(args[0]);
+        }
         if (args.length > 0 && "diag".equalsIgnoreCase(args[0]))
         {
             if (ariatDir.isDirectory())

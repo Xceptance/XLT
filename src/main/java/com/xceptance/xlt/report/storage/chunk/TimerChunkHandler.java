@@ -643,8 +643,30 @@ public class TimerChunkHandler implements ChunkTypeHandler
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
             final int[] compRunTimes = FastIntegerCodec.compress(finalRunTimes);
 
-            return new TimerChunk(typeCode, size, minTime, maxTime, timerIds, agentTestCaseIds, failedRows,
+            return new TimerChunk(typeCode, size, minTime, maxTime,
+                                  timerIds.clone(), agentTestCaseIds.clone(), failedRows.clone(),
                                   compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes);
+        }
+
+        @Override
+        public void reset()
+        {
+            count = 0;
+            minTime = Long.MAX_VALUE;
+            maxTime = Long.MIN_VALUE;
+            timerIds.clear();
+            agentTestCaseIds.clear();
+            failedRows.clear();
+            Arrays.fill(seenTimers, 0L);
+            Arrays.fill(seenAgents, 0L);
+            lastTimerRef = null;
+            lastTimerStr = null;
+            lastTimerId = -1;
+            lastAgentRef = null;
+            lastTxnRef = null;
+            lastAgentStr = null;
+            lastTxnStr = null;
+            lastAgentId = -1;
         }
     }
 }

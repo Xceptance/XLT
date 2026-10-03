@@ -706,9 +706,6 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private long[] seenTimers = new long[64];
         private long[] seenAgents = new long[64];
 
-        // Quota gate for sample URLs (zero locks, zero atomics)
-        private byte[] threadSampleCounts = new byte[4096];
-
         /**
          * Constructs a new chunk builder associated with the given global dictionaries.
          *
@@ -936,18 +933,10 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 ipAddresses[idx] = lastIpAddressesId;
             }
 
-            // 8. Capture sample URLs directly into global dictionaries (capped per thread to eliminate sync overhead)
-            if (timerId >= 0)
+            // 8. Capture sample URLs directly into global dictionaries (quota-checked lock-free)
+            if (timerId >= 0 && !dicts.hasSufficientSamples(timerId))
             {
-                if (timerId >= threadSampleCounts.length)
-                {
-                    threadSampleCounts = Arrays.copyOf(threadSampleCounts, Math.max(threadSampleCounts.length * 2, timerId + 1024));
-                }
-                if (threadSampleCounts[timerId] < 20)
-                {
-                    threadSampleCounts[timerId]++;
-                    dicts.addSampleUrl(timerId, req.getUrl());
-                }
+                dicts.addSampleUrl(timerId, req.getUrl());
             }
 
             count++;
@@ -1014,12 +1003,46 @@ public class RequestChunkHandler implements ChunkTypeHandler
             final int[] compUsedIps = FastIntegerCodec.compress(finalUsedIps);
             final int[] compIpAddresses = FastIntegerCodec.compress(finalIpAddresses);
 
-            return new RequestChunk(size, minTime, maxTime, timerIds, agentTestCaseIds, failedRows,
+            return new RequestChunk(size, minTime, maxTime,
+                                    timerIds.clone(), agentTestCaseIds.clone(), failedRows.clone(),
                                     compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
                                     compResponseCodes, compBytesSent, compBytesReceived,
                                     compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
                                     compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
                                     compHttpMethods, compContentTypes, compUsedIps, compIpAddresses);
+        }
+
+        @Override
+        public void reset()
+        {
+            count = 0;
+            minTime = Long.MAX_VALUE;
+            maxTime = Long.MIN_VALUE;
+            timerIds.clear();
+            agentTestCaseIds.clear();
+            failedRows.clear();
+            Arrays.fill(seenTimers, 0L);
+            Arrays.fill(seenAgents, 0L);
+            lastTimerRef = null;
+            lastTimerStr = null;
+            lastTimerId = -1;
+            lastAgentRef = null;
+            lastTxnRef = null;
+            lastAgentStr = null;
+            lastTxnStr = null;
+            lastAgentId = -1;
+            lastMethodRef = null;
+            lastMethodStr = null;
+            lastMethodId = -1;
+            lastContentTypeRef = null;
+            lastContentTypeStr = null;
+            lastContentTypeId = -1;
+            lastUsedIpRef = null;
+            lastUsedIpStr = null;
+            lastUsedIpId = -1;
+            lastIpAddressesRef = null;
+            lastIpAddressesStr = null;
+            lastIpAddressesId = -1;
         }
     }
 }
