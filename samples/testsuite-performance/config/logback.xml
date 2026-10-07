@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+#############################################################################
+#
+# Logback Settings - Load Test Mode 
+#
+# The Logback configuration used by XLT when running the tests as a load test.
+#
+#############################################################################
+-->
+<configuration>
+
+    <!-- Rolling File Appender -->
+    <appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${com.xceptance.xlt.agent.home}/results/agent.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${com.xceptance.xlt.agent.home}/results/agent-%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>9</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>[%d{yyyy/MM/dd-HH:mm:ss.SSS}] %-5p [%t] %c - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Custom Loggers -->
+    <logger name="runtime" level="WARN" />
+    <logger name="com.xceptance" level="WARN" />
+    <logger name="org.htmlunit" level="WARN" />
+
+    <!-- Uncomment to suppress DOM cloning failure messages:
+    <logger name="com.xceptance.xlt.engine.resultbrowser.DomUtils" level="OFF" />
+    -->
+
+    <!-- Suppressed Loggers -->
+    <logger name="org.htmlunit.IncorrectnessListenerImpl" level="OFF" />
+    <logger name="org.htmlunit.DefaultCssErrorHandler" level="OFF" />
+    <logger name="org.htmlunit.javascript.StrictErrorReporter" level="OFF" />
+    <logger name="org.htmlunit.javascript.host.css.CSSRule" level="OFF" />
+
+    <!-- Root Logger -->
+    <root level="WARN">
+        <appender-ref ref="File" />
+    </root>
+
+</configuration>
