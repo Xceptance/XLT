@@ -37,7 +37,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
@@ -52,6 +54,9 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
  */
 public class XltPropertiesTest
 {
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
     private static FileObject origHome;
     private static FileObject origConfig;
 
@@ -746,6 +751,35 @@ public class XltPropertiesTest
         // Getter return values are based on the directories set in the constructor
         assertEquals(configOverride.getPath(), p.getConfigDirectory());
         assertEquals(homeOverride.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+    }
+
+    /**
+     * Test getConfigDirectory and getDataDirectory when backing files reside in a zip archive (virtual file system).
+     */
+    @Test
+    public void getConfigAndDataDirs_ArchiveFile() throws Exception
+    {
+        final File zipFile = tempFolder.newFile("testsuite.zip");
+        try (final java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(zipFile)))
+        {
+            zos.putNextEntry(new java.util.zip.ZipEntry("config/default.properties"));
+            final byte[] content = "prop1 = val1\ncom.xceptance.xlt.data.directory = data\n".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            zos.write(content);
+            zos.closeEntry();
+        }
+
+        final FileObject archive = VFS.getManager().resolveFile("zip:file://" + zipFile.getAbsolutePath() + "!/");
+        final FileObject configDir = archive.resolveFile("config");
+
+        var p = new XltPropertiesImpl(archive, configDir, true, false);
+
+        assertEquals("val1", p.getProperty("prop1"));
+        assertNull(p.getConfigDirectory());
+        assertNull(p.getDataDirectory());
+
+        // Test with absolute data directory property
+        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, "/tmp/custom-data");
+        assertEquals(java.nio.file.Paths.get("/tmp/custom-data"), p.getDataDirectory());
     }
 
     /**

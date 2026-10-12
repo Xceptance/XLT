@@ -16,6 +16,7 @@
 package com.xceptance.xlt.util;
 
 import java.io.IOException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -227,6 +228,29 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
+     * Converts a {@link FileObject} to a {@link Path} if possible, or returns {@code null} if the file object
+     * is {@code null} or belongs to a virtual file system (such as an archive) without a registered Java NIO provider.
+     *
+     * @param fileObject the file object to convert
+     * @return the corresponding path, or null
+     */
+    private static Path toPathOrNull(final FileObject fileObject)
+    {
+        if (fileObject == null)
+        {
+            return null;
+        }
+        try
+        {
+            return fileObject.getPath();
+        }
+        catch (final FileSystemNotFoundException | UnsupportedOperationException | IllegalArgumentException e)
+        {
+            return null;
+        }
+    }
+
+    /**
      * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but
      * need the logic of the property lookup. Attention: This does not provide any bucket data or source data.
      *
@@ -235,8 +259,8 @@ public class XltPropertiesImpl extends XltProperties
      */
     public XltPropertiesImpl(final Optional<Properties> properties)
     {
-        this.homeDirectory = XltExecutionContext.getCurrent().getTestSuiteHomeDir().getPath();
-        this.configDirectory = XltExecutionContext.getCurrent().getTestSuiteConfigDir().getPath();
+        this.homeDirectory = toPathOrNull(XltExecutionContext.getCurrent().getTestSuiteHomeDir());
+        this.configDirectory = toPathOrNull(XltExecutionContext.getCurrent().getTestSuiteConfigDir());
 
         // get version and start time
         this.devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
@@ -264,8 +288,8 @@ public class XltPropertiesImpl extends XltProperties
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
         loadProperties(hd, cd, ignoreMissingIncludes, staySilent);
 
-        this.homeDirectory = hd.getPath();
-        this.configDirectory = cd.getPath();
+        this.homeDirectory = toPathOrNull(hd);
+        this.configDirectory = toPathOrNull(cd);
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -1082,7 +1106,7 @@ public class XltPropertiesImpl extends XltProperties
 
         if (!path.isAbsolute())
         {
-            return homeDirectory.resolve(path);
+            return homeDirectory == null ? null : homeDirectory.resolve(path);
         }
 
         return path;

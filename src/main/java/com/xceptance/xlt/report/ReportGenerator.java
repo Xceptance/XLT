@@ -455,10 +455,7 @@ public class ReportGenerator
         if (startTime > 0)
         {
             // get load profile
-            final File configDir = new File(inputDir.getName().getPath(), XltConstants.CONFIG_DIR_NAME);
-
-            final XltPropertiesImpl properties = TestLoadProfileConfiguration.readProperties(configDir.getParentFile(), configDir);
-            final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(properties);
+            final TestLoadProfileConfiguration loadProfileConfig = new TestLoadProfileConfiguration(XltPropertiesImpl.getInstance());
 
             final long endOfRampUpTime = startTime + computeRampUpOffset(loadProfileConfig.getLoadTestConfiguration()) * 1000L;
 
@@ -487,7 +484,8 @@ public class ReportGenerator
         // Step 1: Check if transparent persistent ChunkDB disk cache is available and valid.
         // If valid, skip reading and parsing gigabytes of raw CSV text files across disk threads.
         // Instead, execute a fast columnar SIMD scan over memory-mapped / buffered compressed binary chunks.
-        if (config.isDataCacheEnabled())
+        final boolean isPlainDirectory = "file".equals(inputDir.getName().getScheme());
+        if (config.isDataCacheEnabled() && isPlainDirectory)
         {
             try
             {

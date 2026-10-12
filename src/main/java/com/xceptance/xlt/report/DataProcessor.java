@@ -152,7 +152,8 @@ public class DataProcessor
         final boolean isFullRun = (fromTime == 0 && toTime == Long.MAX_VALUE &&
                                    testCaseIncludePatternList == null && testCaseExcludePatternList == null &&
                                    agentIncludePatternList == null && agentExcludePatternList == null);
-        if (config.isDataCacheEnabled() && isFullRun)
+        final boolean isPlainDirectory = "file".equals(inputDir.getName().getScheme());
+        if (config.isDataCacheEnabled() && isFullRun && isPlainDirectory)
         {
             final java.io.File resultsDir = new java.io.File(inputDir.getName().getPath());
             final java.io.File cacheDir = config.getDataCacheDirectory(resultsDir);

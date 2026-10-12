@@ -237,14 +237,14 @@ public abstract class XltProperties
     /**
      * Returns the test suite's config directory.
      *
-     * @return the config directory path
+     * @return the config directory path, or {@code null} if the directory is located in a virtual file system or archive
      */
     public abstract Path getConfigDirectory();
 
     /**
      * Returns the test suite's data directory.
      *
-     * @return the data directory path
+     * @return the data directory path, or {@code null} if the directory is located in a virtual file system or archive
      */
     public abstract Path getDataDirectory();
 

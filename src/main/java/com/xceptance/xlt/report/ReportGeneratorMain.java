@@ -435,7 +435,7 @@ public class ReportGeneratorMain
             }
         }
 
-        XltExecutionContext.getCurrent().setTestSuiteHomeDir(new File(inputDir.getName().getPath()));
+        XltExecutionContext.getCurrent().setTestSuiteHomeDir(inputDir);
 
         // set output directory if we got this as external parameters
         if (outputDirName != null)
