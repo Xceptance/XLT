@@ -286,6 +286,10 @@ When persisted, ChunkDB stores files in `<results-dir>/xlt-cache/`:
 ---
 
 ### 4.1 Global Dictionaries (`dictionaries.bin`)
+`dictionaries.bin` begins with an 8-byte binary header:
+- **Magic Number:** `0x584C5444` (`"XLTD"`, 4-byte int)
+- **Format Version:** `1` (4-byte int)
+
 Deduplicating strings into 16-bit IDs avoids repeating text across millions of records. `GlobalDictionaries` interns:
 - **Timer Names:** Request names, scenario names, action names, custom timers, and web vital metric names.
 - **Agent & TestCase Pairs:** 16-bit compound keys encoding `(agentName, testCaseName)`.
@@ -370,19 +374,32 @@ Across all record types, ChunkDB averages ~22 bytes per row on disk, about a 10x
 
 ---
 
-### 4.5 Cache Validation (`CacheFingerprint`)
+### 4.5 Cache Validation & Version Invariants (`fingerprint.bin`)
 
-A cache in `xlt-cache/` is considered valid if four items match:
+`fingerprint.bin` acts as the cache integrity descriptor and is written last upon successful serialization. It begins with a binary header:
+- **Magic Number:** `0x584C5446` (`"XLTF"`, 4-byte int)
+- **Fingerprint Format Version:** `1` (4-byte int)
+- **ChunkDB Storage Format Version:** `2` (4-byte int, matches `ChunkCatalog.VERSION`)
+- **Timer Log File Count:** `int`
+- **Total Combined Byte Size:** `long`
+- **Merge & Labeling Rules SHA-256 Hash:** UTF-8 string with 32-bit length prefix
+- **XLT Framework Release Version:** UTF-8 string with 32-bit length prefix
+
+A cache in `xlt-cache/` is considered valid if and only if all dimensions match:
 1. **Raw Log File Count:** Number of timer CSV files across all agent directories.
-2. **Total File Size:** Combined byte size of all timer files. Adding or editing lines changes this value.
+2. **Total File Size:** Combined byte size of all timer files. Adding, appending, or removing lines changes this value.
 3. **Merge and Labeling Rules Hash:** SHA-256 digest of:
    - `com.xceptance.xlt.reportgenerator.requestMergeRules.*`
    - `com.xceptance.xlt.reportgenerator.labelingRules.*`
    - `com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames`
    (Because merge rules rewrite request names at parse time, altering rules invalidates the cache).
-4. **XLT Version:** Prevents reading cache files written by a different version of XLT.
+4. **ChunkDB Storage Format Version:** Guards against binary schema adjustments between releases (e.g. adding columns or restructuring chunk headers). Even if XLT is run from an unversioned developer build or IDE (`Implementation-Version: ?.?.?`), format version mismatches are caught immediately.
+5. **XLT Framework Release Version:** Prevents reading cache files written by a different release of XLT (e.g. upgrading from 7.4.0 to 7.5.0).
 
-If any check fails, or if a cache file is corrupted, `CacheManager.purgeCache()` deletes `xlt-cache/` and falls back to a fresh CSV parse.
+#### Automatic Purge and Fallback Semantics
+- **Format / Version Mismatch:** If any dimension differs, `CacheManager.isCacheValid()` returns `false`, deletes the `xlt-cache/` directory, and proceeds with a fresh CSV parse.
+- **Corrupted or Incompatible Headers:** If any file (`chunks.bin`, `dictionaries.bin`, or `fingerprint.bin`) contains an unrecognized magic number or unsupported version number, loading throws an `IOException`. `CacheManager.load()` catches the exception, logs a warning, purges the invalid cache directory, and cleanly falls back to cold CSV processing without crashing the report generator.
+- **Time Range Peeking:** Pre-report date range validation (`CacheManager.peekTimeRange()`) also verifies the `XLTC` magic and catalog format version before inspecting min/max timestamps, safely returning `null` if the version is incompatible.
 
 ---
 

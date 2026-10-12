@@ -208,6 +208,10 @@ public class CacheManager
             {
                 // V2 binary format: int magic, int version, long minTime, long maxTime
                 final int version = in.readInt();
+                if (version != com.xceptance.xlt.report.storage.catalog.ChunkCatalog.VERSION)
+                {
+                    return null;
+                }
                 final long min = in.readLong();
                 final long max = in.readLong();
                 return new long[]{min, max};

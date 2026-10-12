@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.storage.StorageIoUtils;
+import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
 
 /**
  * Cryptographic and structural fingerprint representing the exact state of input raw timer CSV logs
@@ -45,9 +47,12 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
  *   <li><b>Merge &amp; Labeling Rules Hash:</b> SHA-256 digest of request merging rules, labeling rules,
  *       and index stripping configurations ({@code com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames}).
  *       Modifying any merge pattern invalidates the cache because request names are transformed at ingestion time.</li>
+ *   <li><b>Format Version:</b> The binary ChunkDB storage format version (protecting against schema revisions).</li>
  *   <li><b>XLT Version:</b> The version string of the XLT framework to protect against binary format revisions.</li>
  * </ol>
  *
+ * @param formatVersion
+ *            the binary ChunkDB storage format version
  * @param fileCount
  *            the number of timer CSV files scanned
  * @param totalBytes
@@ -57,10 +62,33 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
  * @param xltVersion
  *            the XLT release version string
  */
-public record CacheFingerprint(int fileCount, long totalBytes, String mergeRulesHash, String xltVersion)
+public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes, String mergeRulesHash, String xltVersion)
 {
+    /** Magic header identifier (0x584C5446 = 'XLTF' in ASCII hex). */
+    public static final int MAGIC = 0x584C5446;
+
+    /** Binary fingerprint metadata format version. */
+    public static final int VERSION = 1;
+
     /** Binary filename storing the serialized cache fingerprint metadata. */
     private static final String FINGERPRINT_FILE_NAME = "fingerprint.bin";
+
+    /**
+     * Backward-compatible convenience constructor defaulting formatVersion to {@link ChunkCatalog#VERSION}.
+     *
+     * @param fileCount
+     *            the number of timer CSV files scanned
+     * @param totalBytes
+     *            the aggregated byte length of all timer CSV files
+     * @param mergeRulesHash
+     *            SHA-256 hex digest of transformation rules
+     * @param xltVersion
+     *            the XLT release version string
+     */
+    public CacheFingerprint(final int fileCount, final long totalBytes, final String mergeRulesHash, final String xltVersion)
+    {
+        this(ChunkCatalog.VERSION, fileCount, totalBytes, mergeRulesHash, xltVersion);
+    }
 
     /**
      * Calculates a fingerprint from the test results root directory and report generator configuration.
@@ -79,7 +107,7 @@ public record CacheFingerprint(int fileCount, long totalBytes, String mergeRules
         final String rulesHash = calculateRulesHash(config);
         final String version = ProductInformation.getProductInformation().getVersion();
 
-        return new CacheFingerprint(accumulator.fileCount, accumulator.totalBytes, rulesHash, version);
+        return new CacheFingerprint(ChunkCatalog.VERSION, accumulator.fileCount, accumulator.totalBytes, rulesHash, version);
     }
 
     /**
@@ -214,7 +242,8 @@ public record CacheFingerprint(int fileCount, long totalBytes, String mergeRules
         {
             return false;
         }
-        return fileCount == other.fileCount &&
+        return formatVersion == other.formatVersion &&
+               fileCount == other.fileCount &&
                totalBytes == other.totalBytes &&
                Objects.equals(mergeRulesHash, other.mergeRulesHash) &&
                Objects.equals(xltVersion, other.xltVersion);
@@ -233,19 +262,26 @@ public record CacheFingerprint(int fileCount, long totalBytes, String mergeRules
         final File file = new File(cacheDir, FINGERPRINT_FILE_NAME);
         try (final DataOutputStream out = new DataOutputStream(new FileOutputStream(file)))
         {
+            out.writeInt(MAGIC);
+            out.writeInt(VERSION);
+            out.writeInt(formatVersion);
             out.writeInt(fileCount);
             out.writeLong(totalBytes);
-            out.writeUTF(mergeRulesHash != null ? mergeRulesHash : "");
-            out.writeUTF(xltVersion != null ? xltVersion : "");
+            StorageIoUtils.writeUtfString(out, mergeRulesHash != null ? mergeRulesHash : "");
+            StorageIoUtils.writeUtfString(out, xltVersion != null ? xltVersion : "");
         }
     }
 
     /**
      * Reads a persisted {@link CacheFingerprint} from {@code fingerprint.bin} in the specified cache directory.
+     * <p>
+     * Supports both the versioned fingerprint format (with {@link #MAGIC}) and legacy unversioned format.
+     * If an older unversioned file is encountered, {@code formatVersion} is mapped to 0, safely triggering
+     * cache invalidation and a clean rebuild.
      *
      * @param cacheDir
      *            the directory containing {@code fingerprint.bin}
-     * @return loaded {@link CacheFingerprint}, or {@code null} if file does not exist
+     * @return loaded {@link CacheFingerprint}, or {@code null} if file does not exist or version is unsupported
      * @throws IOException
      *             if an I/O error occurs while reading
      */
@@ -258,11 +294,31 @@ public record CacheFingerprint(int fileCount, long totalBytes, String mergeRules
         }
         try (final DataInputStream in = new DataInputStream(new FileInputStream(file)))
         {
-            final int count = in.readInt();
-            final long bytes = in.readLong();
-            final String hash = in.readUTF();
-            final String version = in.readUTF();
-            return new CacheFingerprint(count, bytes, hash, version);
+            final int magicOrCount = in.readInt();
+            if (magicOrCount == MAGIC)
+            {
+                final int fpVersion = in.readInt();
+                if (fpVersion != VERSION)
+                {
+                    return null;
+                }
+                final int fmtVersion = in.readInt();
+                final int count = in.readInt();
+                final long bytes = in.readLong();
+                final String hash = StorageIoUtils.readUtfString(in);
+                final String version = StorageIoUtils.readUtfString(in);
+                return new CacheFingerprint(fmtVersion, count, bytes, hash, version);
+            }
+            else
+            {
+                // Legacy unversioned format: first int is fileCount
+                final int count = magicOrCount;
+                final long bytes = in.readLong();
+                final String hash = in.readUTF();
+                final String version = in.readUTF();
+                // formatVersion 0 will fail matches() against ChunkCatalog.VERSION and trigger safe purge
+                return new CacheFingerprint(0, count, bytes, hash, version);
+            }
         }
     }
 

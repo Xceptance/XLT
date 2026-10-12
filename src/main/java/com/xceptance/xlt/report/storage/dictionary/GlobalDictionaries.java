@@ -101,6 +101,12 @@ public class GlobalDictionaries
         }
     }
 
+    /** Magic header identifier (0x584C5444 = 'XLTD' in ASCII hex). */
+    public static final int MAGIC = 0x584C5444;
+
+    /** Binary dictionaries format version. */
+    public static final int VERSION = 1;
+
     /** Initial capacity for interned dictionary arrays. */
     private static final int INITIAL_CAPACITY = 256;
 
@@ -856,6 +862,10 @@ public class GlobalDictionaries
      */
     public void writeTo(final DataOutput out) throws IOException
     {
+        // Header
+        out.writeInt(MAGIC);
+        out.writeInt(VERSION);
+
         // 1. Timer names
         final int tCount = timerNameCount;
         out.writeInt(tCount);
@@ -911,6 +921,17 @@ public class GlobalDictionaries
      */
     public static GlobalDictionaries readFrom(final DataInput in) throws IOException
     {
+        final int magic = in.readInt();
+        if (magic != MAGIC)
+        {
+            throw new IOException(String.format("Invalid dictionaries file format: magic 0x%08X != 0x%08X", magic, MAGIC));
+        }
+        final int version = in.readInt();
+        if (version != VERSION)
+        {
+            throw new IOException(String.format("Unsupported dictionaries file version: version %d != %d", version, VERSION));
+        }
+
         final GlobalDictionaries dict = new GlobalDictionaries(false);
 
         // 1. Timer names

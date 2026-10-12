@@ -66,6 +66,9 @@ public class ChunkStorage implements AutoCloseable
     /** Binary filename for the global chunk catalog and compressed columnar data blocks. */
     public static final String CHUNKS_FILE_NAME = "chunks.bin";
 
+    /** Global ChunkDB binary storage format version. */
+    public static final int STORAGE_VERSION = ChunkCatalog.VERSION;
+
     /** Interned dictionary tables for strings, timer names, and agent/test case pairs. */
     private final GlobalDictionaries dictionaries;
 

@@ -765,12 +765,218 @@ public class ChunkStorageAndCacheTest
                                 ChunkCatalog.MAGIC, magic);
         }
 
+        // Check that dictionaries.bin starts with MAGIC and VERSION
+        final File dictFile = new File(saveDir, ChunkStorage.DICTIONARIES_FILE_NAME);
+        try (final java.io.DataInputStream in = new java.io.DataInputStream(new java.io.FileInputStream(dictFile)))
+        {
+            final int magic = in.readInt();
+            final int version = in.readInt();
+            Assert.assertEquals("dictionaries.bin must start with MAGIC", GlobalDictionaries.MAGIC, magic);
+            Assert.assertEquals("dictionaries.bin must start with VERSION", GlobalDictionaries.VERSION, version);
+        }
+
         // Ensure loadFromDirectory works cleanly
         try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(saveDir))
         {
             Assert.assertNotNull(loaded);
             Assert.assertEquals(100, loaded.getTotalRowCount());
         }
+    }
+
+    @Test
+    public void testFormatVersionMismatchInFingerprintPurgesCache() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "res-fmt-test");
+        resultsDir.mkdirs();
+        final File log = new File(resultsDir, "timers.csv");
+        try (final FileOutputStream fos = new FileOutputStream(log))
+        {
+            fos.write("R,1,100,false,200\n".getBytes(StandardCharsets.UTF_8));
+        }
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final CacheManager cacheManager = new CacheManager(resultsDir, config);
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final RequestData r = new RequestData("R1");
+        r.setTime(1000L);
+        r.setRunTime(50);
+        collector.collect(r);
+        cacheManager.save(collector.finish());
+
+        Assert.assertTrue(cacheManager.isCacheValid());
+
+        // Overwrite fingerprint.bin with formatVersion = 999
+        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
+        final CacheFingerprint futureFormat = new CacheFingerprint(999, current.fileCount(), current.totalBytes(), current.mergeRulesHash(), current.xltVersion());
+        futureFormat.saveToDirectory(cacheDir);
+
+        // Verification: must detect format incompatibility and purge
+        Assert.assertFalse("Cache with future formatVersion must be invalid", cacheManager.isCacheValid());
+        Assert.assertFalse("Cache directory must be purged on format mismatch", cacheDir.exists());
+    }
+
+    @Test
+    public void testReleaseVersionMismatchInFingerprintPurgesCache() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "res-rel-test");
+        resultsDir.mkdirs();
+        final File log = new File(resultsDir, "timers.csv");
+        try (final FileOutputStream fos = new FileOutputStream(log))
+        {
+            fos.write("R,1,100,false,200\n".getBytes(StandardCharsets.UTF_8));
+        }
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final CacheManager cacheManager = new CacheManager(resultsDir, config);
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final RequestData r = new RequestData("R1");
+        r.setTime(1000L);
+        r.setRunTime(50);
+        collector.collect(r);
+        cacheManager.save(collector.finish());
+
+        Assert.assertTrue(cacheManager.isCacheValid());
+
+        // Overwrite fingerprint with a different XLT release version
+        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
+        final CacheFingerprint otherXltRelease = new CacheFingerprint(current.formatVersion(), current.fileCount(), current.totalBytes(), current.mergeRulesHash(), "99.9.9");
+        otherXltRelease.saveToDirectory(cacheDir);
+
+        Assert.assertFalse("Cache from different XLT release must be invalid", cacheManager.isCacheValid());
+        Assert.assertFalse("Cache directory must be purged on release version mismatch", cacheDir.exists());
+    }
+
+    @Test
+    public void testLegacyUnversionedFingerprintTriggersPurge() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "res-legacy-test");
+        resultsDir.mkdirs();
+        final File log = new File(resultsDir, "timers.csv");
+        try (final FileOutputStream fos = new FileOutputStream(log))
+        {
+            fos.write("R,1,100,false,200\n".getBytes(StandardCharsets.UTF_8));
+        }
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final CacheManager cacheManager = new CacheManager(resultsDir, config);
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final RequestData r = new RequestData("R1");
+        r.setTime(1000L);
+        r.setRunTime(50);
+        collector.collect(r);
+        cacheManager.save(collector.finish());
+
+        Assert.assertTrue(cacheManager.isCacheValid());
+
+        // Write legacy unversioned fingerprint.bin (int fileCount, long totalBytes, String hash, String xltVersion)
+        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File fpFile = new File(cacheDir, "fingerprint.bin");
+        final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
+        try (final java.io.DataOutputStream out = new java.io.DataOutputStream(new FileOutputStream(fpFile)))
+        {
+            out.writeInt(current.fileCount());
+            out.writeLong(current.totalBytes());
+            out.writeUTF(current.mergeRulesHash());
+            out.writeUTF(current.xltVersion());
+        }
+
+        // CacheManager load should interpret legacy format as formatVersion = 0 and fail matches()
+        Assert.assertFalse("Legacy unversioned cache must be purged", cacheManager.isCacheValid());
+        Assert.assertFalse("Cache directory must be purged", cacheDir.exists());
+    }
+
+    @Test
+    public void testIncompatibleDictionariesOrChunksVersionPurgesOnLoad() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "res-dict-err-test");
+        resultsDir.mkdirs();
+        final File log = new File(resultsDir, "timers.csv");
+        try (final FileOutputStream fos = new FileOutputStream(log))
+        {
+            fos.write("R,1,100,false,200\n".getBytes(StandardCharsets.UTF_8));
+        }
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final CacheManager cacheManager = new CacheManager(resultsDir, config);
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final RequestData r = new RequestData("R1");
+        r.setTime(1000L);
+        r.setRunTime(50);
+        collector.collect(r);
+        cacheManager.save(collector.finish());
+
+        Assert.assertTrue(cacheManager.isCacheValid());
+
+        // 1. Corrupt dictionaries.bin version
+        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File dictFile = new File(cacheDir, ChunkStorage.DICTIONARIES_FILE_NAME);
+        try (final java.io.RandomAccessFile raf = new java.io.RandomAccessFile(dictFile, "rw"))
+        {
+            raf.seek(4); // Seek to version
+            raf.writeInt(999);
+        }
+
+        // cacheManager.load() should catch the version mismatch, purge the cache, and return null
+        final ChunkStorage loaded = cacheManager.load();
+        Assert.assertNull("Storage must return null when dictionaries version is incompatible", loaded);
+        Assert.assertFalse("Cache directory must be purged on load error", cacheDir.exists());
+    }
+
+    @Test
+    public void testIncompatibleChunksCatalogVersionPeekAndLoad() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "res-chunks-err-test");
+        resultsDir.mkdirs();
+        final File log = new File(resultsDir, "timers.csv");
+        try (final FileOutputStream fos = new FileOutputStream(log))
+        {
+            fos.write("R,1,100,false,200\n".getBytes(StandardCharsets.UTF_8));
+        }
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final CacheManager cacheManager = new CacheManager(resultsDir, config);
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final RequestData r = new RequestData("R1");
+        r.setTime(1000L);
+        r.setRunTime(50);
+        collector.collect(r);
+        cacheManager.save(collector.finish());
+
+        Assert.assertTrue(cacheManager.isCacheValid());
+
+        // Corrupt chunks.bin version at offset 4
+        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File chunksFile = new File(cacheDir, ChunkStorage.CHUNKS_FILE_NAME);
+        try (final java.io.RandomAccessFile raf = new java.io.RandomAccessFile(chunksFile, "rw"))
+        {
+            raf.seek(4); // Seek to version
+            raf.writeInt(999);
+        }
+
+        // peekTimeRange should reject the incompatible version and return null
+        Assert.assertNull("peekTimeRange must return null on chunks.bin version mismatch", cacheManager.peekTimeRange());
+
+        // load() should fail cleanly and purge cache
+        final ChunkStorage loaded = cacheManager.load();
+        Assert.assertNull("Storage must return null when chunks version is incompatible", loaded);
+        Assert.assertFalse("Cache directory must be purged on load error", cacheDir.exists());
     }
 
     /**
