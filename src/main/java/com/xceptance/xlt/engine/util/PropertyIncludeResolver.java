@@ -16,6 +16,7 @@
 package com.xceptance.xlt.engine.util;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -29,9 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-
+import com.xceptance.common.io.fs.FsResource;
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.PropertiesUtils;
 
@@ -39,6 +38,8 @@ import com.xceptance.common.util.PropertiesUtils;
  * This class is a convenience to get files which should be included. This is especially due to the feature of property
  * files included by include... properties. This class also resolves cycles as described in the specification for ticket
  * #1650. It can also handle reference on directories and will load all property files there alphabetically.
+ *
+ * [AI: Gemini]
  *
  * @author Sebastian Oerding
  * @author René Schwietzke
@@ -64,7 +65,7 @@ public final class PropertyIncludeResolver
      *            our config route and base we determine all data relative to that
      * @return a list with the absolute paths to the files to include as described above
      */
-    public static List<PropertyIncludeResult> resolve(final FileObject homeDirectory, final FileObject configDirectory, final List<PropertyInclude> propertyFiles)
+    public static List<PropertyIncludeResult> resolve(final FsResource homeDirectory, final FsResource configDirectory, final List<PropertyInclude> propertyFiles)
     {
         /*
          * We use an ArrayList to store the absolute file names of the files we have already read in. We use the
@@ -96,54 +97,50 @@ public final class PropertyIncludeResolver
                 isInclude = true;
             }
 
+            final String fileIdentifier = propertyFile.file.toLocalPath().isPresent()
+                ? propertyFile.file.toLocalPath().get().toAbsolutePath().normalize().toString()
+                : propertyFile.file.getPath();
+
             // did we see that before?
-            if (previousFiles.contains(propertyFile.file.getPublicURIString()))
+            if (previousFiles.contains(fileIdentifier))
             {
                 processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, true, false, isInclude));
                 continue;
             }
             else
             {
-                previousFiles.add(propertyFile.file.getPublicURIString());
+                previousFiles.add(fileIdentifier);
             }
 
             // ok, sanity check... ensure it is within the root hierarchy
             if (verifyRootDir(homeDirectory, propertyFile.file) == false)
             {
                 processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, false, true, isInclude));
-                continue; // we, we won't check that anymore because it outside of what is ours
+                continue; // we won't check that anymore because it is outside of what is ours
             }
 
-            try
+            // do we have that?
+            if (propertyFile.file.exists() == false)
             {
-                // do we have that?
-                if (propertyFile.file.exists() == false)
-                {
-                    // no, add and mark
-                    processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, false, false, isInclude));
-
-                    continue;
-                }
-
-                // yes
-                if (propertyFile.file.isFile())
-                {
-                    processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, true, false, false, isInclude));
-
-                    // resolve includes
-                    List<PropertyInclude> includes = resolveIncludes(propertyFile.file);
-                    toProcess.addAll(includes);
-                }
-                else if (propertyFile.file.isFolder())
-                {
-                    // get all files
-                    final List<PropertyInclude> includes = getFilesOrderedByName(configDirectory, propertyFile.file);
-                    toProcess.addAll(includes);
-                }
+                // no, add and mark
+                processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, false, false, false, isInclude));
+                continue;
             }
-            catch (FileSystemException e)
+
+            // yes
+            if (propertyFile.file.isFile())
             {
-                // ignore
+                processed.add(new PropertyIncludeResult(propertyFile.file, propertyFile.name, configDirectory, true, false, false, isInclude));
+
+                // resolve includes
+                final List<PropertyInclude> includes = resolveIncludes(propertyFile.file);
+                toProcess.addAll(includes);
+            }
+            else if (propertyFile.file.isDirectory())
+            {
+                // get all files
+                final List<PropertyInclude> includes = getFilesOrderedByName(configDirectory, propertyFile.file);
+                toProcess.addAll(includes);
             }
         }
 
@@ -153,95 +150,118 @@ public final class PropertyIncludeResolver
     /**
      * Try to find out if our file is below rootDir or not
      *
-     * @param toCheckFile the file to verify
      * @param homeDirectory our base dir
+     * @param toCheckFile the file to verify
      * @return true if this is a valid subdir or subFile, false otherwise
      */
-    @SuppressWarnings("resource")
-    private static boolean verifyRootDir(final FileObject homeDirectory, final FileObject toCheckFile)
+    private static boolean verifyRootDir(final FsResource homeDirectory, final FsResource toCheckFile)
     {
-        boolean isPartOfRootDir = false;
-
-        var file = toCheckFile;
-        try
+        if (homeDirectory == null || toCheckFile == null)
         {
-            if (toCheckFile.isFile() == false)
-            {
-                file = toCheckFile.getParent();
-            }
-
-            do
-            {
-                if (file.equals(homeDirectory))
-                {
-                    isPartOfRootDir = true;
-                    break;
-                }
-            }
-            while ((file = file.getParent()) != null);
-        }
-        catch (IOException e)
-        {
-            // ignore
+            return false;
         }
 
-        return isPartOfRootDir;
+        if (homeDirectory.toLocalPath().isPresent() && toCheckFile.toLocalPath().isPresent())
+        {
+            final Path homePath = homeDirectory.toLocalPath().get().toAbsolutePath().normalize();
+            final Path checkPath = toCheckFile.toLocalPath().get().toAbsolutePath().normalize();
+
+            if (!checkPath.startsWith(homePath))
+            {
+                return false;
+            }
+            if (!toCheckFile.isFile() && checkPath.equals(homePath))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        if (!homeDirectory.getFileSystem().equals(toCheckFile.getFileSystem()))
+        {
+            return false;
+        }
+
+        final String homePath = homeDirectory.getPath();
+        final String checkPath = toCheckFile.getPath();
+
+        if (homePath.isEmpty())
+        {
+            if (!toCheckFile.isFile() && checkPath.isEmpty())
+            {
+                return false;
+            }
+            return true;
+        }
+
+        if (checkPath.equals(homePath))
+        {
+            return toCheckFile.isFile();
+        }
+
+        return checkPath.startsWith(homePath + "/");
     }
 
     /**
      * Extracts the relative name
      *
-     * @param target the file to extract the name and path from
      * @param rootDirectory our base dir
-     * @return a string with the name and path (excluding root) or just the filename of the root and the target have nothing in common
-     * @throws FileSystemException
-     * @throws
+     * @param target the file to extract the name and path from
+     * @param originalName the fallback original name
+     * @return a string with the name and path (excluding root) or just the filename if root and target have nothing in common
      */
-    public static String extractName(final FileObject rootDirectory, final FileObject target, final String originalName)
+    public static String extractName(final FsResource rootDirectory, final FsResource target, final String originalName)
     {
-        // subtract to base name
-        var targetName = target.getName();
-        var rootName = rootDirectory.getName();
-
-        if (!target.equals(rootDirectory) && verifyRootDir(rootDirectory, target))
+        if (target != null && rootDirectory != null && !target.getPath().equals(rootDirectory.getPath()) && verifyRootDir(rootDirectory, target))
         {
-            try
+            final String rootPath = rootDirectory.getPath();
+            final String targetPath = target.getPath();
+            if (rootPath.isEmpty())
             {
-                return rootName.getRelativeName(targetName);
+                return targetPath;
             }
-            catch (FileSystemException e)
+            if (targetPath.startsWith(rootPath + "/"))
             {
-                // not interested
+                return targetPath.substring(rootPath.length() + 1);
             }
         }
 
         return originalName;
     }
 
-    private static List<PropertyInclude> resolveIncludes(final FileObject file)
+    /**
+     * Resolves the property includes from the given file.
+     *
+     * @param file the properties file
+     * @return list of included files
+     */
+    private static List<PropertyInclude> resolveIncludes(final FsResource file)
     {
         try
         {
-            var properties = getPropertiesFromFile(file);
+            final Properties properties = getPropertiesFromFile(file);
 
             final List<PropertyInclude> includes = new ArrayList<>();
 
-            final FileObject baseDir = file.getParent();
+            final FsResource baseDir = file.getParent();
+            if (baseDir == null)
+            {
+                return List.of();
+            }
 
             for (final String path : getOrderedIncludes(properties))
             {
-                final var f = baseDir.resolveFile(path);
-                final var s = extractName(file, f, path);
+                final FsResource f = baseDir.resolve(path);
+                final String s = extractName(file, f, path);
                 includes.add(new PropertyInclude(f, s));
             }
 
             return includes;
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
+            return List.of();
         }
-
-        return List.of();
     }
 
     /**
@@ -249,42 +269,32 @@ public final class PropertyIncludeResolver
      * &quot;.properties&quot;.
      *
      * @param configDirectory
-     *                  the base directory to search from, going up is ok as long as we are not leaving the later
-     *                  checked base dir (mostly the test suite home)
+     *                  the base directory to search from
      * @param directory the directory to resolve and pull the files from
      * @return a list of file names sorted alphabetically
      */
-    private static List<PropertyInclude> getFilesOrderedByName(final FileObject configDirectory, final FileObject directory)
+    private static List<PropertyInclude> getFilesOrderedByName(final FsResource configDirectory, final FsResource directory)
     {
         final List<PropertyInclude> orderedIncludes = new ArrayList<>();
 
-        final FileObject[] files;
+        final List<FsResource> files;
         try
         {
-            files = directory.getChildren();
+            files = directory.listChildren();
         }
-        catch (final FileSystemException fse)
+        catch (final IOException fse)
         {
-            throw new IllegalStateException("Failed to get children of directory '" + directory.getName().getPath() + "'");
+            throw new IllegalStateException("Failed to get children of directory '" + directory.getPath() + "'", fse);
         }
 
         if (files != null)
         {
-            for (final FileObject child : files)
+            for (final FsResource child : files)
             {
-                try
+                if (child.isFile() && child.getName().endsWith(".properties"))
                 {
-                    if (!child.isFolder() && child.getName().getExtension().equals("properties"))
-                    {
-                        final var originalName = child.getName().getBaseName();
-                        orderedIncludes.add(new PropertyInclude(child,
-                                                                extractName(configDirectory, child, originalName)));
-                    }
-
-                }
-                catch (final FileSystemException fse)
-                {
-                    throw new IllegalStateException("Failed to determine type of file '" + child.getName().getPath() + "'");
+                    final String originalName = child.getName();
+                    orderedIncludes.add(new PropertyInclude(child, extractName(configDirectory, child, originalName)));
                 }
             }
         }
@@ -302,10 +312,9 @@ public final class PropertyIncludeResolver
      *            the file which to load into properties to get its includes
      * @return a properties object with the contents of the argument file loaded into it
      * @throws IOException
-     * @throws IllegalStateException
-     *             if the argument file does not exist, is a directory or can not be read
+     *             if an I/O error occurs
      */
-    private static Properties getPropertiesFromFile(final FileObject current) throws IOException
+    private static Properties getPropertiesFromFile(final FsResource current) throws IOException
     {
         return PropertiesUtils.loadProperties(current);
     }
@@ -352,7 +361,7 @@ public final class PropertyIncludeResolver
         /**
          * The file system object, might point to something non-existent
          */
-        public final FileObject file;
+        public final FsResource file;
 
         /**
          * The human version of the name without any locked up file system
@@ -386,11 +395,13 @@ public final class PropertyIncludeResolver
          * Constructor
          * @param file
          * @param name
+         * @param rootDir
          * @param exists
          * @param seenBefore
          * @param outsideORootDirScope
+         * @param isInclude
          */
-        public PropertyIncludeResult(final FileObject file, final String name, final FileObject rootDir, boolean exists, boolean seenBefore, boolean outsideORootDirScope, boolean isInclude)
+        public PropertyIncludeResult(final FsResource file, final String name, final FsResource rootDir, boolean exists, boolean seenBefore, boolean outsideORootDirScope, boolean isInclude)
         {
             this.file = file;
             this.name = name;
@@ -406,7 +417,7 @@ public final class PropertyIncludeResolver
         /**
          * The file system object, might point to something non-existent
          */
-        public final FileObject file;
+        public final FsResource file;
 
         /**
          * The human version of the name without any looked up file system
@@ -418,7 +429,7 @@ public final class PropertyIncludeResolver
          * @param file the file object from the FS
          * @param name the name we used to look that up initially
          */
-        public PropertyInclude(final FileObject file, final String name)
+        public PropertyInclude(final FsResource file, final String name)
         {
             this.file = file;
             this.name = name;
@@ -427,7 +438,7 @@ public final class PropertyIncludeResolver
         @Override
         public int compareTo(PropertyInclude o)
         {
-            return file.compareTo(o.file);
+            return file.getPath().compareTo(o.file.getPath());
         }
     }
 }

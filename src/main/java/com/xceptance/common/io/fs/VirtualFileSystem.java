@@ -60,6 +60,15 @@ public interface VirtualFileSystem extends Closeable
     Optional<Path> getLocalRootPath();
 
     /**
+     * Returns the base {@link Path} on the local filesystem that this virtual file system was opened from.
+     * For directory file systems, this is the root directory path.
+     * For zip file systems, this is the zip archive file path.
+     *
+     * @return the base path
+     */
+    Path getBasePath();
+
+    /**
      * Closes this file system and releases any open system resources or file handles.
      *
      * @throws IOException if an I/O error occurs

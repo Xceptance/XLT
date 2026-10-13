@@ -29,9 +29,6 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
 
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
@@ -100,13 +97,9 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         final XltPropertiesImpl props;
         try
         {
-
-            final FileSystemManager fsMgr = VFS.getManager();
-            props = new XltPropertiesImpl(fsMgr.resolveFile(reportDirectory.getAbsolutePath()),
-                                          fsMgr.resolveFile(configDir.getAbsolutePath()), false, true);
-
+            props = new XltPropertiesImpl(reportDirectory, configDir, false, true);
         }
-        catch (PropertyFileNotFoundException | PropertiesIOException | PropertiesConfigurationException | FileSystemException e)
+        catch (PropertyFileNotFoundException | PropertiesIOException | PropertiesConfigurationException e)
         {
             return report;
         }

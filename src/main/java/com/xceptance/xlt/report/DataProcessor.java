@@ -21,8 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileType;
+import com.xceptance.common.io.fs.FsResource;
 
 import com.xceptance.common.util.StringMatcher;
 import com.xceptance.common.util.concurrent.DaemonThreadFactory;
@@ -72,7 +71,7 @@ public class DataProcessor
     /**
      * Input directory.
      */
-    private final FileObject inputDir;
+    private final FsResource inputDir;
 
     /**
      * The total number of lines/data records read.
@@ -124,7 +123,7 @@ public class DataProcessor
      */
     public DataProcessor(
                      final ReportGeneratorConfiguration config,
-                     final FileObject inputDir, final DataRecordFactory dataRecordFactory, final long fromTime, final long toTime,
+                     final FsResource inputDir, final DataRecordFactory dataRecordFactory, final long fromTime, final long toTime,
                      final List<ReportProvider> reportProviders,
                      final String testCaseIncludePatternList, final String testCaseExcludePatternList,
                      final String agentIncludePatternList, final String agentExcludePatternList)
@@ -152,10 +151,10 @@ public class DataProcessor
         final boolean isFullRun = (fromTime == 0 && toTime == Long.MAX_VALUE &&
                                    testCaseIncludePatternList == null && testCaseExcludePatternList == null &&
                                    agentIncludePatternList == null && agentExcludePatternList == null);
-        final boolean isPlainDirectory = "file".equals(inputDir.getName().getScheme());
+        final boolean isPlainDirectory = inputDir.toLocalPath().isPresent();
         if (config.isDataCacheEnabled() && isFullRun && isPlainDirectory)
         {
-            final java.io.File resultsDir = new java.io.File(inputDir.getName().getPath());
+            final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
             final java.io.File cacheDir = config.getDataCacheDirectory(resultsDir);
             chunkCollector = new com.xceptance.xlt.report.storage.ChunkIngestionCollector(cacheDir);
         }
@@ -213,12 +212,12 @@ public class DataProcessor
             dispatcher.startProgress();
             final long start = TimerUtils.get().getStartTime();
 
-            for (final FileObject file : inputDir.getChildren())
+            for (final FsResource file : inputDir.listChildren())
             {
-                if (file.getType() == FileType.FOLDER)
+                if (file.isDirectory())
                 {
                     // Check if we need to process the current agent directory
-                    final String directoryName = file.getName().getBaseName();
+                    final String directoryName = file.getName();
                     if (agentFilter.isAccepted(directoryName))
                     {
                         readDataRecordsFromAgentDir(file);
@@ -249,7 +248,7 @@ public class DataProcessor
                 try (final com.xceptance.xlt.report.storage.ChunkStorage storage = chunkCollector.finish())
                 {
                     XltLogger.reportLogger.info("Persisting ChunkDB cache to disk...");
-                    final java.io.File resultsDir = new java.io.File(inputDir.getName().getPath());
+                    final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
                     final com.xceptance.xlt.report.storage.cache.CacheManager cacheManager =
                         new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
                     cacheManager.save(storage);
@@ -309,17 +308,17 @@ public class DataProcessor
      * @throws IOException
      *             thrown on I/O-Error
      */
-    private void readDataRecordsFromAgentDir(final FileObject agentDir) throws Exception
+    private void readDataRecordsFromAgentDir(final FsResource agentDir) throws Exception
     {
-        for (final FileObject file : agentDir.getChildren())
+        for (final FsResource file : agentDir.listChildren())
         {
-            if (file.getType() == FileType.FOLDER)
+            if (file.isDirectory())
             {
                 // filter out certain directories if so configured
-                final String directoryName = file.getName().getBaseName();
+                final String directoryName = file.getName();
                 if (isSpecialDirectory(directoryName) || testCaseFilter.isAccepted(directoryName))
                 {
-                    readDataRecordsFromTestCaseDir(file, agentDir.getName().getBaseName());
+                    readDataRecordsFromTestCaseDir(file, agentDir.getName());
                 }
             }
         }
@@ -335,13 +334,13 @@ public class DataProcessor
      * @throws IOException
      *             thrown on I/O-Error
      */
-    private void readDataRecordsFromTestCaseDir(final FileObject testCaseDir, final String agentName) throws Exception
+    private void readDataRecordsFromTestCaseDir(final FsResource testCaseDir, final String agentName) throws Exception
     {
-        final String testCaseName = testCaseDir.getName().getBaseName();
+        final String testCaseName = testCaseDir.getName();
 
-        for (final FileObject file : testCaseDir.getChildren())
+        for (final FsResource file : testCaseDir.listChildren())
         {
-            if (file.getType() == FileType.FOLDER)
+            if (file.isDirectory())
             {
                 readDataRecordsFromTestUserDir(file, agentName, testCaseName);
             }
@@ -360,13 +359,13 @@ public class DataProcessor
      * @throws IOException
      *             thrown on I/O-Error
      */
-    private void readDataRecordsFromTestUserDir(final FileObject testUserDir, final String agentName, final String testCaseName)
+    private void readDataRecordsFromTestUserDir(final FsResource testUserDir, final String agentName, final String testCaseName)
         throws Exception
     {
         dispatcher.incremementDirectoryCount();
 
         // create a new reader for each user directory and enqueue it for execution
-        final String userNumber = testUserDir.getName().getBaseName();
+        final String userNumber = testUserDir.getName();
         final DataReaderThread reader = new DataReaderThread(testUserDir, agentName, testCaseName, userNumber,
                                                              totalLinesCounter,
                                                              dispatcher);

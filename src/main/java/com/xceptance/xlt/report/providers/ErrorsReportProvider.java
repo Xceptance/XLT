@@ -26,11 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import java.nio.file.Path;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.VFS;
-import org.apache.commons.vfs2.provider.local.LocalFile;
+import com.xceptance.common.io.fs.FsResource;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.data.time.TimeSeries;
@@ -81,7 +80,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
     /**
      * The root directory of the result set.
      */
-    private FileObject resultsDirectory;
+    private FsResource resultsDirectory;
 
     /**
      * The root directory of the result set as a local File if backed by local filesystem.
@@ -152,20 +151,9 @@ public class ErrorsReportProvider extends AbstractReportProvider
         resultsDirectory = getConfiguration().getResultsDirectory();
 
         File localDir = null;
-        try
+        if (resultsDirectory != null)
         {
-            if (resultsDirectory != null && "file".equals(resultsDirectory.getName().getScheme()))
-            {
-                localDir = new File(resultsDirectory.getName().getPath());
-                if (!localDir.isDirectory())
-                {
-                    localDir = null;
-                }
-            }
-        }
-        catch (final Exception e)
-        {
-            localDir = null;
+            localDir = resultsDirectory.toLocalPath().map(Path::toFile).filter(File::isDirectory).orElse(null);
         }
         localResultsDir = localDir;
     }
@@ -599,17 +587,9 @@ public class ErrorsReportProvider extends AbstractReportProvider
                             {
                                 exists = new File(localResultsDir, indexFilePath).exists();
                             }
-                            else
+                            else if (resultsDirectory != null)
                             {
-                                try
-                                {
-                                    exists = VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists();
-                                }
-                                catch (final FileSystemException e)
-                                {
-                                    XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", indexFilePath,
-                                                                resultsDirectory.getName().getPath());
-                                }
+                                exists = resultsDirectory.resolve(indexFilePath).exists();
                             }
 
                             if (exists)
@@ -801,12 +781,12 @@ public class ErrorsReportProvider extends AbstractReportProvider
             {
                 // there is NO URI configured
 
-                final FileObject resultDir = config.getResultsDirectory();
-                if (resultDir instanceof LocalFile)
+                final FsResource resultDir = config.getResultsDirectory();
+                if (resultDir != null && resultDir.toLocalPath().isPresent())
                 {
                     // the results are in the regular file system -> create a path from the report to the results
                     final File reportDir = config.getReportDirectory();
-                    final File resultsDirAsFile = FileUtils.convertLocalFileToFile((LocalFile) resultDir);
+                    final File resultsDirAsFile = resultDir.toLocalPath().get().toFile();
                     pathPrefix = FileUtils.computeRelativeUri(reportDir, resultsDirAsFile, true);
                 }
                 else

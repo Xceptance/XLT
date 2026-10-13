@@ -33,7 +33,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
+import com.xceptance.common.io.fs.FsResource;
 
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.common.util.ParseUtils;
@@ -316,7 +316,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * The results directory, used by providers for example to link to results.
      */
-    private FileObject resultsDirectory;
+    private FsResource resultsDirectory;
 
     /**
      * The name of the results directory.
@@ -903,7 +903,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return reportProviderClasses;
     }
 
-    public FileObject getResultsDirectory()
+    public FsResource getResultsDirectory()
     {
         return resultsDirectory;
     }
@@ -1192,7 +1192,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * @param resultsDirectory
      *            the new resultDirectory value
      */
-    public void setResultsDirectory(final FileObject resultsDirectory)
+    public void setResultsDirectory(final FsResource resultsDirectory)
     {
         this.resultsDirectory = resultsDirectory;
     }

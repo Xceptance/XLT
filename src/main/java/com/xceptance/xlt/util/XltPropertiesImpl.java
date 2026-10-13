@@ -15,8 +15,10 @@
  */
 package com.xceptance.xlt.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -32,8 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 
 import com.xceptance.common.util.GroovyPropertyEvaluator;
 import com.xceptance.common.util.ParameterCheckUtils;
@@ -137,7 +139,7 @@ public class XltPropertiesImpl extends XltProperties
      */
     public static XltPropertiesImpl createInstance(final boolean ignoreMissing, boolean staySilent)
     {
-        return new XltPropertiesImpl(null, null, ignoreMissing, staySilent);
+        return new XltPropertiesImpl((FsResource) null, (FsResource) null, ignoreMissing, staySilent);
     }
 
     /**
@@ -163,7 +165,7 @@ public class XltPropertiesImpl extends XltProperties
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
      */
-    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean ignoreMissingIncludes,
+    public XltPropertiesImpl(final FsResource homeDirectory, final FsResource configDirectory, final boolean ignoreMissingIncludes,
                              final boolean staySilent)
     {
         this(homeDirectory, configDirectory,
@@ -187,7 +189,7 @@ public class XltPropertiesImpl extends XltProperties
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
      */
-    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean devMode,
+    public XltPropertiesImpl(final FsResource homeDirectory, final FsResource configDirectory, final boolean devMode,
                              final boolean ignoreMissingIncludes, final boolean staySilent)
     {
         this.devMode = devMode;
@@ -204,6 +206,45 @@ public class XltPropertiesImpl extends XltProperties
                                                         XltConstants.PROP_REMOVE_USERINFO_FROM_REQUEST_URL).map(Boolean::valueOf)
                                                                                                            .orElse(true);
 
+    }
+
+    public XltPropertiesImpl(final File homeDirectory, final File configDirectory, final boolean ignoreMissingIncludes,
+                             final boolean staySilent)
+    {
+        this(toResource(homeDirectory), toResource(configDirectory), ignoreMissingIncludes, staySilent);
+    }
+
+    public XltPropertiesImpl(final File homeDirectory, final File configDirectory, final boolean devMode,
+                             final boolean ignoreMissingIncludes, final boolean staySilent)
+    {
+        this(toResource(homeDirectory), toResource(configDirectory), devMode, ignoreMissingIncludes, staySilent);
+    }
+
+    private static FsResource toResource(final File file)
+    {
+        if (file == null)
+        {
+            return null;
+        }
+        try
+        {
+            final Path path = file.toPath().toAbsolutePath().normalize();
+            if (Files.exists(path) && !Files.isDirectory(path))
+            {
+                return VirtualFileSystem.open(path).getRoot();
+            }
+            final Path root = path.getRoot();
+            if (root != null)
+            {
+                final String relative = root.relativize(path).toString();
+                return VirtualFileSystem.open(root).getRoot().resolve(relative);
+            }
+            return VirtualFileSystem.open(path).getRoot();
+        }
+        catch (final IOException e)
+        {
+            throw new RuntimeException("Failed to open path: " + file, e);
+        }
     }
 
     /**
@@ -228,26 +269,15 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Converts a {@link FileObject} to a {@link Path} if possible, or returns {@code null} if the file object
-     * is {@code null} or belongs to a virtual file system (such as an archive) without a registered Java NIO provider.
+     * Converts a {@link FsResource} to a {@link Path} if possible, or returns {@code null} if the resource
+     * is {@code null} or belongs to an archive without a direct local path.
      *
-     * @param fileObject the file object to convert
+     * @param resource the resource to convert
      * @return the corresponding path, or null
      */
-    private static Path toPathOrNull(final FileObject fileObject)
+    private static Path toPathOrNull(final FsResource resource)
     {
-        if (fileObject == null)
-        {
-            return null;
-        }
-        try
-        {
-            return fileObject.getPath();
-        }
-        catch (final FileSystemNotFoundException | UnsupportedOperationException | IllegalArgumentException e)
-        {
-            return null;
-        }
+        return resource == null ? null : resource.toLocalPath().orElse(null);
     }
 
     /**
@@ -278,7 +308,7 @@ public class XltPropertiesImpl extends XltProperties
      * Initializes the instance from scratch, ensure that only one is doing it. That should already been taken care of
      * higher in the chain, just for safety. Won't do a thing if this is the same thread.
      */
-    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes,
+    private synchronized void initialize(final FsResource homeDirectory, final FsResource configDirectory, boolean ignoreMissingIncludes,
                                          boolean staySilent)
     {
         clear();
@@ -323,7 +353,7 @@ public class XltPropertiesImpl extends XltProperties
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
      */
-    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes,
+    private void loadProperties(final FsResource homeDirectory, final FsResource configDirectory, boolean ignoreMissingIncludes,
                                 boolean staySilent)
     {
         /*
@@ -409,7 +439,7 @@ public class XltPropertiesImpl extends XltProperties
      * @param keyTransformer
      *            a function applied to the later loading to be able to modify keys of properties if needed
      */
-    private void process(final FileObject homeDirectory, final FileObject configDirectory, final String fileName, final String bucketName,
+    private void process(final FsResource homeDirectory, final FsResource configDirectory, final String fileName, final String bucketName,
                          boolean ignoreMissing, boolean ignoreMissingIncludes, final Function<String, String> keyTransformer)
     {
         // get us the file
@@ -420,15 +450,7 @@ public class XltPropertiesImpl extends XltProperties
             throw new PropertyFileNotFoundException(String.format("Unable to locate property file %s.", fileName));
         }
 
-        // yeah, we have to deal with the exception somehow
-        boolean exists = false;
-        try
-        {
-            exists = propFile.get().file.exists();
-        }
-        catch (FileSystemException e1)
-        {
-        }
+        final boolean exists = propFile.isPresent() && propFile.get().file.exists();
 
         if (!exists && !ignoreMissing)
         {
@@ -444,7 +466,7 @@ public class XltPropertiesImpl extends XltProperties
         // load all properties
         if (XltLogger.runTimeLogger.isDebugEnabled())
         {
-            XltLogger.runTimeLogger.debug(String.format("Trying to evaluate property file: %s ...", propFile.get().file));
+            XltLogger.runTimeLogger.debug(String.format("Trying to evaluate property file: %s ...", propFile.get().file.getPath()));
         }
 
         // resolve includes but don't load them, just check
@@ -600,20 +622,14 @@ public class XltPropertiesImpl extends XltProperties
      *            the name of the file for which to create a file object
      * @return resolved file object or empty optional
      */
-    private Optional<PropertyInclude> getFile(final FileObject configDir, final String fileName)
+    private Optional<PropertyInclude> getFile(final FsResource configDir, final String fileName)
     {
-        try
+        if (configDir == null)
         {
-            final FileObject file = configDir.resolveFile(fileName);
-
-            return Optional.of(new PropertyInclude(file, fileName));
+            return Optional.empty();
         }
-        catch (final FileSystemException fse)
-        {
-            XltLogger.runTimeLogger.error("Unable to read or open property file", fse);
-        }
-
-        return Optional.empty();
+        final FsResource file = configDir.resolve(fileName);
+        return Optional.of(new PropertyInclude(file, fileName));
     }
 
     /**
@@ -649,50 +665,30 @@ public class XltPropertiesImpl extends XltProperties
         return result;
     }
 
-    private static String makeRelativeTo(final FileObject file, final FileObject targetDirectory, final String fallback)
+    private static String makeRelativeTo(final FsResource file, final FsResource targetDirectory, final String fallback)
     {
-        try
+        if (file == null || targetDirectory == null)
         {
-            final ArrayList<String> pathSegments = new ArrayList<>();
-
-            FileObject tmp = targetDirectory;
-            FileObject tmp2 = file;
-            int depthResolved = file.getName().getDepth();
-            int depthPivot = targetDirectory.getName().getDepth() + 1;
-            if (depthResolved < depthPivot)
-            {
-                while (depthResolved < depthPivot)
-                {
-                    tmp = tmp.getParent();
-                    pathSegments.add("..");
-                    --depthPivot;
-
-                }
-            }
-            else if (depthResolved > depthPivot)
-            {
-                while (depthResolved > depthPivot)
-                {
-                    tmp2 = tmp2.getParent();
-                    pathSegments.add(0, tmp2.getName().getBaseName());
-                    --depthResolved;
-                }
-            }
-
-            if (!tmp2.getParent().equals(tmp))
-            {
-                throw new IllegalArgumentException(String.format("Paths '%s' and '%s' do not have a common ancestor.",
-                                                                 file.getName().getPath(), targetDirectory.getName().getPath()));
-            }
-            pathSegments.add(file.getName().getBaseName());
-
-            return pathSegments.stream().collect(Collectors.joining("/"));
-        }
-        catch (final Exception e)
-        {
-            XltLogger.runTimeLogger.warn(e.getMessage());
             return fallback;
         }
+        if (file.toLocalPath().isPresent() && targetDirectory.toLocalPath().isPresent())
+        {
+            try
+            {
+                return targetDirectory.toLocalPath().get().relativize(file.toLocalPath().get()).toString();
+            }
+            catch (final Exception e)
+            {
+                return fallback;
+            }
+        }
+        final String targetPath = targetDirectory.getPath();
+        final String filePath = file.getPath();
+        if (filePath.startsWith(targetPath + "/"))
+        {
+            return filePath.substring(targetPath.length() + 1);
+        }
+        return file.getName();
     }
 
     /**
@@ -1266,10 +1262,10 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @param fallbackToProjectProperties
      *            whether to fall back to project properties file in case no test properties file is referenced
-     * @return virtual file object of referenced test properties file (or project properties if no test properties file
+     * @return virtual file resource of referenced test properties file (or project properties if no test properties file
      *         is referenced and project properties should not be used as fall-back) or {@code null}
      */
-    public FileObject getTestPropertyFile(final boolean fallbackToProjectProperties)
+    public FsResource getTestPropertyFile(final boolean fallbackToProjectProperties)
     {
         DetailedProperties bucket = this.propertyBuckets.get(XltProperties.TEST_PROPERTIES);
         if (bucket != null && !bucket.propertyChain.isEmpty())
@@ -1307,11 +1303,11 @@ public class XltPropertiesImpl extends XltProperties
      * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
      * contains existing files. For internal use only!
      *
-     * @return the resolved property files as described above as absolute file object
+     * @return the resolved property files as described above as resource
      */
-    public List<FileObject> getUsedPropertyFiles()
+    public List<FsResource> getUsedPropertyFiles()
     {
-        final List<FileObject> r = new ArrayList<>();
+        final List<FsResource> r = new ArrayList<>();
         propertyBuckets.values().forEach(p -> {
             p.propertyChain.forEach(i -> r.add(i.file));
         });

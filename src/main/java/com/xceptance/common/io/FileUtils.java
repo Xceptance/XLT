@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.apache.http.client.utils.URIBuilder;
 
 import com.xceptance.common.lang.ReflectionUtils;
@@ -607,26 +606,6 @@ public final class FileUtils
         catch (final SecurityException e)
         {
             throw new RuntimeException("Failed to resolve canonical path for file '" + f.getAbsolutePath() + "': " + e.getMessage());
-        }
-    }
-
-    /**
-     * Converts a VFS {@link LocalFile} object to its corresponding {@link File} object.
-     * 
-     * @param localFile
-     *            the {@link LocalFile} object
-     * @return the corresponding {@link File} object
-     */
-    public static File convertLocalFileToFile(final LocalFile localFile)
-    {
-        final File f = (File) ReflectionUtils.callMethod(LocalFile.class, localFile, "getLocalFile");
-        try
-        {
-            return f.getCanonicalFile();
-        }
-        catch (final IOException e)
-        {
-            throw new RuntimeException("Failed to convert: " + localFile.getName().getPath(), e);
         }
     }
 

@@ -42,14 +42,19 @@ import com.xceptance.xlt.util.PropertyFileHandler;
 import com.xceptance.xlt.util.TestCaseMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.agentcontroller.AgentController;
@@ -346,19 +351,21 @@ public class MasterController
                     TimeZone.setDefault(tz);
                 }
 
-                final FileObject testResultDir = VFS.getManager().resolveFile(currentTestResultsDir.toURI().toString());
-                final ReportGenerator reportGenerator = new ReportGenerator(testResultDir, null, false);
+                try (final VirtualFileSystem vfs = VirtualFileSystem.open(currentTestResultsDir.toPath()))
+                {
+                    final ReportGenerator reportGenerator = new ReportGenerator(vfs.getRoot(), null, false);
 
-                // get limit time range if necessary
-                if (reportCreationType.equals(ReportCreationType.ALL))
-                {
-                    reportGenerator.generateReport(false);
-                    result = true;
-                }
-                else if (reportCreationType.equals(ReportCreationType.NO_RAMPUP))
-                {
-                    reportGenerator.generateReport(true);
-                    result = true;
+                    // get limit time range if necessary
+                    if (reportCreationType.equals(ReportCreationType.ALL))
+                    {
+                        reportGenerator.generateReport(false);
+                        result = true;
+                    }
+                    else if (reportCreationType.equals(ReportCreationType.NO_RAMPUP))
+                    {
+                        reportGenerator.generateReport(true);
+                        result = true;
+                    }
                 }
             }
             catch (final Exception ex)
@@ -1085,8 +1092,8 @@ public class MasterController
 
         if (StringUtils.isNotBlank(testPropertiesFileName))
         {
-            final FileObject testPropertiesFile = VFS.getManager().resolveFile(agentTemplateConfigDir, testPropertiesFileName);
-            if (!testPropertiesFile.exists() || !testPropertiesFile.isFile() || !testPropertiesFile.isReadable())
+            final File testPropertiesFile = new File(agentTemplateConfigDir, testPropertiesFileName);
+            if (!testPropertiesFile.exists() || !testPropertiesFile.isFile() || !testPropertiesFile.canRead())
             {
                 throw new IOException("Unable to load test properties file.");
             }
@@ -1165,12 +1172,13 @@ public class MasterController
             return;
         }
 
-        final FileObject testPropFile = getTestPropertyFile(currentTestResultsDir);
+        final FsResource testPropFile = getTestPropertyFile(currentTestResultsDir);
         try
         {
-            if (testPropFile != null && testPropFile.exists())
+            if (testPropFile != null && testPropFile.exists() && testPropFile.toLocalPath().isPresent())
             {
-                try (final BufferedWriter w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                final Path localPath = testPropFile.toLocalPath().get();
+                try (final BufferedWriter w = Files.newBufferedWriter(localPath, StandardCharsets.UTF_8, StandardOpenOption.APPEND))
                 {
                     w.newLine();
                     w.write("# Command line comment (AUTOMATICALLY INSERTED)\n");
@@ -1182,7 +1190,7 @@ public class MasterController
         {
             if (testPropFile != null)
             {
-                LOG.error("Unable to write comment from CLI to '" + testPropFile.getPublicURIString() + "'.", e);
+                LOG.error("Unable to write comment from CLI to '" + testPropFile.getPath() + "'.", e);
             }
             else
             {
@@ -1200,9 +1208,8 @@ public class MasterController
     {
         try
         {
-            final FileSystemManager fsMgr = VFS.getManager();
-            final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(currentTestResultsDir.getAbsolutePath()),
-                                                              fsMgr.resolveFile(getConfigDir(currentTestResultsDir).getAbsolutePath()),
+            final XltProperties props = new XltPropertiesImpl(currentTestResultsDir,
+                                                              getConfigDir(currentTestResultsDir),
                                                               false, true);
 
             final String testCommentPropValue = props.getProperties().getProperty("com.xceptance.xlt.loadtests.comment");
@@ -1223,16 +1230,13 @@ public class MasterController
      *            test result directory
      * @return test-specific properties file
      */
-    public static FileObject getTestPropertyFile(final File testResultsDir)
+    public static FsResource getTestPropertyFile(final File testResultsDir)
     {
         try
         {
-            final FileSystemManager fsMgr = VFS.getManager();
-
             final File confDir = getConfigDir(testResultsDir);
 
-            final XltPropertiesImpl props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
-                                                                  fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
+            final XltPropertiesImpl props = new XltPropertiesImpl(testResultsDir, confDir, false, true);
             return props.getTestPropertyFile(true);
         }
         catch (final Exception e)

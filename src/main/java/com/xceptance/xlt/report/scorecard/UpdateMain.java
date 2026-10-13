@@ -24,7 +24,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.vfs2.VFS;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,12 +133,15 @@ public final class UpdateMain
 
         final Timer timer = Timer.start();
 
-        final ReportGenerator reportGenerator = new ReportGenerator(VFS.getManager().resolveFile(inputDir.toURI()), outputDir, true);
+        try (final VirtualFileSystem vfs = VirtualFileSystem.open(inputDir.toPath()))
+        {
+            final ReportGenerator reportGenerator = new ReportGenerator(vfs.getRoot(), outputDir, true);
 
-        XltLogger.reportLogger.info(timer.stop().get("...finished"));
-        XltLogger.reportLogger.info(Console.endSection());
+            XltLogger.reportLogger.info(timer.stop().get("...finished"));
+            XltLogger.reportLogger.info(Console.endSection());
 
-        reportGenerator.updateScorecard();
+            reportGenerator.updateScorecard();
+        }
     }
 
     private void printUsage()

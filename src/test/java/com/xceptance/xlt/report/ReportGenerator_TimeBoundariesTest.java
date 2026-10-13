@@ -21,12 +21,13 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.VFS;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -94,7 +95,9 @@ public class ReportGenerator_TimeBoundariesTest
 
     private File DUMMY_DIR;
 
-    private FileObject DUMMY_INPUT_DIR;
+    private VirtualFileSystem vfs;
+
+    private FsResource DUMMY_INPUT_DIR;
 
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -216,7 +219,17 @@ public class ReportGenerator_TimeBoundariesTest
     public void init() throws IOException
     {
         DUMMY_DIR = tempFolder.getRoot();
-        DUMMY_INPUT_DIR = VFS.getManager().resolveFile(DUMMY_DIR.getAbsolutePath());
+        vfs = VirtualFileSystem.open(DUMMY_DIR.toPath());
+        DUMMY_INPUT_DIR = vfs.getRoot();
+    }
+
+    @After
+    public void tearDown() throws IOException
+    {
+        if (vfs != null)
+        {
+            vfs.close();
+        }
     }
 
     /**

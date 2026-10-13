@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -29,10 +30,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import com.xceptance.xlt.common.XltConstants;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.VFS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,11 +57,11 @@ public class XltPropertiesTest
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private static FileObject origHome;
-    private static FileObject origConfig;
+    private static FsResource origHome;
+    private static FsResource origConfig;
 
-    private FileObject homeDir;
-    private FileObject configDir;
+    private FsResource homeDir;
+    private FsResource configDir;
 
     @BeforeClass
     public static void beforeClass()
@@ -82,10 +82,10 @@ public class XltPropertiesTest
     /**
      * Setup the base source
      */
-    public void setup(final String home, final String config) throws FileSystemException
+    public void setup(final String home, final String config) throws IOException
     {
         homeDir = getResourceFile(home);
-        configDir = getResourceFile(config);
+        configDir = homeDir.resolve("config");
 
         XltExecutionContext.getCurrent().setTestSuiteConfigDir(configDir);
         XltExecutionContext.getCurrent().setTestSuiteHomeDir(homeDir);
@@ -95,12 +95,31 @@ public class XltPropertiesTest
     }
 
     /**
-     * Get a FileObject for the resource with the given name
+     * Get a FsResource for the resource with the given name
      */
-    private FileObject getResourceFile(final String resourceName) throws FileSystemException
+    private FsResource getResourceFile(final String resourceName) throws IOException
     {
         var path = getClass().getResource(resourceName).getFile();
-        return VFS.getManager().toFileObject(new File(path));
+        return VirtualFileSystem.open(new File(path).toPath()).getRoot();
+    }
+
+    private static String getRelativeName(final FsResource base, final FsResource target)
+    {
+        if (base.toLocalPath().isPresent() && target.toLocalPath().isPresent())
+        {
+            return base.toLocalPath().get().relativize(target.toLocalPath().get()).toString();
+        }
+        final String basePath = base.getPath();
+        final String targetPath = target.getPath();
+        if (basePath.isEmpty())
+        {
+            return targetPath;
+        }
+        if (targetPath.startsWith(basePath + "/"))
+        {
+            return targetPath.substring(basePath.length() + 1);
+        }
+        return targetPath;
     }
 
     /*
@@ -144,15 +163,15 @@ public class XltPropertiesTest
 
     /**
      * Assume the path is in the context of all dirs, we later will also set it
-     * @throws FileSystemException
+     * @throws Exception
      */
     @Test
-    public void happyPath() throws FileSystemException
+    public void happyPath() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
@@ -182,11 +201,11 @@ public class XltPropertiesTest
         var files = p.getUsedPropertyFiles();
         assertEquals(5, files.size());
 
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
-        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
-        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(2)));
+        assertEquals("config/dev.properties",     getRelativeName(homeDir, files.get(3)));
+        assertEquals("config/secret.properties",  getRelativeName(homeDir, files.get(4)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(5, rFilename.size());
@@ -202,12 +221,12 @@ public class XltPropertiesTest
      */
     @Ignore
     @Test
-    public void noDevPropsLoaded() throws FileSystemException
+    public void noDevPropsLoaded() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = XltEngine.reset(new XltPropertiesImpl(null, null, false, false)).xltProperties;
+        var p = XltEngine.reset(new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false)).xltProperties;
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -235,10 +254,10 @@ public class XltPropertiesTest
         var files = p.getUsedPropertyFiles();
         assertEquals(4, files.size());
 
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
-        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(3).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(2)));
+        assertEquals("config/secret.properties",  getRelativeName(homeDir, files.get(3)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(4, rFilename.size());
@@ -252,12 +271,12 @@ public class XltPropertiesTest
      * Secret is missing
      */
     @Test
-    public void noSecret() throws FileSystemException
+    public void noSecret() throws Exception
     {
         setup("propertytest_nosecret", "propertytest_nosecret/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = new XltPropertiesImpl(null, null, false, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -281,9 +300,9 @@ public class XltPropertiesTest
         // ok, more about the files
         var files = p.getUsedPropertyFiles();
         assertEquals(3, files.size());
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(2)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(3, rFilename.size());
@@ -296,13 +315,13 @@ public class XltPropertiesTest
      * test props location defined by system property
      */
     @Test
-    public void testViaSystem() throws FileSystemException
+    public void testViaSystem() throws Exception
     {
         setup("propertytest_testfromsystem", "propertytest_testfromsystem/config");
         setSystemProperty("com.xceptance.xlt.testPropertiesFile", "test2.properties");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = new XltPropertiesImpl(null, null, false, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // systems prop with +2
@@ -326,9 +345,9 @@ public class XltPropertiesTest
         // ok, more about the files
         var files = p.getUsedPropertyFiles();
         assertEquals(3, files.size());
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/test2.properties",   homeDir.getName().getRelativeName(files.get(2).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/test2.properties",   getRelativeName(homeDir, files.get(2)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(3, rFilename.size());
@@ -341,17 +360,17 @@ public class XltPropertiesTest
      * Load test not set
      */
     @Test
-    public void testNotSet() throws FileSystemException
+    public void testNotSet() throws Exception
     {
         setup("propertytest_notestfallback", "propertytest_notestfallback/config");
 
         // we don't complain about not test props
-        var p = new XltPropertiesImpl(null, null, false, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
 
         var files = p.getUsedPropertyFiles();
         assertEquals(2, files.size());
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(2, rFilename.size());
@@ -363,14 +382,14 @@ public class XltPropertiesTest
      * Test does not exists
      */
     @Test
-    public void testDoesNotExist() throws FileSystemException
+    public void testDoesNotExist() throws Exception
     {
         setup("propertytest_notestfallback", "propertytest_notestfallback/config");
         setSystemProperty("com.xceptance.xlt.testPropertiesFile", "noidea.properties");
 
         try
         {
-            new XltPropertiesImpl(null, null, false, false);
+            new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
 
             // don't want to get here
             fail("Exception not raised");
@@ -385,35 +404,35 @@ public class XltPropertiesTest
      * no standard configs, just test
      */
     @Test
-    public void defaultDoesNotExist() throws FileSystemException
+    public void defaultDoesNotExist() throws Exception
     {
         setup("propertytest_nodefaults", "propertytest_nodefaults/config");
         setSystemProperty("com.xceptance.xlt.testPropertiesFile", "test2.properties");
 
-        new XltPropertiesImpl(null, null, false, false);
+        new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
     }
 
     /**
      * nothing at all
      */
     @Test
-    public void nothingExists() throws FileSystemException
+    public void nothingExists() throws Exception
     {
         setup("propertytest_nothing", "propertytest_nothing/config");
-        new XltPropertiesImpl(null, null, false, false);
+        new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
     }
 
     /**
      * Clear
-     * @throws FileSystemException
+     * @throws Exception
      */
     @Test
-    public void clear() throws FileSystemException
+    public void clear() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -423,11 +442,11 @@ public class XltPropertiesTest
         var files = p.getUsedPropertyFiles();
         assertEquals(5, files.size());
 
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
-        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
-        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(2)));
+        assertEquals("config/dev.properties",     getRelativeName(homeDir, files.get(3)));
+        assertEquals("config/secret.properties",  getRelativeName(homeDir, files.get(4)));
 
         p.clear();
         assertEquals(0, p.getProperties().size());
@@ -435,10 +454,10 @@ public class XltPropertiesTest
 
     /**
      * Reset
-     * @throws FileSystemException
+     * @throws Exception
      */
     @Test
-    public void reset() throws FileSystemException
+    public void reset() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
 
@@ -471,22 +490,15 @@ public class XltPropertiesTest
             var files = p.getUsedPropertyFiles();
             assertEquals(5, files.size());
 
-            try
-            {
-                assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-                assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-                assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(2).getName()));
-                assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(3).getName()));
-                assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(4).getName()));
-            }
-            catch (FileSystemException e)
-            {
-                throw new RuntimeException(e);
-            }
+            assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+            assertEquals("config/project.properties", getRelativeName(homeDir, files.get(1)));
+            assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(2)));
+            assertEquals("config/dev.properties",     getRelativeName(homeDir, files.get(3)));
+            assertEquals("config/secret.properties",  getRelativeName(homeDir, files.get(4)));
         };
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = XltEngine.reset(new XltPropertiesImpl(null, null, true, false)).xltProperties;
+        var p = XltEngine.reset(new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false)).xltProperties;
 
         // check init state
         tester.accept(p);
@@ -527,12 +539,12 @@ public class XltPropertiesTest
      * We use a simple include
      */
     @Test
-    public void simpleFileInclude() throws FileSystemException
+    public void simpleFileInclude() throws Exception
     {
         setup("propertytest_simpleinclude", "propertytest_simpleinclude/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -564,12 +576,12 @@ public class XltPropertiesTest
         var files = p.getUsedPropertyFiles();
         assertEquals(6, files.size());
 
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/include.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(2).getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(3).getName()));
-        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(4).getName()));
-        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(5).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/include.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(2)));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(3)));
+        assertEquals("config/dev.properties",     getRelativeName(homeDir, files.get(4)));
+        assertEquals("config/secret.properties",  getRelativeName(homeDir, files.get(5)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(6, rFilename.size());
@@ -585,12 +597,12 @@ public class XltPropertiesTest
      * We use a dir include
      */
     @Test
-    public void simpleDirInclude() throws FileSystemException
+    public void simpleDirInclude() throws Exception
     {
         setup("propertytest_dirinclude", "propertytest_dirinclude/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1
@@ -622,14 +634,14 @@ public class XltPropertiesTest
         var files = p.getUsedPropertyFiles();
         assertEquals(8, files.size());
 
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.get(0).getName()));
-        assertEquals("config/dir/a.properties", homeDir.getName().getRelativeName(files.get(1).getName()));
-        assertEquals("config/dir/b.properties", homeDir.getName().getRelativeName(files.get(2).getName()));
-        assertEquals("config/dir/c.properties", homeDir.getName().getRelativeName(files.get(3).getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.get(4).getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.get(5).getName()));
-        assertEquals("config/dev.properties",     homeDir.getName().getRelativeName(files.get(6).getName()));
-        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.get(7).getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.get(0)));
+        assertEquals("config/dir/a.properties", getRelativeName(homeDir, files.get(1)));
+        assertEquals("config/dir/b.properties", getRelativeName(homeDir, files.get(2)));
+        assertEquals("config/dir/c.properties", getRelativeName(homeDir, files.get(3)));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.get(4)));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.get(5)));
+        assertEquals("config/dev.properties",     getRelativeName(homeDir, files.get(6)));
+        assertEquals("config/secret.properties",  getRelativeName(homeDir, files.get(7)));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(8, rFilename.size());
@@ -648,12 +660,12 @@ public class XltPropertiesTest
      */
     @Ignore
     @Test
-    public void simpleFileIncludeMissing() throws FileSystemException
+    public void simpleFileIncludeMissing() throws Exception
     {
         setup("propertytest_simpleincludemissing", "propertytest_simpleincludemissing/config");
 
         // load the happy path defaults, default, project, test, dev, secret, system
-        var p = XltEngine.reset(new XltPropertiesImpl(null, null, false, true)).xltProperties;
+        var p = XltEngine.reset(new XltPropertiesImpl((FsResource) null, (FsResource) null, false, true)).xltProperties;
 
         // we are not in control of most system props, so we have to exclude that count dynamically and we have to add our
         // only system prop with +1, no dev is loaded -1
@@ -682,10 +694,10 @@ public class XltPropertiesTest
         var files = new ArrayDeque<>(p.getUsedPropertyFiles());
         assertEquals(4, files.size());
 
-        assertEquals("config/default.properties", homeDir.getName().getRelativeName(files.pollFirst().getName()));
-        assertEquals("config/project.properties", homeDir.getName().getRelativeName(files.pollFirst().getName()));
-        assertEquals("config/test.properties",    homeDir.getName().getRelativeName(files.pollFirst().getName()));
-        assertEquals("config/secret.properties",  homeDir.getName().getRelativeName(files.pollFirst().getName()));
+        assertEquals("config/default.properties", getRelativeName(homeDir, files.pollFirst()));
+        assertEquals("config/project.properties", getRelativeName(homeDir, files.pollFirst()));
+        assertEquals("config/test.properties",    getRelativeName(homeDir, files.pollFirst()));
+        assertEquals("config/secret.properties",  getRelativeName(homeDir, files.pollFirst()));
 
         var rFilename = p.getUsedPropertyFilesByRelativeName();
         assertEquals(4, rFilename.size());
@@ -699,13 +711,13 @@ public class XltPropertiesTest
      * Include does not exist and we don't ignore
      */
     @Test
-    public void simpleFileIncludeMissingDontIgnore() throws FileSystemException
+    public void simpleFileIncludeMissingDontIgnore() throws Exception
     {
         setup("propertytest_simpleincludemissing", "propertytest_simpleincludemissing/config");
 
         try
         {
-            new XltPropertiesImpl(null, null, false, false);
+            new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
             fail("No exeption raised");
         }
         catch (PropertyFileNotFoundException e)
@@ -719,13 +731,13 @@ public class XltPropertiesTest
      * Same include misconfiguration aka circular
      */
     @Test
-    public void includeConfigProblem() throws FileSystemException
+    public void includeConfigProblem() throws Exception
     {
         setup("propertytest_incorrectinclude", "propertytest_incorrectinclude/config");
 
         try
         {
-            new XltPropertiesImpl(null, null, false, false);
+            new XltPropertiesImpl((FsResource) null, (FsResource) null, false, false);
             fail("No exeption raised");
         }
         catch (PropertiesConfigurationException e)
@@ -738,19 +750,19 @@ public class XltPropertiesTest
      * Get config and data directory from XltPropertiesImpl object where the directories are set in the constructor
      */
     @Test
-    public void getConfigAndDataDirs_SetDirsInConstructor() throws FileSystemException
+    public void getConfigAndDataDirs_SetDirsInConstructor() throws Exception
     {
         // Set home and config dir in execution context
         setup("propertytest_hp", "propertytest_hp/config");
 
         // Provide different home and config dirs to XltPropertiesImpl constructor
-        final FileObject homeOverride = getResourceFile("propertytest_notestfallback");
-        final FileObject configOverride = getResourceFile("propertytest_notestfallback/config");
+        final FsResource homeOverride = getResourceFile("propertytest_notestfallback");
+        final FsResource configOverride = getResourceFile("propertytest_notestfallback/config");
         var p = new XltPropertiesImpl(homeOverride, configOverride, true, false);
 
         // Getter return values are based on the directories set in the constructor
-        assertEquals(configOverride.getPath(), p.getConfigDirectory());
-        assertEquals(homeOverride.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+        assertEquals(configOverride.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeOverride.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 
     /**
@@ -768,18 +780,21 @@ public class XltPropertiesTest
             zos.closeEntry();
         }
 
-        final FileObject archive = VFS.getManager().resolveFile("zip:file://" + zipFile.getAbsolutePath() + "!/");
-        final FileObject configDir = archive.resolveFile("config");
+        try (final VirtualFileSystem vfs = VirtualFileSystem.open(zipFile.toPath()))
+        {
+            final FsResource archive = vfs.getRoot();
+            final FsResource configDir = archive.resolve("config");
 
-        var p = new XltPropertiesImpl(archive, configDir, true, false);
+            var p = new XltPropertiesImpl(archive, configDir, true, false);
 
-        assertEquals("val1", p.getProperty("prop1"));
-        assertNull(p.getConfigDirectory());
-        assertNull(p.getDataDirectory());
+            assertEquals("val1", p.getProperty("prop1"));
+            assertNull(p.getConfigDirectory());
+            assertNull(p.getDataDirectory());
 
-        // Test with absolute data directory property
-        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, "/tmp/custom-data");
-        assertEquals(java.nio.file.Paths.get("/tmp/custom-data"), p.getDataDirectory());
+            // Test with absolute data directory property
+            p.setProperty(XltConstants.PROP_DATA_DIRECTORY, "/tmp/custom-data");
+            assertEquals(java.nio.file.Paths.get("/tmp/custom-data"), p.getDataDirectory());
+        }
     }
 
     /**
@@ -787,17 +802,17 @@ public class XltPropertiesTest
      * context
      */
     @Test
-    public void getConfigAndDataDirs_UseDirsFromExecutionContext() throws FileSystemException
+    public void getConfigAndDataDirs_UseDirsFromExecutionContext() throws Exception
     {
         // Set home and config dir in execution context
         setup("propertytest_hp", "propertytest_hp/config");
 
         // Don't provide home and config dirs to XltPropertiesImpl constructor
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Getter return values are based on the directories from the execution context
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 
     /**
@@ -805,30 +820,30 @@ public class XltPropertiesTest
      * context directories
      */
     @Test
-    public void getConfigAndDataDirs_UpdateDirsInExecutionContext() throws FileSystemException
+    public void getConfigAndDataDirs_UpdateDirsInExecutionContext() throws Exception
     {
         // Create instance of XltProperties with directories from execution context and remember the directories
         setup("propertytest_hp", "propertytest_hp/config");
-        final FileObject homeDir1 = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
-        final FileObject configDir1 = XltExecutionContext.getCurrent().getTestSuiteConfigDir();
-        var p1 = new XltPropertiesImpl(null, null, true, false);
+        final FsResource homeDir1 = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
+        final FsResource configDir1 = XltExecutionContext.getCurrent().getTestSuiteConfigDir();
+        var p1 = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Update execution context and create a second instance
         setup("propertytest_notestfallback", "propertytest_notestfallback/config");
-        var p2 = new XltPropertiesImpl(null, null, true, false);
+        var p2 = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Getter return values are based on the home and config directories set during object creation
-        assertEquals(configDir1.getPath(), p1.getConfigDirectory());
-        assertEquals(homeDir1.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p1.getDataDirectory());
-        assertEquals(configDir.getPath(), p2.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p2.getDataDirectory());
+        assertEquals(configDir1.toLocalPath().get(), p1.getConfigDirectory());
+        assertEquals(homeDir1.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p1.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p2.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p2.getDataDirectory());
     }
 
     /**
      * Get config and data directories from XltPropertiesImpl object with empty properties
      */
     @Test
-    public void getConfigAndDataDirs_InstanceWithoutProperties() throws FileSystemException
+    public void getConfigAndDataDirs_InstanceWithoutProperties() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
 
@@ -836,43 +851,43 @@ public class XltPropertiesTest
         var p = new XltPropertiesImpl();
 
         // Getter return values are based on the directories from the execution context
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 
     /**
      * Get config and data directories when relative data directory path is set in the properties
      */
     @Test
-    public void getConfigAndDataDirs_RelativeDataDirFromProperty() throws FileSystemException
+    public void getConfigAndDataDirs_RelativeDataDirFromProperty() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Data directory is overridden with relative path in properties
         final String relativePath = "datadir";
         p.setProperty(XltConstants.PROP_DATA_DIRECTORY, relativePath);
 
         // Getter for data directory returns the relative path inside the provided home directory
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(relativePath), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(relativePath), p.getDataDirectory());
     }
 
     /**
      * Get config and data directories when absolute data directory path is set in the properties
      */
     @Test
-    public void getConfigAndDataDirs_AbsoluteDataDirFromProperty() throws FileSystemException
+    public void getConfigAndDataDirs_AbsoluteDataDirFromProperty() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Data directory is overridden with absolute directory in properties
-        final Path absolutePath = getResourceFile("propertytest_dirinclude").getPath().toAbsolutePath();
+        final Path absolutePath = getResourceFile("propertytest_dirinclude").toLocalPath().get().toAbsolutePath();
         p.setProperty(XltConstants.PROP_DATA_DIRECTORY, absolutePath.toString());
 
         // Getter for data directory returns the absolute directory
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
         assertEquals(absolutePath, p.getDataDirectory());
     }
 
@@ -880,48 +895,48 @@ public class XltPropertiesTest
      * Get config and data directories when empty data directory path is set in the properties
      */
     @Test
-    public void getConfigAndDataDirs_EmptyDataDirFromProperty() throws FileSystemException
+    public void getConfigAndDataDirs_EmptyDataDirFromProperty() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Data directory is overridden with empty value
         p.setProperty(XltConstants.PROP_DATA_DIRECTORY, "");
 
         // Getter for data directory returns the default data directory
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 
     /**
      * Get config and data directories after updating data directory path in properties
      */
     @Test
-    public void getConfigAndDataDirs_UpdateDataDirInProperty() throws FileSystemException
+    public void getConfigAndDataDirs_UpdateDataDirInProperty() throws Exception
     {
         setup("propertytest_hp", "propertytest_hp/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Property isn't set initially; data dir is default data dir path in home dir
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
 
         // Set absolute path in property; data dir is set to the absolute path
-        final Path absolutePath = getResourceFile("propertytest_dirinclude/config").getPath().toAbsolutePath();
+        final Path absolutePath = getResourceFile("propertytest_dirinclude/config").toLocalPath().get().toAbsolutePath();
         p.setProperty(XltConstants.PROP_DATA_DIRECTORY, absolutePath.toString());
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
         assertEquals(absolutePath, p.getDataDirectory());
 
         // Set relative path in property; data dir is set to relative path in home dir
         final String relativePath = "datadir/subdir";
         p.setProperty(XltConstants.PROP_DATA_DIRECTORY, relativePath);
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(relativePath), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(relativePath), p.getDataDirectory());
 
         // Remove property; data dir is default data dir path in home dir again
         p.removeProperty(XltConstants.PROP_DATA_DIRECTORY);
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+        assertEquals(configDir.toLocalPath().get(), p.getConfigDirectory());
+        assertEquals(homeDir.toLocalPath().get().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 
     // =============================================
@@ -930,15 +945,15 @@ public class XltPropertiesTest
     /**
      * Test that Groovy expressions using ${...} variable substitution work correctly
      * within the XltProperties integration layer.
-     * @throws FileSystemException 
+     * @throws Exception 
      */
     @Test
-    public void oneFileCalculation() throws FileSystemException
+    public void oneFileCalculation() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
 
         // Create instance of XltPropertiesImpl 
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // ask for simple properties first
         assertEquals(100, p.getProperty("totalUsers", 0));
@@ -957,10 +972,10 @@ public class XltPropertiesTest
     }
 
     @Test
-    public void groovyFloatEvaluationFallback() throws FileSystemException
+    public void groovyFloatEvaluationFallback() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Inject a property that explicitly evaluates to a floating-point string
         p.setProperty("float.test", "#{ 100 * 0.405 }");
@@ -984,10 +999,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Practical Examples / Load Mix Calculation"
      */
     @Test
-    public void loadMixCalculationWithIntValue() throws FileSystemException
+    public void loadMixCalculationWithIntValue() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // totalUsers = 100, .intValue() produces clean integers
         assertEquals(40, p.getProperty("mix.TBrowse.users", 0));
@@ -1006,10 +1021,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Practical Examples / Environment-Based Configuration"
      */
     @Test
-    public void environmentBasedMultiplierScaling() throws FileSystemException
+    public void environmentBasedMultiplierScaling() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // base.browse.users = 50, load.multiplier = 1.5 → 75
         assertEquals(75, p.getProperty("scaled.TBrowse.users", 0));
@@ -1025,10 +1040,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Supported Operations"
      */
     @Test
-    public void conditionalTernaryOperator() throws FileSystemException
+    public void conditionalTernaryOperator() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // mode=production → quoted as '${mode}' in Groovy → 100
         assertEquals(100, p.getProperty("conditional.users", 0));
@@ -1043,10 +1058,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Supported Operations"
      */
     @Test
-    public void arithmeticModulo() throws FileSystemException
+    public void arithmeticModulo() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // 17 % 5 = 2
         assertEquals(2, p.getProperty("modulo.result", 0));
@@ -1061,10 +1076,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Supported Operations"
      */
     @Test
-    public void typeConversion() throws FileSystemException
+    public void typeConversion() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         assertEquals(42, p.getProperty("typed.int", 0));
         assertEquals("3.14", p.getProperty("typed.double"));
@@ -1081,10 +1096,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Error Handling"
      */
     @Test
-    public void invalidGroovySyntaxThrowsWithMessage() throws FileSystemException
+    public void invalidGroovySyntaxThrowsWithMessage() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Inject invalid Groovy syntax at runtime
         p.setProperty("bad.syntax", "#{ this is not valid ++ }");
@@ -1112,10 +1127,10 @@ public class XltPropertiesTest
      * @see PROPERTY_EXPANSION.md "Security"
      */
     @Test
-    public void securitySandboxBlocksDangerousOperations() throws FileSystemException
+    public void securitySandboxBlocksDangerousOperations() throws Exception
     {
         setup("propertytest_groovy_1", "propertytest_groovy_1/config");
-        var p = new XltPropertiesImpl(null, null, true, false);
+        var p = new XltPropertiesImpl((FsResource) null, (FsResource) null, true, false);
 
         // Doc: "File system access (File, FileReader, etc.)"
         assertSecurityBlocks(p, "#{ new java.io.File('/etc/passwd') }", "File access");

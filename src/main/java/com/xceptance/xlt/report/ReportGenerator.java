@@ -20,21 +20,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileName;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.NameScope;
-import org.apache.commons.vfs2.Selectors;
-import org.apache.commons.vfs2.VFS;
 
+import com.xceptance.common.io.fs.FsResource;
 import com.xceptance.common.util.Console;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.api.report.ReportProvider;
@@ -62,7 +59,7 @@ public class ReportGenerator
 {
     private final ReportGeneratorConfiguration config;
 
-    private final FileObject inputDir;
+    private final FsResource inputDir;
 
     private final File outputDir;
 
@@ -84,7 +81,7 @@ public class ReportGenerator
      * @param noCharts
      * @throws Exception
      */
-    public ReportGenerator(final FileObject inputDir, final File outputDir, final boolean noCharts) throws Exception
+    public ReportGenerator(final FsResource inputDir, final File outputDir, final boolean noCharts) throws Exception
     {
         this(inputDir, outputDir, noCharts, false, null, null, null, null, null, null);
     }
@@ -102,7 +99,7 @@ public class ReportGenerator
      *            a comma-separated list of reg-ex patterns that match the test cases to be excluded from the report
      * @throws Exception
      */
-    public ReportGenerator(final FileObject inputDir, final File outputDir, final boolean noCharts, boolean noAgentCharts,
+    public ReportGenerator(final FsResource inputDir, final File outputDir, final boolean noCharts, boolean noAgentCharts,
                            final File overridePropertyFile, final Properties commandLineProperties, final String testCaseIncludePatternList,
                            final String testCaseExcludePatternList, final String agentIncludePatternList,
                            final String agentExcludePatternList)
@@ -126,14 +123,14 @@ public class ReportGenerator
      *            a comma-separated list of reg-ex patterns that match the test cases to be excluded from the report
      * @throws Exception
      */
-    public ReportGenerator(final FileObject inputDir, final File outputDir, final boolean noCharts, boolean noAgentCharts,
+    public ReportGenerator(final FsResource inputDir, final File outputDir, final boolean noCharts, boolean noAgentCharts,
                            final boolean pdfReport, final File overridePropertyFile, final Properties commandLineProperties,
                            final String testCaseIncludePatternList, final String testCaseExcludePatternList,
                            final String agentIncludePatternList, final String agentExcludePatternList)
         throws Exception
     {
 
-        final FileObject configDir = inputDir.resolveFile(XltConstants.CONFIG_DIR_NAME);
+        final FsResource configDir = inputDir.resolve(XltConstants.CONFIG_DIR_NAME);
 
         XltPropertiesImpl props;
         try
@@ -366,14 +363,17 @@ public class ReportGenerator
         {
             try
             {
-                final java.io.File resultsDir = new java.io.File(inputDir.getName().getPathDecoded());
-                final com.xceptance.xlt.report.storage.cache.CacheManager cm =
-                    new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
-                final long[] range = cm.peekTimeRange();
-                if (range != null)
+                if (inputDir.toLocalPath().isPresent())
                 {
-                    testStartTime = range[0];
-                    elapsedTime = range[1] - range[0];
+                    final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
+                    final com.xceptance.xlt.report.storage.cache.CacheManager cm =
+                        new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
+                    final long[] range = cm.peekTimeRange();
+                    if (range != null)
+                    {
+                        testStartTime = range[0];
+                        elapsedTime = range[1] - range[0];
+                    }
                 }
             }
             catch (final Exception e)
@@ -484,12 +484,12 @@ public class ReportGenerator
         // Step 1: Check if transparent persistent ChunkDB disk cache is available and valid.
         // If valid, skip reading and parsing gigabytes of raw CSV text files across disk threads.
         // Instead, execute a fast columnar SIMD scan over memory-mapped / buffered compressed binary chunks.
-        final boolean isPlainDirectory = "file".equals(inputDir.getName().getScheme());
+        final boolean isPlainDirectory = inputDir.toLocalPath().isPresent();
         if (config.isDataCacheEnabled() && isPlainDirectory)
         {
             try
             {
-                final File resultsDir = new File(inputDir.getName().getPath());
+                final File resultsDir = inputDir.toLocalPath().get().toFile();
                 if (resultsDir.isDirectory())
                 {
                     final com.xceptance.xlt.report.storage.cache.CacheManager cacheManager =
@@ -586,7 +586,8 @@ public class ReportGenerator
 
             final File externalChartsDir = new File(config.getChartDirectory(), "external");
             externalChartsDir.mkdirs();
-            repGen.init(minTime, maxTime, inputDir.getName().getPath(), externalChartsDir, config.shouldChartsGenerated());
+            final String inputDirPath = inputDir.toLocalPath().map(Path::toString).orElseGet(() -> inputDir.getFileSystem().getBasePath().toString());
+            repGen.init(minTime, maxTime, inputDirPath, externalChartsDir, config.shouldChartsGenerated());
             repGen.parse();
             XltLogger.reportLogger.info(timer.stop().get("...finished"));
         }
@@ -728,33 +729,33 @@ public class ReportGenerator
      *            the report directory
      * @throws FileSystemException
      */
-    private void copyConfiguration(final File outputDir) throws FileSystemException
+    private void copyConfiguration(final File outputDir)
     {
-        final FileObject reportConfigDir = VFS.getManager().resolveFile(outputDir, XltConstants.CONFIG_DIR_NAME);
-        FileObject resultsConfigDir = inputDir.getChild("config");
+        final Path reportConfigDir = outputDir.toPath().resolve(XltConstants.CONFIG_DIR_NAME);
+        final FsResource resultsConfigDir = inputDir.resolve(XltConstants.CONFIG_DIR_NAME);
 
         // results generated by XLT 4.3.x and later are only accepted
         // accept all files/directories in the results configuration directory
 
         // copy the configuration files to the report's configuration directory
-        if (resultsConfigDir != null)
+        if (resultsConfigDir.exists() && resultsConfigDir.isDirectory())
         {
             try
             {
-                reportConfigDir.copyFrom(resultsConfigDir, Selectors.SELECT_ALL);
+                resultsConfigDir.extractTo(reportConfigDir);
             }
-            catch (FileSystemException e)
+            catch (final Exception e)
             {
-                XltLogger.reportLogger.error("Issue while copying original properties from {}", reportConfigDir.getPublicURIString(), e);
+                XltLogger.reportLogger.error("Issue while copying original properties to {}", reportConfigDir, e);
             }
         }
         else
         {
-            XltLogger.reportLogger.warn("There is not config directory with property files avaialble. Skipping.");
+            XltLogger.reportLogger.warn("There is no config directory with property files available. Skipping.");
         }
 
-        // we not longer coping data from outside of the home dir, because it might override another similar file
-        // you can still use these propery files in the home of the test suite, but we are not preserving them
+        // we no longer copy data from outside of the home dir, because it might override another similar file
+        // you can still use these property files in the home of the test suite, but we are not preserving them
     }
 
     /**
@@ -890,23 +891,22 @@ public class ReportGenerator
      */
     public void updateScorecard() throws Exception
     {
-        try
-        {
-            inputDir.resolveFile(XltConstants.LOAD_REPORT_XML_FILENAME, NameScope.CHILD);
-        }
-        catch (FileSystemException fse)
+        final FsResource loadReportXml = inputDir.resolve(XltConstants.LOAD_REPORT_XML_FILENAME);
+        if (!loadReportXml.exists())
         {
             XltLogger.reportLogger.error("Could not find '{}' in directory '{}'.", XltConstants.LOAD_REPORT_XML_FILENAME,
-                                         inputDir.getName().getPathDecoded());
+                                         inputDir.getPath());
             return;
         }
 
-        final FileObject targetDir = VFS.getManager().toFileObject(outputDir);
-        if (inputDir.getName() != targetDir.getName())
+        final Path targetDirPath = outputDir.toPath().toAbsolutePath().normalize();
+        final Optional<Path> inputLocalPath = inputDir.toLocalPath().map(p -> p.toAbsolutePath().normalize());
+
+        if (inputLocalPath.isEmpty() || !inputLocalPath.get().equals(targetDirPath))
         {
             ensureOutputDirAndClean(outputDir);
 
-            targetDir.copyFrom(inputDir, Selectors.SELECT_ALL);
+            inputDir.extractTo(targetDirPath);
         }
 
         final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
@@ -934,43 +934,22 @@ public class ReportGenerator
      *            the input directory or archive file
      * @return the directory name
      */
-    private String getResultsDirName(final FileObject input)
+    private String getResultsDirName(final FsResource input)
     {
-        final String inputDirName;
-
-        final FileName inputName = input.getName();
-        final boolean isPlainDirectory = inputName.getScheme().equals("file");
-
-        if (isPlainDirectory)
+        final String name = input.getName();
+        if (StringUtils.isNotEmpty(name))
         {
-            // example: file:///d:/workspace/xlt-4.2.x/results/20121106-111751 -> 20121106-111751
-
-            // use the name of the results directory
-            inputDirName = inputName.getBaseName();
-        }
-        else
-        {
-            // must be a results archive
-
-            // check if there is a results directory in the archive
-            if (inputName.getPath().equals("/"))
-            {
-                // no, use the name of the archive, but exclude the file extension
-                // example: zip:file:///d:/workspace/xlt-4.2.x/results/res.zip!/ -> res
-
-                final String archivePathName = StringUtils.substringBefore(inputName.getRoot().toString(), "!");
-                inputDirName = FilenameUtils.getBaseName(archivePathName);
-            }
-            else
-            {
-                // yes, use the name of the results directory inside the archive
-                // example: zip:file:///d:/workspace/xlt-4.2.x/results/res.zip!/20121106-111751 -> 20121106-111751
-
-                inputDirName = inputName.getBaseName();
-            }
+            return name;
         }
 
-        return inputDirName;
+        // input is root of file system, get file name from base path
+        final Path basePath = input.getFileSystem().getBasePath();
+        if (basePath != null && basePath.getFileName() != null)
+        {
+            return FilenameUtils.getBaseName(basePath.getFileName().toString());
+        }
+
+        return "results";
     }
 
     /**

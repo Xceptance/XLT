@@ -22,7 +22,6 @@ package com.xceptance.xlt.engine;
 //import java.lang.reflect.InvocationTargetException;
 //import java.nio.file.Path;
 //
-//import org.apache.commons.vfs2.FileObject;
 import org.junit.Ignore;
 //import org.junit.Test;
 
@@ -181,7 +180,7 @@ public class XltExecutionContextTest
 //        XltExecutionContext newContext = createNewTestObject();
 //
 //        // WHEN: getting the test suite config directory
-//        FileObject testSuiteConfigDir = newContext.getTestSuiteConfigDir();
+//        FsResource testSuiteConfigDir = newContext.getTestSuiteConfigDir();
 //
 //        // THEN: the returned test suite config directory should be located in the test suite home directory
 //        assertSamePath(new File(testSuiteConfigDir.getName().getPath()), new File(newContext.getTestSuiteHomeDirAsFile(), "config"));

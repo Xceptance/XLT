@@ -22,7 +22,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs2.FileObject;
+
+import com.xceptance.common.io.fs.FsResource;
 
 import com.xceptance.common.util.CsvByteColumns;
 import com.xceptance.common.util.CsvByteLineDecoder;
@@ -152,7 +153,7 @@ class DataParserThread implements Runnable
                 final String userNumber = chunk.getUserNumber();
                 final boolean collectActionNames = chunk.getCollectActionNames();
                 final boolean adjustTimerName = chunk.getAdjustTimerNames();
-                final FileObject file = chunk.getFile();
+                final FsResource file = chunk.getFile();
 
                 final long _fromTime = fromTime;
                 final long _toTime = toTime;

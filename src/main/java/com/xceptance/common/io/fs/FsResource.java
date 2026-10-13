@@ -50,6 +50,23 @@ public interface FsResource
     String getPath();
 
     /**
+     * Returns the file extension of this resource without the leading dot (e.g. "gz" or "properties"),
+     * or an empty string if there is no extension.
+     *
+     * @return file extension, or empty string if none
+     */
+    default String getExtension()
+    {
+        final String name = getName();
+        final int dotIndex = name.lastIndexOf('.');
+        if (dotIndex >= 0 && dotIndex < name.length() - 1)
+        {
+            return name.substring(dotIndex + 1);
+        }
+        return "";
+    }
+
+    /**
      * Checks whether this resource exists in the filesystem.
      *
      * @return {@code true} if this resource exists, {@code false} otherwise

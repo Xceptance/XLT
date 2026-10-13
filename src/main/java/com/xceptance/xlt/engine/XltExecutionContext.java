@@ -16,12 +16,13 @@
 package com.xceptance.xlt.engine;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.VFS;
 
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.common.XltConstants;
 
@@ -46,15 +47,15 @@ public final class XltExecutionContext
     }
 
     /**
-     * The test suite's configuration directory (defaults to "./config"). This is a {@link FileObject}, so the
+     * The test suite's configuration directory (defaults to "./config"). This is a {@link FsResource}, so the
      * configuration directory can also be located in an archive, etc.
      */
-    private FileObject testSuiteConfigDir;
+    private FsResource testSuiteConfigDir;
 
     /**
      * The test suite's home directory (defaults to ".").
      */
-    private FileObject testSuiteHomeDir;
+    private FsResource testSuiteHomeDir;
 
     /**
      * The XLT configuration directory (defaults to "xltHomeDir/config").
@@ -89,19 +90,23 @@ public final class XltExecutionContext
         setTestSuiteConfigDir(new File(testSuiteHome, "config"));
     }
 
-    public FileObject getTestSuiteConfigDir()
+    public FsResource getTestSuiteConfigDir()
     {
         return testSuiteConfigDir;
     }
 
-    public FileObject getTestSuiteHomeDir()
+    public FsResource getTestSuiteHomeDir()
     {
         return testSuiteHomeDir;
     }
 
     public File getTestSuiteHomeDirAsFile()
     {
-        return testSuiteHomeDir == null ? null : new File(testSuiteHomeDir.getName().getPath());
+        if (testSuiteHomeDir == null)
+        {
+            return null;
+        }
+        return testSuiteHomeDir.toLocalPath().map(Path::toFile).orElse(null);
     }
 
     public File getXltConfigDir()
@@ -118,15 +123,15 @@ public final class XltExecutionContext
     {
         try
         {
-            testSuiteConfigDir = VFS.getManager().resolveFile(dir.getAbsolutePath());
+            testSuiteConfigDir = VirtualFileSystem.open(dir.toPath()).getRoot();
         }
-        catch (final FileSystemException e)
+        catch (final IOException e)
         {
             throw new XltException("Failed to resolve directory: " + dir, e);
         }
     }
 
-    public void setTestSuiteConfigDir(final FileObject dir)
+    public void setTestSuiteConfigDir(final FsResource dir)
     {
         testSuiteConfigDir = dir;
     }
@@ -135,15 +140,15 @@ public final class XltExecutionContext
     {
         try
         {
-            testSuiteHomeDir = VFS.getManager().resolveFile(dir.getAbsolutePath());
+            testSuiteHomeDir = VirtualFileSystem.open(dir.toPath()).getRoot();
         }
-        catch (final FileSystemException e)
+        catch (final IOException e)
         {
             throw new XltException("Failed to resolve directory: " + dir, e);
         }
     }
 
-    public void setTestSuiteHomeDir(final FileObject dir)
+    public void setTestSuiteHomeDir(final FsResource dir)
     {
         testSuiteHomeDir = dir;
     }

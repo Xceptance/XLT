@@ -35,8 +35,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileType;
+import com.xceptance.common.io.fs.FsResource;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
@@ -72,8 +71,8 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     {
         final CustomLogsReport report = new CustomLogsReport();
 
-        FileObject results = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory();
-        baseDir = results.getName().getBaseName();
+        FsResource results = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory();
+        baseDir = results.getName();
         targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
         
         // get property value whether or not to aggregate all recorded custom data logs into one data file per scope
@@ -136,7 +135,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return false;
     }        
     
-    private void findLogsAggregated (FileObject results)
+    private void findLogsAggregated (FsResource results)
     {
         try
         {
@@ -153,7 +152,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return;
     }
     
-    private void findLogsNonAggregated (FileObject results)
+    private void findLogsNonAggregated (FsResource results)
     {
         try
         {
@@ -181,22 +180,22 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      * @param currentPath the file path we traversed up to this point
      * @throws IOException
      */
-    private void findLogs (FileObject file, String currentPath, boolean aggregated) throws IOException
+    private void findLogs (FsResource file, String currentPath, boolean aggregated) throws IOException
     {
-        final String filename = file.getName().getBaseName();
-        if (file.getType() == FileType.FOLDER)
+        final String filename = file.getName();
+        if (file.isDirectory())
         {
             if (!XltConstants.CONFIG_DIR_NAME.equals(filename))
             {
-                for (final FileObject fo : file.getChildren())
+                for (final FsResource fo : file.listChildren())
                 {
                     findLogs(fo, makePath(currentPath, filename), aggregated);
                 }
             }
         }
-        else if (file.getType() == FileType.FILE)
+        else if (file.isFile())
         {
-            if (file.getName().getBaseName().toString().startsWith(XltConstants.CUSTOM_LOG_PREFIX)) 
+            if (filename.startsWith(XltConstants.CUSTOM_LOG_PREFIX)) 
             {
                 final String scopeName = filename.substring(XltConstants.CUSTOM_LOG_PREFIX.length(), filename.lastIndexOf('.'));
                 
@@ -229,7 +228,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      * @param scopeName
      * @throws IOException
      */
-    private void copyCustomDataFileToZip(FileObject file, String currentPath, final String filename, final String scopeName)
+    private void copyCustomDataFileToZip(FsResource file, String currentPath, final String filename, final String scopeName)
         throws IOException
     {
         // if scope has already been used, there is a stream for it
@@ -255,12 +254,12 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      * @param file
      * @param scopeName
      */
-    private void aggregateDataForScope(FileObject file, final String scopeName)
+    private void aggregateDataForScope(FsResource file, final String scopeName)
     {
         // every file type is aggregated seperately, e.g. users.csv and users.log
         // aggregated files with same scope (see example above) are then zipped into one archive users.zip for download
 
-        String scopeFile = scopeName + "." + file.getName().getExtension();
+        String scopeFile = scopeName + "." + file.getExtension();
         List<Path> scopePaths = foundScopeFiles.get(scopeName);
         if (scopePaths == null)
         {
@@ -287,7 +286,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         try (BufferedWriter scopeWriter = Files.newBufferedWriter(scopePath, StandardOpenOption.APPEND))
         {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContent().getInputStream(), StandardCharsets.UTF_8)))
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8)))
             {
                 String line;
                 boolean first = true;
@@ -387,12 +386,12 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      * @param scopeStream the {@link ZipOutputStream} that the file contents are written to
      * @throws IOException
      */
-    private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
+    private void writeDataToZip(FsResource file, ZipOutputStream scopeStream) throws IOException
     {
         // InputStream in = /*isCompressed ? 
-        //    new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
-        //    file.getContent().getInputStream();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContent().getInputStream(), StandardCharsets.UTF_8)))
+        //    new GZIPInputStream(file.openStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
+        //    file.openStream();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8)))
         {
             //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
             String line;

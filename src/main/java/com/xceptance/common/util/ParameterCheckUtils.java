@@ -18,9 +18,7 @@ package com.xceptance.common.util;
 import java.io.File;
 import java.util.Arrays;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileType;
+import com.xceptance.common.io.fs.FsResource;
 
 /**
  * The {@link ParameterCheckUtils} class makes verifying method parameters easy.
@@ -142,42 +140,31 @@ public final class ParameterCheckUtils
      * If any of the given criteria checks fails then an <code>IllegalArgumentException</code> is thrown.
      * 
      * @param file
-     *            the file object to be checked
+     *            the resource to be checked
      * @param parameterName
      *            the name of the parameter
      * @throws IllegalArgumentException
-     *             thrown when the given file is not a regular file, an existent file or an unreadable file.
+     *             thrown when the given file is not a regular file or does not exist.
+     * [AI: Gemini]
      */
-    public static void isReadableFile(final FileObject file, final String parameterName)
+    public static void isReadableFile(final FsResource file, final String parameterName)
     {
         isNotNull(file, parameterName);
 
         Reason reason = null;
 
-        try
+        if (!file.exists())
         {
-            if (!file.exists())
-            {
-                reason = Reason.NON_EXISTENT;
-            }
-            else if (file.getType() != FileType.FILE)
-            {
-                reason = Reason.NOT_FILE;
-            }
-            else if (!file.isReadable())
-            {
-                reason = Reason.UNREADABLE;
-            }
-
+            reason = Reason.NON_EXISTENT;
         }
-        catch (final FileSystemException e)
+        else if (!file.isFile())
         {
-            reason = Reason.UNACCESSIBLE;
+            reason = Reason.NOT_FILE;
         }
 
         if (reason != null)
         {
-            doThrow(parameterName, reason, file.getName().getURI());
+            doThrow(parameterName, reason, file.getPath());
         }
     }
 

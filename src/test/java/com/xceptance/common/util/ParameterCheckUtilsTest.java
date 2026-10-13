@@ -17,7 +17,8 @@ package com.xceptance.common.util;
 
 import java.io.File;
 
-import org.apache.commons.vfs2.FileObject;
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -122,7 +123,7 @@ public class ParameterCheckUtilsTest
 
     /**
      * Tests the implementation of {@link ParameterCheckUtils#isReadableFile(File, String)} and
-     * {@link ParameterCheckUtils#isReadableFile(FileObject, String)}.
+     * {@link ParameterCheckUtils#isReadableFile(FsResource, String)}.
      * 
      * @throws Throwable
      *             thrown on unexpected error
@@ -141,8 +142,8 @@ public class ParameterCheckUtilsTest
 
         try
         {
-            ParameterCheckUtils.isReadableFile((FileObject) null, "someParam");
-            Assert.fail("ParameterCheckUtils#isReadableFile(FileObject,String) should raise an IllegalArgumentException since passed FileObject object is null");
+            ParameterCheckUtils.isReadableFile((FsResource) null, "someParam");
+            Assert.fail("ParameterCheckUtils#isReadableFile(FsResource,String) should raise an IllegalArgumentException since passed resource is null");
         }
         catch (final IllegalArgumentException e)
         {
@@ -180,47 +181,34 @@ public class ParameterCheckUtilsTest
         // testFile.setReadable(true);
         //
         // ParameterCheckUtils.isReadableFile(testFile, "someParam");
-        //
-        // final FileObject testFileObject = VFS.getManager().resolveFile(testFile.toURI().toString());
-        // final FileObject testDirObject = VFS.getManager().resolveFile(testDir.toURI().toString());
-        //
-        // Assert.assertNotNull(testFileObject);
-        // Assert.assertNotNull(testDirObject);
-        //
-        // try
-        // {
-        // ParameterCheckUtils.isReadableFile(testDirObject, "someParam");
-        // Assert.fail("ParameterCheckUtils#isReadableFile(FileOject,String) should raise an IllegalArgumentException since passed FileObject object is a directory");
-        // }
-        // catch (final IllegalArgumentException e)
-        // {
-        // }
-        //
-        // try
-        // {
-        // ParameterCheckUtils.isReadableFile(VFS.getManager().resolveFile(new File(testDir, "doesnotexist.txt").toURI()
-        // .toString()),
-        // "someParam");
-        // Assert.fail("ParameterCheckUtils#isReadableFile(FileOject,String) should raise an IllegalArgumentException since passed FileObject object does not exist");
-        // }
-        // catch (final IllegalArgumentException e)
-        // {
-        // }
-        //
-        // testFile.setReadable(false);
-        //
-        // try
-        // {
-        // ParameterCheckUtils.isReadableFile(testFileObject, "someParam");
-        // Assert.fail("ParameterCheckUtils#isReadableFile(FileOject,String) should raise an IllegalArgumentException since passed FileObject object is not readable");
-        // }
-        // catch (final IllegalArgumentException e)
-        // {
-        // }
-        //
-        // testFile.setReadable(true);
-        //
-        // ParameterCheckUtils.isReadableFile(testFileObject, "someParam");
+        try (final VirtualFileSystem vfs = VirtualFileSystem.open(testFile.getParentFile().toPath()))
+        {
+            final FsResource testFileResource = vfs.getRoot().resolve(testFile.getName());
+            final FsResource testDirResource = vfs.getRoot().resolve(testDir.getName());
+
+            Assert.assertNotNull(testFileResource);
+            Assert.assertNotNull(testDirResource);
+
+            try
+            {
+                ParameterCheckUtils.isReadableFile(testDirResource, "someParam");
+                Assert.fail("ParameterCheckUtils#isReadableFile(FsResource,String) should raise an IllegalArgumentException since passed resource is a directory");
+            }
+            catch (final IllegalArgumentException e)
+            {
+            }
+
+            try
+            {
+                ParameterCheckUtils.isReadableFile(vfs.getRoot().resolve("doesnotexist.txt"), "someParam");
+                Assert.fail("ParameterCheckUtils#isReadableFile(FsResource,String) should raise an IllegalArgumentException since passed resource does not exist");
+            }
+            catch (final IllegalArgumentException e)
+            {
+            }
+
+            ParameterCheckUtils.isReadableFile(testFileResource, "someParam");
+        }
     }
 
     /**

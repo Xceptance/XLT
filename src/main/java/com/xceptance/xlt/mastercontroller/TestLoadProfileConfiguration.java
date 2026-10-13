@@ -25,10 +25,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
 
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.ThrowableUtils;
@@ -179,16 +175,11 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     {
         try
         {
-            final FileSystemManager fsMgr = VFS.getManager();
-
-            final FileObject homeDirFO = fsMgr.resolveFile(homeDir.getAbsolutePath());
-            final FileObject configDirFO = fsMgr.resolveFile(configDir.getAbsolutePath());
-
-            return new XltPropertiesImpl(homeDirFO, configDirFO, false, false);
+            return new XltPropertiesImpl(homeDir, configDir, false, false);
         }
-        catch (final FileSystemException fse)
+        catch (final Exception e)
         {
-            throw new IllegalArgumentException("Failed to resolve configuration: " + configDir);
+            throw new IllegalArgumentException("Failed to resolve configuration: " + configDir, e);
         }
     }
 

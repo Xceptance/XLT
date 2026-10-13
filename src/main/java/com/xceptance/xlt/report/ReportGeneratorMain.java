@@ -18,6 +18,7 @@ package com.xceptance.xlt.report;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -28,11 +29,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileType;
-import org.apache.commons.vfs2.VFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 
 import com.xceptance.common.util.Console;
 import com.xceptance.common.util.ParseUtils;
@@ -195,9 +196,14 @@ public class ReportGeneratorMain
     private long duration;
 
     /**
+     * Virtual file system for input.
+     */
+    private VirtualFileSystem vfs;
+
+    /**
      * Report's input directory.
      */
-    private FileObject inputDir;
+    private FsResource inputDir;
 
     /**
      * Report's output directory.
@@ -415,23 +421,21 @@ public class ReportGeneratorMain
             throw new IllegalArgumentException("Please specify a single input directory.");
         }
 
-        final String inputDirURI = getInputDirURI(remainingArgs[0]);
-        inputDir = VFS.getManager().resolveFile(inputDirURI);
-
-        // non-archive URIs use simple 'file' protocol
-        final boolean isArchiveFile = !inputDirURI.startsWith("file:");
+        final String inputPath = StringUtils.isEmpty(remainingArgs[0]) ? "." : remainingArgs[0];
+        vfs = VirtualFileSystem.open(inputPath);
+        inputDir = vfs.getRoot();
 
         // special handling for archives: use archived root directory as input if present
-        if (isArchiveFile)
+        if (!vfs.isPlainDirectory())
         {
             // get 1st level content of inputDir
-            final FileObject[] childs = inputDir.getChildren();
+            final List<FsResource> childs = inputDir.listChildren();
 
             // check if 1st level content of inputDir is a single directory
             // if so, take the sub directory as inputDir
-            if (childs.length == 1 && childs[0].getType() == FileType.FOLDER)
+            if (childs.size() == 1 && childs.get(0).isDirectory())
             {
-                inputDir = childs[0];
+                inputDir = childs.get(0);
             }
         }
 
@@ -448,8 +452,8 @@ public class ReportGeneratorMain
          * have to fall back to given input directory in case such sub-directory does not exist, is not a directory or
          * is not readable.
          */
-        final FileObject configDir = inputDir.getChild(XltConstants.RESULT_CONFIG_DIR);
-        if (configDir != null && configDir.exists() && configDir.isReadable() && configDir.getType().equals(FileType.FOLDER))
+        final FsResource configDir = inputDir.resolve(XltConstants.RESULT_CONFIG_DIR);
+        if (configDir != null && configDir.exists() && configDir.isDirectory())
         {
             // set configuration context
             XltExecutionContext.getCurrent().setTestSuiteConfigDir(configDir);
@@ -501,18 +505,35 @@ public class ReportGeneratorMain
      */
     public void run() throws Exception
     {
-        XltLogger.reportLogger.info(Console.horizontalBar());
-        XltLogger.reportLogger.info(Console.startSection("Setup..."));
+        try
+        {
+            XltLogger.reportLogger.info(Console.horizontalBar());
+            XltLogger.reportLogger.info(Console.startSection("Setup..."));
 
-        final Timer timer = Timer.start();
-        final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, pdfReport,
-                                                                    overridePropertyFile, commandLineProperties,
-                                                                    testCaseIncludePatternList, testCaseExcludePatternList,
-                                                                    agentIncludePatternList, agentExcludePatternList);
-        XltLogger.reportLogger.info(timer.stop().get("...finished"));
-        XltLogger.reportLogger.info(Console.endSection());
+            final Timer timer = Timer.start();
+            final ReportGenerator reportGenerator = new ReportGenerator(inputDir, outputDir, noCharts, noAgentCharts, pdfReport,
+                                                                        overridePropertyFile, commandLineProperties,
+                                                                        testCaseIncludePatternList, testCaseExcludePatternList,
+                                                                        agentIncludePatternList, agentExcludePatternList);
+            XltLogger.reportLogger.info(timer.stop().get("...finished"));
+            XltLogger.reportLogger.info(Console.endSection());
 
-        reportGenerator.generateReport(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel);
+            reportGenerator.generateReport(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel);
+        }
+        finally
+        {
+            if (vfs != null)
+            {
+                try
+                {
+                    vfs.close();
+                }
+                catch (final Exception e)
+                {
+                    // ignore
+                }
+            }
+        }
     }
 
     /**
@@ -629,105 +650,6 @@ public class ReportGeneratorMain
                                      "<inputdir> can also be an archive of one of the following types: ZIP, JAR, TAR and compressed TAR (BZIP or GZIP).\n" +
                                      "<test cases> is a comma-separated list of test case names, but regular expressions are supported as well.");
         System.out.println();
-    }
-
-    /**
-     * Returns the URI of the given input directory whereas the archive's type is determined by the appropriate filename
-     * suffix of the input directory.
-     *
-     * @param input
-     *            input directory
-     * @return URI of given input directory
-     */
-    private String getInputDirURI(final String input)
-    {
-        final String inputDirectory = StringUtils.isEmpty(input) ? "." : input;
-        final String inputDirURI = new File(inputDirectory).toURI().toString();
-
-        for (final ArchiveType type : ArchiveType.values())
-        {
-            if (type.accept(inputDirURI))
-            {
-                return type.getProtocol() + inputDirURI;
-            }
-        }
-
-        return inputDirURI;
-    }
-
-    /**
-     * Enumeration of archive types.
-     */
-    private enum ArchiveType
-    {
-        tbz2("tar.bz|tar.bz2|tbz2|tbz"), tgz("tar.gz|tgz"), tar, jar, zip;
-
-        /**
-         * File suffixes separated by '|'.
-         */
-        private final String fileSuffix;
-
-        /**
-         * Default constructor.
-         */
-        private ArchiveType()
-        {
-            this(null);
-        }
-
-        /**
-         * Creates a new archive type.
-         *
-         * @param suffix
-         *            file suffixes of new archive type
-         */
-        private ArchiveType(final String suffix)
-        {
-            fileSuffix = suffix;
-        }
-
-        /**
-         * Returns the protocol of this archive type.
-         *
-         * @return protocol of this archive type
-         */
-        public String getProtocol()
-        {
-            return name() + ":";
-        }
-
-        /**
-         * Returns the file suffixes as '|' separated list of strings.
-         *
-         * @return file suffixes
-         */
-        public String getFileSuffixes()
-        {
-            return (fileSuffix == null) ? name() : fileSuffix;
-        }
-
-        /**
-         * Determines whether or not the given file name is accepted by this archive type.
-         *
-         * @param fileName
-         *            name of file to be checked
-         * @return <code>true</code> if this archive accepts the given file name, <code>false</code> otherwise
-         */
-        public boolean accept(final String fileName)
-        {
-            if (fileName != null && fileName.length() > 0)
-            {
-                final String s = fileName.toLowerCase();
-                for (final String suffix : getFileSuffixes().split("\\|"))
-                {
-                    if (s.endsWith("." + suffix))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
     }
 
     long getFromTime()

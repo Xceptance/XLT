@@ -22,17 +22,18 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.XltBufferedByteLineReader;
+import com.xceptance.common.io.fs.FsResource;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
  * Reads lines from the result files of a certain test user.
+ *
+ * [AI: Gemini]
  */
 class DataReaderThread implements Runnable
 {
@@ -55,7 +56,7 @@ class DataReaderThread implements Runnable
     /**
      * The directory with the test user's result files.
      */
-    private final FileObject directory;
+    private final FsResource directory;
 
     /**
      * The name of the test case the test user was executing.
@@ -63,14 +64,14 @@ class DataReaderThread implements Runnable
     private final String testCaseName;
 
     /**
-     * The global line counter.
-     */
-    private final AtomicLong totalLineCounter;
-
-    /**
      * The instance number of the test user.
      */
     private final String userNumber;
+
+    /**
+     * The global line counter.
+     */
+    private final AtomicLong totalLineCounter;
 
     /**
      * The dispatcher that coordinates result processing.
@@ -78,7 +79,7 @@ class DataReaderThread implements Runnable
     private final Dispatcher dispatcher;
 
     /**
-     * Constructor.
+     * Creates a new DataReaderThread object.
      *
      * @param directory
      *            the directory with the test user's result files
@@ -93,7 +94,7 @@ class DataReaderThread implements Runnable
      * @param dispatcher
      *            the dispatcher that coordinates result processing
      */
-    public DataReaderThread(final FileObject directory, final String agentName, final String testCaseName, final String userNumber,
+    public DataReaderThread(final FsResource directory, final String agentName, final String testCaseName, final String userNumber,
                             final AtomicLong totalLineCounter, final Dispatcher dispatcher)
     {
         this.directory = directory;
@@ -135,15 +136,15 @@ class DataReaderThread implements Runnable
      */
     private void readLogsFromTestUserDir() throws Exception
     {
-        final ArrayList<FileObject> regularTimerFiles = new ArrayList<FileObject>();
-        final ArrayList<FileObject> clientPerformanceTimerFiles = new ArrayList<FileObject>();
+        final ArrayList<FsResource> regularTimerFiles = new ArrayList<FsResource>();
+        final ArrayList<FsResource> clientPerformanceTimerFiles = new ArrayList<FsResource>();
 
         // get all readable files
-        for (final FileObject file : directory.getChildren())
+        for (final FsResource file : directory.listChildren())
         {
-            if (file.getType() == FileType.FILE && file.isReadable())
+            if (file.isFile())
             {
-                final String fileName = file.getName().getBaseName();
+                final String fileName = file.getName();
                 // timers.csv and timers.csv.gz
                 if (XltConstants.TIMER_FILENAME_PATTERNS.stream().anyMatch(r -> r.asPredicate().test(fileName)))
                 {
@@ -163,7 +164,7 @@ class DataReaderThread implements Runnable
         boolean haveClientPerformanceTimerFiles = !clientPerformanceTimerFiles.isEmpty();
 
         // process regular timer files first (to collect action names)
-        for (final FileObject file : regularTimerFiles)
+        for (final FsResource file : regularTimerFiles)
         {
             // collect action names only if we have client performance data
             readTimerLog(file, haveClientPerformanceTimerFiles, false);
@@ -172,7 +173,7 @@ class DataReaderThread implements Runnable
         // process client performance timer files *after* the regular timer files
         if (haveClientPerformanceTimerFiles)
         {
-            for (final FileObject file : clientPerformanceTimerFiles)
+            for (final FsResource file : clientPerformanceTimerFiles)
             {
                 readTimerLog(file, false, true);
             }
@@ -189,21 +190,13 @@ class DataReaderThread implements Runnable
      * @param adjustTimerName
      *            whether timer names should be adjusted
      */
-    private void readTimerLog(final FileObject file, final boolean collectActionNames, final boolean adjustTimerName)
+    private void readTimerLog(final FsResource file, final boolean collectActionNames, final boolean adjustTimerName)
     {
-        // that costs a lot of time, no idea why... real async logger might be an option, LOG.info did not help
-        // System.out.printf("Reading file '%s' ...", file);
-        // LOG.info(String.format("Reading file '%s' ...", file));
-
-        final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
+        final boolean isCompressed = "gz".equalsIgnoreCase(file.getExtension());
         final int chunkSize = dispatcher.chunkSize;
 
-        // VFS has no performance impact, so we keep that for the moment
-        try (final XltBufferedByteLineReader reader = new XltBufferedByteLineReader(isCompressed ? new GZIPInputStream(file.getContent()
-                                                                                                                         .getInputStream(),
-                                                                                                                     1024 * 16)
-                                                                                               : file.getContent()
-                                                                                                     .getInputStream()))
+        try (final XltBufferedByteLineReader reader = new XltBufferedByteLineReader(isCompressed ? new GZIPInputStream(file.openStream(), 1024 * 16)
+                                                                                                 : file.openStream()))
         {
             List<byte[]> lines = new SimpleArrayList<>(chunkSize);
             int baseLineNumber = 1;  // let line numbering start at 1

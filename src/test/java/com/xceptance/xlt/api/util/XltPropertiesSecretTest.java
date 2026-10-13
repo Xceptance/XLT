@@ -26,8 +26,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.VFS;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +44,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltEngine;
@@ -49,15 +60,25 @@ public class XltPropertiesSecretTest
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    protected FileObject home;
-    protected FileObject config;
+    protected VirtualFileSystem vfs;
+    protected FsResource home;
+    protected FsResource config;
+    private File configFolder;
+
+    private String origTestProperty;
 
     @Before
     public void setup() throws IOException
     {
-        home = VFS.getManager().resolveFile(tempFolder.newFolder("home").getAbsolutePath());
-        config = home.resolveFile("config");
-        config.createFolder();
+        origTestProperty = System.getProperty("test");
+        System.clearProperty("test");
+
+        final File homeFolder = tempFolder.newFolder("home");
+        configFolder = new File(homeFolder, "config");
+        configFolder.mkdirs();
+        vfs = VirtualFileSystem.open(homeFolder.toPath());
+        home = vfs.getRoot();
+        config = home.resolve("config");
 
         // remove all properties starting with secret. from system
         var keys = System.getProperties().keySet().stream()
@@ -70,12 +91,25 @@ public class XltPropertiesSecretTest
     @After
     public void teardown() throws IOException
     {
+        if (vfs != null)
+        {
+            vfs.close();
+        }
         // remove all properties starting with secret. from system
         var keys = System.getProperties().keySet().stream()
             .filter(k -> (k instanceof String))
             .map(k -> (String) k)
             .filter(s -> s.startsWith("secret.")).collect(Collectors.toList());
         keys.forEach(System::clearProperty);
+
+        if (origTestProperty != null)
+        {
+            System.setProperty("test", origTestProperty);
+        }
+        else
+        {
+            System.clearProperty("test");
+        }
     }
 
     /*
@@ -99,35 +133,24 @@ public class XltPropertiesSecretTest
         systemPropertiesSet.clear();
     }
 
-    private FileObject writeConfigContent(String path, String content)
+    private FsResource writeConfigContent(String path, String content)
     {
         return writeConfigContent(path, List.of(content));
     }
 
-    private FileObject writeConfigContent(String path, List<String> content)
+    private FsResource writeConfigContent(String path, List<String> content)
     {
-        FileObject file;
         try
         {
-            file = config.resolveFile(path);
-            if (!file.exists())
-            {
-                file.createFile();
-            }
-
-            var os = file.getContent().getOutputStream();
-            for (String s : content)
-            {
-                os.write((s + "\n").getBytes());
-            }
-            file.getContent().close();
+            final File file = new File(configFolder, path);
+            file.getParentFile().mkdirs();
+            Files.write(file.toPath(), (String.join("\n", content) + "\n").getBytes(StandardCharsets.UTF_8));
+            return config.resolve(path);
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
         }
-
-        return file;
     }
 
     private XltPropertiesImpl createDefaults()

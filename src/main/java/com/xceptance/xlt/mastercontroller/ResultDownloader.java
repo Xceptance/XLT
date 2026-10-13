@@ -27,15 +27,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.vfs2.FileObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.xceptance.common.io.fs.FsResource;
 
 import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.agentcontroller.AgentController;
@@ -87,7 +91,7 @@ public class ResultDownloader
         boolean timeDataUpdated = false;
         if (testConfigDownloaded)
         {
-            final FileObject testPropFile = MasterController.getTestPropertyFile(testResultsDir);
+            final FsResource testPropFile = MasterController.getTestPropertyFile(testResultsDir);
             if (testPropFile != null)
             {
                 timeDataUpdated = updateTimeData(testPropFile);
@@ -422,7 +426,7 @@ public class ResultDownloader
     /**
      * @progresscount ac + 1
      */
-    private boolean updateTimeData(final FileObject testPropFile)
+    private boolean updateTimeData(final FsResource testPropFile)
     {
         // earliest start date and highest elapsed time of test users over all agent controllers
         final AtomicLong startDate = new AtomicLong(Long.MAX_VALUE);
@@ -443,10 +447,10 @@ public class ResultDownloader
                 final long startTime = startDate.get();
                 final long elapsed = elapsedTime.get();
                 // don't update test config when no time data available
-                if (startTime > 0L && startTime < Long.MAX_VALUE)
+                if (startTime > 0L && startTime < Long.MAX_VALUE && testPropFile.toLocalPath().isPresent())
                 {
-                    try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true),
-                                                                           StandardCharsets.ISO_8859_1)))
+                    final Path localPath = testPropFile.toLocalPath().get();
+                    try (var w = Files.newBufferedWriter(localPath, StandardCharsets.ISO_8859_1, StandardOpenOption.APPEND))
                     {
                         w.newLine();
                         w.newLine();
@@ -466,7 +470,7 @@ public class ResultDownloader
         }
         catch (IOException e)
         {
-            LOG.error("Failed adding runtime information to file '" + testPropFile.getPublicURIString() + "'.", e);
+            LOG.error("Failed adding runtime information to file '" + testPropFile.getPath() + "'.", e);
         }
         progress.increaseCount();
 

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.vfs2.FileObject;
+import com.xceptance.common.io.fs.FsResource;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -235,7 +235,7 @@ public class TestDataUtilsTest extends AbstractXLTTestCase
     @Test
     public void testGetGlobalData() throws Throwable
     {
-        final FileObject origHome = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
+        final FsResource origHome = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
         try
         {
             XltExecutionContext.getCurrent().setTestSuiteHomeDir(getTempDir());

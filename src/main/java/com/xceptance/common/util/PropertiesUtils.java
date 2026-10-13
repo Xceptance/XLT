@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,8 +29,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.VFS;
+import com.xceptance.common.io.fs.FsResource;
 
 /**
  * The PropertiesUtils helps in dealing with properties files.
@@ -68,7 +68,9 @@ public final class PropertiesUtils
     {
         ParameterCheckUtils.isReadableFile(file, "file");
 
-        return loadProperties(VFS.getManager().toFileObject(file));
+        final Properties props = new Properties();
+        loadProperties(file, props);
+        return props;
     }
 
     /**
@@ -86,19 +88,23 @@ public final class PropertiesUtils
         ParameterCheckUtils.isReadableFile(file, "file");
         ParameterCheckUtils.isNotNull(props, "props");
 
-        loadProperties(VFS.getManager().toFileObject(file), props);
+        try (final InputStream in = Files.newInputStream(file.toPath()))
+        {
+            props.load(in);
+        }
     }
 
     /**
      * Loads the properties from the given file and returns them as a Properties object.
      *
      * @param file
-     *            the properties file
+     *            the properties resource
      * @return the resulting Properties object
      * @throws IOException
      *             if an I/O error occurs
+     * [AI: Gemini]
      */
-    public static Properties loadProperties(final FileObject file) throws IOException
+    public static Properties loadProperties(final FsResource file) throws IOException
     {
         final Properties props = new Properties();
 
@@ -111,13 +117,14 @@ public final class PropertiesUtils
      * Loads the properties from the given file and puts them into the specified Properties object.
      *
      * @param file
-     *            the properties file
+     *            the properties resource
      * @param props
      *            the properties object to load the properties into
      * @throws IOException
      *             if an I/O error occurs
+     * [AI: Gemini]
      */
-    public static void loadProperties(final FileObject file, final Properties props) throws IOException
+    public static void loadProperties(final FsResource file, final Properties props) throws IOException
     {
         try
         {
@@ -125,11 +132,11 @@ public final class PropertiesUtils
         }
         catch (final IllegalArgumentException e)
         {
-            throw new FileNotFoundException(file.toString());
+            throw new FileNotFoundException(file.getPath());
         }
         ParameterCheckUtils.isNotNull(props, "props");
 
-        try (final InputStream is = file.getContent().getInputStream())
+        try (final InputStream is = file.openStream())
         {
             props.load(is);
         }

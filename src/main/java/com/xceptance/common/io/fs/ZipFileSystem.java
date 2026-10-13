@@ -129,6 +129,15 @@ final class ZipFileSystem implements VirtualFileSystem
      * {@inheritDoc}
      */
     @Override
+    public Path getBasePath()
+    {
+        return zipFilePath;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public synchronized void close() throws IOException
     {
         if (!closed)

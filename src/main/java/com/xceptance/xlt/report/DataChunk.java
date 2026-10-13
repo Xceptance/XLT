@@ -18,7 +18,7 @@ package com.xceptance.xlt.report;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.apache.commons.vfs2.FileObject;
+import com.xceptance.common.io.fs.FsResource;
 
 /**
  * Holds a chunk of result lines together with meta and processing information. Both types of info is needed by the
@@ -48,7 +48,7 @@ public class DataChunk
      */
     private final boolean collectActionNames;
 
-    private final FileObject file;
+    private final FsResource file;
 
     private final List<byte[]> lines;
 
@@ -56,7 +56,7 @@ public class DataChunk
 
     private final String userNumber;
 
-    public DataChunk(final List<byte[]> lines, final int baseLineNumber, final FileObject file, final String agentName,
+    public DataChunk(final List<byte[]> lines, final int baseLineNumber, final FsResource file, final String agentName,
                      final String testCaseName, final String userNumber, final boolean collectActionNames, final boolean adjustTimerNames,
                      final ConcurrentSkipListMap<Long, String> actionNames)
     {
@@ -96,7 +96,7 @@ public class DataChunk
         return collectActionNames;
     }
 
-    public FileObject getFile()
+    public FsResource getFile()
     {
         return file;
     }

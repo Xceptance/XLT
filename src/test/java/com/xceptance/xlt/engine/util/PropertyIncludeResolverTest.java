@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.VFS;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.io.fs.VirtualFileSystem;
 import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyInclude;
 import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyIncludeResult;
 
@@ -44,25 +44,37 @@ import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyIncludeResu
  */
 public class PropertyIncludeResolverTest
 {
+    private VirtualFileSystem vfs;
+
     /**
      * The absolute path to the test resources. Simulates the boundary of the FS
      */
-    private FileObject homeDir;
+    private FsResource homeDir;
 
     /**
      * There the test resources are
      */
-    private FileObject configDir;
+    private FsResource configDir;
 
     /**
      * Setup the base source
      */
     @Before
-    public void setup() throws FileSystemException
+    public void setup() throws IOException
     {
         var home = getClass().getResource("includeresolvertest").getFile();
-        homeDir = VFS.getManager().toFileObject(new File(home));
-        configDir = homeDir.resolveFile("configdir");
+        vfs = VirtualFileSystem.open(new File(home).toPath());
+        homeDir = vfs.getRoot();
+        configDir = homeDir.resolve("configdir");
+    }
+
+    @After
+    public void tearDown() throws IOException
+    {
+        if (vfs != null)
+        {
+            vfs.close();
+        }
     }
 
     enum IsInclude
@@ -139,17 +151,9 @@ public class PropertyIncludeResolverTest
      */
     public void testIt(List<String> source, List<IncludeResult> expected) throws IOException
     {
-        var srcFiles = source.stream().map(s ->
-        {
-            try
-            {
-                return new PropertyInclude(configDir.resolveFile(s), s);
-            }
-            catch (FileSystemException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+        var srcFiles = source.stream()
+                             .map(s -> new PropertyInclude(configDir.resolve(s), s))
+                             .collect(Collectors.toList());
 
         /* Get the results and check them. */
         var results = PropertyIncludeResolver.resolve(homeDir, configDir, srcFiles);
@@ -163,18 +167,8 @@ public class PropertyIncludeResolverTest
             final IncludeResult e = expected.get(i);
             final PropertyIncludeResult r = results.get(i);
 
-            // correct path
-            try
-            {
-                var resolved = configDir.resolveFile(e.name);
-                assertEquals(String.format("expected: %s and actual: %s", resolved.toString(), r.file.toString()),
-                             0,
-                             resolved.compareTo(r.file));
-            }
-            catch (Exception e1)
-            {
-                fail("Could not resolve path");
-            }
+            var resolved = configDir.resolve(e.name);
+            assertEquals(resolved.getPath(), r.file.getPath());
 
             assertEquals(e.exists, r.exists);
             assertEquals(e.outsideRootDirScope, r.outsideORootDirScope);
@@ -490,25 +484,23 @@ public class PropertyIncludeResolverTest
 
     /**
      * Extract name test. Just the name of a shared root
-     * @throws FileSystemException
      */
     @Test
-    public void extractNameFileNameOnly() throws FileSystemException
+    public void extractNameFileNameOnly()
     {
         final var NAME = "a.properties";
-        var s = configDir.resolveFile(NAME);
+        var s = configDir.resolve(NAME);
         assertEquals(NAME, PropertyIncludeResolver.extractName(configDir, s, NAME));
     }
 
     /**
      * Extract name test. Just the and some path
-     * @throws FileSystemException
      */
     @Test
-    public void extractNameFilenameAndPath() throws FileSystemException
+    public void extractNameFilenameAndPath()
     {
         final var NAME = "includeADir2/d.properties";
-        var s = configDir.resolveFile(NAME);
+        var s = configDir.resolve(NAME);
         assertEquals(NAME, PropertyIncludeResolver.extractName(configDir, s, NAME));
     }
 
@@ -520,8 +512,15 @@ public class PropertyIncludeResolverTest
     public void extractNameNoMatch() throws IOException
     {
         var temp = File.createTempFile("testing", ".test");
-        var s = VFS.getManager().toFileObject(temp);
-        assertEquals(temp.getName(), PropertyIncludeResolver.extractName(configDir, s, temp.getName()));
+        try (var tempFs = VirtualFileSystem.open(temp.getParentFile().toPath()))
+        {
+            var s = tempFs.getRoot().resolve(temp.getName());
+            assertEquals(temp.getName(), PropertyIncludeResolver.extractName(configDir, s, temp.getName()));
+        }
+        finally
+        {
+            temp.delete();
+        }
     }
 
 }

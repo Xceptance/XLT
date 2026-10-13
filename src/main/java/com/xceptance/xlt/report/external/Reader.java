@@ -136,8 +136,6 @@ public class Reader extends AbstractReader<ValueSet>
         try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(getFileName()),
                                                                                             getEncoding())))
         {
-            // System.out.printf("Reading file '%s' ...\n", VFS.getManager().resolveFile(getFileName()));
-
             read(bufferedReader);
 
             // wait for the data processor thread to empty the queue

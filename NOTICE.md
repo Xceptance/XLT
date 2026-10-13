@@ -87,12 +87,6 @@ commons-text
   * Homepage: https://commons.apache.org/proper/commons-text/
   * More information in folder: doc/3rd-party-licenses/commons-text
 
-commons-vfs2
-
-  * License: Apache License 2.0
-  * Homepage: https://commons.apache.org/proper/commons-vfs/
-  * More information in folder: doc/3rd-party-licenses/commons-vfs2
-
 datasketches-java
 
   * License: Apache License 2.0

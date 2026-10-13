@@ -43,8 +43,6 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.VFS;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -1242,8 +1240,8 @@ public class AgentControllerImpl implements AgentController
         final List<String> resolvedPropertyFiles;
         try
         {
-            final FileObject configDir = VFS.getManager().resolveFile(configDirectory.getAbsolutePath());
-            final XltPropertiesImpl props = new XltPropertiesImpl(configDir.getParent(), configDir, false, true);
+            final File homeDir = configDirectory.getParentFile();
+            final XltPropertiesImpl props = new XltPropertiesImpl(homeDir, configDirectory, false, true);
             resolvedPropertyFiles = props.getUsedPropertyFilesByRelativeName();
         }
         catch (final Throwable ex)

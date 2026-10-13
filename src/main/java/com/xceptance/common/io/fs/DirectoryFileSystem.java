@@ -79,6 +79,16 @@ final class DirectoryFileSystem implements VirtualFileSystem
     @Override
     public FsResource resolve(final String relativePath)
     {
+        if (relativePath == null)
+        {
+            return rootResource;
+        }
+        if (relativePath.startsWith("/"))
+        {
+            final Path targetPath = Path.of(relativePath).normalize();
+            return new DirectoryFsResource(this, targetPath, relativePath);
+        }
+
         final String normalized = normalizeRelativePath(relativePath);
         if (normalized.isEmpty())
         {
@@ -105,6 +115,15 @@ final class DirectoryFileSystem implements VirtualFileSystem
     public Optional<Path> getLocalRootPath()
     {
         return Optional.of(rootPath);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Path getBasePath()
+    {
+        return rootPath;
     }
 
     /**
@@ -142,7 +161,36 @@ final class DirectoryFileSystem implements VirtualFileSystem
         {
             p = p.replace("//", "/");
         }
-        return p;
+        if (p.isEmpty())
+        {
+            return "";
+        }
+
+        final String[] segments = p.split("/");
+        final List<String> list = new ArrayList<>(segments.length);
+        for (final String seg : segments)
+        {
+            if (seg.isEmpty() || seg.equals("."))
+            {
+                continue;
+            }
+            if (seg.equals(".."))
+            {
+                if (!list.isEmpty() && !list.get(list.size() - 1).equals(".."))
+                {
+                    list.remove(list.size() - 1);
+                }
+                else
+                {
+                    list.add("..");
+                }
+            }
+            else
+            {
+                list.add(seg);
+            }
+        }
+        return String.join("/", list);
     }
 
     /**
@@ -306,6 +354,11 @@ final class DirectoryFileSystem implements VirtualFileSystem
         @Override
         public FsResource resolve(final String subPath)
         {
+            if (subPath != null && subPath.startsWith("/"))
+            {
+                return fs.resolve(subPath);
+            }
+
             final String normalizedSub = normalizeRelativePath(subPath);
             if (normalizedSub.isEmpty())
             {
@@ -325,6 +378,16 @@ final class DirectoryFileSystem implements VirtualFileSystem
             if (relativePath.isEmpty())
             {
                 return null;
+            }
+
+            if (relativePath.startsWith("/"))
+            {
+                final Path parentLocal = localPath.getParent();
+                if (parentLocal == null)
+                {
+                    return null;
+                }
+                return fs.resolve(parentLocal.toString());
             }
 
             final int lastSlash = relativePath.lastIndexOf('/');
