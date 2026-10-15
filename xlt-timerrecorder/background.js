@@ -606,9 +606,11 @@ function getHeaderValue(headerArray, headerName) {
 function createRecordEntry(dataEntry) {
 
   function enrichRequestEntry(reqEntry, timingEntry) {
-    reqEntry.startTime = timingEntry.startTime
-      ? Math.round(timingEntry.startTime)
-      : reqEntry.startTime;
+    if (!reqEntry.startTime) {
+      reqEntry.startTime = timingEntry.startTime
+        ? Math.round(timingEntry.startTime)
+        : reqEntry.startTime;
+    }
     reqEntry.connectTime = timingEntry.connectTime
       ? Math.round(timingEntry.connectTime)
       : timingEntry.connectTime;
