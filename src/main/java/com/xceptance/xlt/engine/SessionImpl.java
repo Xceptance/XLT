@@ -38,6 +38,7 @@ import com.xceptance.xlt.api.engine.NetworkDataManager;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.SessionShutdownListener;
 import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
@@ -198,6 +199,11 @@ public class SessionImpl extends Session
      * The results directory for this session.
      */
     private Path resultDir;
+
+    /**
+     * The output directory for this session.
+     */
+    private Path outputDir;
 
     /**
      * The registered shutdown listeners.
@@ -374,6 +380,7 @@ public class SessionImpl extends Session
             failed = false;
             t = null;
             resultDir = null;
+            outputDir = null;
             actionDirector = null;
             actionName = null;
             // failedActionName = null;
@@ -448,11 +455,7 @@ public class SessionImpl extends Session
     }
 
     /**
-     * Returns the session's results directory.
-     *
-     * @return the result directory
-     * @throws IOException
-     * @throws
+     * {@inheritDoc}
      */
     public Path getResultsDirectory()
     {
@@ -481,30 +484,46 @@ public class SessionImpl extends Session
             // create new file handle for result directory rooted at the
             // user name directory which itself is rooted at the configured
             // result dir
-            // resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
-            resultDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
+            final Path sessionResultsDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
 
-            if (!Files.exists(resultDir))
+            try
             {
-                // mkdirs() is not thread-safe
-                synchronized (SessionImpl.class)
-                {
-                    try
-                    {
-                        Files.createDirectories(resultDir);
-                        return resultDir;
-                    }
-                    catch (IOException e)
-                    {
-                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + resultDir.toString(), e);
-
-                        return null;
-                    }
-                }
+                Files.createDirectories(sessionResultsDir);
             }
+            catch (IOException e)
+            {
+                throw new XltException("Failed to create results directory: " + sessionResultsDir, e);
+            }
+
+            resultDir = sessionResultsDir;
         }
 
         return resultDir;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Path getResultsOutputDirectory()
+    {
+        if (outputDir == null)
+        {
+            final Path sessionResultsDir = getResultsDirectory();
+            final Path sessionOutputDir = sessionResultsDir.resolve(XltConstants.DUMP_OUTPUT_DIR).resolve(getID());
+
+            try
+            {
+                Files.createDirectories(sessionOutputDir);
+            }
+            catch (IOException e)
+            {
+                throw new XltException("Failed to create output directory: " + sessionOutputDir, e);
+            }
+
+            outputDir = sessionOutputDir;
+        }
+
+        return outputDir;
     }
 
     /**
