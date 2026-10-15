@@ -769,6 +769,7 @@ public class SessionImpl extends Session
         {
             this.userName = userName;
             resultDir = null;
+            outputDir = null;
             dataManagerImpl.close();
         }
     }
