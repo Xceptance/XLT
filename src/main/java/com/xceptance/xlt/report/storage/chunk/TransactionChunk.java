@@ -55,6 +55,9 @@ public class TransactionChunk implements Chunk
     /** Latest transaction timestamp in milliseconds. */
     private final long maxTime;
 
+    /** Maximum runtime duration in milliseconds across all rows in this chunk. */
+    private final int maxRunTime;
+
     /** RoaringBitmap containing all distinct 16-bit transaction name IDs present in this chunk. */
     private final RoaringBitmap timerNameIds;
 
@@ -81,8 +84,29 @@ public class TransactionChunk implements Chunk
     /** Compressed virtual user thread sequence numbers. */
     final int[] compUserNumbers;
 
-    /** Sparse map of error diagnostics keyed by row index (populated only for failed transactions). */
+    /** Sparse map of error diagnostics keyed by row index (populated for failed transactions and transactions with Result Browser dumps). */
     final Map<Integer, TransactionError> errorDetails;
+
+    /**
+     * Constructs a sealed {@link TransactionChunk}.
+     */
+    public TransactionChunk(final int rowCount,
+                            final long minTime,
+                            final long maxTime,
+                            final RoaringBitmap timerNameIds,
+                            final RoaringBitmap agentTestCaseIds,
+                            final RoaringBitmap failedRows,
+                            final int[] compTimeOffsets,
+                            final int[] compTimerNameIds,
+                            final int[] compAgentTestCaseIds,
+                            final int[] compRunTimes,
+                            final int[] compUserNumbers,
+                            final Map<Integer, TransactionError> errorDetails)
+    {
+        this(rowCount, minTime, maxTime, 0, timerNameIds, agentTestCaseIds, failedRows,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds,
+             compRunTimes, compUserNumbers, errorDetails);
+    }
 
     /**
      * Constructs a sealed {@link TransactionChunk}.
@@ -93,6 +117,8 @@ public class TransactionChunk implements Chunk
      *            earliest timestamp in milliseconds
      * @param maxTime
      *            latest timestamp in milliseconds
+     * @param maxRunTime
+     *            maximum runtime duration in milliseconds
      * @param timerNameIds
      *            bitmap of contained timer IDs
      * @param agentTestCaseIds
@@ -115,6 +141,7 @@ public class TransactionChunk implements Chunk
     public TransactionChunk(final int rowCount,
                             final long minTime,
                             final long maxTime,
+                            final int maxRunTime,
                             final RoaringBitmap timerNameIds,
                             final RoaringBitmap agentTestCaseIds,
                             final RoaringBitmap failedRows,
@@ -128,6 +155,7 @@ public class TransactionChunk implements Chunk
         this.rowCount = rowCount;
         this.minTime = minTime;
         this.maxTime = maxTime;
+        this.maxRunTime = maxRunTime;
         this.timerNameIds = timerNameIds;
         this.agentTestCaseIds = agentTestCaseIds;
         this.failedRows = failedRows;
@@ -164,6 +192,18 @@ public class TransactionChunk implements Chunk
     }
 
     @Override
+    public int getMaxRunTime()
+    {
+        return maxRunTime;
+    }
+
+    @Override
+    public boolean hasFailures()
+    {
+        return failedRows != null && !failedRows.isEmpty();
+    }
+
+    @Override
     public RoaringBitmap getTimerNameIds()
     {
         return timerNameIds;
@@ -193,5 +233,15 @@ public class TransactionChunk implements Chunk
     public Map<Integer, TransactionError> getErrorDetails()
     {
         return errorDetails;
+    }
+
+    /**
+     * Returns the compressed virtual user numbers array.
+     *
+     * @return compressed user numbers
+     */
+    public int[] getCompUserNumbers()
+    {
+        return compUserNumbers;
     }
 }

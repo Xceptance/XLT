@@ -57,6 +57,12 @@ public abstract class AbstractData implements Data
     private String agentName;
 
     /**
+     * The number (or index, [0..N]) of the test user that produced this data record. Only used during report
+     * generation or analysis.
+     */
+    private String testUserNumber;
+
+    /**
      * Creates a new AbstractData object and gives it the specified name and type code.
      *
      * @param name
@@ -206,6 +212,24 @@ public abstract class AbstractData implements Data
     public void setTransactionName(final String transactionName)
     {
         this.transactionName = transactionName;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getTestUserNumber()
+    {
+        return testUserNumber;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setTestUserNumber(final String testUserNumber)
+    {
+        this.testUserNumber = testUserNumber;
     }
 
     /**

@@ -61,10 +61,10 @@ public class TransactionChunkHandler implements ChunkTypeHandler
      * <p>
      * <b>Binary Layout:</b>
      * <ol>
-     *   <li>Header: row count (int), min timestamp (long), max timestamp (long).</li>
+     *   <li>Header: row count (int), min timestamp (long), max timestamp (long), max runtime (int).</li>
      *   <li>Bitmaps: timer name IDs, agent/testCase IDs, failed row indices.</li>
      *   <li>Columnar compressed blocks: time offsets, timer IDs, agent IDs, runtimes, user numbers.</li>
-     *   <li>Sparse error map: number of failed rows, followed by (row index, failedActionName, stackTrace, directoryName).</li>
+     *   <li>Sparse diagnostic/dump map: entry count (int), followed by (row index, failedActionName, stackTrace, directoryName).</li>
      * </ol>
      *
      * @param chunk
@@ -83,6 +83,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         out.writeInt(c.getRowCount());
         out.writeLong(c.getMinTime());
         out.writeLong(c.getMaxTime());
+        out.writeInt(c.getMaxRunTime());
 
         // 2. RoaringBitmap inverted index filters
         c.getTimerNameIds().serialize(out);
@@ -127,6 +128,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         final int rowCount = in.readInt();
         final long minTime = in.readLong();
         final long maxTime = in.readLong();
+        final int maxRunTime = in.readInt();
 
         // 2. Deserialize RoaringBitmaps
         final RoaringBitmap timerIds = new RoaringBitmap();
@@ -157,7 +159,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             errors.put(rowIdx, new TransactionChunk.TransactionError(action, stack, dir));
         }
 
-        return new TransactionChunk(rowCount, minTime, maxTime, timerIds, agentTestCaseIds, failedRows,
+        return new TransactionChunk(rowCount, minTime, maxTime, maxRunTime, timerIds, agentTestCaseIds, failedRows,
                                     compTimeOffsets, compTimerNameIds, compAgentTestCaseIds,
                                     compRunTimes, compUserNumbers, errors);
     }
@@ -196,6 +198,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
         final Map<Integer, TransactionChunk.TransactionError> errors = c.getErrorDetails();
+        final boolean hasErrorsOrDumps = errors != null && !errors.isEmpty();
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
@@ -232,7 +235,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
 
             final boolean failed = anyFailed && failedRows.contains(i);
             data.setFailed(failed);
-            if (failed && errors != null)
+            if (hasErrorsOrDumps)
             {
                 final TransactionChunk.TransactionError err = errors.get(i);
                 if (err != null)
@@ -285,6 +288,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
         final Map<Integer, TransactionChunk.TransactionError> errors = c.getErrorDetails();
+        final boolean hasErrorsOrDumps = errors != null && !errors.isEmpty();
 
         // Convert failed bitmap to fast boolean lookup table if any rows failed
         boolean[] failedLookup = null;
@@ -389,15 +393,12 @@ public class TransactionChunkHandler implements ChunkTypeHandler
 
             final boolean failed = failedLookup != null && failedLookup[i];
             data.setFailed(failed);
-            if (failed && errors != null)
+            final TransactionChunk.TransactionError err = hasErrorsOrDumps ? errors.get(i) : null;
+            if (err != null)
             {
-                final TransactionChunk.TransactionError err = errors.get(i);
-                if (err != null)
-                {
-                    data.setFailedActionName(err.failedActionName());
-                    data.setFailureStackTrace(err.stackTrace());
-                    data.setDirectoryName(err.directoryName());
-                }
+                data.setFailedActionName(err.failedActionName());
+                data.setFailureStackTrace(err.stackTrace());
+                data.setDirectoryName(err.directoryName());
             }
             else
             {
@@ -469,6 +470,9 @@ public class TransactionChunkHandler implements ChunkTypeHandler
 
         /** Latest timestamp encountered in this chunk. */
         private long maxTime = Long.MIN_VALUE;
+
+        /** Maximum runtime duration encountered in this chunk. */
+        private int maxRunTime = 0;
 
         // ---------------------------------------------------------------------
         // Columnar Primitive Arrays (Pre-allocated to DEFAULT_CHUNK_CAPACITY)
@@ -624,10 +628,18 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             }
             agentTestCaseIdArr[idx] = aid;
 
-            // 4. Record failure status and diagnostics out-of-band
+            // 4. Record failure status and diagnostics (including non-failed Result Browser dumps) out-of-band:
+            //    Note that failedRows (bitmap) and errorMap (sparse diagnostic map) are intentionally decoupled.
+            //    A transaction may succeed (!td.hasFailed()) yet still produce a Result Browser dump directory
+            //    (td.getDirectoryName() != null). Keeping failedRows strictly for failed transactions preserves
+            //    accurate failure counts and Zone Map pruning, while populating errorMap whenever either condition
+            //    holds ensures Result Browser links are never lost for successful transactions.
             if (td.hasFailed())
             {
                 failedRows.add(idx);
+            }
+            if (td.hasFailed() || org.apache.commons.lang3.StringUtils.isNotEmpty(td.getDirectoryName()))
+            {
                 errorMap.put(idx, new TransactionChunk.TransactionError(
                     td.getFailedActionName(),
                     td.getFailureStackTrace(),
@@ -635,8 +647,13 @@ public class TransactionChunkHandler implements ChunkTypeHandler
                 ));
             }
 
-            // 5. Store run time and intern test user number
-            runTimes[idx] = td.getRunTime();
+            // 5. Store run time (updating chunk Zone Map maxRunTime) and intern test user number for correlation
+            final int rt = td.getRunTime();
+            if (rt > maxRunTime)
+            {
+                maxRunTime = rt;
+            }
+            runTimes[idx] = rt;
             userNumbers[idx] = dicts.getOrCreateStringId(td.getTestUserNumber());
 
             count++;
@@ -651,6 +668,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             {
                 minTime = 0;
                 maxTime = 0;
+                maxRunTime = 0;
             }
 
             // Convert absolute epoch timestamps into delta offsets relative to minTime
@@ -673,7 +691,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             final int[] compRunTimes = FastIntegerCodec.compress(finalRunTimes);
             final int[] compUserNumbers = FastIntegerCodec.compress(finalUserNumbers);
 
-            return new TransactionChunk(size, minTime, maxTime,
+            return new TransactionChunk(size, minTime, maxTime, maxRunTime,
                                         timerIds.clone(), agentTestCaseIds.clone(), failedRows.clone(),
                                         compTimeOffsets, compTimerNameIds, compAgentTestCaseIds,
                                         compRunTimes, compUserNumbers, new java.util.HashMap<>(errorMap));
@@ -685,6 +703,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             count = 0;
             minTime = Long.MAX_VALUE;
             maxTime = Long.MIN_VALUE;
+            maxRunTime = 0;
             timerIds.clear();
             agentTestCaseIds.clear();
             failedRows.clear();

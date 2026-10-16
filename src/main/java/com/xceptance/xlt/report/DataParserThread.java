@@ -246,7 +246,15 @@ class DataParserThread implements Runnable
                     // if this is request, filter it aka apply merge rules
                     if (data instanceof RequestData)
                     {
-                        final RequestData result = requestProcessing.postprocess((RequestData) data);
+                        final RequestData reqData = (RequestData) data;
+                        // Snapshot the original unmerged timer name (e.g. "Homepage.1.2") BEFORE MergeRuleProcessor
+                        // mutates reqData.setName(...) in-place, so ChunkDB's Cold Forensic Tail Block can preserve
+                        // both the post-merge group name and the pre-merge raw request name for forensic drill-down.
+                        if (reqData.getRawName() == null)
+                        {
+                            reqData.setRawName(reqData.getName());
+                        }
+                        final RequestData result = requestProcessing.postprocess(reqData);
                         if (result != null)
                         {
                             postProcessedData.add(result);
@@ -317,13 +325,14 @@ class DataParserThread implements Runnable
                                       final boolean collectActionNames, final DataChunk lineChunk, 
                                       final boolean adjustTimerName)
     {
+        // Assign the virtual user instance number (e.g. "0", "1", ...) universally across all Data record types
+        // (Transactions, Actions, Requests, Custom Timers, Custom Values, Web Vitals, Events). Storing this column
+        // across all ChunkDB chunk types enables cross-record correlation to reconstruct a single virtual user's
+        // complete chronological breadcrumb trail.
+        data.setTestUserNumber(userNumber);
+
         // set special fields / special handling
-        if (data instanceof TransactionData)
-        {
-            final TransactionData td = (TransactionData) data;
-            td.setTestUserNumber(userNumber);
-        }
-        else if (collectActionNames && data instanceof ActionData)
+        if (collectActionNames && data instanceof ActionData)
         {
             // store the action name/time for later use
             lineChunk.getActionNames().put(data.getTime(), data.getName());

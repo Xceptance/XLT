@@ -74,7 +74,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
      * <ol>
      *   <li>Header: type code (char), row count (int), min timestamp (long), max timestamp (long).</li>
      *   <li>Bitmaps: metric/timer name IDs, agent/testCase IDs.</li>
-     *   <li>Compressed arrays: time offsets, timer IDs, agent IDs.</li>
+     *   <li>Compressed arrays: time offsets, timer IDs, agent IDs, virtual user numbers.</li>
      *   <li>Floating point array: length (int), followed by raw double values.</li>
      * </ol>
      *
@@ -100,10 +100,11 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         c.getTimerNameIds().serialize(out);
         c.getAgentTestCaseIds().serialize(out);
 
-        // 3. Compressed columnar performance vectors
+        // 3. Compressed columnar performance vectors (including compUserNumbers for virtual user correlation)
         writeIntArray(c.compTimeOffsets, out);
         writeIntArray(c.compTimerNameIds, out);
         writeIntArray(c.compAgentTestCaseIds, out);
+        writeIntArray(c.compUserNumbers, out);
 
         // 4. Double floating-point metric values
         final double[] vals = c.getValues();
@@ -145,6 +146,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         final int[] compTimeOffsets = readIntArray(in);
         final int[] compTimerNameIds = readIntArray(in);
         final int[] compAgentTestCaseIds = readIntArray(in);
+        final int[] compUserNumbers = readIntArray(in);
 
         // 4. Read primitive double metric values
         final int valLen = in.readInt();
@@ -155,7 +157,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         }
 
         return new DoubleValueChunk(tc, rowCount, minTime, maxTime, timerIds, agentTestCaseIds,
-                                    compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, vals);
+                                    compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compUserNumbers, vals);
     }
 
     /**
@@ -187,11 +189,14 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
+            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final double[] vals = c.getValues();
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
+        final String[] strings = dicts.getStringsArray();
 
         // 3. Linear row scan and object reconstruction
         for (int i = 0; i < rowCount; i++)
@@ -210,6 +215,16 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
             final GlobalDictionaries.AgentTestCase pair = agentId >= 0 && agentId < agentPairs.length ? agentPairs[agentId] : null;
             final String agentName = pair != null ? pair.agentName() : null;
             final String testCaseName = pair != null ? pair.testCaseName() : null;
+            final String userNum;
+            if (userNumbers != null && i < userNumbers.length)
+            {
+                final int userNumId = userNumbers[i];
+                userNum = (userNumId >= 0 && userNumId < strings.length) ? strings[userNumId] : null;
+            }
+            else
+            {
+                userNum = null;
+            }
 
             if (typeCode == 'W')
             {
@@ -218,6 +233,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 w.setName(name);
                 w.setAgentName(agentName);
                 w.setTransactionName(testCaseName);
+                w.setTestUserNumber(userNum);
                 w.setValue(vals[i]);
                 consumer.accept(w);
             }
@@ -228,6 +244,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 v.setName(name);
                 v.setAgentName(agentName);
                 v.setTransactionName(testCaseName);
+                v.setTestUserNumber(userNum);
                 v.setValue(vals[i]);
                 consumer.accept(v);
             }
@@ -266,11 +283,14 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
+            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final double[] vals = c.getValues();
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
+        final String[] strings = dicts.getStringsArray();
 
         long minTime = Long.MAX_VALUE;
         long maxTime = 0;
@@ -350,6 +370,17 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 }
             }
 
+            final String userNum;
+            if (userNumbers != null && i < userNumbers.length)
+            {
+                final int userNumId = userNumbers[i];
+                userNum = (userNumId >= 0 && userNumId < strings.length) ? strings[userNumId] : null;
+            }
+            else
+            {
+                userNum = null;
+            }
+
             if (typeCode == 'W')
             {
                 final WebVitalData w = new WebVitalData();
@@ -357,6 +388,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 w.setName(name);
                 w.setAgentName(agentName);
                 w.setTransactionName(testCaseName);
+                w.setTestUserNumber(userNum);
                 w.setValue(vals[i]);
                 container.addFast(w);
             }
@@ -367,6 +399,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 v.setName(name);
                 v.setAgentName(agentName);
                 v.setTransactionName(testCaseName);
+                v.setTestUserNumber(userNum);
                 v.setValue(vals[i]);
                 container.addFast(v);
             }
@@ -427,6 +460,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         private final long[] rawTimes = new long[DEFAULT_CHUNK_CAPACITY];
         private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
+        private final int[] userNumbers = new int[DEFAULT_CHUNK_CAPACITY];
         private final double[] values = new double[DEFAULT_CHUNK_CAPACITY];
 
         private final RoaringBitmap timerIds = new RoaringBitmap();
@@ -478,6 +512,8 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
             agentTestCaseIdArr[idx] = aid;
             agentTestCaseIds.add(aid);
 
+            userNumbers[idx] = dicts.getOrCreateStringId(record.getTestUserNumber());
+
             if (record instanceof WebVitalData w)
             {
                 values[idx] = w.getValue();
@@ -509,14 +545,26 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
 
             final int[] finalTimerIds = size == timerIdArr.length ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == agentTestCaseIdArr.length ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
+            final int[] finalUserNumbers = size == userNumbers.length ? userNumbers : Arrays.copyOf(userNumbers, size);
             final double[] finalValues = size == values.length ? values : Arrays.copyOf(values, size);
 
             final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
+            final int[] compUserNumbers = FastIntegerCodec.compress(finalUserNumbers);
 
-            return new DoubleValueChunk(typeCode, size, minTime, maxTime, timerIds, agentTestCaseIds,
-                                        compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, finalValues);
+            return new DoubleValueChunk(typeCode, size, minTime, maxTime, timerIds.clone(), agentTestCaseIds.clone(),
+                                        compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compUserNumbers, finalValues);
+        }
+
+        @Override
+        public void reset()
+        {
+            count = 0;
+            minTime = Long.MAX_VALUE;
+            maxTime = Long.MIN_VALUE;
+            timerIds.clear();
+            agentTestCaseIds.clear();
         }
     }
 }

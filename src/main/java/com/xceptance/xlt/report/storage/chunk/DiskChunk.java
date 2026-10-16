@@ -83,6 +83,15 @@ public class DiskChunk implements Chunk
     /** Target binary storage file on disk. */
     private final File storageFile;
 
+    /** Maximum runtime (milliseconds) observed across all records in this chunk. */
+    private final int maxRunTime;
+
+    /** Whether any record in this chunk has failed or has an error HTTP status code. */
+    private final boolean hasFailures;
+
+    /** Byte length of the hot columnar vectors prefix excluding any cold forensic tail block. */
+    private final int vectorPayloadLength;
+
     /** Optional reference to the active storage container providing shared, open file channels. */
     private volatile ChunkStorage storage;
 
@@ -112,6 +121,44 @@ public class DiskChunk implements Chunk
                      final RoaringBitmap timerNameIds, final RoaringBitmap agentTestCaseIds,
                      final long fileOffset, final int payloadLength, final File storageFile)
     {
+        this(typeCode, rowCount, minTime, maxTime, timerNameIds, agentTestCaseIds,
+             fileOffset, payloadLength, storageFile, 0, false, payloadLength);
+    }
+
+    /**
+     * Constructs a new {@link DiskChunk} descriptor with the specified boundary metadata, Zone Map bounds,
+     * vector payload prefix length, and file coordinates.
+     *
+     * @param typeCode
+     *            single-character record type code
+     * @param rowCount
+     *            number of records in chunk
+     * @param minTime
+     *            earliest timestamp in milliseconds
+     * @param maxTime
+     *            latest timestamp in milliseconds
+     * @param timerNameIds
+     *            bitmap of contained timer name IDs (may be {@code null})
+     * @param agentTestCaseIds
+     *            bitmap of contained agent/test case IDs (may be {@code null})
+     * @param fileOffset
+     *            starting byte offset in storage file
+     * @param payloadLength
+     *            exact byte length of the chunk's payload
+     * @param storageFile
+     *            underlying storage file on disk
+     * @param maxRunTime
+     *            maximum runtime in milliseconds across all records in this chunk
+     * @param hasFailures
+     *            whether any record in this chunk failed or had an error status code
+     * @param vectorPayloadLength
+     *            exact byte length of the hot columnar vectors prefix
+     */
+    public DiskChunk(final char typeCode, final int rowCount, final long minTime, final long maxTime,
+                     final RoaringBitmap timerNameIds, final RoaringBitmap agentTestCaseIds,
+                     final long fileOffset, final int payloadLength, final File storageFile,
+                     final int maxRunTime, final boolean hasFailures, final int vectorPayloadLength)
+    {
         this.typeCode = typeCode;
         this.rowCount = rowCount;
         this.minTime = minTime;
@@ -121,6 +168,9 @@ public class DiskChunk implements Chunk
         this.fileOffset = fileOffset;
         this.payloadLength = payloadLength;
         this.storageFile = storageFile;
+        this.maxRunTime = maxRunTime;
+        this.hasFailures = hasFailures;
+        this.vectorPayloadLength = vectorPayloadLength > 0 ? vectorPayloadLength : payloadLength;
     }
 
     @Override
@@ -157,6 +207,24 @@ public class DiskChunk implements Chunk
     public RoaringBitmap getAgentTestCaseIds()
     {
         return agentTestCaseIds;
+    }
+
+    @Override
+    public int getMaxRunTime()
+    {
+        return maxRunTime;
+    }
+
+    @Override
+    public boolean hasFailures()
+    {
+        return hasFailures;
+    }
+
+    @Override
+    public int getVectorPayloadLength()
+    {
+        return vectorPayloadLength;
     }
 
     /**
@@ -224,7 +292,7 @@ public class DiskChunk implements Chunk
             }
             else
             {
-                bytes = readBytesDirectly();
+                bytes = readBytesDirectly(payloadLength);
             }
 
             final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
@@ -238,27 +306,125 @@ public class DiskChunk implements Chunk
     }
 
     /**
-     * Reads this chunk's raw payload bytes directly from disk when no shared storage channel is attached.
+     * Reads only the hot columnar vectors prefix ({@link #getVectorPayloadLength()} bytes) from disk
+     * without reading or decompressing any trailing cold forensic tail block.
+     * <p>
+     * <b>Partial-Read I/O Optimization:</b>
+     * For {@link RequestChunk}, each chunk on disk consists of a Hot Vector Prefix followed by a
+     * Deflate-compressed Cold Forensic Tail Block. Standard report scans call this method so the OS/disk
+     * channel only transfers the first {@code vectorPayloadLength} bytes, leaving the cold forensic strings
+     * untouched on disk.
      *
+     * @param handler
+     *            type-specific codec handler for this chunk's type code
+     * @param dicts
+     *            global dictionaries for string resolution
+     * @return reconstituted in-memory chunk instance containing only hot columnar vectors
+     */
+    public Chunk loadVectorsOnly(final ChunkTypeHandler handler, final GlobalDictionaries dicts)
+    {
+        final int lenToRead = (vectorPayloadLength > 0 && vectorPayloadLength < payloadLength) ? vectorPayloadLength : payloadLength;
+        try
+        {
+            final byte[] bytes = readVectorPayload();
+            final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
+            if (handler instanceof RequestChunkHandler rch)
+            {
+                return rch.readVectorsOnly(dis, dicts);
+            }
+            return handler.readChunk(dis, dicts);
+        }
+        catch (final IOException e)
+        {
+            throw new RuntimeException(String.format("Failed to load chunk vectors [type=%c, offset=%d, vecLen=%d] from disk: %s",
+                                                     typeCode, fileOffset, lenToRead, storageFile), e);
+        }
+    }
+
+    /**
+     * Reads only the hot columnar vectors byte prefix ({@code [fileOffset .. fileOffset + vectorPayloadLength)})
+     * from disk without transferring any trailing cold forensic tail block.
+     *
+     * @return serialized vector prefix payload bytes
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    public byte[] readVectorPayload() throws IOException
+    {
+        final int lenToRead = (vectorPayloadLength > 0 && vectorPayloadLength < payloadLength) ? vectorPayloadLength : payloadLength;
+        final ChunkStorage currentStorage = this.storage;
+        if (currentStorage != null)
+        {
+            return currentStorage.readChunkBytes(fileOffset, lenToRead);
+        }
+        return readBytesDirectly(fileOffset, lenToRead);
+    }
+
+    /**
+     * Reads only the trailing Cold Forensic Tail Block bytes ({@code [fileOffset + vectorPayloadLength .. fileOffset + payloadLength)})
+     * without reading the preceding hot columnar vectors prefix.
+     *
+     * @return serialized forensic tail payload bytes, or an empty array if no tail block is present
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    public byte[] readForensicTail() throws IOException
+    {
+        if (vectorPayloadLength <= 0 || vectorPayloadLength >= payloadLength)
+        {
+            return new byte[0];
+        }
+        // Seek directly past the Hot Vector Prefix to read only the Cold Forensic Tail Block
+        final long tailOffset = fileOffset + vectorPayloadLength;
+        final int tailLength = payloadLength - vectorPayloadLength;
+        final ChunkStorage currentStorage = this.storage;
+        if (currentStorage != null)
+        {
+            return currentStorage.readChunkBytes(tailOffset, tailLength);
+        }
+        return readBytesDirectly(tailOffset, tailLength);
+    }
+
+    /**
+     * Reads the specified number of payload bytes directly from disk when no shared storage channel is attached.
+     *
+     * @param length
+     *            number of bytes to read starting at {@link #fileOffset}
      * @return serialized payload bytes
      * @throws IOException
      *             if an I/O error occurs
      */
-    private byte[] readBytesDirectly() throws IOException
+    private byte[] readBytesDirectly(final int length) throws IOException
     {
-        final byte[] bytes = new byte[payloadLength];
+        return readBytesDirectly(fileOffset, length);
+    }
+
+    /**
+     * Reads the specified number of bytes directly from disk starting at the given file offset.
+     *
+     * @param startOffset
+     *            starting byte offset in {@link #storageFile}
+     * @param length
+     *            number of bytes to read
+     * @return serialized bytes
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    private byte[] readBytesDirectly(final long startOffset, final int length) throws IOException
+    {
+        final byte[] bytes = new byte[length];
         try (final RandomAccessFile raf = new RandomAccessFile(storageFile, "r");
              final FileChannel channel = raf.getChannel())
         {
             final ByteBuffer buf = ByteBuffer.wrap(bytes);
-            long pos = fileOffset;
+            long pos = startOffset;
             while (buf.hasRemaining())
             {
                 final int read = channel.read(buf, pos);
                 if (read < 0)
                 {
                     throw new IOException(String.format("Premature EOF reading chunk [type=%c, offset=%d, length=%d] from %s",
-                                                        typeCode, fileOffset, payloadLength, storageFile));
+                                                        typeCode, startOffset, length, storageFile));
                 }
                 pos += read;
             }
@@ -269,7 +435,7 @@ public class DiskChunk implements Chunk
     @Override
     public String toString()
     {
-        return String.format("DiskChunk[type=%c, rows=%d, time=[%d..%d], offset=%d, len=%d]",
-                             typeCode, rowCount, minTime, maxTime, fileOffset, payloadLength);
+        return String.format("DiskChunk[type=%c, rows=%d, time=[%d..%d], maxRt=%d, fail=%b, offset=%d, len=%d, vecLen=%d]",
+                             typeCode, rowCount, minTime, maxTime, maxRunTime, hasFailures, fileOffset, payloadLength, vectorPayloadLength);
     }
 }

@@ -38,6 +38,9 @@ public class TimerChunk implements Chunk
     /** Maximum timestamp (in epoch milliseconds) across all rows in this chunk. */
     private final long maxTime;
 
+    /** Maximum runtime duration (in milliseconds) across all rows in this chunk. */
+    private final int maxRunTime;
+
     /** Inverted index bitmap containing all distinct 16-bit timer name IDs in this chunk. */
     private final RoaringBitmap timerNameIds;
 
@@ -61,6 +64,48 @@ public class TimerChunk implements Chunk
     /** Compressed runtime duration column (in milliseconds). */
     final int[] compRunTimes;
 
+    /** Compressed virtual user thread sequence numbers. */
+    final int[] compUserNumbers;
+
+    /**
+     * Constructs a sealed {@link TimerChunk}.
+     */
+    public TimerChunk(final char typeCode,
+                      final int rowCount,
+                      final long minTime,
+                      final long maxTime,
+                      final RoaringBitmap timerNameIds,
+                      final RoaringBitmap agentTestCaseIds,
+                      final RoaringBitmap failedRows,
+                      final int[] compTimeOffsets,
+                      final int[] compTimerNameIds,
+                      final int[] compAgentTestCaseIds,
+                      final int[] compRunTimes)
+    {
+        this(typeCode, rowCount, minTime, maxTime, 0, timerNameIds, agentTestCaseIds, failedRows,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes, new int[0]);
+    }
+
+    /**
+     * Constructs a sealed {@link TimerChunk}.
+     */
+    public TimerChunk(final char typeCode,
+                      final int rowCount,
+                      final long minTime,
+                      final long maxTime,
+                      final RoaringBitmap timerNameIds,
+                      final RoaringBitmap agentTestCaseIds,
+                      final RoaringBitmap failedRows,
+                      final int[] compTimeOffsets,
+                      final int[] compTimerNameIds,
+                      final int[] compAgentTestCaseIds,
+                      final int[] compRunTimes,
+                      final int[] compUserNumbers)
+    {
+        this(typeCode, rowCount, minTime, maxTime, 0, timerNameIds, agentTestCaseIds, failedRows,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes, compUserNumbers);
+    }
+
     /**
      * Constructs a sealed {@link TimerChunk}.
      *
@@ -72,6 +117,8 @@ public class TimerChunk implements Chunk
      *            minimum timestamp in milliseconds
      * @param maxTime
      *            maximum timestamp in milliseconds
+     * @param maxRunTime
+     *            maximum runtime duration in milliseconds
      * @param timerNameIds
      *            bitmap of unique timer IDs
      * @param agentTestCaseIds
@@ -86,23 +133,28 @@ public class TimerChunk implements Chunk
      *            compressed agent/test case IDs
      * @param compRunTimes
      *            compressed runtime durations
+     * @param compUserNumbers
+     *            compressed virtual user numbers
      */
     public TimerChunk(final char typeCode,
                       final int rowCount,
                       final long minTime,
                       final long maxTime,
+                      final int maxRunTime,
                       final RoaringBitmap timerNameIds,
                       final RoaringBitmap agentTestCaseIds,
                       final RoaringBitmap failedRows,
                       final int[] compTimeOffsets,
                       final int[] compTimerNameIds,
                       final int[] compAgentTestCaseIds,
-                      final int[] compRunTimes)
+                      final int[] compRunTimes,
+                      final int[] compUserNumbers)
     {
         this.typeCode = typeCode;
         this.rowCount = rowCount;
         this.minTime = minTime;
         this.maxTime = maxTime;
+        this.maxRunTime = maxRunTime;
         this.timerNameIds = timerNameIds;
         this.agentTestCaseIds = agentTestCaseIds;
         this.failedRows = failedRows;
@@ -110,6 +162,7 @@ public class TimerChunk implements Chunk
         this.compTimerNameIds = compTimerNameIds;
         this.compAgentTestCaseIds = compAgentTestCaseIds;
         this.compRunTimes = compRunTimes;
+        this.compUserNumbers = compUserNumbers != null ? compUserNumbers : new int[0];
     }
 
     @Override
@@ -137,6 +190,18 @@ public class TimerChunk implements Chunk
     }
 
     @Override
+    public int getMaxRunTime()
+    {
+        return maxRunTime;
+    }
+
+    @Override
+    public boolean hasFailures()
+    {
+        return failedRows != null && !failedRows.isEmpty();
+    }
+
+    @Override
     public RoaringBitmap getTimerNameIds()
     {
         return timerNameIds;
@@ -156,5 +221,15 @@ public class TimerChunk implements Chunk
     public RoaringBitmap getFailedRows()
     {
         return failedRows;
+    }
+
+    /**
+     * Returns the compressed virtual user numbers array.
+     *
+     * @return compressed user numbers
+     */
+    public int[] getCompUserNumbers()
+    {
+        return compUserNumbers;
     }
 }

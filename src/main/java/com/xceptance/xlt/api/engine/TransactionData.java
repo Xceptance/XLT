@@ -71,13 +71,6 @@ public class TransactionData extends TimerData
     private String stackTrace;
 
     /**
-     * The second last part of the path to the directory where dumped pages can be found. Kept separate to make as much
-     * use of String.intern() as possible to save memory. The final path is constructed on request in
-     * {@link TransactionData#getDumpDirectoryPath()}.
-     */
-    private String testUserNumber;
-
-    /**
      * Creates a new TransactionData object.
      */
     public TransactionData()
@@ -123,9 +116,10 @@ public class TransactionData extends TimerData
      *
      * @return the test user number as a string
      */
+    @Override
     public String getTestUserNumber()
     {
-        return testUserNumber;
+        return super.getTestUserNumber();
     }
 
     /**
@@ -134,9 +128,10 @@ public class TransactionData extends TimerData
      * @param testUserNumber
      *            the test user number as a string
      */
+    @Override
     public void setTestUserNumber(final String testUserNumber)
     {
-        this.testUserNumber = testUserNumber;
+        super.setTestUserNumber(testUserNumber);
     }
 
     /**
@@ -171,12 +166,13 @@ public class TransactionData extends TimerData
      */
     public String getDumpDirectoryPath()
     {
-        if (StringUtils.isAnyEmpty(testUserNumber, directoryName))
+        final String userNum = getTestUserNumber();
+        if (StringUtils.isAnyEmpty(userNum, directoryName))
         {
             return null;
         }
 
-        return getAgentName() + "/" + getName() + "/" + testUserNumber + "/" + XltConstants.DUMP_OUTPUT_DIR + "/" + directoryName;
+        return getAgentName() + "/" + getName() + "/" + userNum + "/" + XltConstants.DUMP_OUTPUT_DIR + "/" + directoryName;
     }
 
     /**
@@ -264,7 +260,7 @@ public class TransactionData extends TimerData
 
         // add the other fields
         fields.add(StringUtils.defaultString(failedActionName));
-        fields.add(StringUtils.defaultString(testUserNumber));
+        fields.add(StringUtils.defaultString(getTestUserNumber()));
         fields.add(StringUtils.defaultString(directoryName));
 
         return fields;
@@ -320,7 +316,7 @@ public class TransactionData extends TimerData
                     // keep some values so we can reconstruct the hint on request
                     final String testUserId = matcher.group(1);
                     final int i = testUserId.lastIndexOf('-');
-                    testUserNumber = StringUtils.substring(testUserId, i + 1);
+                    setTestUserNumber(StringUtils.substring(testUserId, i + 1));
                     directoryName = matcher.group(2);
                 }
             }

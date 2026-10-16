@@ -41,10 +41,13 @@ import org.roaringbitmap.RoaringBitmap;
 import com.xceptance.common.util.StringMatcher;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.CustomData;
+import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.EventData;
+import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.common.util.CsvByteColumns;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.storage.cache.CacheFingerprint;
@@ -56,6 +59,8 @@ import com.xceptance.xlt.report.storage.chunk.ChunkSpooler;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry;
 import com.xceptance.xlt.report.storage.chunk.DiskChunk;
+import com.xceptance.xlt.report.storage.chunk.RequestChunk;
+import com.xceptance.xlt.report.storage.chunk.RequestChunkHandler;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
@@ -66,12 +71,14 @@ public class ChunkStorageAndCacheTest
     @Before
     public void setUp() throws Exception
     {
+        RequestChunkHandler.setRequestDetailsMode("sparse");
         tempDir = Files.createTempDirectory("chunkdb-test").toFile();
     }
 
     @After
     public void tearDown() throws Exception
     {
+        RequestChunkHandler.setRequestDetailsMode("sparse");
         if (tempDir != null && tempDir.exists())
         {
             FileUtils.deleteDirectory(tempDir);
@@ -977,6 +984,421 @@ public class ChunkStorageAndCacheTest
         final ChunkStorage loaded = cacheManager.load();
         Assert.assertNull("Storage must return null when chunks version is incompatible", loaded);
         Assert.assertFalse("Cache directory must be purged on load error", cacheDir.exists());
+    }
+
+    @Test
+    public void testUserNumberRoundTripAcrossAllRecordTypes() throws Exception
+    {
+        final File spoolDir = new File(tempDir, "user-number-all-types");
+        spoolDir.mkdirs();
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final long baseTime = 1_700_000_000_000L;
+
+        // 1. RequestData ('R')
+        final RequestData req = new RequestData("Req-1");
+        req.setTime(baseTime + 1);
+        req.setRunTime(25);
+        req.setAgentName("Agent-1");
+        req.setTransactionName("TCheckout");
+        req.setTestUserNumber("101");
+        collector.collect(req);
+
+        // 2. TransactionData ('T')
+        final TransactionData tx = new TransactionData("TCheckout");
+        tx.setTime(baseTime + 2);
+        tx.setRunTime(250);
+        tx.setAgentName("Agent-1");
+        tx.setTransactionName("TCheckout");
+        tx.setTestUserNumber("102");
+        collector.collect(tx);
+
+        // 3. ActionData ('A')
+        final ActionData act = new ActionData("OpenCart");
+        act.setTime(baseTime + 3);
+        act.setRunTime(80);
+        act.setAgentName("Agent-1");
+        act.setTransactionName("TCheckout");
+        act.setTestUserNumber("103");
+        collector.collect(act);
+
+        // 4. CustomData ('C')
+        final CustomData cust = new CustomData("CustomTimer");
+        cust.setTime(baseTime + 4);
+        cust.setRunTime(15);
+        cust.setAgentName("Agent-1");
+        cust.setTransactionName("TCheckout");
+        cust.setTestUserNumber("104");
+        collector.collect(cust);
+
+        // 5. PageLoadTimingData ('P')
+        final PageLoadTimingData page = new PageLoadTimingData("PageLoad");
+        page.setTime(baseTime + 5);
+        page.setRunTime(120);
+        page.setAgentName("Agent-1");
+        page.setTransactionName("TCheckout");
+        page.setTestUserNumber("105");
+        collector.collect(page);
+
+        // 6. WebVitalData ('W')
+        final WebVitalData vital = new WebVitalData("LCP");
+        vital.setTime(baseTime + 6);
+        vital.setValue(450.5);
+        vital.setAgentName("Agent-1");
+        vital.setTransactionName("TCheckout");
+        vital.setTestUserNumber("106");
+        collector.collect(vital);
+
+        // 7. CustomValue ('V')
+        final CustomValue val = new CustomValue("QueueDepth");
+        val.setTime(baseTime + 7);
+        val.setValue(12.25);
+        val.setAgentName("Agent-1");
+        val.setTransactionName("TCheckout");
+        val.setTestUserNumber("107");
+        collector.collect(val);
+
+        // 8. EventData ('E')
+        final EventData evt = new EventData("WarnEvent");
+        evt.setTime(baseTime + 8);
+        evt.setTestCaseName("TCheckout");
+        evt.setMessage("Inventory low");
+        evt.setAgentName("Agent-1");
+        evt.setTransactionName("TCheckout");
+        evt.setTestUserNumber("108");
+        collector.collect(evt);
+
+        try (final ChunkStorage active = collector.finish())
+        {
+            Assert.assertNotNull(active);
+        }
+
+        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        {
+            final char[] types = {'R', 'T', 'A', 'C', 'P', 'W', 'V', 'E'};
+            final String[] expectedUserNumbers = {"101", "102", "103", "104", "105", "106", "107", "108"};
+
+            for (int i = 0; i < types.length; i++)
+            {
+                final List<Data> rows = new ArrayList<>();
+                loaded.scan(types[i], ScanPredicate.ALL, rows::add);
+                Assert.assertEquals("Expected 1 row for type " + types[i], 1, rows.size());
+                Assert.assertEquals("User number mismatch for type " + types[i],
+                                    expectedUserNumbers[i], rows.get(0).getTestUserNumber());
+            }
+        }
+    }
+
+    @Test
+    public void testNonFailedTransactionDirectoryNamePreservation() throws Exception
+    {
+        final File spoolDir = new File(tempDir, "tx-dir-preserve");
+        spoolDir.mkdirs();
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final long baseTime = 1_700_000_000_000L;
+
+        // Non-failed transaction with a Result Browser dump directory (e.g. output2disk = always)
+        final TransactionData txSuccessWithDump = new TransactionData("TBrowse");
+        txSuccessWithDump.setTime(baseTime);
+        txSuccessWithDump.setRunTime(150);
+        txSuccessWithDump.setFailed(false);
+        txSuccessWithDump.setDirectoryName("dump-success-0001");
+        txSuccessWithDump.setTestUserNumber("0");
+        txSuccessWithDump.setAgentName("Agent-1");
+        txSuccessWithDump.setTransactionName("TBrowse");
+        collector.collect(txSuccessWithDump);
+
+        // Normal non-failed transaction without dump directory
+        final TransactionData txSuccessNoDump = new TransactionData("TBrowse");
+        txSuccessNoDump.setTime(baseTime + 100);
+        txSuccessNoDump.setRunTime(120);
+        txSuccessNoDump.setFailed(false);
+        txSuccessNoDump.setTestUserNumber("1");
+        txSuccessNoDump.setAgentName("Agent-1");
+        txSuccessNoDump.setTransactionName("TBrowse");
+        collector.collect(txSuccessNoDump);
+
+        try (final ChunkStorage active = collector.finish())
+        {
+            Assert.assertNotNull(active);
+            final Chunk txChunk = active.getCatalog().getChunksForType('T').get(0);
+            Assert.assertFalse("Chunk with only non-failed transactions must have hasFailures() == false",
+                               txChunk.hasFailures());
+        }
+
+        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        {
+            final List<Data> rows = new ArrayList<>();
+            loaded.scan('T', ScanPredicate.ALL, rows::add);
+            Assert.assertEquals(2, rows.size());
+
+            final TransactionData first = (TransactionData) rows.get(0);
+            Assert.assertFalse("Transaction must remain non-failed", first.hasFailed());
+            Assert.assertEquals("dump-success-0001", first.getDirectoryName());
+
+            final TransactionData second = (TransactionData) rows.get(1);
+            Assert.assertFalse(second.hasFailed());
+            Assert.assertNull(second.getDirectoryName());
+        }
+    }
+
+    @Test
+    public void testRequestFormDataEncodingAndForensicTailSparseAndFullModes() throws Exception
+    {
+        final long baseTime = 1_700_000_000_000L;
+
+        // 1. Test default SPARSE mode
+        RequestChunkHandler.setRequestDetailsMode("sparse");
+        final File sparseDir = new File(tempDir, "forensic-sparse");
+        sparseDir.mkdirs();
+
+        final ChunkIngestionCollector sparseCollector = new ChunkIngestionCollector(sparseDir);
+        populateForensicTestRequests(sparseCollector, baseTime);
+        try (final ChunkStorage s = sparseCollector.finish())
+        {
+            Assert.assertNotNull(s);
+        }
+
+        try (final ChunkStorage loadedSparse = ChunkStorage.loadFromDirectory(sparseDir))
+        {
+            final List<Chunk> rChunks = loadedSparse.getCatalog().getChunksForType('R');
+            Assert.assertEquals(1, rChunks.size());
+            final DiskChunk dc = (DiskChunk) rChunks.get(0);
+
+            // Vector payload length must be strictly smaller than full payload length (since forensic tail is non-empty)
+            Assert.assertTrue("vectorPayloadLength must be > 0", dc.getVectorPayloadLength() > 0);
+            Assert.assertTrue("vectorPayloadLength must be < payloadLength", dc.getVectorPayloadLength() < dc.getPayloadLength());
+
+            final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('R');
+            final RequestChunk fullChunk = (RequestChunk) dc.load(handler, loadedSparse.getDictionaries());
+
+            // Row 0: fast 200 OK (outside top-256 slowest) -> no forensic details in sparse mode
+            Assert.assertNull("Fast 200 OK row outside top-256 must not be in sparse forensic tail",
+                              fullChunk.getForensicDetails(0));
+
+            // Row 1: failed 500 -> must have exact forensic details
+            final RequestChunk.ForensicDetails errDetails = fullChunk.getForensicDetails(1);
+            Assert.assertNotNull("Failed 500 row must be in sparse forensic tail", errDetails);
+            Assert.assertEquals("https://example.com/checkout?step=1", errDetails.url());
+            Assert.assertEquals("req-err-1", errDetails.requestId());
+            Assert.assertEquals("resp-err-1", errDetails.responseId());
+            Assert.assertEquals("sku=999&qty=1", errDetails.formData());
+            Assert.assertEquals("Checkout.1.1", errDetails.rawName());
+
+            // Row 299: slowest 200 OK -> must be in top-256 slowest of sparse forensic tail
+            final RequestChunk.ForensicDetails slowDetails = fullChunk.getForensicDetails(299);
+            Assert.assertNotNull("Slowest 200 OK row must be in sparse forensic tail", slowDetails);
+            Assert.assertEquals("https://example.com/item?idx=299", slowDetails.url());
+            Assert.assertEquals("req-299", slowDetails.requestId());
+            Assert.assertEquals("resp-299", slowDetails.responseId());
+            Assert.assertEquals("field=299", slowDetails.formData());
+            Assert.assertEquals("Action.1.299", slowDetails.rawName());
+
+            // Verify loadVectorsOnly skips the forensic tail completely while loading hot vectors
+            final RequestChunk vectorsOnlyChunk = (RequestChunk) dc.loadVectorsOnly(handler, loadedSparse.getDictionaries());
+            Assert.assertNotNull(vectorsOnlyChunk.getCompRunTimes());
+            Assert.assertNotNull(vectorsOnlyChunk.getCompFormDataEncodings());
+            Assert.assertNotNull(vectorsOnlyChunk.getCompUserNumbers());
+            Assert.assertNull("loadVectorsOnly must not load cold forensic tail", vectorsOnlyChunk.getForensicDetails(1));
+
+            // Verify scan restores formDataEncoding on 100% of rows and forensic details on retained rows
+            final List<Data> scanned = new ArrayList<>();
+            loadedSparse.scan('R', ScanPredicate.ALL, scanned::add);
+            Assert.assertEquals(300, scanned.size());
+
+            final RequestData row0 = (RequestData) scanned.get(0);
+            Assert.assertEquals("application/x-www-form-urlencoded", row0.getFormDataEncoding());
+            Assert.assertEquals("42", row0.getTestUserNumber());
+
+            final RequestData row1 = (RequestData) scanned.get(1);
+            Assert.assertEquals("multipart/form-data", row1.getFormDataEncoding());
+            Assert.assertEquals("https://example.com/checkout?step=1", row1.getUrl().toString());
+            Assert.assertEquals("req-err-1", row1.getRequestId());
+            Assert.assertEquals("resp-err-1", row1.getResponseId());
+            Assert.assertEquals("sku=999&qty=1", row1.getFormData());
+            Assert.assertEquals("Checkout.1.1", row1.getRawName());
+        }
+
+        // 2. Test FULL mode (--preserve-all-details / requestDetailsMode=full)
+        RequestChunkHandler.setRequestDetailsMode("full");
+        final File fullDir = new File(tempDir, "forensic-full");
+        fullDir.mkdirs();
+
+        final ChunkIngestionCollector fullCollector = new ChunkIngestionCollector(fullDir);
+        populateForensicTestRequests(fullCollector, baseTime);
+        try (final ChunkStorage s = fullCollector.finish())
+        {
+            Assert.assertNotNull(s);
+        }
+
+        try (final ChunkStorage loadedFull = ChunkStorage.loadFromDirectory(fullDir))
+        {
+            final DiskChunk dc = (DiskChunk) loadedFull.getCatalog().getChunksForType('R').get(0);
+            final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('R');
+            final RequestChunk fullChunk = (RequestChunk) dc.load(handler, loadedFull.getDictionaries());
+
+            // In full mode, even Row 0 (fast 200 OK) must have exact forensic details
+            final RequestChunk.ForensicDetails row0Details = fullChunk.getForensicDetails(0);
+            Assert.assertNotNull("Full mode must retain forensic details for 100% of rows", row0Details);
+            Assert.assertEquals("https://example.com/fast?idx=0", row0Details.url());
+            Assert.assertEquals("req-fast-0", row0Details.requestId());
+            Assert.assertEquals("resp-fast-0", row0Details.responseId());
+            Assert.assertEquals("fast=true", row0Details.formData());
+            Assert.assertEquals("FastAction.1.0", row0Details.rawName());
+        }
+    }
+
+    private void populateForensicTestRequests(final ChunkIngestionCollector collector, final long baseTime)
+    {
+        // Row 0: fast 200 OK
+        final RequestData r0 = new RequestData("FastAction");
+        r0.setRawName("FastAction.1.0");
+        r0.setTime(baseTime);
+        r0.setRunTime(5);
+        r0.setResponseCode(200);
+        r0.setFailed(false);
+        r0.setUrl("https://example.com/fast?idx=0");
+        r0.setRequestId("req-fast-0");
+        r0.setResponseId("resp-fast-0");
+        r0.setFormDataEncoding("application/x-www-form-urlencoded");
+        r0.setFormData("fast=true");
+        r0.setAgentName("Agent-1");
+        r0.setTransactionName("TShop");
+        r0.setTestUserNumber("42");
+        collector.collect(r0);
+
+        // Row 1: failed 500
+        final RequestData r1 = new RequestData("Checkout");
+        r1.setRawName("Checkout.1.1");
+        r1.setTime(baseTime + 1);
+        r1.setRunTime(10);
+        r1.setResponseCode(500);
+        r1.setFailed(true);
+        r1.setUrl("https://example.com/checkout?step=1");
+        r1.setRequestId("req-err-1");
+        r1.setResponseId("resp-err-1");
+        r1.setFormDataEncoding("multipart/form-data");
+        r1.setFormData("sku=999&qty=1");
+        r1.setAgentName("Agent-1");
+        r1.setTransactionName("TShop");
+        r1.setTestUserNumber("42");
+        collector.collect(r1);
+
+        // Rows 2..299: 298 requests with ascending runtimes (102..399 ms)
+        for (int i = 2; i < 300; i++)
+        {
+            final RequestData r = new RequestData("Action");
+            r.setRawName("Action.1." + i);
+            r.setTime(baseTime + i);
+            r.setRunTime(100 + i);
+            r.setResponseCode(200);
+            r.setFailed(false);
+            r.setUrl("https://example.com/item?idx=" + i);
+            r.setRequestId("req-" + i);
+            r.setResponseId("resp-" + i);
+            r.setFormDataEncoding("application/json");
+            r.setFormData("field=" + i);
+            r.setAgentName("Agent-1");
+            r.setTransactionName("TShop");
+            r.setTestUserNumber("42");
+            collector.collect(r);
+        }
+    }
+
+    @Test
+    public void testCatalogV3ZoneMapsAndPredicatePruning() throws Exception
+    {
+        Assert.assertEquals("Catalog version must be 3", 3, ChunkCatalog.VERSION);
+
+        final File spoolDir = new File(tempDir, "zone-maps-v3");
+        spoolDir.mkdirs();
+
+        final ChunkSpooler spooler = new ChunkSpooler(spoolDir);
+        final ChunkCatalog catalog = new ChunkCatalog();
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkTypeRegistry registry = new ChunkTypeRegistry();
+        final ChunkTypeHandler handler = registry.getHandler('R');
+
+        // Chunk 1: fast, no failures (maxRunTime = 80, hasFailures = false)
+        final ChunkBuilder b1 = handler.newChunkBuilder(dicts);
+        final RequestData r1 = new RequestData("FastReq");
+        r1.setTime(1000L);
+        r1.setRunTime(80);
+        r1.setResponseCode(200);
+        r1.setFailed(false);
+        b1.append(r1);
+        catalog.addChunk(spooler.spoolChunk(b1.seal(), handler));
+
+        // Chunk 2: slow, has failures (maxRunTime = 4500, hasFailures = true)
+        final ChunkBuilder b2 = handler.newChunkBuilder(dicts);
+        final RequestData r2 = new RequestData("SlowErrReq");
+        r2.setTime(2000L);
+        r2.setRunTime(4500);
+        r2.setResponseCode(503);
+        r2.setFailed(true);
+        b2.append(r2);
+        catalog.addChunk(spooler.spoolChunk(b2.seal(), handler));
+
+        spooler.finish(catalog, dicts);
+
+        final ChunkCatalog reloaded = ChunkCatalog.readFrom(new File(spoolDir, ChunkStorage.CHUNKS_FILE_NAME), dicts, registry);
+        final List<Chunk> rChunks = reloaded.getChunksForType('R');
+        Assert.assertEquals(2, rChunks.size());
+
+        final DiskChunk dc1 = (DiskChunk) rChunks.get(0);
+        final DiskChunk dc2 = (DiskChunk) rChunks.get(1);
+
+        Assert.assertEquals(80, dc1.getMaxRunTime());
+        Assert.assertFalse(dc1.hasFailures());
+
+        Assert.assertEquals(4500, dc2.getMaxRunTime());
+        Assert.assertTrue(dc2.hasFailures());
+
+        // Prune by minRunTime = 1000 -> only dc2 matches
+        final ScanPredicate slowPred = new ScanPredicate(0L, Long.MAX_VALUE, null, null, 1000, false);
+        final List<Chunk> slowMatched = reloaded.queryChunks('R', slowPred);
+        Assert.assertEquals(1, slowMatched.size());
+        Assert.assertSame(dc2, slowMatched.get(0));
+
+        // Prune by requireFailures = true -> only dc2 matches
+        final ScanPredicate failPred = new ScanPredicate(0L, Long.MAX_VALUE, null, null, 0, true);
+        final List<Chunk> failMatched = reloaded.queryChunks('R', failPred);
+        Assert.assertEquals(1, failMatched.size());
+        Assert.assertSame(dc2, failMatched.get(0));
+    }
+
+    @Test
+    public void testCacheFingerprintInvalidatesOnRequestDetailsModeChange() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "res-mode-test");
+        resultsDir.mkdirs();
+        final File log = new File(resultsDir, "timers.csv");
+        try (final FileOutputStream fos = new FileOutputStream(log))
+        {
+            fos.write("R,1,100,false,200\n".getBytes(StandardCharsets.UTF_8));
+        }
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+        config.setRequestDetailsMode("sparse");
+
+        final CacheManager cacheManager = new CacheManager(resultsDir, config);
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final RequestData r = new RequestData("R1");
+        r.setTime(1000L);
+        r.setRunTime(50);
+        collector.collect(r);
+        cacheManager.save(collector.finish());
+
+        Assert.assertTrue("Cache should be valid in sparse mode", cacheManager.isCacheValid());
+
+        // Switch mode to full -> fingerprint must differ and invalidate cache
+        config.setRequestDetailsMode("full");
+        final CacheManager fullModeManager = new CacheManager(resultsDir, config);
+        Assert.assertFalse("Cache built with sparse mode must be invalidated when full mode is requested",
+                           fullModeManager.isCacheValid());
     }
 
     /**

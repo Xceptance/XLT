@@ -206,6 +206,11 @@ public class RequestData extends TimerData
     private String usedIpAddress;
 
     /**
+     * The original pre-merge request timer name (e.g., "OpenStartPage.1.3") before index stripping and merge rules.
+     */
+    private String rawName;
+
+    /**
      * Creates a new RequestData object.
      */
     public RequestData()
@@ -877,6 +882,27 @@ public class RequestData extends TimerData
     public void setUsedIpAddress(final String ipAddress)
     {
         this.usedIpAddress = ipAddress;
+    }
+
+    /**
+     * Returns the original pre-merge request timer name (e.g., "OpenStartPage.1.3") before index stripping and merge rules.
+     *
+     * @return the original raw request name, or {@code null} if not recorded
+     */
+    public String getRawName()
+    {
+        return rawName;
+    }
+
+    /**
+     * Sets the original pre-merge request timer name before index stripping and merge rules.
+     *
+     * @param rawName
+     *            the original raw request name
+     */
+    public void setRawName(final String rawName)
+    {
+        this.rawName = rawName;
     }
 
     /**

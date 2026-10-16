@@ -74,9 +74,9 @@ public class TimerChunkHandler implements ChunkTypeHandler
      * <p>
      * <b>Binary Layout:</b>
      * <ol>
-     *   <li>Header: type code (char), row count (int), min timestamp (long), max timestamp (long).</li>
+     *   <li>Header: type code (char), row count (int), min timestamp (long), max timestamp (long), max runtime (int).</li>
      *   <li>Bitmaps: timer name IDs, agent/testCase IDs, failed row indices.</li>
-     *   <li>Compressed arrays: time offsets, timer IDs, agent IDs, runtimes.</li>
+     *   <li>Compressed arrays: time offsets, timer IDs, agent IDs, runtimes, virtual user numbers.</li>
      * </ol>
      *
      * @param chunk
@@ -91,22 +91,24 @@ public class TimerChunkHandler implements ChunkTypeHandler
     {
         final TimerChunk c = (TimerChunk) chunk;
 
-        // 1. Chunk header metadata
+        // 1. Chunk header metadata (including maxRunTime for Zone Map latency pruning)
         out.writeChar(c.getTypeCode());
         out.writeInt(c.getRowCount());
         out.writeLong(c.getMinTime());
         out.writeLong(c.getMaxTime());
+        out.writeInt(c.getMaxRunTime());
 
         // 2. RoaringBitmap inverted index filters
         c.getTimerNameIds().serialize(out);
         c.getAgentTestCaseIds().serialize(out);
         c.getFailedRows().serialize(out);
 
-        // 3. Compressed columnar performance vectors
+        // 3. Compressed columnar performance vectors (including compUserNumbers for virtual user correlation)
         writeIntArray(c.compTimeOffsets, out);
         writeIntArray(c.compTimerNameIds, out);
         writeIntArray(c.compAgentTestCaseIds, out);
         writeIntArray(c.compRunTimes, out);
+        writeIntArray(c.compUserNumbers, out);
     }
 
     /**
@@ -128,6 +130,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
         final int rowCount = in.readInt();
         final long minTime = in.readLong();
         final long maxTime = in.readLong();
+        final int maxRunTime = in.readInt();
 
         // 2. Deserialize RoaringBitmaps
         final RoaringBitmap timerIds = new RoaringBitmap();
@@ -144,9 +147,10 @@ public class TimerChunkHandler implements ChunkTypeHandler
         final int[] compTimerNameIds = readIntArray(in);
         final int[] compAgentTestCaseIds = readIntArray(in);
         final int[] compRunTimes = readIntArray(in);
+        final int[] compUserNumbers = readIntArray(in);
 
-        return new TimerChunk(tc, rowCount, minTime, maxTime, timerIds, agentTestCaseIds, failedRows,
-                              compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes);
+        return new TimerChunk(tc, rowCount, minTime, maxTime, maxRunTime, timerIds, agentTestCaseIds, failedRows,
+                              compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes, compUserNumbers);
     }
 
     /**
@@ -179,12 +183,15 @@ public class TimerChunkHandler implements ChunkTypeHandler
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
         final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
+        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
+            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
+        final String[] strings = dicts.getStringsArray();
 
         // 3. Linear row scan and object reconstruction
         for (int i = 0; i < rowCount; i++)
@@ -208,6 +215,12 @@ public class TimerChunkHandler implements ChunkTypeHandler
             {
                 data.setAgentName(pair.agentName());
                 data.setTransactionName(pair.testCaseName());
+            }
+
+            if (userNumbers != null && i < userNumbers.length)
+            {
+                final int userNumId = userNumbers[i];
+                data.setTestUserNumber(userNumId >= 0 && userNumId < strings.length ? strings[userNumId] : null);
             }
 
             data.setRunTime(runTimes[i]);
@@ -251,6 +264,8 @@ public class TimerChunkHandler implements ChunkTypeHandler
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
         final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
+        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
+            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
 
@@ -271,6 +286,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
         final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
+        final String[] strings = dicts.getStringsArray();
 
         long minTime = Long.MAX_VALUE;
         long maxTime = 0;
@@ -365,6 +381,16 @@ public class TimerChunkHandler implements ChunkTypeHandler
                 }
             }
 
+            if (userNumbers != null && i < userNumbers.length)
+            {
+                final int userNumId = userNumbers[i];
+                data.setTestUserNumber(userNumId >= 0 && userNumId < strings.length ? strings[userNumId] : null);
+            }
+            else
+            {
+                data.setTestUserNumber(null);
+            }
+
             data.setRunTime(runTimes[i]);
             data.setFailed(failedLookup != null && failedLookup[i]);
 
@@ -425,10 +451,6 @@ public class TimerChunkHandler implements ChunkTypeHandler
     // TimerChunkBuilder
     // -------------------------------------------------------------------------
 
-    // -------------------------------------------------------------------------
-    // TimerChunkBuilder
-    // -------------------------------------------------------------------------
-
     /**
      * High-throughput mutable accumulation buffer for collecting and compressing {@link TimerData} into a {@link TimerChunk}.
      * <p>
@@ -451,6 +473,9 @@ public class TimerChunkHandler implements ChunkTypeHandler
         /** Latest timestamp encountered in this chunk. */
         private long maxTime = Long.MIN_VALUE;
 
+        /** Maximum runtime duration encountered in this chunk. */
+        private int maxRunTime = 0;
+
         // ---------------------------------------------------------------------
         // Columnar Primitive Arrays (Pre-allocated to DEFAULT_CHUNK_CAPACITY)
         // ---------------------------------------------------------------------
@@ -458,6 +483,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
         private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] runTimes = new int[DEFAULT_CHUNK_CAPACITY];
+        private final int[] userNumbers = new int[DEFAULT_CHUNK_CAPACITY];
 
         // ---------------------------------------------------------------------
         // In-Memory Index Bitmaps
@@ -478,6 +504,10 @@ public class TimerChunkHandler implements ChunkTypeHandler
         private String lastAgentStr;
         private String lastTxnStr;
         private int lastAgentId = -1;
+
+        private CharSequence lastUserNumRef;
+        private String lastUserNumStr;
+        private int lastUserNumId = -1;
 
         private long[] seenTimers = new long[64];
         private long[] seenAgents = new long[64];
@@ -608,8 +638,34 @@ public class TimerChunkHandler implements ChunkTypeHandler
                 failedRows.add(idx);
             }
 
-            // 5. Store run time
-            runTimes[idx] = td.getRunTime();
+            // 5. Store run time and intern test user number
+            final int rt = td.getRunTime();
+            if (rt > maxRunTime)
+            {
+                maxRunTime = rt;
+            }
+            runTimes[idx] = rt;
+            final CharSequence userNum = td.getTestUserNumber();
+            if (userNum == null)
+            {
+                userNumbers[idx] = -1;
+            }
+            else if (userNum == lastUserNumRef)
+            {
+                userNumbers[idx] = lastUserNumId;
+            }
+            else if (lastUserNumStr != null && GlobalDictionaries.charSequenceEquals(userNum, lastUserNumStr))
+            {
+                userNumbers[idx] = lastUserNumId;
+                lastUserNumRef = userNum;
+            }
+            else
+            {
+                lastUserNumId = dicts.getOrCreateStringId(userNum);
+                lastUserNumStr = dicts.getString(lastUserNumId);
+                lastUserNumRef = userNum;
+                userNumbers[idx] = lastUserNumId;
+            }
 
             count++;
             return true;
@@ -623,6 +679,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
             {
                 minTime = 0;
                 maxTime = 0;
+                maxRunTime = 0;
             }
 
             // Convert absolute epoch timestamps into delta offsets relative to minTime
@@ -636,16 +693,18 @@ public class TimerChunkHandler implements ChunkTypeHandler
             final int[] finalTimerIds = size == DEFAULT_CHUNK_CAPACITY ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == DEFAULT_CHUNK_CAPACITY ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
             final int[] finalRunTimes = size == DEFAULT_CHUNK_CAPACITY ? runTimes : Arrays.copyOf(runTimes, size);
+            final int[] finalUserNumbers = size == DEFAULT_CHUNK_CAPACITY ? userNumbers : Arrays.copyOf(userNumbers, size);
 
             // Compress columns via FastPFOR
             final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
             final int[] compRunTimes = FastIntegerCodec.compress(finalRunTimes);
+            final int[] compUserNumbers = FastIntegerCodec.compress(finalUserNumbers);
 
-            return new TimerChunk(typeCode, size, minTime, maxTime,
+            return new TimerChunk(typeCode, size, minTime, maxTime, maxRunTime,
                                   timerIds.clone(), agentTestCaseIds.clone(), failedRows.clone(),
-                                  compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes);
+                                  compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes, compUserNumbers);
         }
 
         @Override
@@ -654,6 +713,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
             count = 0;
             minTime = Long.MAX_VALUE;
             maxTime = Long.MIN_VALUE;
+            maxRunTime = 0;
             timerIds.clear();
             agentTestCaseIds.clear();
             failedRows.clear();
@@ -667,6 +727,9 @@ public class TimerChunkHandler implements ChunkTypeHandler
             lastAgentStr = null;
             lastTxnStr = null;
             lastAgentId = -1;
+            lastUserNumRef = null;
+            lastUserNumStr = null;
+            lastUserNumId = -1;
         }
     }
 }

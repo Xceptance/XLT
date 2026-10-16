@@ -55,6 +55,26 @@ public class EventChunk implements Chunk
     /** Compressed 16-bit event message dictionary ID column. */
     final int[] compMessages;
 
+    /** Compressed virtual user thread sequence numbers. */
+    final int[] compUserNumbers;
+
+    /**
+     * Constructs a sealed {@link EventChunk}.
+     */
+    public EventChunk(final int rowCount,
+                      final long minTime,
+                      final long maxTime,
+                      final RoaringBitmap timerNameIds,
+                      final RoaringBitmap agentTestCaseIds,
+                      final int[] compTimeOffsets,
+                      final int[] compTimerNameIds,
+                      final int[] compAgentTestCaseIds,
+                      final int[] compMessages)
+    {
+        this(rowCount, minTime, maxTime, timerNameIds, agentTestCaseIds,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compMessages, new int[0]);
+    }
+
     /**
      * Constructs a sealed {@link EventChunk}.
      *
@@ -76,6 +96,8 @@ public class EventChunk implements Chunk
      *            compressed agent/test case IDs
      * @param compMessages
      *            compressed event message string IDs
+     * @param compUserNumbers
+     *            compressed virtual user numbers
      */
     public EventChunk(final int rowCount,
                       final long minTime,
@@ -85,7 +107,8 @@ public class EventChunk implements Chunk
                       final int[] compTimeOffsets,
                       final int[] compTimerNameIds,
                       final int[] compAgentTestCaseIds,
-                      final int[] compMessages)
+                      final int[] compMessages,
+                      final int[] compUserNumbers)
     {
         this.rowCount = rowCount;
         this.minTime = minTime;
@@ -96,6 +119,7 @@ public class EventChunk implements Chunk
         this.compTimerNameIds = compTimerNameIds;
         this.compAgentTestCaseIds = compAgentTestCaseIds;
         this.compMessages = compMessages;
+        this.compUserNumbers = compUserNumbers != null ? compUserNumbers : new int[0];
     }
 
     @Override
@@ -132,5 +156,15 @@ public class EventChunk implements Chunk
     public RoaringBitmap getAgentTestCaseIds()
     {
         return agentTestCaseIds;
+    }
+
+    /**
+     * Returns the compressed virtual user numbers array.
+     *
+     * @return compressed user numbers
+     */
+    public int[] getCompUserNumbers()
+    {
+        return compUserNumbers;
     }
 }

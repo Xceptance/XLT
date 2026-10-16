@@ -181,7 +181,7 @@ public class CacheManager
     /**
      * Quickly reads global minTime and maxTime from the catalog header if the cache is present and valid.
      * <p>
-     * Supports both the modern V2 binary format (with magic number 0x584C5443) and legacy V1 format.
+     * Supports both the modern V3 binary format (with magic number 0x584C5443) and legacy V1 format.
      * This allows {@link com.xceptance.xlt.report.ReportGenerator} to resolve relative start/end time offsets
      * (e.g. "from start + 5m to end - 5m") before initializing log reading and statistics processors.
      *
@@ -206,7 +206,7 @@ public class CacheManager
             final int magicOrMinHigh = in.readInt();
             if (magicOrMinHigh == com.xceptance.xlt.report.storage.catalog.ChunkCatalog.MAGIC)
             {
-                // V2 binary format: int magic, int version, long minTime, long maxTime
+                // V3 binary format: int magic, int version, long minTime, long maxTime
                 final int version = in.readInt();
                 if (version != com.xceptance.xlt.report.storage.catalog.ChunkCatalog.VERSION)
                 {

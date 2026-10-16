@@ -144,6 +144,11 @@ public class ReportGeneratorMain
     private static final String OPTION_NO_AGENT_CHARTS = "noAgentCharts";
 
     /**
+     * The name of the command-line option to preserve full forensic request details for all requests.
+     */
+    private static final String OPTION_PRESERVE_ALL_DETAILS = "preserve-all-details";
+
+    /**
      * Boolean indicating if links to result browsers should be generated. Acts as an override, thus if
      * <code>null</code> the configured value of the property
      * <code>com.xceptance.xlt.reportgenerator.linkToResultBrowser</code> takes effect.
@@ -342,6 +347,10 @@ public class ReportGeneratorMain
         excludeAgents.setArgName("agents");
         options.addOption(excludeAgents);
 
+        final Option preserveAllDetails = new Option(null, OPTION_PRESERVE_ALL_DETAILS, false,
+                                                     "preserves forensic request details (URL, request/response IDs, form data, raw name) for 100% of requests");
+        options.addOption(preserveAllDetails);
+
         return options;
     }
 
@@ -487,6 +496,12 @@ public class ReportGeneratorMain
         {
             final String summaryVal = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_RATING_SUMMARY);
             commandLineProperties.setProperty(XltConstants.PROPERTY_RATING_SUMMARY, summaryVal);
+        }
+
+        if (commandLine.hasOption(OPTION_PRESERVE_ALL_DETAILS))
+        {
+            commandLineProperties.setProperty(ReportGeneratorConfiguration.PROP_REQUEST_DETAILS_MODE, "full");
+            com.xceptance.xlt.report.storage.chunk.RequestChunkHandler.setRequestDetailsMode("full");
         }
 
         // get test case include/exclude patterns

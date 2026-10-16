@@ -55,8 +55,29 @@ public class DoubleValueChunk implements Chunk
     /** Compressed 16-bit unified (agent, testCase) ID column. */
     final int[] compAgentTestCaseIds;
 
+    /** Compressed virtual user thread sequence numbers. */
+    final int[] compUserNumbers;
+
     /** Dense double-precision floating-point metric value array. */
     final double[] values;
+
+    /**
+     * Constructs a sealed {@link DoubleValueChunk}.
+     */
+    public DoubleValueChunk(final char typeCode,
+                            final int rowCount,
+                            final long minTime,
+                            final long maxTime,
+                            final RoaringBitmap timerNameIds,
+                            final RoaringBitmap agentTestCaseIds,
+                            final int[] compTimeOffsets,
+                            final int[] compTimerNameIds,
+                            final int[] compAgentTestCaseIds,
+                            final double[] values)
+    {
+        this(typeCode, rowCount, minTime, maxTime, timerNameIds, agentTestCaseIds,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, new int[0], values);
+    }
 
     /**
      * Constructs a sealed {@link DoubleValueChunk}.
@@ -79,6 +100,8 @@ public class DoubleValueChunk implements Chunk
      *            compressed metric name IDs
      * @param compAgentTestCaseIds
      *            compressed agent/test case IDs
+     * @param compUserNumbers
+     *            compressed virtual user numbers
      * @param values
      *            dense primitive double array of metric values
      */
@@ -91,6 +114,7 @@ public class DoubleValueChunk implements Chunk
                             final int[] compTimeOffsets,
                             final int[] compTimerNameIds,
                             final int[] compAgentTestCaseIds,
+                            final int[] compUserNumbers,
                             final double[] values)
     {
         this.typeCode = typeCode;
@@ -102,6 +126,7 @@ public class DoubleValueChunk implements Chunk
         this.compTimeOffsets = compTimeOffsets;
         this.compTimerNameIds = compTimerNameIds;
         this.compAgentTestCaseIds = compAgentTestCaseIds;
+        this.compUserNumbers = compUserNumbers != null ? compUserNumbers : new int[0];
         this.values = values;
     }
 
@@ -139,6 +164,16 @@ public class DoubleValueChunk implements Chunk
     public RoaringBitmap getAgentTestCaseIds()
     {
         return agentTestCaseIds;
+    }
+
+    /**
+     * Returns the compressed virtual user numbers array.
+     *
+     * @return compressed user numbers
+     */
+    public int[] getCompUserNumbers()
+    {
+        return compUserNumbers;
     }
 
     /**

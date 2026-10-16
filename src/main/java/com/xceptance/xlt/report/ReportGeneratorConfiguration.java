@@ -203,6 +203,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /** Configuration property key specifying the directory name or path for the persistent ChunkDB cache. */
     public static final String PROP_DATA_CACHE_DIR = PROP_PREFIX + "dataCache.dir";
 
+    /** Configuration property key specifying the request forensic details retention mode ("sparse" or "full"). */
+    public static final String PROP_REQUEST_DETAILS_MODE = "com.xceptance.xlt.report.storage.requestDetailsMode";
+
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
     static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
@@ -387,6 +390,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private String dataCacheDirectoryName;
 
+    private String requestDetailsMode;
+
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
     private double defaultApdexThreshold;
@@ -537,6 +542,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         // data cache settings
         dataCacheEnabled = getBooleanProperty(PROP_DATA_CACHE_ENABLED, true);
         dataCacheDirectoryName = getStringProperty(PROP_DATA_CACHE_DIR, "xlt-cache");
+        setRequestDetailsMode(getStringProperty(PROP_REQUEST_DETAILS_MODE, "sparse"));
 
         // error settings
         generateErrorLinks = getBooleanProperty(PROP_GENERATE_ERROR_LINKS, false);
@@ -972,6 +978,29 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             return dir;
         }
         return new File(testResultDir, dataCacheDirectoryName);
+    }
+
+    /**
+     * Returns the configured request forensic details retention mode ({@code "sparse"} or {@code "full"}).
+     *
+     * @return request details retention mode
+     */
+    public String getRequestDetailsMode()
+    {
+        return requestDetailsMode != null ? requestDetailsMode : "sparse";
+    }
+
+    /**
+     * Sets the request forensic details retention mode ({@code "sparse"} or {@code "full"}) and updates
+     * {@link com.xceptance.xlt.report.storage.chunk.RequestChunkHandler}.
+     *
+     * @param requestDetailsMode
+     *            {@code "full"} to retain forensic details for 100% of requests, or {@code "sparse"} (default)
+     */
+    public void setRequestDetailsMode(final String requestDetailsMode)
+    {
+        this.requestDetailsMode = "full".equalsIgnoreCase(requestDetailsMode) ? "full" : "sparse";
+        com.xceptance.xlt.report.storage.chunk.RequestChunkHandler.setRequestDetailsMode(this.requestDetailsMode);
     }
 
     public int[] getRuntimeIntervalBoundaries()

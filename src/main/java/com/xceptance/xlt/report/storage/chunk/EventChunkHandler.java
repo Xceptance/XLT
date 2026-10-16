@@ -59,7 +59,7 @@ public class EventChunkHandler implements ChunkTypeHandler
      * <ol>
      *   <li>Header: type code ('E'), row count (int), min timestamp (long), max timestamp (long).</li>
      *   <li>Bitmaps: event name IDs, agent/testCase IDs.</li>
-     *   <li>Compressed arrays: time offsets, event name IDs, agent IDs, message string IDs.</li>
+     *   <li>Compressed arrays: time offsets, event name IDs, agent IDs, message string IDs, virtual user numbers.</li>
      * </ol>
      *
      * @param chunk
@@ -84,11 +84,12 @@ public class EventChunkHandler implements ChunkTypeHandler
         c.getTimerNameIds().serialize(out);
         c.getAgentTestCaseIds().serialize(out);
 
-        // 3. Compressed columnar performance vectors
+        // 3. Compressed columnar performance vectors (including compUserNumbers for virtual user correlation)
         writeIntArray(c.compTimeOffsets, out);
         writeIntArray(c.compTimerNameIds, out);
         writeIntArray(c.compAgentTestCaseIds, out);
         writeIntArray(c.compMessages, out);
+        writeIntArray(c.compUserNumbers, out);
     }
 
     /**
@@ -123,9 +124,10 @@ public class EventChunkHandler implements ChunkTypeHandler
         final int[] compTimerNameIds = readIntArray(in);
         final int[] compAgentTestCaseIds = readIntArray(in);
         final int[] compMessages = readIntArray(in);
+        final int[] compUserNumbers = readIntArray(in);
 
         return new EventChunk(rowCount, minTime, maxTime, timerIds, agentTestCaseIds,
-                              compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compMessages);
+                              compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compMessages, compUserNumbers);
     }
 
     /**
@@ -158,6 +160,8 @@ public class EventChunkHandler implements ChunkTypeHandler
         final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
         final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
         final int[] messages = FastIntegerCodec.decompress(c.compMessages);
+        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
+            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
@@ -187,6 +191,12 @@ public class EventChunkHandler implements ChunkTypeHandler
                 event.setAgentName(pair.agentName());
                 event.setTransactionName(pair.testCaseName());
                 event.setTestCaseName(pair.testCaseName());
+            }
+
+            if (userNumbers != null && i < userNumbers.length)
+            {
+                final int userNumId = userNumbers[i];
+                event.setTestUserNumber(userNumId >= 0 && userNumId < strings.length ? strings[userNumId] : null);
             }
 
             final int msgId = messages[i];
@@ -242,6 +252,7 @@ public class EventChunkHandler implements ChunkTypeHandler
         private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] msgArr = new int[DEFAULT_CHUNK_CAPACITY];
+        private final int[] userNumbers = new int[DEFAULT_CHUNK_CAPACITY];
 
         private final RoaringBitmap timerIds = new RoaringBitmap();
         private final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
@@ -295,6 +306,7 @@ public class EventChunkHandler implements ChunkTypeHandler
             agentTestCaseIds.add(aid);
 
             msgArr[idx] = dicts.getOrCreateStringId(r.getMessage());
+            userNumbers[idx] = dicts.getOrCreateStringId(r.getTestUserNumber());
 
             count++;
             return true;
@@ -319,14 +331,26 @@ public class EventChunkHandler implements ChunkTypeHandler
             final int[] finalTimerIds = size == timerIdArr.length ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == agentTestCaseIdArr.length ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
             final int[] finalMessages = size == msgArr.length ? msgArr : Arrays.copyOf(msgArr, size);
+            final int[] finalUserNumbers = size == userNumbers.length ? userNumbers : Arrays.copyOf(userNumbers, size);
 
             final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
             final int[] compMessages = FastIntegerCodec.compress(finalMessages);
+            final int[] compUserNumbers = FastIntegerCodec.compress(finalUserNumbers);
 
-            return new EventChunk(size, minTime, maxTime, timerIds, agentTestCaseIds,
-                                  compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compMessages);
+            return new EventChunk(size, minTime, maxTime, timerIds.clone(), agentTestCaseIds.clone(),
+                                  compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compMessages, compUserNumbers);
+        }
+
+        @Override
+        public void reset()
+        {
+            count = 0;
+            minTime = Long.MAX_VALUE;
+            maxTime = Long.MIN_VALUE;
+            timerIds.clear();
+            agentTestCaseIds.clear();
         }
     }
 }

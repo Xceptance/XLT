@@ -39,16 +39,19 @@ import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
  * and report transformation configuration rules.
  * <p>
  * <b>Cache Invalidation Invariants:</b>
- * A cached dataset is valid if and only if all four components match:
+ * A cached dataset is valid if and only if all five components match:
  * <ol>
+ *   <li><b>Format Version:</b> The binary ChunkDB storage format version ({@link ChunkCatalog#VERSION}),
+ *       protecting against binary schema revisions (e.g., V2 to V3 upgrades).</li>
  *   <li><b>Input File Count:</b> Total number of raw timer CSV files in the input results directory tree.</li>
  *   <li><b>Input Total Bytes:</b> Total combined byte size of all discovered raw timer CSV files. Any modification,
  *       appended lines, or deleted log files alters this total.</li>
- *   <li><b>Merge &amp; Labeling Rules Hash:</b> SHA-256 digest of request merging rules, labeling rules,
- *       and index stripping configurations ({@code com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames}).
- *       Modifying any merge pattern invalidates the cache because request names are transformed at ingestion time.</li>
- *   <li><b>Format Version:</b> The binary ChunkDB storage format version (protecting against schema revisions).</li>
- *   <li><b>XLT Version:</b> The version string of the XLT framework to protect against binary format revisions.</li>
+ *   <li><b>Merge, Labeling &amp; Forensic Retention Rules Hash:</b> SHA-256 digest of request merging rules,
+ *       labeling rules, index stripping ({@code com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames}),
+ *       and request forensic retention mode ({@code sparse} vs {@code full} via {@code --preserve-all-details}).
+ *       Modifying any merge pattern or toggling full forensic retention invalidates the cache because request names
+ *       and Cold Forensic Tail Blocks are constructed at ingestion time.</li>
+ *   <li><b>XLT Version:</b> The version string of the XLT framework to protect against release upgrades.</li>
  * </ol>
  *
  * @param formatVersion
@@ -58,7 +61,7 @@ import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
  * @param totalBytes
  *            the aggregated byte length of all timer CSV files
  * @param mergeRulesHash
- *            SHA-256 hex digest of transformation rules
+ *            SHA-256 hex digest of transformation and forensic retention rules
  * @param xltVersion
  *            the XLT release version string
  */
@@ -220,6 +223,10 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                     md.update(rule.toString().getBytes(StandardCharsets.UTF_8));
                 }
             }
+
+            // 4. Request forensic details retention mode ("sparse" vs "full")
+            final String detailsMode = config.getRequestDetailsMode();
+            md.update((detailsMode != null ? detailsMode.toLowerCase() : "sparse").getBytes(StandardCharsets.UTF_8));
 
             return HexFormat.of().formatHex(md.digest());
         }

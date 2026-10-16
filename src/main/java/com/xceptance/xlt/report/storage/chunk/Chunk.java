@@ -77,4 +77,36 @@ public interface Chunk
      * @return bitmap of contained agent and test case IDs, or {@code null} if this record type has no agent/test case pairs
      */
     RoaringBitmap getAgentTestCaseIds();
+
+    /**
+     * Returns the maximum runtime duration (in milliseconds) across all records in this chunk.
+     * Used as a Zone Map boundary to prune chunks in \(O(1)\) time during latency threshold queries.
+     *
+     * @return maximum runtime in milliseconds, or {@code 0} if not applicable
+     */
+    default int getMaxRunTime()
+    {
+        return 0;
+    }
+
+    /**
+     * Returns whether this chunk contains at least one failed record (or HTTP 5xx/0 response for requests).
+     * Used as a Zone Map flag to prune error-free chunks in \(O(1)\) time during failure queries.
+     *
+     * @return {@code true} if the chunk contains any failures, {@code false} otherwise
+     */
+    default boolean hasFailures()
+    {
+        return false;
+    }
+
+    /**
+     * Returns the serialized byte length of the hot columnar vectors (excluding any cold forensic tail block).
+     *
+     * @return vector payload byte length, or {@code 0} if equal to the total chunk payload length
+     */
+    default int getVectorPayloadLength()
+    {
+        return 0;
+    }
 }

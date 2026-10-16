@@ -25,14 +25,15 @@ import com.xceptance.xlt.report.storage.chunk.Chunk;
  * <b>Two-Tier Pruning Design:</b>
  * <ol>
  *   <li><b>Tier 1 - Chunk-Level Pruning (Coarse Grain):</b>
- *       Evaluated via {@link #mayMatchChunk(Chunk)} prior to decompression. Checks whether the chunk's
+ *       Evaluated via {@link #mayMatchChunk(Chunk)} prior to disk I/O or decompression. Checks whether the chunk's
  *       timestamp range \([\text{minTime}, \text{maxTime}]\) intersects the query window \([t_{\text{from}}, t_{\text{to}}]\),
+ *       verifies Zone Map bounds ({@code chunk.getMaxRunTime() >= minRunTime} and {@code chunk.hasFailures()}),
  *       and executes \(O(1)\) bitwise intersections between allowed ID sets and the chunk's internal
- *       {@link RoaringBitmap} sets. If either check fails, the chunk is skipped entirely without decompressing
- *       a single column or allocating objects.</li>
+ *       {@link RoaringBitmap} sets. If any check fails, the chunk is skipped entirely without reading from disk,
+ *       decompressing a single column, or allocating objects.</li>
  *   <li><b>Tier 2 - Row-Level Filtering (Fine Grain):</b>
- *       Evaluated via {@link #testRow(long, short, short)} during chunk scanning. Fast primitive numeric
- *       comparisons and bitmap membership checks verify individual row timestamps and interned 16-bit IDs.</li>
+ *       Evaluated via {@link #testRow(long, int, int)} during chunk scanning. Fast primitive numeric
+ *       comparisons and bitmap membership checks verify individual row timestamps and interned 32-bit IDs.</li>
  * </ol>
  */
 public class ScanPredicate
@@ -48,6 +49,12 @@ public class ScanPredicate
 
     /** Set of allowed 16-bit unified (agent, testCase) pair IDs, or {@code null} if all pairs are accepted. */
     private final RoaringBitmap allowedAgentTestCaseIds;
+
+    /** Minimum runtime threshold in milliseconds (inclusive); chunks with {@code maxRunTime < minRunTime} are pruned. */
+    private final int minRunTime;
+
+    /** If {@code true}, chunks with {@code !hasFailures()} are pruned. */
+    private final boolean requireFailures;
 
     /** Unconditional predicate that matches all chunks and records across the entire dataset. */
     public static final ScanPredicate ALL = new ScanPredicate(Long.MIN_VALUE, Long.MAX_VALUE, null, null);
@@ -66,10 +73,34 @@ public class ScanPredicate
      */
     public ScanPredicate(final long fromTime, final long toTime, final RoaringBitmap allowedTimerIds, final RoaringBitmap allowedAgentTestCaseIds)
     {
+        this(fromTime, toTime, allowedTimerIds, allowedAgentTestCaseIds, 0, false);
+    }
+
+    /**
+     * Constructs a new {@link ScanPredicate} with additional Zone Map runtime and failure pruning criteria.
+     *
+     * @param fromTime
+     *            earliest timestamp (milliseconds since epoch, inclusive)
+     * @param toTime
+     *            latest timestamp (milliseconds since epoch, inclusive)
+     * @param allowedTimerIds
+     *            bitmap of allowed timer name IDs (null accepts all)
+     * @param allowedAgentTestCaseIds
+     *            bitmap of allowed (agent, testCase) pair IDs (null accepts all)
+     * @param minRunTime
+     *            minimum runtime threshold in milliseconds (0 disables runtime pruning)
+     * @param requireFailures
+     *            {@code true} to prune chunks that contain no failures or error status codes
+     */
+    public ScanPredicate(final long fromTime, final long toTime, final RoaringBitmap allowedTimerIds, final RoaringBitmap allowedAgentTestCaseIds,
+                         final int minRunTime, final boolean requireFailures)
+    {
         this.fromTime = fromTime;
         this.toTime = toTime;
         this.allowedTimerIds = allowedTimerIds;
         this.allowedAgentTestCaseIds = allowedAgentTestCaseIds;
+        this.minRunTime = minRunTime;
+        this.requireFailures = requireFailures;
     }
 
     /**
@@ -93,9 +124,29 @@ public class ScanPredicate
     }
 
     /**
+     * Returns the minimum runtime threshold in milliseconds.
+     *
+     * @return minimum runtime threshold
+     */
+    public int getMinRunTime()
+    {
+        return minRunTime;
+    }
+
+    /**
+     * Returns whether only chunks/records with failures or error status codes are accepted.
+     *
+     * @return {@code true} if failures are required
+     */
+    public boolean isRequireFailures()
+    {
+        return requireFailures;
+    }
+
+    /**
      * Evaluates whether the given chunk could contain any records matching this predicate.
      * <p>
-     * Performs lightweight bounding-box and bitwise intersection checks without decompressing
+     * Performs lightweight bounding-box, Zone Map, and bitwise intersection checks without decompressing
      * the chunk's columnar data.
      *
      * @param chunk
@@ -110,7 +161,17 @@ public class ScanPredicate
             return false;
         }
 
-        // 2. Timer name bitmap pruning: reject if chunk's timers are disjoint from allowed set
+        // 2. Zone Map pruning: reject if chunk's maxRunTime is below minRunTime or chunk has no failures when required
+        if (minRunTime > 0 && chunk.getMaxRunTime() < minRunTime)
+        {
+            return false;
+        }
+        if (requireFailures && !chunk.hasFailures())
+        {
+            return false;
+        }
+
+        // 3. Timer name bitmap pruning: reject if chunk's timers are disjoint from allowed set
         if (allowedTimerIds != null)
         {
             final RoaringBitmap chunkTimers = chunk.getTimerNameIds();
@@ -120,7 +181,7 @@ public class ScanPredicate
             }
         }
 
-        // 3. Agent & TestCase pair bitmap pruning: reject if chunk's pairs are disjoint from allowed set
+        // 4. Agent & TestCase pair bitmap pruning: reject if chunk's pairs are disjoint from allowed set
         if (allowedAgentTestCaseIds != null)
         {
             final RoaringBitmap chunkAgents = chunk.getAgentTestCaseIds();
@@ -170,7 +231,7 @@ public class ScanPredicate
     /**
      * Checks if all rows of the specified chunk are guaranteed to match this predicate without
      * needing row-level checks (e.g. if the chunk is completely bounded within [fromTime, toTime]
-     * and no ID filtering is active).
+     * and no ID, runtime, or failure filtering is active).
      *
      * @param chunk
      *            the candidate chunk to test
@@ -179,6 +240,7 @@ public class ScanPredicate
     public boolean matchesAllRows(final Chunk chunk)
     {
         return allowedTimerIds == null && allowedAgentTestCaseIds == null
+            && minRunTime <= 0 && !requireFailures
             && chunk.getMinTime() >= fromTime && chunk.getMaxTime() <= toTime;
     }
 

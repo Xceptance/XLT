@@ -150,4 +150,26 @@ public interface Data
      *            the transaction's name
      */
     public void setTransactionName(String transactionName);
+
+    /**
+     * Returns the number (or index, [0..N]) of the test user that produced this data record. Only used during report
+     * generation or analysis.
+     *
+     * @return the test user number as a string
+     */
+    default public String getTestUserNumber()
+    {
+        return null;
+    }
+
+    /**
+     * Sets the number (or index, [0..N]) of the test user that produced this data record. Only used during report
+     * generation or analysis.
+     *
+     * @param testUserNumber
+     *            the test user number as a string
+     */
+    default public void setTestUserNumber(final String testUserNumber)
+    {
+    }
 }

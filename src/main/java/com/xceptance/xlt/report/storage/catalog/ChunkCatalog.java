@@ -71,7 +71,7 @@ public class ChunkCatalog
     public static final int MAGIC = 0x584C5443;
 
     /** Binary catalog format version. */
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
 
     /**
      * Standard fixed header size in bytes for the V2 catalog format.
@@ -313,14 +313,16 @@ public class ChunkCatalog
     }
 
     // -------------------------------------------------------------------------
-    // Deserialization (V2 Format with tail index table)
+    // Deserialization (V3 Format with tail index table)
     // -------------------------------------------------------------------------
 
     /**
-     * Reads a {@link ChunkCatalog} from disk using the V2 binary format.
+     * Reads a {@link ChunkCatalog} from disk using the V3 binary format.
      * <p>
-     * Seeks directly to the metadata index table and instantly instantiates {@link DiskChunk}
-     * descriptors, completing in ~1-2 milliseconds without loading or decompressing columnar data.
+     * Reads the 44-byte header at offset 0, seeks directly to {@code metadataIndexOffset} at the end of
+     * {@code chunks.bin}, and instantiates lightweight {@link DiskChunk} descriptors (including Zone Map bounds
+     * {@code maxRunTime} and {@code hasFailures}, plus {@code vectorPayloadLength} for partial hot-vector reads).
+     * Completes in ~1-2 milliseconds without loading or decompressing any columnar chunk payloads.
      *
      * @param chunksFile
      *            the binary chunks file on disk
@@ -330,7 +332,7 @@ public class ChunkCatalog
      *            the chunk type registry to locate specialized handlers for each chunk type
      * @return fully reconstructed {@link ChunkCatalog} instance
      * @throws IOException
-     *             if an I/O error occurs or the file is not in valid V2 ChunkDB format
+     *             if an I/O error occurs or the file is not in valid V3 ChunkDB format
      */
     public static ChunkCatalog readFrom(final File chunksFile, final GlobalDictionaries dicts, final ChunkTypeRegistry registry) throws IOException
     {
@@ -357,7 +359,7 @@ public class ChunkCatalog
             final int chunkCount = raf.readInt();
             final long metadataIndexOffset = raf.readLong();
 
-            // Seek to metadata index table
+            // Seek directly past all serialized chunk payloads to the tail metadata index table
             raf.seek(metadataIndexOffset);
             final InputStream inStream = Channels.newInputStream(raf.getChannel());
             final DataInput in = new DataInputStream(new BufferedInputStream(inStream));
@@ -365,12 +367,17 @@ public class ChunkCatalog
 
             for (int i = 0; i < indexChunkCount; i++)
             {
+                // Read V3 per-chunk metadata descriptor:
+                // file coordinates, typeCode, rowCount, time bounds, Zone Map bounds, and vector prefix length
                 final long offset = in.readLong();
                 final int payloadLength = in.readInt();
                 final char typeCode = in.readChar();
                 final int rowCount = in.readInt();
                 final long minTime = in.readLong();
                 final long maxTime = in.readLong();
+                final int maxRunTime = in.readInt();
+                final boolean hasFailures = in.readBoolean();
+                final int vectorPayloadLength = in.readInt();
 
                 final boolean hasTimers = in.readBoolean();
                 final RoaringBitmap timers;
@@ -396,10 +403,13 @@ public class ChunkCatalog
                     agents = new RoaringBitmap();
                 }
 
-                final DiskChunk chunk = new DiskChunk(typeCode, rowCount, minTime, maxTime, timers, agents, offset, payloadLength, chunksFile);
+                final DiskChunk chunk = new DiskChunk(typeCode, rowCount, minTime, maxTime, timers, agents,
+                                                      offset, payloadLength, chunksFile,
+                                                      maxRunTime, hasFailures, vectorPayloadLength);
                 catalog.chunks.add(chunk);
                 catalog.chunksByType.computeIfAbsent(typeCode, k -> Collections.synchronizedList(new ArrayList<>())).add(chunk);
 
+                // Rebuild in-memory inverted RoaringBitmap indexes (timerId -> chunkIdx, agentTestCaseId -> chunkIdx)
                 for (final int timerId : timers)
                 {
                     catalog.timerToChunksIndex.computeIfAbsent(timerId, k -> new RoaringBitmap()).add(i);

@@ -353,7 +353,7 @@ public class ChunkStorage implements AutoCloseable
             dir.mkdirs();
         }
 
-        // Write directly using ChunkSpooler to produce the unified V2 format with tail index table
+        // Write directly using ChunkSpooler to produce the unified V3 format with tail index table
         final ChunkSpooler spooler = new ChunkSpooler(dir);
         final List<Chunk> allChunks = catalog.getAllChunks();
         for (final Chunk c : allChunks)
@@ -394,7 +394,7 @@ public class ChunkStorage implements AutoCloseable
             dicts = GlobalDictionaries.readFrom(in);
         }
 
-        // 2. Read chunk catalog (utilizes fast index seeking if V2, or falls back to V1 sequential parse)
+        // 2. Read V3 chunk catalog via O(1) tail metadata index seek
         final ChunkTypeRegistry reg = ChunkTypeRegistry.getInstance();
         final ChunkCatalog cat = ChunkCatalog.readFrom(chunksFile, dicts, reg);
 
