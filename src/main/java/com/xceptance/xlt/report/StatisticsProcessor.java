@@ -68,7 +68,7 @@ public class StatisticsProcessor
     /**
      * All worker report provider lists instantiated for worker threads.
      */
-    private final ConcurrentLinkedQueue<List<ReportProvider>> allWorkerProviders = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<WorkerProviderSet> allWorkerProviderSets = new ConcurrentLinkedQueue<>();
 
     /**
      * Internal container managing worker provider instances for a single processing thread.
@@ -102,12 +102,21 @@ public class StatisticsProcessor
                 this.providersByTypeCode[c] = matching.toArray(new ReportProvider[0]);
             }
         }
+
+        /**
+         * Clears all provider references and routing tables so merged worker providers can be garbage-collected.
+         */
+        void clear()
+        {
+            allProviders.clear();
+            java.util.Arrays.fill(providersByTypeCode, null);
+        }
     }
 
     /**
      * Thread-local worker provider sets maintaining per-thread instances and type routing tables.
      */
-    private final ThreadLocal<WorkerProviderSet> threadLocalProviderSet;
+    private ThreadLocal<WorkerProviderSet> threadLocalProviderSet;
 
     /**
      * Flag indicating whether merge completion has already been performed.
@@ -184,8 +193,9 @@ public class StatisticsProcessor
                 throw new RuntimeException(e);
             }
         }
-        allWorkerProviders.add(localList);
-        return new WorkerProviderSet(localList);
+        final WorkerProviderSet set = new WorkerProviderSet(localList);
+        allWorkerProviderSets.add(set);
+        return set;
     }
 
 
@@ -370,25 +380,42 @@ public class StatisticsProcessor
 
 
     /**
-     * Merges all worker provider statistics into the master report providers.
+     * Merges all worker provider statistics into the master report providers and immediately releases
+     * worker memory.
+     * <p>
+     * Each report provider type is merged in parallel across all worker sets. As soon as a worker provider
+     * is merged into its master provider, its slot in {@code workerSet.allProviders} is nulled out so its
+     * internal time series can be reclaimed by the GC while remaining providers are still merging.
      */
     public void complete()
     {
         if (completed.compareAndSet(false, true))
         {
-            final List<List<ReportProvider>> workers = new ArrayList<>(allWorkerProviders);
-            allWorkerProviders.clear();
+            final List<WorkerProviderSet> workerSets = new ArrayList<>(allWorkerProviderSets);
+            allWorkerProviderSets.clear();
+            // Drop the ThreadLocal reference so worker threads cannot retain their WorkerProviderSet via ThreadLocalMaps
+            threadLocalProviderSet = null;
 
-            if (!workers.isEmpty())
+            if (!workerSets.isEmpty())
             {
                 IntStream.range(0, reportProviders.size()).parallel().forEach(i -> {
                     final ReportProvider master = reportProviders.get(i);
-                    for (final List<ReportProvider> workerList : workers)
+                    for (final WorkerProviderSet workerSet : workerSets)
                     {
-                        final ReportProvider worker = workerList.get(i);
-                        master.merge(worker);
+                        final ReportProvider worker = workerSet.allProviders.get(i);
+                        if (worker != null)
+                        {
+                            master.merge(worker);
+                            // Drop reference immediately after merging so GC can reclaim this worker's data right away
+                            workerSet.allProviders.set(i, null);
+                        }
                     }
                 });
+
+                for (final WorkerProviderSet workerSet : workerSets)
+                {
+                    workerSet.clear();
+                }
             }
         }
     }

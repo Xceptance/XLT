@@ -428,6 +428,16 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
             return true;
         }
 
+        /**
+         * Clears accumulated records so this builder instance and its backing {@link ArrayList} capacity
+         * can be recycled across chunks without retaining previously sealed {@link Data} records in heap memory.
+         */
+        @Override
+        public void reset()
+        {
+            records.clear();
+        }
+
         @Override
         public Chunk seal()
         {

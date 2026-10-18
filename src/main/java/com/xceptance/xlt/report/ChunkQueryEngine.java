@@ -61,9 +61,11 @@ public class ChunkQueryEngine
      * Reusable thread-local data containers sized for full chunk capacity (up to 65,536 records).
      * <p>
      * Reusing pre-allocated data containers across chunks avoids allocating millions of container
-     * and array objects on the JVM heap, completely removing GC pressure during warm query scans.
+     * and array objects on the JVM heap during warm query scans. Kept as an instance field (rather than
+     * {@code static}) and nulled out when {@link #executeScan(ScanPredicate, StatisticsProcessor)} finishes
+     * so the 65,536-element arrays are eligible for GC before report XML and chart generation begins.
      */
-    private static final ThreadLocal<PostProcessedDataContainer> THREAD_LOCAL_CONTAINER =
+    private ThreadLocal<PostProcessedDataContainer> threadLocalContainer =
         ThreadLocal.withInitial(() -> new PostProcessedDataContainer(65536, 1));
 
     /**
@@ -112,13 +114,14 @@ public class ChunkQueryEngine
         final java.util.concurrent.atomic.LongAdder totalProcessNanos = new java.util.concurrent.atomic.LongAdder();
 
         // Step 2: Parallel decompression & streaming into statistics processor
+        final ThreadLocal<PostProcessedDataContainer> localContainer = this.threadLocalContainer;
         final ForkJoinPool pool = new ForkJoinPool(threadCount);
         try
         {
             pool.submit(() -> candidateChunks.parallelStream().forEach(chunk -> {
                 // Find codec handler for this chunk type
                 final ChunkTypeHandler handler = storage.getRegistry().getHandler(chunk.getTypeCode());
-                final PostProcessedDataContainer container = THREAD_LOCAL_CONTAINER.get();
+                final PostProcessedDataContainer container = localContainer.get();
                 container.reset();
                 container.typeCode = chunk.getTypeCode();
 
@@ -150,8 +153,9 @@ public class ChunkQueryEngine
         }
         finally
         {
-            // Clean up thread pool
+            // Clean up thread pool and release thread-local container reference
             pool.shutdown();
+            this.threadLocalContainer = null;
         }
 
         // Finalize statistics merging across thread-local provider sets

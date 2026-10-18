@@ -987,5 +987,155 @@ public class IntTimeSeriesEntryTest
         assertEquals(original.getMaxCount(), copy.getMaxCount());
         assertEquals(original.getErrorCount(), copy.getErrorCount());
         assertEquals(original, copy);
+        assertEquals(original.hashCode(), copy.hashCode());
+    }
+
+    @Test
+    public final void testClearResetsAllFieldsAndHashCodeSensitivity()
+    {
+        final IntTimeSeriesEntry entry = new IntTimeSeriesEntry();
+        final int emptyHash = entry.hashCode();
+
+        entry.updateValue(63, false);
+        entry.updateValue(64, true);
+        entry.updateValue(500, true);
+        entry.updateConcurrency();
+
+        org.junit.Assert.assertNotEquals(emptyHash, entry.hashCode());
+        org.junit.Assert.assertNotEquals(new IntTimeSeriesEntry(10, false).hashCode(), new IntTimeSeriesEntry(20, false).hashCode());
+        org.junit.Assert.assertNotEquals(new IntTimeSeriesEntry(10, false).hashCode(), new IntTimeSeriesEntry(10, true).hashCode());
+
+        entry.clear();
+        assertEquals(new IntTimeSeriesEntry(), entry);
+        assertEquals(emptyHash, entry.hashCode());
+        assertEquals(0, entry.getCount());
+        assertEquals(0, entry.getErrorCount());
+        assertEquals(0, entry.getMaxErrorCount());
+        assertEquals(0, entry.getMaxCount());
+        assertEquals(0, entry.getConcurrentCount());
+        assertEquals(0L, entry.getTotalValue());
+        assertEquals(0, entry.getMinimumValue());
+        assertEquals(0, entry.getMaximumValue());
+        assertEquals(0, entry.getValues().length);
+    }
+
+    @Test
+    public final void testMergeAndCondenseWithEdgeCasesAndReturnSelf()
+    {
+        // 1. merge(null) and condenseWith(null) return self unchanged
+        final IntTimeSeriesEntry base = new IntTimeSeriesEntry(100, true);
+        org.junit.Assert.assertSame(base, base.merge(null));
+        org.junit.Assert.assertSame(base, base.condenseWith(null));
+        assertEquals(1, base.getCount());
+
+        // 2. merge and condenseWith when other/adjacent has count == 0 (empty or concurrency-only)
+        final IntTimeSeriesEntry concOnly = new IntTimeSeriesEntry();
+        concOnly.updateConcurrency();
+        concOnly.updateConcurrency();
+        concOnly.updateConcurrency();
+
+        org.junit.Assert.assertSame(base, base.merge(new IntTimeSeriesEntry()));
+        assertEquals(1, base.getConcurrentCount());
+        org.junit.Assert.assertSame(base, base.merge(concOnly));
+        assertEquals(3, base.getConcurrentCount());
+        assertEquals(1, base.getCount());
+
+        final IntTimeSeriesEntry base2 = new IntTimeSeriesEntry(100, true);
+        org.junit.Assert.assertSame(base2, base2.condenseWith(new IntTimeSeriesEntry()));
+        assertEquals(1, base2.getConcurrentCount());
+        org.junit.Assert.assertSame(base2, base2.condenseWith(concOnly));
+        assertEquals(3, base2.getConcurrentCount());
+        assertEquals(1, base2.getCount());
+
+        // 3. merge and condenseWith when this has count == 0 (empty or concurrency-only)
+        final IntTimeSeriesEntry targetMerge = new IntTimeSeriesEntry();
+        targetMerge.updateConcurrency();
+        targetMerge.updateConcurrency();
+        targetMerge.updateConcurrency();
+        targetMerge.updateConcurrency(); // concurrentCount = 4, count = 0
+        final IntTimeSeriesEntry source = new IntTimeSeriesEntry(80, true);
+        source.updateValue(120, false);   // count = 2, concurrentCount = 2, high bits non-zero
+        org.junit.Assert.assertSame(targetMerge, targetMerge.merge(source));
+        assertEquals(2, targetMerge.getCount());
+        assertEquals(2, targetMerge.getMaxCount());
+        assertEquals(1, targetMerge.getErrorCount());
+        assertEquals(1, targetMerge.getMaxErrorCount());
+        assertEquals(4, targetMerge.getConcurrentCount());
+        assertEquals(200L, targetMerge.getTotalValue());
+        assertEquals(80, targetMerge.getMinimumValue());
+        assertEquals(120, targetMerge.getMaximumValue());
+        assertArrayEquals(source.getValues(), targetMerge.getValues(), 0.0);
+
+        final IntTimeSeriesEntry targetCondense = new IntTimeSeriesEntry();
+        targetCondense.updateConcurrency();
+        targetCondense.updateConcurrency();
+        targetCondense.updateConcurrency();
+        targetCondense.updateConcurrency(); // concurrentCount = 4, count = 0
+        org.junit.Assert.assertSame(targetCondense, targetCondense.condenseWith(source));
+        assertEquals(2, targetCondense.getCount());
+        assertEquals(2, targetCondense.getMaxCount());
+        assertEquals(1, targetCondense.getErrorCount());
+        assertEquals(1, targetCondense.getMaxErrorCount());
+        assertEquals(4, targetCondense.getConcurrentCount());
+        assertEquals(200L, targetCondense.getTotalValue());
+        assertEquals(80, targetCondense.getMinimumValue());
+        assertEquals(120, targetCondense.getMaximumValue());
+        assertArrayEquals(source.getValues(), targetCondense.getValues(), 0.0);
+
+        // 4. merge and condenseWith at same scale with non-zero high bits and across different scales
+        final IntTimeSeriesEntry m1 = new IntTimeSeriesEntry(100, false);
+        final IntTimeSeriesEntry m2 = new IntTimeSeriesEntry(110, false);
+        org.junit.Assert.assertSame(m1, m1.merge(m2));
+        assertArrayEquals(new double[] { 100.0, 110.0 }, m1.getValues(), 0.0);
+
+        final IntTimeSeriesEntry cSame1 = new IntTimeSeriesEntry(100, false);
+        final IntTimeSeriesEntry cSame2 = new IntTimeSeriesEntry(110, false);
+        org.junit.Assert.assertSame(cSame1, cSame1.condenseWith(cSame2));
+        assertArrayEquals(new double[] { 100.0, 110.0 }, cSame1.getValues(), 0.0);
+
+        final IntTimeSeriesEntry cAsc1 = new IntTimeSeriesEntry(100, false);
+        final IntTimeSeriesEntry cAsc2 = new IntTimeSeriesEntry(2000, false);
+        org.junit.Assert.assertSame(cAsc1, cAsc1.condenseWith(cAsc2));
+        assertArrayEquals(new double[] { 96.0, 2000.0 }, cAsc1.getValues(), 0.0);
+
+        final IntTimeSeriesEntry cDesc1 = new IntTimeSeriesEntry(2000, false);
+        final IntTimeSeriesEntry cDesc2 = new IntTimeSeriesEntry(100, false);
+        org.junit.Assert.assertSame(cDesc1, cDesc1.condenseWith(cDesc2));
+        assertArrayEquals(new double[] { 96.0, 2000.0 }, cDesc1.getValues(), 0.0);
+    }
+
+    @Test
+    public final void testEqualsSingleFieldIsolationAndExactHashCode()
+    {
+        final IntTimeSeriesEntry ref = new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 50, 10, 0x1234L, 0x5678L, 2);
+        final IntTimeSeriesEntry same = new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 50, 10, 0x1234L, 0x5678L, 2);
+        assertEquals(ref, same);
+
+        // Verify each of the 11 fields independently breaks equality when mutated in isolation
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(101L, 5, 6, 2, 1, 3, 50, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 6, 6, 2, 1, 3, 50, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 7, 2, 1, 3, 50, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 3, 1, 3, 50, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 2, 3, 50, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 4, 50, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 51, 10, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 50, 11, 0x1234L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 50, 10, 0x1235L, 0x5678L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 50, 10, 0x1234L, 0x5679L, 2));
+        org.junit.Assert.assertNotEquals(ref, new IntTimeSeriesEntry(100L, 5, 6, 2, 1, 3, 50, 10, 0x1234L, 0x5678L, 3));
+
+        // Verify exact deterministic polynomial hashCode across all 11 non-zero fields
+        int expectedHash = Long.hashCode(100L);
+        expectedHash = 31 * expectedHash + 5;
+        expectedHash = 31 * expectedHash + 6;
+        expectedHash = 31 * expectedHash + 2;
+        expectedHash = 31 * expectedHash + 1;
+        expectedHash = 31 * expectedHash + 3;
+        expectedHash = 31 * expectedHash + 50;
+        expectedHash = 31 * expectedHash + 10;
+        expectedHash = 31 * expectedHash + Long.hashCode(0x1234L);
+        expectedHash = 31 * expectedHash + Long.hashCode(0x5678L);
+        expectedHash = 31 * expectedHash + 2;
+        assertEquals(expectedHash, ref.hashCode());
     }
 }

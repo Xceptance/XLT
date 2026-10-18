@@ -161,10 +161,22 @@ public class TimeSeriesDownsamplerTest
             {
                 0, 0
             }, TimeSeriesDownsampler.meanPerBucket(new IntMinMaxValueSet(100), 0, 2, 60));
+        Assert.assertArrayEquals(new int[]
+            {
+                0, 0
+            }, TimeSeriesDownsampler.meanPerBucket(new IntTimeSeries(), 0, 2, 60));
         Assert.assertArrayEquals(new double[]
             {
                 0.0, 0.0
             }, TimeSeriesDownsampler.ratePerBucket(new ValueSet(), 0, 2, 60), 0.001);
+        Assert.assertArrayEquals(new double[]
+            {
+                0.0, 0.0
+            }, TimeSeriesDownsampler.countRatePerBucket(new IntTimeSeries(), 0, 2, 60), 0.001);
+        Assert.assertArrayEquals(new double[]
+            {
+                0.0, 0.0
+            }, TimeSeriesDownsampler.errorRatePerBucket(new IntTimeSeries(), 0, 2, 60), 0.001);
     }
 
     @Test
@@ -190,5 +202,61 @@ public class TimeSeriesDownsamplerTest
             {
                 0.0, 0.0
             }, TimeSeriesDownsampler.errorRatePerBucket((IntTimeSeries) null, 0, 2, 60), 0.001);
+    }
+
+    @Test
+    public void testSelectIntervalCeilingAndZeroDuration()
+    {
+        // Zero or negative duration falls back to minimum 1s interval
+        Assert.assertEquals(1, TimeSeriesDownsampler.selectInterval(0, 0));
+        Assert.assertEquals(1, TimeSeriesDownsampler.selectInterval(120, 1));
+        Assert.assertEquals(5, TimeSeriesDownsampler.selectInterval(121, 1));
+
+        // Duration exceeding 120 * 3600s exhausts the ladder and clamps to 3600s (unless sourceResolution is larger)
+        Assert.assertEquals(3600, TimeSeriesDownsampler.selectInterval(200L * HOUR, 1));
+        Assert.assertEquals(7200, TimeSeriesDownsampler.selectInterval(200L * HOUR, 7200));
+    }
+
+    @Test
+    public void testScaledSeriesAndOutOfBoundsBucketsIgnored()
+    {
+        final long firstSec = 100L;
+        final int buckets = 2;
+        final int interval = 10; // Bucket 0: [100..109], Bucket 1: [110..119]
+
+        // 1. IntMinMaxValueSet at scale > 1 (capacity 4, span > 4s forces scale = 2) with samples before, inside, and after range
+        final IntMinMaxValueSet mm = new IntMinMaxValueSet(4);
+        mm.addOrUpdateValue(99_000L, 999);  // second 99 (< firstSec, ignored)
+        mm.addOrUpdateValue(102_000L, 100); // second 102 (bucket 0)
+        mm.addOrUpdateValue(112_000L, 300); // second 112 (bucket 1, forces scale > 1 on size 4)
+        mm.addOrUpdateValue(120_000L, 888); // second 120 (bucket == 2 >= buckets, ignored)
+        Assert.assertTrue(mm.getScale() > 1);
+        Assert.assertArrayEquals(new int[] { 100, 300 }, TimeSeriesDownsampler.meanPerBucket(mm, firstSec, buckets, interval));
+
+        // 2. ValueSet with samples before (second 99), inside (100, 119), and after (120)
+        final ValueSet vs = new ValueSet();
+        vs.addOrUpdateValue(99_000L, 50);
+        vs.addOrUpdateValue(100_000L, 20);
+        vs.addOrUpdateValue(119_000L, 40);
+        vs.addOrUpdateValue(120_000L, 70);
+        Assert.assertArrayEquals(new double[] { 2.0, 4.0 }, TimeSeriesDownsampler.ratePerBucket(vs, firstSec, buckets, interval), 0.0001);
+
+        // 3. IntTimeSeries at scale > 1 (condensed so slotWidth = 2) with weighted samples, errors, empty slots, and out-of-range slots
+        final IntTimeSeries ts = new IntTimeSeries(16, 16);
+        ts.addValue(98_000L, 999, true);   // second 98 (< firstSec, ignored)
+        ts.addValue(100_000L, 100, false); // second 100 (bucket 0: 1 sample of 100, 0 errors)
+        ts.addValue(104_000L, 400, true);  // second 104 (bucket 0: 3 samples of 400, 2 errors -> weighted mean (100 + 3*400)/4 = 325)
+        ts.addValue(104_000L, 400, true);
+        ts.addValue(104_000L, 400, false);
+        ts.addValue(112_000L, 250, true);  // second 112 (bucket 1: 1 sample of 250, 1 error)
+        ts.addValue(120_000L, 777, true);  // second 120 (bucket == 2 >= buckets, ignored; span 23s > 16s auto-condenses to slotWidth=2)
+
+        Assert.assertEquals(2, ts.getSlotWidth());
+        Assert.assertArrayEquals(new int[] { 325, 250 }, TimeSeriesDownsampler.meanPerBucket(ts, firstSec, buckets, interval));
+        Assert.assertArrayEquals(new double[] { 0.4, 0.1 }, TimeSeriesDownsampler.countRatePerBucket(ts, firstSec, buckets, interval), 0.0001);
+        Assert.assertArrayEquals(new double[] { 0.2, 0.1 }, TimeSeriesDownsampler.errorRatePerBucket(ts, firstSec, buckets, interval), 0.0001);
+
+        // Verify empty bucket produces 0 mean when other buckets have data (bucket 2 has 777 at 120s, bucket 3 at [130..139] is empty)
+        Assert.assertArrayEquals(new int[] { 325, 250, 777, 0 }, TimeSeriesDownsampler.meanPerBucket(ts, firstSec, 4, interval));
     }
 }

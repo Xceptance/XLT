@@ -245,7 +245,19 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
     }
 
     /**
-     * Merges another {@link AbstractDataProcessorBasedReportProvider} into this instance.
+     * Merges another {@link AbstractDataProcessorBasedReportProvider} (typically a worker thread's instance)
+     * into this master instance.
+     * <p>
+     * <b>Memory Lifecycle &amp; Leak Prevention:</b>
+     * <ul>
+     *   <li>When this master provider does not yet have a processor for a timer {@code name}, it adopts
+     *       {@code otherProcessor} directly instead of cloning it. Crucially, it re-parents {@code otherProcessor}
+     *       to {@code this} via {@link AbstractDataProcessor#setReportProvider(AbstractReportProvider)}; otherwise,
+     *       {@code otherProcessor.reportProvider} would still point to the worker provider {@code other}, pinning
+     *       {@code other} and all of its remaining merged processors in Old Gen for the rest of report generation.</li>
+     *   <li>Once all timers from {@code other} have been adopted or merged, {@code other}'s map and L1/L2 caches
+     *       are cleared immediately so every non-adopted worker processor can be reclaimed by the GC right away.</li>
+     * </ul>
      *
      * @param other
      *            the other provider to merge
@@ -263,6 +275,8 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
             final T myProcessor = this.processors.get(name);
             if (myProcessor == null)
             {
+                // Adopt the worker processor and re-parent it to this master provider so it no longer retains 'other'
+                otherProcessor.setReportProvider(this);
                 this.processors.put(name, otherProcessor);
             }
             else
@@ -270,5 +284,12 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
                 myProcessor.merge(otherProcessor);
             }
         }
+
+        // Release all references from the merged worker provider so non-adopted worker processors can be GC'd immediately
+        other.processors.clear();
+        java.util.Arrays.fill(other.cachedNames, null);
+        java.util.Arrays.fill(other.cachedProcessors, null);
+        other.lastTimerName = null;
+        other.lastProcessor = null;
     }
 }

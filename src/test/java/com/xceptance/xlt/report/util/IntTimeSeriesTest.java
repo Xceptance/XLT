@@ -15,7 +15,9 @@
  */
 package com.xceptance.xlt.report.util;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -1118,6 +1120,912 @@ public class IntTimeSeriesTest
             maxInCondensed = Math.max(maxInCondensed, errTsCondensed.getValue(i).doubleValue());
         }
         assertEquals(45.0, maxInCondensed, 0.001);
+    }
+
+    /**
+     * Verifies that 64-slot primitive pages are allocated lazily on demand and that untouched pages remain null.
+     */
+    @Test
+    public void testPagedLazyAllocationAndCleanupOnCondense()
+    {
+        final IntTimeSeries s = new IntTimeSeries(4096, 32768);
+        assertEquals(0, s.getAllocatedPageCount());
+
+        // Write to page 0 (sec 5), page 7 (sec 500), and page 31 (sec 2000)
+        s.addValue(msec(5), 100, false);
+        assertEquals(1, s.getAllocatedPageCount());
+
+        s.addValue(msec(500), 200, false);
+        assertEquals(2, s.getAllocatedPageCount());
+
+        s.addValue(msec(2000), 300, false);
+        assertEquals(3, s.getAllocatedPageCount());
+
+        // Condense repeatedly until all 3 points fall into page 0 (scale 6 -> slotWidth 32 -> 2000/32 = 62 < 64)
+        s.condenseToScale(6);
+        assertEquals(1, s.getAllocatedPageCount());
+        assertEquals(3, s.getCount());
+        assertEquals(600, s.getTotalValue());
+    }
+
+    /**
+     * Verifies that auxiliary per-page arrays (errorCounts, concurrentCounts, maxCounts, maxErrorCounts)
+     * remain null until a slot on that page actually diverges from default invariants.
+     */
+    @Test
+    public void testPageLazyAuxiliaryArraysInvariants()
+    {
+        final IntTimeSeries s = new IntTimeSeries(256, 256);
+
+        // 1. Page 0: only non-failing, single-second samples -> no auxiliary arrays needed
+        s.addValue(msec(0), 50, false);
+        s.addValue(msec(0), 150, false);
+        s.addValue(msec(63), 100, false);
+
+        assertFalse(s.hasPageErrorCounts(0));
+        assertFalse(s.hasPageConcurrentCounts(0));
+        assertFalse(s.hasPageMaxCounts(0));
+        assertFalse(s.hasPageMaxErrorCounts(0));
+        assertEquals(2, s.getSlotCount(0));
+        assertEquals(2, s.getSlotConcurrentCount(0));
+        assertEquals(2, s.getSlotMaxCount(0));
+        assertEquals(0, s.getSlotErrorCount(0));
+        assertEquals(0, s.getSlotMaxErrorCount(0));
+
+        // 2. Page 1 (slots 64..127): add a failed sample at sec 64 -> only errorCounts allocated on page 1
+        s.addValue(msec(64), 200, true);
+        assertFalse(s.hasPageErrorCounts(0));
+        assertTrue(s.hasPageErrorCounts(1));
+        assertFalse(s.hasPageConcurrentCounts(1));
+        assertFalse(s.hasPageMaxCounts(1));
+        assertFalse(s.hasPageMaxErrorCounts(1));
+        assertEquals(1, s.getSlotErrorCount(64));
+        assertEquals(1, s.getSlotMaxErrorCount(64));
+
+        // 3. Page 2 (slots 128..191): add a sample spanning sec 128..130 -> concurrentCounts allocated on page 2
+        s.addValue(msec(128), msec(130), 300, false);
+        assertFalse(s.hasPageConcurrentCounts(0));
+        assertFalse(s.hasPageConcurrentCounts(1));
+        assertTrue(s.hasPageConcurrentCounts(2));
+        assertEquals(0, s.getSlotCount(128));
+        assertEquals(1, s.getSlotConcurrentCount(128));
+        assertEquals(0, s.getSlotCount(129));
+        assertEquals(1, s.getSlotConcurrentCount(129));
+        assertEquals(1, s.getSlotCount(130));
+        assertEquals(1, s.getSlotConcurrentCount(130));
+
+        // Verify that existing slots in page 0 still preserve concurrentCount == count when page 0 later gets concurrency
+        s.addValue(msec(10), msec(11), 80, false);
+        assertTrue(s.hasPageConcurrentCounts(0));
+        assertEquals(2, s.getSlotCount(0));
+        assertEquals(2, s.getSlotConcurrentCount(0));
+        assertEquals(1, s.getSlotCount(63));
+        assertEquals(1, s.getSlotConcurrentCount(63));
+        assertEquals(0, s.getSlotCount(10));
+        assertEquals(1, s.getSlotConcurrentCount(10));
+        assertEquals(1, s.getSlotCount(11));
+        assertEquals(1, s.getSlotConcurrentCount(11));
+
+        // 4. Condense one step: slot 0 (count 2) and slot 1 (count 0) -> condensed slot 0 has count 2, maxCount 2.
+        // Add another sample to sec 1 before condensing so count(0)+count(1) = 3 != max(2, 1) = 2!
+        s.addValue(msec(1), 50, false);
+        // Also add 2 errors at sec 64 (total 3 errors) and 1 error at sec 65 so condensed errorCount(4) != maxErrorCount(3)
+        s.addValue(msec(64), 200, true);
+        s.addValue(msec(64), 200, true);
+        s.addValue(msec(65), 200, true);
+
+        assertFalse(s.hasPageMaxCounts(0));
+        assertFalse(s.hasPageMaxErrorCounts(1));
+
+        s.condenseOneStep();
+
+        // After condensing, page 0 holds condensed slots 0..63 (from original pages 0 and 1!)
+        assertTrue(s.hasPageMaxCounts(0));
+        assertTrue(s.hasPageMaxErrorCounts(0));
+        // Condensed slot 0 (from sec 0 and sec 1): count = 2 + 1 = 3, maxCount = max(2, 1) = 2
+        assertEquals(3, s.getSlotCount(0));
+        assertEquals(2, s.getSlotMaxCount(0));
+        // Condensed slot 32 (from sec 64 and sec 65): errorCount = 3 + 1 = 4, maxErrorCount = max(3, 1) = 3
+        assertEquals(4, s.getSlotErrorCount(32));
+        assertEquals(3, s.getSlotMaxErrorCount(32));
+    }
+
+    /**
+     * Verifies that same-scale thread merges keep maxCounts and maxErrorCounts unallocated at scale 1
+     * because additive burst counts equal total slot counts at 1-second resolution.
+     */
+    @Test
+    public void testSameScaleMergeKeepsMaxArraysUnallocated()
+    {
+        final IntTimeSeries s1 = new IntTimeSeries(128, 128);
+        final IntTimeSeries s2 = new IntTimeSeries(128, 128);
+
+        s1.addValue(msec(0), 50, false);
+        s1.addValue(msec(10), 100, true);
+        s1.addValue(msec(10), 120, false);
+
+        s2.addValue(msec(10), 140, true);
+        s2.addValue(msec(70), 200, false);
+
+        s1.merge(s2);
+
+        assertEquals(1, s1.getScale());
+        assertFalse(s1.hasPageMaxCounts(0));
+        assertFalse(s1.hasPageMaxErrorCounts(0));
+        assertFalse(s1.hasPageMaxCounts(1));
+        assertFalse(s1.hasPageMaxErrorCounts(1));
+
+        assertEquals(3, s1.getSlotCount(10));
+        assertEquals(3, s1.getSlotMaxCount(10));
+        assertEquals(2, s1.getSlotErrorCount(10));
+        assertEquals(2, s1.getSlotMaxErrorCount(10));
+    }
+
+    /**
+     * Tests operations spanning across multiple 64-slot page boundaries (slots 63 -> 64 and 127 -> 128).
+     */
+    @Test
+    public void testCrossPageBoundaryConcurrencyAndShiftRight()
+    {
+        final IntTimeSeries s = new IntTimeSeries(256, 512);
+
+        // Operation spanning from sec 0 (page 0) across page 1 (64..127) to sec 132 (page 2)
+        s.addValue(msec(0), msec(132), 132000, true);
+
+        assertEquals(3, s.getAllocatedPageCount());
+        for (int pos = 0; pos < 132; pos++)
+        {
+            assertEquals("Pos " + pos, 0, s.getSlotCount(pos));
+            assertEquals("Pos " + pos, 1, s.getSlotConcurrentCount(pos));
+            assertEquals("Pos " + pos, 0, s.getSlotErrorCount(pos));
+        }
+        assertEquals(1, s.getSlotCount(132));
+        assertEquals(1, s.getSlotConcurrentCount(132));
+        assertEquals(1, s.getSlotErrorCount(132));
+        assertEquals(132000L, s.getSlotTotalValue(132));
+
+        // Now add an earlier sample at sec -70 (shifts everything right by 70 slots across page boundaries!)
+        s.addValue(msec(-70), 50, false);
+
+        assertEquals(sec(-70), s.getFirstSecond());
+        // Slot 0 is sec -70
+        assertEquals(1, s.getSlotCount(0));
+        assertEquals(50L, s.getSlotTotalValue(0));
+        assertEquals(0, s.getSlotErrorCount(0));
+
+        // Slots 1..69 (sec -69 .. sec -1) must be completely empty
+        for (int pos = 1; pos < 70; pos++)
+        {
+            assertEquals("Empty pos " + pos, 0, s.getSlotCount(pos));
+            assertEquals("Empty pos " + pos, 0, s.getSlotConcurrentCount(pos));
+            assertEquals("Empty pos " + pos, 0, s.getSlotErrorCount(pos));
+        }
+
+        // Slots 70..201 (sec 0 .. sec 131) must have concurrency = 1, count = 0
+        for (int pos = 70; pos < 202; pos++)
+        {
+            assertEquals("Shifted active pos " + pos, 0, s.getSlotCount(pos));
+            assertEquals("Shifted active pos " + pos, 1, s.getSlotConcurrentCount(pos));
+        }
+
+        // Slot 202 (sec 132) must have the completion record
+        assertEquals(1, s.getSlotCount(202));
+        assertEquals(1, s.getSlotConcurrentCount(202));
+        assertEquals(1, s.getSlotErrorCount(202));
+        assertEquals(132000L, s.getSlotTotalValue(202));
+        assertEquals(132000, s.getSlotMinimumValue(202));
+        assertEquals(132000, s.getSlotMaximumValue(202));
+    }
+
+    /**
+     * Tests condensing across multiple 64-slot pages where page 0 (0..63) and page 1 (64..127)
+     * condense into page 0 (0..31 and 32..63), and page 2 (128..191) + page 3 (192..255) condense into page 1.
+     */
+    @Test
+    public void testMultiPageCondenseSlotMapping()
+    {
+        final IntTimeSeries s = new IntTimeSeries(256, 256);
+
+        // Populate boundary slots of pages 0, 1, 2, 3:
+        // Page 0: slot 0, slot 62, slot 63
+        s.addValue(msec(0), 10, false);
+        s.addValue(msec(62), 20, false);
+        s.addValue(msec(63), 30, true);
+
+        // Page 1: slot 64, slot 127
+        s.addValue(msec(64), 40, false);
+        s.addValue(msec(127), 50, true);
+
+        // Page 2: slot 128, slot 191
+        s.addValue(msec(128), 60, false);
+        s.addValue(msec(191), 70, false);
+
+        // Page 3: slot 192, slot 255
+        s.addValue(msec(192), 80, true);
+        s.addValue(msec(255), 90, false);
+
+        assertEquals(4, s.getAllocatedPageCount());
+
+        s.condenseOneStep();
+
+        assertEquals(2, s.getScale());
+        assertEquals(2, s.getAllocatedPageCount());
+        assertEquals(127, s.getLastPosUsed());
+
+        // Check condensed slots in Page 0 (0..63):
+        // Slot 0 (from 0, 1): count 1, total 10
+        assertEquals(1, s.getSlotCount(0));
+        assertEquals(10L, s.getSlotTotalValue(0));
+
+        // Slot 31 (from 62, 63): count 2, total 50, min 20, max 30, error 1
+        assertEquals(2, s.getSlotCount(31));
+        assertEquals(50L, s.getSlotTotalValue(31));
+        assertEquals(20, s.getSlotMinimumValue(31));
+        assertEquals(30, s.getSlotMaximumValue(31));
+        assertEquals(1, s.getSlotErrorCount(31));
+
+        // Slot 32 (from 64, 65): count 1, total 40
+        assertEquals(1, s.getSlotCount(32));
+        assertEquals(40L, s.getSlotTotalValue(32));
+
+        // Slot 63 (from 126, 127): count 1, total 50, error 1
+        assertEquals(1, s.getSlotCount(63));
+        assertEquals(50L, s.getSlotTotalValue(63));
+        assertEquals(1, s.getSlotErrorCount(63));
+
+        // Check condensed slots in Page 1 (64..127):
+        // Slot 64 (from 128, 129): count 1, total 60
+        assertEquals(1, s.getSlotCount(64));
+        assertEquals(60L, s.getSlotTotalValue(64));
+
+        // Slot 95 (from 190, 191): count 1, total 70
+        assertEquals(1, s.getSlotCount(95));
+        assertEquals(70L, s.getSlotTotalValue(95));
+
+        // Slot 96 (from 192, 193): count 1, total 80, error 1
+        assertEquals(1, s.getSlotCount(96));
+        assertEquals(80L, s.getSlotTotalValue(96));
+        assertEquals(1, s.getSlotErrorCount(96));
+
+        // Slot 127 (from 254, 255): count 1, total 90
+        assertEquals(1, s.getSlotCount(127));
+        assertEquals(90L, s.getSlotTotalValue(127));
+    }
+
+    /**
+     * Tests all combinations of concurrency-only slots (count == 0, concurrentCount > 0)
+     * during merge and condense operations.
+     */
+    @Test
+    public void testConcurrencyOnlySlotMergeAndCondenseCombinations()
+    {
+        // Series A: op spanning sec 0..3 -> sec 0, 1, 2 have count=0, concurrentCount=1; sec 3 has count=1, concurrentCount=1
+        final IntTimeSeries a = new IntTimeSeries(64, 64);
+        a.addValue(msec(0), msec(3), 100, false);
+        a.addValue(msec(0), msec(3), 200, false);
+        // Now in A: sec 0, 1, 2 have count=0, concurrent=2; sec 3 has count=2, concurrent=2
+
+        // Series B:
+        // - sec 0: concurrency-only with concurrent=5 (from op spanning 0..4)
+        // - sec 1: completion with count=1, concurrent=1 (plus 5 from spanning op = 6)
+        // - sec 2: empty if we didn't span, let's test another series C for count > 0 into concurrency-only
+        final IntTimeSeries b = new IntTimeSeries(64, 64);
+        for (int i = 0; i < 5; i++)
+        {
+            b.addValue(msec(0), msec(1), 50, false);
+        }
+        // In B: sec 0 has count=0, concurrent=5; sec 1 has count=5, concurrent=5; sec 3 has count=0, concurrent=0
+        // Add concurrency-only at sec 3 in B (by spanning sec 3..4)
+        for (int i = 0; i < 4; i++)
+        {
+            b.addValue(msec(3), msec(4), 80, true);
+        }
+        // Now in B: sec 3 has count=0, concurrent=4; sec 4 has count=4, concurrent=4, error=4
+
+        a.merge(b);
+
+        // Slot 0: both A (conc=2) and B (conc=5) had count=0 -> result count=0, conc=max(2, 5)=5
+        assertEquals(0, a.getSlotCount(0));
+        assertEquals(5, a.getSlotConcurrentCount(0));
+
+        // Slot 1: A had count=0, conc=2; B had count=5, conc=5 -> result count=5, conc=max(2, 5)=5, total=250
+        assertEquals(5, a.getSlotCount(1));
+        assertEquals(5, a.getSlotConcurrentCount(1));
+        assertEquals(250L, a.getSlotTotalValue(1));
+
+        // Slot 2: A had count=0, conc=2; B was empty -> result count=0, conc=2
+        assertEquals(0, a.getSlotCount(2));
+        assertEquals(2, a.getSlotConcurrentCount(2));
+
+        // Slot 3: A had count=2, conc=2, total=300; B had count=0, conc=4 -> result count=2, conc=max(2, 4)=4, total=300
+        assertEquals(2, a.getSlotCount(3));
+        assertEquals(4, a.getSlotConcurrentCount(3));
+        assertEquals(300L, a.getSlotTotalValue(3));
+
+        // Slot 4: A was empty; B had count=4, conc=4, error=4 -> result count=4, conc=4, error=4
+        assertEquals(4, a.getSlotCount(4));
+        assertEquals(4, a.getSlotConcurrentCount(4));
+        assertEquals(4, a.getSlotErrorCount(4));
+
+        // Now condense A one step:
+        // Condensed slot 0 combines old slot 0 (count=0, conc=5) and old slot 1 (count=5, conc=5) -> count=5, conc=5
+        // Condensed slot 1 combines old slot 2 (count=0, conc=2) and old slot 3 (count=2, conc=4) -> count=2, conc=4
+        a.condenseOneStep();
+        assertEquals(5, a.getSlotCount(0));
+        assertEquals(5, a.getSlotConcurrentCount(0));
+        assertEquals(250L, a.getSlotTotalValue(0));
+
+        assertEquals(2, a.getSlotCount(1));
+        assertEquals(4, a.getSlotConcurrentCount(1));
+        assertEquals(300L, a.getSlotTotalValue(1));
+    }
+
+    /**
+     * Verifies that the distinct values bitset and scaling inside Page slots match standalone IntTimeSeriesEntry
+     * across small values (< 64), medium values (64..127), large values requiring multiple scaleUp steps,
+     * and slot merges/condenses with mismatched distinctValuesScale.
+     */
+    @Test
+    public void testDistinctValuesBitsetAndScaleAlignmentMatchesEntry()
+    {
+        final IntTimeSeries s1 = new IntTimeSeries(64, 64);
+        final IntTimeSeries s2 = new IntTimeSeries(64, 64);
+
+        final IntTimeSeriesEntry ref1 = new IntTimeSeriesEntry();
+        final IntTimeSeriesEntry ref2 = new IntTimeSeriesEntry();
+
+        final int[] sampleSet1 = { 0, 1, 63, 64, 65, 127 }; // stays at scale 0 (both low and high words used)
+        final int[] sampleSet2 = { 15, 90, 250, 1200, 15000 }; // triggers multiple scaleUp steps
+
+        for (final int v : sampleSet1)
+        {
+            s1.addValue(msec(0), v, false);
+            ref1.updateValue(v, false);
+        }
+        assertArrayEquals(ref1.getValues(), s1.getEntry(0).getValues(), 0.0001);
+        assertEquals(ref1, s1.getEntry(0));
+
+        for (final int v : sampleSet2)
+        {
+            s2.addValue(msec(0), v, true);
+            ref2.updateValue(v, true);
+        }
+        assertArrayEquals(ref2.getValues(), s2.getEntry(0).getValues(), 0.0001);
+        assertEquals(ref2, s2.getEntry(0));
+
+        // Test merge when dstScale (0) < srcScale (>0)
+        final IntTimeSeries mergedAsc = new IntTimeSeries(s1);
+        mergedAsc.merge(s2);
+        final IntTimeSeriesEntry refMergedAsc = new IntTimeSeriesEntry(ref1).merge(new IntTimeSeriesEntry(ref2));
+        assertEquals(refMergedAsc, mergedAsc.getEntry(0));
+        assertArrayEquals(refMergedAsc.getValues(), mergedAsc.getEntry(0).getValues(), 0.0001);
+
+        // Test merge when dstScale (>0) > srcScale (0)
+        final IntTimeSeries mergedDesc = new IntTimeSeries(s2);
+        mergedDesc.merge(s1);
+        final IntTimeSeriesEntry refMergedDesc = new IntTimeSeriesEntry(ref2).merge(new IntTimeSeriesEntry(ref1));
+        assertEquals(refMergedDesc, mergedDesc.getEntry(0));
+        assertArrayEquals(refMergedDesc.getValues(), mergedDesc.getEntry(0).getValues(), 0.0001);
+
+        // Test condense when slot 0 has scale 0 and slot 1 has scale > 0
+        final IntTimeSeries condenseSeries = new IntTimeSeries(64, 64);
+        for (final int v : sampleSet1)
+        {
+            condenseSeries.addValue(msec(0), v, false);
+        }
+        for (final int v : sampleSet2)
+        {
+            condenseSeries.addValue(msec(1), v, true);
+        }
+        condenseSeries.condenseOneStep();
+        final IntTimeSeriesEntry refCondensed = new IntTimeSeriesEntry(ref1).condenseWith(new IntTimeSeriesEntry(ref2));
+        assertEquals(refCondensed, condenseSeries.getEntry(0));
+        assertArrayEquals(refCondensed.getValues(), condenseSeries.getEntry(0).getValues(), 0.0001);
+    }
+
+    /**
+     * Randomized equivalence test verifying that all direct slot getters and materialized entries
+     * match a reference array of IntTimeSeriesEntry across multi-page growth, concurrency, errors,
+     * condensing, and merging.
+     */
+    @Test
+    public void testRandomizedEquivalenceWithReferenceEntries()
+    {
+        final Random rng = new Random(42L);
+        final int capacity = 256;
+        final IntTimeSeries s1 = new IntTimeSeries(16, capacity);
+        final IntTimeSeries s2 = new IntTimeSeries(16, capacity);
+        final IntTimeSeriesEntry[] ref1 = new IntTimeSeriesEntry[capacity];
+        final IntTimeSeriesEntry[] ref2 = new IntTimeSeriesEntry[capacity];
+        for (int i = 0; i < capacity; i++)
+        {
+            ref1[i] = new IntTimeSeriesEntry();
+            ref2[i] = new IntTimeSeriesEntry();
+        }
+
+        // Anchor second 0 on both series so slot index == second offset
+        s1.addValue(msec(0), 10, false);
+        ref1[0].updateValue(10, false);
+        s2.addValue(msec(0), 20, true);
+        ref2[0].updateValue(20, true);
+
+        for (int n = 0; n < 2000; n++)
+        {
+            final int startSec = rng.nextInt(capacity - 10);
+            final int durationSec = rng.nextInt(6);
+            final int endSec = startSec + durationSec;
+            final int value = rng.nextInt(50_000);
+            final boolean failed = rng.nextInt(5) == 0;
+
+            if (rng.nextBoolean())
+            {
+                s1.addValue(msec(startSec), msec(endSec), value, failed);
+                ref1[endSec].updateValue(value, failed);
+                for (int p = startSec; p < endSec; p++)
+                {
+                    ref1[p].updateConcurrency();
+                }
+            }
+            else
+            {
+                s2.addValue(msec(startSec), msec(endSec), value, failed);
+                ref2[endSec].updateValue(value, failed);
+                for (int p = startSec; p < endSec; p++)
+                {
+                    ref2[p].updateConcurrency();
+                }
+            }
+        }
+
+        // Verify all slots in s1 and s2 before merge
+        for (int i = 0; i < capacity; i++)
+        {
+            assertSlotMatchesReference("s1 slot " + i, s1, i, ref1[i]);
+            assertSlotMatchesReference("s2 slot " + i, s2, i, ref2[i]);
+        }
+
+        // Merge s2 into s1 and ref2 into ref1
+        s1.merge(s2);
+        for (int i = 0; i < capacity; i++)
+        {
+            ref1[i].merge(ref2[i]);
+            assertSlotMatchesReference("merged slot " + i, s1, i, ref1[i]);
+        }
+
+        // Condense two steps and verify every condensed slot matches reference condenseWith
+        for (int step = 0; step < 2; step++)
+        {
+            s1.condenseOneStep();
+            final int activeSlots = capacity >> (step + 1);
+            for (int i = 0; i < activeSlots; i++)
+            {
+                ref1[i] = ref1[2 * i].condenseWith(ref1[2 * i + 1]);
+                assertSlotMatchesReference("condensed step " + step + " slot " + i, s1, i, ref1[i]);
+            }
+            for (int i = activeSlots; i < capacity; i++)
+            {
+                assertSlotMatchesReference("cleared step " + step + " slot " + i, s1, i, new IntTimeSeriesEntry());
+            }
+        }
+    }
+
+    /**
+     * Verifies out-of-bounds slot getters safely return 0 or an empty IntTimeSeriesEntry.
+     */
+    @Test
+    public void testOutOfBoundsSlotGetters()
+    {
+        final IntTimeSeries s = new IntTimeSeries(64, 64);
+        s.addValue(msec(0), 100, true);
+
+        for (final int pos : new int[] { -1, -100, 64, 1000 })
+        {
+            assertEquals(0, s.getSlotCount(pos));
+            assertEquals(0, s.getSlotErrorCount(pos));
+            assertEquals(0, s.getSlotMaxErrorCount(pos));
+            assertEquals(0, s.getSlotMaxCount(pos));
+            assertEquals(0, s.getSlotConcurrentCount(pos));
+            assertEquals(0L, s.getSlotTotalValue(pos));
+            assertEquals(0, s.getSlotAverageValue(pos));
+            assertEquals(0, s.getSlotMinimumValue(pos));
+            assertEquals(0, s.getSlotMaximumValue(pos));
+            assertEquals(new IntTimeSeriesEntry(), s.getEntry(pos));
+        }
+    }
+
+    /**
+     * Tests merging a larger series into an empty series that has a smaller maxCapacity,
+     * ensuring it safely condenses instead of overflowing page bounds.
+     */
+    @Test
+    public void testMergeIntoEmptyWithSmallerMaxCapacity()
+    {
+        final IntTimeSeries target = new IntTimeSeries(16, 16);
+        final IntTimeSeries source = new IntTimeSeries(128, 128);
+
+        source.addValue(msec(0), 100, false);
+        source.addValue(msec(50), 300, true);
+
+        target.merge(source);
+
+        assertEquals(2, target.getCount());
+        assertEquals(1, target.getErrorCount());
+        assertEquals(400L, target.getTotalValue());
+        assertTrue(target.getScale() > 1);
+    }
+
+    /**
+     * Tests merging two non-empty series that are at different scales (scale 1 and scale 3)
+     * across multiple pages.
+     */
+    @Test
+    public void testMergeDifferentScalesAcrossPages()
+    {
+        final IntTimeSeries s1 = new IntTimeSeries(128, 128);
+        final IntTimeSeries s2 = new IntTimeSeries(128, 128);
+
+        // s1 at scale 1: points at sec 0, sec 64, sec 100
+        s1.addValue(msec(0), 100, false);
+        s1.addValue(msec(64), 200, true);
+        s1.addValue(msec(100), 300, false);
+        assertEquals(1, s1.getScale());
+
+        // s2 condensed to scale 3 (slotWidth = 4s): points at sec 0, sec 400
+        s2.addValue(msec(0), 400, true);
+        s2.addValue(msec(400), 500, false);
+        assertEquals(3, s2.getScale());
+
+        s1.merge(s2);
+
+        assertEquals(3, s1.getScale());
+        assertEquals(5, s1.getCount());
+        assertEquals(2, s1.getErrorCount());
+        assertEquals(1500L, s1.getTotalValue());
+        // Slot 0 (sec 0..3): combined sec 0 from s1 (100, false) and sec 0 from s2 (400, true)
+        assertEquals(2, s1.getSlotCount(0));
+        assertEquals(1, s1.getSlotErrorCount(0));
+        assertEquals(500L, s1.getSlotTotalValue(0));
+        // Slot 16 (sec 64..67): from s1 sec 64
+        assertEquals(1, s1.getSlotCount(16));
+        assertEquals(1, s1.getSlotErrorCount(16));
+        assertEquals(200L, s1.getSlotTotalValue(16));
+        // Slot 25 (sec 100..103): from s1 sec 100
+        assertEquals(1, s1.getSlotCount(25));
+        assertEquals(300L, s1.getSlotTotalValue(25));
+        // Slot 100 (sec 400..403): from s2 sec 400
+        assertEquals(1, s1.getSlotCount(100));
+        assertEquals(500L, s1.getSlotTotalValue(100));
+    }
+
+    /**
+     * Tests shifting right repeatedly with dynamic capacity expansion (64 -> 128 -> 256)
+     * followed by condensing when maxCapacity is exceeded.
+     */
+    @Test
+    public void testShiftRightWithDynamicGrowthAndCondensingAcrossPages()
+    {
+        final IntTimeSeries s = new IntTimeSeries(64, 256);
+
+        s.addValue(msec(200), 100, false);
+        assertEquals(64, s.getSize());
+        assertEquals(1, s.getScale());
+
+        // Shift right by 100s -> span 100..200 (101 slots), grows to 128 at scale 1
+        s.addValue(msec(100), 200, true);
+        assertEquals(128, s.getSize());
+        assertEquals(1, s.getScale());
+        assertEquals(1, s.getSlotCount(0));
+        assertEquals(200L, s.getSlotTotalValue(0));
+        assertEquals(1, s.getSlotCount(100));
+        assertEquals(100L, s.getSlotTotalValue(100));
+
+        // Shift right by another 100s -> span 0..200 (201 slots), grows to 256 at scale 1
+        s.addValue(msec(0), 300, false);
+        assertEquals(256, s.getSize());
+        assertEquals(1, s.getScale());
+        assertEquals(1, s.getSlotCount(0));
+        assertEquals(300L, s.getSlotTotalValue(0));
+        assertEquals(1, s.getSlotCount(100));
+        assertEquals(200L, s.getSlotTotalValue(100));
+        assertEquals(1, s.getSlotErrorCount(100));
+        assertEquals(1, s.getSlotCount(200));
+        assertEquals(100L, s.getSlotTotalValue(200));
+
+        // Shift right by another 100s -> span -100..200 (301 slots > maxCapacity 256), condenses to scale 2!
+        s.addValue(msec(-100), 400, true);
+        assertEquals(256, s.getSize());
+        assertEquals(2, s.getScale());
+        assertEquals(4, s.getCount());
+        assertEquals(2, s.getErrorCount());
+        assertEquals(1000L, s.getTotalValue());
+    }
+
+    /**
+     * Verifies TimeSeriesDownsampler bucket calculations on a multi-page IntTimeSeries.
+     */
+    @Test
+    public void testTimeSeriesDownsamplerMultiPageIntegration()
+    {
+        final IntTimeSeries s = new IntTimeSeries(256, 256);
+        // Bucket 0 (sec 0..59, page 0): 2 samples (100ms, 300ms, 1 error) -> mean 200, countRate 2/60, errorRate 1/60
+        s.addValue(msec(0), 100, false);
+        s.addValue(msec(30), 300, true);
+
+        // Bucket 1 (sec 60..119, crossing page 0 -> page 1 at sec 64): 3 samples (60ms, 90ms, 150ms, 2 errors) -> mean 100
+        s.addValue(msec(63), 60, true);
+        s.addValue(msec(64), 90, false);
+        s.addValue(msec(100), 150, true);
+
+        // Bucket 2 (sec 120..179, crossing page 1 -> page 2 at sec 128): empty
+        // Bucket 3 (sec 180..239, page 2 & page 3): 1 sample (500ms, 0 errors) -> mean 500
+        s.addValue(msec(200), 500, false);
+
+        final int[] means = TimeSeriesDownsampler.meanPerBucket(s, sec(0), 4, 60);
+        assertArrayEquals(new int[] { 200, 100, 0, 500 }, means);
+
+        final double[] countRates = TimeSeriesDownsampler.countRatePerBucket(s, sec(0), 4, 60);
+        assertArrayEquals(new double[] { 2.0 / 60.0, 3.0 / 60.0, 0.0, 1.0 / 60.0 }, countRates, 0.00001);
+
+        final double[] errorRates = TimeSeriesDownsampler.errorRatePerBucket(s, sec(0), 4, 60);
+        assertArrayEquals(new double[] { 1.0 / 60.0, 2.0 / 60.0, 0.0, 0.0 }, errorRates, 0.00001);
+    }
+
+    /**
+     * Exercises Page copy constructor when all four lazy auxiliary arrays (errorCounts, concurrentCounts,
+     * maxCounts, maxErrorCounts) are allocated, as well as updating a slot after condensing and testing
+     * exact distinct-value bitmap boundaries (0, 63, 64, 127, 128).
+     */
+    @Test
+    public void testPageCopyAndPostCondenseUpdateAndBitmapBoundaries()
+    {
+        final IntTimeSeries s = new IntTimeSeries(64, 64);
+
+        // Anchor firstSecond at sec 0, then populate slot 5 to test non-zero slot index when concurrentCounts == null
+        s.addValue(msec(0), 200, true);
+        s.addValue(msec(5), 63, false);
+        s.addValue(msec(5), 64, false);
+        s.addValue(msec(5), 127, false);
+        assertFalse(s.hasPageConcurrentCounts(0));
+        assertEquals(3, s.getSlotConcurrentCount(5));
+        assertArrayEquals(new double[] { 63.0, 64.0, 127.0 }, s.getEntry(5).getValues(), 0.0);
+
+        // Trigger scaleUp at exact boundary 128
+        s.addValue(msec(5), 128, false);
+        assertArrayEquals(new double[] { 62.0, 64.0, 126.0, 128.0 }, s.getEntry(5).getValues(), 0.0);
+
+        // Populate errors and concurrency across slots 0 and 1, then condense so all 4 auxiliary arrays exist on page 0
+        s.addValue(msec(0), msec(1), 100, true);
+        s.addValue(msec(1), 300, true);
+        s.condenseOneStep();
+
+        assertTrue(s.hasPageErrorCounts(0));
+        assertTrue(s.hasPageConcurrentCounts(0));
+        assertTrue(s.hasPageMaxCounts(0));
+        assertTrue(s.hasPageMaxErrorCounts(0));
+
+        // Condensed slot 0 currently has count=3, maxCount=2, errorCount=3, maxErrorCount=2
+        assertEquals(3, s.getSlotCount(0));
+        assertEquals(2, s.getSlotMaxCount(0));
+        assertEquals(3, s.getSlotErrorCount(0));
+        assertEquals(2, s.getSlotMaxErrorCount(0));
+
+        // Deep copy via copy constructor when all 4 lazy arrays are non-null
+        final IntTimeSeries copy = new IntTimeSeries(s);
+        assertTrue(copy.hasPageErrorCounts(0));
+        assertTrue(copy.hasPageConcurrentCounts(0));
+        assertTrue(copy.hasPageMaxCounts(0));
+        assertTrue(copy.hasPageMaxErrorCounts(0));
+        assertEquals(s.getEntry(0), copy.getEntry(0));
+        assertEquals(s.getEntry(2), copy.getEntry(2));
+
+        // Now add a new failing value to slot 0 of the already-condensed series
+        s.addValue(msec(0), 50, true);
+        assertEquals(4, s.getSlotCount(0));
+        assertEquals(3, s.getSlotMaxCount(0));
+        assertEquals(4, s.getSlotErrorCount(0));
+        assertEquals(3, s.getSlotMaxErrorCount(0));
+    }
+
+    /**
+     * Tests nextHighestPowerOfTwo, page directory sizing, negative sample clamping,
+     * and preserving null lazy arrays during copySlot/combineSlot across slots with different counts.
+     */
+    @Test
+    public void testPowerOfTwoPageDirectoryAndLazyInvariantsOnCopyAndCombine()
+    {
+        assertEquals(1, IntTimeSeries.nextHighestPowerOfTwo(-5));
+        assertEquals(1, IntTimeSeries.nextHighestPowerOfTwo(0));
+        assertEquals(1, IntTimeSeries.nextHighestPowerOfTwo(1));
+        assertEquals(2, IntTimeSeries.nextHighestPowerOfTwo(2));
+        assertEquals(4, IntTimeSeries.nextHighestPowerOfTwo(3));
+        assertEquals(64, IntTimeSeries.nextHighestPowerOfTwo(64));
+        assertEquals(128, IntTimeSeries.nextHighestPowerOfTwo(65));
+
+        final IntTimeSeries s1 = new IntTimeSeries(64, 256);
+        assertEquals(1, s1.getPageDirectoryLength());
+
+        // Add negative value (clamped to 0) at slot 0 (count=1) and two non-failing values at slot 2 (count=2)
+        // Slot 2 has count=2 != slot 0's count=1, testing setConcurrentCount's s * 3 index calculation!
+        s1.addValue(msec(0), -50, false);
+        s1.addValue(msec(2), 100, false);
+        s1.addValue(msec(2), 200, false);
+        assertEquals(0, s1.getSlotMinimumValue(0));
+        assertEquals(0, s1.getSlotMaximumValue(0));
+        assertEquals(0, s1.getStatistics().minValue);
+        assertFalse(s1.hasPageErrorCounts(0));
+        assertFalse(s1.hasPageConcurrentCounts(0));
+
+        // Condense s1: slot 0 gets slot 0 (count=1, conc=1, err=0), slot 1 gets slot 2 (count=2, conc=2, err=0)
+        // Neither errorCounts nor concurrentCounts should be allocated during copySlot!
+        final IntTimeSeries condensed = new IntTimeSeries(s1);
+        condensed.condenseOneStep();
+        assertFalse(condensed.hasPageErrorCounts(0));
+        assertFalse(condensed.hasPageConcurrentCounts(0));
+        assertEquals(1, condensed.getSlotCount(0));
+        assertEquals(2, condensed.getSlotCount(1));
+
+        // Merge s1 with another error-free series that populates non-overlapping slot 4 (count=3, conc=3)
+        final IntTimeSeries s2 = new IntTimeSeries(64, 256);
+        s2.addValue(msec(4), 300, false);
+        s1.merge(s2);
+        assertFalse(s1.hasPageErrorCounts(0));
+        assertFalse(s1.hasPageConcurrentCounts(0));
+        assertEquals(1, s1.getSlotCount(0));
+        assertEquals(2, s1.getSlotCount(2));
+        assertEquals(1, s1.getSlotCount(4));
+    }
+
+    /**
+     * Tests copy constructor, merge with earlier startSecond (triggering shiftRight inside merge),
+     * sparse null pages across copy/merge, and toResolution boundary conditions.
+     */
+    @Test
+    public void testCopyAndMergeSparsePagesAndShiftRightInMergeAndToResolution()
+    {
+        // 1. Copy constructor on empty series
+        final IntTimeSeries empty = new IntTimeSeries(64, 128);
+        final IntTimeSeries emptyCopy = new IntTimeSeries(empty);
+        assertEquals(-1, emptyCopy.getLastPosUsed());
+        assertEquals(0, emptyCopy.getAllocatedPageCount());
+
+        // 2. Series with Page 0 and Page 2 allocated, Page 1 null (sparse pages)
+        final IntTimeSeries sparse = new IntTimeSeries(256, 256);
+        sparse.addValue(msec(0), 100, false);    // Page 0, slot 0
+        sparse.addValue(msec(130), 200, true);   // Page 2, slot 2 (Page 1 is null!)
+        assertEquals(2, sparse.getAllocatedPageCount());
+        assertEquals(4, sparse.getPageDirectoryLength());
+
+        // Copy constructor preserves null Page 1
+        final IntTimeSeries sparseCopy = new IntTimeSeries(sparse);
+        assertEquals(2, sparseCopy.getAllocatedPageCount());
+        assertEquals(100L, sparseCopy.getSlotTotalValue(0));
+        assertEquals(200L, sparseCopy.getSlotTotalValue(130));
+
+        // Merge into empty series (fast-path) preserves null Page 1 and merges histogram/stats
+        final IntTimeSeries fastTarget = new IntTimeSeries(64, 256);
+        fastTarget.merge(sparse);
+        assertEquals(256, fastTarget.getSize());
+        assertEquals(2, fastTarget.getAllocatedPageCount());
+        assertEquals(148, fastTarget.getMedianValue());
+        assertEquals(2, fastTarget.getHistogram().getValueCount());
+
+        // 3. Merge into non-empty series where 'other' starts EARLIER than 'this' (triggers shiftRight in merge)
+        // and both are at scale 1 requiring growToCapacity
+        final IntTimeSeries later = new IntTimeSeries(64, 256);
+        later.addValue(msec(100), 400, false); // starts at sec 100
+        later.merge(sparse);                   // sparse starts at sec 0, ends at sec 130 -> span 131 grows to 256 and shifts right!
+        assertEquals(256, later.getSize());
+        assertEquals(sec(0), later.getFirstSecond());
+        assertEquals(130, later.getLastPosUsed());
+        assertEquals(100L, later.getSlotTotalValue(0));
+        assertEquals(400L, later.getSlotTotalValue(100));
+        assertEquals(200L, later.getSlotTotalValue(130));
+        assertEquals(3, later.getCount());
+        assertEquals(100, later.getStatistics().minValue);
+        assertEquals(400, later.getStatistics().maxValue);
+        assertTrue(later.getStandardDeviation() > 0.0);
+
+        // 4. toResolution boundary conditions: targetWidth <= 0, targetWidth == lastPosUsed + 1, targetWidth == lastPosUsed
+        assertEquals(1, later.toResolution(0).getScale());
+        assertEquals(1, later.toResolution(-10).getScale());
+        assertEquals(1, later.toResolution(131).getScale()); // lastPosUsed (130) < 131 -> no condense
+        final IntTimeSeries condensed130 = later.toResolution(130); // lastPosUsed (130) >= 130 -> condenses 1 step to 65
+        assertEquals(2, condensed130.getScale());
+        assertEquals(65, condensed130.getLastPosUsed());
+    }
+
+    /**
+     * Tests JFreeChart export methods, statistics on empty and constant-value series,
+     * and vertical/horizontal histogram series generation.
+     */
+    @Test
+    public void testChartExportsStatisticsAndHistograms()
+    {
+        // 1. Empty series statistics and chart exports
+        final IntTimeSeries empty = new IntTimeSeries(64, 64);
+        final IntTimeSeries.Statistics emptyStats = empty.getStatistics();
+        assertEquals(0L, emptyStats.count);
+        assertEquals(0, emptyStats.minValue);
+        assertEquals(0, emptyStats.maxValue);
+        assertEquals(0.0, emptyStats.mean, 0.0);
+        assertEquals(0.0, emptyStats.standardDeviation, 0.0);
+        assertEquals(0, empty.toRunTimeTimeSeries("rt").getItemCount());
+        assertEquals(0, empty.toMinMaxTimeSeries("mm").getItemCount());
+        assertEquals(0, empty.toCountPerSecondTimeSeries("cps").getItemCount());
+        assertEquals(0, empty.toErrorsPerSecondTimeSeries("eps").getItemCount());
+        assertEquals(0, empty.toErrorRateTimeSeries("er").getItemCount());
+        assertEquals(0, empty.toHistogramSeries("hs", 5).getItemCount());
+        assertEquals(0, empty.toVerticalHistogramSeries("vhs", 5).getItemCount());
+
+        // 2. Constant-value series (max == min -> variance == 0.0 and histogram bucketWidth == 1.0)
+        final IntTimeSeries constant = new IntTimeSeries(64, 64);
+        constant.addValue(msec(0), 100, false);
+        constant.addValue(msec(1), 100, false);
+        assertEquals(0.0, constant.getStandardDeviation(), 0.0);
+        assertEquals(96, constant.getMedianValue());
+        assertEquals(2, constant.getHistogram().getValueCount());
+        final var constHist = constant.toHistogram(4);
+        assertEquals(4, constHist.size());
+
+        // Bimodal series (0 and 500) across 10 buckets leaves middle buckets empty (count == 0), testing count > 0 filter
+        final IntTimeSeries bimodal = new IntTimeSeries(64, 64);
+        bimodal.addValue(msec(0), 0, false);
+        bimodal.addValue(msec(1), 500, false);
+        assertEquals(2, bimodal.toHistogramSeries("hs", 10).getItemCount());
+        final var vSeries = bimodal.toVerticalHistogramSeries("vhs", 10);
+        assertEquals(2, vSeries.getItemCount());
+        assertEquals(1.0, vSeries.getYValue(0), 0.001);
+
+        // 3. Multi-page condensed series chart exports (with null middle page before condense, and slotWidth = 2)
+        final IntTimeSeries multi = new IntTimeSeries(256, 256);
+        multi.addValue(msec(0), 100, true);    // Page 0, slot 0: count=1, err=1
+        multi.addValue(msec(0), 300, false);   // Page 0, slot 0: count=2, err=1
+        multi.addValue(msec(130), 200, false); // Page 2, slot 2: count=1, err=0 (Page 1 is null!)
+        assertEquals(2, multi.toRunTimeTimeSeries("rt").getItemCount());
+        assertEquals(2, multi.toMinMaxTimeSeries("mm").getItemCount());
+
+        // Condense to scale 2 (slotWidth = 2s):
+        // Slot 0 (sec 0): count=2, err=1, maxErr=1 -> count/s = 1.0, errRate = 50.0%
+        // Slot 65 (sec 130): count=1, err=0 -> count/s = 0.5, errRate = 0.0%
+        multi.condenseOneStep();
+        assertEquals(2, multi.getSlotWidth());
+
+        final var rtSeries = multi.toMinMaxTimeSeries("mm");
+        assertEquals(2, rtSeries.getItemCount());
+        assertEquals(multi.getFirstSecond() * 1000L, rtSeries.getTimePeriod(0).getFirstMillisecond());
+        assertEquals((multi.getFirstSecond() + 130L) * 1000L, rtSeries.getTimePeriod(1).getFirstMillisecond());
+
+        final var cpsSeries = multi.toCountPerSecondTimeSeries("cps");
+        assertEquals(66, cpsSeries.getItemCount());
+        assertEquals(1.0, cpsSeries.getValue(0).doubleValue(), 0.0001);
+        assertEquals(0.0, cpsSeries.getValue(1).doubleValue(), 0.0001);
+        assertEquals(0.5, cpsSeries.getValue(65).doubleValue(), 0.0001);
+
+        final var epsSeries = multi.toErrorsPerSecondTimeSeries("eps");
+        assertEquals(66, epsSeries.getItemCount());
+        assertEquals(1.0, epsSeries.getValue(0).doubleValue(), 0.0001);
+        assertEquals(0.0, epsSeries.getValue(65).doubleValue(), 0.0001);
+
+        final var erSeries = multi.toErrorRateTimeSeries("er");
+        assertEquals(2, erSeries.getItemCount());
+        assertEquals(multi.getFirstSecond() * 1000L, erSeries.getTimePeriod(0).getFirstMillisecond());
+        assertEquals(50.0, erSeries.getValue(0).doubleValue(), 0.0001);
+        assertEquals((multi.getFirstSecond() + 130L) * 1000L, erSeries.getTimePeriod(1).getFirstMillisecond());
+        assertEquals(0.0, erSeries.getValue(1).doubleValue(), 0.0001);
+    }
+
+    private static void assertSlotMatchesReference(final String label, final IntTimeSeries series, final int pos, final IntTimeSeriesEntry expected)
+    {
+        assertEquals(label + " count", expected.getCount(), series.getSlotCount(pos));
+        assertEquals(label + " errorCount", expected.getErrorCount(), series.getSlotErrorCount(pos));
+        assertEquals(label + " maxErrorCount", expected.getMaxErrorCount(), series.getSlotMaxErrorCount(pos));
+        assertEquals(label + " maxCount", expected.getMaxCount(), series.getSlotMaxCount(pos));
+        assertEquals(label + " concurrentCount", expected.getConcurrentCount(), series.getSlotConcurrentCount(pos));
+        assertEquals(label + " totalValue", expected.getTotalValue(), series.getSlotTotalValue(pos));
+        assertEquals(label + " averageValue", expected.getAverageValue(), series.getSlotAverageValue(pos));
+        assertEquals(label + " minimumValue", expected.getMinimumValue(), series.getSlotMinimumValue(pos));
+        assertEquals(label + " maximumValue", expected.getMaximumValue(), series.getSlotMaximumValue(pos));
+        assertEquals(label + " entry", expected, series.getEntry(pos));
     }
 }
 

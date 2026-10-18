@@ -114,7 +114,7 @@ public class ChunkIngestionCollector
      * Thread-local array of active, unsealed chunk builders indexed directly by ASCII type code character.
      * Eliminates map lookups and Character autoboxing overhead on the critical parsing path.
      */
-    private final ThreadLocal<ChunkBuilder[]> threadLocalBuilders = ThreadLocal.withInitial(() -> {
+    private ThreadLocal<ChunkBuilder[]> threadLocalBuilders = ThreadLocal.withInitial(() -> {
         final ChunkBuilder[] array = new ChunkBuilder[128];
         allThreadBuilders.add(array);
         return array;
@@ -556,6 +556,7 @@ public class ChunkIngestionCollector
             }
         }
         allThreadBuilders.clear();
+        threadLocalBuilders = null;
 
         // 3. Seal and compress all remaining builders in parallel
         final List<Chunk> sealedChunks = remainingBuilders.parallelStream()
@@ -582,7 +583,10 @@ public class ChunkIngestionCollector
             catalog.addChunk(chunk);
         }
 
-        // 5. Finalize spooled storage files and attach open file channel for lazy loading
+        // 5. Release all recycled builder pools so array memory is reclaimed immediately (before Phase 2 scan)
+        java.util.Arrays.fill(recycledBuilders, null);
+
+        // 6. Finalize spooled storage files and attach open file channel for lazy loading
         if (spooler != null)
         {
             try
@@ -599,9 +603,6 @@ public class ChunkIngestionCollector
                 throw new RuntimeException("Failed to finalize spooled chunk storage", e);
             }
         }
-
-        // 6. Release all recycled builder pools so array memory is reclaimed immediately
-        java.util.Arrays.fill(recycledBuilders, null);
 
         return new ChunkStorage(dictionaries, catalog, registry);
     }

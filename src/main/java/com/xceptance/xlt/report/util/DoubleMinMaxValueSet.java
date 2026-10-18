@@ -15,10 +15,29 @@
  */
 package com.xceptance.xlt.report.util;
 
+import java.util.Arrays;
+
 import com.xceptance.common.util.ParameterCheckUtils;
 
 /**
- * Value set for {@link DoubleMinMaxValue}s.
+ * A fixed-capacity, self-scaling time series bucket array for {@link DoubleMinMaxValue} instances that maintains
+ * per-bucket summary statistics (min, max, sum, count, and approximate distinct values) over an arbitrarily long test
+ * duration.
+ *
+ * <h2>How Self-Scaling Works</h2>
+ * The backing array is allocated with {@code 2 * size} slots (where {@code size} typically matches the chart width in
+ * pixels, e.g. 1024). Initially, each slot represents {@code scale = 1} second ({@code 2^scale2} where {@code scale2 = 0}).
+ * <ul>
+ *   <li><b>Appending forward in time ({@code second > firstSecond}):</b> As long as the target slot index
+ *       {@code (second - firstSecond) >> scale2} exceeds the backing array capacity, {@link #shrink()} merges adjacent
+ *       slot pairs {@code (2k, 2k+1)} in-place, doubling {@link #scale} and halving the occupied slot count.</li>
+ *   <li><b>Inserting earlier timestamps ({@code second < firstSecond}):</b> Out-of-order samples that precede
+ *       {@link #firstSecond} trigger {@link #shrink()} if the total span {@code (lastSecond - second) >> scale2}
+ *       exceeds capacity, and then {@link #shift(int)} shifts existing entries rightward to make room at index 0.</li>
+ *   <li><b>Grid alignment during {@link #shrink()}:</b> When {@code firstSecond} is not aligned to the new, doubled
+ *       {@code scale}, slot 0 sits in the upper half of its new coarse bucket and stands alone while pairing starts
+ *       at slot 1 ({@code offset = 1}).</li>
+ * </ul>
  * 
  * @see IntMinMaxValueSet
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
@@ -26,52 +45,59 @@ import com.xceptance.common.util.ParameterCheckUtils;
 public class DoubleMinMaxValueSet
 {
     /**
-     * The default initial value set size.
+     * The default logical value set size (backing array is allocated at {@code 2 * DEFAULT_SIZE}).
      */
     public static final int DEFAULT_SIZE = 1024;
 
     /**
-     * The smallest time [s] for which a min/max value exists.
+     * The smallest scale-aligned time [s] for which a min/max value exists.
      */
     private int firstSecond;
 
     /**
-     * The biggest time [s] for which a min/max value exists.
+     * The largest scale-aligned time [s] for which a min/max value exists.
      */
     private int lastSecond;
 
     /**
-     * The maximum time [ms] for which a value has been added to this set.
+     * The maximum raw timestamp [ms] for which a value has been added to this set.
      */
     private long maximumTime;
 
     /**
-     * The minimum time [ms] for which a value has been added to this set.
+     * The minimum raw timestamp [ms] for which a value has been added to this set.
      */
     private long minimumTime;
 
     /**
-     * The number of seconds a single min/max value represents. Always a power of 2.
+     * The number of seconds a single min/max slot represents. Always a power of 2 ({@code 1 << scale2}).
      */
     private int scale = 1;
 
     /**
-     * The number of different min/max values that can be stored in this value set.
+     * Base-2 logarithm of {@link #scale} ({@code scale == 1 << scale2}), used to replace division and modulo
+     * by {@code scale} with fast bit shifts.
+     */
+    private int scale2 = 0;
+
+    /**
+     * Internal backing array capacity ({@code 2 * logicalSize}), doubled so that after a {@link #shrink()} pass
+     * at least {@code logicalSize} buckets remain populated.
      */
     private final int size;
 
     /**
-     * The total number of values added to this value set.
+     * The total number of sample values added to this value set.
      */
     private long valueCount;
 
     /**
-     * The min/max values maintained by this value set.
+     * The per-bucket min/max accumulators maintained by this value set.
      */
     private final DoubleMinMaxValue[] values;
 
     /**
-     * Creates a {@link DoubleMinMaxValueSet} instance with a size of {@link #DEFAULT_SIZE}.
+     * Creates a {@link DoubleMinMaxValueSet} instance with a logical size of {@link #DEFAULT_SIZE}.
      */
     public DoubleMinMaxValueSet()
     {
@@ -79,130 +105,123 @@ public class DoubleMinMaxValueSet
     }
 
     /**
-     * Creates a {@link DoubleMinMaxValueSet} instance with the specified size.
+     * Creates a {@link DoubleMinMaxValueSet} instance with the specified logical size.
      * 
      * @param size
-     *            the size
+     *            the logical size (must be greater than 0)
      */
     public DoubleMinMaxValueSet(final int size)
     {
         ParameterCheckUtils.isGreaterThan(size, 0, "size");
 
-        // double the size to have at least size min/max values even after shrinking
-        this.size = size * 2;
+        // Double the size so at least 'size' min/max values remain even immediately after shrinking
+        this.size = size << 1;
         values = new DoubleMinMaxValue[this.size];
     }
 
     /**
-     * Adds a value for a certain time-stamp to this value set.
+     * Adds a value for a given millisecond timestamp to this value set.
      * 
      * @param time
-     *            the time-stamp
+     *            the timestamp in milliseconds
      * @param value
-     *            the value
+     *            the sample value
      */
     public void addOrUpdateValue(final long time, final double value)
     {
-        // get the corresponding second
-        int second = ((int) (time / 1000)) & ~(scale - 1);
+        // Align the timestamp's second to the current power-of-two bucket scale
+        final int second = ((int) (time / 1000)) & ~(scale - 1);
 
-        // check whether this is the first value added
+        // Fast-path for the very first value added to this set
         if (valueCount == 0)
         {
-            // yes, that's easy
             firstSecond = lastSecond = second;
             values[0] = new DoubleMinMaxValue(value);
 
-            // maintain statistics
             minimumTime = maximumTime = time;
             valueCount = 1;
+            return;
+        }
+
+        final int index = resolveSlotIndex(second);
+        final DoubleMinMaxValue item = values[index];
+        if (item == null)
+        {
+            values[index] = new DoubleMinMaxValue(value);
         }
         else
         {
-            // no, there are values in the set already
-
-            // check whether we have to shrink the value set first
-            if (second != firstSecond)
-            {
-                // decide on the way of shrinking
-                if (second > firstSecond)
-                {
-                    // repeat as long as the second falls after the current size
-                    while ((second - firstSecond) / scale >= size)
-                    {
-                        scale = scale * 2;
-
-                        shrink();
-
-                        second = second & ~(scale - 1);
-                        firstSecond = firstSecond & ~(scale - 1);
-                        lastSecond = lastSecond & ~(scale - 1);
-                    }
-
-                    // maintain upper boundary
-                    if (second > lastSecond)
-                    {
-                        lastSecond = second;
-                    }
-                }
-                else
-                {
-                    // repeat as long as the second still falls outside (before) the current size
-                    while ((lastSecond - second) / scale >= size)
-                    {
-                        scale = scale * 2;
-
-                        shrink();
-
-                        second = second & ~(scale - 1);
-                        firstSecond = firstSecond & ~(scale - 1);
-                        lastSecond = lastSecond & ~(scale - 1);
-                    }
-
-                    // shift if necessary
-                    if (second < firstSecond)
-                    {
-                        final int indexDiff = (firstSecond - second) / scale;
-
-                        shift(indexDiff);
-
-                        // maintain lower boundary
-                        firstSecond = second;
-                    }
-                }
-            }
-
-            // calculate final index and update value
-            final int index = (second - firstSecond) / scale;
-            final DoubleMinMaxValue item = values[index];
-            if (item == null)
-            {
-                values[index] = new DoubleMinMaxValue(value);
-            }
-            else
-            {
-                item.updateValue(value);
-            }
-
-            // maintain statistics
-            valueCount++;
-
-            if (time < minimumTime)
-            {
-                minimumTime = time;
-            }
-
-            if (time > maximumTime)
-            {
-                maximumTime = time;
-            }
+            item.updateValue(value);
         }
+
+        valueCount++;
+        minimumTime = Math.min(minimumTime, time);
+        maximumTime = Math.max(maximumTime, time);
     }
 
     /**
-     * Returns the smallest second for which a min/max value exists in this set.
+     * Adjusts the sliding window ({@link #firstSecond}, {@link #lastSecond}, {@link #scale}) by shrinking and/or
+     * shifting the backing array as needed so that {@code second} maps to a valid slot index in {@code [0, size)}.
+     *
+     * @param second
+     *            the scale-aligned second to accommodate
+     * @return the resolved slot index in {@link #values}
+     */
+    private int resolveSlotIndex(int second)
+    {
+        if (second != firstSecond)
+        {
+            if (second > firstSecond)
+            {
+                // Shrink (double scale) until the new forward second fits within the array capacity
+                while (((second - firstSecond) >> scale2) >= size)
+                {
+                    scale = scale << 1;
+                    scale2++;
+
+                    shrink();
+
+                    final int mask = ~(scale - 1);
+                    second = second & mask;
+                    firstSecond = firstSecond & mask;
+                    lastSecond = lastSecond & mask;
+                }
+
+                lastSecond = Math.max(lastSecond, second);
+            }
+            else
+            {
+                // Shrink (double scale) until the distance from the new earlier second to lastSecond fits in capacity
+                while (((lastSecond - second) >> scale2) >= size)
+                {
+                    scale = scale << 1;
+                    scale2++;
+
+                    shrink();
+
+                    final int mask = ~(scale - 1);
+                    second = second & mask;
+                    firstSecond = firstSecond & mask;
+                    lastSecond = lastSecond & mask;
+                }
+
+                // Shift existing buckets right if the new second still precedes firstSecond after any shrinking
+                if (second < firstSecond)
+                {
+                    final int indexDiff = (firstSecond - second) >> scale2;
+                    shift(indexDiff);
+                    firstSecond = second;
+                }
+            }
+        }
+
+        return (second - firstSecond) >> scale2;
+    }
+
+    /**
+     * Returns the smallest second for which a min/max value exists in this set, as milliseconds since the epoch.
      * 
-     * @return the first second
+     * @return the first second, in milliseconds
      */
     public long getFirstSecond()
     {
@@ -256,10 +275,13 @@ public class DoubleMinMaxValueSet
     }
 
     /**
+     * Returns the logical size of this value set.
+     *
+     * @return the logical size
      */
     public int getSize()
     {
-        return size / 2;
+        return size >> 1;
     }
 
     /**
@@ -276,7 +298,7 @@ public class DoubleMinMaxValueSet
      * Merges another {@link DoubleMinMaxValueSet} into this instance.
      *
      * @param other
-     *            the other min-max value set to merge, may be <code>null</code>
+     *            the other min-max value set to merge, may be {@code null}
      */
     public void merge(final DoubleMinMaxValueSet other)
     {
@@ -288,65 +310,51 @@ public class DoubleMinMaxValueSet
         if (this.valueCount == 0)
         {
             this.scale = other.scale;
-
-            final int otherLength = (other.lastSecond - other.firstSecond) / other.scale + 1;
-            for (int i = 0; i < otherLength; i++)
-            {
-                final DoubleMinMaxValue otherItem = other.values[i];
-                if (otherItem != null)
-                {
-                    final int sec = other.firstSecond + (i * other.scale);
-                    addOrUpdateItem(sec, otherItem);
-                }
-            }
-
+            this.scale2 = other.scale2;
             this.minimumTime = other.minimumTime;
             this.maximumTime = other.maximumTime;
-            return;
         }
-
-        // If other is on a larger scale, scale this instance up until scales match
-        while (this.scale < other.scale)
+        else
         {
-            this.scale = this.scale * 2;
+            // If other is on a coarser scale, scale this instance up until scales match
+            while (this.scale < other.scale)
+            {
+                this.scale = this.scale << 1;
+                this.scale2++;
 
-            shrink();
+                shrink();
 
-            final int s1 = ~(this.scale - 1);
-            this.firstSecond = this.firstSecond & s1;
-            this.lastSecond = this.lastSecond & s1;
+                final int mask = ~(this.scale - 1);
+                this.firstSecond = this.firstSecond & mask;
+                this.lastSecond = this.lastSecond & mask;
+            }
+
+            this.minimumTime = Math.min(this.minimumTime, other.minimumTime);
+            this.maximumTime = Math.max(this.maximumTime, other.maximumTime);
         }
 
-        final int otherLength = (other.lastSecond - other.firstSecond) / other.scale + 1;
+        final int otherLength = ((other.lastSecond - other.firstSecond) >> other.scale2) + 1;
         for (int i = 0; i < otherLength; i++)
         {
             final DoubleMinMaxValue otherItem = other.values[i];
             if (otherItem != null)
             {
-                final int sec = other.firstSecond + (i * other.scale);
+                final int sec = other.firstSecond + (i << other.scale2);
                 addOrUpdateItem(sec, otherItem);
             }
         }
-
-        this.minimumTime = Math.min(this.minimumTime, other.minimumTime);
-        this.maximumTime = Math.max(this.maximumTime, other.maximumTime);
     }
 
     /**
-     * Adds or merges a {@link DoubleMinMaxValue} item for a specific second into this value set.
+     * Adds or merges a non-null {@link DoubleMinMaxValue} item for a specific second into this value set.
      *
      * @param second
-     *            the second in seconds
+     *            the timestamp in seconds
      * @param newItem
-     *            the item to merge
+     *            the non-null item to merge
      */
     private void addOrUpdateItem(int second, final DoubleMinMaxValue newItem)
     {
-        if (newItem == null)
-        {
-            return;
-        }
-
         second = second & ~(scale - 1);
 
         if (valueCount == 0)
@@ -357,48 +365,7 @@ public class DoubleMinMaxValueSet
             return;
         }
 
-        if (second != firstSecond)
-        {
-            if (second > firstSecond)
-            {
-                while ((second - firstSecond) / scale >= size)
-                {
-                    scale = scale * 2;
-
-                    shrink();
-
-                    final int s1 = ~(scale - 1);
-                    second = second & s1;
-                    firstSecond = firstSecond & s1;
-                    lastSecond = lastSecond & s1;
-                }
-
-                lastSecond = Math.max(lastSecond, second);
-            }
-            else
-            {
-                while ((lastSecond - second) / scale >= size)
-                {
-                    scale = scale * 2;
-
-                    shrink();
-
-                    final int s1 = ~(scale - 1);
-                    second = second & s1;
-                    firstSecond = firstSecond & s1;
-                    lastSecond = lastSecond & s1;
-                }
-
-                if (second < firstSecond)
-                {
-                    final int indexDiff = (firstSecond - second) / scale;
-                    shift(indexDiff);
-                    firstSecond = second;
-                }
-            }
-        }
-
-        final int index = (second - firstSecond) / scale;
+        final int index = resolveSlotIndex(second);
         final DoubleMinMaxValue item = values[index];
         if (item == null)
         {
@@ -413,86 +380,62 @@ public class DoubleMinMaxValueSet
     }
 
     /**
-     * Returns the min/max values maintained by this set.
+     * Returns a copy of the occupied range of min/max values maintained by this set, from {@link #firstSecond}
+     * to {@link #lastSecond} inclusive.
      * 
-     * @return the min/max values
+     * @return the min/max values array
      */
     public DoubleMinMaxValue[] getValues()
     {
-        DoubleMinMaxValue[] copy;
-
         if (valueCount == 0)
         {
-            copy = new DoubleMinMaxValue[0];
+            return new DoubleMinMaxValue[0];
         }
-        else
-        {
-            final int length = (lastSecond - firstSecond) / scale + 1;
-            copy = new DoubleMinMaxValue[length];
 
-            System.arraycopy(values, 0, copy, 0, length);
-        }
+        final int length = ((lastSecond - firstSecond) >> scale2) + 1;
+        final DoubleMinMaxValue[] copy = new DoubleMinMaxValue[length];
+        System.arraycopy(values, 0, copy, 0, length);
 
         return copy;
     }
 
     /**
-     * Shifts the content of the min/max value array to the right for the specified number of elements.
+     * Shifts the content of the min/max value array to the right by {@code indexDiff} slots and clears the
+     * vacated leading slots.
      * 
      * @param indexDiff
-     *            the destination index
+     *            the number of slots to shift right
      */
     private void shift(final int indexDiff)
     {
         System.arraycopy(values, 0, values, indexDiff, size - indexDiff);
-
-        for (int i = 0; i < indexDiff; i++)
-        {
-            values[i] = null;
-        }
+        Arrays.fill(values, 0, indexDiff, null);
     }
 
     /**
-     * Shrinks the min/max value array by merging two consecutive min/max values into one value.
+     * Compacts the backing array by merging adjacent pairs of min/max slots into single slots of doubled time scale.
      */
     private void shrink()
     {
-        final int offset = (firstSecond % scale > 0) ? 1 : 0;
+        // Note: scale has already been doubled by the caller before shrink() is invoked.
+        // If firstSecond is not aligned to the new scale, slot 0 belongs to the upper half of the first
+        // new coarse bucket and stands alone, while pairing starts at slot 1 (offset = 1).
+        final int offset = ((firstSecond & (scale - 1)) != 0) ? 1 : 0;
 
-        // loop over value pairs, skipping the first value if necessary
-        int i, j;
-        for (i = offset, j = offset; i < size - 1; i = i + 2, j++)
+        int i;
+        int j = offset;
+        for (i = offset; i < size - 1; i += 2)
         {
             final DoubleMinMaxValue v1 = values[i];
             final DoubleMinMaxValue v2 = values[i + 1];
-            DoubleMinMaxValue rv;
+            final DoubleMinMaxValue rv = (v1 != null) ? v1.merge(v2) : v2;
 
-            if (v1 != null && v2 != null)
-            {
-                rv = v1.merge(v2);
-            }
-            else if (v1 != null && v2 == null)
-            {
-                rv = v1;
-            }
-            else if (v1 == null && v2 != null)
-            {
-                rv = v2;
-            }
-            else
-            {
-                rv = null;
-            }
-
-            // clear the old values
             values[i] = null;
             values[i + 1] = null;
-
-            // set the new value
-            values[j] = rv;
+            values[j++] = rv;
         }
 
-        // check whether we have one last entry left to deal with
+        // When offset == 1 and size is even, one trailing slot at index (size - 1) remains unpaired
         if (i < size)
         {
             values[j] = values[i];

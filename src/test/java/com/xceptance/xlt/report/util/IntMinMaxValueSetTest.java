@@ -356,8 +356,8 @@ public class IntMinMaxValueSetTest
             sequential.addOrUpdateValue(base + i * 1000L, 10 + i);
             set1.addOrUpdateValue(base + i * 1000L, 10 + i);
         }
-        // set2: 20 to 60 seconds (overlapping 20..40, disjoint 40..60)
-        for (int i = 20; i < 60; i++)
+        // set2: 20 to 60 seconds with sparse gaps (step by 2) so both non-null and null slots in other are exercised
+        for (int i = 20; i < 60; i += 2)
         {
             sequential.addOrUpdateValue(base + i * 1000L, 20 + i);
             set2.addOrUpdateValue(base + i * 1000L, 20 + i);
@@ -403,5 +403,66 @@ public class IntMinMaxValueSetTest
         Assert.assertEquals(countA + countB, setA.getValueCount());
         Assert.assertEquals(base, setA.getMinimumTime());
         Assert.assertEquals(base + 198 * 1000L, setA.getMaximumTime());
+
+        // Also test merging coarse setA into fine-scale setC (triggers this.scale < other.scale loop)
+        final IntMinMaxValueSet setC = new IntMinMaxValueSet(size);
+        final IntMinMaxValueSet expectedC = new IntMinMaxValueSet(size);
+        for (int i = 1; i < 20; i++)
+        {
+            setC.addOrUpdateValue(base + i * 1000L, 25 + i);
+            expectedC.addOrUpdateValue(base + i * 1000L, 25 + i);
+        }
+        for (int i = 0; i < 200; i += 2)
+        {
+            expectedC.addOrUpdateValue(base + i * 1000L, 50);
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            expectedC.addOrUpdateValue(base + i * 1000L, 30);
+        }
+        Assert.assertEquals(1, setC.getScale());
+        setC.merge(setA);
+        Assert.assertEquals(setA.getScale(), setC.getScale());
+        Assert.assertEquals(countA + countB + 19, setC.getValueCount());
+        Assert.assertEquals(expectedC.getFirstSecond(), setC.getFirstSecond());
+        Assert.assertArrayEquals(expectedC.getValues(), setC.getValues());
+    }
+
+    @Test
+    public void testEmptySetBehaviorAndExceptions()
+    {
+        final IntMinMaxValueSet empty = new IntMinMaxValueSet(64);
+        Assert.assertEquals(0L, empty.getValueCount());
+        Assert.assertEquals(0, empty.getValues().length);
+
+        try
+        {
+            empty.getFirstSecond();
+            Assert.fail("Expected IllegalStateException");
+        }
+        catch (final IllegalStateException expected)
+        {
+            // expected
+        }
+
+        try
+        {
+            empty.getMinimumTime();
+            Assert.fail("Expected IllegalStateException");
+        }
+        catch (final IllegalStateException expected)
+        {
+            // expected
+        }
+
+        try
+        {
+            empty.getMaximumTime();
+            Assert.fail("Expected IllegalStateException");
+        }
+        catch (final IllegalStateException expected)
+        {
+            // expected
+        }
     }
 }

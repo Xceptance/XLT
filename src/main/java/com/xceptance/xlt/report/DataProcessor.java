@@ -180,7 +180,7 @@ public class DataProcessor
      * Ingestion collector accumulating records into compressed columnar ChunkDB chunks concurrently
      * with standard report statistics aggregation during cold-cache runs.
      */
-    private final com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
+    private com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
 
     /**
      * Returns the maximum time.
@@ -228,6 +228,12 @@ public class DataProcessor
             // Wait for all data record parsing and thread-local processing to complete
             dispatcher.waitForDataRecordProcessingToComplete();
 
+            // Shut down CSV reader and parser thread pools immediately after Phase 1 finishes.
+            // Terminating these threads allows their ThreadLocal maps and per-thread parsing buffers
+            // to be garbage-collected before Phase 2 (ChunkDB scan and statistics aggregation) starts.
+            dataParserExecutor.shutdownNow();
+            dataReaderExecutor.shutdownNow();
+
             // Calculate parsing and processing duration and throughput strictly for log reading
             final long readDuration = TimerUtils.get().getElapsedTime(start);
             final long linesPerSecond = Math.round((totalLinesCounter.get() / (double) readDuration) * 1000L);
@@ -244,8 +250,12 @@ public class DataProcessor
             // parsing; finishing writes the index table and header. We safely close storage after caching.
             if (chunkCollector != null)
             {
+                // Detach chunkCollector from this DataProcessor field before entering Phase 2 so the collector
+                // and its builder pools can be reclaimed as soon as collector.finish() completes.
+                final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector = chunkCollector;
+                chunkCollector = null;
                 final long tCacheStart = TimerUtils.get().getStartTime();
-                try (final com.xceptance.xlt.report.storage.ChunkStorage storage = chunkCollector.finish())
+                try (final com.xceptance.xlt.report.storage.ChunkStorage storage = collector.finish())
                 {
                     XltLogger.reportLogger.info("Persisting ChunkDB cache to disk...");
                     final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();

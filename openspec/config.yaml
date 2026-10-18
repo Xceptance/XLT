@@ -1,20 +1,14 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack: Java 21, Maven, JUnit 4 / JUnitParams
+  Code quality & testing standards:
+  - Write clear, human-oriented Javadoc and inline comments explaining the "why" (invariants, memory layouts, edge cases, lifecycle rationale), not just restating what the code does.
+  - Every new or modified core class must be backed by comprehensive unit tests verified with:
+    1. Code coverage (line and branch coverage via JaCoCo: `mvn test jacoco:report` -> `target/site/jacoco/index.html`)
+    2. Mutation testing (via PITest: `mvn test-compile pitest:mutationCoverage -DtargetClasses=<pkg.Class>* -DtargetTests=<pkg.Class>*Test` -> `target/pit-reports/index.html`)
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  tasks:
+    - Include unit test, JaCoCo branch coverage, and targeted PIT mutation testing verification tasks for all modified/added classes.
+    - Ensure all modified/added classes have thorough human-readable Javadoc and inline comments explaining non-obvious design decisions and invariants.

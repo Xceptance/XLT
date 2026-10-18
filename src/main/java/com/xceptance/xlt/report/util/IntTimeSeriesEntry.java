@@ -20,8 +20,14 @@ import java.util.Arrays;
 import com.xceptance.xlt.report.util.misc.BitCompression;
 
 /**
- * A {@link IntTimeSeriesEntry} stores the minimum/maximum/sum/count of all the sample values added, but can also reproduce a
- * rough approximation of the distinct values added.
+ * An {@link IntTimeSeriesEntry} represents a single time-slot snapshot holding the minimum, maximum, sum,
+ * completion count, error count, peak 1-second burst counts, active concurrency, and a 128-bit distinct-value
+ * sketch of all sample values recorded in that slot.
+ * <p>
+ * Note: During high-throughput data ingestion, {@link IntTimeSeries} accumulates slot metrics directly inside
+ * 64-slot primitive pages ({@code IntTimeSeries.Page}) to avoid allocating millions of {@link IntTimeSeriesEntry}
+ * heap objects. Instances of {@link IntTimeSeriesEntry} are materialized on demand when constructing JFreeChart
+ * items ({@link IntMinMaxTimeSeriesDataItem}) or when inspecting individual slots via {@link IntTimeSeries#getEntry(int)}.
  */
 public class IntTimeSeriesEntry
 {
@@ -109,6 +115,26 @@ public class IntTimeSeriesEntry
     }
 
     /**
+     * Package-private constructor used by {@link IntTimeSeries} to materialize an entry snapshot from a primitive page slot.
+     */
+    IntTimeSeriesEntry(final long totalValue, final int count, final int concurrentCount, final int errorCount,
+                       final int maxErrorCount, final int maxCount, final int maximum, final int minimum,
+                       final long distinctValuesLow, final long distinctValuesHigh, final int distinctValuesScale)
+    {
+        this.totalValue = totalValue;
+        this.count = count;
+        this.concurrentCount = concurrentCount;
+        this.errorCount = errorCount;
+        this.maxErrorCount = maxErrorCount;
+        this.maxCount = maxCount;
+        this.maximum = maximum;
+        this.minimum = minimum;
+        this.distinctValuesLow = distinctValuesLow;
+        this.distinctValuesHigh = distinctValuesHigh;
+        this.distinctValuesScale = distinctValuesScale;
+    }
+
+    /**
      * Adds the given sample value to this entry.
      * 
      * @param value
@@ -118,36 +144,26 @@ public class IntTimeSeriesEntry
      */
     public void updateValue(final int value, final boolean failed)
     {
-        final int v = value < 0 ? 0 : value;
+        final int v = Math.max(0, value);
 
         this.count++;
-        if (this.count > this.maxCount)
-        {
-            this.maxCount = this.count;
-        }
+        this.maxCount++;
 
         if (failed)
         {
             this.errorCount++;
-            if (this.errorCount > this.maxErrorCount)
-            {
-                this.maxErrorCount = this.errorCount;
-            }
+            this.maxErrorCount++;
         }
 
         this.totalValue += v;
         this.concurrentCount++;
 
-        if (v > this.maximum)
-        {
-            this.maximum = v;
-        }
-        if (v < this.minimum)
-        {
-            this.minimum = v;
-        }
+        this.maximum = Math.max(this.maximum, v);
+        this.minimum = Math.min(this.minimum, v);
 
-        // Fast-path: inline bitmap update without method call overhead when value fits in current scale
+        // Fast-path: inline bitmap update without method call overhead when value fits in current scale.
+        // Note: per JLS §15.19, 64-bit long shifts (1L << s) implicitly mask the shift distance by (s & 63),
+        // so for s in [64 .. 127], (1L << s) directly sets bit (s - 64) in distinctValuesHigh.
         final int scaled = v >> distinctValuesScale;
         if (scaled < 128)
         {
@@ -157,22 +173,16 @@ public class IntTimeSeriesEntry
             }
             else
             {
-                distinctValuesHigh |= (1L << (scaled - 64));
+                distinctValuesHigh |= (1L << scaled);
             }
         }
         else
         {
+            // Value exceeds the current 128-bucket range; neededScale places (v >> neededScale) in [64 .. 127] (high word)
             final int neededScale = (32 - Integer.numberOfLeadingZeros(v)) - 7;
             scaleUp(neededScale);
             final int s = v >> distinctValuesScale;
-            if (s < 64)
-            {
-                distinctValuesLow |= (1L << s);
-            }
-            else
-            {
-                distinctValuesHigh |= (1L << (s - 64));
-            }
+            distinctValuesHigh |= (1L << s);
         }
     }
 
@@ -193,6 +203,8 @@ public class IntTimeSeriesEntry
         this.count = 0;
         this.concurrentCount = 0;
         this.errorCount = 0;
+        this.maxErrorCount = 0;
+        this.maxCount = 0;
         this.maximum = Integer.MIN_VALUE;
         this.minimum = Integer.MAX_VALUE;
         this.distinctValuesLow = 0;
@@ -201,7 +213,7 @@ public class IntTimeSeriesEntry
     }
 
     /**
-     * Scales up the distinct values bitmap to the target scale.
+     * Scales up the distinct values bitmap to the target scale (where {@code targetScale > distinctValuesScale}).
      * <p>
      * Every scale step halves the resolution by merging adjacent bits across the 128-bit
      * register (low 64-bit and high 64-bit words) using parallel bit compression.
@@ -211,16 +223,8 @@ public class IntTimeSeriesEntry
      */
     private void scaleUp(final int targetScale)
     {
-        // Fast-path: if no distinct values have been recorded yet, simply jump to targetScale
-        // without executing bitwise compression loops over all-zero bitmasks.
-        if (distinctValuesLow == 0L && distinctValuesHigh == 0L)
-        {
-            distinctValuesScale = targetScale;
-            return;
-        }
-
         // If high word is present, compress both words for the first step, folding high into low
-        if (distinctValuesHigh != 0L && distinctValuesScale < targetScale)
+        if (distinctValuesHigh != 0L)
         {
             long l = BitCompression.combineAdjacentBits(distinctValuesLow);
             l = BitCompression.compressAndShiftOddBits(l);
@@ -242,38 +246,6 @@ public class IntTimeSeriesEntry
 
             distinctValuesScale++;
         }
-    }
-
-    /**
-     * Scales the bitmap if the value exceeds the 128-slot capacity.
-     * <p>
-     * Calculates the required scale factor using a single leading zeros instruction
-     * instead of invoking iterative compression passes.
-     * 
-     * @param value
-     *            the sample value to scale
-     * @return the scaled slot index fitting into [0..127]
-     */
-    private int scaleIfNeeded(final int value)
-    {
-        // Fast-path: if the distinct value bitmap is empty, compute target scale directly
-        // without running iterative scaling loops.
-        if (distinctValuesLow == 0L && distinctValuesHigh == 0L)
-        {
-            final int neededScale = (32 - Integer.numberOfLeadingZeros(value)) - 7;
-            distinctValuesScale = neededScale;
-            return value >> neededScale;
-        }
-
-        int v = value >> distinctValuesScale;
-        if (v >= 128)
-        {
-            final int neededScale = (32 - Integer.numberOfLeadingZeros(value)) - 7;
-            scaleUp(neededScale);
-            v = value >> distinctValuesScale;
-        }
-
-        return v;
     }
 
     /**
@@ -322,11 +294,6 @@ public class IntTimeSeriesEntry
     public double[] getValues()
     {
         final int bitCount = Long.bitCount(distinctValuesLow) + Long.bitCount(distinctValuesHigh);
-        if (bitCount == 0)
-        {
-            return new double[0];
-        }
-
         final double[] result = new double[bitCount];
         final long multiplier = 1L << distinctValuesScale;
         int idx = 0;
@@ -391,7 +358,6 @@ public class IntTimeSeriesEntry
     }
 
     /**
-    /**
      * Merges another entry representing the SAME time interval into this instance (parallel aggregation across threads).
      * <p>
      * <b>Thread-Merge Semantics:</b>
@@ -408,25 +374,6 @@ public class IntTimeSeriesEntry
     {
         if (other == null)
         {
-            return this;
-        }
-        if (other.count == 0 && other.concurrentCount == 0)
-        {
-            return this;
-        }
-        if (this.count == 0 && this.concurrentCount == 0)
-        {
-            this.totalValue = other.totalValue;
-            this.count = other.count;
-            this.concurrentCount = other.concurrentCount;
-            this.errorCount = other.errorCount;
-            this.maxErrorCount = other.maxErrorCount;
-            this.maxCount = other.maxCount;
-            this.maximum = other.maximum;
-            this.minimum = other.minimum;
-            this.distinctValuesLow = other.distinctValuesLow;
-            this.distinctValuesHigh = other.distinctValuesHigh;
-            this.distinctValuesScale = other.distinctValuesScale;
             return this;
         }
         if (other.count == 0)
@@ -466,8 +413,8 @@ public class IntTimeSeriesEntry
         count += other.count;
         concurrentCount = Math.max(concurrentCount, other.concurrentCount);
         errorCount += other.errorCount;
-        maxErrorCount = Math.min(errorCount, maxErrorCount + other.maxErrorCount);
-        maxCount = Math.min(count, maxCount + other.maxCount);
+        maxErrorCount += other.maxErrorCount;
+        maxCount += other.maxCount;
 
         distinctValuesLow |= other.distinctValuesLow;
         distinctValuesHigh |= other.distinctValuesHigh;
@@ -495,25 +442,6 @@ public class IntTimeSeriesEntry
     {
         if (adjacent == null)
         {
-            return this;
-        }
-        if (adjacent.count == 0 && adjacent.concurrentCount == 0)
-        {
-            return this;
-        }
-        if (this.count == 0 && this.concurrentCount == 0)
-        {
-            this.totalValue = adjacent.totalValue;
-            this.count = adjacent.count;
-            this.concurrentCount = adjacent.concurrentCount;
-            this.errorCount = adjacent.errorCount;
-            this.maxErrorCount = adjacent.maxErrorCount;
-            this.maxCount = adjacent.maxCount;
-            this.maximum = adjacent.maximum;
-            this.minimum = adjacent.minimum;
-            this.distinctValuesLow = adjacent.distinctValuesLow;
-            this.distinctValuesHigh = adjacent.distinctValuesHigh;
-            this.distinctValuesScale = adjacent.distinctValuesScale;
             return this;
         }
         if (adjacent.count == 0)

@@ -52,7 +52,7 @@ public abstract class AbstractDataProcessor
     /**
      * The report provider to which this data processor belongs.
      */
-    private final AbstractReportProvider reportProvider;
+    private AbstractReportProvider reportProvider;
 
     /**
      * Creates a new {@link AbstractDataProcessor} instance.
@@ -189,6 +189,22 @@ public abstract class AbstractDataProcessor
     public AbstractReportProvider getReportProvider()
     {
         return reportProvider;
+    }
+
+    /**
+     * Sets the report provider owning this data processor.
+     * <p>
+     * Used during {@link AbstractDataProcessorBasedReportProvider#merge(AbstractDataProcessorBasedReportProvider)}
+     * when a master report provider adopts a data processor instance directly from a worker thread's provider.
+     * Re-parenting the processor to the master provider detaches it from the worker provider, allowing the
+     * worker provider and all of its already-merged processors to be garbage-collected immediately.
+     *
+     * @param reportProvider
+     *            the new owning report provider
+     */
+    public void setReportProvider(final AbstractReportProvider reportProvider)
+    {
+        this.reportProvider = reportProvider;
     }
 
     /**

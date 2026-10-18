@@ -159,25 +159,12 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         if (getConfiguration().shouldChartsGenerated())
         {
-            // Condense to chart resolution (e.g. chart display width) for rendering charts.
-            // The underlying timeSeries retains full 1-second resolution for statistics, percentiles, and AI data export.
-            final IntTimeSeries chartTimeSeries = timeSeries.toResolution(getChartWidth());
-
-            // post-process the run time series now as they will be needed for multiple charts
-            final TimeSeries runTimeTimeSeries = chartTimeSeries.toRunTimeTimeSeries("Runtime");
-
-            // process common moving average
-            final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
-                                                                                                      getCommonMovingAverageConfig());
-            // process additional moving averages, if they are configured
-            final List<TimeSeries> additionalRunTimeAverageTimeSeriesList = getAdditionalMovingAverageConfigs().stream()
-                                                                                                               .map(config -> JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
-                                                                                                                                                                            config))
-                                                                                                               .toList();
-
-            final TimeSeries countPerSecondTimeSeries = chartTimeSeries.toCountPerSecondTimeSeries("Count/s");
-
-            // create charts asynchronously
+            // Queue chart rendering asynchronously.
+            // IMPORTANT: Do NOT compute chartTimeSeries or JFreeChart TimeSeries objects outside run()!
+            // If computed eagerly before addTask(), every queued Runnable closure (often 400+ request timers)
+            // would simultaneously retain its condensed series and thousands of JFreeChart Second/DataItem
+            // objects on the heap until all chart tasks finish. Creating them inside run() ensures only the
+            // currently executing worker threads hold JFreeChart objects in Young Gen.
             final TaskManager taskManager = TaskManager.getInstance();
 
             taskManager.addTask(new Runnable()
@@ -185,6 +172,24 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                 @Override
                 public void run()
                 {
+                    // Condense to chart resolution (e.g. chart display width in pixels) on demand for this task.
+                    // The master timeSeries retains full 1-second resolution for statistics, percentiles, and AI data export.
+                    final IntTimeSeries chartTimeSeries = timeSeries.toResolution(getChartWidth());
+
+                    // Materialize JFreeChart series locally for this task; eligible for GC as soon as run() exits
+                    final TimeSeries runTimeTimeSeries = chartTimeSeries.toRunTimeTimeSeries("Runtime");
+
+                    // process common moving average
+                    final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
+                                                                                                              getCommonMovingAverageConfig());
+                    // process additional moving averages, if they are configured
+                    final List<TimeSeries> additionalRunTimeAverageTimeSeriesList = getAdditionalMovingAverageConfigs().stream()
+                                                                                                                       .map(config -> JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
+                                                                                                                                                                                    config))
+                                                                                                                       .toList();
+
+                    final TimeSeries countPerSecondTimeSeries = chartTimeSeries.toCountPerSecondTimeSeries("Count/s");
+
                     // determine the capping value
                     final int chartCappingValue = JFreeChartUtils.getChartCappingValue(getChartCappingInfo(), stats.mean,
                                                                                        stats.maxValue);
@@ -195,33 +200,19 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
                     saveResponseTimeChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, runTimeHistogramSeries,
                                           errorsPerSecondTimeSeries, chartCappingValue);
-                }
-            });
 
-            taskManager.addTask(new Runnable()
-            {
-                @Override
-                public void run()
-                {
                     saveResponseTimeAverageChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, timerReport.median.doubleValue(),
                                                  timerReport.mean.doubleValue(), additionalRunTimeAverageTimeSeriesList);
-                }
-            });
 
-            taskManager.addTask(new Runnable()
-            {
-                @Override
-                public void run()
-                {
                     saveCountPerSecondChart(name, countPerSecondTimeSeries);
+
+                    // create JSON data file asynchronously
+                    if (((ReportGeneratorConfiguration) getConfiguration()).dynamicChartsEnabled())
+                    {
+                        saveResponseTimeSeriesAsJson(name, runTimeTimeSeries, countPerSecondTimeSeries);
+                    }
                 }
             });
-
-            // create JSON data file asynchronously
-            if (((ReportGeneratorConfiguration) getConfiguration()).dynamicChartsEnabled())
-            {
-                taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries, countPerSecondTimeSeries));
-            }
         }
 
         return timerReport;

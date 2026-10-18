@@ -71,11 +71,54 @@
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
         <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+        <pitest-maven.version>1.17.4</pitest-maven.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2026 ${project.organization.name}</copyright>
     </properties>
 
     <build>
         <plugins>
+            <!-- Code coverage (line & branch coverage) via JaCoCo. -->
+            <!-- Usage: mvn test jacoco:report (report in target/site/jacoco/index.html) -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Mutation testing via PITest. -->
+            <!-- Usage: mvn test-compile pitest:mutationCoverage -DtargetClasses=com.xceptance.xlt.report.util.IntTimeSeries* -DtargetTests=com.xceptance.xlt.report.util.IntTimeSeries*Test -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>${pitest-maven.version}</version>
+                <configuration>
+                    <threads>4</threads>
+                    <mutators>
+                        <mutator>STRONGER</mutator>
+                    </mutators>
+                    <outputFormats>
+                        <outputFormat>HTML</outputFormat>
+                        <outputFormat>XML</outputFormat>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
+                    <failWhenNoMutations>false</failWhenNoMutations>
+                </configuration>
+            </plugin>
             <!-- Adds or updates the license header in source files. -->
             <!-- Usage: mvn license:format -->
             <plugin>

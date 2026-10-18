@@ -175,12 +175,16 @@ public final class TimeSeriesDownsampler
     }
 
     /**
-     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the mean per bucket.
+     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the sample-weighted mean per bucket.
+     * <p>
+     * Queries primitive slot accessors ({@link IntTimeSeries#getSlotCount(int)} and {@link IntTimeSeries#getSlotAverageValue(int)})
+     * directly over {@code [0 .. lastPosUsed]} instead of calling {@link IntTimeSeries#getValues()} so downsampling
+     * runs with zero {@link IntTimeSeriesEntry} object allocations.
      *
      * @param series
      *            the collected time series
      * @param firstSecond
-     *            the second the series starts at
+     *            the second the output series starts at
      * @param buckets
      *            the number of output buckets
      * @param interval
@@ -195,14 +199,15 @@ public final class TimeSeriesDownsampler
 
         if (series != null && series.getCount() > 0)
         {
-            final IntTimeSeriesEntry[] data = series.getValues();
             final int slotWidth = series.getSlotWidth();
             final long start = series.getFirstSecond();
+            final int lastPos = series.getLastPosUsed();
 
-            for (int i = 0; i <= series.getLastPosUsed(); i++)
+            // Iterate only up to lastPosUsed using zero-allocation primitive slot getters
+            for (int i = 0; i <= lastPos; i++)
             {
-                final IntTimeSeriesEntry value = data[i];
-                if (value == null || value.getCount() == 0)
+                final int count = series.getSlotCount(i);
+                if (count == 0)
                 {
                     continue;
                 }
@@ -210,8 +215,9 @@ public final class TimeSeriesDownsampler
                 final int bucket = bucketOf(start + (long) i * slotWidth, firstSecond, buckets, interval);
                 if (bucket >= 0)
                 {
-                    weightedSum[bucket] += (long) value.getAverageValue() * value.getCount();
-                    weight[bucket] += value.getCount();
+                    // Weight by sample count so that a busy source slot counts proportionally more than a quiet one
+                    weightedSum[bucket] += (long) series.getSlotAverageValue(i) * count;
+                    weight[bucket] += count;
                 }
             }
         }
@@ -226,7 +232,19 @@ public final class TimeSeriesDownsampler
     }
 
     /**
-     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the per-second count rate in each bucket.
+     * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the per-second completion rate in each bucket.
+     * <p>
+     * Uses {@link IntTimeSeries#getSlotCount(int)} directly to avoid materializing {@link IntTimeSeriesEntry} objects.
+     *
+     * @param series
+     *            the collected time series
+     * @param firstSecond
+     *            the second the output series starts at
+     * @param buckets
+     *            the number of output buckets
+     * @param interval
+     *            the output bucket size in seconds
+     * @return one completion rate (count/s) per bucket
      */
     public static double[] countRatePerBucket(final IntTimeSeries series, final long firstSecond, final int buckets,
                                               final int interval)
@@ -235,14 +253,14 @@ public final class TimeSeriesDownsampler
 
         if (series != null && series.getCount() > 0)
         {
-            final IntTimeSeriesEntry[] data = series.getValues();
             final int slotWidth = series.getSlotWidth();
             final long start = series.getFirstSecond();
+            final int lastPos = series.getLastPosUsed();
 
-            for (int i = 0; i <= series.getLastPosUsed(); i++)
+            for (int i = 0; i <= lastPos; i++)
             {
-                final IntTimeSeriesEntry value = data[i];
-                if (value == null || value.getCount() == 0)
+                final int count = series.getSlotCount(i);
+                if (count == 0)
                 {
                     continue;
                 }
@@ -250,7 +268,7 @@ public final class TimeSeriesDownsampler
                 final int bucket = bucketOf(start + (long) i * slotWidth, firstSecond, buckets, interval);
                 if (bucket >= 0)
                 {
-                    sums[bucket] += value.getCount();
+                    sums[bucket] += count;
                 }
             }
         }
@@ -266,6 +284,18 @@ public final class TimeSeriesDownsampler
 
     /**
      * Reduces an {@link IntTimeSeries} to buckets of the given interval, returning the per-second error rate in each bucket.
+     * <p>
+     * Uses {@link IntTimeSeries#getSlotErrorCount(int)} directly to avoid materializing {@link IntTimeSeriesEntry} objects.
+     *
+     * @param series
+     *            the collected time series
+     * @param firstSecond
+     *            the second the output series starts at
+     * @param buckets
+     *            the number of output buckets
+     * @param interval
+     *            the output bucket size in seconds
+     * @return one error rate (errors/s) per bucket
      */
     public static double[] errorRatePerBucket(final IntTimeSeries series, final long firstSecond, final int buckets,
                                               final int interval)
@@ -274,14 +304,14 @@ public final class TimeSeriesDownsampler
 
         if (series != null && series.getCount() > 0)
         {
-            final IntTimeSeriesEntry[] data = series.getValues();
             final int slotWidth = series.getSlotWidth();
             final long start = series.getFirstSecond();
+            final int lastPos = series.getLastPosUsed();
 
-            for (int i = 0; i <= series.getLastPosUsed(); i++)
+            for (int i = 0; i <= lastPos; i++)
             {
-                final IntTimeSeriesEntry value = data[i];
-                if (value == null || value.getErrorCount() == 0)
+                final int errorCount = series.getSlotErrorCount(i);
+                if (errorCount == 0)
                 {
                     continue;
                 }
@@ -289,7 +319,7 @@ public final class TimeSeriesDownsampler
                 final int bucket = bucketOf(start + (long) i * slotWidth, firstSecond, buckets, interval);
                 if (bucket >= 0)
                 {
-                    sums[bucket] += value.getErrorCount();
+                    sums[bucket] += errorCount;
                 }
             }
         }
@@ -308,8 +338,13 @@ public final class TimeSeriesDownsampler
      */
     private static int bucketOf(final long second, final long firstSecond, final int buckets, final int interval)
     {
+        if (second < firstSecond)
+        {
+            return -1;
+        }
+
         final long bucket = (second - firstSecond) / interval;
 
-        return (bucket < 0 || bucket >= buckets) ? -1 : (int) bucket;
+        return bucket >= buckets ? -1 : (int) bucket;
     }
 }
