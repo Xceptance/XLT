@@ -272,24 +272,11 @@ public class IntMinMaxValueTest
         base.updateValue(30); // count=3, sum=60, min=10, max=30
         Assert.assertNotEquals(0, base.hashCode());
 
-        // Different accumulatedValue ONLY (same min=10, max=30, count=3, but different middle value)
-        final IntMinMaxValue diffSum = new IntMinMaxValue(10);
-        diffSum.updateValue(25);
-        diffSum.updateValue(30);
-        Assert.assertNotEquals(base, diffSum);
-
-        // Different maximum
-        final IntMinMaxValue diffMax = new IntMinMaxValue(10);
-        diffMax.updateValue(20);
-        diffMax.updateValue(30);
-        diffMax.updateValue(0);
-        diffMax.updateValue(-10);
-        final IntMinMaxValue diffMax2 = new IntMinMaxValue(10);
-        diffMax2.updateValue(20);
-        diffMax2.updateValue(25);
-        diffMax2.updateValue(5);
-        diffMax2.updateValue(-10);
-        Assert.assertNotEquals(diffMax, diffMax2);
+        // Different accumulatedValue ONLY (all other fields including w0..w3 identical)
+        final IntMinMaxValue rawBase = new IntMinMaxValue(60L, 3, 10, 30, 0, 1L, 2L, 4L, 8L);
+        Assert.assertEquals(rawBase, new IntMinMaxValue(60L, 3, 10, 30, 0, 1L, 2L, 4L, 8L));
+        Assert.assertNotEquals(rawBase, new IntMinMaxValue(65L, 3, 10, 30, 0, 1L, 2L, 4L, 8L));
+        Assert.assertNotEquals(rawBase, new IntMinMaxValue(60L, 3, 10, 35, 0, 1L, 2L, 4L, 8L));
 
         // Different minimum with same sum, max, count, and bitset (negative values don't touch bitset)
         final IntMinMaxValue minA = new IntMinMaxValue(20);

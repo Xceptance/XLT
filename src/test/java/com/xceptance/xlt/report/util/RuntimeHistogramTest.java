@@ -812,4 +812,188 @@ public class RuntimeHistogramTest
             assertEquals("Percentile " + p + " mismatch", sequential.getPercentile(p), h1.getPercentile(p), 0.0);
         }
     }
+
+    @Test
+    public void testPrecisionConstructorBoundaries()
+    {
+        assertEquals(1, new RuntimeHistogram(-5).getPrecision());
+        assertEquals(1, new RuntimeHistogram(0).getPrecision());
+        assertEquals(1, new RuntimeHistogram(1).getPrecision());
+        assertEquals(2, new RuntimeHistogram(2).getPrecision());
+        assertEquals(4, new RuntimeHistogram(3).getPrecision());
+        assertEquals(4, new RuntimeHistogram(4).getPrecision());
+        assertEquals(8, new RuntimeHistogram(5).getPrecision());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetPercentileBelowZeroThrows()
+    {
+        final RuntimeHistogram h = new RuntimeHistogram();
+        h.addValue(10);
+        h.getPercentile(-0.001);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetPercentileAboveHundredThrows()
+    {
+        final RuntimeHistogram h = new RuntimeHistogram();
+        h.addValue(10);
+        h.getPercentile(100.001);
+    }
+
+    @Test
+    public void testGetPercentileBoundaryValuesOnEmptyAndNonEmpty()
+    {
+        final RuntimeHistogram empty = new RuntimeHistogram();
+        assertEquals(0.0, empty.getPercentile(0.0), 0.0);
+        assertEquals(0.0, empty.getPercentile(100.0), 0.0);
+
+        final RuntimeHistogram h = new RuntimeHistogram(8);
+        h.addValue(16);
+        h.addValue(16);
+        h.addValue(80);
+        h.addValue(80);
+        assertEquals(16.0, h.getPercentile(0.0), 0.0);
+        assertEquals(80.0, h.getPercentile(100.0), 0.0);
+    }
+
+    @Test
+    public void testSparsePageAllocationAndCopyConstructor()
+    {
+        final RuntimeHistogram empty = new RuntimeHistogram(8);
+        assertEquals(0, empty.getAllocatedPageCount());
+
+        final RuntimeHistogram emptyCopy = new RuntimeHistogram(empty);
+        assertTrue(emptyCopy.isEmpty());
+        assertEquals(0, emptyCopy.getValueCount());
+        assertEquals(0, emptyCopy.getNumberOfBuckets());
+        assertEquals(0, emptyCopy.getAllocatedPageCount());
+        assertEquals(8, emptyCopy.getPrecision());
+
+        // Add normal value (8 ms -> bucket 1 -> page 0) and huge outlier (180,000 ms -> bucket 22,500 -> page 351)
+        final RuntimeHistogram sparse = new RuntimeHistogram(8);
+        sparse.addValue(8);
+        sparse.addValue(180_000);
+
+        assertEquals(2, sparse.getValueCount());
+        assertEquals(22500 - 1 + 1, sparse.getNumberOfBuckets());
+        // Only 2 pages (512 bytes) physically allocated despite 22,500-bucket logical span!
+        assertEquals(2, sparse.getAllocatedPageCount());
+
+        // Querying a range entirely within an unallocated (null) middle page must return 0
+        assertEquals(0L, sparse.getCountForValue(5000, 5100));
+        // Querying a range spanning across multiple unallocated middle pages must return 0
+        assertEquals(0L, sparse.getCountForValue(5000, 50000));
+
+        // Copy constructor must deep-clone allocated pages and preserve null pages
+        final RuntimeHistogram copy = new RuntimeHistogram(sparse);
+        assertEquals(2, copy.getValueCount());
+        assertEquals(22500, copy.getNumberOfBuckets());
+        assertEquals(2, copy.getAllocatedPageCount());
+        assertEquals(sparse.getPercentile(0.0), copy.getPercentile(0.0), 0.0);
+        assertEquals(sparse.getPercentile(50.0), copy.getPercentile(50.0), 0.0);
+        assertEquals(sparse.getPercentile(100.0), copy.getPercentile(100.0), 0.0);
+
+        // Mutating copy must not affect original
+        copy.addValue(8);
+        copy.addValue(5000);
+        assertEquals(2, sparse.getValueCount());
+        assertEquals(2, sparse.getAllocatedPageCount());
+        assertEquals(4, copy.getValueCount());
+        assertEquals(3, copy.getAllocatedPageCount());
+    }
+
+    @Test
+    public void testGetCountForValueEdgeCases()
+    {
+        final RuntimeHistogram empty = new RuntimeHistogram();
+        // When empty, firstIndexValue is Integer.MAX_VALUE; querying MAX_VALUE tests the valueCount == 0 guard directly
+        assertEquals(0L, empty.getCountForValue(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+        final RuntimeHistogram h = new RuntimeHistogram();
+        h.addValue(100);
+        h.addValue(200);
+        // Exact boundary checks just outside [firstIndexValue .. lastIndexValue]
+        assertEquals(0L, h.getCountForValue(0, 99));
+        assertEquals(1L, h.getCountForValue(0, 100));
+        assertEquals(0L, h.getCountForValue(201, 300));
+        assertEquals(1L, h.getCountForValue(200, 300));
+    }
+
+    @Test
+    public void testSpineExpansionDownwardAndMergeDirections()
+    {
+        // Start at a high page and walk downward across page boundaries
+        final RuntimeHistogram h = new RuntimeHistogram(1);
+        h.addValue(500); // page 7
+        h.addValue(499); // same page, smaller index
+        h.addValue(500); // same index as max (neither < firstIndexValue nor > lastIndexValue)
+        h.addValue(200); // page 3 (shifts spine right)
+        h.addValue(10);  // page 0 (shifts spine right again)
+
+        assertEquals(5, h.getValueCount());
+        assertEquals(3, h.getAllocatedPageCount());
+        assertEquals(10.0, h.getPercentile(0.0), 0.0);
+        assertEquals(500.0, h.getPercentile(100.0), 0.0);
+        assertEquals(1L, h.getCountForValue(10, 10));
+        assertEquals(1L, h.getCountForValue(200, 200));
+        assertEquals(1L, h.getCountForValue(499, 499));
+        assertEquals(2L, h.getCountForValue(500, 500));
+
+        // Merge into a histogram whose range is strictly higher (triggers newMinPageCoord < basePageCoord in merge)
+        final RuntimeHistogram high = new RuntimeHistogram(1);
+        high.addValue(1000); // page 15
+        final RuntimeHistogram low = new RuntimeHistogram(1);
+        low.addValue(10);    // page 0
+        high.merge(low);
+        assertEquals(2, high.getValueCount());
+        assertEquals(2, high.getAllocatedPageCount());
+        assertEquals(10.0, high.getPercentile(0.0), 0.0);
+        assertEquals(1000.0, high.getPercentile(100.0), 0.0);
+
+        // Merge a histogram whose range is strictly inside the receiver's range (no spine expansion on either end)
+        final RuntimeHistogram mid = new RuntimeHistogram(1);
+        mid.addValue(500); // page 7 (allocated into previously null middle page of 'high')
+        high.merge(mid);
+        assertEquals(3, high.getValueCount());
+        assertEquals(3, high.getAllocatedPageCount());
+        assertEquals(500.0, high.getMedianValue(), 0.0);
+
+        // Merge into an empty histogram must deep-copy pages (subsequent mutation of source must not leak)
+        final RuntimeHistogram intoEmpty = new RuntimeHistogram(1);
+        intoEmpty.merge(mid);
+        mid.addValue(500);
+        assertEquals(1, intoEmpty.getValueCount());
+        assertEquals(1L, intoEmpty.getCountForValue(500, 500));
+
+        // Merge upward where receiver has a non-zero basePageCoord (page 3) and other extends to page 5
+        final RuntimeHistogram base3 = new RuntimeHistogram(1);
+        base3.addValue(200); // page 3 (basePageCoord = 3, pages.length = 1)
+        final RuntimeHistogram samePageHigherIndex = new RuntimeHistogram(1);
+        samePageHigherIndex.addValue(210); // also page 3 (newMaxPageCoord - basePageCoord == 0 < pages.length)
+        base3.merge(samePageHigherIndex);
+        assertEquals(2, base3.getValueCount());
+        assertEquals(1, base3.getAllocatedPageCount());
+        assertEquals(210 - 200 + 1, base3.getNumberOfBuckets());
+
+        final RuntimeHistogram page4 = new RuntimeHistogram(1);
+        page4.addValue(260); // page 4 (newMaxPageCoord - basePageCoord == 1 == pages.length -> triggers expansion)
+        base3.merge(page4);
+        assertEquals(3, base3.getValueCount());
+        assertEquals(2, base3.getAllocatedPageCount());
+        assertEquals(1L, base3.getCountForValue(200, 200));
+        assertEquals(1L, base3.getCountForValue(210, 210));
+        assertEquals(1L, base3.getCountForValue(260, 260));
+
+        // Merge upward across negative page coordinates (basePageCoord = -5, newMaxPageCoord = -2)
+        final RuntimeHistogram negLow = new RuntimeHistogram(1);
+        negLow.addValue(-300); // page -5
+        final RuntimeHistogram negHigh = new RuntimeHistogram(1);
+        negHigh.addValue(-100); // page -2
+        negLow.merge(negHigh);
+        assertEquals(2, negLow.getValueCount());
+        assertEquals(2, negLow.getAllocatedPageCount());
+        assertEquals(1L, negLow.getCountForValue(-300, -300));
+        assertEquals(1L, negLow.getCountForValue(-100, -100));
+    }
 }

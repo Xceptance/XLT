@@ -465,4 +465,93 @@ public class IntMinMaxValueSetTest
             // expected
         }
     }
+
+    @Test
+    public void testSparseMultiPageBitSetScalingAndNegativeValues()
+    {
+        // 1. Negative values are recorded in min/max/sum/count but ignored in the low-precision bitset; 0 IS recorded
+        final IntMinMaxValueSet negSet = new IntMinMaxValueSet(64);
+        negSet.addOrUpdateValue(10_000L, -5);
+        negSet.addOrUpdateValue(10_000L, 0);
+        negSet.addOrUpdateValue(10_000L, 12);
+        final IntMinMaxValue negSlot = negSet.getValues()[0];
+        Assert.assertEquals(-5, negSlot.getMinimumValue());
+        Assert.assertEquals(12, negSlot.getMaximumValue());
+        Assert.assertEquals(7L, negSlot.getAccumulatedValue());
+        Assert.assertEquals(3, negSlot.getValueCount());
+        Assert.assertArrayEquals(new double[] { 0.0, 12.0 }, negSlot.getValues(), 0.0);
+
+        // 2. Adding a second value to a slot that ALREADY has bitScale > 0 (verifies value >>= sc)
+        // and Page.mergeFrom across all 4 words (w0, w1, w2, w3) when dstScale < srcScale and srcScale < dstScale
+        final IntMinMaxValueSet setSmallFirst = new IntMinMaxValueSet(64);
+        setSmallFirst.addOrUpdateValue(0L, 10);       // slot 0: bitScale = 0
+        setSmallFirst.addOrUpdateValue(1_000L, 1024); // slot 1: bitScale = 3 (1024 >> 3 = 128, w2)
+        setSmallFirst.addOrUpdateValue(1_000L, 16);   // slot 1 already has bitScale = 3 -> 16 >> 3 = 2 (w0)
+        setSmallFirst.addOrUpdateValue(1_000L, 600);  // 600 >> 3 = 75 (w1)
+        setSmallFirst.addOrUpdateValue(1_000L, 1600); // 1600 >> 3 = 200 (w3)
+        setSmallFirst.addOrUpdateValue(2_000L, 2048); // slot 2: bitScale = 4 (2048 >> 4 = 128)
+        setSmallFirst.addOrUpdateValue(3_000L, 8);    // slot 3: bitScale = 0, w0
+        setSmallFirst.addOrUpdateValue(3_000L, 80);   // slot 3: w1
+        setSmallFirst.addOrUpdateValue(3_000L, 150);  // slot 3: w2
+        setSmallFirst.addOrUpdateValue(3_000L, 220);  // slot 3: w3
+        // Trigger shrink() so (slot 0, slot 1) merges with dstScale < srcScale across all 4 words
+        // and (slot 2, slot 3) merges with srcScale < dstScale across all 4 words
+        setSmallFirst.addOrUpdateValue(200_000L, 50);
+
+        final IntMinMaxValue expectedSlot1 = new IntMinMaxValue(1024);
+        expectedSlot1.updateValue(16);
+        expectedSlot1.updateValue(600);
+        expectedSlot1.updateValue(1600);
+        final IntMinMaxValue expectedPair01 = new IntMinMaxValue(10).merge(expectedSlot1);
+
+        final IntMinMaxValue expectedSlot3 = new IntMinMaxValue(8);
+        expectedSlot3.updateValue(80);
+        expectedSlot3.updateValue(150);
+        expectedSlot3.updateValue(220);
+        final IntMinMaxValue expectedPair23 = new IntMinMaxValue(2048).merge(expectedSlot3);
+
+        final IntMinMaxValue[] shrunkVals = setSmallFirst.getValues();
+        Assert.assertEquals(expectedPair01, shrunkVals[0]);
+        Assert.assertArrayEquals(expectedPair01.getValues(), shrunkVals[0].getValues(), 0.0);
+        Assert.assertEquals(expectedPair23, shrunkVals[1]);
+        Assert.assertArrayEquals(expectedPair23.getValues(), shrunkVals[1].getValues(), 0.0);
+
+        // 3. Backward insertion when scale > 1 (scale = 2, scale2 = 1) that shifts without further shrinking
+        setSmallFirst.addOrUpdateValue(-4_000L, 77);
+        Assert.assertEquals(-4_000L, setSmallFirst.getFirstSecond());
+        Assert.assertEquals(new IntMinMaxValue(77), setSmallFirst.getValues()[0]);
+        Assert.assertEquals(expectedPair01, setSmallFirst.getValues()[2]);
+
+        // 4. Merge coarse small-capacity set (scale = 2, narrow time span) into fine large-capacity set (scale = 1)
+        // where resolveSlotIndex alone would NOT shrink the target set
+        final IntMinMaxValueSet smallCoarse = new IntMinMaxValueSet(2); // backing = 4 slots
+        smallCoarse.addOrUpdateValue(10_000L, 5);
+        smallCoarse.addOrUpdateValue(14_000L, 6); // span = 4 >= 4 -> shrinks smallCoarse to scale = 2
+        Assert.assertEquals(2, smallCoarse.getScale());
+
+        final IntMinMaxValueSet largeFine = new IntMinMaxValueSet(64); // backing = 128 slots, scale = 1
+        largeFine.addOrUpdateValue(11_000L, 100); // firstSecond = 11 (odd)
+        largeFine.addOrUpdateValue(21_000L, 200); // lastSecond = 21 (odd, > smallCoarse.lastSecond so only masked in merge loop)
+        largeFine.merge(smallCoarse);
+        Assert.assertEquals(2, largeFine.getScale());
+        Assert.assertEquals(10_000L, largeFine.getFirstSecond());
+        // Slots for [10..11], [12..13], [14..15], [16..17], [18..19], [20..21] -> 6 slots
+        Assert.assertEquals(6, largeFine.getValues().length);
+        Assert.assertEquals(new IntMinMaxValue(100).merge(new IntMinMaxValue(5)), largeFine.getValues()[0]);
+        Assert.assertEquals(new IntMinMaxValue(200), largeFine.getValues()[5]);
+
+        // 5. Multi-page sparse set where page 1 (slots 64..127) remains null while page 0 and page 2 are populated
+        final IntMinMaxValueSet sparseA = new IntMinMaxValueSet(100); // backing = 200 slots (4 pages)
+        sparseA.addOrUpdateValue(10_000L, 100);          // slot 0 (page 0)
+        sparseA.addOrUpdateValue(160_000L, 200);         // slot 150 (page 2), leaving page 1 null
+        final IntMinMaxValue[] sparseVals = sparseA.getValues();
+        Assert.assertEquals(151, sparseVals.length);
+        Assert.assertNotNull(sparseVals[0]);
+        Assert.assertNull(sparseVals[70]); // inside null page 1
+        Assert.assertNotNull(sparseVals[150]);
+
+        final IntMinMaxValueSet sparseB = new IntMinMaxValueSet(100);
+        sparseB.merge(sparseA);
+        Assert.assertArrayEquals(sparseVals, sparseB.getValues());
+    }
 }

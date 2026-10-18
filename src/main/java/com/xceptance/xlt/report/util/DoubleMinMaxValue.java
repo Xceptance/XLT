@@ -124,6 +124,25 @@ public class DoubleMinMaxValue
     }
 
     /**
+     * Package-private constructor used by {@link DoubleMinMaxValueSet#getValues()} to materialize a
+     * {@link DoubleMinMaxValue} view from a primitive page slot on demand.
+     */
+    DoubleMinMaxValue(final double accumulatedValue, final int valueCount, final double minimum, final double maximum,
+                      final double bucketWidth, final double rangeMin, final double rangeMax,
+                      final long bits0, final long bits1)
+    {
+        this.accumulatedValue = accumulatedValue;
+        this.valueCount = valueCount;
+        this.minimum = minimum;
+        this.maximum = maximum;
+        this.bucketWidth = bucketWidth;
+        this.rangeMin = rangeMin;
+        this.rangeMax = rangeMax;
+        this.bits0 = bits0;
+        this.bits1 = bits1;
+    }
+
+    /**
      * @return the accumulatedValue
      */
     public double getAccumulatedValue()
@@ -271,7 +290,8 @@ public class DoubleMinMaxValue
         }
         else
         {
-            bits1 |= (1L << (index - 64));
+            // Note: Java's long shift operator (1L << index) automatically masks the shift distance by & 63
+            bits1 |= (1L << index);
         }
     }
 
@@ -304,8 +324,7 @@ public class DoubleMinMaxValue
      */
     private void scaleBitSet()
     {
-        bits0 = (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(bits0)) & 0xFFFFFFFFL)
-                | (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(bits1)) << 32);
+        bits0 = IntMinMaxValue.compressWordPair(bits0, bits1);
         bits1 = 0L;
     }
 
@@ -322,7 +341,8 @@ public class DoubleMinMaxValue
         }
         else
         {
-            bits1 = bits0 << (buckets - 64);
+            // Note: Java's long shift operator (bits0 << buckets) automatically masks the shift distance by & 63
+            bits1 = bits0 << buckets;
             bits0 = 0L;
         }
     }

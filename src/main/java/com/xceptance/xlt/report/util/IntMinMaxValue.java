@@ -126,6 +126,24 @@ public class IntMinMaxValue
     }
 
     /**
+     * Package-private constructor used by {@link IntMinMaxValueSet#getValues()} to materialize an
+     * {@link IntMinMaxValue} view from a primitive page slot on demand.
+     */
+    IntMinMaxValue(final long accumulatedValue, final int valueCount, final int minimum, final int maximum,
+                   final int scale, final long w0, final long w1, final long w2, final long w3)
+    {
+        this.accumulatedValue = accumulatedValue;
+        this.valueCount = valueCount;
+        this.minimum = minimum;
+        this.maximum = maximum;
+        this.scale = scale;
+        this.w0 = w0;
+        this.w1 = w1;
+        this.w2 = w2;
+        this.w3 = w3;
+    }
+
+    /**
      * Returns the sum of the values added to this min-max value.
      * 
      * @return the accumulated value
@@ -315,16 +333,25 @@ public class IntMinMaxValue
     }
 
     /**
+     * Compresses two 64-bit bitset words ({@code lowWord} and {@code highWord}, 128 bits total) into a single
+     * 64-bit word by OR-combining adjacent bit pairs {@code (2k, 2k+1)} and packing the 32 resulting bits of
+     * {@code lowWord} into the lower half and the 32 resulting bits of {@code highWord} into the upper half.
+     */
+    static long compressWordPair(final long lowWord, final long highWord)
+    {
+        return (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(lowWord)) & 0xFFFFFFFFL)
+               | (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(highWord)) << 32);
+    }
+
+    /**
      * Doubles the value range of the inline 256-bucket bitset by merging adjacent bit pairs {@code (2k, 2k+1)}
      * into bit {@code k} using SWAR parallel bit compression and clearing the upper 128 bits.
      */
     private void scaleBitSet()
     {
         scale++;
-        w0 = (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(w0)) & 0xFFFFFFFFL)
-             | (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(w1)) << 32);
-        w1 = (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(w2)) & 0xFFFFFFFFL)
-             | (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(w3)) << 32);
+        w0 = compressWordPair(w0, w1);
+        w1 = compressWordPair(w2, w3);
         w2 = 0L;
         w3 = 0L;
     }
@@ -346,10 +373,8 @@ public class IntMinMaxValue
         long ow3 = other.w3;
         for (int s = other.scale; s < this.scale; s++)
         {
-            ow0 = (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(ow0)) & 0xFFFFFFFFL)
-                  | (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(ow1)) << 32);
-            ow1 = (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(ow2)) & 0xFFFFFFFFL)
-                  | (BitCompression.compressAndShiftOddBits(BitCompression.combineAdjacentBits(ow3)) << 32);
+            ow0 = compressWordPair(ow0, ow1);
+            ow1 = compressWordPair(ow2, ow3);
             ow2 = 0L;
             ow3 = 0L;
         }

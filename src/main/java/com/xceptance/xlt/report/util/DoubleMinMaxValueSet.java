@@ -15,8 +15,6 @@
  */
 package com.xceptance.xlt.report.util;
 
-import java.util.Arrays;
-
 import com.xceptance.common.util.ParameterCheckUtils;
 
 /**
@@ -24,12 +22,33 @@ import com.xceptance.common.util.ParameterCheckUtils;
  * per-bucket summary statistics (min, max, sum, count, and approximate distinct values) over an arbitrarily long test
  * duration.
  *
+ * <h2>Why Sparse 64-Slot Primitive Pages Instead of {@code DoubleMinMaxValue[]}</h2>
+ * <p>
+ * Storing a {@code DoubleMinMaxValue[2 * size]} reference array and allocating a separate {@link DoubleMinMaxValue}
+ * heap object for every occupied second creates significant wrapper object overhead and pointer chasing across worker
+ * threads. Conversely, allocating flat primitive arrays of length {@code 2 * size} eagerly for every set would waste
+ * memory on sparse series that only record a few samples over a multi-hour test.
+ * </p>
+ * <p>
+ * Partitioning the {@code 2 * size} logical slots into lazily allocated 64-slot primitive {@link Page}s combines both
+ * advantages:
+ * </p>
+ * <ul>
+ *   <li><b>Zero Wrapper Object Churn:</b> {@link #addOrUpdateValue(long, double)}, {@link #shrink()},
+ *       {@link #shift(int)}, and {@link #merge(DoubleMinMaxValueSet)} operate exclusively on primitive arrays inside
+ *       {@link Page}, allocating zero {@link DoubleMinMaxValue} instances during ingestion and merging.</li>
+ *   <li><b>Sparse Memory Footprint:</b> Empty sets allocate no pages at all, and sparse series only allocate the
+ *       specific 64-slot pages that receive data.</li>
+ *   <li><b>In-Place Page Reuse:</b> Clearing a slot during {@link #shift(int)} or {@link #shrink()} simply sets
+ *       {@code page.counts[slot] = 0}, keeping already-allocated {@link Page} arrays in place for subsequent reuse.</li>
+ * </ul>
+ *
  * <h2>How Self-Scaling Works</h2>
- * The backing array is allocated with {@code 2 * size} slots (where {@code size} typically matches the chart width in
+ * The logical capacity is {@code 2 * size} slots (where {@code size} typically matches the chart width in
  * pixels, e.g. 1024). Initially, each slot represents {@code scale = 1} second ({@code 2^scale2} where {@code scale2 = 0}).
  * <ul>
  *   <li><b>Appending forward in time ({@code second > firstSecond}):</b> As long as the target slot index
- *       {@code (second - firstSecond) >> scale2} exceeds the backing array capacity, {@link #shrink()} merges adjacent
+ *       {@code (second - firstSecond) >> scale2} exceeds the backing capacity, {@link #shrink()} merges adjacent
  *       slot pairs {@code (2k, 2k+1)} in-place, doubling {@link #scale} and halving the occupied slot count.</li>
  *   <li><b>Inserting earlier timestamps ({@code second < firstSecond}):</b> Out-of-order samples that precede
  *       {@link #firstSecond} trigger {@link #shrink()} if the total span {@code (lastSecond - second) >> scale2}
@@ -45,9 +64,186 @@ import com.xceptance.common.util.ParameterCheckUtils;
 public class DoubleMinMaxValueSet
 {
     /**
-     * The default logical value set size (backing array is allocated at {@code 2 * DEFAULT_SIZE}).
+     * The default logical value set size (backing capacity is {@code 2 * DEFAULT_SIZE}).
      */
     public static final int DEFAULT_SIZE = 1024;
+
+    /**
+     * Bit shift for dividing a slot index into a page index ({@code 2^6 = 64} slots per page).
+     */
+    private static final int PAGE_SHIFT = 6;
+
+    /**
+     * Number of slots per {@link Page}.
+     */
+    private static final int PAGE_SIZE = 1 << PAGE_SHIFT;
+
+    /**
+     * Bitmask for extracting the intra-page slot index ({@code index & 63}).
+     */
+    private static final int PAGE_MASK = PAGE_SIZE - 1;
+
+    /**
+     * Number of buckets in each slot's inline low-precision value set (2 &times; 64-bit words = 128 bits).
+     */
+    private static final int BITSET_BUCKET_COUNT = 128;
+
+    /**
+     * A 64-slot primitive page storing per-slot min, max, sum, count, and the 128-bucket low-precision value set.
+     * Slot {@code s} is occupied if and only if {@code counts[s] > 0}.
+     */
+    private static final class Page
+    {
+        final int[] counts = new int[PAGE_SIZE];
+        final double[] sums = new double[PAGE_SIZE];
+        final double[] mins = new double[PAGE_SIZE];
+        final double[] maxs = new double[PAGE_SIZE];
+        final double[] bucketWidths = new double[PAGE_SIZE];
+        final double[] rangeMins = new double[PAGE_SIZE];
+        final double[] rangeMaxs = new double[PAGE_SIZE];
+        final long[] words = new long[PAGE_SIZE << 1];
+
+        void addOrUpdate(final int s, final double value)
+        {
+            if (counts[s] == 0)
+            {
+                counts[s] = 1;
+                sums[s] = value;
+                mins[s] = value;
+                maxs[s] = value;
+
+                final double width = AbstractFixedSizeDoubleValueSet.INITIAL_BUCKET_WIDTH;
+                bucketWidths[s] = width;
+                rangeMins[s] = value;
+                rangeMaxs[s] = Math.max(Double.MIN_VALUE, value + width);
+
+                final int wIdx = s << 1;
+                words[wIdx] = 1L;
+                words[wIdx + 1] = 0L;
+            }
+            else
+            {
+                counts[s]++;
+                sums[s] += value;
+                mins[s] = Math.min(mins[s], value);
+                maxs[s] = Math.max(maxs[s], value);
+                addBitValue(s, value);
+            }
+        }
+
+        private void addBitValue(final int s, final double value)
+        {
+            double width = bucketWidths[s];
+            double rMin = rangeMins[s];
+            final double rMax = rangeMaxs[s];
+            final int wIdx = s << 1;
+            long b0 = words[wIdx];
+            long b1 = words[wIdx + 1];
+
+            while (value >= rMin + width * BITSET_BUCKET_COUNT
+                   || value < rMax - width * BITSET_BUCKET_COUNT)
+            {
+                width = width * 2;
+                b0 = IntMinMaxValue.compressWordPair(b0, b1);
+                b1 = 0L;
+            }
+
+            if (value < rMin)
+            {
+                final double diff = Math.max(0.0, rMin - value);
+                final int buckets = (int) Math.ceil(diff / width);
+                rMin = rMin - width * buckets;
+                if (buckets < 64)
+                {
+                    b1 = (b1 << buckets) | (b0 >>> (64 - buckets));
+                    b0 = b0 << buckets;
+                }
+                else
+                {
+                    // Note: Java's long shift operator (b0 << buckets) automatically masks the shift distance by & 63
+                    b1 = b0 << buckets;
+                    b0 = 0L;
+                }
+            }
+
+            final double diff = Math.max(0.0, value - rMin);
+            final int index = (int) Math.floor(diff / width);
+
+            bucketWidths[s] = width;
+            rangeMins[s] = rMin;
+            rangeMaxs[s] = Math.max(rMax, rMin + width * (index + 1));
+
+            if (index < 64)
+            {
+                b0 |= (1L << index);
+            }
+            else
+            {
+                // Note: Java's long shift operator (1L << index) automatically masks the shift distance by & 63
+                b1 |= (1L << index);
+            }
+            words[wIdx] = b0;
+            words[wIdx + 1] = b1;
+        }
+
+        void copyFrom(final int dstSlot, final Page srcPage, final int srcSlot)
+        {
+            counts[dstSlot] = srcPage.counts[srcSlot];
+            sums[dstSlot] = srcPage.sums[srcSlot];
+            mins[dstSlot] = srcPage.mins[srcSlot];
+            maxs[dstSlot] = srcPage.maxs[srcSlot];
+            bucketWidths[dstSlot] = srcPage.bucketWidths[srcSlot];
+            rangeMins[dstSlot] = srcPage.rangeMins[srcSlot];
+            rangeMaxs[dstSlot] = srcPage.rangeMaxs[srcSlot];
+
+            final int dstW = dstSlot << 1;
+            final int srcW = srcSlot << 1;
+            words[dstW] = srcPage.words[srcW];
+            words[dstW + 1] = srcPage.words[srcW + 1];
+        }
+
+        void mergeFrom(final int dstSlot, final Page srcPage, final int srcSlot)
+        {
+            if (counts[dstSlot] == 0)
+            {
+                copyFrom(dstSlot, srcPage, srcSlot);
+                return;
+            }
+
+            counts[dstSlot] += srcPage.counts[srcSlot];
+            sums[dstSlot] += srcPage.sums[srcSlot];
+            mins[dstSlot] = Math.min(mins[dstSlot], srcPage.mins[srcSlot]);
+            maxs[dstSlot] = Math.max(maxs[dstSlot], srcPage.maxs[srcSlot]);
+
+            final int srcW = srcSlot << 1;
+            final double srcMin = srcPage.rangeMins[srcSlot];
+            final double srcWidth = srcPage.bucketWidths[srcSlot];
+
+            long w = srcPage.words[srcW];
+            while (w != 0L)
+            {
+                final int bit = Long.numberOfTrailingZeros(w);
+                addBitValue(dstSlot, srcMin + srcWidth * bit);
+                w &= (w - 1L);
+            }
+
+            w = srcPage.words[srcW + 1];
+            while (w != 0L)
+            {
+                final int bit = 64 + Long.numberOfTrailingZeros(w);
+                addBitValue(dstSlot, srcMin + srcWidth * bit);
+                w &= (w - 1L);
+            }
+        }
+
+        DoubleMinMaxValue toMinMaxValue(final int s)
+        {
+            final int wIdx = s << 1;
+            return new DoubleMinMaxValue(sums[s], counts[s], mins[s], maxs[s],
+                                         bucketWidths[s], rangeMins[s], rangeMaxs[s],
+                                         words[wIdx], words[wIdx + 1]);
+        }
+    }
 
     /**
      * The smallest scale-aligned time [s] for which a min/max value exists.
@@ -81,7 +277,7 @@ public class DoubleMinMaxValueSet
     private int scale2 = 0;
 
     /**
-     * Internal backing array capacity ({@code 2 * logicalSize}), doubled so that after a {@link #shrink()} pass
+     * Internal backing slot capacity ({@code 2 * logicalSize}), doubled so that after a {@link #shrink()} pass
      * at least {@code logicalSize} buckets remain populated.
      */
     private final int size;
@@ -92,9 +288,9 @@ public class DoubleMinMaxValueSet
     private long valueCount;
 
     /**
-     * The per-bucket min/max accumulators maintained by this value set.
+     * Lazily allocated spine of 64-slot primitive {@link Page}s covering {@code [0, size)}.
      */
-    private final DoubleMinMaxValue[] values;
+    private Page[] pages;
 
     /**
      * Creates a {@link DoubleMinMaxValueSet} instance with a logical size of {@link #DEFAULT_SIZE}.
@@ -116,7 +312,45 @@ public class DoubleMinMaxValueSet
 
         // Double the size so at least 'size' min/max values remain even immediately after shrinking
         this.size = size << 1;
-        values = new DoubleMinMaxValue[this.size];
+    }
+
+    /**
+     * Returns the {@link Page} at {@code pageIndex}, allocating both the outer page spine and the {@link Page}
+     * lazily if not yet present.
+     */
+    private Page getOrCreatePage(final int pageIndex)
+    {
+        if (pages == null)
+        {
+            pages = new Page[(size + PAGE_MASK) >>> PAGE_SHIFT];
+        }
+        Page page = pages[pageIndex];
+        if (page == null)
+        {
+            page = new Page();
+            pages[pageIndex] = page;
+        }
+        return page;
+    }
+
+    /**
+     * Returns {@code true} if the slot at {@code index} contains at least one sample.
+     */
+    private boolean isOccupied(final int index)
+    {
+        final Page page = pages[index >>> PAGE_SHIFT];
+        return page != null && page.counts[index & PAGE_MASK] > 0;
+    }
+
+    /**
+     * Moves the occupied slot at {@code srcIndex} to {@code dstIndex} and marks {@code srcIndex} as empty.
+     */
+    private void moveSlot(final int srcIndex, final int dstIndex)
+    {
+        final Page srcPage = pages[srcIndex >>> PAGE_SHIFT];
+        final int srcSlot = srcIndex & PAGE_MASK;
+        getOrCreatePage(dstIndex >>> PAGE_SHIFT).copyFrom(dstIndex & PAGE_MASK, srcPage, srcSlot);
+        srcPage.counts[srcSlot] = 0;
     }
 
     /**
@@ -136,7 +370,7 @@ public class DoubleMinMaxValueSet
         if (valueCount == 0)
         {
             firstSecond = lastSecond = second;
-            values[0] = new DoubleMinMaxValue(value);
+            getOrCreatePage(0).addOrUpdate(0, value);
 
             minimumTime = maximumTime = time;
             valueCount = 1;
@@ -144,15 +378,7 @@ public class DoubleMinMaxValueSet
         }
 
         final int index = resolveSlotIndex(second);
-        final DoubleMinMaxValue item = values[index];
-        if (item == null)
-        {
-            values[index] = new DoubleMinMaxValue(value);
-        }
-        else
-        {
-            item.updateValue(value);
-        }
+        getOrCreatePage(index >>> PAGE_SHIFT).addOrUpdate(index & PAGE_MASK, value);
 
         valueCount++;
         minimumTime = Math.min(minimumTime, time);
@@ -161,57 +387,53 @@ public class DoubleMinMaxValueSet
 
     /**
      * Adjusts the sliding window ({@link #firstSecond}, {@link #lastSecond}, {@link #scale}) by shrinking and/or
-     * shifting the backing array as needed so that {@code second} maps to a valid slot index in {@code [0, size)}.
+     * shifting the backing pages as needed so that {@code second} maps to a valid slot index in {@code [0, size)}.
      *
      * @param second
      *            the scale-aligned second to accommodate
-     * @return the resolved slot index in {@link #values}
+     * @return the resolved slot index in {@code [0, size)}
      */
     private int resolveSlotIndex(int second)
     {
-        if (second != firstSecond)
+        if (second > firstSecond)
         {
-            if (second > firstSecond)
+            // Shrink (double scale) until the new forward second fits within the array capacity
+            while (((second - firstSecond) >> scale2) >= size)
             {
-                // Shrink (double scale) until the new forward second fits within the array capacity
-                while (((second - firstSecond) >> scale2) >= size)
-                {
-                    scale = scale << 1;
-                    scale2++;
+                scale = scale << 1;
+                scale2++;
 
-                    shrink();
+                shrink();
 
-                    final int mask = ~(scale - 1);
-                    second = second & mask;
-                    firstSecond = firstSecond & mask;
-                    lastSecond = lastSecond & mask;
-                }
-
-                lastSecond = Math.max(lastSecond, second);
+                final int mask = ~(scale - 1);
+                second = second & mask;
+                firstSecond = firstSecond & mask;
             }
-            else
+
+            lastSecond = Math.max(lastSecond, second);
+        }
+        else if (second < firstSecond)
+        {
+            // Shrink (double scale) until the distance from the new earlier second to lastSecond fits in capacity
+            while (((lastSecond - second) >> scale2) >= size)
             {
-                // Shrink (double scale) until the distance from the new earlier second to lastSecond fits in capacity
-                while (((lastSecond - second) >> scale2) >= size)
-                {
-                    scale = scale << 1;
-                    scale2++;
+                scale = scale << 1;
+                scale2++;
 
-                    shrink();
+                shrink();
 
-                    final int mask = ~(scale - 1);
-                    second = second & mask;
-                    firstSecond = firstSecond & mask;
-                    lastSecond = lastSecond & mask;
-                }
+                final int mask = ~(scale - 1);
+                second = second & mask;
+                firstSecond = firstSecond & mask;
+                lastSecond = lastSecond & mask;
+            }
 
-                // Shift existing buckets right if the new second still precedes firstSecond after any shrinking
-                if (second < firstSecond)
-                {
-                    final int indexDiff = (firstSecond - second) >> scale2;
-                    shift(indexDiff);
-                    firstSecond = second;
-                }
+            // Shift existing buckets right if the new second still precedes firstSecond after any shrinking
+            if (second < firstSecond)
+            {
+                final int indexDiff = (firstSecond - second) >> scale2;
+                shift(indexDiff);
+                firstSecond = second;
             }
         }
 
@@ -295,7 +517,8 @@ public class DoubleMinMaxValueSet
     }
 
     /**
-     * Merges another {@link DoubleMinMaxValueSet} into this instance.
+     * Merges another {@link DoubleMinMaxValueSet} into this instance without allocating intermediate
+     * {@link DoubleMinMaxValue} objects.
      *
      * @param other
      *            the other min-max value set to merge, may be {@code null}
@@ -336,52 +559,37 @@ public class DoubleMinMaxValueSet
         final int otherLength = ((other.lastSecond - other.firstSecond) >> other.scale2) + 1;
         for (int i = 0; i < otherLength; i++)
         {
-            final DoubleMinMaxValue otherItem = other.values[i];
-            if (otherItem != null)
+            if (other.isOccupied(i))
             {
                 final int sec = other.firstSecond + (i << other.scale2);
-                addOrUpdateItem(sec, otherItem);
+                addOrUpdateSlot(sec, other.pages[i >>> PAGE_SHIFT], i & PAGE_MASK);
             }
         }
     }
 
     /**
-     * Adds or merges a non-null {@link DoubleMinMaxValue} item for a specific second into this value set.
-     *
-     * @param second
-     *            the timestamp in seconds
-     * @param newItem
-     *            the non-null item to merge
+     * Adds or merges an occupied slot {@code (srcPage, srcSlot)} at {@code second} into this value set.
      */
-    private void addOrUpdateItem(int second, final DoubleMinMaxValue newItem)
+    private void addOrUpdateSlot(int second, final Page srcPage, final int srcSlot)
     {
         second = second & ~(scale - 1);
 
         if (valueCount == 0)
         {
             firstSecond = lastSecond = second;
-            values[0] = new DoubleMinMaxValue(newItem);
-            valueCount = newItem.getValueCount();
+            getOrCreatePage(0).copyFrom(0, srcPage, srcSlot);
+            valueCount = srcPage.counts[srcSlot];
             return;
         }
 
         final int index = resolveSlotIndex(second);
-        final DoubleMinMaxValue item = values[index];
-        if (item == null)
-        {
-            values[index] = new DoubleMinMaxValue(newItem);
-        }
-        else
-        {
-            item.merge(newItem);
-        }
-
-        valueCount += newItem.getValueCount();
+        getOrCreatePage(index >>> PAGE_SHIFT).mergeFrom(index & PAGE_MASK, srcPage, srcSlot);
+        valueCount += srcPage.counts[srcSlot];
     }
 
     /**
-     * Returns a copy of the occupied range of min/max values maintained by this set, from {@link #firstSecond}
-     * to {@link #lastSecond} inclusive.
+     * Materializes and returns a copy of the occupied range of min/max values maintained by this set,
+     * from {@link #firstSecond} to {@link #lastSecond} inclusive. Unoccupied buckets are {@code null}.
      * 
      * @return the min/max values array
      */
@@ -394,13 +602,19 @@ public class DoubleMinMaxValueSet
 
         final int length = ((lastSecond - firstSecond) >> scale2) + 1;
         final DoubleMinMaxValue[] copy = new DoubleMinMaxValue[length];
-        System.arraycopy(values, 0, copy, 0, length);
+        for (int i = 0; i < length; i++)
+        {
+            if (isOccupied(i))
+            {
+                copy[i] = pages[i >>> PAGE_SHIFT].toMinMaxValue(i & PAGE_MASK);
+            }
+        }
 
         return copy;
     }
 
     /**
-     * Shifts the content of the min/max value array to the right by {@code indexDiff} slots and clears the
+     * Shifts the content of the min/max value slots to the right by {@code indexDiff} positions and clears the
      * vacated leading slots.
      * 
      * @param indexDiff
@@ -408,12 +622,20 @@ public class DoubleMinMaxValueSet
      */
     private void shift(final int indexDiff)
     {
-        System.arraycopy(values, 0, values, indexDiff, size - indexDiff);
-        Arrays.fill(values, 0, indexDiff, null);
+        // Note: resolveSlotIndex() shrinks before calling shift(indexDiff), guaranteeing that
+        // ((lastSecond - firstSecond) >> scale2) + indexDiff < size. Iterating downward from the highest
+        // occupied slot moves every occupied entry right by indexDiff and clears its vacated source slot in-place.
+        for (int src = (lastSecond - firstSecond) >> scale2; src >= 0; src--)
+        {
+            if (isOccupied(src))
+            {
+                moveSlot(src, src + indexDiff);
+            }
+        }
     }
 
     /**
-     * Compacts the backing array by merging adjacent pairs of min/max slots into single slots of doubled time scale.
+     * Compacts the backing slots by merging adjacent pairs of min/max slots into single slots of doubled time scale.
      */
     private void shrink()
     {
@@ -426,20 +648,32 @@ public class DoubleMinMaxValueSet
         int j = offset;
         for (i = offset; i < size - 1; i += 2)
         {
-            final DoubleMinMaxValue v1 = values[i];
-            final DoubleMinMaxValue v2 = values[i + 1];
-            final DoubleMinMaxValue rv = (v1 != null) ? v1.merge(v2) : v2;
-
-            values[i] = null;
-            values[i + 1] = null;
-            values[j++] = rv;
+            final boolean occ1 = isOccupied(i);
+            final boolean occ2 = isOccupied(i + 1);
+            if (occ1)
+            {
+                if (occ2)
+                {
+                    final Page p2 = pages[(i + 1) >>> PAGE_SHIFT];
+                    pages[i >>> PAGE_SHIFT].mergeFrom(i & PAGE_MASK, p2, (i + 1) & PAGE_MASK);
+                    p2.counts[(i + 1) & PAGE_MASK] = 0;
+                }
+                if (j != i)
+                {
+                    moveSlot(i, j);
+                }
+            }
+            else if (occ2)
+            {
+                moveSlot(i + 1, j);
+            }
+            j++;
         }
 
         // When offset == 1 and size is even, one trailing slot at index (size - 1) remains unpaired
-        if (i < size)
+        if (i < size && isOccupied(i))
         {
-            values[j] = values[i];
-            values[i] = null;
+            moveSlot(i, j);
         }
     }
 }

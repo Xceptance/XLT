@@ -15,20 +15,41 @@
  */
 package com.xceptance.xlt.report.util;
 
-import java.util.Arrays;
-
 /**
  * A fixed-capacity, self-scaling time series bucket array that maintains per-bucket summary statistics
  * ({@link IntMinMaxValue}: min, max, sum, count, and approximate distinct values) over an arbitrarily long test duration.
  *
+ * <h2>Why Sparse 64-Slot Primitive Pages Instead of {@code IntMinMaxValue[]}</h2>
+ * <p>
+ * During parallel report generation, each worker thread instantiates thousands of {@link IntMinMaxValueSet} instances
+ * (e.g., 16 threads &times; 1,500 request processors = 24,000 sets, each with a backing capacity of 2,000 slots).
+ * Storing an {@code IntMinMaxValue[2000]} reference array and allocating a separate {@link IntMinMaxValue} heap object
+ * per occupied second created up to 48 million wrapper objects (~2.37 GB in JFR) during log ingestion.
+ * </p>
+ * <p>
+ * Conversely, allocating flat primitive arrays of length 2,000 eagerly for every set would waste memory on sparse
+ * timers that only fire a few times over a multi-hour test. Partitioning the {@code 2 * size} slots into lazily
+ * allocated 64-slot primitive {@link Page}s combines both advantages:
+ * </p>
+ * <ul>
+ *   <li><b>Zero Wrapper Object Churn:</b> {@link #addOrUpdateValue(long, int)}, {@link #shrink()}, {@link #shift(int)},
+ *       and {@link #merge(IntMinMaxValueSet)} operate exclusively on primitive arrays inside {@link Page}, allocating
+ *       zero {@link IntMinMaxValue} instances during ingestion and merging.</li>
+ *   <li><b>Sparse Memory Footprint:</b> Empty sets allocate no pages at all, and sparse timers only allocate the
+ *       specific 64-slot pages that receive data.</li>
+ *   <li><b>In-Place Page Reuse:</b> Clearing a slot during {@link #shift(int)} or {@link #shrink()} simply sets
+ *       {@code page.counts[slot] = 0}, keeping already-allocated {@link Page} arrays in place for subsequent reuse
+ *       without garbage collection pressure.</li>
+ * </ul>
+ *
  * <h2>How Self-Scaling Works</h2>
- * The backing array is allocated with {@code 2 * size} slots (where {@code size} typically matches the chart width in
+ * The logical capacity is {@code 2 * size} slots (where {@code size} typically matches the chart width in
  * pixels, e.g. 1024). Initially, each slot represents {@code scale = 1} second ({@code 2^scale2} where {@code scale2 = 0}).
  * <ul>
  *   <li><b>Appending forward in time ({@code second > firstSecond}):</b> As long as the target slot index
- *       {@code (second - firstSecond) >> scale2} exceeds the backing array capacity, {@link #shrink()} is called to
+ *       {@code (second - firstSecond) >> scale2} exceeds the backing capacity, {@link #shrink()} is called to
  *       merge adjacent slot pairs {@code (2k, 2k+1)} in-place, doubling {@link #scale} and halving the occupied slot
- *       count so the new timestamp fits without growing the array.</li>
+ *       count so the new timestamp fits without growing the logical capacity.</li>
  *   <li><b>Inserting earlier timestamps ({@code second < firstSecond}):</b> Out-of-order samples that precede
  *       {@link #firstSecond} first trigger {@link #shrink()} if the total span {@code (lastSecond - second) >> scale2}
  *       exceeds capacity, and then {@link #shift(int)} shifts existing entries rightward to make room at index 0.</li>
@@ -41,9 +62,161 @@ import java.util.Arrays;
 public class IntMinMaxValueSet
 {
     /**
-     * The default logical value set size (backing array is allocated at {@code 2 * DEFAULT_SIZE}).
+     * The default logical value set size (backing capacity is {@code 2 * DEFAULT_SIZE}).
      */
     public static final int DEFAULT_SIZE = 1024;
+
+    /**
+     * Bit shift for dividing a slot index into a page index ({@code 2^6 = 64} slots per page).
+     */
+    private static final int PAGE_SHIFT = 6;
+
+    /**
+     * Number of slots per {@link Page}.
+     */
+    private static final int PAGE_SIZE = 1 << PAGE_SHIFT;
+
+    /**
+     * Bitmask for extracting the intra-page slot index ({@code index & 63}).
+     */
+    private static final int PAGE_MASK = PAGE_SIZE - 1;
+
+    /**
+     * Number of buckets in each slot's inline low-precision value set (4 &times; 64-bit words = 256 bits).
+     */
+    private static final int BITSET_BUCKET_COUNT = 256;
+
+    /**
+     * A 64-slot primitive page storing per-slot min, max, sum, count, and the 256-bit low-precision value set.
+     * Slot {@code s} is occupied if and only if {@code counts[s] > 0}.
+     */
+    private static final class Page
+    {
+        final int[] counts = new int[PAGE_SIZE];
+        final long[] sums = new long[PAGE_SIZE];
+        final int[] mins = new int[PAGE_SIZE];
+        final int[] maxs = new int[PAGE_SIZE];
+        final byte[] bitScales = new byte[PAGE_SIZE];
+        final long[] words = new long[PAGE_SIZE << 2];
+
+        void addOrUpdate(final int s, final int value)
+        {
+            if (counts[s] == 0)
+            {
+                counts[s] = 1;
+                sums[s] = value;
+                mins[s] = value;
+                maxs[s] = value;
+                bitScales[s] = 0;
+                final int wIdx = s << 2;
+                words[wIdx] = 0L;
+                words[wIdx + 1] = 0L;
+                words[wIdx + 2] = 0L;
+                words[wIdx + 3] = 0L;
+                addBitValue(s, value);
+            }
+            else
+            {
+                counts[s]++;
+                sums[s] += value;
+                mins[s] = Math.min(mins[s], value);
+                maxs[s] = Math.max(maxs[s], value);
+                addBitValue(s, value);
+            }
+        }
+
+        private void addBitValue(final int s, int value)
+        {
+            if (value < 0)
+            {
+                return;
+            }
+
+            final int wIdx = s << 2;
+            int sc = bitScales[s];
+            value >>= sc;
+            while (value >= BITSET_BUCKET_COUNT)
+            {
+                sc++;
+                words[wIdx] = IntMinMaxValue.compressWordPair(words[wIdx], words[wIdx + 1]);
+                words[wIdx + 1] = IntMinMaxValue.compressWordPair(words[wIdx + 2], words[wIdx + 3]);
+                words[wIdx + 2] = 0L;
+                words[wIdx + 3] = 0L;
+                value >>= 1;
+            }
+            bitScales[s] = (byte) sc;
+            words[wIdx + (value >> 6)] |= (1L << value);
+        }
+
+        void copyFrom(final int dstSlot, final Page srcPage, final int srcSlot)
+        {
+            counts[dstSlot] = srcPage.counts[srcSlot];
+            sums[dstSlot] = srcPage.sums[srcSlot];
+            mins[dstSlot] = srcPage.mins[srcSlot];
+            maxs[dstSlot] = srcPage.maxs[srcSlot];
+            bitScales[dstSlot] = srcPage.bitScales[srcSlot];
+
+            final int dstW = dstSlot << 2;
+            final int srcW = srcSlot << 2;
+            words[dstW] = srcPage.words[srcW];
+            words[dstW + 1] = srcPage.words[srcW + 1];
+            words[dstW + 2] = srcPage.words[srcW + 2];
+            words[dstW + 3] = srcPage.words[srcW + 3];
+        }
+
+        void mergeFrom(final int dstSlot, final Page srcPage, final int srcSlot)
+        {
+            if (counts[dstSlot] == 0)
+            {
+                copyFrom(dstSlot, srcPage, srcSlot);
+                return;
+            }
+
+            counts[dstSlot] += srcPage.counts[srcSlot];
+            sums[dstSlot] += srcPage.sums[srcSlot];
+            mins[dstSlot] = Math.min(mins[dstSlot], srcPage.mins[srcSlot]);
+            maxs[dstSlot] = Math.max(maxs[dstSlot], srcPage.maxs[srcSlot]);
+
+            final int dstW = dstSlot << 2;
+            final int srcW = srcSlot << 2;
+            int dstScale = bitScales[dstSlot];
+            final int srcScale = srcPage.bitScales[srcSlot];
+
+            while (dstScale < srcScale)
+            {
+                dstScale++;
+                words[dstW] = IntMinMaxValue.compressWordPair(words[dstW], words[dstW + 1]);
+                words[dstW + 1] = IntMinMaxValue.compressWordPair(words[dstW + 2], words[dstW + 3]);
+                words[dstW + 2] = 0L;
+                words[dstW + 3] = 0L;
+            }
+            bitScales[dstSlot] = (byte) dstScale;
+
+            long ow0 = srcPage.words[srcW];
+            long ow1 = srcPage.words[srcW + 1];
+            long ow2 = srcPage.words[srcW + 2];
+            long ow3 = srcPage.words[srcW + 3];
+            for (int sc = srcScale; sc < dstScale; sc++)
+            {
+                ow0 = IntMinMaxValue.compressWordPair(ow0, ow1);
+                ow1 = IntMinMaxValue.compressWordPair(ow2, ow3);
+                ow2 = 0L;
+                ow3 = 0L;
+            }
+
+            words[dstW] |= ow0;
+            words[dstW + 1] |= ow1;
+            words[dstW + 2] |= ow2;
+            words[dstW + 3] |= ow3;
+        }
+
+        IntMinMaxValue toMinMaxValue(final int s)
+        {
+            final int wIdx = s << 2;
+            return new IntMinMaxValue(sums[s], counts[s], mins[s], maxs[s], bitScales[s],
+                                      words[wIdx], words[wIdx + 1], words[wIdx + 2], words[wIdx + 3]);
+        }
+    }
 
     /**
      * The smallest scale-aligned time [s] for which a min/max value exists.
@@ -77,7 +250,7 @@ public class IntMinMaxValueSet
     private int scale2 = 0;
 
     /**
-     * Internal backing array capacity ({@code 2 * logicalSize}), doubled so that after a {@link #shrink()} pass
+     * Internal backing slot capacity ({@code 2 * logicalSize}), doubled so that after a {@link #shrink()} pass
      * at least {@code logicalSize} buckets remain populated.
      */
     private final int size;
@@ -88,9 +261,9 @@ public class IntMinMaxValueSet
     private long valueCount;
 
     /**
-     * The per-bucket min/max accumulators maintained by this value set.
+     * Lazily allocated spine of 64-slot primitive {@link Page}s covering {@code [0, size)}.
      */
-    private final IntMinMaxValue[] values;
+    private Page[] pages;
 
     /**
      * Creates a {@link IntMinMaxValueSet} instance with a logical size of {@link #DEFAULT_SIZE}.
@@ -110,7 +283,45 @@ public class IntMinMaxValueSet
     {
         // Double the size so at least 'size' min/max values remain even immediately after shrinking
         this.size = size << 1;
-        values = new IntMinMaxValue[this.size];
+    }
+
+    /**
+     * Returns the {@link Page} at {@code pageIndex}, allocating both the outer page spine and the {@link Page}
+     * lazily if not yet present.
+     */
+    private Page getOrCreatePage(final int pageIndex)
+    {
+        if (pages == null)
+        {
+            pages = new Page[(size + PAGE_MASK) >>> PAGE_SHIFT];
+        }
+        Page page = pages[pageIndex];
+        if (page == null)
+        {
+            page = new Page();
+            pages[pageIndex] = page;
+        }
+        return page;
+    }
+
+    /**
+     * Returns {@code true} if the slot at {@code index} contains at least one sample.
+     */
+    private boolean isOccupied(final int index)
+    {
+        final Page page = pages[index >>> PAGE_SHIFT];
+        return page != null && page.counts[index & PAGE_MASK] > 0;
+    }
+
+    /**
+     * Moves the occupied slot at {@code srcIndex} to {@code dstIndex} and marks {@code srcIndex} as empty.
+     */
+    private void moveSlot(final int srcIndex, final int dstIndex)
+    {
+        final Page srcPage = pages[srcIndex >>> PAGE_SHIFT];
+        final int srcSlot = srcIndex & PAGE_MASK;
+        getOrCreatePage(dstIndex >>> PAGE_SHIFT).copyFrom(dstIndex & PAGE_MASK, srcPage, srcSlot);
+        srcPage.counts[srcSlot] = 0;
     }
 
     /**
@@ -130,7 +341,7 @@ public class IntMinMaxValueSet
         if (valueCount == 0)
         {
             firstSecond = lastSecond = second;
-            values[0] = new IntMinMaxValue(value);
+            getOrCreatePage(0).addOrUpdate(0, value);
 
             minimumTime = maximumTime = time;
             valueCount = 1;
@@ -139,15 +350,7 @@ public class IntMinMaxValueSet
         }
 
         final int index = resolveSlotIndex(second);
-        final IntMinMaxValue item = values[index];
-        if (item != null)
-        {
-            item.updateValue(value);
-        }
-        else
-        {
-            values[index] = new IntMinMaxValue(value);
-        }
+        getOrCreatePage(index >>> PAGE_SHIFT).addOrUpdate(index & PAGE_MASK, value);
 
         valueCount++;
         minimumTime = Math.min(minimumTime, time);
@@ -156,57 +359,53 @@ public class IntMinMaxValueSet
 
     /**
      * Adjusts the sliding window ({@link #firstSecond}, {@link #lastSecond}, {@link #scale}) by shrinking and/or
-     * shifting the backing array as needed so that {@code second} maps to a valid slot index in {@code [0, size)}.
+     * shifting the backing pages as needed so that {@code second} maps to a valid slot index in {@code [0, size)}.
      *
      * @param second
      *            the scale-aligned second to accommodate
-     * @return the resolved slot index in {@link #values}
+     * @return the resolved slot index in {@code [0, size)}
      */
     private int resolveSlotIndex(int second)
     {
-        if (second != firstSecond)
+        if (second > firstSecond)
         {
-            if (second > firstSecond)
+            // Shrink (double scale) until the new forward second fits within the array capacity
+            while (((second - firstSecond) >> scale2) >= size)
             {
-                // Shrink (double scale) until the new forward second fits within the array capacity
-                while (((second - firstSecond) >> scale2) >= size)
-                {
-                    scale = scale << 1;
-                    scale2++;
+                scale = scale << 1;
+                scale2++;
 
-                    shrink();
+                shrink();
 
-                    final int mask = ~(scale - 1);
-                    second = second & mask;
-                    firstSecond = firstSecond & mask;
-                    lastSecond = lastSecond & mask;
-                }
-
-                lastSecond = Math.max(lastSecond, second);
+                final int mask = ~(scale - 1);
+                second = second & mask;
+                firstSecond = firstSecond & mask;
             }
-            else
+
+            lastSecond = Math.max(lastSecond, second);
+        }
+        else if (second < firstSecond)
+        {
+            // Shrink (double scale) until the distance from the new earlier second to lastSecond fits in capacity
+            while (((lastSecond - second) >> scale2) >= size)
             {
-                // Shrink (double scale) until the distance from the new earlier second to lastSecond fits in capacity
-                while (((lastSecond - second) >> scale2) >= size)
-                {
-                    scale = scale << 1;
-                    scale2++;
+                scale = scale << 1;
+                scale2++;
 
-                    shrink();
+                shrink();
 
-                    final int mask = ~(scale - 1);
-                    second = second & mask;
-                    firstSecond = firstSecond & mask;
-                    lastSecond = lastSecond & mask;
-                }
+                final int mask = ~(scale - 1);
+                second = second & mask;
+                firstSecond = firstSecond & mask;
+                lastSecond = lastSecond & mask;
+            }
 
-                // Shift existing buckets right if the new second still precedes firstSecond after any shrinking
-                if (second < firstSecond)
-                {
-                    final int indexDiff = (firstSecond - second) >> scale2;
-                    shift(indexDiff);
-                    firstSecond = second;
-                }
+            // Shift existing buckets right if the new second still precedes firstSecond after any shrinking
+            if (second < firstSecond)
+            {
+                final int indexDiff = (firstSecond - second) >> scale2;
+                shift(indexDiff);
+                firstSecond = second;
             }
         }
 
@@ -272,7 +471,8 @@ public class IntMinMaxValueSet
     }
 
     /**
-     * Merges another {@link IntMinMaxValueSet} into this instance.
+     * Merges another {@link IntMinMaxValueSet} into this instance without allocating intermediate
+     * {@link IntMinMaxValue} objects.
      *
      * @param other
      *            the other min-max value set to merge, may be {@code null}
@@ -313,47 +513,32 @@ public class IntMinMaxValueSet
         final int otherLength = ((other.lastSecond - other.firstSecond) >> other.scale2) + 1;
         for (int i = 0; i < otherLength; i++)
         {
-            final IntMinMaxValue otherItem = other.values[i];
-            if (otherItem != null)
+            if (other.isOccupied(i))
             {
                 final int sec = other.firstSecond + (i << other.scale2);
-                addOrUpdateItem(sec, otherItem);
+                addOrUpdateSlot(sec, other.pages[i >>> PAGE_SHIFT], i & PAGE_MASK);
             }
         }
     }
 
     /**
-     * Adds or merges a non-null {@link IntMinMaxValue} item for a specific second into this value set.
-     *
-     * @param second
-     *            the timestamp in seconds
-     * @param newItem
-     *            the non-null item to merge
+     * Adds or merges an occupied slot {@code (srcPage, srcSlot)} at {@code second} into this value set.
      */
-    private void addOrUpdateItem(int second, final IntMinMaxValue newItem)
+    private void addOrUpdateSlot(int second, final Page srcPage, final int srcSlot)
     {
         second = second & ~(scale - 1);
 
         if (valueCount == 0)
         {
             firstSecond = lastSecond = second;
-            values[0] = new IntMinMaxValue(newItem);
-            valueCount = newItem.getValueCount();
+            getOrCreatePage(0).copyFrom(0, srcPage, srcSlot);
+            valueCount = srcPage.counts[srcSlot];
             return;
         }
 
         final int index = resolveSlotIndex(second);
-        final IntMinMaxValue item = values[index];
-        if (item != null)
-        {
-            item.merge(newItem);
-        }
-        else
-        {
-            values[index] = new IntMinMaxValue(newItem);
-        }
-
-        valueCount += newItem.getValueCount();
+        getOrCreatePage(index >>> PAGE_SHIFT).mergeFrom(index & PAGE_MASK, srcPage, srcSlot);
+        valueCount += srcPage.counts[srcSlot];
     }
 
     /**
@@ -377,8 +562,8 @@ public class IntMinMaxValueSet
     }
 
     /**
-     * Returns a copy of the occupied range of min/max values maintained by this set, from {@link #firstSecond}
-     * to {@link #lastSecond} inclusive.
+     * Materializes and returns a copy of the occupied range of min/max values maintained by this set,
+     * from {@link #firstSecond} to {@link #lastSecond} inclusive. Unoccupied buckets are {@code null}.
      *
      * @return the min/max values array
      */
@@ -391,13 +576,19 @@ public class IntMinMaxValueSet
 
         final int length = ((lastSecond - firstSecond) >> scale2) + 1;
         final IntMinMaxValue[] copy = new IntMinMaxValue[length];
-        System.arraycopy(values, 0, copy, 0, length);
+        for (int i = 0; i < length; i++)
+        {
+            if (isOccupied(i))
+            {
+                copy[i] = pages[i >>> PAGE_SHIFT].toMinMaxValue(i & PAGE_MASK);
+            }
+        }
 
         return copy;
     }
 
     /**
-     * Shifts the content of the min/max value array to the right by {@code indexDiff} slots and clears the
+     * Shifts the content of the min/max value slots to the right by {@code indexDiff} positions and clears the
      * vacated leading slots.
      *
      * @param indexDiff
@@ -405,12 +596,20 @@ public class IntMinMaxValueSet
      */
     private void shift(final int indexDiff)
     {
-        System.arraycopy(values, 0, values, indexDiff, size - indexDiff);
-        Arrays.fill(values, 0, indexDiff, null);
+        // Note: resolveSlotIndex() shrinks before calling shift(indexDiff), guaranteeing that
+        // ((lastSecond - firstSecond) >> scale2) + indexDiff < size. Iterating downward from the highest
+        // occupied slot moves every occupied entry right by indexDiff and clears its vacated source slot in-place.
+        for (int src = (lastSecond - firstSecond) >> scale2; src >= 0; src--)
+        {
+            if (isOccupied(src))
+            {
+                moveSlot(src, src + indexDiff);
+            }
+        }
     }
 
     /**
-     * Compacts the backing array by merging adjacent pairs of min/max slots into single slots of doubled time scale.
+     * Compacts the backing slots by merging adjacent pairs of min/max slots into single slots of doubled time scale.
      */
     private void shrink()
     {
@@ -423,20 +622,32 @@ public class IntMinMaxValueSet
         int j = offset;
         for (i = offset; i < size - 1; i += 2)
         {
-            final IntMinMaxValue v1 = values[i];
-            final IntMinMaxValue v2 = values[i + 1];
-            final IntMinMaxValue rv = (v1 != null) ? v1.merge(v2) : v2;
-
-            values[i] = null;
-            values[i + 1] = null;
-            values[j++] = rv;
+            final boolean occ1 = isOccupied(i);
+            final boolean occ2 = isOccupied(i + 1);
+            if (occ1)
+            {
+                if (occ2)
+                {
+                    final Page p2 = pages[(i + 1) >>> PAGE_SHIFT];
+                    pages[i >>> PAGE_SHIFT].mergeFrom(i & PAGE_MASK, p2, (i + 1) & PAGE_MASK);
+                    p2.counts[(i + 1) & PAGE_MASK] = 0;
+                }
+                if (j != i)
+                {
+                    moveSlot(i, j);
+                }
+            }
+            else if (occ2)
+            {
+                moveSlot(i + 1, j);
+            }
+            j++;
         }
 
         // When offset == 1 and size is even, one trailing slot at index (size - 1) remains unpaired
-        if (i < size)
+        if (i < size && isOccupied(i))
         {
-            values[j] = values[i];
-            values[i] = null;
+            moveSlot(i, j);
         }
     }
 }

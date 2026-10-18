@@ -167,54 +167,82 @@ public class DoubleMinMaxValueSetTest
     {
         final double w = AbstractFixedSizeDoubleValueSet.INITIAL_BUCKET_WIDTH;
 
-        // 1. Shift by < 64 buckets (10), == 64 buckets, and > 64 buckets (70) without scaling
-        final DoubleMinMaxValue vShiftSmall = new DoubleMinMaxValue(100.0 * w);
-        vShiftSmall.updateValue(90.0 * w); // shifts by 10 buckets (< 64)
-        vShiftSmall.updateValue(20.0 * w); // shifts by another 70 buckets (> 64), pushing first value to bucket 80 (bits1)
+        // 1. Shift by < 64 buckets (10) while bits0 has a high bit (60) that crosses into bits1 AND bits1 is already non-zero
+        final DoubleMinMaxValue vShiftSmall = new DoubleMinMaxValue(20.0 * w);
+        vShiftSmall.updateValue(80.0 * w); // bucket 60 in bits0 (crosses into bit 6 of bits1 when shifted by 10)
+        vShiftSmall.updateValue(90.0 * w); // bucket 70 in bits1 (moves to bit 16 of bits1 when shifted by 10)
+        vShiftSmall.updateValue(10.0 * w); // shifts by 10 buckets (< 64)
         final double[] vals = vShiftSmall.getValues();
-        Assert.assertEquals(3, vals.length);
-        Assert.assertEquals(20.0 * w, vals[0], 1e-18);
-        Assert.assertEquals(90.0 * w, vals[1], 1e-18);
-        Assert.assertEquals(100.0 * w, vals[2], 1e-18);
+        Assert.assertEquals(4, vals.length);
+        Assert.assertEquals(10.0 * w, vals[0], 1e-18);
+        Assert.assertEquals(20.0 * w, vals[1], 1e-18);
+        Assert.assertEquals(80.0 * w, vals[2], 1e-18);
+        Assert.assertEquals(90.0 * w, vals[3], 1e-18);
 
-        // Shift by exact 64 buckets boundary (buckets == 64)
+        // Shift by > 64 buckets (70)
+        final DoubleMinMaxValue vShift70 = new DoubleMinMaxValue(90.0 * w);
+        vShift70.updateValue(20.0 * w);
+        Assert.assertArrayEquals(new double[] { 20.0 * w, 90.0 * w }, vShift70.getValues(), 1e-18);
+
+        // Shift by exact 64 buckets boundary (buckets == 64) when multiple bits in bits0 (bit 0 and bit 1) are set
         final DoubleMinMaxValue vShift64 = new DoubleMinMaxValue(64.0 * w);
-        vShift64.updateValue(0.0); // diff = 0 -> shifts by 64 buckets, moving bucket 0 to bucket 64 (bit 0 of bits1)
+        vShift64.updateValue(65.0 * w); // sets bit 1 of bits0 so failing to clear bits0 on 64-bit shift would leave bit 1 set
+        vShift64.updateValue(0.0);      // shifts by 64 buckets, moving bits 0,1 of bits0 to bits 0,1 of bits1 and clearing bits0
         final double[] vals64 = vShift64.getValues();
-        Assert.assertEquals(2, vals64.length);
+        Assert.assertEquals(3, vals64.length);
         Assert.assertEquals(0.0, vals64[0], 1e-18);
         Assert.assertEquals(64.0 * w, vals64[1], 1e-18);
+        Assert.assertEquals(65.0 * w, vals64[2], 1e-18);
 
-        // Add value at exact bucket 63 (bits0 MSB) and bucket 64 (bits1 LSB) without shifting
+        // Add value at exact bucket 63 (bits0 MSB)
         vShift64.updateValue(63.0 * w);
-        Assert.assertEquals(3, vShift64.getValues().length);
+        Assert.assertEquals(4, vShift64.getValues().length);
 
-        // 2. Scale up by adding value at exact upper boundary (rangeMin + 128 * w) and exact lower boundary (rangeMax - 128 * bucketWidth)
-        final DoubleMinMaxValue vScale = new DoubleMinMaxValue(64.0 * w); // rangeMin = 0.0, rangeMax = 128 * w
-        vScale.updateValue(0.0); // bucket 0 (bits0)
-        vScale.updateValue(100.0 * w); // bucket 100 (bits1)
-        vScale.updateValue(128.0 * w); // exact boundary value == rangeMin + 128 * w -> triggers 1x scaleBitSet (bucketWidth = 2*w)
-        final double[] scaledVals = vScale.getValues();
-        Assert.assertEquals(4, scaledVals.length);
-        Assert.assertEquals(0.0, scaledVals[0], 1e-18);
-        Assert.assertEquals(64.0 * w, scaledVals[1], 1e-18);
-        Assert.assertEquals(100.0 * w, scaledVals[2], 1e-18);
-        Assert.assertEquals(128.0 * w, scaledVals[3], 1e-18);
+        // 2. Verify initial rangeMax = value + w (adding -127.5 * w after 0.0 must scale to 2*w so 0.0 stays at 0.0)
+        final DoubleMinMaxValue vInitRangeMax = new DoubleMinMaxValue(0.0);
+        vInitRangeMax.updateValue(-127.5 * w); // < rangeMax - 128 * w (-127 * w) -> scales to 2*w and preserves 0.0
+        Assert.assertArrayEquals(new double[] { -128.0 * w, 0.0 }, vInitRangeMax.getValues(), 1e-18);
 
-        // Trigger lower-bound scale in adjustRange: value < rangeMax - 128 * bucketWidth
-        vScale.updateValue(-200.0 * w);
-        Assert.assertEquals(5, vScale.getValues().length);
+        // Verify updated rangeMax = rangeMin + width * (index + 1)
+        final DoubleMinMaxValue vUpdRangeMax = new DoubleMinMaxValue(0.0);
+        vUpdRangeMax.updateValue(64.0 * w);  // index = 64 -> rangeMax = 65 * w
+        vUpdRangeMax.updateValue(-63.5 * w); // < 65 * w - 128 * w (-63 * w) -> scales to 2*w and preserves all 3 values
+        Assert.assertEquals(3, vUpdRangeMax.getValues().length);
+
+        // Scale up at exact upper boundary (value == rangeMin + 128 * w)
+        final DoubleMinMaxValue vScale = new DoubleMinMaxValue(0.0);
+        vScale.updateValue(127.0 * w); // fits without scaling (index = 127 < 128)
+        Assert.assertArrayEquals(new double[] { 0.0, 127.0 * w }, vScale.getValues(), 1e-18);
+        vScale.updateValue(128.0 * w); // exact upper boundary -> triggers 1x scaleBitSet (bucketWidth = 2*w)
+        Assert.assertArrayEquals(new double[] { 0.0, 126.0 * w, 128.0 * w }, vScale.getValues(), 1e-18);
+
+        // Exercise the exact same bitset boundary conditions through DoubleMinMaxValueSet$Page
+        final DoubleMinMaxValueSet pageSet = new DoubleMinMaxValueSet(16);
+        pageSet.addOrUpdateValue(1_000L, 64.0 * w);
+        pageSet.addOrUpdateValue(1_000L, 65.0 * w);
+        pageSet.addOrUpdateValue(1_000L, 0.0); // buckets == 64 shift in Page.addBitValue
+        Assert.assertArrayEquals(vals64, pageSet.getValues()[0].getValues(), 1e-18);
+
+        pageSet.addOrUpdateValue(2_000L, 0.0);
+        pageSet.addOrUpdateValue(2_000L, -127.5 * w); // initial rangeMax = value + width in Page.addOrUpdate
+        Assert.assertArrayEquals(new double[] { -128.0 * w, 0.0 }, pageSet.getValues()[1].getValues(), 1e-18);
+
+        pageSet.addOrUpdateValue(3_000L, 0.0);
+        pageSet.addOrUpdateValue(3_000L, 127.0 * w);
+        Assert.assertArrayEquals(new double[] { 0.0, 127.0 * w }, pageSet.getValues()[2].getValues(), 1e-18);
+        pageSet.addOrUpdateValue(3_000L, 128.0 * w); // exact upper boundary in Page.addBitValue
+        Assert.assertArrayEquals(new double[] { 0.0, 126.0 * w, 128.0 * w }, pageSet.getValues()[2].getValues(), 1e-18);
 
         // 3. Merge null and merge another value with bits in both bits0 and bits1, verifying getValues()
         Assert.assertSame(vShift64, vShift64.merge(null));
-        final DoubleMinMaxValue mergeTarget = new DoubleMinMaxValue(64.0 * w); // rangeMin = 0
-        final DoubleMinMaxValue mergeSource = new DoubleMinMaxValue(64.0 * w); // rangeMin = 0
+        final DoubleMinMaxValue mergeTarget = new DoubleMinMaxValue(64.0 * w);
+        final DoubleMinMaxValue mergeSource = new DoubleMinMaxValue(64.0 * w);
         mergeSource.updateValue(10.0 * w); // bits0
         mergeSource.updateValue(80.0 * w); // bits1
         mergeTarget.merge(mergeSource);
         Assert.assertArrayEquals(mergeSource.getValues(), mergeTarget.getValues(), 1e-18);
 
-        // 4. toString, hashCode, equals across all fields
+        // 4. toString, hashCode, equals across all fields (varying one field at a time)
         final DoubleMinMaxValue strVal = new DoubleMinMaxValue(10.0);
         strVal.updateValue(20.0);
         Assert.assertEquals("15.0/30.0/10.0/20.0/2", strVal.toString());
@@ -228,65 +256,15 @@ public class DoubleMinMaxValueSetTest
         Assert.assertEquals(strVal, strValCopy);
         Assert.assertEquals(strVal.hashCode(), strValCopy.hashCode());
 
-        // Differ in accumulatedValue only
-        final DoubleMinMaxValue base = new DoubleMinMaxValue(10.0);
-        base.updateValue(20.0);
-        base.updateValue(30.0);
-        final DoubleMinMaxValue diffSum = new DoubleMinMaxValue(10.0);
-        diffSum.updateValue(25.0);
-        diffSum.updateValue(30.0);
-        Assert.assertNotEquals(base, diffSum);
-
-        // Differ in maximum (same accumulatedValue = 60.0)
-        final DoubleMinMaxValue diffMax = new DoubleMinMaxValue(10.0);
-        diffMax.updateValue(15.0);
-        diffMax.updateValue(35.0);
-        Assert.assertNotEquals(base, diffMax);
-
-        // Differ in minimum
-        final DoubleMinMaxValue diffMin = new DoubleMinMaxValue(5.0);
-        diffMin.updateValue(25.0);
-        diffMin.updateValue(30.0);
-        Assert.assertNotEquals(base, diffMin);
-
-        // Differ in valueCount
-        final DoubleMinMaxValue countA = new DoubleMinMaxValue(0.0);
-        countA.updateValue(10.0);
-        final DoubleMinMaxValue countB = new DoubleMinMaxValue(0.0);
-        countB.updateValue(0.0);
-        countB.updateValue(10.0);
-        Assert.assertNotEquals(countA, countB);
-
-        // Differ in rangeMin (same min=0.0, max=10.0, sum=10.1, count=3, but starting at 0.1 shifts rangeMin to -0.025)
-        final DoubleMinMaxValue rangeOrderA = new DoubleMinMaxValue(0.0);
-        rangeOrderA.updateValue(10.0);
-        rangeOrderA.updateValue(0.1);
-        final DoubleMinMaxValue rangeOrderB = new DoubleMinMaxValue(0.1);
-        rangeOrderB.updateValue(10.0);
-        rangeOrderB.updateValue(0.0);
-        Assert.assertNotEquals(rangeOrderA, rangeOrderB);
-
-        // Differ in bits0 (same min=0, max=100, sum=200, count=4, rangeMin, but different lower-half bucket in bits0)
-        final DoubleMinMaxValue bits0A = new DoubleMinMaxValue(0.0);
-        bits0A.updateValue(100.0);
-        bits0A.updateValue(10.0);
-        bits0A.updateValue(90.0);
-        final DoubleMinMaxValue bits0B = new DoubleMinMaxValue(0.0);
-        bits0B.updateValue(100.0);
-        bits0B.updateValue(20.0);
-        bits0B.updateValue(80.0);
-        Assert.assertNotEquals(bits0A, bits0B);
-
-        // Differ in bits1 only (same min=0, max=100, sum=260, count=4, rangeMin, same bits0, different upper-half buckets >= 64 in bits1)
-        final DoubleMinMaxValue bits1A = new DoubleMinMaxValue(0.0);
-        bits1A.updateValue(100.0);
-        bits1A.updateValue(66.0);
-        bits1A.updateValue(94.0);
-        final DoubleMinMaxValue bits1B = new DoubleMinMaxValue(0.0);
-        bits1B.updateValue(100.0);
-        bits1B.updateValue(70.0);
-        bits1B.updateValue(90.0);
-        Assert.assertNotEquals(bits1A, bits1B);
+        final DoubleMinMaxValue rawBase = new DoubleMinMaxValue(60.0, 3, 10.0, 30.0, w, 10.0, 31.0, 1L, 2L);
+        Assert.assertEquals(rawBase, new DoubleMinMaxValue(60.0, 3, 10.0, 30.0, w, 10.0, 31.0, 1L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(65.0, 3, 10.0, 30.0, w, 10.0, 31.0, 1L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(60.0, 4, 10.0, 30.0, w, 10.0, 31.0, 1L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(60.0, 3, 5.0, 30.0, w, 10.0, 31.0, 1L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(60.0, 3, 10.0, 35.0, w, 10.0, 31.0, 1L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(60.0, 3, 10.0, 30.0, w, 12.0, 31.0, 1L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(60.0, 3, 10.0, 30.0, w, 10.0, 31.0, 3L, 2L));
+        Assert.assertNotEquals(rawBase, new DoubleMinMaxValue(60.0, 3, 10.0, 30.0, w, 10.0, 31.0, 1L, 4L));
     }
 
     @Test
@@ -388,5 +366,53 @@ public class DoubleMinMaxValueSetTest
                 Assert.assertArrayEquals(expected, actual);
             }
         }
+
+        // Verify sparse multi-page behavior (null intermediate pages) and shrink() where only the second slot in a pair is occupied
+        final DoubleMinMaxValueSet sparse = new DoubleMinMaxValueSet(100); // backing = 200 slots (4 pages)
+        sparse.addOrUpdateValue(10_000L, 1.0);   // second = 10 -> slot 0 (page 0)
+        sparse.addOrUpdateValue(13_000L, 2.0);   // second = 13 -> slot 3 (page 0, odd slot so pair (2,3) has occ1=false, occ2=true)
+        sparse.addOrUpdateValue(160_000L, 3.0);  // second = 160 -> slot 150 (page 2, leaving page 1 null)
+
+        final DoubleMinMaxValueSet sparseCopy = new DoubleMinMaxValueSet(100);
+        sparseCopy.merge(sparse);
+        Assert.assertArrayEquals(sparse.getValues(), sparseCopy.getValues());
+
+        // Trigger shift() on sparse set (which has unoccupied intermediate slots) before shrinking
+        sparse.addOrUpdateValue(8_000L, 0.5);    // second = 8 -> shifts existing sparse slots right by 2
+        Assert.assertEquals(8_000L, sparse.getFirstSecond());
+        Assert.assertEquals(new DoubleMinMaxValue(0.5), sparse.getValues()[0]);
+        Assert.assertNull(sparse.getValues()[1]);
+        Assert.assertEquals(new DoubleMinMaxValue(1.0), sparse.getValues()[2]);
+
+        // Trigger shrink() on sparse set (scale 1 -> 2): pairs (0,1), (2,3), (4,5) where slot 4 is empty and slot 5 is occupied
+        sparse.addOrUpdateValue(250_000L, 4.0);
+        Assert.assertEquals(2, sparse.getScale());
+        final DoubleMinMaxValue[] shrunkSparse = sparse.getValues();
+        Assert.assertEquals(new DoubleMinMaxValue(0.5), shrunkSparse[0]);
+        Assert.assertEquals(new DoubleMinMaxValue(1.0), shrunkSparse[1]);
+        Assert.assertEquals(new DoubleMinMaxValue(2.0), shrunkSparse[2]);
+
+        // Also test shrink() when offset == 1 and the trailing slot (size - 1) is unoccupied
+        final DoubleMinMaxValueSet oddStart = new DoubleMinMaxValueSet(64); // backing = 128
+        oddStart.addOrUpdateValue(1_000L, 10.0);   // firstSecond = 1 (odd -> offset = 1 when shrinking to scale 2)
+        oddStart.addOrUpdateValue(200_000L, 20.0); // triggers shrink() while slot 127 is unoccupied
+        Assert.assertEquals(2, oddStart.getScale());
+        Assert.assertEquals(2L, oddStart.getValueCount());
+
+        // Merge coarse small-capacity set (scale = 2, narrow time span) into fine large-capacity set (scale = 1)
+        final DoubleMinMaxValueSet smallCoarse = new DoubleMinMaxValueSet(2); // backing = 4 slots
+        smallCoarse.addOrUpdateValue(10_000L, 5.0);
+        smallCoarse.addOrUpdateValue(14_000L, 6.0); // span = 4 >= 4 -> shrinks smallCoarse to scale = 2
+        Assert.assertEquals(2, smallCoarse.getScale());
+
+        final DoubleMinMaxValueSet largeFine = new DoubleMinMaxValueSet(64); // backing = 128 slots, scale = 1
+        largeFine.addOrUpdateValue(11_000L, 100.0); // firstSecond = 11 (odd)
+        largeFine.addOrUpdateValue(21_000L, 200.0); // lastSecond = 21 (odd, > smallCoarse.lastSecond)
+        largeFine.merge(smallCoarse);
+        Assert.assertEquals(2, largeFine.getScale());
+        Assert.assertEquals(10_000L, largeFine.getFirstSecond());
+        Assert.assertEquals(6, largeFine.getValues().length);
+        Assert.assertEquals(new DoubleMinMaxValue(100.0).merge(new DoubleMinMaxValue(5.0)), largeFine.getValues()[0]);
+        Assert.assertEquals(new DoubleMinMaxValue(200.0), largeFine.getValues()[5]);
     }
 }
