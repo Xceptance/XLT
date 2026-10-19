@@ -43,6 +43,9 @@ When PDF generation is enabled, the PDF report is integrated into the HTML repor
 - The link opens or downloads `load-report.pdf`.
 - If PDF generation was not enabled, the download link is automatically omitted from the navigation bar.
 
+> [!NOTE]
+> PDF report generation applies to standard load test reports (`create_report.sh`). Trend and diff reports use separate report templates and do not generate a PDF report.
+
 ---
 
 ## Test Rating & Executive Evaluation
@@ -71,7 +74,7 @@ The rating score and summary line can be passed directly as command-line argumen
 
 ### Configuration Properties
 
-Alternatively, you can set the rating in `default.properties` within the test suite or pass them as system properties (`-D`):
+Alternatively, you can configure ratings in your test suite properties (e.g., `project.properties` or `default.properties`) or pass them as system properties (`-D`):
 
 | Property Key | Type | Description |
 |---|---|---|
@@ -105,19 +108,19 @@ The PDF report is designed as an executive document that captures all essential 
 
 1. **Header & Metadata**:
    - Report title, test start/end dates, total elapsed duration (`hh:mm:ss`).
-2. **Rating & Assessment** *(if present)*:
+2. **Load Profile & Configuration**:
+   - Configured test cases, user counts, ramp-up times, measurement durations, and percentages.
+3. **Rating & Assessment** *(if present)*:
    - 6-segment rating scale (`A+`, `A`, `B`, `C`, `D`, `F`) with active grade elevated and highlighted.
    - Summary text.
    - Rendered Markdown evaluation sections (tables, bullet points, bold/italic text).
-3. **Test Comments**:
+4. **Test Comments** *(if present)*:
    - Test run comments and notes (plain text or Markdown).
-4. **Load Profile & Configuration**:
-   - Configured test cases, user counts, ramp-up times, measurement durations, and percentages.
 5. **General Information & Charts**:
    - Key test execution parameters, total hits, sent/received bytes.
-   - Concurrent Users chart, Requests per Second chart, and Request Runtime chart (centered layout).
+   - Concurrent Users chart, Requests per Second chart, Request Runtime chart, and Transaction Errors chart (centered layout).
 6. **Agent Summary & Utilization**:
-   - Agent instances, total transactions/actions/requests executed per agent.
+   - Overall load generator agent health.
    - All Agents CPU Usage chart (centered layout).
 7. **Performance Summary & Network**:
    - High-level KPI summary table (Transactions, Actions, Requests, Custom Timers counts, error rates, runtime percentiles).
@@ -162,7 +165,7 @@ The PDF report utilizes CSS Paged Media Level 3 rules (`config/testreport/css/pd
   - `page-break-inside: avoid` on charts and summary boxes to prevent awkward mid-element page splits.
   - `thead { display: table-header-group; }` to repeat table header rows across page breaks on multi-page tables.
 - **Typography & Colors**:
-  - Clean font stack (sans-serif / Liberation Sans) compatible with standard PDF engines.
+  - Clean font stack (`Helvetica, Arial, sans-serif`) utilizing standard PDF core fonts with sans-serif fallbacks.
   - High-contrast table row shading and consistent status badge color coding.
 
 ---
@@ -170,6 +173,6 @@ The PDF report utilizes CSS Paged Media Level 3 rules (`config/testreport/css/pd
 ## Architecture & Technical Details
 
 - **OpenHTMLtoPDF**: Renders the XML/XSL-generated XHTML into a PDF DOM using Apache PDFBox.
-- **SVG & Raster Images**: Charts rendered as high-resolution SVGs or PNGs are automatically embedded with crisp vector lines.
+- **On-the-Fly WebP Transcoding**: XLT generates charts in WebP format for optimal compression. Because OpenHTMLtoPDF requires standard image formats, a custom stream factory intercepts `.webp` image requests and transcodes them to PNG in memory on the fly.
 - **Memory & Resource Efficiency**: Fast-mode rendering ensures minimal memory overhead and rapid document creation (typically 1–3 seconds).
 - **Zero Native Dependencies**: Does not require any OS packages (such as Chrome, fontconfig, or X11 libraries), making it fully compatible with headless containerized CI/CD environments (Docker, Kubernetes, GitHub Actions, GitLab CI).

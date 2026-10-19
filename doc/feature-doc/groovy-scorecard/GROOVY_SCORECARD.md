@@ -6,23 +6,37 @@ The Groovy Scorecard feature allows you to define complex, dynamic scorecard con
 
 When your `.groovy` scorecard script executes, it runs inside a secured sandbox with several pre-injected "bindings" (variables) ready for you to use:
 
-* `builder`: The core `ScorecardBuilder` used to define your rules, groups, and ratings.
+* `builder`: The core `ScorecardBuilder` used to configure schema version, selectors, rules, groups, and ratings.
 * `xpathBuilder`: A helper object that generates complex XPath strings for standard report metrics automatically.
-* `properties`: Access to your XLT test properties.
-* `data`: A tool to query the live `testreport.xml` data during script execution.
-* `log`: A logger for debugging your script.
+* `properties`: Access to your XLT test properties (`ScorecardProperties`):
+  * `properties.get(key)`: Returns the property value as a string, or `null` if not found.
+  * `properties.get(key, defaultValue)`: Returns the property value, or the default string value.
+  * `properties.getBoolean(key, defaultValue)`: Returns the boolean property value.
+  * `properties.getInt(key, defaultValue)`: Returns the int property value.
+  * `properties.getLong(key, defaultValue)`: Returns the long property value.
+* `data`: A query helper to inspect live `testreport.xml` data during script execution (`ScorecardData`):
+  * `data.get(xpath)`: Executes the XPath expression and returns the string value of the first matching node, or `null`.
+  * `data.getList(xpath)`: Executes the XPath expression and returns a `List<String>` of all matching values.
+  * `data.getDocument()`: Returns the underlying Saxon `XdmNode` of the XML report document.
+* `log`: A logger for recording diagnostic messages during script execution (`ScorecardLogger`):
+  * `log.info(message)`, `log.warn(message)`, `log.error(message)`
+  * `log.error(throwable)`, `log.error(message, throwable)`
+  * Recorded logs are stored in `scorecard.xml` under `<result><logs>` and displayed in the report output.
 
-At the very end of your script, you must return the `builder` object so the engine can evaluate it.
+The engine injects `builder` into the script binding and calls `builder.build()` automatically when script execution finishes. Explicitly writing `return builder` at the end of the script is optional.
 
 ---
 
 ## 2. A Basic Example
 
-To get started, create a file with the `.groovy` extension (e.g., `scorecard.groovy`) and point the XLT report generator to it by configuring the following property in your `project.properties` (or any other file in the XLT property hierarchy):
+To get started, create a file with the `.groovy` extension (e.g., `scorecard.groovy`) inside your test suite's `config/` directory (e.g., `<testsuite>/config/scorecard.groovy`). Then point the XLT report generator to it by configuring the following property in your `project.properties` (or any other file in the XLT property hierarchy):
 
 ```properties
 com.xceptance.xlt.scorecard.config = scorecard.groovy
 ```
+
+> [!NOTE]
+> During report generation, XLT copies configuration files from the test suite's `config/` directory into `<reportDir>/config/` and resolves `com.xceptance.xlt.scorecard.config` relative to that directory.
 
 Here is a minimal, complete example:
 
@@ -87,7 +101,9 @@ builder.rules {
 }
 ```
 
-**Fluent Assertions:** You must use one of the following methods to evaluate the selector's value: `isLessThan(value)`, `isLessThanOrEqualTo(value)`, `isGreaterThan(value)`, `isGreaterThanOrEqualTo(value)`, `isEqualTo(value)`, `isNotEqualTo(value)`, or `matchesRegex(pattern)`.
+**Condition Evaluation:** To evaluate the selected value, you can use fluent assertion methods or specify a raw XPath condition directly using `condition(expression)`:
+* **Fluent assertions:** `isLessThan(value)`, `isLessThanOrEqualTo(value)`, `isGreaterThan(value)`, `isGreaterThanOrEqualTo(value)`, `isEqualTo(value)`, `isNotEqualTo(value)`, or `matchesRegex(pattern)`.
+* **Raw condition:** `condition "<= 500"`, `condition "= 0"`, or `condition "exists(.)"`. If an expression begins with a comparison operator (`=`, `!=`, `<`, `<=`, `>`, `>=`), the current value context (`.`) is prepended automatically.
 
 **The `xpathBuilder` Helper:** Writing raw XPath is tedious. The `xpathBuilder` object abstracts this away using named parameters:
 * `xpathBuilder.requestP95('^Homepage')` (legacy shorthand: matches by regex against the name)
@@ -106,7 +122,7 @@ You can freely combine these constraints:
 *   `xpathBuilder.requestP95(name: '^Homepage', excludeLabel: 'cached')`
 
 Similarly, these helpers are available for **transactions**, **actions** and **customTimers**:
-*   `transactionP95(name: '...Regex')`, `transactionP95(label: '...Label')`, `transactionCount(label: '...')`, `actionErrorPercentage(label: '...')`, etc.
+*   `transactionP95(name: '...Regex')`, `transactionP95(label: '...Label')`, `transactionCount(label: '...')`, `actionErrorPercentage(label: '...')`, etc. (See [Section 8](#8-xpathbuilder-reference-cheat-sheet) for the complete reference).
 
 **Global Summaries & Errors:**
 You can retrieve pre-computed global totals and specialized error metrics directly:
@@ -132,12 +148,22 @@ Groups logically organize your rules. A group calculates its achieved points bas
 * `allPassed`: The standard mode. The group's achieved points are the sum of all passed rules. The group's total achievable points are the sum of all rules.
 * `firstPassed` / `lastPassed`: Used for tiered grading (e.g., trying to assign an A, B, or C grade to a specific page). The group evaluates rules in order and takes the points from the *first* (or *last*) rule that passes. The group's total achievable points are set to the *maximum* points of any single rule in the group.
 
+Groups also support optional `description`, `failsTest`, `failsOn` (`NOTPASSED` or `PASSED`), and custom `messages`:
+
 ```groovy
 builder.groups {
     group {
         id 'system_health'
+        name 'System Health'
+        description 'Checks agent resource utilization and stability'
         mode 'allPassed'
+        failsTest true
+        failsOn 'NOTPASSED' // NOTPASSED (default) or PASSED
         rules(['cpu_check', 'memory_check'])
+        messages {
+            success 'System health checks passed'
+            fail 'System health thresholds exceeded'
+        }
     }
 }
 ```
@@ -147,11 +173,14 @@ Ratings determine the final outcome of the load test by summing up all achieved 
 
 The engine processes your ratings in the exact order they are defined. The **first rating** whose `value` is greater than or equal to the achieved percentage is selected as the final rating. This means `value` acts as the **upper limit**.
 
+> [!IMPORTANT]
+> Because ratings are evaluated in definition order against their upper-limit thresholds, **ratings must be defined in ascending order of their `value`** (lowest percentage to highest percentage). If defined in descending order, the highest threshold (e.g., 100%) will match all scores and shadow all subsequent ratings.
+
 ```groovy
 builder.ratings {
-    rating { id 'Poor'; value 50.0; failsTest true } // <= 50.0%
-    rating { id 'Ok'; value 95.0 }                   // <= 95.0%
-    rating { id 'A'; value 100.0 }                   // <= 100.0%
+    rating { id 'Poor'; value 50.0; failsTest true } // 0.0% to 50.0%
+    rating { id 'Ok'; value 95.0 }                   // 50.1% to 95.0%
+    rating { id 'A'; value 100.0 }                   // 95.1% to 100.0%
 }
 ```
 
@@ -225,14 +254,15 @@ If you want to bypass the point-based evaluation entirely, you can force a check
 **Manual Check Status:**
 ```groovy
 check {
-    status 'PASSED'     // SKIPPED, PASSED, FAILED, ERROR
+    status 'FAILED'     // PASSED, FAILED, ERROR, SKIPPED
     value 'Manually Set'
+    message 'Custom failure reason shown in report'
 }
 ```
 
 **Manual Rating Selection:**
 
-You can manually force a rating. This is especially useful for conditionally overriding the scorecard outcome when infrastructure limits are exceeded (for example, if the load generator agents were overloaded, rendering the performance measurements unreliable):
+You can manually force a rating using `forced true`. When a rating is marked as forced, it will be selected regardless of the achieved points percentage (if multiple ratings are forced, the first one in definition order wins). This is especially useful for conditionally overriding the scorecard outcome when infrastructure limits are exceeded (for example, if the load generator agents were overloaded, rendering the performance measurements unreliable):
 
 ```groovy
 // Retrieve CPU utilization from agent statistics using XPath
@@ -243,8 +273,12 @@ def maxCpu = maxCpuStr ? Double.parseDouble(maxCpuStr) : 0.0
 def isOverloaded = maxCpu > 90.0
 
 builder.ratings {
+    if (isOverloaded) {
+        rating { id 'F'; forced true; failsTest true }
+    }
+    rating { id 'Poor'; value 50.0; failsTest true }
+    rating { id 'Ok'; value 95.0 }
     rating { id 'A'; value 100.0 }
-    rating { id 'F'; value 0.0; forced isOverloaded; failsTest true }
 }
 ```
 
@@ -254,16 +288,22 @@ If your script is doing complex logic and you need to see what's happening, use 
 ```groovy
 log.info("Generating rules for ${allRequests.size()} requests...")
 if (allRequests.isEmpty()) {
-    log.error("No requests found in the report!")
+    log.warn("No requests found matching criteria")
 }
 ```
-These logs will be printed to the console during report generation, and are also attached to the scorecard in your final HTML report (typically visible under the log output or error details).
+Supported methods include `log.info(String)`, `log.warn(String)`, `log.error(String)`, `log.error(Throwable)`, and `log.error(String, Throwable)`. These logs are recorded in the scorecard results (`scorecard.xml` under `<result><logs>`) and displayed in the generated HTML report.
 
 ---
 
-## 5. Security
+## 5. Security Sandbox
 
-Groovy scripts run in a secured sandbox. Many standard Java classes (like `System`, `Runtime`, `File`, `Thread`) are blocked to prevent malicious scripts from affecting the system. Only whitelisted classes (like `java.util.*`, `java.text.*`) and project-specific DSL classes are allowed.
+Groovy scripts run inside a secured compilation sandbox (`GroovySecurityUtils`). Standard Java classes for file I/O, process execution, and network access are blocked to prevent malicious operations.
+
+* **Allowed imports:** Star imports from `java.util.*`, `java.math.*`, and `java.text.*`.
+* **Blocked constructors:** `java.io.*`, `java.nio.*`, `java.net.*`, `groovy.lang.*`, `org.codehaus.groovy.*`, `Runtime`, `ProcessBuilder`, `Thread`, and `ClassLoader`.
+* **Blocked receiver classes:** Method calls on `System`, `Runtime`, `ProcessBuilder`, `Thread`, `ClassLoader`, `Class`, `File`, `FileReader`, `FileWriter`, `FileInputStream`, `FileOutputStream`, `RandomAccessFile`, `URL`, `URI`, `Socket`, `ServerSocket`, `HttpURLConnection`.
+* **Blocked runtime escapes:** Invoking dynamic `.execute()` (process execution) on strings, `.getClass()`, and `.class` property access (reflection).
+* **Allowed capabilities:** Full Groovy closures, collection manipulation, loops, arithmetic, string interpolation, and the injected binding APIs (`builder`, `xpathBuilder`, `properties`, `data`, `log`).
 
 ---
 
@@ -284,12 +324,15 @@ builder.rules {
         rule {
             id "crit_${reqName}"
             name "Critical: ${reqName}"
+            description "P95 response time validation for ${reqName}"
             points 20
             failsTest true
+            failsOn 'NOTPASSED'
             checks {
                 check {
                     selector xpathBuilder.requestP95(reqName)
                     isLessThan defaultLimit
+                    formatter '%,.2f ms'
                 }
             }
         }
@@ -301,16 +344,23 @@ builder.groups {
     group {
         id 'critical_kpis'
         name 'Critical KPIs'
+        description 'Performance budget checks for all critical endpoints'
         rules(criticalRequests.collect { "crit_${it}" })
         mode 'allPassed'
+        failsTest true
+        failsOn 'NOTPASSED'
+        messages {
+            success 'All critical endpoints met their response time SLA'
+            fail 'One or more critical endpoints violated SLA'
+        }
     }
 }
 
-// 4. Set Ratings
+// 4. Set Ratings (defined in ascending threshold order)
 builder.ratings {
-    rating { id 'A'; value 100.0 }
-    rating { id 'B'; value 90.0 }
-    rating { id 'F'; value 50.0; failsTest true }
+    rating { id 'F'; name 'Failed'; value 50.0; failsTest true }
+    rating { id 'B'; name 'Acceptable'; value 90.0 }
+    rating { id 'A'; name 'Excellent'; value 100.0 }
 }
 ```
 
@@ -318,25 +368,31 @@ builder.ratings {
 
 ## 7. DSL Reference
 
+### `builder`
+* `version(int)`: Sets configuration schema version (default `1`).
+
 ### `selectors`
 * `selector { ... }`
-  * `id (String)`: Unique identifier.
+  * `id (String)`: Unique identifier used in `selectorId` references.
   * `expression (String)`: The XPath expression (e.g., `xpathBuilder.requestP95('...')`).
+  * `comment (String)`: Optional documentation comment.
 
 ### `rules`
 * `rule { ... }`
   * `id (String)`: Unique identifier.
   * `name (String)`: Display name.
+  * `description (String)`: Optional explanation of what the rule validates.
   * `enabled (boolean)`: Default is `true`.
-  * `points (int)`: Achievable points.
-  * `failsTest (boolean)`: Whether failing this rule fails the whole test.
-  * `failsOn (String)`: `FAILED` or `ERROR`.
-  * `negateResult (boolean)`: Flip the outcome.
+  * `points (int)`: Achievable points when the rule passes (default `0`).
+  * `failsTest (boolean)`: Whether this rule can cause the overall test to fail (default `false`).
+  * `failsOn (String)`: Trigger condition: `'NOTPASSED'` (default, fails test if rule does not pass) or `'PASSED'` (fails test if rule passes).
+  * `negateResult (boolean)`: Inverts the outcome (passed becomes failed, failed becomes passed). Default `false`.
   * `checks { ... }`
     * `check { ... }`
-      * `selector (String)`: Inline XPath.
-      * `selectorId (String)`: Reference to a predefined selector.
-      * Fluent Assertions (required):
+      * `selector (String)`: Inline XPath expression.
+      * `selectorId (String)`: Reference to a predefined selector ID.
+      * `condition (String)`: Direct XPath condition expression (e.g., `'<= 500'`, `'= 0'`).
+      * Fluent Assertions:
         * `isLessThan(value)`
         * `isLessThanOrEqualTo(value)`
         * `isGreaterThan(value)`
@@ -344,9 +400,13 @@ builder.ratings {
         * `isEqualTo(value)`
         * `isNotEqualTo(value)`
         * `matchesRegex(String)`
-      * `displayValue (boolean)`: Whether to show the value in the report.
-      * `enabled (boolean)`: Default true.
-      * `formatter (String)`: Optional Java string formatter syntax (e.g., `%,.2f`).
+      * `displayValue (boolean)`: Whether to show the value in the report (default `true`).
+      * `enabled (boolean)`: Default `true`.
+      * `formatter (String)`: Optional `java.util.Formatter` pattern (e.g., `'%,.2f ms'`), evaluated with `Locale.US`.
+      * Manual results:
+        * `status (String)`: Bypass evaluation and set `'PASSED'`, `'FAILED'`, `'ERROR'`, or `'SKIPPED'`.
+        * `value (String)`: Display value when using manual status.
+        * `message (String)`: Error message when using manual `'FAILED'` or `'ERROR'`.
   * `messages { ... }`
     * `success (String)`: Message to display when the rule passes.
     * `fail (String)`: Message to display when the rule fails.
@@ -355,15 +415,85 @@ builder.ratings {
 * `group { ... }`
   * `id (String)`: Unique identifier.
   * `name (String)`: Display name.
-  * `rules (List<String>)`: List of rule IDs to include.
-  * `mode (String)`: `allPassed`, `firstPassed`, or `lastPassed`.
-  * `failsTest (boolean)`: If group fails, test fails.
-  * `enabled (boolean)`: Default true.
+  * `description (String)`: Optional description.
+  * `rules (List<String>)`: List of rule IDs to include (evaluated in order).
+  * `mode (String)`:
+    * `'allPassed'` (default): Group points = sum of passed rules; total achievable points = sum of all rules.
+    * `'firstPassed'`: Group points = points of the first passing rule; total achievable points = max points of any rule in the group.
+    * `'lastPassed'`: Group points = points of the last passing rule; total achievable points = max points of any rule in the group.
+  * `failsTest (boolean)`: If group triggers failure, overall test fails (default `false`).
+  * `failsOn (String)`: `'NOTPASSED'` (default) or `'PASSED'`.
+  * `enabled (boolean)`: Default `true`.
+  * `messages { ... }`
+    * `success (String)`: Message when group passes.
+    * `fail (String)`: Message when group fails.
 
 ### `ratings`
 * `rating { ... }`
-  * `id (String)`: Rating name (e.g., 'A', 'Poor').
-  * `value (double)`: Maximum percentage for this rating.
-  * `failsTest (boolean)`: If this rating is achieved, test fails.
-  * `enabled (boolean)`: Default true.
-  * `forced (boolean)`: Manually select this rating, bypassing point-based calculation. Default false.
+  * `id (String)`: Rating identifier (e.g., `'A'`, `'F'`).
+  * `name (String)`: Optional human-readable name (e.g., `'Excellent'`).
+  * `description (String)`: Optional description.
+  * `value (double)`: Maximum score percentage for this rating (0.0 to 100.0). Evaluated in ascending order.
+  * `failsTest (boolean)`: If this rating is assigned, mark the overall test as failed (default `false`).
+  * `enabled (boolean)`: Default `true`.
+  * `forced (boolean)`: Manually forces this rating, bypassing point-based calculation (default `false`).
+
+---
+
+## 8. xpathBuilder Reference Cheat Sheet
+
+Every metric helper in `xpathBuilder` supports two call forms:
+1. **Positional regex:** `xpathBuilder.requestP95('^Homepage')` (matches by regex on the element `name`).
+2. **Named parameters:** `xpathBuilder.requestP95(name: '^Homepage', excludeName: '^Order', label: 'critical', excludeLabel: 'cached')`.
+   * `name`: Matches regex against the element's `name`.
+   * `excludeName`: Rejects elements whose `name` matches the regex.
+   * `label`: Exact match on the element's `labels`.
+   * `excludeLabel`: Rejects elements whose `labels` equals the string.
+
+### Requests, Transactions & Actions
+
+| Metric | Requests | Transactions | Actions | Description |
+|:---|:---|:---|:---|:---|
+| **P50 (Median)** | `requestP50(...)` | `transactionP50(...)` | `actionP50(...)` | 50th percentile response time |
+| **P95** | `requestP95(...)` | `transactionP95(...)` | `actionP95(...)` | 95th percentile response time |
+| **P99** | `requestP99(...)` | `transactionP99(...)` | `actionP99(...)` | 99th percentile response time |
+| **P99.9** | `requestP99_9(...)` | `transactionP99_9(...)` | `actionP99_9(...)` | 99.9th percentile response time |
+| **Mean** | `requestMean(...)` | `transactionMean(...)` | `actionMean(...)` | Mean response time |
+| **Median** | `requestMedian(...)` | `transactionMedian(...)` | `actionMedian(...)` | Median response time |
+| **Min** | `requestMin(...)` | `transactionMin(...)` | `actionMin(...)` | Minimum response time |
+| **Max** | `requestMax(...)` | `transactionMax(...)` | `actionMax(...)` | Maximum response time |
+| **Errors** | `requestErrors(...)` | `transactionErrors(...)` | `actionErrors(...)` | Error count |
+| **Error %** | `requestErrorPercentage(...)` | `transactionErrorPercentage(...)` | `actionErrorPercentage(...)` | Error rate percentage |
+| **Count** | `requestCount(...)` | `transactionCount(...)` | `actionCount(...)` | Total execution count |
+| **Arbitrary Metric** | `requestValue(..., path)` | `transactionValue(..., path)` | `actionValue(..., path)` | Relative XPath path (e.g. `'bytesSent/mean'`) |
+
+### Custom Timers
+
+| Method | Parameters | Description |
+|:---|:---|:---|
+| `customTimerP50(...)` | regex or map | 50th percentile runtime |
+| `customTimerP95(...)` | regex or map | 95th percentile runtime |
+| `customTimerP99(...)` | regex or map | 99th percentile runtime |
+| `customTimerMean(...)` | regex or map | Mean runtime |
+| `customTimerMax(...)` | regex or map | Maximum runtime |
+| `customTimerValue(..., path)` | regex or map, path | Custom sub-metric |
+
+### Global Summaries, HTTP Errors & Rate Calculations
+
+| Method | Parameters | Description |
+|:---|:---|:---|
+| `globalCountPerHour(type)` | `'transactions'`, `'requests'`, `'actions'` | Pre-computed hourly rate from report summary |
+| `globalErrorPercentage(type)` | `'transactions'`, `'requests'`, `'actions'` | Global summary error percentage |
+| `httpErrorCount(regex)` | Regex string (e.g., `'5..'`, `'404\|400'`) | Sum of counts for matching HTTP status codes |
+| `perHour(metricExpression)` | XPath expression string | Divides metric by test duration in hours (`/testreport/general/duration div 3600`) |
+
+### Agent & Resource Utilization
+
+| Method | Parameters | Description |
+|:---|:---|:---|
+| `agentCpuMax()` | *(none)* | Maximum CPU usage percentage across all agents |
+| `agentCountCpuMeanAbove(threshold)` | `Number` threshold | Count of agents whose mean CPU usage exceeded the threshold |
+| `agentCount()` | *(none)* | Total number of agents utilized in the test |
+| `agentCountWithErrors()` | *(none)* | Count of agents that encountered transaction errors |
+| `agentTransactionErrorsTotal()` | *(none)* | Pre-computed total transaction errors across all agents |
+
