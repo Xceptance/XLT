@@ -80,7 +80,7 @@ public class ChunkIngestionCollector
     private final ChunkTypeRegistry registry;
 
     /** Optional background spooler streaming chunks directly to disk to prevent heap accumulation. */
-    private final ChunkSpooler spooler;
+    private ChunkSpooler spooler;
 
     /**
      * Master registry tracking all thread-local builder arrays created across worker threads.
@@ -190,10 +190,9 @@ public class ChunkIngestionCollector
         }
         this.spooler = s;
 
-        final int cpus = Runtime.getRuntime().availableProcessors();
-        // FastPFOR compression takes ~4 ms/chunk; 2-4 worker threads easily sustain 200+ chunks/s
+        // FastPFOR compression takes ~4 ms/chunk; up to 4 worker threads easily sustain 200+ chunks/s
         // without causing CPU thrashing against reader and parser threads on loaded systems.
-        final int workerCount = Math.max(2, Math.min(4, cpus / 4));
+        final int workerCount = Math.min(4, Runtime.getRuntime().availableProcessors());
         this.compressionExecutor = Executors.newFixedThreadPool(workerCount, new ThreadFactory()
         {
             private final AtomicInteger count = new AtomicInteger(1);
@@ -207,7 +206,7 @@ public class ChunkIngestionCollector
             }
         });
         // Bounded queue permits to cap in-flight memory accumulation (~150 MB max)
-        this.compressionPermits = new Semaphore(Math.max(16, cpus * 2));
+        this.compressionPermits = new Semaphore(64);
     }
 
     /**
@@ -267,36 +266,26 @@ public class ChunkIngestionCollector
         final Object[] internalArr = list.getInternalArray();
         final char typeCode = container.typeCode;
 
-        if (typeCode > 0 && typeCode < builders.length)
+        if (typeCode > 0)
         {
             // Homogeneous chunk fast-path: resolve builder once per chunk
             ChunkBuilder builder = builders[typeCode];
-            if (builder == null)
-            {
-                builder = acquireBuilder(typeCode);
-                if (builder == null)
-                {
-                    return;
-                }
-                builders[typeCode] = builder;
-            }
-
             for (int i = 0; i < size; i++)
             {
                 final Data record = (Data) internalArr[i];
                 if (record != null)
                 {
+                    if (builder == null)
+                    {
+                        builder = acquireBuilder(typeCode);
+                        builders[typeCode] = builder;
+                    }
                     builder.append(record);
                     if (builder.isFull())
                     {
-                        final ChunkBuilder fullBuilder = builder;
-                        builder = acquireBuilder(typeCode);
-                        builders[typeCode] = builder;
-                        sealAndSpool(fullBuilder, typeCode);
-                        if (builder == null)
-                        {
-                            break;
-                        }
+                        sealAndSpool(builder, typeCode);
+                        builder = null;
+                        builders[typeCode] = null;
                     }
                 }
             }
@@ -323,7 +312,7 @@ public class ChunkIngestionCollector
      */
     public void collect(final List<Data> records)
     {
-        if (records == null || records.isEmpty())
+        if (records == null)
         {
             return;
         }
@@ -332,27 +321,12 @@ public class ChunkIngestionCollector
         final ChunkBuilder[] builders = threadLocalBuilders.get();
         final int size = records.size();
 
-        if (records instanceof SimpleArrayList)
+        for (int i = 0; i < size; i++)
         {
-            final Object[] array = ((SimpleArrayList<Data>) records).getInternalArray();
-            for (int i = 0; i < size; i++)
+            final Data record = records.get(i);
+            if (record != null)
             {
-                final Data record = (Data) array[i];
-                if (record != null)
-                {
-                    collectRecord(record, builders);
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i < size; i++)
-            {
-                final Data record = records.get(i);
-                if (record != null)
-                {
-                    collectRecord(record, builders);
-                }
+                collectRecord(record, builders);
             }
         }
     }
@@ -388,36 +362,21 @@ public class ChunkIngestionCollector
         final char typeCode = record.getTypeCode();
 
         // 1. Locate or lazily initialize the builder for this type code on the calling thread
-        ChunkBuilder builder = (typeCode < builders.length) ? builders[typeCode] : null;
+        ChunkBuilder builder = builders[typeCode];
         if (builder == null)
         {
             builder = acquireBuilder(typeCode);
-            if (builder == null)
-            {
-                return;
-            }
-            if (typeCode < builders.length)
-            {
-                builders[typeCode] = builder;
-            }
+            builders[typeCode] = builder;
         }
 
         // 2. Append record to builder
         builder.append(record);
 
-        // 3. If builder reached maximum chunk capacity, seal and rotate to a new builder
+        // 3. If builder reached maximum chunk capacity, seal and clear slot so next record acquires a fresh/recycled builder
         if (builder.isFull())
         {
-            final ChunkBuilder fullBuilder = builder;
-
-            // Rotate to a fresh or recycled chunk builder immediately on the parser thread
-            final ChunkBuilder newBuilder = acquireBuilder(typeCode);
-            if (typeCode < builders.length)
-            {
-                builders[typeCode] = newBuilder;
-            }
-
-            sealAndSpool(fullBuilder, typeCode);
+            sealAndSpool(builder, typeCode);
+            builders[typeCode] = null;
         }
     }
 
@@ -427,21 +386,18 @@ public class ChunkIngestionCollector
      */
     private ChunkBuilder acquireBuilder(final char typeCode)
     {
-        if (typeCode < recycledBuilders.length)
+        final ConcurrentLinkedQueue<ChunkBuilder> pool = recycledBuilders[typeCode];
+        if (pool != null)
         {
-            final ConcurrentLinkedQueue<ChunkBuilder> pool = recycledBuilders[typeCode];
-            if (pool != null)
+            final ChunkBuilder builder = pool.poll();
+            if (builder != null)
             {
-                final ChunkBuilder builder = pool.poll();
-                if (builder != null)
-                {
-                    builder.reset();
-                    return builder;
-                }
+                builder.reset();
+                return builder;
             }
         }
         final ChunkTypeHandler handler = registry.getHandler(typeCode);
-        return handler != null ? handler.newChunkBuilder(dictionaries) : null;
+        return handler.newChunkBuilder(dictionaries);
     }
 
     /**
@@ -449,25 +405,19 @@ public class ChunkIngestionCollector
      */
     private void recycleBuilder(final ChunkBuilder builder, final char typeCode)
     {
-        if (typeCode < recycledBuilders.length)
+        ConcurrentLinkedQueue<ChunkBuilder> pool;
+        synchronized (recycledBuilders)
         {
-            ConcurrentLinkedQueue<ChunkBuilder> pool = recycledBuilders[typeCode];
+            pool = recycledBuilders[typeCode];
             if (pool == null)
             {
-                synchronized (recycledBuilders)
-                {
-                    pool = recycledBuilders[typeCode];
-                    if (pool == null)
-                    {
-                        pool = new ConcurrentLinkedQueue<>();
-                        recycledBuilders[typeCode] = pool;
-                    }
-                }
+                pool = new ConcurrentLinkedQueue<>();
+                recycledBuilders[typeCode] = pool;
             }
-            if (pool.size() < 32)
-            {
-                pool.offer(builder);
-            }
+        }
+        if (pool.size() < 32)
+        {
+            pool.offer(builder);
         }
     }
 
@@ -513,7 +463,8 @@ public class ChunkIngestionCollector
 
     /**
      * Flushes and seals all remaining partially filled chunk builders across all worker threads,
-     * registers them in the catalog, and produces a fully populated, queryable {@link ChunkStorage} instance.
+     * registers them in the catalog, compacts ingestion-only dictionary structures, and produces
+     * a fully populated, queryable {@link ChunkStorage} instance.
      * <p>
      * Waits for all background compression tasks to complete before draining partial builders.
      * If direct-to-disk spooling was active, the storage file is finalized and indexed, and an open
@@ -564,14 +515,15 @@ public class ChunkIngestionCollector
             .toList();
 
         // 4. Register sealed chunks into catalog (spooling to disk if spooler is active)
+        final ChunkSpooler activeSpooler = this.spooler;
         for (final Chunk chunk : sealedChunks)
         {
-            if (spooler != null)
+            if (activeSpooler != null)
             {
                 try
                 {
                     final ChunkTypeHandler h = registry.getHandler(chunk.getTypeCode());
-                    final DiskChunk diskChunk = spooler.spoolChunk(chunk, h);
+                    final DiskChunk diskChunk = activeSpooler.spoolChunk(chunk, h);
                     catalog.addChunk(diskChunk);
                     continue;
                 }
@@ -583,20 +535,20 @@ public class ChunkIngestionCollector
             catalog.addChunk(chunk);
         }
 
-        // 5. Release all recycled builder pools so array memory is reclaimed immediately (before Phase 2 scan)
+        // 5. Release all recycled builder pools and compact dictionary reverse maps before Phase 2 scan
         java.util.Arrays.fill(recycledBuilders, null);
+        dictionaries.compactForReadOnly();
 
         // 6. Finalize spooled storage files and attach open file channel for lazy loading
-        if (spooler != null)
+        this.spooler = null;
+        if (activeSpooler != null)
         {
             try
             {
-                spooler.finish(catalog, dictionaries);
-                final File targetFile = spooler.getTargetFile();
+                activeSpooler.finish(catalog, dictionaries);
+                final File targetFile = activeSpooler.getTargetFile();
                 final FileChannel channel = FileChannel.open(targetFile.toPath(), StandardOpenOption.READ);
-                final ChunkStorage storage = new ChunkStorage(dictionaries, catalog, registry, targetFile, channel, true);
-                catalog.attachStorage(storage);
-                return storage;
+                return new ChunkStorage(dictionaries, catalog, registry, targetFile, channel, true);
             }
             catch (final IOException e)
             {

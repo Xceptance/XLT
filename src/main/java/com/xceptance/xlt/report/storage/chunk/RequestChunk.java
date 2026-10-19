@@ -809,69 +809,132 @@ public class RequestChunk implements Chunk
                 return local;
             }
 
-            // If this chunk was loaded via loadVectorsOnly() or had no forensic rows, return empty map
-            if (forensicRows == null || forensicRows.isEmpty()
-                || compressedForensicTail == null || compressedForensicTail.length == 0
-                || uncompressedForensicLength <= 0)
-            {
-                local = Collections.emptyMap();
-                this.inflatedForensicDetails = local;
-                return local;
-            }
+            local = inflateForensicDetails(forensicRows, uncompressedForensicLength, compressedForensicTail);
+            this.inflatedForensicDetails = local;
+            return local;
+        }
+    }
 
-            // 1. Inflate the Deflate-compressed byte stream into an exact-sized uncompressed buffer
-            final byte[] raw = new byte[uncompressedForensicLength];
-            final Inflater inflater = new Inflater();
+    /**
+     * Inflates and parses a Cold Forensic Tail Block given its row bitmap, uncompressed byte length, and
+     * Deflate-compressed payload bytes.
+     *
+     * @param forensicRows
+     *            bitmap of row indices stored in the tail block
+     * @param uncompressedForensicLength
+     *            uncompressed byte length of the serialized forensic strings
+     * @param compressedForensicTail
+     *            Deflate-compressed forensic bytes
+     * @return unmodifiable map of row index to {@link ForensicDetails}
+     */
+    public static Map<Integer, ForensicDetails> inflateForensicDetails(final RoaringBitmap forensicRows,
+                                                                       final int uncompressedForensicLength,
+                                                                       final byte[] compressedForensicTail)
+    {
+        if (forensicRows == null || forensicRows.isEmpty()
+            || compressedForensicTail == null || compressedForensicTail.length == 0
+            || uncompressedForensicLength <= 0)
+        {
+            return Collections.emptyMap();
+        }
+
+        // 1. Inflate the Deflate-compressed byte stream into an exact-sized uncompressed buffer
+        final byte[] raw = new byte[uncompressedForensicLength];
+        final Inflater inflater = new Inflater();
+        try
+        {
+            inflater.setInput(compressedForensicTail);
+            int offset = 0;
+            while (!inflater.finished() && offset < raw.length)
+            {
+                final int count = inflater.inflate(raw, offset, raw.length - offset);
+                if (count == 0 && inflater.needsInput())
+                {
+                    break;
+                }
+                offset += count;
+            }
+        }
+        catch (final DataFormatException e)
+        {
+            throw new RuntimeException("Failed to inflate RequestChunk Cold Forensic Tail Block", e);
+        }
+        finally
+        {
+            inflater.end();
+        }
+
+        // 2. Reconstruct the (rowIdx -> ForensicDetails) map by iterating forensicRows in ascending order.
+        //    RoaringBitmap iteration order is strictly ascending and deterministic, matching the exact order
+        //    in which RequestChunkBuilder.seal() wrote the 5-string tuples into the Deflate stream. This
+        //    eliminates the need to store redundant row index integers inside the compressed byte stream.
+        final int cardinality = forensicRows.getCardinality();
+        final Map<Integer, ForensicDetails> map = new HashMap<>(cardinality * 4 / 3 + 1);
+        try (final DataInputStream in = new DataInputStream(new ByteArrayInputStream(raw)))
+        {
+            for (final int rowIdx : forensicRows)
+            {
+                final String url = StorageIoUtils.readUtfString(in);
+                final String reqId = StorageIoUtils.readUtfString(in);
+                final String respId = StorageIoUtils.readUtfString(in);
+                final String form = StorageIoUtils.readUtfString(in);
+                final String rawName = StorageIoUtils.readUtfString(in);
+                map.put(rowIdx, new ForensicDetails(url, reqId, respId, form, rawName));
+            }
+        }
+        catch (final IOException e)
+        {
+            throw new RuntimeException("Failed to deserialize RequestChunk Cold Forensic Tail Block", e);
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * Lazily loads and inflates the Cold Forensic Tail Block from either an in-memory {@link RequestChunk}
+     * or an on-disk {@link DiskChunk} (reading only the tail slice at {@code fileOffset + vectorPayloadLength}
+     * without re-reading the hot integer vector columns).
+     *
+     * @param chunk
+     *            the source chunk ({@link RequestChunk} or {@link DiskChunk})
+     * @return map of chunk row index to {@link ForensicDetails}
+     */
+    public static Map<Integer, ForensicDetails> loadForensicDetails(final Object chunk)
+    {
+        if (chunk instanceof RequestChunk rc)
+        {
+            return rc.getAllForensicDetails();
+        }
+        if (chunk instanceof DiskChunk dc)
+        {
             try
             {
-                inflater.setInput(compressedForensicTail);
-                int offset = 0;
-                while (!inflater.finished() && offset < raw.length)
+                final byte[] tailBytes = dc.readForensicTail();
+                if (tailBytes == null || tailBytes.length == 0)
                 {
-                    final int count = inflater.inflate(raw, offset, raw.length - offset);
-                    if (count == 0 && inflater.needsInput())
-                    {
-                        break;
-                    }
-                    offset += count;
+                    return Collections.emptyMap();
                 }
-            }
-            catch (final DataFormatException e)
-            {
-                throw new RuntimeException("Failed to inflate RequestChunk Cold Forensic Tail Block", e);
-            }
-            finally
-            {
-                inflater.end();
-            }
-
-            // 2. Reconstruct the (rowIdx -> ForensicDetails) map by iterating forensicRows in ascending order.
-            //    RoaringBitmap iteration order is strictly ascending and deterministic, matching the exact order
-            //    in which RequestChunkBuilder.seal() wrote the 5-string tuples into the Deflate stream. This
-            //    eliminates the need to store redundant row index integers inside the compressed byte stream.
-            final int cardinality = forensicRows.getCardinality();
-            final Map<Integer, ForensicDetails> map = new HashMap<>(cardinality * 4 / 3 + 1);
-            try (final DataInputStream in = new DataInputStream(new ByteArrayInputStream(raw)))
-            {
-                for (final int rowIdx : forensicRows)
+                try (final DataInputStream in = new DataInputStream(new ByteArrayInputStream(tailBytes)))
                 {
-                    final String url = StorageIoUtils.readUtfString(in);
-                    final String reqId = StorageIoUtils.readUtfString(in);
-                    final String respId = StorageIoUtils.readUtfString(in);
-                    final String form = StorageIoUtils.readUtfString(in);
-                    final String rawName = StorageIoUtils.readUtfString(in);
-                    map.put(rowIdx, new ForensicDetails(url, reqId, respId, form, rawName));
+                    final RoaringBitmap forensicRows = new RoaringBitmap();
+                    forensicRows.deserialize(in);
+                    final int uncompressedLen = in.readInt();
+                    final int compressedLen = in.readInt();
+                    if (compressedLen <= 0)
+                    {
+                        return Collections.emptyMap();
+                    }
+                    final byte[] compressedTail = new byte[compressedLen];
+                    in.readFully(compressedTail);
+                    return inflateForensicDetails(forensicRows, uncompressedLen, compressedTail);
                 }
             }
             catch (final IOException e)
             {
-                throw new RuntimeException("Failed to deserialize RequestChunk Cold Forensic Tail Block", e);
+                return Collections.emptyMap();
             }
-
-            local = Collections.unmodifiableMap(map);
-            this.inflatedForensicDetails = local;
-            return local;
         }
+        return Collections.emptyMap();
     }
 
     /**

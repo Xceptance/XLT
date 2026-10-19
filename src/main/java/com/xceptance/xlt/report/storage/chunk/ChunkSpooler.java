@@ -238,6 +238,12 @@ public class ChunkSpooler
         {
             count = 0;
         }
+
+        public void release()
+        {
+            buf = new byte[0];
+            count = 0;
+        }
     }
 
     /**
@@ -285,6 +291,7 @@ public class ChunkSpooler
                 diskChunks.add(dc);
             }
         }
+        spoolBuffer.release();
 
         // 2. Write V3 metadata index table starting at currentOffset (tail of chunks.bin):
         //    Each entry stores file coordinates, typeCode, rowCount, time bounds, Zone Map bounds
@@ -369,7 +376,8 @@ public class ChunkSpooler
                        StandardCopyOption.REPLACE_EXISTING);
         }
 
-        // 5. Save dictionaries
+        // 5. Compact dictionaries for read-only Phase 2 querying and persist dictionaries.bin
+        dicts.compactForReadOnly();
         final File dictFile = new File(cacheDir, ChunkStorage.DICTIONARIES_FILE_NAME);
         try (final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dictFile))))
         {

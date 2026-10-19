@@ -96,8 +96,7 @@ public class GlobalDictionaries
         private static String retrieveHost(final String url)
         {
             final String hostName = com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(url);
-            final String host = (hostName == null || hostName.length() == 0) ? com.xceptance.xlt.api.engine.RequestData.UNKNOWN_HOST : hostName;
-            return host;
+            return hostName.isEmpty() ? com.xceptance.xlt.api.engine.RequestData.UNKNOWN_HOST : hostName;
         }
     }
 
@@ -114,8 +113,15 @@ public class GlobalDictionaries
     // Timer Names Storage
     // -------------------------------------------------------------------------
 
-    /** Concurrent lookup map from timer name string to interned integer ID. */
-    private final ConcurrentHashMap<String, Integer> timerNameToId = new ConcurrentHashMap<>();
+    /** Lock guarding timer name ID allocation and reverse map reconstruction. */
+    private final Object timerLock = new Object();
+
+    /**
+     * Concurrent lookup map from timer name string to interned integer ID.
+     * Released ({@code null}) upon {@link #compactForReadOnly()} and lazily reconstructed on demand if
+     * {@link #getOrCreateTimerNameId(CharSequence)} is called after compaction.
+     */
+    private volatile ConcurrentHashMap<String, Integer> timerNameToId;
 
     /** Volatile append-only array indexed by interned ID for lock-free \(O(1)\) reads. */
     private volatile String[] timerNames = new String[INITIAL_CAPACITY];
@@ -127,8 +133,15 @@ public class GlobalDictionaries
     // Agent + TestCase Unified Storage
     // -------------------------------------------------------------------------
 
-    /** Concurrent lookup map from (agent, testCase) pair to interned integer ID. */
-    private final ConcurrentHashMap<AgentTestCase, Integer> pairToId = new ConcurrentHashMap<>();
+    /** Lock guarding (agent, testCase) pair ID allocation and reverse map reconstruction. */
+    private final Object pairLock = new Object();
+
+    /**
+     * Concurrent lookup map from (agent, testCase) pair to interned integer ID.
+     * Released ({@code null}) upon {@link #compactForReadOnly()} and lazily reconstructed on demand if
+     * {@link #getOrCreateAgentTestCaseId(CharSequence, CharSequence)} is called after compaction.
+     */
+    private volatile ConcurrentHashMap<AgentTestCase, Integer> pairToId;
 
     /** Volatile append-only array indexed by interned ID for lock-free \(O(1)\) reads. */
     private volatile AgentTestCase[] agentTestCases = new AgentTestCase[INITIAL_CAPACITY];
@@ -140,8 +153,15 @@ public class GlobalDictionaries
     // General Strings Storage
     // -------------------------------------------------------------------------
 
-    /** Concurrent lookup map from general string to interned integer ID. */
-    private final ConcurrentHashMap<String, Integer> stringToId = new ConcurrentHashMap<>();
+    /** Lock guarding general string ID allocation and reverse map reconstruction. */
+    private final Object stringLock = new Object();
+
+    /**
+     * Concurrent lookup map from general string to interned integer ID.
+     * Released ({@code null}) upon {@link #compactForReadOnly()} and lazily reconstructed on demand if
+     * {@link #getOrCreateStringId(CharSequence)} is called after compaction.
+     */
+    private volatile ConcurrentHashMap<String, Integer> stringToId;
 
     /** Volatile append-only array indexed by interned ID for lock-free \(O(1)\) reads. */
     private volatile String[] strings = new String[INITIAL_CAPACITY];
@@ -159,10 +179,24 @@ public class GlobalDictionaries
     /** Maximum number of sample URLs stored per timer name across the entire dataset. */
     private static final int MAX_SAMPLE_URLS_PER_TIMER = 10;
 
-    /** Concurrent lookup map from timer name ID to list of representative sample URL strings. */
-    private final ConcurrentHashMap<Integer, java.util.List<String>> sampleUrlsByTimer = new ConcurrentHashMap<>();
+    /** Lock guarding sample URL registration and precomputation. */
+    private final Object sampleUrlLock = new Object();
 
-    /** Volatile append-only array of precomputed sample URLs indexed by timer ID for lock-free reads. */
+    /**
+     * Number of sample URLs collected per timer ID (`0 .. MAX_SAMPLE_URLS_PER_TIMER`).
+     * Stored in a flat primitive `byte[]` indexed by `timerId` so {@link #hasSufficientSamples(int)}
+     * executes as a single L1-cache array load without `Integer` autoboxing or map lookups.
+     */
+    private volatile byte[] sampleUrlCounts = new byte[INITIAL_CAPACITY];
+
+    /**
+     * Ingestion-time staging buckets indexed by `timerId`. Each non-null bucket has fixed capacity
+     * {@link #MAX_SAMPLE_URLS_PER_TIMER}, avoiding `CopyOnWriteArrayList`/`CopyOnWriteArraySet` array
+     * cloning on every newly discovered sample URL. Released (`null`) upon {@link #compactForReadOnly()}.
+     */
+    private volatile String[][] rawSampleUrls;
+
+    /** Volatile array of precomputed sample URLs indexed by timer ID for lock-free reads. */
     private volatile CachedSampleUrl[][] cachedSampleUrls = new CachedSampleUrl[INITIAL_CAPACITY][];
 
     // -------------------------------------------------------------------------
@@ -181,7 +215,7 @@ public class GlobalDictionaries
         int lastId = -1;
     }
 
-    private final ThreadLocal<ThreadLocalTimerCache> localTimerCache =
+    private volatile ThreadLocal<ThreadLocalTimerCache> localTimerCache =
         ThreadLocal.withInitial(ThreadLocalTimerCache::new);
 
     /**
@@ -200,7 +234,7 @@ public class GlobalDictionaries
         int lastId = -1;
     }
 
-    private final ThreadLocal<ThreadLocalAgentTestCaseCache> localAgentTestCaseCache =
+    private volatile ThreadLocal<ThreadLocalAgentTestCaseCache> localAgentTestCaseCache =
         ThreadLocal.withInitial(ThreadLocalAgentTestCaseCache::new);
 
     /**
@@ -213,7 +247,7 @@ public class GlobalDictionaries
         int lastId = -1;
     }
 
-    private final ThreadLocal<ThreadLocalStringCache> localStringCache =
+    private volatile ThreadLocal<ThreadLocalStringCache> localStringCache =
         ThreadLocal.withInitial(ThreadLocalStringCache::new);
 
     /**
@@ -224,14 +258,10 @@ public class GlobalDictionaries
      *            the candidate char sequence (may be null)
      * @param s
      *            the known string (may be null)
-     * @return {@code true} if both sequences are non-null and contain identical characters, or both null
+     * @return {@code true} if both sequences are non-null and contain identical characters
      */
     public static boolean charSequenceEquals(final CharSequence cs, final String s)
     {
-        if (cs == s)
-        {
-            return true;
-        }
         if (cs == null || s == null)
         {
             return false;
@@ -265,12 +295,17 @@ public class GlobalDictionaries
 
     /**
      * Internal constructor with option to suppress pre-interning constants, used during deserialization
-     * to prevent constructor state pollution.
+     * to prevent constructor state pollution and avoid allocating reverse lookup maps on warm runs.
      */
     private GlobalDictionaries(final boolean preIntern)
     {
         if (preIntern)
         {
+            this.timerNameToId = new ConcurrentHashMap<>();
+            this.pairToId = new ConcurrentHashMap<>();
+            this.stringToId = new ConcurrentHashMap<>();
+            this.rawSampleUrls = new String[INITIAL_CAPACITY][];
+
             // Pre-intern standard HTTP methods and content types to guarantee immediate ID assignment
             getOrCreateStringId("GET");
             getOrCreateStringId("POST");
@@ -295,6 +330,31 @@ public class GlobalDictionaries
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the reverse lookup map for timer names, lazily rebuilding it from {@link #timerNames}
+     * if this dictionary was previously compacted or deserialized from disk.
+     */
+    private ConcurrentHashMap<String, Integer> getOrInitTimerNameMap()
+    {
+        ConcurrentHashMap<String, Integer> map = this.timerNameToId;
+        if (map != null)
+        {
+            return map;
+        }
+        synchronized (timerLock)
+        {
+            map = new ConcurrentHashMap<>();
+            final String[] names = this.timerNames;
+            final int count = this.timerNameCount;
+            for (int i = 0; i < count; i++)
+            {
+                map.put(names[i], i);
+            }
+            this.timerNameToId = map;
+            return map;
+        }
+    }
+
+    /**
      * Interns the specified timer name, returning its existing or newly assigned integer identifier.
      * <p>
      * Thread-safe: employs thread-local single-entry memoization first, falling back to optimistic
@@ -313,7 +373,7 @@ public class GlobalDictionaries
 
         // 1. Thread-local fast-path: check if matches last seen timer name on this thread
         final ThreadLocalTimerCache cache = localTimerCache.get();
-        if (name == cache.lastRef && cache.lastId != -1)
+        if (name == cache.lastRef)
         {
             return cache.lastId;
         }
@@ -324,9 +384,10 @@ public class GlobalDictionaries
         }
 
         final String s = name.toString();
+        final ConcurrentHashMap<String, Integer> map = getOrInitTimerNameMap();
 
         // 2. Optimistic lock-free read for steady-state hits
-        final Integer id = timerNameToId.get(s);
+        final Integer id = map.get(s);
         if (id != null)
         {
             cache.lastRef = name;
@@ -335,15 +396,15 @@ public class GlobalDictionaries
             return id;
         }
 
-        // 3. Synchronize on the lookup map only when allocating a newly discovered string
-        synchronized (timerNameToId)
+        // 3. Synchronize on timerLock only when allocating a newly discovered string
+        synchronized (timerLock)
         {
-            final int assignedId = timerNameToId.computeIfAbsent(s, key -> {
+            final int assignedId = map.computeIfAbsent(s, key -> {
                 final int nextId = timerNameCount++;
                 if (nextId >= timerNames.length)
                 {
                     // Geometric array doubling: eliminates O(N) array clone churn
-                    timerNames = Arrays.copyOf(timerNames, Math.max(timerNames.length * 2, nextId + 1));
+                    timerNames = Arrays.copyOf(timerNames, Math.max(INITIAL_CAPACITY, timerNames.length * 2));
                 }
                 timerNames[nextId] = key;
                 return nextId;
@@ -399,6 +460,31 @@ public class GlobalDictionaries
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the reverse lookup map for (agent, testCase) pairs, lazily rebuilding it from {@link #agentTestCases}
+     * if this dictionary was previously compacted or deserialized from disk.
+     */
+    private ConcurrentHashMap<AgentTestCase, Integer> getOrInitPairMap()
+    {
+        ConcurrentHashMap<AgentTestCase, Integer> map = this.pairToId;
+        if (map != null)
+        {
+            return map;
+        }
+        synchronized (pairLock)
+        {
+            map = new ConcurrentHashMap<>();
+            final AgentTestCase[] pairs = this.agentTestCases;
+            final int count = this.agentTestCaseCount;
+            for (int i = 0; i < count; i++)
+            {
+                map.put(pairs[i], i);
+            }
+            this.pairToId = map;
+            return map;
+        }
+    }
+
+    /**
      * Interns the specified agent and test case combination, returning a unified integer identifier.
      * <p>
      * Thread-safe: checks thread-local memoization cache first to eliminate object allocations,
@@ -415,13 +501,13 @@ public class GlobalDictionaries
     {
         // 1. Thread-local cache fast-path: eliminates 99.99%+ of allocations
         final ThreadLocalAgentTestCaseCache cache = localAgentTestCaseCache.get();
-        if (agent == cache.lastAgentRef && testCase == cache.lastTestCaseRef && cache.lastId != -1)
+        if (cache.lastId != -1 && agent == cache.lastAgentRef && testCase == cache.lastTestCaseRef)
         {
             return cache.lastId;
         }
 
         // Fast string/char-sequence match without allocating new Strings or AgentTestCase objects
-        if (cache.lastAgentStr != null && cache.lastTestCaseStr != null &&
+        if (cache.lastAgentStr != null &&
             charSequenceEquals(agent, cache.lastAgentStr) &&
             charSequenceEquals(testCase, cache.lastTestCaseStr))
         {
@@ -433,9 +519,10 @@ public class GlobalDictionaries
         final String a = agent != null ? agent.toString() : "";
         final String tc = testCase != null ? testCase.toString() : "";
         final AgentTestCase pair = new AgentTestCase(a, tc);
+        final ConcurrentHashMap<AgentTestCase, Integer> map = getOrInitPairMap();
 
         // 2. Optimistic lock-free read
-        final Integer id = pairToId.get(pair);
+        final Integer id = map.get(pair);
         if (id != null)
         {
             cache.lastAgentRef = agent;
@@ -447,13 +534,13 @@ public class GlobalDictionaries
         }
 
         // 3. Synchronize only for allocating the next sequential ID
-        synchronized (pairToId)
+        synchronized (pairLock)
         {
-            final int assignedId = pairToId.computeIfAbsent(pair, key -> {
+            final int assignedId = map.computeIfAbsent(pair, key -> {
                 final int nextId = agentTestCaseCount++;
                 if (nextId >= agentTestCases.length)
                 {
-                    agentTestCases = Arrays.copyOf(agentTestCases, Math.max(agentTestCases.length * 2, nextId + 1));
+                    agentTestCases = Arrays.copyOf(agentTestCases, Math.max(INITIAL_CAPACITY, agentTestCases.length * 2));
                 }
                 agentTestCases[nextId] = key;
                 return nextId;
@@ -564,10 +651,6 @@ public class GlobalDictionaries
         for (int i = 0; i < count; i++)
         {
             final AgentTestCase pair = array[i];
-            if (pair == null)
-            {
-                continue;
-            }
             final boolean agentOk = agentFilter == null || agentFilter.isAccepted(pair.agentName());
             final boolean testCaseOk = testCaseFilter == null || testCaseFilter.isAccepted(pair.testCaseName());
             if (agentOk && testCaseOk)
@@ -587,6 +670,31 @@ public class GlobalDictionaries
     // -------------------------------------------------------------------------
     // General Strings Operations
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the reverse lookup map for general strings, lazily rebuilding it from {@link #strings}
+     * if this dictionary was previously compacted or deserialized from disk.
+     */
+    private ConcurrentHashMap<String, Integer> getOrInitStringMap()
+    {
+        ConcurrentHashMap<String, Integer> map = this.stringToId;
+        if (map != null)
+        {
+            return map;
+        }
+        synchronized (stringLock)
+        {
+            map = new ConcurrentHashMap<>();
+            final String[] arr = this.strings;
+            final int count = this.stringCount;
+            for (int i = 0; i < count; i++)
+            {
+                map.put(arr[i], i);
+            }
+            this.stringToId = map;
+            return map;
+        }
+    }
 
     /**
      * Interns an arbitrary string (e.g. HTTP method, content type, IP address, error message),
@@ -609,7 +717,7 @@ public class GlobalDictionaries
 
         // 1. Thread-local cache fast-path: avoids String conversions and map lookups for repeated strings
         final ThreadLocalStringCache cache = localStringCache.get();
-        if (text == cache.lastRef && cache.lastId != -1)
+        if (text == cache.lastRef)
         {
             return cache.lastId;
         }
@@ -620,9 +728,10 @@ public class GlobalDictionaries
         }
 
         final String s = text.toString();
+        final ConcurrentHashMap<String, Integer> map = getOrInitStringMap();
 
         // 2. Optimistic lock-free read
-        final Integer id = stringToId.get(s);
+        final Integer id = map.get(s);
         if (id != null)
         {
             cache.lastRef = text;
@@ -632,14 +741,13 @@ public class GlobalDictionaries
         }
 
         // 3. Synchronize for allocating next sequential ID
-        synchronized (stringToId)
+        synchronized (stringLock)
         {
-            final int assignedId = stringToId.computeIfAbsent(s, key -> {
+            final int assignedId = map.computeIfAbsent(s, key -> {
                 final int nextId = stringCount++;
                 if (nextId >= strings.length)
                 {
-                    final int newCapacity = Math.max(strings.length * 2, nextId + 1);
-                    strings = Arrays.copyOf(strings, newCapacity);
+                    strings = Arrays.copyOf(strings, Math.max(INITIAL_CAPACITY, strings.length * 2));
                 }
                 strings[nextId] = key;
                 return nextId;
@@ -731,7 +839,7 @@ public class GlobalDictionaries
         final String[] split = org.apache.commons.lang3.StringUtils.split(str, '|');
         if (id >= splitIpAddresses.length)
         {
-            splitIpAddresses = Arrays.copyOf(splitIpAddresses, Math.max(splitIpAddresses.length * 2, id + 1));
+            splitIpAddresses = Arrays.copyOf(splitIpAddresses, id + 1);
         }
         splitIpAddresses[id] = split;
         return split;
@@ -743,11 +851,12 @@ public class GlobalDictionaries
 
     /**
      * Checks whether the representative sample URL quota has already been met for the specified timer ID.
-     * Lock-free O(1) check allowing caller threads to bypass URL string construction entirely.
+     * Lock-free, zero-allocation \(O(1)\) primitive array check allowing caller threads to bypass URL string
+     * construction entirely without `Integer` autoboxing or hash table traversal.
      *
      * @param timerId
      *            the interned timer name ID
-     * @return {@code true} if quota reached; {@code false} otherwise
+     * @return {@code true} if quota reached (or {@code timerId < 0}); {@code false} otherwise
      */
     public boolean hasSufficientSamples(final int timerId)
     {
@@ -755,13 +864,16 @@ public class GlobalDictionaries
         {
             return true;
         }
-        final java.util.List<String> existing = sampleUrlsByTimer.get(timerId);
-        return existing != null && existing.size() >= MAX_SAMPLE_URLS_PER_TIMER;
+        final byte[] counts = this.sampleUrlCounts;
+        return timerId < counts.length && counts[timerId] >= MAX_SAMPLE_URLS_PER_TIMER;
     }
 
     /**
      * Registers a representative sample URL for the specified timer ID if the maximum quota
      * ({@value #MAX_SAMPLE_URLS_PER_TIMER} URLs per timer) has not yet been reached across the dataset.
+     * <p>
+     * Uses fixed-size 10-element `String[]` staging buckets indexed by `timerId` to avoid array cloning
+     * on each newly discovered sample URL.
      *
      * @param timerId
      *            the interned timer name ID
@@ -775,25 +887,71 @@ public class GlobalDictionaries
             return;
         }
 
-        final java.util.List<String> list = sampleUrlsByTimer.computeIfAbsent(timerId, k -> new java.util.ArrayList<>(MAX_SAMPLE_URLS_PER_TIMER));
-        if (list.size() < MAX_SAMPLE_URLS_PER_TIMER)
+        synchronized (sampleUrlLock)
         {
-            synchronized (list)
+            if (timerId >= sampleUrlCounts.length)
             {
-                if (list.size() < MAX_SAMPLE_URLS_PER_TIMER)
+                sampleUrlCounts = Arrays.copyOf(sampleUrlCounts, timerId + 1);
+            }
+            final int count = sampleUrlCounts[timerId];
+            if (count >= MAX_SAMPLE_URLS_PER_TIMER)
+            {
+                return;
+            }
+
+            if (rawSampleUrls == null)
+            {
+                rawSampleUrls = new String[sampleUrlCounts.length][];
+                for (int id = 0; id < cachedSampleUrls.length; id++)
                 {
-                    final String urlStr = url.toString();
-                    if (!list.contains(urlStr))
+                    final CachedSampleUrl[] existingCached = cachedSampleUrls[id];
+                    if (existingCached != null)
                     {
-                        list.add(urlStr);
+                        final String[] bucket = new String[MAX_SAMPLE_URLS_PER_TIMER];
+                        for (int j = 0; j < existingCached.length; j++)
+                        {
+                            bucket[j] = existingCached[j].url();
+                        }
+                        rawSampleUrls[id] = bucket;
                     }
                 }
             }
+            else if (timerId >= rawSampleUrls.length)
+            {
+                rawSampleUrls = Arrays.copyOf(rawSampleUrls, timerId + 1);
+            }
+
+            String[] bucket = rawSampleUrls[timerId];
+            if (bucket == null)
+            {
+                bucket = new String[MAX_SAMPLE_URLS_PER_TIMER];
+                rawSampleUrls[timerId] = bucket;
+            }
+
+            final String urlStr = url.toString();
+            for (int i = 0; i < count; i++)
+            {
+                if (bucket[i].equals(urlStr))
+                {
+                    return;
+                }
+            }
+
+            bucket[count] = urlStr;
+            if (timerId < cachedSampleUrls.length)
+            {
+                cachedSampleUrls[timerId] = null;
+            }
+            sampleUrlCounts[timerId] = (byte) (count + 1);
         }
     }
 
     /**
      * Returns the array of precomputed sample URLs for the specified timer ID.
+     * <p>
+     * Once {@link #compactForReadOnly()} or {@link #readFrom(DataInput)} has completed, all non-empty
+     * sample URL arrays are precomputed in {@link #cachedSampleUrls} and {@link #rawSampleUrls} is {@code null},
+     * making both hit and miss paths 100% lock-free.
      *
      * @param timerId
      *            the interned timer name ID
@@ -814,6 +972,11 @@ public class GlobalDictionaries
                 return existing;
             }
         }
+        final byte[] counts = this.sampleUrlCounts;
+        if (this.rawSampleUrls == null || timerId >= counts.length || counts[timerId] == 0)
+        {
+            return null;
+        }
         return computeCachedSampleUrls(timerId);
     }
 
@@ -822,30 +985,133 @@ public class GlobalDictionaries
      *
      * @param timerId
      *            the interned timer name ID
-     * @return array of cached sample URLs, or {@code null} if none exist
+     * @return array of cached sample URLs
      */
-    private synchronized CachedSampleUrl[] computeCachedSampleUrls(final int timerId)
+    private CachedSampleUrl[] computeCachedSampleUrls(final int timerId)
     {
-        if (timerId < cachedSampleUrls.length && cachedSampleUrls[timerId] != null)
+        synchronized (sampleUrlLock)
         {
-            return cachedSampleUrls[timerId];
+            final int count = sampleUrlCounts[timerId];
+            final String[] bucket = rawSampleUrls[timerId];
+            final CachedSampleUrl[] arr = new CachedSampleUrl[count];
+            for (int i = 0; i < count; i++)
+            {
+                arr[i] = new CachedSampleUrl(bucket[i]);
+            }
+            if (timerId >= cachedSampleUrls.length)
+            {
+                cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, timerId + 1);
+            }
+            cachedSampleUrls[timerId] = arr;
+            return arr;
         }
-        final java.util.List<String> list = sampleUrlsByTimer.get(timerId);
-        if (list == null || list.isEmpty())
+    }
+
+    // -------------------------------------------------------------------------
+    // Post-Ingestion Read-Only Compaction
+    // -------------------------------------------------------------------------
+
+    /**
+     * Releases all ingestion-only reverse lookup maps, thread-local memoization caches, and raw sample URL
+     * staging buffers, while trimming forward lookup arrays to their exact element counts and precomputing
+     * all {@link CachedSampleUrl} arrays for lock-free Phase 2 query execution.
+     * <p>
+     * <b>Memory &amp; GC Lifecycle Rationale:</b>
+     * During Phase 1 cold-run CSV parsing, {@link GlobalDictionaries} maintains {@link ConcurrentHashMap}
+     * reverse indexes ({@code String -> ID} and {@code AgentTestCase -> ID}) so parser threads can intern
+     * strings in \(O(1)\) time. Once {@link com.xceptance.xlt.report.storage.ChunkIngestionCollector#finish()}
+     * seals all chunks, Phase 2 ({@link com.xceptance.xlt.report.ChunkQueryEngine}) only resolves integer IDs
+     * forward to strings ({@code ID -> String}) via direct array indexing. Releasing the reverse maps and
+     * staging buffers before Phase 2 starts frees Old Gen heap occupied by hash table nodes, table spines,
+     * thread-local caches, and geometric array slack before {@link com.xceptance.xlt.report.StatisticsProcessor}
+     * allocates per-thread report processors.
+     */
+    public synchronized void compactForReadOnly()
+    {
+        synchronized (timerLock)
         {
-            return null;
+            timerNameToId = null;
+            localTimerCache = ThreadLocal.withInitial(ThreadLocalTimerCache::new);
+            if (timerNames.length > timerNameCount)
+            {
+                timerNames = Arrays.copyOf(timerNames, timerNameCount);
+            }
         }
-        final CachedSampleUrl[] arr = new CachedSampleUrl[list.size()];
-        for (int i = 0; i < list.size(); i++)
+
+        synchronized (pairLock)
         {
-            arr[i] = new CachedSampleUrl(list.get(i));
+            pairToId = null;
+            localAgentTestCaseCache = ThreadLocal.withInitial(ThreadLocalAgentTestCaseCache::new);
+            if (agentTestCases.length > agentTestCaseCount)
+            {
+                agentTestCases = Arrays.copyOf(agentTestCases, agentTestCaseCount);
+            }
         }
-        if (timerId >= cachedSampleUrls.length)
+
+        synchronized (stringLock)
         {
-            cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, Math.max(cachedSampleUrls.length * 2, timerId + 1));
+            stringToId = null;
+            localStringCache = ThreadLocal.withInitial(ThreadLocalStringCache::new);
+            if (strings.length > stringCount)
+            {
+                strings = Arrays.copyOf(strings, stringCount);
+            }
         }
-        cachedSampleUrls[timerId] = arr;
-        return arr;
+
+        if (splitIpAddresses.length > stringCount)
+        {
+            splitIpAddresses = Arrays.copyOf(splitIpAddresses, stringCount);
+        }
+
+        synchronized (sampleUrlLock)
+        {
+            int maxSampleTimerId = -1;
+            for (int i = 0; i < sampleUrlCounts.length; i++)
+            {
+                if (sampleUrlCounts[i] > 0)
+                {
+                    maxSampleTimerId = i;
+                }
+            }
+            final int targetSampleLen = Math.max(timerNameCount, maxSampleTimerId + 1);
+            if (cachedSampleUrls.length != targetSampleLen)
+            {
+                cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, targetSampleLen);
+            }
+            if (rawSampleUrls != null)
+            {
+                for (int i = 0; i <= maxSampleTimerId; i++)
+                {
+                    final String[] bucket = rawSampleUrls[i];
+                    final int count = sampleUrlCounts[i];
+                    if (count > 0 && cachedSampleUrls[i] == null)
+                    {
+                        final CachedSampleUrl[] arr = new CachedSampleUrl[count];
+                        for (int j = 0; j < count; j++)
+                        {
+                            arr[j] = new CachedSampleUrl(bucket[j]);
+                        }
+                        cachedSampleUrls[i] = arr;
+                    }
+                }
+                rawSampleUrls = null;
+            }
+            if (sampleUrlCounts.length != targetSampleLen)
+            {
+                sampleUrlCounts = Arrays.copyOf(sampleUrlCounts, targetSampleLen);
+            }
+        }
+    }
+
+    /**
+     * Returns whether this dictionary instance has been compacted for read-only query execution
+     * (all ingestion-only reverse lookup maps and raw sample URL staging buffers released).
+     *
+     * @return {@code true} if compacted; {@code false} if any ingestion reverse map or staging buffer is active
+     */
+    public boolean isCompacted()
+    {
+        return timerNameToId == null && pairToId == null && stringToId == null && rawSampleUrls == null;
     }
 
     // -------------------------------------------------------------------------
@@ -854,6 +1120,7 @@ public class GlobalDictionaries
 
     /**
      * Serializes all interned dictionaries and sample URLs to the specified data output stream.
+     * Supports serialization both before and after {@link #compactForReadOnly()}.
      *
      * @param out
      *            the target {@link DataOutput}
@@ -896,26 +1163,55 @@ public class GlobalDictionaries
         }
 
         // 4. Sample URLs by timer ID
-        final int uCount = sampleUrlsByTimer.size();
-        out.writeInt(uCount);
-        for (final java.util.Map.Entry<Integer, java.util.List<String>> entry : sampleUrlsByTimer.entrySet())
+        synchronized (sampleUrlLock)
         {
-            out.writeInt(entry.getKey());
-            final java.util.List<String> list = entry.getValue();
-            out.writeInt(list.size());
-            for (final String u : list)
+            int uCount = 0;
+            for (int i = 0; i < sampleUrlCounts.length; i++)
             {
-                StorageIoUtils.writeUtfString(out, u);
+                if (sampleUrlCounts[i] > 0)
+                {
+                    uCount++;
+                }
+            }
+            out.writeInt(uCount);
+            for (int timerId = 0; timerId < sampleUrlCounts.length; timerId++)
+            {
+                final int count = sampleUrlCounts[timerId];
+                if (count > 0)
+                {
+                    out.writeInt(timerId);
+                    out.writeInt(count);
+                    final CachedSampleUrl[] cached = timerId < cachedSampleUrls.length ? cachedSampleUrls[timerId] : null;
+                    if (cached != null)
+                    {
+                        for (int j = 0; j < count; j++)
+                        {
+                            StorageIoUtils.writeUtfString(out, cached[j].url());
+                        }
+                    }
+                    else
+                    {
+                        final String[] raw = rawSampleUrls[timerId];
+                        for (int j = 0; j < count; j++)
+                        {
+                            StorageIoUtils.writeUtfString(out, raw[j]);
+                        }
+                    }
+                }
             }
         }
     }
 
     /**
      * Deserializes global dictionaries and sample URLs from the specified data input stream.
+     * <p>
+     * Populates only the compact forward lookup arrays and precomputed {@link CachedSampleUrl} arrays,
+     * omitting reverse {@link ConcurrentHashMap} instances and `CopyOnWriteArrayList` wrappers so warm
+     * cache loads start directly in compacted read-only state.
      *
      * @param in
      *            the source {@link DataInput}
-     * @return reconstructed {@link GlobalDictionaries} instance
+     * @return reconstructed {@link GlobalDictionaries} instance in compacted read-only state
      * @throws IOException
      *             if an I/O error occurs
      */
@@ -936,59 +1232,62 @@ public class GlobalDictionaries
 
         // 1. Timer names
         final int timerCount = in.readInt();
-        dict.timerNames = new String[Math.max(INITIAL_CAPACITY, timerCount)];
+        dict.timerNames = new String[timerCount];
         dict.timerNameCount = timerCount;
         for (int i = 0; i < timerCount; i++)
         {
-            final String s = StorageIoUtils.readUtfString(in);
-            dict.timerNames[i] = s;
-            dict.timerNameToId.put(s, i);
+            dict.timerNames[i] = StorageIoUtils.readUtfString(in);
         }
 
         // 2. Agent + TestCase pairs
         final int pairCount = in.readInt();
-        dict.agentTestCases = new AgentTestCase[Math.max(INITIAL_CAPACITY, pairCount)];
+        dict.agentTestCases = new AgentTestCase[pairCount];
         dict.agentTestCaseCount = pairCount;
         for (int i = 0; i < pairCount; i++)
         {
             final String agent = StorageIoUtils.readUtfString(in);
             final String tc = StorageIoUtils.readUtfString(in);
-            final AgentTestCase pair = new AgentTestCase(agent, tc);
-            dict.agentTestCases[i] = pair;
-            dict.pairToId.put(pair, i);
+            dict.agentTestCases[i] = new AgentTestCase(agent, tc);
         }
 
         // 3. General strings
         final int strCount = in.readInt();
-        dict.strings = new String[Math.max(INITIAL_CAPACITY, strCount)];
-        dict.splitIpAddresses = new String[Math.max(INITIAL_CAPACITY, strCount)][];
+        dict.strings = new String[strCount];
+        dict.splitIpAddresses = new String[strCount][];
         dict.stringCount = strCount;
         for (int i = 0; i < strCount; i++)
         {
-            final String s = StorageIoUtils.readUtfString(in);
-            dict.strings[i] = s;
-            dict.stringToId.put(s, i);
+            dict.strings[i] = StorageIoUtils.readUtfString(in);
         }
 
-        // 4. Sample URLs by timer ID (with backwards compatibility)
+        // 4. Sample URLs by timer ID (with backwards compatibility for streams ending right after general strings)
+        dict.sampleUrlCounts = new byte[timerCount];
+        dict.cachedSampleUrls = new CachedSampleUrl[timerCount][];
+        final int uCount;
         try
         {
-            final int uCount = in.readInt();
-            for (int i = 0; i < uCount; i++)
-            {
-                final int timerId = in.readInt();
-                final int count = in.readInt();
-                final java.util.List<String> list = new java.util.concurrent.CopyOnWriteArrayList<>();
-                for (int j = 0; j < count; j++)
-                {
-                    list.add(StorageIoUtils.readUtfString(in));
-                }
-                dict.sampleUrlsByTimer.put(timerId, list);
-            }
+            uCount = in.readInt();
         }
         catch (final java.io.EOFException e)
         {
-            // Backwards compatibility with older dictionary files lacking sample URLs
+            return dict;
+        }
+        for (int i = 0; i < uCount; i++)
+        {
+            final int timerId = in.readInt();
+            final int count = in.readInt();
+            final CachedSampleUrl[] arr = new CachedSampleUrl[count];
+            for (int j = 0; j < count; j++)
+            {
+                arr[j] = new CachedSampleUrl(StorageIoUtils.readUtfString(in));
+            }
+            if (timerId >= dict.cachedSampleUrls.length)
+            {
+                dict.cachedSampleUrls = Arrays.copyOf(dict.cachedSampleUrls, timerId + 1);
+                dict.sampleUrlCounts = Arrays.copyOf(dict.sampleUrlCounts, timerId + 1);
+            }
+            dict.cachedSampleUrls[timerId] = arr;
+            dict.sampleUrlCounts[timerId] = (byte) count;
         }
 
         return dict;

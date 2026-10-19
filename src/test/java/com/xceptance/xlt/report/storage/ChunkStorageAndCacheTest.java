@@ -1671,4 +1671,833 @@ public class ChunkStorageAndCacheTest
             return extra2;
         }
     }
+
+    /**
+     * Verifies {@link GlobalDictionaries} read-only compaction ({@link GlobalDictionaries#compactForReadOnly()}),
+     * primitive sample URL storage, lazy reverse-map reconstruction on post-compaction writes,
+     * {@link GlobalDictionaries#charSequenceEquals(CharSequence, String)}, IP address splitting,
+     * and binary serialization/deserialization edge cases.
+     */
+    @Test
+    public void testGlobalDictionariesCompactionAndEdgeCases() throws Exception
+    {
+        // 1. charSequenceEquals edge cases
+        Assert.assertFalse(GlobalDictionaries.charSequenceEquals(null, null));
+        Assert.assertFalse(GlobalDictionaries.charSequenceEquals(null, "abc"));
+        Assert.assertFalse(GlobalDictionaries.charSequenceEquals("abc", null));
+        final String literal = "sameRef";
+        Assert.assertTrue(GlobalDictionaries.charSequenceEquals(literal, literal));
+        Assert.assertTrue(GlobalDictionaries.charSequenceEquals(new String("abc"), "abc"));
+        Assert.assertFalse(GlobalDictionaries.charSequenceEquals(new String("abc"), "abd"));
+        Assert.assertFalse(GlobalDictionaries.charSequenceEquals(new StringBuilder("abc"), "ab"));
+        Assert.assertFalse(GlobalDictionaries.charSequenceEquals(new StringBuilder("abc"), "abd"));
+        Assert.assertTrue(GlobalDictionaries.charSequenceEquals(new StringBuilder("abc"), "abc"));
+
+        // 2. CachedSampleUrl host resolution with valid host and empty host fallback
+        final GlobalDictionaries.CachedSampleUrl withHost = new GlobalDictionaries.CachedSampleUrl("https://example.com/path#frag");
+        Assert.assertEquals("example.com", withHost.host());
+        final GlobalDictionaries.CachedSampleUrl emptyHost = new GlobalDictionaries.CachedSampleUrl("/relative/only");
+        Assert.assertEquals(RequestData.UNKNOWN_HOST, emptyHost.host());
+
+        // 3. Fresh dictionary state and null/cache hits
+        final GlobalDictionaries dict = new GlobalDictionaries();
+        Assert.assertFalse("Fresh dictionary must not report compacted", dict.isCompacted());
+        Assert.assertEquals(-1, dict.getOrCreateTimerNameId(null));
+        Assert.assertEquals(-1, dict.getOrCreateStringId(null));
+
+        // Exercise getOrCreateAgentTestCaseId(null, null) when cache.lastId == -1
+        final int nullPairId = dict.getOrCreateAgentTestCaseId(null, null);
+        Assert.assertEquals(0, nullPairId);
+        Assert.assertEquals("", dict.getAgentName(nullPairId));
+        Assert.assertEquals("", dict.getTestCaseName(nullPairId));
+        // Partial reference hit/miss on ThreadLocalAgentTestCaseCache
+        final String ag1 = "Agent1";
+        final String tc1 = "TC1";
+        final int pair1 = dict.getOrCreateAgentTestCaseId(ag1, tc1);
+        Assert.assertEquals(1, pair1);
+        Assert.assertEquals(pair1, dict.getOrCreateAgentTestCaseId(ag1, tc1));
+        final int pair2 = dict.getOrCreateAgentTestCaseId(ag1, "TC2");
+        Assert.assertEquals(2, pair2);
+        // Immediate CharSequence match on pair2 (lastId == 2 != 0) before map lookup
+        Assert.assertEquals(pair2, dict.getOrCreateAgentTestCaseId(new StringBuilder("Agent1"), new StringBuilder("TC2")));
+        // Optimistic map.get(pair) hit on pair1
+        Assert.assertEquals(pair1, dict.getOrCreateAgentTestCaseId(new StringBuilder("Agent1"), new StringBuilder("TC1")));
+        final int pair3 = dict.getOrCreateAgentTestCaseId("Agent2", "TC2");
+        Assert.assertNotEquals(pair2, pair3);
+        Assert.assertEquals(pair2, dict.getOrCreateAgentTestCaseId(new StringBuilder("Agent1"), new StringBuilder("TC2")));
+
+        // Timer name thread-local reference and CharSequence cache hits (verify on both ID 0 and ID 1 != 0)
+        final String timerRef = "TimerA";
+        final int tA = dict.getOrCreateTimerNameId(timerRef);
+        Assert.assertEquals(0, tA);
+        Assert.assertEquals(tA, dict.getOrCreateTimerNameId(timerRef));
+        Assert.assertEquals(tA, dict.getOrCreateTimerNameId(new StringBuilder("TimerA")));
+        final String timerRefB = "TimerB";
+        final int tB = dict.getOrCreateTimerNameId(timerRefB);
+        Assert.assertEquals(1, tB);
+        Assert.assertEquals(tB, dict.getOrCreateTimerNameId(timerRefB));
+        Assert.assertEquals(tB, dict.getOrCreateTimerNameId(new StringBuilder("TimerB")));
+        Assert.assertEquals(tA, dict.getOrCreateTimerNameId("TimerA"));
+        Assert.assertEquals(tB, dict.getOrCreateTimerNameId(new String("TimerB")));
+        // Verify null input when thread-local cache is already populated (lastRef != null, lastId != -1)
+        Assert.assertEquals(-1, dict.getOrCreateTimerNameId(null));
+
+        // String thread-local reference and CharSequence cache hits (15 pre-seeded HTTP strings precede custom strings)
+        final String strRef = "CustomHeader";
+        final int sA = dict.getOrCreateStringId(strRef);
+        Assert.assertEquals(15, sA);
+        Assert.assertEquals(sA, dict.getOrCreateStringId(strRef));
+        Assert.assertEquals(sA, dict.getOrCreateStringId(new StringBuilder("CustomHeader")));
+        Assert.assertEquals(-1, dict.getOrCreateStringId(null));
+
+        // Out-of-bounds and zero-boundary lookups
+        Assert.assertNull(dict.getTimerName(-1));
+        Assert.assertNull(dict.getTimerName(9999));
+        Assert.assertEquals("TimerA", dict.getTimerName(tA));
+
+        Assert.assertNull(dict.getAgentTestCase(-1));
+        Assert.assertNull(dict.getAgentTestCase(9999));
+        Assert.assertNull(dict.getAgentName(-1));
+        Assert.assertNull(dict.getAgentName(9999));
+        Assert.assertNull(dict.getTestCaseName(-1));
+        Assert.assertNull(dict.getTestCaseName(9999));
+
+        Assert.assertNull(dict.getString(-1));
+        Assert.assertNull(dict.getString(9999));
+        Assert.assertEquals("GET", dict.getString(0));
+
+        // 4. Filter bitmaps
+        Assert.assertNull(dict.filterAgentTestCaseIds(null, null));
+        final StringMatcher matchAll = new StringMatcher(".*", null, true);
+        Assert.assertNull(dict.filterAgentTestCaseIds(matchAll, matchAll));
+        final StringMatcher onlyTc1 = new StringMatcher("TC1", null, true);
+        final RoaringBitmap tc1Bitmap = dict.filterAgentTestCaseIds(null, onlyTc1);
+        Assert.assertNotNull(tc1Bitmap);
+        Assert.assertTrue(tc1Bitmap.contains(pair1));
+        Assert.assertFalse(tc1Bitmap.contains(pair2));
+        final StringMatcher onlyAg1 = new StringMatcher("Agent1", null, true);
+        final RoaringBitmap ag1Tc1Bitmap = dict.filterAgentTestCaseIds(onlyAg1, onlyTc1);
+        Assert.assertNotNull(ag1Tc1Bitmap);
+        Assert.assertEquals(1, ag1Tc1Bitmap.getCardinality());
+        Assert.assertTrue(ag1Tc1Bitmap.contains(pair1));
+
+        // 5. Split IP addresses (compute ID 16 first, then ID 0, then verify ID 16 was not truncated)
+        Assert.assertNull(dict.getSplitIpAddresses(-1));
+        Assert.assertNull(dict.getSplitIpAddresses(9999));
+        final String ipRef = "10.0.0.1|10.0.0.2";
+        final int ipId = dict.getOrCreateStringId(ipRef);
+        Assert.assertEquals(16, ipId);
+        Assert.assertEquals(ipId, dict.getOrCreateStringId(ipRef));
+        Assert.assertEquals(ipId, dict.getOrCreateStringId(new StringBuilder("10.0.0.1|10.0.0.2")));
+        final String[] split1 = dict.getSplitIpAddresses(ipId);
+        Assert.assertArrayEquals(new String[] { "10.0.0.1", "10.0.0.2" }, split1);
+        final String[] split0 = dict.getSplitIpAddresses(0);
+        Assert.assertArrayEquals(new String[] { "GET" }, split0);
+        Assert.assertSame("Second lookup at index 0 must return cached split array", split0, dict.getSplitIpAddresses(0));
+        Assert.assertSame("Second lookup must return cached split array", split1, dict.getSplitIpAddresses(ipId));
+
+        final java.lang.reflect.Field cachedSampleUrlsField = GlobalDictionaries.class.getDeclaredField("cachedSampleUrls");
+        cachedSampleUrlsField.setAccessible(true);
+        final java.lang.reflect.Field sampleUrlCountsField = GlobalDictionaries.class.getDeclaredField("sampleUrlCounts");
+        sampleUrlCountsField.setAccessible(true);
+        final java.lang.reflect.Field splitIpField = GlobalDictionaries.class.getDeclaredField("splitIpAddresses");
+        splitIpField.setAccessible(true);
+
+        // 6. Sample URLs: quota, deduplication, pre-compaction caching, and high timerId expansion
+        Assert.assertTrue(dict.hasSufficientSamples(-1));
+        Assert.assertFalse(dict.hasSufficientSamples(9999));
+        dict.addSampleUrl(-1, "https://example.com/ignored");
+        dict.addSampleUrl(tA, null);
+        dict.addSampleUrl(tA, "");
+        Assert.assertNull(dict.getCachedSampleUrls(-1));
+        Assert.assertNull(dict.getCachedSampleUrls(9999));
+        Assert.assertNull(dict.getCachedSampleUrls(tA));
+
+        for (int i = 0; i < 12; i++)
+        {
+            dict.addSampleUrl(tB, "https://example.com/b/" + i);
+            dict.addSampleUrl(tB, "https://example.com/b/" + i); // duplicate ignored
+            if (i < 9)
+            {
+                Assert.assertFalse(dict.hasSufficientSamples(tB));
+            }
+            else
+            {
+                Assert.assertTrue(dict.hasSufficientSamples(tB));
+            }
+        }
+        // Exercise getCachedSampleUrls when rawSampleUrls != null and counts[timerId] == 0 or timerId == counts.length
+        Assert.assertNull(dict.getCachedSampleUrls(tA));
+        Assert.assertNull(dict.getCachedSampleUrls(((byte[]) sampleUrlCountsField.get(dict)).length));
+
+        // Add sample URL for timerId == 2 (equals timerNameCount == 2 for readFrom boundary) and cache it first
+        dict.addSampleUrl(2, "https://example.com/t2/1");
+        final GlobalDictionaries.CachedSampleUrl[] cachedT2 = dict.getCachedSampleUrls(2);
+        Assert.assertEquals(1, cachedT2.length);
+
+        // Compute cached sample URLs for tB (tB == 1 < cachedSampleUrls.length == 3) BEFORE compaction
+        // and verify cachedSampleUrls[2] was not truncated by computeCachedSampleUrls(tB)
+        final GlobalDictionaries.CachedSampleUrl[] cachedB = dict.getCachedSampleUrls(tB);
+        Assert.assertNotNull(cachedB);
+        Assert.assertEquals(10, cachedB.length);
+        Assert.assertSame(cachedB, dict.getCachedSampleUrls(tB));
+        Assert.assertEquals(256, ((GlobalDictionaries.CachedSampleUrl[][]) cachedSampleUrlsField.get(dict)).length);
+        Assert.assertSame(cachedT2, dict.getCachedSampleUrls(2));
+
+        // Add sample URL for high timerId >= INITIAL_CAPACITY (256), compute cached, then add a second URL to invalidate cache
+        dict.addSampleUrl(300, "https://example.com/high/1");
+        Assert.assertEquals(1, dict.getCachedSampleUrls(300).length);
+        dict.addSampleUrl(300, "https://example.com/high/2");
+        // Add sample URL for timerId == 301 (equals cachedSampleUrls.length == 301 for writeTo boundary)
+        dict.addSampleUrl(301, "https://example.com/high/301");
+        // Also add a sample URL for timerId 302 (> cachedSampleUrls.length = 301) without calling getCachedSampleUrls(302)
+        dict.addSampleUrl(302, "https://example.com/high/302");
+
+        // Write before compaction (tB uses cachedSampleUrls[tB], timer 2/300/301/302 use rawSampleUrls)
+        final ByteArrayOutputStream preCompactBaos = new ByteArrayOutputStream();
+        try (final DataOutputStream dos = new DataOutputStream(preCompactBaos))
+        {
+            dict.writeTo(dos);
+        }
+        try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(preCompactBaos.toByteArray())))
+        {
+            final GlobalDictionaries fromPreCompact = GlobalDictionaries.readFrom(dis);
+            Assert.assertTrue("Deserialized dictionary must start in compacted state", fromPreCompact.isCompacted());
+            Assert.assertEquals(10, fromPreCompact.getCachedSampleUrls(tB).length);
+            Assert.assertEquals(1, fromPreCompact.getCachedSampleUrls(2).length);
+            Assert.assertEquals(2, fromPreCompact.getCachedSampleUrls(300).length);
+            Assert.assertEquals(1, fromPreCompact.getCachedSampleUrls(301).length);
+            Assert.assertEquals(1, fromPreCompact.getCachedSampleUrls(302).length);
+        }
+
+        // Also verify readFrom and compactForReadOnly do not shrink cachedSampleUrls below timerCount when only timer 0 has sample URLs
+        final GlobalDictionaries twoTimerDict = new GlobalDictionaries();
+        twoTimerDict.getOrCreateTimerNameId("T0");
+        twoTimerDict.getOrCreateTimerNameId("T1");
+        twoTimerDict.addSampleUrl(0, "https://example.com/t0");
+        final ByteArrayOutputStream twoTimerBaos = new ByteArrayOutputStream();
+        try (final DataOutputStream dos = new DataOutputStream(twoTimerBaos))
+        {
+            twoTimerDict.writeTo(dos);
+        }
+        try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(twoTimerBaos.toByteArray())))
+        {
+            final GlobalDictionaries restoredTwoTimer = GlobalDictionaries.readFrom(dis);
+            Assert.assertEquals(2, ((GlobalDictionaries.CachedSampleUrl[][]) cachedSampleUrlsField.get(restoredTwoTimer)).length);
+            Assert.assertEquals(2, ((byte[]) sampleUrlCountsField.get(restoredTwoTimer)).length);
+        }
+        twoTimerDict.compactForReadOnly();
+        Assert.assertEquals(2, ((GlobalDictionaries.CachedSampleUrl[][]) cachedSampleUrlsField.get(twoTimerDict)).length);
+        Assert.assertEquals(2, ((byte[]) sampleUrlCountsField.get(twoTimerDict)).length);
+        Assert.assertEquals(1, twoTimerDict.getCachedSampleUrls(0).length);
+
+        // 7. Compact for read-only and verify array trimming and reverse-map release
+        dict.compactForReadOnly();
+        Assert.assertTrue(dict.isCompacted());
+        final String[] compactedTimers = dict.getTimerNamesArray();
+        final GlobalDictionaries.AgentTestCase[] compactedPairs = dict.getAgentTestCasesArray();
+        final String[] compactedStrings = dict.getStringsArray();
+        final String[][] compactedSplitIps = (String[][]) splitIpField.get(dict);
+        final GlobalDictionaries.CachedSampleUrl[][] compactedCachedUrls =
+            (GlobalDictionaries.CachedSampleUrl[][]) cachedSampleUrlsField.get(dict);
+        final byte[] compactedUrlCounts = (byte[]) sampleUrlCountsField.get(dict);
+
+        Assert.assertEquals(dict.getTimerNameCount(), compactedTimers.length);
+        Assert.assertEquals(dict.getAgentTestCaseCount(), compactedPairs.length);
+        Assert.assertEquals(dict.getStringCount(), compactedStrings.length);
+        Assert.assertEquals(dict.getStringCount(), compactedSplitIps.length);
+        Assert.assertEquals(303, compactedCachedUrls.length);
+        Assert.assertEquals(303, compactedUrlCounts.length);
+        Assert.assertSame("Pre-computed CachedSampleUrl[] must be preserved on compaction", cachedB, dict.getCachedSampleUrls(tB));
+        Assert.assertEquals(2, dict.getCachedSampleUrls(300).length);
+        Assert.assertEquals(1, dict.getCachedSampleUrls(302).length);
+        Assert.assertNull(dict.getCachedSampleUrls(tA));
+
+        // Exact upper-boundary lookups (id == count) after arrays are trimmed to exact length
+        Assert.assertNull(dict.getTimerName(dict.getTimerNameCount()));
+        Assert.assertNull(dict.getAgentTestCase(dict.getAgentTestCaseCount()));
+        Assert.assertNull(dict.getString(dict.getStringCount()));
+        Assert.assertNull(dict.getSplitIpAddresses(dict.getStringCount()));
+        Assert.assertNull(dict.getCachedSampleUrls(303));
+
+        // Calling compactForReadOnly() again when already compacted is a no-op that preserves trimmed arrays
+        dict.compactForReadOnly();
+        Assert.assertTrue(dict.isCompacted());
+        Assert.assertSame(compactedTimers, dict.getTimerNamesArray());
+        Assert.assertSame(compactedPairs, dict.getAgentTestCasesArray());
+        Assert.assertSame(compactedStrings, dict.getStringsArray());
+        Assert.assertSame(compactedSplitIps, splitIpField.get(dict));
+        Assert.assertSame(compactedCachedUrls, cachedSampleUrlsField.get(dict));
+        Assert.assertSame(compactedUrlCounts, sampleUrlCountsField.get(dict));
+
+        // 8. Lazy reconstruction of each reverse map and sample URL staging buffer after compaction
+        Assert.assertEquals(tA, dict.getOrCreateTimerNameId("TimerA"));
+        Assert.assertFalse("Rebuilding timerNameToId makes isCompacted false", dict.isCompacted());
+        dict.compactForReadOnly();
+        Assert.assertTrue(dict.isCompacted());
+
+        Assert.assertEquals(pair1, dict.getOrCreateAgentTestCaseId("Agent1", "TC1"));
+        Assert.assertFalse("Rebuilding pairToId makes isCompacted false", dict.isCompacted());
+        dict.compactForReadOnly();
+        Assert.assertTrue(dict.isCompacted());
+
+        Assert.assertEquals(ipId, dict.getOrCreateStringId(new String("10.0.0.1|10.0.0.2")));
+        Assert.assertFalse("Rebuilding stringToId makes isCompacted false", dict.isCompacted());
+        final int newIpId = dict.getOrCreateStringId("192.168.1.1|192.168.1.2");
+        // Compute split IP on newly interned ID beyond compacted splitIpAddresses.length
+        Assert.assertArrayEquals(new String[] { "192.168.1.1", "192.168.1.2" }, dict.getSplitIpAddresses(newIpId));
+        dict.compactForReadOnly();
+        Assert.assertTrue(dict.isCompacted());
+
+        // Add sample URL after compaction (rebuilds rawSampleUrls from cachedSampleUrls)
+        dict.addSampleUrl(300, "https://example.com/high/3");
+        Assert.assertFalse("Rebuilding rawSampleUrls makes isCompacted false", dict.isCompacted());
+        // Add sample URL at exact boundary timerId == cachedSampleUrls.length (303)
+        dict.addSampleUrl(303, "https://example.com/high/303");
+        Assert.assertEquals(1, dict.getCachedSampleUrls(303).length);
+        dict.addSampleUrl(305, "https://example.com/high/305");
+        Assert.assertEquals(3, dict.getCachedSampleUrls(300).length);
+        Assert.assertEquals(1, dict.getCachedSampleUrls(305).length);
+
+        // 9. Geometric expansion beyond INITIAL_CAPACITY (256) for timerNames and agentTestCases
+        final GlobalDictionaries largeDict = new GlobalDictionaries();
+        for (int i = 0; i < 300; i++)
+        {
+            Assert.assertEquals(i, largeDict.getOrCreateTimerNameId("T-" + i));
+            Assert.assertEquals(i, largeDict.getOrCreateAgentTestCaseId("Ag-" + i, "Tc-" + i));
+        }
+        Assert.assertEquals(300, largeDict.getTimerNameCount());
+        Assert.assertEquals(300, largeDict.getAgentTestCaseCount());
+
+        // 10. Deserialization error paths (invalid magic, invalid version) and legacy EOF without sample URLs
+        final ByteArrayOutputStream badMagic = new ByteArrayOutputStream();
+        try (final DataOutputStream dos = new DataOutputStream(badMagic))
+        {
+            dos.writeInt(0x12345678);
+            dos.writeInt(GlobalDictionaries.VERSION);
+        }
+        try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(badMagic.toByteArray())))
+        {
+            GlobalDictionaries.readFrom(dis);
+            Assert.fail("Expected IOException for invalid magic");
+        }
+        catch (final java.io.IOException expected)
+        {
+            Assert.assertTrue(expected.getMessage().contains("Invalid dictionaries file format"));
+        }
+
+        final ByteArrayOutputStream badVersion = new ByteArrayOutputStream();
+        try (final DataOutputStream dos = new DataOutputStream(badVersion))
+        {
+            dos.writeInt(GlobalDictionaries.MAGIC);
+            dos.writeInt(999);
+        }
+        try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(badVersion.toByteArray())))
+        {
+            GlobalDictionaries.readFrom(dis);
+            Assert.fail("Expected IOException for unsupported version");
+        }
+        catch (final java.io.IOException expected)
+        {
+            Assert.assertTrue(expected.getMessage().contains("Unsupported dictionaries file version"));
+        }
+
+        // Legacy stream lacking sample URLs section (triggers EOFException catch block) with 0 entries
+        final ByteArrayOutputStream legacyEmpty = new ByteArrayOutputStream();
+        try (final DataOutputStream dos = new DataOutputStream(legacyEmpty))
+        {
+            dos.writeInt(GlobalDictionaries.MAGIC);
+            dos.writeInt(GlobalDictionaries.VERSION);
+            dos.writeInt(0); // timers
+            dos.writeInt(0); // pairs
+            dos.writeInt(0); // strings
+            // omit sample URLs count to trigger EOFException
+        }
+        try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(legacyEmpty.toByteArray())))
+        {
+            final GlobalDictionaries emptyRestored = GlobalDictionaries.readFrom(dis);
+            Assert.assertTrue(emptyRestored.isCompacted());
+            Assert.assertEquals(0, emptyRestored.getTimerNameCount());
+            Assert.assertEquals(0, emptyRestored.getAgentTestCaseCount());
+            Assert.assertEquals(0, emptyRestored.getStringCount());
+            // Expand from 0-length arrays after deserialization
+            Assert.assertEquals(0, emptyRestored.getOrCreateTimerNameId("FirstTimer"));
+            Assert.assertEquals(0, emptyRestored.getOrCreateAgentTestCaseId("FirstAgent", "FirstTC"));
+            Assert.assertEquals(0, emptyRestored.getOrCreateStringId("1.1.1.1|2.2.2.2"));
+            final String[] firstSplit = emptyRestored.getSplitIpAddresses(0);
+            Assert.assertArrayEquals(new String[] { "1.1.1.1", "2.2.2.2" }, firstSplit);
+            Assert.assertSame("Cached split IP at index 0 must be returned on second call",
+                              firstSplit, emptyRestored.getSplitIpAddresses(0));
+        }
+    }
+
+    /**
+     * Verifies {@link ChunkIngestionCollector} batch container ingestion, builder rotation and recycling when
+     * chunks fill up, and I/O fallback error handling.
+     */
+    @Test
+    public void testChunkIngestionCollectorLifecycleAndEdgeCases() throws Exception
+    {
+        // 1. Register a small-capacity test handler (full after 2 rows) for 'Q' and 'X' type codes
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkCatalog catalog = new ChunkCatalog();
+        final ChunkTypeRegistry registry = new ChunkTypeRegistry();
+
+        final java.util.concurrent.atomic.AtomicInteger qWriteCount = new java.util.concurrent.atomic.AtomicInteger();
+        final ChunkTypeHandler smallHandlerAscii = createSmallCapacityHandler('Q', 2, qWriteCount);
+        final ChunkTypeHandler smallHandlerSecond = createSmallCapacityHandler('X', 2, new java.util.concurrent.atomic.AtomicInteger());
+        registry.registerHandler(smallHandlerAscii);
+        registry.registerHandler(smallHandlerSecond);
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(dicts, catalog, registry);
+        Assert.assertSame(dicts, collector.getDictionaries());
+        Assert.assertSame(catalog, collector.getCatalog());
+        Assert.assertSame(registry, collector.getRegistry());
+
+        final java.lang.reflect.Field tlField = ChunkIngestionCollector.class.getDeclaredField("threadLocalBuilders");
+        tlField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        final ThreadLocal<ChunkBuilder[]> tlBuilders = (ThreadLocal<ChunkBuilder[]>) tlField.get(collector);
+        final java.lang.reflect.Field allBuildersField = ChunkIngestionCollector.class.getDeclaredField("allThreadBuilders");
+        allBuildersField.setAccessible(true);
+        final java.util.Collection<?> allBuilders = (java.util.Collection<?>) allBuildersField.get(collector);
+
+        // 2. Null and empty input guards across all collect() overloads
+        collector.collect((Data) null);
+        collector.collect((List<Data>) null);
+        collector.collect((com.xceptance.xlt.api.report.PostProcessedDataContainer) null);
+        final com.xceptance.xlt.api.report.PostProcessedDataContainer emptyHom =
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4, 1);
+        emptyHom.typeCode = 'Q';
+        collector.collect(emptyHom);
+        Assert.assertTrue("Empty container must not initialize threadLocalBuilders", allBuilders.isEmpty());
+        collector.collect(java.util.Collections.emptyList());
+        Assert.assertNull("Empty container must not allocate a builder", tlBuilders.get()['Q']);
+
+        // 3. Homogeneous PostProcessedDataContainer sized exactly to 4 elements (size == internalArr.length)
+        // Include a record whose own getTypeCode() is 'X' while container.typeCode is 'Q' to verify homogeneous routing
+        final com.xceptance.xlt.api.report.PostProcessedDataContainer homContainer =
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4, 1);
+        homContainer.typeCode = 'Q';
+        homContainer.dataList.add(createDummyRecord('Q', 1000L));
+        homContainer.dataList.add(null);
+        homContainer.dataList.add(createDummyRecord('Q', 1001L)); // triggers isFull() -> sealAndSpool + recycleBuilder
+        homContainer.dataList.add(createDummyRecord('X', 1002L)); // routed to 'Q' builder via container.typeCode fast-path
+        collector.collect(homContainer);
+        Assert.assertEquals(1, tlBuilders.get()['Q'].getRowCount());
+        Assert.assertNull(tlBuilders.get()['X']);
+
+        // 4. Heterogeneous PostProcessedDataContainer (typeCode = 0) sized exactly to 4 elements
+        final com.xceptance.xlt.api.report.PostProcessedDataContainer hetContainer =
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4, 1);
+        hetContainer.typeCode = 0;
+        hetContainer.dataList.add(null);
+        hetContainer.dataList.add(createDummyRecord('Q', 1003L)); // triggers isFull() for 'Q' inside collectRecord
+        hetContainer.dataList.add(createDummyRecord('X', 1004L));
+        hetContainer.dataList.add(createDummyRecord('X', 1005L)); // triggers isFull() for 'X'
+        collector.collect(hetContainer);
+
+        // Leave 1 uncommitted row in builders['X'] before collecting secondHomContainer (verifies builder != null reuse)
+        collector.collect(createDummyRecord('X', 1006L));
+        final com.xceptance.xlt.api.report.PostProcessedDataContainer secondHomContainer =
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(1, 1);
+        secondHomContainer.typeCode = 'X';
+        secondHomContainer.dataList.add(createDummyRecord('X', 1007L)); // triggers isFull() for 'X' (2 rows: 1006L, 1007L)
+        collector.collect(secondHomContainer);
+        Assert.assertNull("Full homogeneous builder slot must be cleared", tlBuilders.get()['X']);
+
+        // 5. List<Data> with null elements via collect(List<Data>)
+        final List<Data> arrayList = new ArrayList<>();
+        arrayList.add(null);
+        arrayList.add(createDummyRecord('Q', 1008L));
+        collector.collect(arrayList);
+
+        final java.lang.reflect.Field permitsField = ChunkIngestionCollector.class.getDeclaredField("compressionPermits");
+        permitsField.setAccessible(true);
+        final java.util.concurrent.Semaphore permits = (java.util.concurrent.Semaphore) permitsField.get(collector);
+        final java.lang.reflect.Field tasksField = ChunkIngestionCollector.class.getDeclaredField("pendingCompressionTasks");
+        tasksField.setAccessible(true);
+        final java.util.Collection<?> pendingTasks = (java.util.Collection<?>) tasksField.get(collector);
+        final java.lang.reflect.Field execField = ChunkIngestionCollector.class.getDeclaredField("compressionExecutor");
+        execField.setAccessible(true);
+        final java.util.concurrent.ExecutorService exec = (java.util.concurrent.ExecutorService) execField.get(collector);
+
+        // Verify ThreadFactory explicitly sets daemon=true even when invoked from a non-daemon parent thread
+        final java.util.concurrent.atomic.AtomicBoolean workerIsDaemon = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final Thread nonDaemonParent = new Thread(() -> {
+            final Thread worker = ((java.util.concurrent.ThreadPoolExecutor) exec).getThreadFactory().newThread(() -> {});
+            workerIsDaemon.set(worker.isDaemon());
+        });
+        nonDaemonParent.setDaemon(false);
+        nonDaemonParent.start();
+        nonDaemonParent.join();
+        Assert.assertTrue("ThreadFactory must explicitly mark worker threads as daemon", workerIsDaemon.get());
+
+        try (final ChunkStorage storage = collector.finish())
+        {
+            Assert.assertNotNull(storage);
+            Assert.assertTrue("Dictionaries must be compacted on finish()", dicts.isCompacted());
+            Assert.assertEquals(9L, storage.getTotalRowCount());
+            Assert.assertEquals(5, catalog.getAllChunks().size());
+            for (final Chunk c : catalog.getAllChunks())
+            {
+                Assert.assertTrue(c.getRowCount() > 0);
+            }
+            Assert.assertEquals(64, permits.availablePermits());
+            Assert.assertTrue(pendingTasks.isEmpty());
+            Assert.assertTrue(exec.isShutdown());
+            Assert.assertTrue(allBuilders.isEmpty());
+        }
+
+        // Calling finish() a second time when threadLocalBuilders is already null
+        try (final ChunkStorage storageAgain = collector.finish())
+        {
+            Assert.assertNotNull(storageAgain);
+        }
+
+        // 6. Test spooled ChunkIngestionCollector with builder rotation during collect()
+        final File spoolDir = new File(tempDir, "small-spool");
+        final ChunkCatalog spoolCatalog = new ChunkCatalog();
+        final ChunkTypeRegistry spoolRegistry = new ChunkTypeRegistry();
+        spoolRegistry.registerHandler(createSmallCapacityHandler('E', 2, qWriteCount));
+        final ChunkIngestionCollector spoolCollector =
+            new ChunkIngestionCollector(new GlobalDictionaries(), spoolCatalog, spoolRegistry, spoolDir);
+        qWriteCount.set(0);
+        spoolCollector.collect(createDummyRecord('E', 2000L));
+        spoolCollector.collect(createDummyRecord('E', 2001L)); // triggers background spooling in sealAndSpool
+        spoolCollector.collect(createDummyRecord('E', 2002L)); // partial builder sealed & spooled in finish()
+        try (final ChunkStorage spooledStorage = spoolCollector.finish())
+        {
+            Assert.assertNotNull(spooledStorage);
+            Assert.assertSame(spoolCatalog, spooledStorage.getCatalog());
+            Assert.assertEquals(3L, spooledStorage.getTotalRowCount());
+            Assert.assertTrue(spooledStorage.getDictionaries().isCompacted());
+            Assert.assertEquals(2, spoolCatalog.getAllChunks().size());
+            Assert.assertEquals("Both chunks must be spooled via collector's handler", 2, qWriteCount.get());
+            for (final Chunk c : spoolCatalog.getAllChunks())
+            {
+                Assert.assertTrue("Expected DiskChunk when spooler is active",
+                                  c instanceof com.xceptance.xlt.report.storage.chunk.DiskChunk);
+            }
+        }
+
+        // 7. Test ChunkSpooler init failure fallback (when cacheDir is a regular file blocking mkdirs/tmpFile creation)
+        final File blockingFile = new File(tempDir, "not-a-dir");
+        Files.writeString(blockingFile.toPath(), "block", StandardCharsets.UTF_8);
+        final ChunkIngestionCollector fallbackCollector = new ChunkIngestionCollector(blockingFile);
+        final EventData fallbackEvent = new EventData("Ev");
+        fallbackEvent.setTime(3000L);
+        fallbackEvent.setAgentName("Ag");
+        fallbackEvent.setTransactionName("Tc");
+        fallbackEvent.setMessage("Msg");
+        fallbackCollector.collect(fallbackEvent);
+        try (final ChunkStorage fallbackStorage = fallbackCollector.finish())
+        {
+            Assert.assertEquals(1L, fallbackStorage.getTotalRowCount());
+        }
+
+        // 8. Test recycleBuilder pool cap at 32, builder.reset() on poll, and 0-row builder skipping in finish()
+        final ChunkCatalog poolCatalog = new ChunkCatalog();
+        final ChunkIngestionCollector poolCollector = new ChunkIngestionCollector(new GlobalDictionaries(), poolCatalog, registry);
+        @SuppressWarnings("unchecked")
+        final ThreadLocal<ChunkBuilder[]> poolTlBuilders = (ThreadLocal<ChunkBuilder[]>) tlField.get(poolCollector);
+        final java.lang.reflect.Field recycledField = ChunkIngestionCollector.class.getDeclaredField("recycledBuilders");
+        recycledField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        final java.util.concurrent.ConcurrentLinkedQueue<ChunkBuilder>[] pools =
+            (java.util.concurrent.ConcurrentLinkedQueue<ChunkBuilder>[]) recycledField.get(poolCollector);
+        final java.util.concurrent.ConcurrentLinkedQueue<ChunkBuilder> qPool = new java.util.concurrent.ConcurrentLinkedQueue<>();
+        pools['Q'] = qPool;
+        // First collect when qPool is non-null but empty -> acquireBuilder polls null and creates a new builder
+        poolCollector.collect(createDummyRecord('Q', 4000L));
+        // Offer a dirty builder (with 1 pre-existing row that reset() must clear) + 30 more builders (31 total in qPool)
+        final ChunkBuilder dirtyBuilder = smallHandlerAscii.newChunkBuilder(dicts);
+        dirtyBuilder.append(createDummyRecord('Q', 3999L));
+        Assert.assertEquals(1, dirtyBuilder.getRowCount());
+        qPool.offer(dirtyBuilder);
+        for (int i = 0; i < 30; i++)
+        {
+            qPool.offer(smallHandlerAscii.newChunkBuilder(dicts));
+        }
+        Assert.assertEquals(31, qPool.size());
+        // Collect 2nd record -> fills active builder -> background sealAndSpool recycles fullBuilder into qPool (31 < 32 -> size becomes 32)
+        poolCollector.collect(createDummyRecord('Q', 4001L));
+        Assert.assertNull("Full builder slot must be cleared on sealAndSpool", poolTlBuilders.get()['Q']);
+        @SuppressWarnings("unchecked")
+        final java.util.Collection<java.util.concurrent.Future<?>> poolTasks =
+            (java.util.Collection<java.util.concurrent.Future<?>>) tasksField.get(poolCollector);
+        for (final java.util.concurrent.Future<?> f : poolTasks)
+        {
+            f.get();
+        }
+        Assert.assertEquals("Recycled builder must be offered when pool size is 31 (< 32)", 32, qPool.size());
+
+        // Also test recycleBuilder when pool size is already 32 (must not exceed 32)
+        final java.lang.reflect.Method recycleMethod =
+            ChunkIngestionCollector.class.getDeclaredMethod("recycleBuilder", ChunkBuilder.class, char.class);
+        recycleMethod.setAccessible(true);
+        recycleMethod.invoke(poolCollector, smallHandlerAscii.newChunkBuilder(dicts), 'Q');
+        Assert.assertEquals("Pool size must be capped at 32", 32, qPool.size());
+
+        // Collect 3rd record -> acquires dirtyBuilder from head of qPool (size 32 -> 31), resets it to 0 rows, and appends 4002L
+        poolCollector.collect(createDummyRecord('Q', 4002L));
+        Assert.assertEquals(31, qPool.size());
+        Assert.assertSame("acquireBuilder must poll and return recycled builder from pool", dirtyBuilder, poolTlBuilders.get()['Q']);
+        Assert.assertEquals(1, dirtyBuilder.getRowCount());
+
+        // Place a 0-row builder in slot 'X' to verify finish() skips non-null builders with 0 rows
+        poolTlBuilders.get()['X'] = smallHandlerSecond.newChunkBuilder(dicts);
+
+        try (final ChunkStorage poolStorage = poolCollector.finish())
+        {
+            Assert.assertEquals(3L, poolStorage.getTotalRowCount());
+            Assert.assertEquals("0-row builder must not be sealed as an extra chunk", 2, poolCatalog.getAllChunks().size());
+            Assert.assertNull("finish() must clear recycledBuilders entries", pools['Q']);
+        }
+
+        // 9. Test IOException fallback in sealAndSpool and finish() when writeChunk fails, plus finish() spooler failure
+        final ChunkTypeRegistry failingRegistry = new ChunkTypeRegistry();
+        failingRegistry.registerHandler(new ChunkTypeHandler()
+        {
+            @Override
+            public char getTypeCode()
+            {
+                return 'E';
+            }
+
+            @Override
+            public ChunkBuilder newChunkBuilder(final GlobalDictionaries d)
+            {
+                return smallHandlerAscii.newChunkBuilder(d);
+            }
+
+            @Override
+            public void writeChunk(final Chunk chunk, final java.io.DataOutput out) throws java.io.IOException
+            {
+                throw new java.io.IOException("Simulated spool write failure");
+            }
+
+            @Override
+            public Chunk readChunk(final java.io.DataInput in, final GlobalDictionaries d)
+            {
+                return null;
+            }
+
+            @Override
+            public void scan(final Chunk chunk, final ScanPredicate pred,
+                             final java.util.function.Consumer<Data> cons, final GlobalDictionaries d)
+            {
+            }
+        });
+        final File failSpoolDir = new File(tempDir, "fail-spool");
+        final ChunkIngestionCollector failSpoolCollector =
+            new ChunkIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), failingRegistry, failSpoolDir);
+        failSpoolCollector.collect(createDummyRecord('E', 5000L));
+        failSpoolCollector.collect(createDummyRecord('E', 5001L)); // triggers sealAndSpool IOException fallback
+        failSpoolCollector.collect(createDummyRecord('E', 5002L)); // triggers finish() spoolChunk IOException fallback
+        // Delete chunks.bin.tmp before finish() so activeSpooler.finish() fails when moving tmpFile -> targetFile
+        new File(failSpoolDir, ChunkStorage.CHUNKS_FILE_NAME + ".tmp").delete();
+        try
+        {
+            failSpoolCollector.finish();
+            Assert.fail("Expected RuntimeException when spooler.finish fails");
+        }
+        catch (final RuntimeException expected)
+        {
+            Assert.assertTrue(expected.getMessage().contains("Failed to finalize spooled chunk storage"));
+        }
+
+        // 10. Test asynchronous compression task failure in finish()
+        final ChunkTypeRegistry sealFailRegistry = new ChunkTypeRegistry();
+        sealFailRegistry.registerHandler(new ChunkTypeHandler()
+        {
+            @Override
+            public char getTypeCode()
+            {
+                return 'Q';
+            }
+
+            @Override
+            public ChunkBuilder newChunkBuilder(final GlobalDictionaries d)
+            {
+                return new ChunkBuilder()
+                {
+                    private int rows;
+
+                    @Override
+                    public char getTypeCode()
+                    {
+                        return 'Q';
+                    }
+
+                    @Override
+                    public boolean append(final Data record)
+                    {
+                        return ++rows >= 1;
+                    }
+
+                    @Override
+                    public boolean isFull()
+                    {
+                        return rows >= 1;
+                    }
+
+                    @Override
+                    public int getRowCount()
+                    {
+                        return rows;
+                    }
+
+                    @Override
+                    public Chunk seal()
+                    {
+                        throw new IllegalStateException("Simulated seal failure");
+                    }
+
+                    @Override
+                    public void reset()
+                    {
+                        rows = 0;
+                    }
+                };
+            }
+
+            @Override
+            public void writeChunk(final Chunk chunk, final java.io.DataOutput out)
+            {
+            }
+
+            @Override
+            public Chunk readChunk(final java.io.DataInput in, final GlobalDictionaries d)
+            {
+                return null;
+            }
+
+            @Override
+            public void scan(final Chunk chunk, final ScanPredicate pred,
+                             final java.util.function.Consumer<Data> cons, final GlobalDictionaries d)
+            {
+            }
+        });
+        final ChunkIngestionCollector sealFailCollector =
+            new ChunkIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), sealFailRegistry);
+        sealFailCollector.collect(createDummyRecord('Q', 6000L)); // triggers sealAndSpool which throws in background task
+        try
+        {
+            sealFailCollector.finish();
+            Assert.fail("Expected RuntimeException when async compression task fails");
+        }
+        catch (final RuntimeException expected)
+        {
+            Assert.assertTrue(expected.getMessage().contains("Asynchronous chunk compression failed"));
+        }
+    }
+
+    private static Data createDummyRecord(final char typeCode, final long time)
+    {
+        final com.xceptance.xlt.api.engine.AbstractData d = new com.xceptance.xlt.api.engine.AbstractData("Timer", typeCode)
+        {
+            @Override
+            public void setRemainingValues(final CsvByteColumns values)
+            {
+            }
+        };
+        d.setTime(time);
+        d.setAgentName("Ag");
+        d.setTransactionName("Tc");
+        return d;
+    }
+
+    private static ChunkTypeHandler createSmallCapacityHandler(final char typeCode, final int maxRows,
+                                                               final java.util.concurrent.atomic.AtomicInteger writeCount)
+    {
+        final com.xceptance.xlt.report.storage.chunk.EventChunkHandler delegate =
+            new com.xceptance.xlt.report.storage.chunk.EventChunkHandler();
+        return new ChunkTypeHandler()
+        {
+            @Override
+            public char getTypeCode()
+            {
+                return typeCode;
+            }
+
+            @Override
+            public ChunkBuilder newChunkBuilder(final GlobalDictionaries dicts)
+            {
+                final ChunkBuilder inner = delegate.newChunkBuilder(dicts);
+                return new ChunkBuilder()
+                {
+                    @Override
+                    public char getTypeCode()
+                    {
+                        return typeCode;
+                    }
+
+                    @Override
+                    public boolean append(final Data record)
+                    {
+                        if (inner.getRowCount() >= maxRows)
+                        {
+                            throw new IllegalStateException("Builder overflow beyond maxRows=" + maxRows);
+                        }
+                        final EventData ev = new EventData(record.getName());
+                        ev.setTime(record.getTime());
+                        ev.setAgentName(record.getAgentName());
+                        ev.setTransactionName(record.getTransactionName());
+                        ev.setMessage("m");
+                        inner.append(ev);
+                        return isFull();
+                    }
+
+                    @Override
+                    public boolean isFull()
+                    {
+                        return inner.getRowCount() >= maxRows;
+                    }
+
+                    @Override
+                    public int getRowCount()
+                    {
+                        return inner.getRowCount();
+                    }
+
+                    @Override
+                    public Chunk seal()
+                    {
+                        if (Thread.currentThread().getName().startsWith("ChunkCompressionWorker-"))
+                        {
+                            Assert.assertTrue("Compression worker thread must be daemon", Thread.currentThread().isDaemon());
+                        }
+                        return inner.seal();
+                    }
+
+                    @Override
+                    public void reset()
+                    {
+                        inner.reset();
+                    }
+                };
+            }
+
+            @Override
+            public void writeChunk(final Chunk chunk, final java.io.DataOutput out) throws java.io.IOException
+            {
+                writeCount.incrementAndGet();
+                delegate.writeChunk(chunk, out);
+            }
+
+            @Override
+            public Chunk readChunk(final java.io.DataInput in, final GlobalDictionaries dicts) throws java.io.IOException
+            {
+                return delegate.readChunk(in, dicts);
+            }
+
+            @Override
+            public void scan(final Chunk chunk, final ScanPredicate predicate,
+                             final java.util.function.Consumer<Data> consumer, final GlobalDictionaries dicts)
+            {
+                delegate.scan(chunk, predicate, consumer, dicts);
+            }
+        };
+    }
 }

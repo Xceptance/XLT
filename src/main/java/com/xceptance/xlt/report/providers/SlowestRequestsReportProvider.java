@@ -22,9 +22,11 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.storage.chunk.RequestChunk;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -112,6 +114,28 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
             }
         }
 
+        // Lazily resolve Cold Forensic Tail Block attributes (exact URL, requestId, responseId, formData)
+        // for the final top slowest requests without inflating forensic tails during hot-vector scanning.
+        Map<Object, Map<Integer, RequestChunk.ForensicDetails>> forensicCache = null;
+        for (final SlowRequestReport request : slowestRequests)
+        {
+            final Object chunk = request.getSourceChunk();
+            if (chunk != null)
+            {
+                if (forensicCache == null)
+                {
+                    forensicCache = new IdentityHashMap<>();
+                }
+                Map<Integer, RequestChunk.ForensicDetails> chunkForensics = forensicCache.get(chunk);
+                if (chunkForensics == null)
+                {
+                    chunkForensics = RequestChunk.loadForensicDetails(chunk);
+                    forensicCache.put(chunk, chunkForensics);
+                }
+                request.applyForensicDetails(chunkForensics.get(request.getSourceRowIndex()));
+            }
+        }
+
         SlowestRequestsReport report = new SlowestRequestsReport();
         report.slowestRequests = new ArrayList<>(slowestRequests);
 
@@ -144,6 +168,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         final com.xceptance.xlt.api.util.SimpleArrayList<Data> list = dataContainer.dataList;
         final Object[] array = list.getInternalArray();
         final int size = list.size();
+        final Object sourceChunk = dataContainer.getSourceChunk();
 
         for (int p = 0; p < size; p++)
         {
@@ -152,7 +177,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
 
             if (runtime >= minRuntime && runtime <= maxRuntime)
             {
-                processRequestData(req, runtime);
+                processRequestData(req, runtime, sourceChunk, dataContainer.getSourceRowIndex(p));
             }
         }
     }
@@ -171,7 +196,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
             // only process requests that are within the runtime thresholds
             if (runtime >= minRuntime && runtime <= maxRuntime)
             {
-                processRequestData(reqData, runtime);
+                processRequestData(reqData, runtime, null, -1);
             }
         }
     }
@@ -183,8 +208,15 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
      *            the request data record
      * @param runtime
      *            the pre-extracted runtime duration
+     * @param sourceChunk
+     *            optional source chunk for lazy forensic detail lookup
+     * @param sourceRowIndex
+     *            row index inside {@code sourceChunk}, or {@code -1}
      */
-    private void processRequestData(final RequestData reqData, final long runtime)
+    private void processRequestData(final RequestData reqData,
+                                    final long runtime,
+                                    final Object sourceChunk,
+                                    final int sourceRowIndex)
     {
         final String bucketName = reqData.getName();
         TreeSet<SlowRequestReport> requests;
@@ -217,7 +249,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         if (requests.size() < requestsPerBucket)
         {
             // if bucket limit isn't reached, add any request; request set is sorted automatically
-            requests.add(new SlowRequestReport(reqData, processingOrder++));
+            requests.add(new SlowRequestReport(reqData, processingOrder++, sourceChunk, sourceRowIndex));
             if (requests.size() >= requestsPerBucket)
             {
                 minStoredRuntime = requests.last().runtime;
@@ -228,7 +260,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         else if (runtime > minStoredRuntime)
         {
             // add the request; the request set is sorted automatically
-            requests.add(new SlowRequestReport(reqData, processingOrder++));
+            requests.add(new SlowRequestReport(reqData, processingOrder++, sourceChunk, sourceRowIndex));
 
             // remove request that is the last after sorting to stay within bucket limit
             requests.remove(requests.last());

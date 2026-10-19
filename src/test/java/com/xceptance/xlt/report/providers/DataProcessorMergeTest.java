@@ -964,4 +964,177 @@ public class DataProcessorMergeTest
         Assert.assertEquals("Mean runtime mismatch", rExpected.mean.doubleValue(), rActual.mean.doubleValue(), 0.001);
         Assert.assertEquals("Apdex mismatch", rExpected.apdex.value.doubleValue(), rActual.apdex.value.doubleValue(), 0.01);
     }
+
+    @Test
+    public void testErrorsReportProviderMergeEnforcesStackTracesLimit()
+    {
+        final int limit = config.getStackTracesLimit(); // 500
+        Assert.assertEquals(500, limit);
+
+        final ErrorsReportProvider master = new ErrorsReportProvider();
+        master.setConfiguration(config);
+
+        final ErrorsReportProvider w1 = new ErrorsReportProvider();
+        w1.setConfiguration(config);
+
+        final ErrorsReportProvider w2 = new ErrorsReportProvider();
+        w2.setConfiguration(config);
+
+        final ErrorsReportProvider w3 = new ErrorsReportProvider();
+        w3.setConfiguration(config);
+
+        // w1 processes 300 distinct stack traces (0..299)
+        for (int i = 0; i < 300; i++)
+        {
+            final TransactionData txn = createTransaction("TTest", 2000L + i, 100, true);
+            txn.setFailedActionName("Act");
+            txn.setFailureStackTrace("java.lang.RuntimeException: Error trace #" + i);
+            w1.processDataRecord(txn);
+        }
+
+        // w2 processes 300 stack traces: 50 overlapping (250..299) and 250 new (300..549)
+        for (int i = 250; i < 550; i++)
+        {
+            final TransactionData txn = createTransaction("TTest", 3000L + i, 100, true);
+            txn.setFailedActionName("Act");
+            txn.setFailureStackTrace("java.lang.RuntimeException: Error trace #" + i);
+            w2.processDataRecord(txn);
+        }
+
+        // w3 processes 300 stack traces: 50 overlapping (500..549) and 250 new (550..799)
+        for (int i = 500; i < 800; i++)
+        {
+            final TransactionData txn = createTransaction("TTest", 4000L + i, 100, true);
+            txn.setFailedActionName("Act");
+            txn.setFailureStackTrace("java.lang.RuntimeException: Error trace #" + i);
+            w3.processDataRecord(txn);
+        }
+
+        master.merge(w1);
+        master.merge(w2);
+        master.merge(w3);
+
+        final ErrorsReport report = (ErrorsReport) master.createReportFragment();
+        Assert.assertEquals("All 800 distinct error groups must be preserved", 800, report.errors.size());
+
+        int fullTraceCount = 0;
+        int naTraceCount = 0;
+        int totalOccurrences = 0;
+        for (final ErrorReport er : report.errors)
+        {
+            totalOccurrences += er.count;
+            if ("n/a".equals(er.trace))
+            {
+                naTraceCount++;
+            }
+            else
+            {
+                Assert.assertTrue(er.trace.startsWith("java.lang.RuntimeException: Error trace #"));
+                fullTraceCount++;
+            }
+        }
+
+        Assert.assertEquals("Total error occurrences must equal 900 (300 + 300 + 300)", 900, totalOccurrences);
+        Assert.assertEquals("Number of retained stack traces must never exceed stackTracesLimit", limit, fullTraceCount);
+        Assert.assertEquals("Remaining errors beyond stackTracesLimit must have trace='n/a'", 800 - limit, naTraceCount);
+    }
+
+    @Test
+    public void testSlowestRequestsLazyForensicResolutionFromDiskAndMemoryChunks() throws Exception
+    {
+        final File spoolDir = tempFolder.newFolder("slowest-forensic-spool");
+        final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector =
+            new com.xceptance.xlt.report.storage.ChunkIngestionCollector(spoolDir);
+
+        final long baseTime = 1_700_000_000_000L;
+
+        // First ingest 20 fast requests with sample URLs so GlobalDictionaries sample URLs are filled
+        for (int i = 0; i < 20; i++)
+        {
+            final RequestData fast = new RequestData("Search");
+            fast.setTime(baseTime + i);
+            fast.setRunTime(50);
+            fast.setResponseCode(200);
+            fast.setHttpMethod("GET");
+            fast.setUrl("https://shop.example.com/search?q=sample-" + i);
+            fast.setRequestId("fast-req-" + i);
+            fast.setResponseId("fast-resp-" + i);
+            fast.setFormData("");
+            collector.collect(fast);
+        }
+
+        // Now ingest a slow outlier request (runtime = 4500 ms >= minRuntime 3000 ms) with a unique URL,
+        // requestId, responseId, and POST formData that are NOT in GlobalDictionaries sample URLs
+        final RequestData slow1 = new RequestData("Search");
+        slow1.setTime(baseTime + 100);
+        slow1.setRunTime(4_500);
+        slow1.setResponseCode(200);
+        slow1.setHttpMethod("POST");
+        slow1.setUrl("https://shop.example.com/search?q=exact-outlier-url-999");
+        slow1.setRequestId("exact-req-id-999");
+        slow1.setResponseId("exact-resp-id-999");
+        slow1.setFormDataEncoding("application/x-www-form-urlencoded");
+        slow1.setFormData("query=outlier&page=99");
+        collector.collect(slow1);
+
+        // And a second slow request with empty formData and empty responseId (as produced by CSV parsing)
+        final RequestData slow2 = new RequestData("Search");
+        slow2.setTime(baseTime + 200);
+        slow2.setRunTime(3_800);
+        slow2.setResponseCode(200);
+        slow2.setHttpMethod("GET");
+        slow2.setUrl("https://shop.example.com/search?q=exact-outlier-url-888");
+        slow2.setRequestId("exact-req-id-888");
+        slow2.setResponseId("");
+        slow2.setFormData("");
+        collector.collect(slow2);
+
+        try (final com.xceptance.xlt.report.storage.ChunkStorage active = collector.finish())
+        {
+            Assert.assertNotNull(active);
+        }
+
+        try (final com.xceptance.xlt.report.storage.ChunkStorage loaded =
+                 com.xceptance.xlt.report.storage.ChunkStorage.loadFromDirectory(spoolDir))
+        {
+            final com.xceptance.xlt.report.storage.chunk.DiskChunk dc =
+                (com.xceptance.xlt.report.storage.chunk.DiskChunk) loaded.getCatalog().getChunksForType('R').get(0);
+            final com.xceptance.xlt.report.storage.chunk.RequestChunkHandler handler =
+                (com.xceptance.xlt.report.storage.chunk.RequestChunkHandler)
+                    com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry.getInstance().getHandler('R');
+
+            final PostProcessedDataContainer container = new PostProcessedDataContainer(32, 1);
+            container.typeCode = 'R';
+            handler.scan(dc, com.xceptance.xlt.report.storage.query.ScanPredicate.ALL, container, loaded.getDictionaries());
+
+            Assert.assertSame(dc, container.getSourceChunk());
+            Assert.assertEquals(20, container.getSourceRowIndex(20));
+            Assert.assertEquals(21, container.getSourceRowIndex(21));
+
+            final SlowestRequestsReportProvider worker = new SlowestRequestsReportProvider();
+            worker.setConfiguration(config);
+            worker.processAll(container);
+
+            final SlowestRequestsReportProvider master = new SlowestRequestsReportProvider();
+            master.setConfiguration(config);
+            master.merge(worker);
+
+            final SlowestRequestsReport report = (SlowestRequestsReport) master.createReportFragment();
+            Assert.assertEquals(2, report.slowestRequests.size());
+
+            final SlowRequestReport r0 = report.slowestRequests.get(0);
+            Assert.assertEquals(4_500L, r0.runtime);
+            Assert.assertEquals("https://shop.example.com/search?q=exact-outlier-url-999", r0.url);
+            Assert.assertEquals("exact-req-id-999", r0.requestId);
+            Assert.assertEquals("exact-resp-id-999", r0.responseId);
+            Assert.assertEquals("query=outlier&page=99", r0.formData);
+
+            final SlowRequestReport r1 = report.slowestRequests.get(1);
+            Assert.assertEquals(3_800L, r1.runtime);
+            Assert.assertEquals("https://shop.example.com/search?q=exact-outlier-url-888", r1.url);
+            Assert.assertEquals("exact-req-id-888", r1.requestId);
+            Assert.assertEquals("", r1.responseId);
+            Assert.assertEquals("", r1.formData);
+        }
+    }
 }

@@ -18,6 +18,7 @@ package com.xceptance.xlt.report.providers;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.report.storage.chunk.RequestChunk;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -47,7 +48,7 @@ public class SlowRequestReport
     /**
      * The request ID.
      */
-    public final String requestId;
+    public String requestId;
 
     /**
      * The request HTTP method.
@@ -57,7 +58,7 @@ public class SlowRequestReport
     /**
      * The request URL.
      */
-    public final String url;
+    public String url;
 
     /**
      * The request form data encoding.
@@ -67,12 +68,12 @@ public class SlowRequestReport
     /**
      * The request form data.
      */
-    public final String formData;
+    public String formData;
 
     /**
      * The response ID.
      */
-    public final String responseId;
+    public String responseId;
 
     /**
      * The HTTP response code.
@@ -142,6 +143,12 @@ public class SlowRequestReport
     @XStreamOmitField
     private long processingOrder;
 
+    @XStreamOmitField
+    private transient Object sourceChunk;
+
+    @XStreamOmitField
+    private transient int sourceRowIndex = -1;
+
     /**
      * General comparator for slow requests. Compares requests by runtime, bucket name and processing order.
      */
@@ -187,6 +194,14 @@ public class SlowRequestReport
 
     public SlowRequestReport(final RequestData requestData, final long processingOrder)
     {
+        this(requestData, processingOrder, null, -1);
+    }
+
+    public SlowRequestReport(final RequestData requestData,
+                             final long processingOrder,
+                             final Object sourceChunk,
+                             final int sourceRowIndex)
+    {
         this.name = requestData.getName();
         this.runtime = requestData.getRunTime();
         this.time = new Date(requestData.getTime());
@@ -221,5 +236,47 @@ public class SlowRequestReport
         this.usedIpAddress = Objects.toString(requestData.getUsedIpAddress(), null);
 
         this.processingOrder = processingOrder;
+        this.sourceChunk = sourceChunk;
+        this.sourceRowIndex = sourceRowIndex;
+    }
+
+    Object getSourceChunk()
+    {
+        return sourceChunk;
+    }
+
+    int getSourceRowIndex()
+    {
+        return sourceRowIndex;
+    }
+
+    void applyForensicDetails(final RequestChunk.ForensicDetails details)
+    {
+        if (details != null)
+        {
+            if (details.url() != null)
+            {
+                this.url = details.url();
+            }
+            this.requestId = details.requestId() != null ? details.requestId() : "";
+            this.responseId = details.responseId() != null ? details.responseId() : "";
+            this.formData = details.formData() != null ? details.formData() : "";
+        }
+        else
+        {
+            if (this.requestId == null)
+            {
+                this.requestId = "";
+            }
+            if (this.responseId == null)
+            {
+                this.responseId = "";
+            }
+            if (this.formData == null)
+            {
+                this.formData = "";
+            }
+        }
+        this.sourceChunk = null;
     }
 }

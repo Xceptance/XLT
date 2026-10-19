@@ -81,8 +81,9 @@ public class Dispatcher
 
     /**
      * Optional collector for streaming parsed records into ChunkDB storage during ingestion.
+     * Released once Phase 1 data record processing completes so the collector is eligible for GC before Phase 2.
      */
-    private final com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
+    private com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
 
     /**
      * Creates a new {@link Dispatcher} object with the given configuration and statistics processor.
@@ -233,8 +234,9 @@ public class Dispatcher
         // wait for the data processor thread to finish data record chunks
         openDataChunkCount.awaitZero();
 
-        // stop progress
+        // stop progress and release ingestion collector reference
         progressBar.close();
+        chunkCollector = null;
     }
 
     /**

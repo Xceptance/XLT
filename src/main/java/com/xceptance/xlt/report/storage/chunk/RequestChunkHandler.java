@@ -638,6 +638,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         String lastEncoding = null;
 
         int containerIndex = container.dataList.size();
+        container.setSourceChunk(chunk);
 
         // 4. Linear row scan and zero-allocation reconstitution
         for (int i = 0; i < rowCount; i++)
@@ -662,7 +663,9 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
 
             // Reconstruct RequestData instance from container pool (zero allocation!)
-            final RequestData req = container.getOrCreateRequestData(containerIndex++);
+            final int idx = containerIndex++;
+            final RequestData req = container.getOrCreateRequestData(idx);
+            container.setSourceRowIndex(idx, i);
             req.setTime(time);
 
             // Register-cached timer name & sample URL lookup

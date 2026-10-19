@@ -78,6 +78,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
     private int stackTracesLimit;
 
     /**
+     * The number of errors currently stored with a full stack trace (not {@code "n/a"}).
+     */
+    private int savedStackTracesCount;
+
+    /**
      * The root directory of the result set.
      */
     private FsResource resultsDirectory;
@@ -532,9 +537,10 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     errorReport.actionName = failedActionName;
                     errorReport.detailChartID = 0;
                     
-                    if (errorReports.size() < stackTracesLimit) //only save stacktraces up to limit
+                    if (savedStackTracesCount < stackTracesLimit) //only save stacktraces up to limit
                     {
                         errorReport.trace = trace;
+                        savedStackTracesCount++;
                     }
                     else
                     {
@@ -731,16 +737,37 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
         for (final Map.Entry<String, ErrorValues> entry : other.errorReports.entrySet())
         {
-            ErrorValues ev = this.errorReports.get(entry.getKey());
+            final ErrorValues otherEv = entry.getValue();
+            final ErrorValues ev = this.errorReports.get(entry.getKey());
             if (ev == null)
             {
-                this.errorReports.put(entry.getKey(), entry.getValue());
+                final boolean hasRealTrace = otherEv.errorReport.trace != null && !"n/a".equals(otherEv.errorReport.trace);
+                if (hasRealTrace)
+                {
+                    if (savedStackTracesCount < stackTracesLimit)
+                    {
+                        savedStackTracesCount++;
+                    }
+                    else
+                    {
+                        otherEv.errorReport.trace = "n/a";
+                    }
+                }
+                this.errorReports.put(entry.getKey(), otherEv);
             }
             else
             {
-                ev.values.merge(entry.getValue().values);
-                ev.errorReport.count += entry.getValue().errorReport.count;
-                for (final String hint : entry.getValue().errorReport.directoryHints)
+                if ("n/a".equals(ev.errorReport.trace)
+                    && otherEv.errorReport.trace != null
+                    && !"n/a".equals(otherEv.errorReport.trace)
+                    && savedStackTracesCount < stackTracesLimit)
+                {
+                    ev.errorReport.trace = otherEv.errorReport.trace;
+                    savedStackTracesCount++;
+                }
+                ev.values.merge(otherEv.values);
+                ev.errorReport.count += otherEv.errorReport.count;
+                for (final String hint : otherEv.errorReport.directoryHints)
                 {
                     if (ev.errorReport.directoryHints.size() < directoryLimitPerError)
                     {

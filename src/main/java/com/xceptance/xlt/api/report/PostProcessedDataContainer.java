@@ -99,6 +99,16 @@ public class PostProcessedDataContainer
      */
     private CustomValue[] customValuePool;
 
+    /**
+     * Optional reference to the source chunk from which the current records were scanned.
+     */
+    private Object sourceChunk;
+
+    /**
+     * Pre-allocated array mapping container record index {@code p} to its original row index inside {@link #sourceChunk}.
+     */
+    private int[] sourceRowIndices;
+
     public PostProcessedDataContainer(final int size, final int sampleFactor)
     {
         final SimpleArrayList<Data> list = new SimpleArrayList<>(size);
@@ -316,6 +326,64 @@ public class PostProcessedDataContainer
     }
 
     /**
+     * Returns the source chunk from which the current container records were scanned, or {@code null}.
+     *
+     * @return the source chunk
+     */
+    public Object getSourceChunk()
+    {
+        return sourceChunk;
+    }
+
+    /**
+     * Sets the source chunk from which the current container records are being scanned.
+     *
+     * @param sourceChunk
+     *            the source chunk
+     */
+    public void setSourceChunk(final Object sourceChunk)
+    {
+        this.sourceChunk = sourceChunk;
+    }
+
+    /**
+     * Records the original chunk row index for the record at the given container position.
+     *
+     * @param containerIndex
+     *            the index inside {@link #dataList}
+     * @param chunkRowIndex
+     *            the row index inside {@link #sourceChunk}
+     */
+    public void setSourceRowIndex(final int containerIndex, final int chunkRowIndex)
+    {
+        if (sourceRowIndices == null)
+        {
+            sourceRowIndices = new int[65536];
+        }
+        else if (containerIndex >= sourceRowIndices.length)
+        {
+            sourceRowIndices = java.util.Arrays.copyOf(sourceRowIndices, Math.max(sourceRowIndices.length * 2, containerIndex + 1));
+        }
+        sourceRowIndices[containerIndex] = chunkRowIndex;
+    }
+
+    /**
+     * Returns the original chunk row index for the record at the given container position, or {@code -1} if not tracked.
+     *
+     * @param containerIndex
+     *            the index inside {@link #dataList}
+     * @return the row index inside {@link #sourceChunk}, or {@code -1}
+     */
+    public int getSourceRowIndex(final int containerIndex)
+    {
+        if (sourceRowIndices == null || containerIndex < 0 || containerIndex >= sourceRowIndices.length)
+        {
+            return -1;
+        }
+        return sourceRowIndices[containerIndex];
+    }
+
+    /**
      * Clears all accumulated data records and resets min/max timestamps for container reuse.
      */
     public void reset()
@@ -326,6 +394,7 @@ public class PostProcessedDataContainer
         droppedLines = 0;
         hasFailedRecords = false;
         typeCode = 0;
+        sourceChunk = null;
     }
 }
 
