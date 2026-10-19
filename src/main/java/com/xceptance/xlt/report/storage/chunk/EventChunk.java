@@ -159,6 +159,46 @@ public class EventChunk implements Chunk
     }
 
     /**
+     * Returns the compressed timestamp offset column.
+     *
+     * @return compressed time offsets
+     */
+    public int[] getCompTimeOffsets()
+    {
+        return compTimeOffsets;
+    }
+
+    /**
+     * Returns the compressed event name IDs column.
+     *
+     * @return compressed timer name IDs
+     */
+    public int[] getCompTimerNameIds()
+    {
+        return compTimerNameIds;
+    }
+
+    /**
+     * Returns the compressed unified (agent, testCase) pair IDs column.
+     *
+     * @return compressed agent/test case IDs
+     */
+    public int[] getCompAgentTestCaseIds()
+    {
+        return compAgentTestCaseIds;
+    }
+
+    /**
+     * Returns the compressed event message dictionary IDs column.
+     *
+     * @return compressed message IDs
+     */
+    public int[] getCompMessages()
+    {
+        return compMessages;
+    }
+
+    /**
      * Returns the compressed virtual user numbers array.
      *
      * @return compressed user numbers

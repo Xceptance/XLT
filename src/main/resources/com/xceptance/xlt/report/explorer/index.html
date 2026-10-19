@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XLT ChunkDB Explorer</title>
+  <link rel="stylesheet" href="/explorer/css/explorer.css">
+</head>
+<body>
+  <!-- Top Navigation & Global Filter Bar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-title">
+        <span class="brand-badge">XLT</span>
+        <h1>ChunkDB Explorer</h1>
+      </div>
+      <div class="dataset-meta" id="datasetMeta">
+        <span class="meta-pill">Loading dataset...</span>
+      </div>
+      <div class="topbar-right">
+        <div class="query-status" id="queryStatus" aria-live="polite">
+          <span class="status-dot idle" id="statusDot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+        <button type="button" id="themeToggleBtn" class="btn btn-secondary btn-xs" title="Toggle between Light Mode (default) and Dark Mode">
+          🌙 Dark
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label for="recordTypeSelect">Record Type</label>
+        <select id="recordTypeSelect">
+          <option value="R" selected>Requests</option>
+          <option value="T">Transactions</option>
+          <option value="A">Actions</option>
+          <option value="P">Page Loads</option>
+          <option value="C">Custom Timers</option>
+        </select>
+      </div>
+
+      <div class="filter-group filter-group-wide">
+        <label for="nameFilterInput">Timer Name / Regex</label>
+        <div class="input-with-clear">
+          <input type="text" id="nameFilterInput" list="timerNameList" placeholder="Filter by timer name or regex (e.g. Checkout.*)" autocomplete="off">
+          <button type="button" id="clearNameFilterBtn" class="icon-btn hidden" title="Clear name filter">&times;</button>
+        </div>
+        <datalist id="timerNameList"></datalist>
+      </div>
+
+      <div class="filter-group">
+        <label for="fromTimeInput">From (UTC)</label>
+        <input type="text" id="fromTimeInput" class="time-input" placeholder="YYYY-MM-DD HH:mm:ss" title="Start time in UTC (YYYY-MM-DD HH:mm:ss or HH:mm:ss)" autocomplete="off">
+      </div>
+
+      <div class="filter-group">
+        <label for="toTimeInput">To (UTC)</label>
+        <input type="text" id="toTimeInput" class="time-input" placeholder="YYYY-MM-DD HH:mm:ss" title="End time in UTC (YYYY-MM-DD HH:mm:ss or HH:mm:ss)" autocomplete="off">
+      </div>
+
+      <div class="filter-group">
+        <label for="scenarioSelect">Scenario</label>
+        <select id="scenarioSelect">
+          <option value="">All Scenarios</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="agentSelect">Agent</label>
+        <select id="agentSelect">
+          <option value="">All Agents</option>
+        </select>
+      </div>
+
+      <div class="filter-group" id="statusFilterGroup">
+        <label for="statusPresetSelect">HTTP Status</label>
+        <select id="statusPresetSelect">
+          <option value="ALL">All Statuses</option>
+          <option value="4XX_5XX">4xx &amp; 5xx (&ge; 400)</option>
+          <option value="5XX">5xx Server Errors (&ge; 500)</option>
+          <option value="4XX">4xx Client Errors (400-499)</option>
+          <option value="2XX">2xx Success (200-299)</option>
+          <option value="0">0 Connection Failed</option>
+        </select>
+      </div>
+
+      <div class="filter-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="failedOnlyCheckbox">
+          <span>Failed Only</span>
+        </label>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" id="runQueryBtn" class="btn btn-primary" title="Run analysis with selected filters and time window (Enter)">
+          ▶ Update
+        </button>
+        <button type="button" id="resetZoomBtn" class="btn btn-accent hidden" title="Reset From/To time inputs to full test duration">
+          Full Time
+        </button>
+        <button type="button" id="resetFiltersBtn" class="btn btn-secondary" title="Reset all filters and time window">
+          Reset All
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="workspace">
+    <!-- Top Pane: Interactive Time-Series Chart Workbench -->
+    <section class="chart-workbench" id="chartWorkbench">
+      <div class="workbench-header">
+        <div class="workbench-title-group">
+          <h2>Time-Series Explorer</h2>
+          <span class="time-window-badge" id="timeWindowBadge">Full Test Window</span>
+          <span class="bucket-badge" id="bucketBadge">Bucket: auto</span>
+        </div>
+
+        <div class="workbench-controls">
+          <div class="control-inline">
+            <label for="chartMetricSelect">View:</label>
+            <select id="chartMetricSelect">
+              <option value="LATENCY" selected>Latency Percentiles (p50 / p90 / p95 / p99)</option>
+              <option value="THROUGHPUT">Throughput (RPS) &amp; Errors/s</option>
+              <option value="NETWORK_PHASES">Network Phases (Connect / Send / Busy / Receive)</option>
+            </select>
+          </div>
+
+          <div class="control-inline">
+            <label for="chartGroupBySelect">Split Series By:</label>
+            <select id="chartGroupBySelect">
+              <option value="NONE" selected>None (Aggregate)</option>
+              <option value="TIMER">Timer Name</option>
+              <option value="USED_IP">Used IP / Host</option>
+              <option value="AGENT">Agent</option>
+              <option value="SCENARIO">Scenario</option>
+              <option value="STATUS_CODE">HTTP Status</option>
+              <option value="CONTENT_TYPE">Content-Type</option>
+              <option value="HTTP_METHOD">HTTP Method</option>
+            </select>
+          </div>
+
+          <div class="control-inline">
+            <label for="bucketSizeSelect">Resolution:</label>
+            <select id="bucketSizeSelect">
+              <option value="0" selected>Auto (120 buckets)</option>
+              <option value="100">100 ms</option>
+              <option value="500">500 ms</option>
+              <option value="1000">1 s</option>
+              <option value="5000">5 s</option>
+              <option value="10000">10 s</option>
+              <option value="30000">30 s</option>
+              <option value="60000">60 s</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-container" id="chartContainer">
+        <canvas id="timeSeriesCanvas"></canvas>
+        <div class="chart-brush-hint">Drag horizontally on chart to select time range &bull; Click ▶ Update (or press Enter) to run</div>
+        <div class="chart-tooltip hidden" id="chartTooltip"></div>
+      </div>
+      <div class="chart-legend" id="chartLegend"></div>
+    </section>
+
+    <!-- Bottom Pane: Tabbed Diagnostic Workspace -->
+    <section class="diagnostic-pane">
+      <div class="tabs-header">
+        <div class="tab-buttons">
+          <button type="button" class="tab-btn active" data-tab="summaryTab" id="tabBtnSummary">
+            📊 Summary &amp; Dimension Breakdown
+          </button>
+          <button type="button" class="tab-btn" data-tab="forensicTab" id="tabBtnForensic">
+            🔬 Forensic Outliers &amp; Failures
+          </button>
+        </div>
+
+        <!-- Tab 1 Controls -->
+        <div class="tab-toolbar" id="summaryToolbar">
+          <div class="control-inline">
+            <label for="summaryGroupBySelect">Group By Dimension:</label>
+            <select id="summaryGroupBySelect">
+              <option value="TIMER" selected>Timer Name</option>
+              <option value="USED_IP">Used IP / Backend Host</option>
+              <option value="AGENT">Load Agent</option>
+              <option value="SCENARIO">Scenario</option>
+              <option value="STATUS_CODE">HTTP Status Code</option>
+              <option value="CONTENT_TYPE">Content-Type</option>
+              <option value="HTTP_METHOD">HTTP Method</option>
+            </select>
+          </div>
+
+          <div class="control-inline">
+            <input type="text" id="summarySearchInput" placeholder="Filter table rows..." class="toolbar-input">
+          </div>
+
+          <button type="button" id="copyMarkdownBtn" class="btn btn-secondary" title="Copy current table as GitHub Markdown">
+            📋 Copy Table as Markdown
+          </button>
+        </div>
+
+        <!-- Tab 2 Controls -->
+        <div class="tab-toolbar hidden" id="forensicToolbar">
+          <div class="control-inline">
+            <label for="inspectModeSelect">Forensic Mode:</label>
+            <select id="inspectModeSelect">
+              <option value="SLOWEST_REQUESTS" selected>🐢 Slowest Requests (Top N by Runtime)</option>
+              <option value="FAILED_REQUESTS">❌ Failed Requests (HTTP &ge; 400 or Error)</option>
+              <option value="FAILED_TRANSACTIONS">💥 Failed Transactions (Stack Traces)</option>
+            </select>
+          </div>
+
+          <div class="control-inline">
+            <label for="inspectLimitSelect">Limit:</label>
+            <select id="inspectLimitSelect">
+              <option value="50">Top 50</option>
+              <option value="100" selected>Top 100</option>
+              <option value="250">Top 250</option>
+              <option value="500">Top 500</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 1: Multi-Dimensional Summary Table -->
+      <div class="tab-content active" id="summaryTab">
+        <div class="table-scroll">
+          <table class="data-table" id="summaryTable">
+            <thead>
+              <tr>
+                <th data-sort="key" class="sortable">Dimension Key</th>
+                <th data-sort="count" class="sortable num">Count</th>
+                <th data-sort="rps" class="sortable num">RPS</th>
+                <th data-sort="errors" class="sortable num">Errors</th>
+                <th data-sort="errorPct" class="sortable num">Error %</th>
+                <th data-sort="mean" class="sortable num">Mean (ms)</th>
+                <th data-sort="min" class="sortable num">Min</th>
+                <th data-sort="p50" class="sortable num">p50</th>
+                <th data-sort="p90" class="sortable num">p90</th>
+                <th data-sort="p95" class="sortable num sort-desc">p95</th>
+                <th data-sort="p99" class="sortable num">p99</th>
+                <th data-sort="max" class="sortable num">Max</th>
+                <th data-sort="avgTtfb" class="sortable num">TTFB Mean</th>
+                <th data-sort="avgConnect" class="sortable num">Conn Mean</th>
+                <th data-sort="avgServerBusy" class="sortable num">Busy Mean</th>
+                <th data-sort="distinctUrls" class="sortable num">Distinct URLs</th>
+                <th class="actions-col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTableBody">
+              <tr><td colspan="17" class="empty-cell">Configure filters or time window above and click <strong>▶ Update</strong> to run analysis.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Forensic Outlier & Failure Inspector -->
+      <div class="tab-content" id="forensicTab">
+        <div class="table-scroll">
+          <table class="data-table" id="forensicTable">
+            <thead>
+              <tr>
+                <th>Time (UTC)</th>
+                <th>Timer / Record Name</th>
+                <th class="num">Runtime (ms)</th>
+                <th>Status</th>
+                <th>Scenario / Agent / VU</th>
+                <th>Method &amp; URL / Failure Details</th>
+                <th>Used IP</th>
+                <th>Request ID</th>
+                <th class="actions-col">Session</th>
+              </tr>
+            </thead>
+            <tbody id="forensicTableBody">
+              <tr><td colspan="9" class="empty-cell">Select forensic mode and filters above and click <strong>▶ Update</strong> to inspect records.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Virtual User Session Reconstruction Modal -->
+  <div class="modal-backdrop hidden" id="sessionModalBackdrop">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="sessionModalTitle">Virtual User Session Reconstruction</h2>
+          <div class="session-meta-bar" id="sessionMetaBar"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="prevIterationBtn" class="btn btn-secondary" title="Inspect previous transaction iteration for this Virtual User">
+            ◀ Prev Iteration
+          </button>
+          <button type="button" id="nextIterationBtn" class="btn btn-secondary" title="Inspect next transaction iteration for this Virtual User">
+            Next Iteration ▶
+          </button>
+          <a id="openResultDumpLink" href="#" target="_blank" rel="noopener" class="btn btn-accent hidden">
+            🌐 Open Result Browser Dump
+          </a>
+          <button type="button" id="closeSessionModalBtn" class="btn btn-close" title="Close modal">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" id="sessionModalBody">
+        <div class="empty-cell">Reconstructing Virtual User session...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/explorer/js/explorer.js"></script>
+</body>
+</html>

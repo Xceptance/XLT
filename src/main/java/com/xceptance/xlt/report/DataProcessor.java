@@ -97,6 +97,8 @@ public class DataProcessor
 
     private final ReportGeneratorConfiguration config;
 
+    private final boolean hasReportProviders;
+
     /**
      * Constructor.
      *
@@ -136,6 +138,7 @@ public class DataProcessor
         this.inputDir = inputDir;
         this.fromTime = fromTime;
         this.toTime = toTime;
+        this.hasReportProviders = reportProviders != null && !reportProviders.isEmpty();
 
         testCaseFilter = new StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
         agentFilter = new StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
@@ -270,29 +273,32 @@ public class DataProcessor
                     final long cacheDuration = TimerUtils.get().getElapsedTime(tCacheStart);
                     XltLogger.reportLogger.info(String.format("ChunkDB cache persisted - %,d ms", cacheDuration));
 
-                    // Phase 2: Query the sealed ChunkDB concurrently to aggregate report statistics
-                    XltLogger.reportLogger.info("Aggregating report statistics from ChunkDB...");
-                    final long scanStart = TimerUtils.get().getStartTime();
-
-                    final org.roaringbitmap.RoaringBitmap matchingAgents =
-                        storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
-
-                    final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
-                        new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
-
-                    final com.xceptance.xlt.report.ChunkQueryEngine queryEngine =
-                        new com.xceptance.xlt.report.ChunkQueryEngine(storage, config.parserThreadCount);
-                    final long recordsProcessed;
-                    try (final ProgressBar scanProgressBar =
-                             new ProgressBarBuilder().setTaskName("Aggregating").setStyle(ProgressBarStyle.ASCII).build())
+                    if (hasReportProviders)
                     {
-                        recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor, scanProgressBar);
-                    }
+                        // Phase 2: Query the sealed ChunkDB concurrently to aggregate report statistics
+                        XltLogger.reportLogger.info("Aggregating report statistics from ChunkDB...");
+                        final long scanStart = TimerUtils.get().getStartTime();
 
-                    final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
-                    final long scanRate = scanDuration > 0 ? Math.round((recordsProcessed / (double) scanDuration) * 1000L) : 0;
-                    XltLogger.reportLogger.info(String.format("%,d records aggregated from ChunkDB - %,d ms - %,d records/s",
-                                                              recordsProcessed, scanDuration, scanRate));
+                        final org.roaringbitmap.RoaringBitmap matchingAgents =
+                            storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
+
+                        final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
+                            new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
+
+                        final com.xceptance.xlt.report.ChunkQueryEngine queryEngine =
+                            new com.xceptance.xlt.report.ChunkQueryEngine(storage, config.parserThreadCount);
+                        final long recordsProcessed;
+                        try (final ProgressBar scanProgressBar =
+                                 new ProgressBarBuilder().setTaskName("Aggregating").setStyle(ProgressBarStyle.ASCII).build())
+                        {
+                            recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor, scanProgressBar);
+                        }
+
+                        final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
+                        final long scanRate = scanDuration > 0 ? Math.round((recordsProcessed / (double) scanDuration) * 1000L) : 0;
+                        XltLogger.reportLogger.info(String.format("%,d records aggregated from ChunkDB - %,d ms - %,d records/s",
+                                                                  recordsProcessed, scanDuration, scanRate));
+                    }
                 }
                 catch (final Exception e)
                 {

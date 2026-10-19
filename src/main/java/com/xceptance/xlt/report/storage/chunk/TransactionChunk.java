@@ -236,6 +236,46 @@ public class TransactionChunk implements Chunk
     }
 
     /**
+     * Returns the compressed timestamp offset column.
+     *
+     * @return compressed time offsets
+     */
+    public int[] getCompTimeOffsets()
+    {
+        return compTimeOffsets;
+    }
+
+    /**
+     * Returns the compressed transaction name IDs column.
+     *
+     * @return compressed timer name IDs
+     */
+    public int[] getCompTimerNameIds()
+    {
+        return compTimerNameIds;
+    }
+
+    /**
+     * Returns the compressed unified (agent, testCase) pair IDs column.
+     *
+     * @return compressed agent/test case IDs
+     */
+    public int[] getCompAgentTestCaseIds()
+    {
+        return compAgentTestCaseIds;
+    }
+
+    /**
+     * Returns the compressed transaction runtime durations column.
+     *
+     * @return compressed run times
+     */
+    public int[] getCompRunTimes()
+    {
+        return compRunTimes;
+    }
+
+    /**
      * Returns the compressed virtual user numbers array.
      *
      * @return compressed user numbers

@@ -861,6 +861,271 @@ public class RequestChunkHandler implements ChunkTypeHandler
         return array;
     }
 
+    /**
+     * Reads or skips a length-prefixed primitive {@code int[]} array depending on whether {@code include} is true.
+     * <p>
+     * Skipping unrequested column vectors avoids allocating temporary {@code int[]} arrays on the JVM heap
+     * (particularly for large high-entropy columns like {@code compUrlHashes} or unused network sub-timings)
+     * during selective analytical scans in {@code ColumnarQueryEngine}.
+     */
+    private static int[] readOrSkipIntArray(final DataInput in, final boolean include) throws IOException
+    {
+        if (include)
+        {
+            return readIntArray(in);
+        }
+        final int len = in.readInt();
+        int remainingBytes = len * 4;
+        while (remainingBytes > 0)
+        {
+            final int skipped = in.skipBytes(remainingBytes);
+            if (skipped <= 0)
+            {
+                in.readByte();
+                remainingBytes--;
+            }
+            else
+            {
+                remainingBytes -= skipped;
+            }
+        }
+        return new int[0];
+    }
+
+    // -------------------------------------------------------------------------
+    // Selective Columnar Projection Bitmasks for ColumnarQueryEngine
+    // -------------------------------------------------------------------------
+
+    /** Bitmask for {@code compTimeOffsets} (column 0). */
+    public static final int COL_TIME_OFFSETS        = 1 << 0;
+    /** Bitmask for {@code compTimerNameIds} (column 1). */
+    public static final int COL_TIMER_IDS           = 1 << 1;
+    /** Bitmask for {@code compAgentTestCaseIds} (column 2). */
+    public static final int COL_AGENT_IDS           = 1 << 2;
+    /** Bitmask for {@code compRunTimes} (column 3). */
+    public static final int COL_RUN_TIMES           = 1 << 3;
+    /** Bitmask for {@code compResponseCodes} (column 4). */
+    public static final int COL_RESPONSE_CODES      = 1 << 4;
+    /** Bitmask for {@code compBytesSent} (column 5). */
+    public static final int COL_BYTES_SENT          = 1 << 5;
+    /** Bitmask for {@code compBytesReceived} (column 6). */
+    public static final int COL_BYTES_RECEIVED      = 1 << 6;
+    /** Bitmask for {@code compDnsTimes} (column 7). */
+    public static final int COL_DNS_TIMES           = 1 << 7;
+    /** Bitmask for {@code compConnectTimes} (column 8). */
+    public static final int COL_CONNECT_TIMES       = 1 << 8;
+    /** Bitmask for {@code compSendTimes} (column 9). */
+    public static final int COL_SEND_TIMES          = 1 << 9;
+    /** Bitmask for {@code compServerBusyTimes} (column 10). */
+    public static final int COL_SERVER_BUSY_TIMES   = 1 << 10;
+    /** Bitmask for {@code compReceiveTimes} (column 11). */
+    public static final int COL_RECEIVE_TIMES       = 1 << 11;
+    /** Bitmask for {@code compTimeToFirstBytes} (column 12). */
+    public static final int COL_TTFB                = 1 << 12;
+    /** Bitmask for {@code compTimeToLastBytes} (column 13). */
+    public static final int COL_TTLB                = 1 << 13;
+    /** Bitmask for {@code compHttpMethods} (column 14). */
+    public static final int COL_HTTP_METHODS        = 1 << 14;
+    /** Bitmask for {@code compContentTypes} (column 15). */
+    public static final int COL_CONTENT_TYPES       = 1 << 15;
+    /** Bitmask for {@code compUsedIps} (column 16). */
+    public static final int COL_USED_IPS            = 1 << 16;
+    /** Bitmask for {@code compIpAddresses} (column 17). */
+    public static final int COL_IP_ADDRESSES        = 1 << 17;
+    /** Bitmask for {@code compUserNumbers} (column 18). */
+    public static final int COL_USER_NUMBERS        = 1 << 18;
+    /** Bitmask for {@code compFormDataEncodings} (column 19). */
+    public static final int COL_FORM_DATA_ENCODINGS = 1 << 19;
+    /** Bitmask for {@code compUrlHashes} (column 20). */
+    public static final int COL_URL_HASHES          = 1 << 20;
+
+    /** Combined bitmask for all 7 network timing columns. */
+    public static final int COL_ALL_NETWORK_TIMINGS =
+        COL_DNS_TIMES | COL_CONNECT_TIMES | COL_SEND_TIMES | COL_SERVER_BUSY_TIMES
+        | COL_RECEIVE_TIMES | COL_TTFB | COL_TTLB;
+
+    /**
+     * Resolves or reads a {@link RequestChunk} containing at least the columns specified by {@code columnMask}.
+     * When {@code chunk} is an on-disk {@link DiskChunk}, reads only the hot vector payload and skips
+     * unrequested {@code int[]} column arrays without heap allocation.
+     *
+     * @param chunk
+     *            in-memory {@link RequestChunk} or on-disk {@link DiskChunk}
+     * @param columnMask
+     *            bitwise OR of {@code COL_*} constants indicating required columns
+     * @return {@link RequestChunk} populated with the requested compressed columns
+     */
+    private static final int[] EMPTY_INTS = new int[0];
+
+    public static RequestChunk loadSelectedColumns(final Chunk chunk, final int columnMask)
+    {
+        if (chunk instanceof RequestChunk rc)
+        {
+            return rc;
+        }
+        if (chunk instanceof DiskChunk dc)
+        {
+            try
+            {
+                final byte[] bytes = dc.readVectorPayload();
+                final java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(bytes);
+                return readSelectedColumnsFromBuffer(buf, dc, columnMask);
+            }
+            catch (final IOException e)
+            {
+                throw new RuntimeException("Failed to load selected columns from DiskChunk: " + dc, e);
+            }
+        }
+        throw new IllegalArgumentException("Unsupported chunk implementation for RequestChunkHandler: " + chunk);
+    }
+
+    private static RequestChunk readSelectedColumnsFromBuffer(final java.nio.ByteBuffer buf,
+                                                              final DiskChunk dc,
+                                                              final int columnMask) throws IOException
+    {
+        final int rowCount = buf.getInt();
+        final long minTime = buf.getLong();
+        final long maxTime = buf.getLong();
+        final int maxRunTime = buf.getInt();
+        final boolean hasFailures = buf.get() != 0;
+        buf.getInt(); // vectorPayloadLen
+
+        final RoaringBitmap timerIds = new RoaringBitmap();
+        timerIds.deserialize(buf);
+        buf.position(buf.position() + timerIds.serializedSizeInBytes());
+
+        final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
+        agentTestCaseIds.deserialize(buf);
+        buf.position(buf.position() + agentTestCaseIds.serializedSizeInBytes());
+
+        final RoaringBitmap failedRows = new RoaringBitmap();
+        failedRows.deserialize(buf);
+        buf.position(buf.position() + failedRows.serializedSizeInBytes());
+
+        final int[] compTimeOffsets       = readOrSkipIntArray(buf, (columnMask & COL_TIME_OFFSETS) != 0);
+        final int[] compTimerNameIds      = readOrSkipIntArray(buf, (columnMask & COL_TIMER_IDS) != 0);
+        final int[] compAgentTestCaseIds  = readOrSkipIntArray(buf, (columnMask & COL_AGENT_IDS) != 0);
+        final int[] compRunTimes          = readOrSkipIntArray(buf, (columnMask & COL_RUN_TIMES) != 0);
+        final int[] compResponseCodes     = readOrSkipIntArray(buf, (columnMask & COL_RESPONSE_CODES) != 0);
+        final int[] compBytesSent         = readOrSkipIntArray(buf, (columnMask & COL_BYTES_SENT) != 0);
+        final int[] compBytesReceived     = readOrSkipIntArray(buf, (columnMask & COL_BYTES_RECEIVED) != 0);
+
+        final int[] compDnsTimes          = readOrSkipIntArray(buf, (columnMask & COL_DNS_TIMES) != 0);
+        final int[] compConnectTimes      = readOrSkipIntArray(buf, (columnMask & COL_CONNECT_TIMES) != 0);
+        final int[] compSendTimes         = readOrSkipIntArray(buf, (columnMask & COL_SEND_TIMES) != 0);
+        final int[] compServerBusyTimes   = readOrSkipIntArray(buf, (columnMask & COL_SERVER_BUSY_TIMES) != 0);
+        final int[] compReceiveTimes      = readOrSkipIntArray(buf, (columnMask & COL_RECEIVE_TIMES) != 0);
+        final int[] compTimeToFirstBytes  = readOrSkipIntArray(buf, (columnMask & COL_TTFB) != 0);
+        final int[] compTimeToLastBytes   = readOrSkipIntArray(buf, (columnMask & COL_TTLB) != 0);
+
+        final int[] compHttpMethods       = readOrSkipIntArray(buf, (columnMask & COL_HTTP_METHODS) != 0);
+        final int[] compContentTypes      = readOrSkipIntArray(buf, (columnMask & COL_CONTENT_TYPES) != 0);
+        final int[] compUsedIps           = readOrSkipIntArray(buf, (columnMask & COL_USED_IPS) != 0);
+        final int[] compIpAddresses       = readOrSkipIntArray(buf, (columnMask & COL_IP_ADDRESSES) != 0);
+        final int[] compUserNumbers       = readOrSkipIntArray(buf, (columnMask & COL_USER_NUMBERS) != 0);
+        final int[] compFormDataEncodings = readOrSkipIntArray(buf, (columnMask & COL_FORM_DATA_ENCODINGS) != 0);
+        final int[] compUrlHashes         = readOrSkipIntArray(buf, (columnMask & COL_URL_HASHES) != 0);
+
+        return new RequestChunk(rowCount, minTime, maxTime, maxRunTime, hasFailures,
+                                dc.getTimerNameIds() != null ? dc.getTimerNameIds() : timerIds,
+                                dc.getAgentTestCaseIds() != null ? dc.getAgentTestCaseIds() : agentTestCaseIds,
+                                failedRows,
+                                compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
+                                compResponseCodes, compBytesSent, compBytesReceived,
+                                compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
+                                compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
+                                compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
+                                compUserNumbers, compFormDataEncodings, compUrlHashes,
+                                new RoaringBitmap(), 0, new byte[0]);
+    }
+
+    private static int[] readOrSkipIntArray(final java.nio.ByteBuffer buf, final boolean include)
+    {
+        if (buf.remaining() < 4)
+        {
+            return EMPTY_INTS;
+        }
+        final int len = buf.getInt();
+        final int byteLen = len << 2;
+        if (!include || len <= 0)
+        {
+            buf.position(Math.min(buf.limit(), buf.position() + byteLen));
+            return EMPTY_INTS;
+        }
+        final int[] array = new int[len];
+        buf.asIntBuffer().get(array);
+        buf.position(buf.position() + byteLen);
+        return array;
+    }
+
+    /**
+     * Deserializes the header, bitmaps, and only the compressed {@code int[]} columns enabled in {@code columnMask},
+     * skipping all other columns and omitting the Cold Forensic Tail Block.
+     *
+     * @param in
+     *            binary input stream positioned at the start of a serialized {@link RequestChunk}
+     * @param columnMask
+     *            bitwise OR of {@code COL_*} constants specifying which columns to read
+     * @return partially populated {@link RequestChunk} ready for selective SIMD decompression
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    public static RequestChunk readSelectedColumns(final DataInput in, final int columnMask) throws IOException
+    {
+        // 1. Read header metadata (29 bytes)
+        final int rowCount = in.readInt();
+        final long minTime = in.readLong();
+        final long maxTime = in.readLong();
+        final int maxRunTime = in.readInt();
+        final boolean hasFailures = in.readBoolean();
+        in.readInt(); // vectorPayloadLen
+
+        // 2. Deserialize RoaringBitmaps
+        final RoaringBitmap timerIds = new RoaringBitmap();
+        timerIds.deserialize(in);
+
+        final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
+        agentTestCaseIds.deserialize(in);
+
+        final RoaringBitmap failedRows = new RoaringBitmap();
+        failedRows.deserialize(in);
+
+        // 3. Read or skip each of the 21 compressed integer columns according to columnMask
+        final int[] compTimeOffsets       = readOrSkipIntArray(in, (columnMask & COL_TIME_OFFSETS) != 0);
+        final int[] compTimerNameIds      = readOrSkipIntArray(in, (columnMask & COL_TIMER_IDS) != 0);
+        final int[] compAgentTestCaseIds  = readOrSkipIntArray(in, (columnMask & COL_AGENT_IDS) != 0);
+        final int[] compRunTimes          = readOrSkipIntArray(in, (columnMask & COL_RUN_TIMES) != 0);
+        final int[] compResponseCodes     = readOrSkipIntArray(in, (columnMask & COL_RESPONSE_CODES) != 0);
+        final int[] compBytesSent         = readOrSkipIntArray(in, (columnMask & COL_BYTES_SENT) != 0);
+        final int[] compBytesReceived     = readOrSkipIntArray(in, (columnMask & COL_BYTES_RECEIVED) != 0);
+
+        final int[] compDnsTimes          = readOrSkipIntArray(in, (columnMask & COL_DNS_TIMES) != 0);
+        final int[] compConnectTimes      = readOrSkipIntArray(in, (columnMask & COL_CONNECT_TIMES) != 0);
+        final int[] compSendTimes         = readOrSkipIntArray(in, (columnMask & COL_SEND_TIMES) != 0);
+        final int[] compServerBusyTimes   = readOrSkipIntArray(in, (columnMask & COL_SERVER_BUSY_TIMES) != 0);
+        final int[] compReceiveTimes      = readOrSkipIntArray(in, (columnMask & COL_RECEIVE_TIMES) != 0);
+        final int[] compTimeToFirstBytes  = readOrSkipIntArray(in, (columnMask & COL_TTFB) != 0);
+        final int[] compTimeToLastBytes   = readOrSkipIntArray(in, (columnMask & COL_TTLB) != 0);
+
+        final int[] compHttpMethods       = readOrSkipIntArray(in, (columnMask & COL_HTTP_METHODS) != 0);
+        final int[] compContentTypes      = readOrSkipIntArray(in, (columnMask & COL_CONTENT_TYPES) != 0);
+        final int[] compUsedIps           = readOrSkipIntArray(in, (columnMask & COL_USED_IPS) != 0);
+        final int[] compIpAddresses       = readOrSkipIntArray(in, (columnMask & COL_IP_ADDRESSES) != 0);
+        final int[] compUserNumbers       = readOrSkipIntArray(in, (columnMask & COL_USER_NUMBERS) != 0);
+        final int[] compFormDataEncodings = readOrSkipIntArray(in, (columnMask & COL_FORM_DATA_ENCODINGS) != 0);
+        final int[] compUrlHashes         = readOrSkipIntArray(in, (columnMask & COL_URL_HASHES) != 0);
+
+        return new RequestChunk(rowCount, minTime, maxTime, maxRunTime, hasFailures,
+                                timerIds, agentTestCaseIds, failedRows,
+                                compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
+                                compResponseCodes, compBytesSent, compBytesReceived,
+                                compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
+                                compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
+                                compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
+                                compUserNumbers, compFormDataEncodings, compUrlHashes,
+                                new RoaringBitmap(), 0, new byte[0]);
+    }
+
     // -------------------------------------------------------------------------
     // RequestChunkBuilder
     // -------------------------------------------------------------------------

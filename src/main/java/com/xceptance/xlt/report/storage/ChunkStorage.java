@@ -277,31 +277,52 @@ public class ChunkStorage implements AutoCloseable
     {
         final byte[] bytes = new byte[payloadLength];
         final ByteBuffer buf = ByteBuffer.wrap(bytes);
+        readChunkBuffer(fileOffset, buf);
+        return bytes;
+    }
 
+    /**
+     * Reads bytes from the underlying {@code chunks.bin} file starting at {@code fileOffset} directly into
+     * the remaining span of {@code dst} ({@code [dst.position() .. dst.limit())}) without allocating a {@code byte[]}.
+     *
+     * @param fileOffset
+     *            starting byte offset in {@code chunks.bin}
+     * @param dst
+     *            target buffer whose remaining bytes will be filled
+     * @throws IOException
+     *             if an I/O error occurs or premature EOF is reached
+     */
+    public void readChunkBuffer(final long fileOffset, final ByteBuffer dst) throws IOException
+    {
         if (readChannel != null)
         {
-            // Thread-safe positional read via NIO FileChannel
             long currentPos = fileOffset;
-            while (buf.hasRemaining())
+            while (dst.hasRemaining())
             {
-                final int read = readChannel.read(buf, currentPos);
+                final int read = readChannel.read(dst, currentPos);
                 if (read < 0)
                 {
                     throw new EOFException("Premature EOF encountered while reading chunk payload at offset " + currentPos);
                 }
                 currentPos += read;
             }
-            return bytes;
         }
         else if (chunksFile != null)
         {
-            // Fallback to RandomAccessFile if readChannel was not supplied
-            try (final RandomAccessFile raf = new RandomAccessFile(chunksFile, "r"))
+            try (final RandomAccessFile raf = new RandomAccessFile(chunksFile, "r");
+                 final FileChannel ch = raf.getChannel())
             {
-                raf.seek(fileOffset);
-                raf.readFully(bytes);
+                long currentPos = fileOffset;
+                while (dst.hasRemaining())
+                {
+                    final int read = ch.read(dst, currentPos);
+                    if (read < 0)
+                    {
+                        throw new EOFException("Premature EOF encountered while reading chunk payload at offset " + currentPos);
+                    }
+                    currentPos += read;
+                }
             }
-            return bytes;
         }
         else
         {
