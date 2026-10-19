@@ -414,5 +414,17 @@ public class DoubleMinMaxValueSetTest
         Assert.assertEquals(6, largeFine.getValues().length);
         Assert.assertEquals(new DoubleMinMaxValue(100.0).merge(new DoubleMinMaxValue(5.0)), largeFine.getValues()[0]);
         Assert.assertEquals(new DoubleMinMaxValue(200.0), largeFine.getValues()[5]);
+
+        // Minimum logical size = 1 (backing capacity = 2) with offset = 1 (firstSecond = 1):
+        // when shrinking from scale 1 to scale 2, i = 1 and j = 1 (j == i), so slot 1 must remain intact in-place
+        final DoubleMinMaxValueSet tiny = new DoubleMinMaxValueSet(1);
+        tiny.addOrUpdateValue(1_000L, 10.0); // slot 0 (second = 1)
+        tiny.addOrUpdateValue(2_000L, 20.0); // slot 1 (second = 2)
+        tiny.addOrUpdateValue(3_000L, 30.0); // triggers shrink (offset = 1, i = j = 1) and merges into slot 1 ([2..3])
+        Assert.assertEquals(3L, tiny.getValueCount());
+        final DoubleMinMaxValue[] tinyVals = tiny.getValues();
+        Assert.assertEquals(2, tinyVals.length);
+        Assert.assertEquals(new DoubleMinMaxValue(10.0), tinyVals[0]);
+        Assert.assertEquals(new DoubleMinMaxValue(20.0).merge(new DoubleMinMaxValue(30.0)), tinyVals[1]);
     }
 }

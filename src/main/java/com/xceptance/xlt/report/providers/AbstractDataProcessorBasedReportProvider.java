@@ -42,7 +42,7 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
     /**
      * A mapping from timer names to data processor instances.
      */
-    private final FastHashMap<String, T> processors = new FastHashMap<String, T>(11, 0.5f);
+    final FastHashMap<String, T> processors = new FastHashMap<String, T>(11, 0.5f);
 
     /**
      * Size of the direct-mapped processor cache (must be a power of two).
@@ -58,25 +58,29 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
      * Direct-mapped cache of timer names to eliminate hash map lookups when timer names
      * alternate across records in a chunk.
      */
-    private final String[] cachedNames = new String[PROCESSOR_CACHE_SIZE];
+    final String[] cachedNames = new String[PROCESSOR_CACHE_SIZE];
 
     /**
      * Direct-mapped cache of processor instances corresponding to {@link #cachedNames}.
      */
-    @SuppressWarnings("unchecked")
-    private final T[] cachedProcessors = (T[]) new AbstractDataProcessor[PROCESSOR_CACHE_SIZE];
+    final AbstractDataProcessor[] cachedProcessors = new AbstractDataProcessor[PROCESSOR_CACHE_SIZE];
 
     /**
      * Fast-path single-item cache: the name of the most recently resolved timer.
      * When consecutive records share the exact same timer name reference (the most common pattern
      * within a single chunk), this avoids slot hashing and array access entirely.
      */
-    private String lastTimerName;
+    String lastTimerName;
 
     /**
      * Fast-path single-item cache: the processor instance for {@link #lastTimerName}.
      */
-    private T lastProcessor;
+    T lastProcessor;
+
+    /**
+     * Fallback processor instance for records with a {@code null} timer name.
+     */
+    private T nullProcessor;
 
     /**
      * Creates a new {@link AbstractDataProcessorBasedReportProvider} instance.
@@ -142,12 +146,13 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
      *            the timer name
      * @return the data processor
      */
+    @SuppressWarnings("unchecked")
     protected T getProcessor(final String name)
     {
         if (name != null)
         {
             // Level 1: Immediate reference-equality hit for consecutive identical timer records
-            if (name == lastTimerName && lastProcessor != null)
+            if (name == lastTimerName)
             {
                 return lastProcessor;
             }
@@ -156,9 +161,9 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
             final int slot = name.hashCode() & PROCESSOR_CACHE_MASK;
             final String cachedName = cachedNames[slot];
 
-            if (cachedName != null && (cachedName == name || cachedName.equals(name)))
+            if (cachedName != null && cachedName.equals(name))
             {
-                final T processor = cachedProcessors[slot];
+                final T processor = (T) cachedProcessors[slot];
                 lastTimerName = name;
                 lastProcessor = processor;
                 return processor;
@@ -168,17 +173,7 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
             T processor = processors.get(name);
             if (processor == null)
             {
-                // lazily create a processor for that timer name
-                try
-                {
-                    final Constructor<T> constructor = implClass.getConstructor(String.class, AbstractReportProvider.class);
-                    processor = constructor.newInstance(name, this);
-                }
-                catch (final Exception ex)
-                {
-                    throw new RuntimeException("Failed to instantiate processor for timer: " + name, ex);
-                }
-
+                processor = instantiateProcessor(name);
                 processors.put(name, processor);
             }
 
@@ -190,24 +185,28 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
             return processor;
         }
 
-        // Fallback for null timer names
-        T processor = processors.get(null);
-        if (processor == null)
+        // Fallback for null timer names (FastHashMap does not permit null keys)
+        if (nullProcessor == null)
         {
-            try
-            {
-                final Constructor<T> constructor = implClass.getConstructor(String.class, AbstractReportProvider.class);
-                processor = constructor.newInstance(null, this);
-            }
-            catch (final Exception ex)
-            {
-                throw new RuntimeException("Failed to instantiate processor for null name", ex);
-            }
-
-            processors.put(null, processor);
+            nullProcessor = instantiateProcessor(null);
         }
+        return nullProcessor;
+    }
 
-        return processor;
+    /**
+     * Instantiates a new data processor for the given timer name via reflection.
+     */
+    private T instantiateProcessor(final String name)
+    {
+        try
+        {
+            final Constructor<T> constructor = implClass.getConstructor(String.class, AbstractReportProvider.class);
+            return constructor.newInstance(name, this);
+        }
+        catch (final Exception ex)
+        {
+            throw new RuntimeException("Failed to instantiate processor for timer: " + name, ex);
+        }
     }
 
     /**
@@ -269,9 +268,15 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
             return;
         }
 
+        // Release worker L1/L2 caches up front so they do not pin merged processors while iterating
+        java.util.Arrays.fill(other.cachedNames, null);
+        java.util.Arrays.fill(other.cachedProcessors, null);
+        other.lastTimerName = null;
+        other.lastProcessor = null;
+
         for (final String name : other.processors.keys())
         {
-            final T otherProcessor = other.processors.get(name);
+            final T otherProcessor = other.processors.remove(name);
             final T myProcessor = this.processors.get(name);
             if (myProcessor == null)
             {
@@ -284,12 +289,5 @@ public abstract class AbstractDataProcessorBasedReportProvider<T extends Abstrac
                 myProcessor.merge(otherProcessor);
             }
         }
-
-        // Release all references from the merged worker provider so non-adopted worker processors can be GC'd immediately
-        other.processors.clear();
-        java.util.Arrays.fill(other.cachedNames, null);
-        java.util.Arrays.fill(other.cachedProcessors, null);
-        other.lastTimerName = null;
-        other.lastProcessor = null;
     }
 }

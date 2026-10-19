@@ -553,5 +553,17 @@ public class IntMinMaxValueSetTest
         final IntMinMaxValueSet sparseB = new IntMinMaxValueSet(100);
         sparseB.merge(sparseA);
         Assert.assertArrayEquals(sparseVals, sparseB.getValues());
+
+        // 6. Minimum logical size = 1 (backing capacity = 2) with offset = 1 (firstSecond = 1):
+        // when shrinking from scale 1 to scale 2, i = 1 and j = 1 (j == i), so slot 1 must remain intact in-place
+        final IntMinMaxValueSet tiny = new IntMinMaxValueSet(1);
+        tiny.addOrUpdateValue(1_000L, 10); // slot 0 (second = 1)
+        tiny.addOrUpdateValue(2_000L, 20); // slot 1 (second = 2)
+        tiny.addOrUpdateValue(3_000L, 30); // triggers shrink (offset = 1, i = j = 1) and merges into slot 1 ([2..3])
+        Assert.assertEquals(3L, tiny.getValueCount());
+        final IntMinMaxValue[] tinyVals = tiny.getValues();
+        Assert.assertEquals(2, tinyVals.length);
+        Assert.assertEquals(new IntMinMaxValue(10), tinyVals[0]);
+        Assert.assertEquals(new IntMinMaxValue(20).merge(new IntMinMaxValue(30)), tinyVals[1]);
     }
 }

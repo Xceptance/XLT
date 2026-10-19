@@ -70,33 +70,76 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     private static final int MAXIMUM_NUMBER_OF_URLS = 10;
 
     /**
+     * Initial capacity of the open-addressed exact URL hash table (must be a power of two).
+     * Starts at 16 ints (64 bytes) and only grows if a timer observes more than 8 distinct URLs.
+     */
+    static final int INITIAL_URL_HASH_CAPACITY = 16;
+
+    /**
+     * Maximum capacity of the open-addressed exact URL hash table (must be a power of two).
+     * At a 50% maximum load factor, this holds up to {@link #MAX_EXACT_URL_HASHES} (512) distinct
+     * non-zero URL hash codes in 4 KB before spilling into an {@link HllSketch}. Once spilled, this
+     * 1,024-slot array serves as a direct-mapped primitive filter in front of the {@link HllSketch}
+     * to prevent repeated {@code long[]} allocations inside {@link HllSketch#update(long)}.
+     */
+    static final int MAX_EXACT_URL_HASH_CAPACITY = 1024;
+
+    /**
+     * Maximum number of distinct non-zero URL hash codes tracked exactly before spilling to {@link HllSketch}.
+     */
+    static final int MAX_EXACT_URL_HASHES = MAX_EXACT_URL_HASH_CAPACITY >>> 1;
+
+    /**
+     * Log2 of the number of buckets (K) used when a high-cardinality request stream spills to {@link HllSketch}.
+     */
+    private static final int HLL_LOG_K = 20;
+
+    /**
      * The value set holding the bytes received.
      */
-    private final IntMinMaxValueSet responseSizeValueSet;
+    final IntMinMaxValueSet responseSizeValueSet;
 
     /**
-     * Using HyperLogLog algorithm for counting distinct urls. We use the 8 bit version which is the fastest.
+     * Lazily allocated HyperLogLog sketch used only when a request timer exceeds {@link #MAX_EXACT_URL_HASHES}
+     * (512) distinct non-zero URL hash codes. Remains {@code null} when {@link #countDistinctUrls} is
+     * {@code false} or when the timer observes at most 512 distinct URLs.
      */
-    private HllSketch distinctUrlsHLL = new HllSketch(20, TgtHllType.HLL_8);
+    HllSketch distinctUrlsHLL;
 
     /**
-     * Direct-mapped 16-entry cache of recently observed URL strings for this processor.
-     * In typical load tests, request streams and sample URLs alternate between multiple URLs
-     * (e.g. 2-5 distinct URLs per timer name). A 16-slot direct-mapped cache indexed by the
-     * URL hash code ensures hits even when alternating between different URLs, completely
-     * eliminating redundant MurmurHash operations, HyperLogLog updates, and Map lookups.
+     * Lazily allocated primitive hash table of observed {@link RequestData#hashCodeOfUrlWithoutFragment()} values.
+     * <ul>
+     *   <li>While {@link #distinctUrlsHLL} is {@code null}, this array is an open-addressed linear-probing hash
+     *       set (capacity {@code 16 .. 1024} at 50% load factor) storing up to {@link #MAX_EXACT_URL_HASHES}
+     *       distinct non-zero URL hash codes without false evictions or object allocations.</li>
+     *   <li>If cardinality exceeds {@link #MAX_EXACT_URL_HASHES} and spills to {@link #distinctUrlsHLL}, this
+     *       1,024-slot array acts as a direct-mapped primitive filter so repeated URLs do not re-invoke
+     *       {@link HllSketch#update(long)} (which allocates two {@code long[]} arrays per call).</li>
+     * </ul>
      */
-    private final String[] recentUrls = new String[16];
+    int[] distinctUrlHashes;
 
     /**
-     * Single-item URL reference cache to bypass hashing and array lookup for consecutive identical URLs.
+     * Exact count of distinct non-zero URL hash codes stored in {@link #distinctUrlHashes} while
+     * {@link #distinctUrlsHLL} is {@code null}.
+     */
+    private int distinctUrlHashCount;
+
+    /**
+     * Whether a URL with {@code hashCodeOfUrlWithoutFragment() == 0} has been observed.
+     * Tracked separately so {@code 0} can serve as the empty-slot sentinel in {@link #distinctUrlHashes}.
+     */
+    boolean hasZeroUrlHash;
+
+    /**
+     * Single-item URL reference cache to bypass hashing and table lookup for consecutive identical URLs.
      */
     private String lastUrl;
 
     /**
      * A set of distinct URLs. Contains at most {@link #MAXIMUM_NUMBER_OF_URLS} entries.
      */
-    private final FastHashMap<String, String> distinctUrlSet = new FastHashMap<>(2 * MAXIMUM_NUMBER_OF_URLS + 1, 0.5f);
+    private final FastHashMap<String, String> distinctUrlSet = new FastHashMap<>(MAXIMUM_NUMBER_OF_URLS, 0.5f);
 
     /**
      * The configured runtime segment boundaries. May be an empty array.
@@ -112,7 +155,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
      * The histogram value set limited by the highest runtime segment boundary. Will be <code>null</code> if no segment
      * boundaries have been configured.
      */
-    private final HistogramValueSet runTimeHistogramValueSet;
+    final HistogramValueSet runTimeHistogramValueSet;
 
     /**
      * The statistics for the "bytesSent" values.
@@ -284,7 +327,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         final RequestReport timerReport = (RequestReport) super.createTimerReport(generateHistograms);
 
         // just int is safe, more than 2 billion urls is unlikely
-        timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.getEstimate());
+        timerReport.urls = getUrlList(distinctUrlSet, getDistinctUrlCount());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
         timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
                                                                     : new BigDecimal[] {};
@@ -350,27 +393,12 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
             final String url = reqData.getUrl();
             if (url != null && url != lastUrl)
             {
-                final int slot = url.hashCode() & 15;
-                final String cached = recentUrls[slot];
+                recordUrlHash(reqData.hashCodeOfUrlWithoutFragment());
 
-                // Check whether this URL matches the cached URL for this hash slot.
-                // If it matches by identity or equality, we can completely bypass the expensive
-                // HyperLogLog update and Map lookup.
-                if (cached == null || (cached != url && !url.equals(cached)))
+                // Remember up to MAXIMUM_NUMBER_OF_URLS sample URLs
+                if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
                 {
-                    // New or evicted distinct URL encountered for this processor slot
-                    recentUrls[slot] = url;
-                    distinctUrlsHLL.update(reqData.hashCodeOfUrlWithoutFragment());
-
-                    // remember some URLs (up to the limit)
-                    if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
-                    {
-                        if (distinctUrlSet.get(url) == null)
-                        {
-                            distinctUrlSet.put(url, url);
-                            distinctUrlSetLimitedSize = distinctUrlSet.size();
-                        }
-                    }
+                    addSampleUrl(url);
                 }
 
                 lastUrl = url;
@@ -386,6 +414,164 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         receiveTimeStatistics.addValue(reqData.getReceiveTime());
         timeToFirstBytesStatistics.addValue(reqData.getTimeToFirstBytes());
         timeToLastBytesStatistics.addValue(reqData.getTimeToLastBytes());
+    }
+
+    /**
+     * Adds a sample URL string to {@link #distinctUrlSet} and updates {@link #distinctUrlSetLimitedSize}.
+     */
+    private void addSampleUrl(final String url)
+    {
+        distinctUrlSet.put(url, url);
+        distinctUrlSetLimitedSize = distinctUrlSet.size();
+    }
+
+    /**
+     * Mixes a 32-bit hash code using Murmur3-style bit avalanching so URLs sharing common prefixes
+     * or sequential suffixes distribute uniformly across power-of-two table slots.
+     */
+    static int mixHash(final int h)
+    {
+        final int x = h ^ (h >>> 16);
+        return x * 0x85ebca6b;
+    }
+
+    /**
+     * Records a fragment-free URL hash code in the two-tier distinct URL tracker.
+     *
+     * @param urlHash
+     *            the value of {@link RequestData#hashCodeOfUrlWithoutFragment()}
+     */
+    void recordUrlHash(final int urlHash)
+    {
+        if (urlHash == 0)
+        {
+            if (!hasZeroUrlHash)
+            {
+                hasZeroUrlHash = true;
+                if (distinctUrlsHLL != null)
+                {
+                    distinctUrlsHLL.update(0);
+                }
+            }
+            return;
+        }
+
+        if (distinctUrlsHLL != null)
+        {
+            final int slot = mixHash(urlHash) & (MAX_EXACT_URL_HASH_CAPACITY - 1);
+            if (distinctUrlHashes[slot] != urlHash)
+            {
+                distinctUrlHashes[slot] = urlHash;
+                distinctUrlsHLL.update(urlHash);
+            }
+            return;
+        }
+
+        if (distinctUrlHashes == null)
+        {
+            distinctUrlHashes = new int[INITIAL_URL_HASH_CAPACITY];
+            distinctUrlHashes[mixHash(urlHash) & (INITIAL_URL_HASH_CAPACITY - 1)] = urlHash;
+            distinctUrlHashCount = 1;
+            return;
+        }
+
+        final int[] table = distinctUrlHashes;
+        final int mask = table.length - 1;
+        int slot = mixHash(urlHash) & mask;
+        while (true)
+        {
+            final int existing = table[slot];
+            if (existing == urlHash)
+            {
+                return;
+            }
+            if (existing == 0)
+            {
+                break;
+            }
+            slot = (slot + 1) & mask;
+        }
+
+        if (distinctUrlHashCount < MAX_EXACT_URL_HASHES)
+        {
+            table[slot] = urlHash;
+            distinctUrlHashCount++;
+            if (distinctUrlHashCount > (table.length >>> 1))
+            {
+                growUrlHashes();
+            }
+            return;
+        }
+
+        spillToHll();
+        distinctUrlHashes[mixHash(urlHash) & (MAX_EXACT_URL_HASH_CAPACITY - 1)] = urlHash;
+        distinctUrlsHLL.update(urlHash);
+    }
+
+    /**
+     * Doubles the capacity of the open-addressed {@link #distinctUrlHashes} table and re-inserts
+     * all non-zero hash codes.
+     */
+    private void growUrlHashes()
+    {
+        final int[] oldTable = distinctUrlHashes;
+        final int newCapacity = oldTable.length << 1;
+        final int newMask = newCapacity - 1;
+        final int[] newTable = new int[newCapacity];
+
+        for (final int h : oldTable)
+        {
+            if (h != 0)
+            {
+                int slot = mixHash(h) & newMask;
+                while (newTable[slot] != 0)
+                {
+                    slot = (slot + 1) & newMask;
+                }
+                newTable[slot] = h;
+            }
+        }
+        distinctUrlHashes = newTable;
+    }
+
+    /**
+     * Transitions this processor from the exact open-addressed {@code int[]} hash set to a
+     * {@link HllSketch} once more than {@link #MAX_EXACT_URL_HASHES} (512) distinct non-zero
+     * URL hash codes have been observed, converting {@link #distinctUrlHashes} into a 1,024-slot
+     * direct-mapped filter in front of the sketch.
+     */
+    private void spillToHll()
+    {
+        final HllSketch hll = new HllSketch(HLL_LOG_K, TgtHllType.HLL_8);
+        if (hasZeroUrlHash)
+        {
+            hll.update(0);
+        }
+        final int[] oldTable = distinctUrlHashes;
+        final int[] filterTable = new int[MAX_EXACT_URL_HASH_CAPACITY];
+        final int mask = MAX_EXACT_URL_HASH_CAPACITY - 1;
+        for (final int h : oldTable)
+        {
+            if (h != 0)
+            {
+                hll.update(h);
+                filterTable[mixHash(h) & mask] = h;
+            }
+        }
+        distinctUrlHashes = filterTable;
+        distinctUrlsHLL = hll;
+    }
+
+    /**
+     * Returns the exact or HyperLogLog-estimated count of distinct fragment-free URLs observed.
+     */
+    int getDistinctUrlCount()
+    {
+        if (distinctUrlsHLL != null)
+        {
+            return (int) distinctUrlsHLL.getEstimate();
+        }
+        return distinctUrlHashCount + (hasZeroUrlHash ? 1 : 0);
     }
 
     /**
@@ -410,16 +596,13 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
     @Override
     public void merge(final BasicTimerDataProcessor other)
     {
-        if (other == null)
-        {
-            return;
-        }
-
-        super.merge(other);
-
         if (other instanceof RequestDataProcessor)
         {
-            mergeRequestSpecific((RequestDataProcessor) other);
+            merge((RequestDataProcessor) other);
+        }
+        else
+        {
+            super.merge(other);
         }
     }
 
@@ -450,28 +633,76 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
             countPerSegment.merge(other.countPerSegment);
         }
 
-        if (countDistinctUrls && other.countDistinctUrls)
+        if (countDistinctUrls)
         {
-            final Union union = new Union(20);
-            union.update(distinctUrlsHLL);
-            union.update(other.distinctUrlsHLL);
-            distinctUrlsHLL = union.getResult(TgtHllType.HLL_8);
+            if (other.distinctUrlsHLL == null)
+            {
+                if (other.hasZeroUrlHash)
+                {
+                    recordUrlHash(0);
+                }
+                if (other.distinctUrlHashes != null)
+                {
+                    for (final int h : other.distinctUrlHashes)
+                    {
+                        if (h != 0)
+                        {
+                            recordUrlHash(h);
+                        }
+                    }
+                }
+            }
+            else if (this.distinctUrlsHLL == null)
+            {
+                final boolean oldHasZero = this.hasZeroUrlHash;
+                final int[] oldHashes = this.distinctUrlHashes;
+
+                this.distinctUrlsHLL = other.distinctUrlsHLL;
+                this.distinctUrlHashes = other.distinctUrlHashes;
+                this.hasZeroUrlHash = other.hasZeroUrlHash;
+                this.distinctUrlHashCount = 0;
+
+                if (oldHasZero)
+                {
+                    recordUrlHash(0);
+                }
+                if (oldHashes != null)
+                {
+                    for (final int h : oldHashes)
+                    {
+                        if (h != 0)
+                        {
+                            recordUrlHash(h);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                final Union union = new Union(HLL_LOG_K);
+                union.update(this.distinctUrlsHLL);
+                union.update(other.distinctUrlsHLL);
+                this.distinctUrlsHLL = union.getResult(TgtHllType.HLL_8);
+                this.hasZeroUrlHash |= other.hasZeroUrlHash;
+            }
 
             for (final String url : other.distinctUrlSet.keys())
             {
                 if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
                 {
-                    if (distinctUrlSet.get(url) == null)
-                    {
-                        distinctUrlSet.put(url, url);
-                        distinctUrlSetLimitedSize = distinctUrlSet.size();
-                    }
+                    addSampleUrl(url);
                 }
                 else
                 {
                     break;
                 }
             }
+
+            other.distinctUrlsHLL = null;
+            other.distinctUrlHashes = null;
+            other.distinctUrlHashCount = 0;
+            other.hasZeroUrlHash = false;
+            other.distinctUrlSet.clear();
         }
 
         bytesSentStatistics.merge(other.bytesSentStatistics);

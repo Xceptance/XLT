@@ -68,14 +68,14 @@ public class StatisticsProcessor
     /**
      * All worker report provider lists instantiated for worker threads.
      */
-    private final ConcurrentLinkedQueue<WorkerProviderSet> allWorkerProviderSets = new ConcurrentLinkedQueue<>();
+    final ConcurrentLinkedQueue<WorkerProviderSet> allWorkerProviderSets = new ConcurrentLinkedQueue<>();
 
     /**
      * Internal container managing worker provider instances for a single processing thread.
      * Provides pre-filtered arrays indexed by character type code (e.g. 'R', 'T', 'A', 'C', 'E')
      * so that incoming columnar data chunks only dispatch to providers that actually consume that record type.
      */
-    private static final class WorkerProviderSet
+    static final class WorkerProviderSet
     {
         /** The complete list of worker providers instantiated for this thread. */
         final List<ReportProvider> allProviders;
@@ -104,11 +104,11 @@ public class StatisticsProcessor
         }
 
         /**
-         * Clears all provider references and routing tables so merged worker providers can be garbage-collected.
+         * Clears the type-code routing table before merging so worker providers are only referenced
+         * by {@link #allProviders} and can be garbage-collected as soon as their slot is nulled out.
          */
-        void clear()
+        void clearRoutingTable()
         {
-            allProviders.clear();
             java.util.Arrays.fill(providersByTypeCode, null);
         }
     }
@@ -116,7 +116,7 @@ public class StatisticsProcessor
     /**
      * Thread-local worker provider sets maintaining per-thread instances and type routing tables.
      */
-    private ThreadLocal<WorkerProviderSet> threadLocalProviderSet;
+    ThreadLocal<WorkerProviderSet> threadLocalProviderSet;
 
     /**
      * Flag indicating whether merge completion has already been performed.
@@ -146,20 +146,7 @@ public class StatisticsProcessor
     {
         // filter the list and take only the provider that really need runtime parsed data
         this.reportProviders = reportProviders.stream().filter(p -> p.wantsDataRecords()).collect(Collectors.toList());
-
-        if (configuration != null)
-        {
-            this.configuration = configuration;
-        }
-        else if (!this.reportProviders.isEmpty() && this.reportProviders.get(0) instanceof AbstractReportProvider)
-        {
-            this.configuration = ((AbstractReportProvider) this.reportProviders.get(0)).getConfiguration();
-        }
-        else
-        {
-            this.configuration = null;
-        }
-
+        this.configuration = configuration;
         this.threadLocalProviderSet = ThreadLocal.withInitial(this::createWorkerProviderSet);
     }
 
@@ -262,9 +249,10 @@ public class StatisticsProcessor
         {
             for (int i = 0; i < providers.length; i++)
             {
+                final ReportProvider provider = providers[i];
                 try
                 {
-                    providers[i].processAll(dataContainer);
+                    provider.processAll(dataContainer);
                 }
                 catch (final Throwable t)
                 {
@@ -294,9 +282,10 @@ public class StatisticsProcessor
                 {
                     for (int i = 0; i < relevantProviders.length; i++)
                     {
+                        final ReportProvider provider = relevantProviders[i];
                         try
                         {
-                            relevantProviders[i].processDataRecord(data);
+                            provider.processDataRecord(data);
                         }
                         catch (final Throwable t)
                         {
@@ -308,9 +297,10 @@ public class StatisticsProcessor
                 {
                     for (int i = 0; i < all.size(); i++)
                     {
+                        final ReportProvider provider = all.get(i);
                         try
                         {
-                            all.get(i).processDataRecord(data);
+                            provider.processDataRecord(data);
                         }
                         catch (final Throwable t)
                         {
@@ -396,27 +386,21 @@ public class StatisticsProcessor
             // Drop the ThreadLocal reference so worker threads cannot retain their WorkerProviderSet via ThreadLocalMaps
             threadLocalProviderSet = null;
 
-            if (!workerSets.isEmpty())
+            // Clear type-code routing tables up front so they do not pin worker providers during parallel merge
+            for (final WorkerProviderSet workerSet : workerSets)
             {
-                IntStream.range(0, reportProviders.size()).parallel().forEach(i -> {
-                    final ReportProvider master = reportProviders.get(i);
-                    for (final WorkerProviderSet workerSet : workerSets)
-                    {
-                        final ReportProvider worker = workerSet.allProviders.get(i);
-                        if (worker != null)
-                        {
-                            master.merge(worker);
-                            // Drop reference immediately after merging so GC can reclaim this worker's data right away
-                            workerSet.allProviders.set(i, null);
-                        }
-                    }
-                });
+                workerSet.clearRoutingTable();
+            }
 
+            IntStream.range(0, reportProviders.size()).parallel().forEach(i -> {
+                final ReportProvider master = reportProviders.get(i);
                 for (final WorkerProviderSet workerSet : workerSets)
                 {
-                    workerSet.clear();
+                    // Atomically detach the worker provider from the worker set so GC can reclaim its data as soon as merge returns
+                    final ReportProvider worker = workerSet.allProviders.set(i, null);
+                    master.merge(worker);
                 }
-            }
+            });
         }
     }
 

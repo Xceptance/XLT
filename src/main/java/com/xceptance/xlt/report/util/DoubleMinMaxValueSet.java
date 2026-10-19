@@ -671,7 +671,7 @@ public class DoubleMinMaxValueSet
         }
 
         // When offset == 1 and size is even, one trailing slot at index (size - 1) remains unpaired
-        if (i < size && isOccupied(i))
+        if (j != i && i < size && isOccupied(i))
         {
             moveSlot(i, j);
         }
