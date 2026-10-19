@@ -496,17 +496,48 @@ public class DataProcessorMergeTest
         Assert.assertEquals(2, proc.getDistinctUrlCount());
 
         // 4. Grow through all exact table capacities up to MAX_EXACT_URL_HASHES (512 non-zero + 1 zero = 513)
+        //    Pick URLs that do not map to the same HLL register as urlHash == 0 so we can verify exact zero-hash register handling.
+        final byte[] zeroHashProbe = new byte[RequestDataProcessor.HLL_REGISTERS];
+        RequestDataProcessor.updateHll(zeroHashProbe, 0);
+        int zeroHashRegIdx = -1;
+        byte zeroHashRegRho = 0;
+        for (int r = 0; r < zeroHashProbe.length; r++)
+        {
+            if (zeroHashProbe[r] != 0)
+            {
+                zeroHashRegIdx = r;
+                zeroHashRegRho = zeroHashProbe[r];
+                break;
+            }
+        }
+        Assert.assertTrue(zeroHashRegIdx >= 0 && zeroHashRegRho > 0);
+
         final RequestDataProcessor procWithoutZero = new RequestDataProcessor("NoZero", requestsProvider, true);
         procWithoutZero.processDataRecord(fragA);
-        for (int i = 1; i < RequestDataProcessor.MAX_EXACT_URL_HASHES; i++)
+        int addedUrls = 1;
+        int urlSeq = 1;
+        String firstAddedUrl = null;
+        while (addedUrls < RequestDataProcessor.MAX_EXACT_URL_HASHES)
         {
+            final int i = urlSeq++;
             final String u = "http://example.com/page/" + i;
+            final byte[] probe = new byte[RequestDataProcessor.HLL_REGISTERS];
+            RequestDataProcessor.updateHll(probe, u.hashCode());
+            if (probe[zeroHashRegIdx] != 0)
+            {
+                continue;
+            }
+            if (firstAddedUrl == null)
+            {
+                firstAddedUrl = u;
+            }
             proc.processDataRecord(createRequest("UrlEdgeCases", 1100L + i, 10, false, 200, 100, u));
             procWithoutZero.processDataRecord(createRequest("NoZero", 1100L + i, 10, false, 200, 100, u));
+            addedUrls++;
             // Duplicate with a different preceding URL to test open-addressed table hit
-            if (i == 5)
+            if (addedUrls == 5)
             {
-                proc.processDataRecord(createRequest("UrlEdgeCases", 1100L + i, 10, false, 200, 100, "http://example.com/page/1"));
+                proc.processDataRecord(createRequest("UrlEdgeCases", 1100L + i, 10, false, 200, 100, firstAddedUrl));
                 proc.processDataRecord(createRequest("UrlEdgeCases", 1100L + i, 10, false, 200, 100, u));
             }
         }
@@ -524,24 +555,113 @@ public class DataProcessorMergeTest
         Assert.assertTrue(beforeSpillReport.urls.list.contains("http://example.com/item#a"));
         Assert.assertTrue(beforeSpillReport.urls.list.contains("http://example.com/item#b"));
 
-        // 5. Trigger spill to HllSketch on the 513th non-zero URL hash (comparing with and without hasZeroUrlHash)
-        final String spillUrl = "http://example.com/page/spill_513";
+        // 5. Trigger spill to byte[4096] HLL on the 513th non-zero URL hash (comparing with and without hasZeroUrlHash)
+        String spillUrl = "http://example.com/page/spill_513";
+        while (true)
+        {
+            final byte[] probe = new byte[RequestDataProcessor.HLL_REGISTERS];
+            RequestDataProcessor.updateHll(probe, spillUrl.hashCode());
+            if (probe[zeroHashRegIdx] == 0)
+            {
+                break;
+            }
+            spillUrl = "http://example.com/page/spill_" + (urlSeq++);
+        }
         proc.processDataRecord(createRequest("UrlEdgeCases", 2000L, 10, false, 200, 100, spillUrl));
         procWithoutZero.processDataRecord(createRequest("NoZero", 2000L, 10, false, 200, 100, spillUrl));
         Assert.assertNotNull(proc.distinctUrlsHLL);
+        Assert.assertNull("Tier-1 int[] table must be freed upon HLL spill", proc.distinctUrlHashes);
         Assert.assertNotNull(procWithoutZero.distinctUrlsHLL);
+        Assert.assertNull("Tier-1 int[] table must be freed upon HLL spill", procWithoutZero.distinctUrlHashes);
 
-        // At HLL_LOG_K=20, 513 and 514 distinct items have exact integer estimates (513 and 514)
-        Assert.assertEquals(513, procWithoutZero.getDistinctUrlCount());
-        Assert.assertEquals(514, proc.getDistinctUrlCount());
+        // Verify spillToHll recorded urlHash == 0 only when hasZeroUrlHash == true, and skipped 0 slots in oldTable
+        Assert.assertEquals(zeroHashRegRho, proc.distinctUrlsHLL[zeroHashRegIdx]);
+        Assert.assertEquals(0, procWithoutZero.distinctUrlsHLL[zeroHashRegIdx]);
 
-        // Re-insert an already-filtered URL in HLL mode (hits the 1024-slot direct-mapped filter)
+        final int spilledCountNoZero = procWithoutZero.getDistinctUrlCount();
+        final int spilledCountWithZero = proc.getDistinctUrlCount();
+        Assert.assertTrue("Expected ~513, got " + spilledCountNoZero, spilledCountNoZero >= 505 && spilledCountNoZero <= 525);
+        Assert.assertTrue("Expected ~514, got " + spilledCountWithZero, spilledCountWithZero >= 506 && spilledCountWithZero <= 526);
+        Assert.assertTrue("Zero hash in HLL must strictly increase estimate when its bucket was empty",
+                          spilledCountWithZero > spilledCountNoZero);
+
+        // Re-insert already-seen URLs in HLL mode: idempotent register max leaves estimate unchanged
         proc.recordUrlHash(spillUrl.hashCode());
-        proc.processDataRecord(createRequest("UrlEdgeCases", 2001L, 10, false, 200, 100, "http://example.com/page/1"));
+        proc.processDataRecord(createRequest("UrlEdgeCases", 2001L, 10, false, 200, 100, firstAddedUrl));
         proc.processDataRecord(createRequest("UrlEdgeCases", 2002L, 10, false, 200, 100, spillUrl));
-        // Re-record zero hash in HLL mode
+        // Re-record zero hash in HLL mode when already true, and first-time record zero hash in HLL mode when false
         proc.recordUrlHash(0);
-        Assert.assertEquals(514, proc.getDistinctUrlCount());
+        Assert.assertEquals(spilledCountWithZero, proc.getDistinctUrlCount());
+        procWithoutZero.recordUrlHash(0);
+        Assert.assertEquals(zeroHashRegRho, procWithoutZero.distinctUrlsHLL[zeroHashRegIdx]);
+        Assert.assertEquals(spilledCountWithZero, procWithoutZero.getDistinctUrlCount());
+
+        // 6. Verify ChunkDB scan pattern: consecutive records sharing the same sample URL reference (url == lastUrl)
+        //    but carrying distinct per-row URL hashes via setUrlFast(sampleUrl, host, urlHash)
+        final RequestDataProcessor chunkSimProc = new RequestDataProcessor("ChunkSim", requestsProvider, true);
+        final String sharedSampleUrl = "https://example.com/sample0";
+        for (int i = 1; i <= 25; i++)
+        {
+            final RequestData r = createRequest("ChunkSim", 3000L + i, 10, false, 200, 100, sharedSampleUrl);
+            r.setUrlFast(sharedSampleUrl, "example.com", 10_000 + i);
+            chunkSimProc.processDataRecord(r);
+        }
+        Assert.assertEquals(25, chunkSimProc.getDistinctUrlCount());
+        final RequestReport chunkSimReport = (RequestReport) chunkSimProc.createTimerReport(false);
+        Assert.assertEquals(25, chunkSimReport.urls.total);
+        Assert.assertEquals(1, chunkSimReport.urls.list.size());
+
+        // 7. Verify updateHll SplitMix64 bit mixing (including negative hash and high-rho lower-32-bit avalanche)
+        //    and estimateHll across small/large cardinality boundaries
+        final int deepZerosHash = findDeepLeadingZerosHash();
+        final byte[] deepProbe = new byte[RequestDataProcessor.HLL_REGISTERS];
+        RequestDataProcessor.updateHll(deepProbe, deepZerosHash);
+        long refZ = (deepZerosHash & 0xFFFFFFFFL) + 0x9e3779b97f4a7c15L;
+        refZ = (refZ ^ (refZ >>> 30)) * 0xbf58476d1ce4e5b9L;
+        refZ = (refZ ^ (refZ >>> 27)) * 0x94d049bb133111ebL;
+        refZ = refZ ^ (refZ >>> 31);
+        final int expectedDeepIdx = (int) (refZ >>> 52);
+        final byte expectedDeepRho = (byte) (Long.numberOfLeadingZeros((refZ << 12) | (1L << 11)) + 1);
+        Assert.assertEquals(expectedDeepRho, deepProbe[expectedDeepIdx]);
+
+        final byte[] allOnesRegisters = new byte[RequestDataProcessor.HLL_REGISTERS];
+        java.util.Arrays.fill(allOnesRegisters, (byte) 1);
+        final int allOnesEstimate = RequestDataProcessor.estimateHll(allOnesRegisters);
+        Assert.assertEquals(5907, allOnesEstimate);
+
+        // Verify estimateHll when zeros > 0 AND estimate > 2.5 * HLL_REGISTERS (must NOT use LinearCounting)
+        final byte[] highEstimateWithZero = new byte[RequestDataProcessor.HLL_REGISTERS];
+        java.util.Arrays.fill(highEstimateWithZero, (byte) 10);
+        highEstimateWithZero[0] = 0;
+        Assert.assertEquals(2420116, RequestDataProcessor.estimateHll(highEstimateWithZero));
+
+        final byte[] largeRegisters = new byte[RequestDataProcessor.HLL_REGISTERS];
+        for (int i = 1; i <= 50_000; i++)
+        {
+            RequestDataProcessor.updateHll(largeRegisters, i * 31);
+        }
+        final int largeEstimate = RequestDataProcessor.estimateHll(largeRegisters);
+        Assert.assertTrue("Expected ~50,000 in harmonic mean regime, got " + largeEstimate,
+                          largeEstimate >= 48_000 && largeEstimate <= 52_000);
+    }
+
+    /**
+     * Finds a 32-bit hash code whose SplitMix64 state has at least 20 leading zeros in bits 51..32
+     * so that the final {@code z ^ (z >>> 31)} step directly determines {@code Long.numberOfLeadingZeros(w)}.
+     */
+    private static int findDeepLeadingZerosHash()
+    {
+        for (int h = -1; h != 0; h--)
+        {
+            long z = (h & 0xFFFFFFFFL) + 0x9e3779b97f4a7c15L;
+            z = (z ^ (z >>> 30)) * 0xbf58476d1ce4e5b9L;
+            z = (z ^ (z >>> 27)) * 0x94d049bb133111ebL;
+            if ((z < 0) && ((z << 12) >>> 45) == 0L)
+            {
+                return h;
+            }
+        }
+        throw new AssertionError("Unreachable");
     }
 
     /**
@@ -558,7 +678,7 @@ public class DataProcessorMergeTest
             pHll1.recordUrlHash(i * 17);
         }
         final int countHll1 = pHll1.getDistinctUrlCount();
-        Assert.assertTrue("Expected ~1500 in pHll1, got " + countHll1, countHll1 >= 1495 && countHll1 <= 1505);
+        Assert.assertTrue("Expected ~1500 in pHll1, got " + countHll1, countHll1 >= 1450 && countHll1 <= 1550);
 
         // Processor B: exact mode with zero hash and 50 non-zero hashes disjoint from pHll1
         final RequestDataProcessor pExactWithZero = new RequestDataProcessor("MergeHll", requestsProvider, true);
@@ -577,10 +697,23 @@ public class DataProcessorMergeTest
         pTargetExact.merge(pExactWithZero);
         Assert.assertEquals(51, pTargetExact.getDistinctUrlCount());
 
+        // Reference processor for (pExactWithZero U pHll1)
+        final RequestDataProcessor pRefExactPlusHll1 = new RequestDataProcessor("MergeHll", requestsProvider, true);
+        pRefExactPlusHll1.recordUrlHash(0);
+        for (int i = 1; i <= 50; i++)
+        {
+            pRefExactPlusHll1.recordUrlHash(900_000 + i);
+        }
+        for (int i = 1; i <= 1500; i++)
+        {
+            pRefExactPlusHll1.recordUrlHash(i * 17);
+        }
+
         // Merge HLL (other.distinctUrlsHLL != null, other.hasZeroUrlHash == false) into exact (oldHasZero == true, oldHashes != null)
         pTargetExact.merge(pHll1);
         Assert.assertTrue(pTargetExact.hasZeroUrlHash);
-        Assert.assertEquals(countHll1 + 51, pTargetExact.getDistinctUrlCount());
+        Assert.assertNull(pTargetExact.distinctUrlHashes);
+        Assert.assertEquals(pRefExactPlusHll1.getDistinctUrlCount(), pTargetExact.getDistinctUrlCount());
 
         // Test merging HLL (without zero hash) into an exact processor that has non-zero hashes and oldHasZero == false
         // (verifies empty 0 slots in oldHashes are NOT recorded as hash 0!)
@@ -588,18 +721,22 @@ public class DataProcessorMergeTest
         pExactNoZero.recordUrlHash(888_881);
         pExactNoZero.recordUrlHash(888_882);
         final RequestDataProcessor pHllNoZero = new RequestDataProcessor("MergeHll", requestsProvider, true);
+        final RequestDataProcessor pRefNoZero = new RequestDataProcessor("MergeHll", requestsProvider, true);
+        pRefNoZero.recordUrlHash(888_881);
+        pRefNoZero.recordUrlHash(888_882);
         for (int i = 1; i <= 600; i++)
         {
             pHllNoZero.recordUrlHash(i * 23);
+            pRefNoZero.recordUrlHash(i * 23);
         }
-        final int countHllNoZero = pHllNoZero.getDistinctUrlCount();
         pExactNoZero.merge(pHllNoZero);
         Assert.assertFalse("Empty 0 slots in oldHashes must not set hasZeroUrlHash", pExactNoZero.hasZeroUrlHash);
-        Assert.assertEquals(countHllNoZero + 2, pExactNoZero.getDistinctUrlCount());
+        Assert.assertEquals(pRefNoZero.getDistinctUrlCount(), pExactNoZero.getDistinctUrlCount());
         // Now record 0 while already in HLL mode (covers hasZeroUrlHash == false && distinctUrlsHLL != null)
         pExactNoZero.recordUrlHash(0);
+        pRefNoZero.recordUrlHash(0);
         Assert.assertTrue(pExactNoZero.hasZeroUrlHash);
-        Assert.assertEquals(countHllNoZero + 3, pExactNoZero.getDistinctUrlCount());
+        Assert.assertEquals(pRefNoZero.getDistinctUrlCount(), pExactNoZero.getDistinctUrlCount());
 
         // Also test merging HLL into a completely empty exact processor (oldHasZero == false, oldHashes == null)
         final RequestDataProcessor pHll2 = new RequestDataProcessor("MergeHll", requestsProvider, true);
@@ -609,10 +746,10 @@ public class DataProcessorMergeTest
         }
         final RequestDataProcessor pEmptyTarget = new RequestDataProcessor("MergeHll", requestsProvider, true);
         pEmptyTarget.merge(pHll2);
-        Assert.assertTrue(pEmptyTarget.getDistinctUrlCount() >= 1495);
+        Assert.assertTrue(pEmptyTarget.getDistinctUrlCount() >= 1450);
         Assert.assertFalse(pEmptyTarget.hasZeroUrlHash);
 
-        // Build a reference processor with the exact union of pEmptyTarget + pTargetExact to verify HLL+HLL Union merge
+        // Build a reference processor with the exact union of pEmptyTarget + pTargetExact to verify HLL+HLL register-max merge
         final RequestDataProcessor pUnionRef = new RequestDataProcessor("MergeHll", requestsProvider, true);
         for (int i = 1; i <= 1500; i++)
         {
@@ -633,12 +770,13 @@ public class DataProcessorMergeTest
         Assert.assertTrue(pEmptyTarget.hasZeroUrlHash);
         Assert.assertEquals(pUnionRef.getDistinctUrlCount(), pEmptyTarget.getDistinctUrlCount());
 
-        // Also merge an exact processor into an already-HLL processor
+        // Also merge an exact processor (both with and without zero hash) into an already-HLL processor
         final RequestDataProcessor pSmallExact = new RequestDataProcessor("MergeHll", requestsProvider, true);
+        pSmallExact.recordUrlHash(0);
         pSmallExact.recordUrlHash(777_777);
-        final int beforeSmall = pEmptyTarget.getDistinctUrlCount();
+        pUnionRef.recordUrlHash(777_777);
         pEmptyTarget.merge(pSmallExact);
-        Assert.assertEquals(beforeSmall + 1, pEmptyTarget.getDistinctUrlCount());
+        Assert.assertEquals(pUnionRef.getDistinctUrlCount(), pEmptyTarget.getDistinctUrlCount());
     }
 
     /**

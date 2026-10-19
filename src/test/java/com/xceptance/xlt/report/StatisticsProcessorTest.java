@@ -257,6 +257,11 @@ public class StatisticsProcessorTest
 
         Assert.assertEquals(1234L, procMixed.getMinimumTime());
         Assert.assertEquals(1234L, procMixed.getMaximumTime());
+        Assert.assertEquals(2, procMixed.getReportProviderCount());
+
+        final java.util.concurrent.atomic.AtomicInteger callbackCount = new java.util.concurrent.atomic.AtomicInteger();
+        procMixed.complete(callbackCount::incrementAndGet);
+        Assert.assertEquals(2, callbackCount.get());
         Assert.assertEquals(2, procMixed.getReportProviders().size());
 
         // Verify complete() cleared allWorkerProviderSets, nulled out routing tables, and detached worker providers
@@ -279,7 +284,11 @@ public class StatisticsProcessorTest
         Assert.assertEquals(1, mixedReport.requests.get(0).count);
 
         // Verify calling complete() a second time is guarded by completed.compareAndSet(false, true)
+        // while still advancing the optional progress callback for each provider
         procMixed.allWorkerProviderSets.add(workerSet);
+        final java.util.concurrent.atomic.AtomicInteger secondCallbackCount = new java.util.concurrent.atomic.AtomicInteger();
+        procMixed.complete(secondCallbackCount::incrementAndGet);
+        Assert.assertEquals(2, secondCallbackCount.get());
         procMixed.complete();
         Assert.assertEquals("Second complete() call must be a no-op", 1, procMixed.allWorkerProviderSets.size());
     }

@@ -849,4 +849,26 @@ public class RequestDataTest extends TimerDataTest
     {
         return CsvUtils.encode(timerData.toList()).toString();
     }
+
+    @Test
+    public void testHashCodeOfUrlWithoutFragmentFromBytesAndString()
+    {
+        final RequestData req = new RequestData();
+        Assert.assertEquals(0, req.hashCodeOfUrlWithoutFragment());
+
+        final byte[] raw = "xxhttps://example.com/item?id=7#sectionyy".getBytes(StandardCharsets.UTF_8);
+        req.setUrl(raw, 2, raw.length - 4);
+        final int expectedHash = "https://example.com/item?id=7".hashCode();
+        Assert.assertEquals(expectedHash, req.hashCodeOfUrlWithoutFragment());
+        // Second call returns cached non-zero hash
+        Assert.assertEquals(expectedHash, req.hashCodeOfUrlWithoutFragment());
+
+        // Materialize URL string and verify consistency
+        Assert.assertEquals("https://example.com/item?id=7#section", req.getUrl());
+        Assert.assertEquals(expectedHash, req.hashCodeOfUrlWithoutFragment());
+
+        // URL string with zero fragment-free hash (e.g. "#onlyfrag")
+        req.setUrl("#onlyfrag");
+        Assert.assertEquals(0, req.hashCodeOfUrlWithoutFragment());
+    }
 }

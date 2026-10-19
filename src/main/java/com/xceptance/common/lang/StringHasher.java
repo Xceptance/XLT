@@ -55,4 +55,51 @@ public class StringHasher
 
         return hash;
     }
+
+    /**
+     * Hashes the UTF-8 byte slice {@code bytes[offset .. offset + length)} up to {@code limitingChar}
+     * (excluding it), producing the exact same hash code as {@link #hashCodeWithLimit(CharSequence, char)}
+     * on the decoded {@link String} while avoiding {@link String} allocation for ASCII inputs.
+     * <p>
+     * If a multi-byte UTF-8 sequence (any byte {@code < 0}) is encountered prior to {@code limitingChar},
+     * falls back to decoding the UTF-8 slice into a {@link String} so non-ASCII character hashing remains
+     * 100% identical to {@link #hashCodeWithLimit(CharSequence, char)}.
+     *
+     * @param bytes
+     *            the UTF-8 byte buffer
+     * @param offset
+     *            start offset in {@code bytes}
+     * @param length
+     *            number of bytes in the slice
+     * @param limitingChar
+     *            character at which to stop hashing (e.g. {@code '#'})
+     * @return the hash code up to {@code limitingChar}
+     */
+    public static int hashCodeWithLimit(final byte[] bytes, final int offset, final int length, final char limitingChar)
+    {
+        int hash = 0;
+        final int end = offset + length;
+        for (int i = offset; i < end; i++)
+        {
+            final byte b = bytes[i];
+            if (b < 0)
+            {
+                return hashCodeWithLimit(new String(bytes, offset, length, java.nio.charset.StandardCharsets.UTF_8), limitingChar);
+            }
+
+            final char c = (char) b;
+            if (c != limitingChar)
+            {
+                final int h1 = hash << 5;
+                final int h2 = c - hash;
+                hash = h1 + h2;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return hash;
+    }
 }

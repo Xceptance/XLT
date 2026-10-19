@@ -1401,6 +1401,223 @@ public class ChunkStorageAndCacheTest
                            fullModeManager.isCacheValid());
     }
 
+    @Test
+    public void testUrlHashColumnAndDistinctUrlCountRoundTrip() throws Exception
+    {
+        RequestChunkHandler.setRequestDetailsMode("sparse");
+        final File spoolDir = new File(tempDir, "url-hash-roundtrip");
+        spoolDir.mkdirs();
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final long baseTime = 1_700_000_000_000L;
+
+        // Ingest 600 requests for the same timer with 600 distinct URLs (plus consecutive duplicates)
+        // to exercise:
+        // 1. Zero-allocation byte-slice hashing and String URL hashing
+        // 2. Register cache hit for consecutive identical (timerId, urlHash)
+        // 3. GlobalDictionaries sample URL cap (10 samples)
+        // 4. Tier 1 -> Tier 2 HLL promotion (> 512 distinct URLs) when scanning from ChunkDB
+        for (int i = 0; i < 600; i++)
+        {
+            final String url = "https://example.com/catalog/product/" + i + "?lang=en#frag" + i;
+            for (int dup = 0; dup < 2; dup++)
+            {
+                final RequestData req = new RequestData("BrowseProduct");
+                req.setTime(baseTime + (i * 2L) + dup);
+                req.setRunTime(20 + (i % 50));
+                req.setResponseCode(200);
+                req.setFailed(false);
+                req.setUrl(url);
+                req.setAgentName("Agent-1");
+                req.setTransactionName("TBrowse");
+                collector.collect(req);
+            }
+        }
+
+        try (final ChunkStorage active = collector.finish())
+        {
+            Assert.assertNotNull(active);
+        }
+
+        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        {
+            final int timerId = loaded.getDictionaries().getOrCreateTimerNameId("BrowseProduct");
+            Assert.assertEquals("GlobalDictionaries must retain up to 10 sample URLs",
+                                10,
+                                loaded.getDictionaries().getCachedSampleUrls(timerId).length);
+
+            final DiskChunk dc = (DiskChunk) loaded.getCatalog().getChunksForType('R').get(0);
+            final RequestChunkHandler handler = (RequestChunkHandler) ChunkTypeRegistry.getInstance().getHandler('R');
+            final RequestChunk vectorsOnly = (RequestChunk) dc.loadVectorsOnly(handler, loaded.getDictionaries());
+            Assert.assertNotNull(vectorsOnly.getCompUrlHashes());
+            Assert.assertTrue("compUrlHashes must be non-empty", vectorsOnly.getCompUrlHashes().length > 0);
+
+            // 1. Scan via PostProcessedDataContainer (hot vector path used by ReportGeneratorMain)
+            final com.xceptance.xlt.api.report.PostProcessedDataContainer container =
+                new com.xceptance.xlt.api.report.PostProcessedDataContainer(1200, 1);
+            handler.scan(dc, ScanPredicate.ALL, container, loaded.getDictionaries());
+            Assert.assertEquals(1200, container.dataList.size());
+
+            final com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration config =
+                new com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration();
+            config.setChartStartTime(baseTime);
+            config.setChartEndTime(baseTime + 10_000L);
+            final com.xceptance.xlt.report.providers.RequestsReportProvider provider =
+                new com.xceptance.xlt.report.providers.RequestsReportProvider();
+            provider.setConfiguration(config);
+            final com.xceptance.xlt.report.providers.RequestDataProcessor proc1 =
+                new com.xceptance.xlt.report.providers.RequestDataProcessor("BrowseProduct", provider);
+            for (int i = 0; i < container.dataList.size(); i++)
+            {
+                proc1.processDataRecord(container.dataList.get(i));
+            }
+            final com.xceptance.xlt.report.providers.RequestReport r1 =
+                (com.xceptance.xlt.report.providers.RequestReport) proc1.createTimerReport(false);
+            Assert.assertEquals(10, r1.urls.list.size());
+            Assert.assertEquals("HLL estimate for 600 distinct URLs from container scan must be within 5%",
+                                600.0, r1.urls.total, 600.0 * 0.05);
+
+            // 2. Scan via Consumer<Data> overload
+            final com.xceptance.xlt.report.providers.RequestDataProcessor proc2 =
+                new com.xceptance.xlt.report.providers.RequestDataProcessor("BrowseProduct", provider);
+            loaded.scan('R', ScanPredicate.ALL, proc2::processDataRecord);
+            final com.xceptance.xlt.report.providers.RequestReport r2 =
+                (com.xceptance.xlt.report.providers.RequestReport) proc2.createTimerReport(false);
+            Assert.assertEquals(10, r2.urls.list.size());
+            Assert.assertEquals("Container scan and Consumer scan must produce identical distinct URL count",
+                                r1.urls.total, r2.urls.total);
+
+            // 3. Test legacy RequestChunk constructor without compUrlHashes (fallback to sample URL hash)
+            final RequestChunk legacyChunk = new RequestChunk(
+                vectorsOnly.getRowCount(), vectorsOnly.getMinTime(), vectorsOnly.getMaxTime(),
+                vectorsOnly.getMaxRunTime(), vectorsOnly.hasFailures(),
+                vectorsOnly.getTimerNameIds(), vectorsOnly.getAgentTestCaseIds(), vectorsOnly.getFailedRows(),
+                vectorsOnly.getCompTimeOffsets(), vectorsOnly.getCompTimerNameIds(), vectorsOnly.getCompAgentTestCaseIds(),
+                vectorsOnly.getCompRunTimes(), vectorsOnly.getCompResponseCodes(), vectorsOnly.getCompBytesSent(),
+                vectorsOnly.getCompBytesReceived(), vectorsOnly.getCompDnsTimes(), vectorsOnly.getCompConnectTimes(),
+                vectorsOnly.getCompSendTimes(), vectorsOnly.getCompServerBusyTimes(), vectorsOnly.getCompReceiveTimes(),
+                vectorsOnly.getCompTimeToFirstBytes(), vectorsOnly.getCompTimeToLastBytes(),
+                vectorsOnly.getCompHttpMethods(), vectorsOnly.getCompContentTypes(), vectorsOnly.getCompUsedIps(),
+                vectorsOnly.getCompIpAddresses(), vectorsOnly.getCompUserNumbers(), vectorsOnly.getCompFormDataEncodings(),
+                vectorsOnly.getForensicRows(), vectorsOnly.getUncompressedForensicLength(), vectorsOnly.getCompressedForensicTail());
+            Assert.assertEquals(0, legacyChunk.getCompUrlHashes().length);
+
+            final List<Data> legacyConsumerRows = new ArrayList<>();
+            handler.scan(legacyChunk, ScanPredicate.ALL, legacyConsumerRows::add, loaded.getDictionaries());
+            Assert.assertEquals(1200, legacyConsumerRows.size());
+
+            final com.xceptance.xlt.api.report.PostProcessedDataContainer legacyContainer =
+                new com.xceptance.xlt.api.report.PostProcessedDataContainer(1200, 1);
+            handler.scan(legacyChunk, ScanPredicate.ALL, legacyContainer, loaded.getDictionaries());
+            Assert.assertEquals(1200, legacyContainer.dataList.size());
+        }
+    }
+
+    /**
+     * Verifies {@link com.xceptance.xlt.report.ChunkQueryEngine} progress bar updates across candidate chunk scanning
+     * and provider merging (including empty candidate chunk sets), nested directory fingerprint calculation,
+     * and {@link CacheManager#loadValidated()} / {@link CacheManager#peekTimeRangeValidated()}.
+     */
+    @Test
+    public void testChunkQueryEngineProgressBarAndNestedFingerprint() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "nested-results");
+        final File userDir = new File(resultsDir, "ac001/TBrowse/0");
+        final File skippedOutputDir = new File(resultsDir, "ac001/output");
+        final File skippedGitDir = new File(resultsDir, ".git");
+        userDir.mkdirs();
+        skippedOutputDir.mkdirs();
+        skippedGitDir.mkdirs();
+
+        // Write standard, dated, and compact timer files plus non-timer and skipped-directory files
+        Files.writeString(new File(userDir, "timers.csv.gz").toPath(), "R,1,100,false,200\n", StandardCharsets.UTF_8);
+        Files.writeString(new File(userDir, "timers.csv.2025-07-17.gz").toPath(), "R,2,100,false,200\n", StandardCharsets.UTF_8);
+        Files.writeString(new File(userDir, "timer-wd-1.csv.gz").toPath(), "W,3,100\n", StandardCharsets.UTF_8);
+        Files.writeString(new File(userDir, "other.txt").toPath(), "ignored", StandardCharsets.UTF_8);
+        Files.writeString(new File(userDir, "timer-invalid.txt").toPath(), "ignored", StandardCharsets.UTF_8);
+        Files.writeString(new File(skippedOutputDir, "timers.csv").toPath(), "ignored-in-output", StandardCharsets.UTF_8);
+        Files.writeString(new File(skippedGitDir, "timers.csv").toPath(), "ignored-in-git", StandardCharsets.UTF_8);
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final CacheFingerprint fp = CacheFingerprint.calculate(resultsDir, config);
+        Assert.assertEquals("Only the 3 valid timer files outside skipped directories must be counted", 3, fp.fileCount());
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final long baseTime = 1_700_000_000_000L;
+        for (int i = 0; i < 50; i++)
+        {
+            final RequestData r = new RequestData("Req-" + (i % 5));
+            r.setTime(baseTime + i * 10L);
+            r.setRunTime(20 + i);
+            r.setResponseCode(200);
+            r.setAgentName("ac001");
+            r.setTransactionName("TBrowse");
+            collector.collect(r);
+        }
+
+        final ChunkStorage storage = collector.finish();
+        final CacheManager cm = new CacheManager(resultsDir, config);
+        cm.save(storage);
+
+        Assert.assertTrue(cm.isCacheValid());
+        final long[] range = cm.peekTimeRangeValidated();
+        Assert.assertNotNull(range);
+        Assert.assertEquals(baseTime, range[0]);
+        Assert.assertEquals(baseTime + 490L, range[1]);
+
+        try (final ChunkStorage loaded = cm.loadValidated())
+        {
+            Assert.assertNotNull(loaded);
+            final com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration dummyConfig =
+                new com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration();
+            dummyConfig.setChartStartTime(baseTime);
+            dummyConfig.setChartEndTime(baseTime + 1000L);
+
+            final com.xceptance.xlt.report.providers.RequestsReportProvider reqProvider =
+                new com.xceptance.xlt.report.providers.RequestsReportProvider();
+            reqProvider.setConfiguration(dummyConfig);
+
+            final com.xceptance.xlt.report.StatisticsProcessor statsProcessor =
+                new com.xceptance.xlt.report.StatisticsProcessor(List.of(reqProvider), dummyConfig);
+            final com.xceptance.xlt.report.ChunkQueryEngine engine =
+                new com.xceptance.xlt.report.ChunkQueryEngine(loaded, 2);
+
+            try (final me.tongfei.progressbar.ProgressBar pb =
+                     new me.tongfei.progressbar.ProgressBarBuilder()
+                         .setTaskName("Reading")
+                         .setStyle(me.tongfei.progressbar.ProgressBarStyle.ASCII)
+                         .build())
+            {
+                final long count = engine.executeScan(ScanPredicate.ALL, statsProcessor, pb);
+                Assert.assertEquals(50L, count);
+                final long expectedSteps = loaded.getCatalog().getChunkCount() + statsProcessor.getReportProviderCount();
+                Assert.assertEquals(expectedSteps, pb.getMax());
+                Assert.assertEquals(expectedSteps, pb.getCurrent());
+            }
+
+            // Also verify empty candidate chunk scan updates progressBar to 1/1
+            final com.xceptance.xlt.report.StatisticsProcessor emptyStatsProcessor =
+                new com.xceptance.xlt.report.StatisticsProcessor(List.of(reqProvider), dummyConfig);
+            final com.xceptance.xlt.report.ChunkQueryEngine emptyEngine =
+                new com.xceptance.xlt.report.ChunkQueryEngine(loaded, 2);
+            try (final me.tongfei.progressbar.ProgressBar pbEmpty =
+                     new me.tongfei.progressbar.ProgressBarBuilder()
+                         .setTaskName("Reading")
+                         .setStyle(me.tongfei.progressbar.ProgressBarStyle.ASCII)
+                         .build())
+            {
+                final ScanPredicate noMatch = new ScanPredicate(baseTime + 100_000L, baseTime + 200_000L, null, null);
+                final long count = emptyEngine.executeScan(noMatch, emptyStatsProcessor, pbEmpty);
+                Assert.assertEquals(0L, count);
+                Assert.assertEquals(1L, pbEmpty.getMax());
+                Assert.assertEquals(1L, pbEmpty.getCurrent());
+            }
+        }
+    }
+
     /**
      * Custom record type representing an unhandled / novel record format
      * to verify generic chunking and chunk-local string dictionary isolation.

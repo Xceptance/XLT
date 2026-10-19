@@ -93,4 +93,29 @@ public class TaskManagerTest
             }
         }
     }
+
+    @Test
+    public void testProgressSteps() throws Exception
+    {
+        final TaskManager taskmgr = TaskManager.getInstance();
+        taskmgr.startProgress("Testing");
+        try
+        {
+            taskmgr.addProgressSteps(3);
+            taskmgr.addProgressSteps(0);
+            taskmgr.stepProgress();
+            taskmgr.stepProgress();
+            taskmgr.stepProgress();
+
+            final Field totalTasksField = TaskManager.class.getDeclaredField("totalTasks");
+            totalTasksField.setAccessible(true);
+            final java.util.concurrent.atomic.AtomicInteger totalTasks =
+                (java.util.concurrent.atomic.AtomicInteger) totalTasksField.get(taskmgr);
+            Assert.assertEquals(3, totalTasks.get());
+        }
+        finally
+        {
+            taskmgr.stopProgress();
+        }
+    }
 }

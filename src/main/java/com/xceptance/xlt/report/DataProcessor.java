@@ -31,6 +31,10 @@ import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
+
 /**
  * Processor for the chain file to log line to parsed log line via
  * log line filter and transformation to finally the statistics part
@@ -278,7 +282,12 @@ public class DataProcessor
 
                     final com.xceptance.xlt.report.ChunkQueryEngine queryEngine =
                         new com.xceptance.xlt.report.ChunkQueryEngine(storage, config.parserThreadCount);
-                    final long recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor);
+                    final long recordsProcessed;
+                    try (final ProgressBar scanProgressBar =
+                             new ProgressBarBuilder().setTaskName("Aggregating").setStyle(ProgressBarStyle.ASCII).build())
+                    {
+                        recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor, scanProgressBar);
+                    }
 
                     final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
                     final long scanRate = scanDuration > 0 ? Math.round((recordsProcessed / (double) scanDuration) * 1000L) : 0;

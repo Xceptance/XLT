@@ -52,6 +52,10 @@ import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.util.Timer;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
+import me.tongfei.progressbar.ProgressBarStyle;
+
 /**
  *
  */
@@ -350,30 +354,47 @@ public class ReportGenerator
     public void readLogs(long fromTime, long toTime, final long duration, final boolean noRampUp, final boolean fromTimeRel,
                          final boolean toTimeRel)
     {
-        XltLogger.reportLogger.info(Console.horizontalBar());
-        XltLogger.reportLogger.info(Console.startSection("Reading Log Files..."));
         long testStartTime = config.getLongProperty(XltConstants.LOAD_TEST_START_DATE, 0);
         long elapsedTime = config.getLongProperty(XltConstants.LOAD_TEST_ELAPSED_TIME, 0);
+
+        com.xceptance.xlt.report.storage.cache.CacheManager validCacheManager = null;
+        if (config.isDataCacheEnabled() && inputDir.toLocalPath().isPresent())
+        {
+            try
+            {
+                final File resultsDir = inputDir.toLocalPath().get().toFile();
+                if (resultsDir.isDirectory())
+                {
+                    final com.xceptance.xlt.report.storage.cache.CacheManager cm =
+                        new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
+                    if (cm.isCacheValid())
+                    {
+                        validCacheManager = cm;
+                    }
+                }
+            }
+            catch (final Exception e)
+            {
+                // Ignore cache validation errors and fall back to standard log reading
+            }
+        }
+
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection(validCacheManager != null ? "Reading from Cache..." : "Reading Log Files..."));
 
         // If relative time offsets (e.g. fromTimeRel / toTimeRel) are specified on the CLI and
         // the test start timestamp is not explicitly provided in test properties, query the ChunkDB
         // cache catalog (if available and valid) to determine the exact earliest and latest timestamps
         // without scanning raw CSV log files.
-        if ((fromTimeRel || toTimeRel) && testStartTime == 0)
+        if ((fromTimeRel || toTimeRel) && testStartTime == 0 && validCacheManager != null)
         {
             try
             {
-                if (inputDir.toLocalPath().isPresent())
+                final long[] range = validCacheManager.peekTimeRangeValidated();
+                if (range != null)
                 {
-                    final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
-                    final com.xceptance.xlt.report.storage.cache.CacheManager cm =
-                        new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
-                    final long[] range = cm.peekTimeRange();
-                    if (range != null)
-                    {
-                        testStartTime = range[0];
-                        elapsedTime = range[1] - range[0];
-                    }
+                    testStartTime = range[0];
+                    elapsedTime = range[1] - range[0];
                 }
             }
             catch (final Exception e)
@@ -395,7 +416,7 @@ public class ReportGenerator
             throw new IllegalArgumentException("Specified start must not be after specified end.");
         }
 
-        read(fromTime, toTime);
+        read(fromTime, toTime, validCacheManager);
         XltLogger.reportLogger.info(Console.endSection());
     }
 
@@ -472,81 +493,92 @@ public class ReportGenerator
     }
 
     /**
-     * Processing of the log files within a defined time range
+     * Processing of the log files or ChunkDB cache within a defined time range.
      *
      * @param fromTime
      *            start time of the period to report
      * @param toTime
      *            end time of the period to report
+     * @param validCacheManager
+     *            pre-validated {@link com.xceptance.xlt.report.storage.cache.CacheManager} if a valid cache is available,
+     *            or {@code null} to read raw log files
      */
-    private void read(final long fromTime, final long toTime)
+    private void read(final long fromTime, final long toTime,
+                      final com.xceptance.xlt.report.storage.cache.CacheManager validCacheManager)
     {
-        // Step 1: Check if transparent persistent ChunkDB disk cache is available and valid.
-        // If valid, skip reading and parsing gigabytes of raw CSV text files across disk threads.
-        // Instead, execute a fast columnar SIMD scan over memory-mapped / buffered compressed binary chunks.
-        final boolean isPlainDirectory = inputDir.toLocalPath().isPresent();
-        if (config.isDataCacheEnabled() && isPlainDirectory)
+        // Step 1: If a valid persistent ChunkDB disk cache is available, skip reading and parsing
+        // gigabytes of raw CSV text files across disk threads. Instead, execute a fast columnar SIMD
+        // scan over compressed binary chunks while displaying console progress.
+        if (validCacheManager != null)
         {
             try
             {
-                final File resultsDir = inputDir.toLocalPath().get().toFile();
-                if (resultsDir.isDirectory())
+                XltLogger.reportLogger.info(String.format("Accelerating report generation using ChunkDB cache from: %s",
+                                                          validCacheManager.getCacheDirectory()));
+
+                // Create fresh statistics aggregation pipeline
+                final StatisticsProcessor statisticsProcessor = new StatisticsProcessor(reportProviders, config);
+
+                final long cacheLoadStart = TimerUtils.get().getStartTime();
+                final long cacheLoadDuration;
+                final long scanDuration;
+                final long recordsProcessed;
+
+                try (final ProgressBar progressBar =
+                         new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
+                     final com.xceptance.xlt.report.storage.ChunkStorage storage = validCacheManager.loadValidated())
                 {
-                    final com.xceptance.xlt.report.storage.cache.CacheManager cacheManager =
-                        new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
-                    if (cacheManager.isCacheValid())
+                    if (storage != null)
                     {
-                        final long cacheLoadStart = TimerUtils.get().getStartTime();
-                        try (final com.xceptance.xlt.report.storage.ChunkStorage storage = cacheManager.load())
-                        {
-                            if (storage != null)
-                            {
-                                final long cacheLoadDuration = TimerUtils.get().getElapsedTime(cacheLoadStart);
-                                XltLogger.reportLogger.info(String.format("Accelerating report generation using ChunkDB cache from: %s",
-                                                                          cacheManager.getCacheDirectory()));
+                        cacheLoadDuration = TimerUtils.get().getElapsedTime(cacheLoadStart);
 
-                                // Create fresh statistics aggregation pipeline
-                                final StatisticsProcessor statisticsProcessor = new StatisticsProcessor(reportProviders, config);
+                        // Compile agent and testcase include/exclude CLI patterns into a fast RoaringBitmap set
+                        // using 16-bit dictionary ID lookups
+                        final com.xceptance.common.util.StringMatcher testCaseFilter =
+                            new com.xceptance.common.util.StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
+                        final com.xceptance.common.util.StringMatcher agentFilter =
+                            new com.xceptance.common.util.StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
+                        final org.roaringbitmap.RoaringBitmap matchingAgents =
+                            storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
 
-                                // Compile agent and testcase include/exclude CLI patterns into a fast RoaringBitmap set
-                                // using 16-bit dictionary ID lookups
-                                final com.xceptance.common.util.StringMatcher testCaseFilter =
-                                    new com.xceptance.common.util.StringMatcher(testCaseIncludePatternList, testCaseExcludePatternList, true);
-                                final com.xceptance.common.util.StringMatcher agentFilter =
-                                    new com.xceptance.common.util.StringMatcher(agentIncludePatternList, agentExcludePatternList, true);
-                                final org.roaringbitmap.RoaringBitmap matchingAgents =
-                                    storage.getDictionaries().filterAgentTestCaseIds(agentFilter, testCaseFilter);
+                        // Construct two-tier query predicate (bounding-box chunk pruning + fine row filter)
+                        final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
+                            new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
 
-                                // Construct two-tier query predicate (bounding-box chunk pruning + fine row filter)
-                                final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
-                                    new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
-
-                                // Execute parallel SIMD scan across configured worker thread pool
-                                final long scanStart = TimerUtils.get().getStartTime();
-                                final ChunkQueryEngine queryEngine =
-                                    new ChunkQueryEngine(storage, config.parserThreadCount);
-                                final long recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor);
-                                final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
-                                final long totalDuration = cacheLoadDuration + scanDuration;
-                                final long recordsPerSecond = totalDuration > 0 ? Math.round((recordsProcessed / (double) totalDuration) * 1000L) : 0;
-
-                                XltLogger.reportLogger.info(String.format("%,d records read from cache - %,d ms (load: %,d ms, scan: %,d ms) - %,d records/s",
-                                                                          recordsProcessed, totalDuration, cacheLoadDuration, scanDuration, recordsPerSecond));
-
-                                XltLogger.reportLogger.info(Console.endSection());
-
-                                // Extract global time bounds aggregated across all processed records
-                                final long minTime = statisticsProcessor.getMinimumTime();
-                                final long maxTime = statisticsProcessor.getMaximumTime();
-
-                                config.setChartStartTime(minTime);
-                                config.setChartEndTime(maxTime);
-
-                                processExternalData(minTime, maxTime);
-                                return;
-                            }
-                        }
+                        // Execute parallel SIMD scan across configured worker thread pool
+                        final long scanStart = TimerUtils.get().getStartTime();
+                        final ChunkQueryEngine queryEngine =
+                            new ChunkQueryEngine(storage, config.parserThreadCount);
+                        recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor, progressBar);
+                        scanDuration = TimerUtils.get().getElapsedTime(scanStart);
                     }
+                    else
+                    {
+                        cacheLoadDuration = 0;
+                        scanDuration = 0;
+                        recordsProcessed = -1;
+                    }
+                }
+
+                if (recordsProcessed >= 0)
+                {
+                    final long totalDuration = cacheLoadDuration + scanDuration;
+                    final long recordsPerSecond = totalDuration > 0 ? Math.round((recordsProcessed / (double) totalDuration) * 1000L) : 0;
+
+                    XltLogger.reportLogger.info(String.format("%,d records read from cache - %,d ms (load: %,d ms, scan: %,d ms) - %,d records/s",
+                                                              recordsProcessed, totalDuration, cacheLoadDuration, scanDuration, recordsPerSecond));
+
+                    XltLogger.reportLogger.info(Console.endSection());
+
+                    // Extract global time bounds aggregated across all processed records
+                    final long minTime = statisticsProcessor.getMinimumTime();
+                    final long maxTime = statisticsProcessor.getMaximumTime();
+
+                    config.setChartStartTime(minTime);
+                    config.setChartEndTime(maxTime);
+
+                    processExternalData(minTime, maxTime);
+                    return;
                 }
             }
             catch (final Exception e)

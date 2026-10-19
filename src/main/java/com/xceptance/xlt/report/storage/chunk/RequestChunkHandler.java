@@ -188,13 +188,14 @@ public class RequestChunkHandler implements ChunkTypeHandler
         writeIntArray(c.compTimeToFirstBytes, out);
         writeIntArray(c.compTimeToLastBytes, out);
 
-        // 5. Interned string attribute dictionary IDs (6 arrays)
+        // 5. Interned string attribute dictionary IDs and per-row URL hashes (7 arrays)
         writeIntArray(c.compHttpMethods, out);
         writeIntArray(c.compContentTypes, out);
         writeIntArray(c.compUsedIps, out);
         writeIntArray(c.compIpAddresses, out);
         writeIntArray(c.compUserNumbers, out);
         writeIntArray(c.compFormDataEncodings, out);
+        writeIntArray(c.compUrlHashes, out);
 
         // 6. Cold Forensic Tail Block (at offset vectorPayloadLength)
         c.getForensicRows().serialize(out);
@@ -262,7 +263,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final RoaringBitmap failedRows = new RoaringBitmap();
         failedRows.deserialize(in);
 
-        // 3. Read 20 compressed integer columns
+        // 3. Read 21 compressed integer columns
         final int[] compTimeOffsets = readIntArray(in);
         final int[] compTimerNameIds = readIntArray(in);
         final int[] compAgentTestCaseIds = readIntArray(in);
@@ -285,6 +286,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int[] compIpAddresses = readIntArray(in);
         final int[] compUserNumbers = readIntArray(in);
         final int[] compFormDataEncodings = readIntArray(in);
+        final int[] compUrlHashes = readIntArray(in);
 
         // 4. Read Cold Forensic Tail Block if requested and available in stream
         RoaringBitmap forensicRows = new RoaringBitmap();
@@ -320,7 +322,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                                 compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
                                 compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
                                 compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-                                compUserNumbers, compFormDataEncodings,
+                                compUserNumbers, compFormDataEncodings, compUrlHashes,
                                 forensicRows, uncompressedForensicLen, compressedForensicTail);
     }
 
@@ -374,7 +376,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
         }
 
-        // 3. Decompress remaining 17 columns only when matching rows exist
+        // 3. Decompress remaining 18 columns only when matching rows exist
         final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
         final int[] responseCodes = FastIntegerCodec.decompress(c.compResponseCodes);
         final int[] bytesSent = FastIntegerCodec.decompress(c.compBytesSent);
@@ -396,6 +398,8 @@ public class RequestChunkHandler implements ChunkTypeHandler
             ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final int[] formDataEncodings = c.compFormDataEncodings != null && c.compFormDataEncodings.length > 0
             ? FastIntegerCodec.decompress(c.compFormDataEncodings) : null;
+        final int[] urlHashes = c.compUrlHashes != null && c.compUrlHashes.length > 0
+            ? FastIntegerCodec.decompress(c.compUrlHashes) : null;
 
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
@@ -470,12 +474,15 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 req.setFormDataEncoding(encId >= 0 && encId < stringBuffers.length ? stringBuffers[encId] : null);
             }
 
-            // Precomputed sample URL lookup (avoids multi-million URL parsing, hash, and String allocations)
+            // Precomputed sample URL lookup combined with the row's true fragment-free URL hash
             final GlobalDictionaries.CachedSampleUrl[] sampleUrls = dicts.getCachedSampleUrls(timerId);
             if (sampleUrls != null && sampleUrls.length > 0)
             {
                 final GlobalDictionaries.CachedSampleUrl sample = (sampleUrls.length == 1) ? sampleUrls[0] : sampleUrls[i % sampleUrls.length];
-                req.setUrlFast(sample.url(), sample.host(), sample.hashCodeOfUrlWithoutFragment());
+                final int urlHash = (urlHashes != null && i < urlHashes.length)
+                    ? urlHashes[i]
+                    : sample.hashCodeOfUrlWithoutFragment();
+                req.setUrlFast(sample.url(), sample.host(), urlHash);
             }
 
             // Restore exact forensic details if retained for this row in the Cold Forensic Tail Block
@@ -523,7 +530,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             return;
         }
 
-        // Load ONLY the Hot Vector Prefix (20 FastPFOR integer columns + bitmaps) when reading from disk.
+        // Load ONLY the Hot Vector Prefix (21 FastPFOR integer columns + bitmaps) when reading from disk.
         // Standard report generation providers aggregate numeric metrics and sample URLs from GlobalDictionaries
         // and never inspect per-row forensic strings; skipping the Cold Forensic Tail Block avoids disk I/O
         // and Deflate decompression overhead completely.
@@ -556,7 +563,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
         }
 
-        // 3. Decompress remaining 17 columns only when matching rows exist
+        // 3. Decompress remaining 18 columns only when matching rows exist
         final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
         final int[] responseCodes = FastIntegerCodec.decompress(c.compResponseCodes);
         final int[] bytesSent = FastIntegerCodec.decompress(c.compBytesSent);
@@ -578,6 +585,8 @@ public class RequestChunkHandler implements ChunkTypeHandler
             ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final int[] formDataEncodings = c.compFormDataEncodings != null && c.compFormDataEncodings.length > 0
             ? FastIntegerCodec.decompress(c.compFormDataEncodings) : null;
+        final int[] urlHashes = c.compUrlHashes != null && c.compUrlHashes.length > 0
+            ? FastIntegerCodec.decompress(c.compUrlHashes) : null;
 
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
@@ -660,24 +669,21 @@ public class RequestChunkHandler implements ChunkTypeHandler
             if (timerId == lastTimerId)
             {
                 req.setName(lastTimerName);
-                if (lastUrls != null && lastUrls.length > 0)
-                {
-                    final GlobalDictionaries.CachedSampleUrl sample = (lastUrls.length == 1) ? lastUrls[0] : lastUrls[i % lastUrls.length];
-                    req.setUrlFast(sample.url(), sample.host(), sample.hashCodeOfUrlWithoutFragment());
-                }
             }
             else
             {
                 lastTimerId = timerId;
                 lastTimerName = (timerId >= 0 && timerId < timerNames.length) ? timerNames[timerId] : null;
                 req.setName(lastTimerName);
-
                 lastUrls = dicts.getCachedSampleUrls(timerId);
-                if (lastUrls != null && lastUrls.length > 0)
-                {
-                    final GlobalDictionaries.CachedSampleUrl sample = (lastUrls.length == 1) ? lastUrls[0] : lastUrls[i % lastUrls.length];
-                    req.setUrlFast(sample.url(), sample.host(), sample.hashCodeOfUrlWithoutFragment());
-                }
+            }
+            if (lastUrls != null && lastUrls.length > 0)
+            {
+                final GlobalDictionaries.CachedSampleUrl sample = (lastUrls.length == 1) ? lastUrls[0] : lastUrls[i % lastUrls.length];
+                final int urlHash = (urlHashes != null && i < urlHashes.length)
+                    ? urlHashes[i]
+                    : sample.hashCodeOfUrlWithoutFragment();
+                req.setUrlFast(sample.url(), sample.host(), urlHash);
             }
 
             // Register-cached agent/testCase pair lookup
@@ -917,6 +923,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private final int[] ipAddresses = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] userNumbers = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] formDataEncodings = new int[DEFAULT_CHUNK_CAPACITY];
+        private final int[] urlHashes = new int[DEFAULT_CHUNK_CAPACITY];
 
         // ---------------------------------------------------------------------
         // In-Memory Index Bitmaps
@@ -970,6 +977,9 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private CharSequence lastEncodingRef;
         private String lastEncodingStr;
         private int lastEncodingId = -1;
+
+        private int lastSampleUrlTimerId = -1;
+        private int lastSampleUrlHash = 0;
 
         // Bitmasks to avoid redundant RoaringBitmap additions across 64K chunk records
         private long[] seenTimers = new long[64];
@@ -1261,9 +1271,13 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 formDataEncodings[idx] = lastEncodingId;
             }
 
-            // 8. Capture sample URLs directly into global dictionaries (quota-checked lock-free)
-            if (timerId >= 0 && !dicts.hasSufficientSamples(timerId))
+            // 8. Capture fragment-free URL hash and sample URLs directly into global dictionaries (quota-checked lock-free)
+            final int urlHash = req.hashCodeOfUrlWithoutFragment();
+            urlHashes[idx] = urlHash;
+            if (timerId >= 0 && (timerId != lastSampleUrlTimerId || urlHash != lastSampleUrlHash) && !dicts.hasSufficientSamples(timerId))
             {
+                lastSampleUrlTimerId = timerId;
+                lastSampleUrlHash = urlHash;
                 dicts.addSampleUrl(timerId, req.getUrl());
             }
 
@@ -1431,6 +1445,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             final int[] finalIpAddresses = size == DEFAULT_CHUNK_CAPACITY ? ipAddresses : Arrays.copyOf(ipAddresses, size);
             final int[] finalUserNumbers = size == DEFAULT_CHUNK_CAPACITY ? userNumbers : Arrays.copyOf(userNumbers, size);
             final int[] finalFormDataEncodings = size == DEFAULT_CHUNK_CAPACITY ? formDataEncodings : Arrays.copyOf(formDataEncodings, size);
+            final int[] finalUrlHashes = size == DEFAULT_CHUNK_CAPACITY ? urlHashes : Arrays.copyOf(urlHashes, size);
 
             // Compress columnar integer arrays using FastPFOR128
             final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
@@ -1455,6 +1470,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             final int[] compIpAddresses = FastIntegerCodec.compress(finalIpAddresses);
             final int[] compUserNumbers = FastIntegerCodec.compress(finalUserNumbers);
             final int[] compFormDataEncodings = FastIntegerCodec.compress(finalFormDataEncodings);
+            final int[] compUrlHashes = FastIntegerCodec.compress(finalUrlHashes);
 
             // Build and Deflate-compress the Cold Forensic Tail Block:
             // Populate the RoaringBitmap of retained row indices first. Iterating forensicRows below visits
@@ -1529,7 +1545,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                                     compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
                                     compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
                                     compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-                                    compUserNumbers, compFormDataEncodings,
+                                    compUserNumbers, compFormDataEncodings, compUrlHashes,
                                     forensicRows, uncompressedForensicLength, compressedForensicTail);
         }
 
@@ -1575,6 +1591,8 @@ public class RequestChunkHandler implements ChunkTypeHandler
             lastEncodingRef = null;
             lastEncodingStr = null;
             lastEncodingId = -1;
+            lastSampleUrlTimerId = -1;
+            lastSampleUrlHash = 0;
         }
     }
 }

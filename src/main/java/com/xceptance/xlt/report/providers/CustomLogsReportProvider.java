@@ -22,15 +22,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -59,9 +63,14 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     private Map<String, ZipOutputStream> zipStreamsForScopes = new HashMap<String, ZipOutputStream>();
     
     private Map<String, List<Path>> foundScopeFiles = new HashMap<String, List<Path>>();
+
+    private final Map<Path, BufferedWriter> scopeWriters = new HashMap<>();
+
+    private final Set<Path> nonEmptyScopePaths = new HashSet<>();
     
     private String baseDir;
     private Path targetDir = null;
+    private String cacheDirName = null;
 
     /**
      * {@inheritDoc}
@@ -70,15 +79,17 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     public Object createReportFragment()
     {
         final CustomLogsReport report = new CustomLogsReport();
+        final ReportGeneratorConfiguration reportConfig = (ReportGeneratorConfiguration) getConfiguration();
 
-        FsResource results = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory();
+        FsResource results = reportConfig.getResultsDirectory();
         baseDir = results.getName();
-        targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
+        targetDir = Paths.get(reportConfig.getReportDirectory() + File.separator + CUSTOM_DATA);
+        cacheDirName = reportConfig.getDataCacheDirectoryName();
         
         // get property value whether or not to aggregate all recorded custom data logs into one data file per scope
         // (or else to keep the original directory structure for recorded custom data)
         // (default: true = collect all data in one file per scope)
-        final boolean collectCustomDataInOneFile = ((ReportGeneratorConfiguration) getConfiguration()).aggregateCustomData();
+        final boolean collectCustomDataInOneFile = reportConfig.aggregateCustomData();
         
         if (collectCustomDataInOneFile)
         {
@@ -135,11 +146,19 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return false;
     }        
     
-    private void findLogsAggregated (FsResource results)
+    private void findLogsAggregated(FsResource results)
     {
         try
         {
-            findLogs(results, null, true);
+            final Optional<Path> localPath = results.toLocalPath();
+            if (localPath.isPresent() && Files.isDirectory(localPath.get()))
+            {
+                findLogsLocal(localPath.get(), true);
+            }
+            else
+            {
+                findLogs(results, null, true);
+            }
         }
         catch (IOException e)
         {
@@ -147,16 +166,24 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         }
         finally 
         {
+            closeScopeWriters();
             writeAggregatedDataToZip();
         }
-        return;
     }
     
-    private void findLogsNonAggregated (FsResource results)
+    private void findLogsNonAggregated(FsResource results)
     {
         try
         {
-            findLogs(results, null, false);
+            final Optional<Path> localPath = results.toLocalPath();
+            if (localPath.isPresent() && Files.isDirectory(localPath.get()))
+            {
+                findLogsLocal(localPath.get(), false);
+            }
+            else
+            {
+                findLogs(results, null, false);
+            }
         }
         catch (IOException e)
         {
@@ -166,7 +193,82 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         {
             finishZipStreams(); // this closes the ZipOutputStreams, so this MUST be done
         }
-        return;
+    }
+
+    /**
+     * Fast local-filesystem directory walk using NIO {@link Files#walkFileTree} to avoid allocating
+     * {@link FsResource} wrappers and extra {@code stat()} calls for non-matching files across thousands
+     * of user directories.
+     */
+    private void findLogsLocal(final Path rootDir, final boolean aggregated) throws IOException
+    {
+        final ReportGeneratorConfiguration reportConfig = (ReportGeneratorConfiguration) getConfiguration();
+        final Path cacheDirPath = reportConfig.getDataCacheDirectory(rootDir.toFile()).toPath().toAbsolutePath().normalize();
+
+        Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>()
+        {
+            @Override
+            public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
+            {
+                if (!dir.equals(rootDir))
+                {
+                    final Path namePath = dir.getFileName();
+                    final String dirName = namePath != null ? namePath.toString() : "";
+                    if (XltConstants.CONFIG_DIR_NAME.equals(dirName) ||
+                        (cacheDirName != null && cacheDirName.equals(dirName)) ||
+                        dir.toAbsolutePath().normalize().equals(cacheDirPath))
+                    {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+            {
+                if (!attrs.isRegularFile())
+                {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                final Path namePath = file.getFileName();
+                if (namePath == null)
+                {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                final String filename = namePath.toString();
+                if (filename.startsWith(XltConstants.CUSTOM_LOG_PREFIX))
+                {
+                    final int dotIdx = filename.lastIndexOf('.');
+                    if (dotIdx <= XltConstants.CUSTOM_LOG_PREFIX.length())
+                    {
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    final String scopeName = filename.substring(XltConstants.CUSTOM_LOG_PREFIX.length(), dotIdx);
+                    final String extension = filename.substring(dotIdx + 1);
+
+                    if (foundScopes.isEmpty() && foundScopeFiles.isEmpty())
+                    {
+                        targetDir.toFile().mkdirs();
+                    }
+
+                    if (aggregated)
+                    {
+                        aggregateDataForScope(file, scopeName, extension);
+                    }
+                    else
+                    {
+                        final Path relParent = rootDir.relativize(file.getParent());
+                        final String currentPath = relParent.toString().isEmpty() ? null : relParent.toString().replace('\\', '/');
+                        copyCustomDataFileToZip(file, currentPath, filename.substring(XltConstants.CUSTOM_LOG_PREFIX.length()), scopeName);
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
 
@@ -185,7 +287,8 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         final String filename = file.getName();
         if (file.isDirectory())
         {
-            if (!XltConstants.CONFIG_DIR_NAME.equals(filename))
+            if (!XltConstants.CONFIG_DIR_NAME.equals(filename) &&
+                (cacheDirName == null || !cacheDirName.equals(filename)))
             {
                 for (final FsResource fo : file.listChildren())
                 {
@@ -199,7 +302,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             {
                 final String scopeName = filename.substring(XltConstants.CUSTOM_LOG_PREFIX.length(), filename.lastIndexOf('.'));
                 
-                if (foundScopes.isEmpty())
+                if (foundScopes.isEmpty() && foundScopeFiles.isEmpty())
                 {
                     //for the very first scope we have to create the directory to contain all logs in the report
                     targetDir.toFile().mkdirs();
@@ -231,6 +334,24 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     private void copyCustomDataFileToZip(FsResource file, String currentPath, final String filename, final String scopeName)
         throws IOException
     {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8)))
+        {
+            copyReaderToZip(reader, currentPath, filename, scopeName);
+        }
+    }
+
+    private void copyCustomDataFileToZip(Path file, String currentPath, final String filename, final String scopeName)
+        throws IOException
+    {
+        try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8))
+        {
+            copyReaderToZip(reader, currentPath, filename, scopeName);
+        }
+    }
+
+    private void copyReaderToZip(BufferedReader reader, String currentPath, final String filename, final String scopeName)
+        throws IOException
+    {
         // if scope has already been used, there is a stream for it
         ZipOutputStream scopeStream = zipStreamsForScopes.get(scopeName);
         // if scope/stream does not exist yet, create one and add it to list
@@ -244,7 +365,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         // add zip entry, copy current log file for scope   
         scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, filename)));
-        writeDataToZip(file, scopeStream);
+        writeReaderToZip(reader, scopeStream);
         scopeStream.closeEntry();
     }
 
@@ -256,67 +377,104 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      */
     private void aggregateDataForScope(FsResource file, final String scopeName)
     {
-        // every file type is aggregated seperately, e.g. users.csv and users.log
-        // aggregated files with same scope (see example above) are then zipped into one archive users.zip for download
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8)))
+        {
+            aggregateDataFromReader(reader, scopeName, file.getExtension());
+        }
+        catch (IOException e)
+        {
+            XltLogger.runTimeLogger.error("Error reading or writing file: " + e.getMessage() + e.getClass());
+        }
+    }
 
-        String scopeFile = scopeName + "." + file.getExtension();
+    private void aggregateDataForScope(Path file, final String scopeName, final String extension)
+    {
+        try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8))
+        {
+            aggregateDataFromReader(reader, scopeName, extension);
+        }
+        catch (IOException e)
+        {
+            XltLogger.runTimeLogger.error("Error reading or writing file: " + e.getMessage() + e.getClass());
+        }
+    }
+
+    private void aggregateDataFromReader(final BufferedReader reader, final String scopeName, final String extension)
+        throws IOException
+    {
+        // every file type is aggregated separately, e.g. users.csv and users.log
+        // aggregated files with same scope (see example above) are then zipped into one archive users.zip for download
+        final String scopeFile = scopeName + "." + extension;
         List<Path> scopePaths = foundScopeFiles.get(scopeName);
         if (scopePaths == null)
         {
             scopePaths = new ArrayList<Path>();
             foundScopeFiles.put(scopeName, scopePaths);
         }
-        Path scopePath = targetDir.resolve(scopeFile).toAbsolutePath().normalize();
+        final Path scopePath = targetDir.resolve(scopeFile).toAbsolutePath().normalize();
         if (!scopePaths.contains(scopePath))
         {
             scopePaths.add(scopePath);
         }
-        
-        try
+
+        BufferedWriter scopeWriter = scopeWriters.get(scopePath);
+        if (scopeWriter == null)
         {
-            if (!Files.exists(scopePath))
+            Files.createDirectories(targetDir);
+            if (Files.exists(scopePath) && Files.size(scopePath) > 0)
             {
-                Files.createFile(scopePath);
+                nonEmptyScopePaths.add(scopePath);
             }
+            scopeWriter = Files.newBufferedWriter(scopePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            scopeWriters.put(scopePath, scopeWriter);
         }
-        catch (IOException e)
+
+        String line;
+        boolean first = true;
+        while ((line = reader.readLine()) != null)
         {
-            
-        }
-        
-        try (BufferedWriter scopeWriter = Files.newBufferedWriter(scopePath, StandardOpenOption.APPEND))
-        {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8)))
+            if (first)
             {
-                String line;
-                boolean first = true;
-                while ((line = reader.readLine()) != null) 
+                first = false;
+                // check if the file uses a header
+                if (CUSTOM_DATA_HEADER_MARKER.equals(line))
                 {
-                    if (first)
+                    // do not write the XLT specific header marker to the target file,
+                    // continue to actual header line
+                    line = reader.readLine();
+                    if (line == null)
                     {
-                        first = false;
-                        // check if the file uses a header
-                        if (CUSTOM_DATA_HEADER_MARKER.equals(line))
-                        {
-                            // do not write the XLT specific header marker to the target file, 
-                            // continue to actual header line
-                            line = reader.readLine();
-                            // if aggregated file already exists (has content): ignore header
-                            if (Files.size(scopePath) > 0)
-                                continue;
-                            // otherwise write header line
-                        }
+                        break;
                     }
-                    scopeWriter.write(line);
-                    scopeWriter.newLine();
+                    // if aggregated file already exists (has content): ignore header
+                    if (nonEmptyScopePaths.contains(scopePath))
+                    {
+                        continue;
+                    }
+                    // otherwise write header line
                 }
             }
+            scopeWriter.write(line);
+            scopeWriter.newLine();
+            nonEmptyScopePaths.add(scopePath);
         }
-        catch (IOException e) 
+    }
+
+    private void closeScopeWriters()
+    {
+        for (final BufferedWriter writer : scopeWriters.values())
         {
-            XltLogger.runTimeLogger.error("Error reading or writing file: " + e.getMessage() + e.getClass());
-            // Continue processing other files even if one fails
+            try
+            {
+                writer.close();
+            }
+            catch (final IOException e)
+            {
+                XltLogger.runTimeLogger.error("Error closing aggregated custom data log writer: " + e.getMessage());
+            }
         }
+        scopeWriters.clear();
+        nonEmptyScopePaths.clear();
     }
     
     /**
@@ -381,33 +539,25 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     }
 
     /**
-     * Writes contents of a file (that might be inside a zip archive) to a {@link ZipOutputStream}.
-     * @param file the file to copy to the zip archive
+     * Writes contents of a reader to a {@link ZipOutputStream}.
+     * @param reader the reader to copy to the zip archive
      * @param scopeStream the {@link ZipOutputStream} that the file contents are written to
      * @throws IOException
      */
-    private void writeDataToZip(FsResource file, ZipOutputStream scopeStream) throws IOException
+    private void writeReaderToZip(BufferedReader reader, ZipOutputStream scopeStream) throws IOException
     {
-        // InputStream in = /*isCompressed ? 
-        //    new GZIPInputStream(file.openStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
-        //    file.openStream();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8)))
+        String line;
+        boolean first = true;
+        while ((line = reader.readLine()) != null) 
         {
-            //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
-            String line;
-            boolean first = true;
-            while ((line = reader.readLine()) != null) 
+            if (first)
             {
-                if (first)
-                {
-                    first = false;
-                    // check if the file uses a header: if yes, don't write the XLT-specific marker to the target file
-                    if (CUSTOM_DATA_HEADER_MARKER.equals(line))
-                        continue;
-                }
-                scopeStream.write((line + System.lineSeparator()).getBytes("UTF-8"));
-                //TODO count lines while reading for additional info?
+                first = false;
+                // check if the file uses a header: if yes, don't write the XLT-specific marker to the target file
+                if (CUSTOM_DATA_HEADER_MARKER.equals(line))
+                    continue;
             }
+            scopeStream.write((line + System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
         }
     }
 

@@ -157,6 +157,9 @@ public class RequestChunk implements Chunk
     /** Compressed form data encoding string dictionary IDs. */
     final int[] compFormDataEncodings;
 
+    /** Compressed 32-bit fragment-free URL hash codes for distinct URL counting. */
+    final int[] compUrlHashes;
+
     /** Sample URL strings mapped by timer name ID for report display. */
     final Map<Integer, List<String>> sampleUrlsByTimer;
 
@@ -174,7 +177,7 @@ public class RequestChunk implements Chunk
     /** Deflate-compressed forensic tail payload bytes. */
     final byte[] compressedForensicTail;
 
-    /** Exact byte length of the serialized hot vector payload (header + bitmaps + 20 int[] columns). */
+    /** Exact byte length of the serialized hot vector payload (header + bitmaps + 21 int[] columns). */
     private final int vectorPayloadLength;
 
     /** Lazily inflated forensic details map, populated only upon explicit drill-down inspection. */
@@ -254,13 +257,13 @@ public class RequestChunk implements Chunk
              compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
              compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
              compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-             new int[0], new int[0],
+             new int[0], new int[0], new int[0],
              new RoaringBitmap(), 0, new byte[0],
              sampleUrlsByTimer, slowestRequests);
     }
 
     /**
-     * Constructs a sealed V3 {@link RequestChunk} with all 20 compressed columnar blocks, Zone Map boundaries,
+     * Constructs a sealed V3 {@link RequestChunk} with 20 compressed columnar blocks, Zone Map boundaries,
      * and the Deflate-compressed Cold Forensic Tail Block.
      */
     public RequestChunk(final int rowCount,
@@ -302,13 +305,62 @@ public class RequestChunk implements Chunk
              compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
              compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
              compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-             compUserNumbers, compFormDataEncodings,
+             compUserNumbers, compFormDataEncodings, new int[0],
              forensicRows, uncompressedForensicLength, compressedForensicTail,
              Collections.emptyMap(), Collections.emptyList());
     }
 
     /**
-     * Full constructor for a sealed V3 {@link RequestChunk}.
+     * Constructs a sealed V3 {@link RequestChunk} with all 21 compressed columnar blocks (including per-row URL hashes),
+     * Zone Map boundaries, and the Deflate-compressed Cold Forensic Tail Block.
+     */
+    public RequestChunk(final int rowCount,
+                        final long minTime,
+                        final long maxTime,
+                        final int maxRunTime,
+                        final boolean hasFailuresFlag,
+                        final RoaringBitmap timerNameIds,
+                        final RoaringBitmap agentTestCaseIds,
+                        final RoaringBitmap failedRows,
+                        final int[] compTimeOffsets,
+                        final int[] compTimerNameIds,
+                        final int[] compAgentTestCaseIds,
+                        final int[] compRunTimes,
+                        final int[] compResponseCodes,
+                        final int[] compBytesSent,
+                        final int[] compBytesReceived,
+                        final int[] compDnsTimes,
+                        final int[] compConnectTimes,
+                        final int[] compSendTimes,
+                        final int[] compServerBusyTimes,
+                        final int[] compReceiveTimes,
+                        final int[] compTimeToFirstBytes,
+                        final int[] compTimeToLastBytes,
+                        final int[] compHttpMethods,
+                        final int[] compContentTypes,
+                        final int[] compUsedIps,
+                        final int[] compIpAddresses,
+                        final int[] compUserNumbers,
+                        final int[] compFormDataEncodings,
+                        final int[] compUrlHashes,
+                        final RoaringBitmap forensicRows,
+                        final int uncompressedForensicLength,
+                        final byte[] compressedForensicTail)
+    {
+        this(rowCount, minTime, maxTime, maxRunTime, hasFailuresFlag,
+             timerNameIds, agentTestCaseIds, failedRows,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
+             compResponseCodes, compBytesSent, compBytesReceived,
+             compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
+             compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
+             compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
+             compUserNumbers, compFormDataEncodings, compUrlHashes,
+             forensicRows, uncompressedForensicLength, compressedForensicTail,
+             Collections.emptyMap(), Collections.emptyList());
+    }
+
+    /**
+     * Full constructor for a sealed V3 {@link RequestChunk} without explicit URL hashes.
      */
     public RequestChunk(final int rowCount,
                         final long minTime,
@@ -344,6 +396,56 @@ public class RequestChunk implements Chunk
                         final Map<Integer, List<String>> sampleUrlsByTimer,
                         final List<RequestData> slowestRequests)
     {
+        this(rowCount, minTime, maxTime, maxRunTime, hasFailuresFlag,
+             timerNameIds, agentTestCaseIds, failedRows,
+             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
+             compResponseCodes, compBytesSent, compBytesReceived,
+             compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
+             compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
+             compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
+             compUserNumbers, compFormDataEncodings, new int[0],
+             forensicRows, uncompressedForensicLength, compressedForensicTail,
+             sampleUrlsByTimer, slowestRequests);
+    }
+
+    /**
+     * Full constructor for a sealed V3 {@link RequestChunk}.
+     */
+    public RequestChunk(final int rowCount,
+                        final long minTime,
+                        final long maxTime,
+                        final int maxRunTime,
+                        final boolean hasFailuresFlag,
+                        final RoaringBitmap timerNameIds,
+                        final RoaringBitmap agentTestCaseIds,
+                        final RoaringBitmap failedRows,
+                        final int[] compTimeOffsets,
+                        final int[] compTimerNameIds,
+                        final int[] compAgentTestCaseIds,
+                        final int[] compRunTimes,
+                        final int[] compResponseCodes,
+                        final int[] compBytesSent,
+                        final int[] compBytesReceived,
+                        final int[] compDnsTimes,
+                        final int[] compConnectTimes,
+                        final int[] compSendTimes,
+                        final int[] compServerBusyTimes,
+                        final int[] compReceiveTimes,
+                        final int[] compTimeToFirstBytes,
+                        final int[] compTimeToLastBytes,
+                        final int[] compHttpMethods,
+                        final int[] compContentTypes,
+                        final int[] compUsedIps,
+                        final int[] compIpAddresses,
+                        final int[] compUserNumbers,
+                        final int[] compFormDataEncodings,
+                        final int[] compUrlHashes,
+                        final RoaringBitmap forensicRows,
+                        final int uncompressedForensicLength,
+                        final byte[] compressedForensicTail,
+                        final Map<Integer, List<String>> sampleUrlsByTimer,
+                        final List<RequestData> slowestRequests)
+    {
         this.rowCount = rowCount;
         this.minTime = minTime;
         this.maxTime = maxTime;
@@ -372,6 +474,7 @@ public class RequestChunk implements Chunk
         this.compIpAddresses = compIpAddresses;
         this.compUserNumbers = compUserNumbers != null ? compUserNumbers : new int[0];
         this.compFormDataEncodings = compFormDataEncodings != null ? compFormDataEncodings : new int[0];
+        this.compUrlHashes = compUrlHashes != null ? compUrlHashes : new int[0];
         this.forensicRows = forensicRows != null ? forensicRows : new RoaringBitmap();
         this.uncompressedForensicLength = uncompressedForensicLength;
         this.compressedForensicTail = compressedForensicTail != null ? compressedForensicTail : new byte[0];
@@ -385,7 +488,7 @@ public class RequestChunk implements Chunk
      * the Cold Forensic Tail Block in {@link RequestChunkHandler#writeChunk(Chunk, java.io.DataOutput)}).
      * <p>
      * <b>Why this is precomputed:</b>
-     * Standard report generation scans require only the 20 compressed integer vectors and bitmaps, never
+     * Standard report generation scans require only the 21 compressed integer vectors and bitmaps, never
      * the high-entropy per-row forensic strings (URLs, request/response IDs, POST form data, raw names).
      * By recording this exact byte boundary in the V3 catalog tail index, {@link DiskChunk#loadVectorsOnly}
      * can issue a single bounded positional {@code FileChannel.read} of {@code vectorPayloadLength} bytes,
@@ -402,7 +505,7 @@ public class RequestChunk implements Chunk
         size += agentTestCaseIds.serializedSizeInBytes();
         size += failedRows.serializedSizeInBytes();
 
-        // 3. All 20 FastPFOR-compressed integer column vectors (each prefixed by a 4-byte int length)
+        // 3. All 21 FastPFOR-compressed integer column vectors (each prefixed by a 4-byte int length)
         size += arrayBytes(compTimeOffsets);
         size += arrayBytes(compTimerNameIds);
         size += arrayBytes(compAgentTestCaseIds);
@@ -423,6 +526,7 @@ public class RequestChunk implements Chunk
         size += arrayBytes(compIpAddresses);
         size += arrayBytes(compUserNumbers);
         size += arrayBytes(compFormDataEncodings);
+        size += arrayBytes(compUrlHashes);
         return size;
     }
 
@@ -607,6 +711,16 @@ public class RequestChunk implements Chunk
     public int[] getCompFormDataEncodings()
     {
         return compFormDataEncodings;
+    }
+
+    /**
+     * Returns the compressed 32-bit fragment-free URL hashes array.
+     *
+     * @return compressed URL hashes
+     */
+    public int[] getCompUrlHashes()
+    {
+        return compUrlHashes;
     }
 
     /**

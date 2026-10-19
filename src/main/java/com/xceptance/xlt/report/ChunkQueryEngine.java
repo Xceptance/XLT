@@ -29,6 +29,8 @@ import com.xceptance.xlt.report.storage.chunk.Chunk;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
+import me.tongfei.progressbar.ProgressBar;
+
 /**
  * Parallel query execution engine for scanning ChunkDB chunks directly into {@link StatisticsProcessor}.
  * <p>
@@ -90,8 +92,26 @@ public class ChunkQueryEngine
      *            filter criteria specifying time boundaries, timer name filters, and agent/test case IDs
      * @param statisticsProcessor
      *            statistics processor that accumulates metrics for report providers
+     * @return total number of matching data records processed
      */
     public long executeScan(final ScanPredicate predicate, final StatisticsProcessor statisticsProcessor)
+    {
+        return executeScan(predicate, statisticsProcessor, null);
+    }
+
+    /**
+     * Executes a parallel scan over all candidate chunks matching the predicate, feeding results
+     * directly into the {@link StatisticsProcessor} while updating an optional console {@link ProgressBar}.
+     *
+     * @param predicate
+     *            filter criteria specifying time boundaries, timer name filters, and agent/test case IDs
+     * @param statisticsProcessor
+     *            statistics processor that accumulates metrics for report providers
+     * @param progressBar
+     *            optional console progress bar updated as chunks are scanned and providers are merged (may be {@code null})
+     * @return total number of matching data records processed
+     */
+    public long executeScan(final ScanPredicate predicate, final StatisticsProcessor statisticsProcessor, final ProgressBar progressBar)
     {
         final long start = System.currentTimeMillis();
 
@@ -105,8 +125,19 @@ public class ChunkQueryEngine
         // If no chunks match the filter, finalize processor and exit early
         if (candidateChunks.isEmpty())
         {
+            if (progressBar != null)
+            {
+                progressBar.maxHint(1);
+                progressBar.step();
+            }
             statisticsProcessor.complete();
             return 0L;
+        }
+
+        final int mergeSteps = statisticsProcessor.getReportProviderCount();
+        if (progressBar != null)
+        {
+            progressBar.maxHint(candidateChunks.size() + mergeSteps);
         }
 
         final java.util.concurrent.atomic.LongAdder totalRecords = new java.util.concurrent.atomic.LongAdder();
@@ -142,6 +173,11 @@ public class ChunkQueryEngine
                     totalProcessNanos.add(p1 - p0);
                 }
                 container.reset();
+
+                if (progressBar != null)
+                {
+                    progressBar.step();
+                }
             })).get();
         }
 
@@ -159,12 +195,11 @@ public class ChunkQueryEngine
         }
 
         // Finalize statistics merging across thread-local provider sets
-        statisticsProcessor.complete();
+        statisticsProcessor.complete(progressBar != null ? progressBar::step : null);
 
         final long duration = System.currentTimeMillis() - start;
-        com.xceptance.xlt.api.util.XltLogger.reportLogger.info(String.format(
-            "ChunkDB timing breakdown: handler.scan (decomp+reconstitute) CPU time = %,d ms, statisticsProcessor.process CPU time = %,d ms across %d threads",
-            totalScanNanos.sum() / 1_000_000L, totalProcessNanos.sum() / 1_000_000L, threadCount));
+        LOG.debug("ChunkDB timing breakdown: handler.scan (decomp+reconstitute) CPU time = {} ms, statisticsProcessor.process CPU time = {} ms across {} threads",
+                  totalScanNanos.sum() / 1_000_000L, totalProcessNanos.sum() / 1_000_000L, threadCount);
 
         LOG.info("ChunkDB query completed in {} ms (processed {} chunks, {} records)",
                  duration, candidateChunks.size(), totalRecords.sum());

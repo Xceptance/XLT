@@ -146,7 +146,7 @@ public class CacheManager
     }
 
     /**
-     * Attempts to load {@link ChunkStorage} from disk cache.
+     * Attempts to load {@link ChunkStorage} from disk cache after validating its fingerprint.
      * <p>
      * If loading fails due to file corruption or I/O failure, the cache directory is safely purged
      * and {@code null} is returned so the report generator falls back to standard CSV parsing.
@@ -160,6 +160,18 @@ public class CacheManager
             return null;
         }
 
+        return loadValidated();
+    }
+
+    /**
+     * Loads {@link ChunkStorage} from disk cache when the caller has already verified {@link #isCacheValid()}.
+     * <p>
+     * Avoids a redundant directory-tree fingerprint walk while preserving corruption recovery and safe purging.
+     *
+     * @return loaded {@link ChunkStorage} instance, or {@code null} if the cache cannot be read
+     */
+    public ChunkStorage loadValidated()
+    {
         try
         {
             LOG.info("Loading preprocessed test data from ChunkDB cache at: {}", cacheDir);
@@ -194,6 +206,16 @@ public class CacheManager
             return null;
         }
 
+        return peekTimeRangeValidated();
+    }
+
+    /**
+     * Reads global minTime and maxTime from the catalog header when the caller has already verified {@link #isCacheValid()}.
+     *
+     * @return 2-element array {@code [minTime, maxTime]}, or {@code null} if the header cannot be read
+     */
+    public long[] peekTimeRangeValidated()
+    {
         final File catalogFile = new File(cacheDir, ChunkStorage.CHUNKS_FILE_NAME);
         if (!catalogFile.isFile() || catalogFile.length() < 16)
         {

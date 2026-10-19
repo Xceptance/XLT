@@ -386,10 +386,13 @@ public class RequestData extends TimerData
     {
         if (hashCodeOfUrlWithoutFragment == 0)
         {
-            final String u = getUrl();
-            if (u != null)
+            if (url == null && urlBytes != null)
             {
-                this.hashCodeOfUrlWithoutFragment = StringHasher.hashCodeWithLimit(u, '#');
+                this.hashCodeOfUrlWithoutFragment = StringHasher.hashCodeWithLimit(urlBytes, urlOffset, urlLength, '#');
+            }
+            else if (url != null)
+            {
+                this.hashCodeOfUrlWithoutFragment = StringHasher.hashCodeWithLimit(url, '#');
             }
         }
         return hashCodeOfUrlWithoutFragment;

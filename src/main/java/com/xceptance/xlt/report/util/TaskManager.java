@@ -107,6 +107,28 @@ public class TaskManager
     }
 
     /**
+     * Reserves the given number of synchronous progress steps in the current progress bar total.
+     *
+     * @param steps
+     *            the number of steps to add to the progress bar maximum
+     */
+    public void addProgressSteps(final int steps)
+    {
+        if (steps > 0)
+        {
+            progressBar.maxHint(totalTasks.addAndGet(steps));
+        }
+    }
+
+    /**
+     * Advances the current progress bar by one completed synchronous step.
+     */
+    public void stepProgress()
+    {
+        progressBar.step();
+    }
+
+    /**
      * Adds the given task to the to-do list.
      * 
      * @param task

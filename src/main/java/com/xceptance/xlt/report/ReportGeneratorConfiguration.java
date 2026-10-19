@@ -1726,7 +1726,42 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Reads and returns the list of all configured report provider classes.
+     * Compares two property key suffixes numerically if both are valid integers, placing integer keys
+     * before non-integer keys and falling back to lexicographical comparison otherwise.
+     */
+    static int compareIndexedKeys(final String s1, final String s2)
+    {
+        final Integer i1 = tryParseInt(s1);
+        final Integer i2 = tryParseInt(s2);
+        if (i1 != null && i2 != null)
+        {
+            return Integer.compare(i1.intValue(), i2.intValue());
+        }
+        if (i1 != null)
+        {
+            return -1;
+        }
+        if (i2 != null)
+        {
+            return 1;
+        }
+        return s1.compareTo(s2);
+    }
+
+    private static Integer tryParseInt(final String s)
+    {
+        try
+        {
+            return Integer.valueOf(s);
+        }
+        catch (final NumberFormatException e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Reads and returns the list of all configured report provider classes in their configured index order.
      *
      * @return the list of report provider classes
      */
@@ -1734,7 +1769,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         final List<Class<? extends ReportProvider>> providerClasses = new ArrayList<>();
 
-        final Set<String> keys = getPropertyKeysWithPrefix(PROP_REPORT_PROVIDER_CLASSES_PREFIX);
+        final List<String> keys = new ArrayList<>(getPropertyKeysWithPrefix(PROP_REPORT_PROVIDER_CLASSES_PREFIX));
+        final int prefixLength = PROP_REPORT_PROVIDER_CLASSES_PREFIX.length();
+        keys.sort((k1, k2) -> compareIndexedKeys(k1.substring(prefixLength), k2.substring(prefixLength)));
+
         for (final String key : keys)
         {
             final Class<?> cl = getClassProperty(key);
@@ -1762,7 +1800,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      */
     private void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames)
     {
-        final Set<String> keys = getPropertyKeyFragment(PROP_TRANSFORMATIONS_PREFIX);
+        final List<String> keys = new ArrayList<>(getPropertyKeyFragment(PROP_TRANSFORMATIONS_PREFIX));
+        keys.sort(ReportGeneratorConfiguration::compareIndexedKeys);
+
         for (final String key : keys)
         {
             final String propertyPrefix = PROP_TRANSFORMATIONS_PREFIX + key;

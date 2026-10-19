@@ -370,6 +370,16 @@ public class StatisticsProcessor
 
 
     /**
+     * Returns the number of registered master report providers that consume runtime data records.
+     *
+     * @return count of active report providers
+     */
+    public int getReportProviderCount()
+    {
+        return reportProviders.size();
+    }
+
+    /**
      * Merges all worker provider statistics into the master report providers and immediately releases
      * worker memory.
      * <p>
@@ -378,6 +388,18 @@ public class StatisticsProcessor
      * internal time series can be reclaimed by the GC while remaining providers are still merging.
      */
     public void complete()
+    {
+        complete(null);
+    }
+
+    /**
+     * Merges all worker provider statistics into the master report providers and invokes an optional
+     * step callback as each master report provider finishes merging its worker sets.
+     *
+     * @param onProviderMerged
+     *            optional callback invoked once per master report provider upon merge completion (may be {@code null})
+     */
+    public void complete(final Runnable onProviderMerged)
     {
         if (completed.compareAndSet(false, true))
         {
@@ -400,7 +422,18 @@ public class StatisticsProcessor
                     final ReportProvider worker = workerSet.allProviders.set(i, null);
                     master.merge(worker);
                 }
+                if (onProviderMerged != null)
+                {
+                    onProviderMerged.run();
+                }
             });
+        }
+        else if (onProviderMerged != null)
+        {
+            for (int i = 0; i < reportProviders.size(); i++)
+            {
+                onProviderMerged.run();
+            }
         }
     }
 

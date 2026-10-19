@@ -157,7 +157,7 @@ public class GlobalDictionaries
     // -------------------------------------------------------------------------
 
     /** Maximum number of sample URLs stored per timer name across the entire dataset. */
-    private static final int MAX_SAMPLE_URLS_PER_TIMER = 5;
+    private static final int MAX_SAMPLE_URLS_PER_TIMER = 10;
 
     /** Concurrent lookup map from timer name ID to list of representative sample URL strings. */
     private final ConcurrentHashMap<Integer, java.util.List<String>> sampleUrlsByTimer = new ConcurrentHashMap<>();

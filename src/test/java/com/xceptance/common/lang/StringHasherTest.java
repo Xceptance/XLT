@@ -59,5 +59,35 @@ public class StringHasherTest
     {
         Assert.assertEquals("test".hashCode(), StringHasher.hashCodeWithLimit("test#", '#'));
         Assert.assertEquals("test".hashCode(), StringHasher.hashCodeWithLimit(new StringBuilder("test#"), '#'));
-    }    
+    }
+
+    @Test
+    public void testByteSliceHashingAsciiAndUtf8Fallback()
+    {
+        Assert.assertNotNull(new StringHasher());
+
+        // Empty slice (length 0)
+        final byte[] sample = "https://example.com".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Assert.assertEquals(0, StringHasher.hashCodeWithLimit(sample, 0, 0, '#'));
+
+        // ASCII slice with non-zero offset and no fragment
+        final byte[] paddedNoFrag = "___https://example.com/shop?id=42___".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Assert.assertEquals("https://example.com/shop?id=42".hashCode(),
+                            StringHasher.hashCodeWithLimit(paddedNoFrag, 3, 30, '#'));
+
+        // ASCII slice with non-zero offset and #fragment (including non-ASCII after #fragment)
+        final byte[] paddedWithFrag = "___https://example.com/shop?id=42#sect-ü___".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Assert.assertEquals("https://example.com/shop?id=42".hashCode(),
+                            StringHasher.hashCodeWithLimit(paddedWithFrag, 3, paddedWithFrag.length - 6, '#'));
+
+        // Slice starting immediately with limiter
+        final byte[] onlyFrag = "#fragment".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Assert.assertEquals(0, StringHasher.hashCodeWithLimit(onlyFrag, 0, onlyFrag.length, '#'));
+
+        // Non-ASCII UTF-8 characters before #fragment trigger exact UTF-8 String fallback
+        final String utf8Base = "https://example.com/grüße/äöü?q=€";
+        final byte[] paddedUtf8 = ("!!" + utf8Base + "#frag!!").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Assert.assertEquals(utf8Base.hashCode(),
+                            StringHasher.hashCodeWithLimit(paddedUtf8, 2, paddedUtf8.length - 4, '#'));
+    }
 }

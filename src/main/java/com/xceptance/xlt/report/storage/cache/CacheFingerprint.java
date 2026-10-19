@@ -22,10 +22,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.Objects;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.regex.Pattern;
 
 import com.xceptance.common.util.ProductInformation;
@@ -110,17 +117,18 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
         final String rulesHash = calculateRulesHash(config);
         final String version = ProductInformation.getProductInformation().getVersion();
 
-        return new CacheFingerprint(ChunkCatalog.VERSION, accumulator.fileCount, accumulator.totalBytes, rulesHash, version);
+        return new CacheFingerprint(ChunkCatalog.VERSION, (int) accumulator.fileCount.sum(), accumulator.totalBytes.sum(), rulesHash, version);
     }
 
     /**
-     * Recursively walks the results directory tree, discovering raw timer CSV files and accumulating
-     * file counts and total byte sizes.
+     * Walks the results directory tree in parallel across top-level entries using NIO {@link Files#walkFileTree},
+     * discovering raw timer CSV files and accumulating file counts and total byte sizes without redundant
+     * per-file {@code stat()} system calls.
      *
      * @param dir
-     *            current directory being inspected
+     *            root directory being inspected
      * @param acc
-     *            file accumulator holding totals
+     *            thread-safe file accumulator holding totals
      */
     private static void scanDirectory(final File dir, final FileAccumulator acc)
     {
@@ -129,32 +137,98 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
             return;
         }
 
-        final File[] files = dir.listFiles();
-        if (files == null)
+        final File[] topFiles = dir.listFiles();
+        if (topFiles == null || topFiles.length == 0)
         {
             return;
         }
 
-        for (final File f : files)
-        {
+        Arrays.stream(topFiles).parallel().forEach(f -> {
             final String name = f.getName();
             if (f.isDirectory())
             {
-                // Skip output report directory, the cache directory itself, and version control directories
-                if ("output".equalsIgnoreCase(name) ||
-                    acc.cacheDirName.equalsIgnoreCase(name) ||
-                    ".git".equalsIgnoreCase(name))
+                if (isSkippedDirectory(name, acc.cacheDirName))
                 {
-                    continue;
+                    return;
                 }
-                scanDirectory(f, acc);
+                scanSubtree(f.toPath(), acc);
             }
             else if (f.isFile() && isTimerLogFile(name))
             {
-                acc.fileCount++;
-                acc.totalBytes += f.length();
+                acc.fileCount.increment();
+                acc.totalBytes.add(f.length());
             }
+        });
+    }
+
+    /**
+     * Walks a single directory subtree using {@link Files#walkFileTree} so that file type and byte size
+     * are obtained directly from {@link BasicFileAttributes} in a single pass.
+     */
+    private static void scanSubtree(final Path root, final FileAccumulator acc)
+    {
+        final long[] localCounts = new long[2]; // [0] = fileCount, [1] = totalBytes
+        try
+        {
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
+                {
+                    if (!dir.equals(root))
+                    {
+                        final Path fileName = dir.getFileName();
+                        if (fileName != null && isSkippedDirectory(fileName.toString(), acc.cacheDirName))
+                        {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
+                {
+                    if (attrs.isRegularFile())
+                    {
+                        final Path fileName = file.getFileName();
+                        if (fileName != null && isTimerLogFile(fileName.toString()))
+                        {
+                            localCounts[0]++;
+                            localCounts[1] += attrs.size();
+                        }
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(final Path file, final IOException exc)
+                {
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
+        catch (final IOException ignored)
+        {
+            // Ignore unreadable subtree
+        }
+
+        if (localCounts[0] > 0)
+        {
+            acc.fileCount.add(localCounts[0]);
+            acc.totalBytes.add(localCounts[1]);
+        }
+    }
+
+    /**
+     * Checks whether a directory name should be excluded from fingerprint scanning
+     * (report output directories, the ChunkDB cache directory itself, and git metadata).
+     */
+    private static boolean isSkippedDirectory(final String name, final String cacheDirName)
+    {
+        return "output".equalsIgnoreCase(name) ||
+               cacheDirName.equalsIgnoreCase(name) ||
+               ".git".equalsIgnoreCase(name);
     }
 
     /**
@@ -166,7 +240,17 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
      */
     private static boolean isTimerLogFile(final String name)
     {
-        // Check standard timer patterns (timers.csv, requests.csv, etc.)
+        // Fast-path for standard timer filenames (99.9%+ of all load test files)
+        if ("timers.csv.gz".equals(name) || "timers.csv".equals(name))
+        {
+            return true;
+        }
+        if (!name.startsWith("timer"))
+        {
+            return false;
+        }
+
+        // Check standard timer patterns (timers.csv, dated timers.csv, etc.)
         for (final Pattern p : XltConstants.TIMER_FILENAME_PATTERNS)
         {
             if (p.matcher(name).matches())
@@ -174,7 +258,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                 return true;
             }
         }
-        // Check compact timer patterns (cpt-timers.csv, etc.)
+        // Check compact timer patterns (timer-wd-*.csv, etc.)
         for (final Pattern p : XltConstants.CPT_TIMER_FILENAME_PATTERNS)
         {
             if (p.matcher(name).matches())
@@ -224,9 +308,10 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                 }
             }
 
-            // 4. Request forensic details retention mode ("sparse" vs "full")
+            // 4. Request forensic details retention mode ("sparse" vs "full") and URL hash schema version
             final String detailsMode = config.getRequestDetailsMode();
             md.update((detailsMode != null ? detailsMode.toLowerCase() : "sparse").getBytes(StandardCharsets.UTF_8));
+            md.update("url-hashes-v1".getBytes(StandardCharsets.UTF_8));
 
             return HexFormat.of().formatHex(md.digest());
         }
@@ -330,13 +415,13 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
     }
 
     /**
-     * Helper accumulator for directory traversal file metrics.
+     * Thread-safe accumulator for parallel directory traversal file metrics.
      */
     private static class FileAccumulator
     {
         final String cacheDirName;
-        int fileCount = 0;
-        long totalBytes = 0;
+        final LongAdder fileCount = new LongAdder();
+        final LongAdder totalBytes = new LongAdder();
 
         FileAccumulator(final String cacheDirName)
         {

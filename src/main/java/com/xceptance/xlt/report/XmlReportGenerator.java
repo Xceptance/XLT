@@ -28,6 +28,7 @@ import com.thoughtworks.xstream.converters.basic.DateConverter;
 import com.xceptance.xlt.api.report.ReportCreator;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.xstream.SafePropertiesConverter;
 import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
 
@@ -42,8 +43,12 @@ public class XmlReportGenerator
 
     public void createReport(final File xmlFile) throws IOException
     {
-        //
         final TestReport testReport = new TestReport();
+        final TaskManager taskManager = TaskManager.getInstance();
+
+        // Reserve progress steps for all registered report creators plus the final XML serialization step
+        // so the console progress bar does not reach 100% while report fragments or testreport.xml are still being created.
+        taskManager.addProgressSteps(processors.size() + 1);
 
         for (final ReportCreator processor : processors)
         {
@@ -59,9 +64,20 @@ public class XmlReportGenerator
             {
                 XltLogger.reportLogger.warn("Failed to create report fragment", t);
             }
+            finally
+            {
+                taskManager.stepProgress();
+            }
         }
 
-        saveTestReport(testReport, xmlFile);
+        try
+        {
+            saveTestReport(testReport, xmlFile);
+        }
+        finally
+        {
+            taskManager.stepProgress();
+        }
     }
 
     <T extends ReportCreator> void registerStatisticsProviders(final List<T> processors)
