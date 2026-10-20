@@ -72,10 +72,12 @@
     summaryGroupBySelect: document.getElementById("summaryGroupBySelect"),
     summarySearchInput: document.getElementById("summarySearchInput"),
     copyMarkdownBtn: document.getElementById("copyMarkdownBtn"),
+    exportSummaryCsvBtn: document.getElementById("exportSummaryCsvBtn"),
     summaryTable: document.getElementById("summaryTable"),
     summaryTableBody: document.getElementById("summaryTableBody"),
     inspectModeSelect: document.getElementById("inspectModeSelect"),
     inspectLimitSelect: document.getElementById("inspectLimitSelect"),
+    exportForensicCsvBtn: document.getElementById("exportForensicCsvBtn"),
     forensicTableBody: document.getElementById("forensicTableBody"),
     sessionModalBackdrop: document.getElementById("sessionModalBackdrop"),
     sessionMetaBar: document.getElementById("sessionMetaBar"),
@@ -461,11 +463,22 @@
     pendingBrushX1: null,
     pendingBrushX2: null,
     hoverX: null,
+    rafId: null,
     padLeft: 56,
     padRight: 18,
     padTop: 14,
     padBottom: 24
   };
+
+  function scheduleChartRender(tsData) {
+    if (chartInteraction.rafId) {
+      cancelAnimationFrame(chartInteraction.rafId);
+    }
+    chartInteraction.rafId = requestAnimationFrame(() => {
+      chartInteraction.rafId = null;
+      renderTimeSeriesChart(tsData !== undefined ? tsData : state.lastTimeSeries);
+    });
+  }
 
   function buildChartDatasets(tsData) {
     if (!tsData || !tsData.timestamps || tsData.timestamps.length === 0) return { unit: "ms", lines: [] };
@@ -532,9 +545,10 @@
     const axisTextColor = isDark ? "#64748b" : "#475569";
 
     const ctx = canvas.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, width, height);
 
     const { padLeft, padRight, padTop, padBottom } = chartInteraction;
     const plotW = width - padLeft - padRight;
@@ -677,13 +691,30 @@
       const y = e.clientY - rect.top;
       if (chartInteraction.dragging) {
         chartInteraction.dragCurX = x;
-        renderTimeSeriesChart(state.lastTimeSeries);
+        scheduleChartRender(state.lastTimeSeries);
       } else if (x >= chartInteraction.padLeft && x <= rect.width - chartInteraction.padRight && y >= 0 && y <= rect.height) {
         chartInteraction.hoverX = x;
-        renderTimeSeriesChart(state.lastTimeSeries);
+        scheduleChartRender(state.lastTimeSeries);
       } else if (chartInteraction.hoverX !== null) {
         chartInteraction.hoverX = null;
-        renderTimeSeriesChart(state.lastTimeSeries);
+        scheduleChartRender(state.lastTimeSeries);
+      }
+    });
+
+    el.chartContainer.addEventListener("mouseleave", () => {
+      if (chartInteraction.hoverX !== null) {
+        chartInteraction.hoverX = null;
+        el.chartTooltip.classList.add("hidden");
+        scheduleChartRender(state.lastTimeSeries);
+      }
+    });
+
+    window.addEventListener("blur", () => {
+      if (chartInteraction.hoverX !== null || chartInteraction.dragging) {
+        chartInteraction.hoverX = null;
+        chartInteraction.dragging = false;
+        el.chartTooltip.classList.add("hidden");
+        scheduleChartRender(state.lastTimeSeries);
       }
     });
 
@@ -692,7 +723,7 @@
       chartInteraction.dragging = false;
       const tsData = state.lastTimeSeries;
       if (!tsData || !tsData.timestamps || tsData.timestamps.length < 2) {
-        renderTimeSeriesChart(tsData);
+        scheduleChartRender(tsData);
         return;
       }
       const rect = el.canvas.getBoundingClientRect();
@@ -716,11 +747,11 @@
           chartInteraction.pendingBrushX2 = chartInteraction.padLeft + x2;
           syncTimeInputsFromState();
           markPendingChanges("Time range selected — click ▶ Update to run");
-          renderTimeSeriesChart(tsData);
+          scheduleChartRender(tsData);
           return;
         }
       }
-      renderTimeSeriesChart(tsData);
+      scheduleChartRender(tsData);
     });
 
     el.canvas.addEventListener("dblclick", () => {
@@ -732,12 +763,12 @@
         chartInteraction.pendingBrushX2 = null;
         syncTimeInputsFromState();
         markPendingChanges("Full time window restored — click ▶ Update to run");
-        renderTimeSeriesChart(state.lastTimeSeries);
+        scheduleChartRender(state.lastTimeSeries);
       }
     });
 
     window.addEventListener("resize", () => {
-      renderTimeSeriesChart(state.lastTimeSeries);
+      scheduleChartRender(state.lastTimeSeries);
     });
   }
 
@@ -847,6 +878,75 @@
     }
   }
 
+  // Client-Side CSV Export Utility
+  function downloadCsv(filename, headers, rows) {
+    function escapeCsvCell(val) {
+      if (val === null || val === undefined) return '""';
+      const str = String(val);
+      if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return `"${str}"`;
+    }
+    const lines = [headers.map(escapeCsvCell).join(",")];
+    for (const row of rows) {
+      lines.push(row.map(escapeCsvCell).join(","));
+    }
+    const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function exportSummaryCsv() {
+    const rows = getSortedFilteredSummaryRows();
+    const headers = [
+      "Dimension Key", "Count", "RPS", "Errors", "Error %",
+      "Mean (ms)", "Min (ms)", "p50 (ms)", "p90 (ms)", "p95 (ms)", "p99 (ms)", "Max (ms)",
+      "TTFB Mean (ms)", "Connect Mean (ms)", "Busy Mean (ms)", "Distinct URLs"
+    ];
+    const data = rows.map(r => [
+      r.key, r.count, r.rps, r.errors, r.errorPct,
+      r.mean, r.min, r.p50, r.p90, r.p95, r.p99, r.max,
+      r.avgTtfb, r.avgConnect, r.avgServerBusy, r.distinctUrls
+    ]);
+    const group = (el.summaryGroupBySelect.value || "timer").toLowerCase();
+    downloadCsv(`chunkdb-summary-${group}-${Date.now()}.csv`, headers, data);
+  }
+
+  function exportForensicCsv() {
+    const records = state.forensicRecords || [];
+    const headers = [
+      "Time (UTC)", "Record Type", "Timer Name", "Runtime (ms)", "Status",
+      "Failed", "Scenario", "Agent", "VU", "Method", "URL",
+      "Used IP", "Request ID", "Failed Action", "Stack Trace / Message"
+    ];
+    const data = records.map(r => [
+      fmtUtc(r.time, true),
+      r.recordType,
+      r.timerName,
+      r.runTime,
+      r.recordType === "R" ? `HTTP ${r.statusCode}` : (r.failed ? "FAILED" : "OK"),
+      r.failed ? "true" : "false",
+      r.scenario || "",
+      r.agent || "",
+      r.userNumber || "",
+      r.httpMethod || "",
+      r.url || "",
+      r.usedIp || "",
+      r.requestId || "",
+      r.failedActionName || "",
+      r.stackTrace || ""
+    ]);
+    const mode = (el.inspectModeSelect.value || "forensics").toLowerCase();
+    downloadCsv(`chunkdb-forensic-${mode}-${Date.now()}.csv`, headers, data);
+  }
+
   // Render Tab 2: Forensic Outlier & Failure Inspector
   function renderForensicTable() {
     const records = state.forensicRecords;
@@ -858,15 +958,32 @@
     const htmlRows = [];
     records.forEach((rec, idx) => {
       const isTx = rec.recordType === "T";
-      const statusBadge = isTx
-        ? (rec.failed ? `<span class="badge badge-err">FAILED TX</span>` : `<span class="badge badge-ok">OK</span>`)
-        : (rec.failed || rec.statusCode >= 400
-            ? `<span class="badge badge-err">HTTP ${rec.statusCode}</span>`
-            : `<span class="badge badge-ok">HTTP ${rec.statusCode}</span>`);
+      const isAction = rec.recordType === "A";
+      const isReq = rec.recordType === "R";
 
-      const summaryDetail = isTx
-        ? `<span class="url-preview">${escapeHtml(rec.failedActionName ? "Action: " + rec.failedActionName + " — " : "")}${escapeHtml(rec.stackTrace || "")}</span>`
-        : `<span class="badge badge-info">${escapeHtml(rec.httpMethod || "GET")}</span> <span class="url-preview" title="${escapeHtml(rec.url)}">${escapeHtml(rec.url || "—")}</span>`;
+      let statusBadge;
+      if (isTx) {
+        statusBadge = rec.failed ? `<span class="badge badge-err">FAILED TX</span>` : `<span class="badge badge-ok">OK (TX)</span>`;
+      } else if (isAction) {
+        statusBadge = rec.failed ? `<span class="badge badge-err">FAILED ACTION</span>` : `<span class="badge badge-ok">OK (ACTION)</span>`;
+      } else if (isReq) {
+        statusBadge = (rec.failed || rec.statusCode >= 400 || rec.statusCode === 0)
+          ? `<span class="badge badge-err">HTTP ${rec.statusCode}</span>`
+          : `<span class="badge badge-ok">HTTP ${rec.statusCode}</span>`;
+      } else {
+        statusBadge = rec.failed ? `<span class="badge badge-err">FAILED</span>` : `<span class="badge badge-ok">OK</span>`;
+      }
+
+      let summaryDetail;
+      if (isTx) {
+        summaryDetail = `<span class="url-preview">${escapeHtml(rec.failedActionName ? "Action: " + rec.failedActionName + " — " : "")}${escapeHtml(rec.stackTrace || (rec.failed ? "Transaction failed" : "Transaction completed"))}</span>`;
+      } else if (isAction) {
+        summaryDetail = `<span class="url-preview">${escapeHtml(rec.stackTrace || (rec.failed ? "Action failed" : "Action completed"))}</span>`;
+      } else if (isReq) {
+        summaryDetail = `<span class="badge badge-info">${escapeHtml(rec.httpMethod || "GET")}</span> <span class="url-preview" title="${escapeHtml(rec.url)}">${escapeHtml(rec.url || "—")}</span>`;
+      } else {
+        summaryDetail = `<span class="url-preview">${escapeHtml(rec.timerName || "—")}</span>`;
+      }
 
       htmlRows.push(`
         <tr class="data-row forensic-row" data-idx="${idx}">
@@ -936,6 +1053,32 @@
       `;
     }
 
+    if (rec.recordType === "A" || rec.recordType === "C" || rec.recordType === "P") {
+      const typeLabel = rec.recordType === "A" ? "Action" : rec.recordType === "C" ? "Custom Timer" : "Page Load";
+      return `
+        <tr class="drawer-row">
+          <td colspan="9">
+            <div class="forensic-drawer">
+              <div class="drawer-card">
+                <h4>${typeLabel} Context</h4>
+                <div class="kv-grid">
+                  <span class="kv-label">${typeLabel} Name:</span><span class="kv-val">${escapeHtml(rec.timerName)}</span>
+                  <span class="kv-label">Agent / VU:</span><span class="kv-val">${escapeHtml(rec.agent)} / VU #${escapeHtml(rec.userNumber || "0")}</span>
+                  <span class="kv-label">Scenario:</span><span class="kv-val">${escapeHtml(rec.scenario || "—")}</span>
+                  <span class="kv-label">Status:</span><span class="kv-val">${rec.failed ? "FAILED" : "OK"}</span>
+                  <span class="kv-label">Duration:</span><span class="kv-val">${fmtInt(rec.runTime)} ms</span>
+                </div>
+              </div>
+              <div class="drawer-card">
+                <h4>Execution Details</h4>
+                <pre class="stacktrace-pre">${escapeHtml(rec.stackTrace || (rec.failed ? "Action marked as failed without stack trace" : "Completed successfully"))}</pre>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
     const totalPhase = Math.max(1, rec.connectTime + rec.sendTime + rec.serverBusyTime + rec.receiveTime);
     const pConn = ((rec.connectTime / totalPhase) * 100).toFixed(1);
     const pSend = ((rec.sendTime / totalPhase) * 100).toFixed(1);
@@ -991,6 +1134,9 @@
       scenario: rec.scenario,
       userNumber: rec.userNumber || "0",
       targetTime: rec.time,
+      targetName: rec.timerName,
+      targetType: rec.recordType,
+      targetRequestId: rec.requestId,
       paddingMs: 30000
     };
     el.sessionModalBackdrop.classList.remove("hidden");
@@ -1046,13 +1192,22 @@
         for (const n of nodes) {
           const relStart = Math.max(0, n.time - sess.windowStart);
           const leftPct = Math.min(98, (relStart / spanMs) * 100).toFixed(1);
-          const widthPct = Math.max(0.8, Math.min(100 - leftPct, (Math.max(1, n.runTime) / spanMs) * 100)).toFixed(1);
+          const widthPct = Math.max(0.6, Math.min(100 - leftPct, (Math.max(1, n.runTime) / spanMs) * 100)).toFixed(1);
 
           let barClass = "wf-bar-req";
           if (n.typeCode === "T") barClass = n.failed ? "wf-bar-err" : "wf-bar-tx";
           else if (n.typeCode === "A") barClass = n.failed ? "wf-bar-err" : "wf-bar-action";
           else if (n.typeCode === "E") barClass = "wf-bar-event";
           else if (n.failed || n.statusCode >= 400) barClass = "wf-bar-err";
+
+          const isTarget = state.sessionContext && (
+            (state.sessionContext.targetRequestId && n.requestId === state.sessionContext.targetRequestId) ||
+            (Math.abs(n.time - state.sessionContext.targetTime) <= 1 && n.name === state.sessionContext.targetName)
+          );
+
+          const targetPill = isTarget ? `<span class="badge badge-warn" title="Inspected outlier target">🎯 Target</span> ` : "";
+          const rowClass = isTarget ? "wf-row wf-target-row" : "wf-row";
+          const rowIdAttr = isTarget ? 'id="wfTargetRow"' : "";
 
           const badge = n.typeCode === "R"
             ? `<span class="badge ${n.failed || n.statusCode >= 400 ? "badge-err" : "badge-ok"}">${escapeHtml(n.httpMethod || "GET")} ${n.statusCode}</span>`
@@ -1063,8 +1218,8 @@
             : `<span class="url-preview" title="${escapeHtml(n.message)}">${escapeHtml(n.message || "")}</span>`;
 
           rowsHtml.push(`
-            <tr>
-              <td class="wf-indent-${Math.min(2, depth)}">${escapeHtml(n.name)}</td>
+            <tr class="${rowClass}" ${rowIdAttr}>
+              <td class="wf-indent-${Math.min(2, depth)}">${targetPill}${escapeHtml(n.name)}</td>
               <td>${badge}</td>
               <td class="num">+${fmtInt(relStart)} ms</td>
               <td class="num"><strong>${fmtInt(n.runTime)} ms</strong></td>
@@ -1093,13 +1248,20 @@
               <th>Type / Status</th>
               <th class="num">Offset</th>
               <th class="num">Duration</th>
-              <th>Iteration Waterfall</th>
+              <th>Iteration Waterfall (0 &rarr; ${fmtDuration(spanMs)})</th>
               <th>URL / Event Message / Stack Trace</th>
             </tr>
           </thead>
           <tbody>${rowsHtml.join("")}</tbody>
         </table>
       `;
+
+      const targetEl = el.sessionModalBody.querySelector("#wfTargetRow");
+      if (targetEl) {
+        setTimeout(() => {
+          targetEl.scrollIntoView({ block: "center", behavior: "smooth" });
+        }, 60);
+      }
     } catch (err) {
       el.sessionModalBody.innerHTML = `<div class="empty-cell">Failed to reconstruct session: ${escapeHtml(err.message)}</div>`;
     }
@@ -1202,6 +1364,8 @@
 
     el.summarySearchInput.addEventListener("input", () => renderSummaryTable());
     el.copyMarkdownBtn.addEventListener("click", copyTableAsMarkdown);
+    if (el.exportSummaryCsvBtn) el.exportSummaryCsvBtn.addEventListener("click", exportSummaryCsv);
+    if (el.exportForensicCsvBtn) el.exportForensicCsvBtn.addEventListener("click", exportForensicCsv);
 
     el.resetZoomBtn.addEventListener("click", () => {
       if (!state.meta) return;

@@ -29,6 +29,7 @@ import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
+import com.xceptance.xlt.report.storage.StorageIoUtils;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -107,12 +108,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         writeIntArray(c.compUserNumbers, out);
 
         // 4. Double floating-point metric values
-        final double[] vals = c.getValues();
-        out.writeInt(vals.length);
-        for (final double v : vals)
-        {
-            out.writeDouble(v);
-        }
+        StorageIoUtils.writeDoubleArray(out, c.getValues());
     }
 
     /**
@@ -148,13 +144,8 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         final int[] compAgentTestCaseIds = readIntArray(in);
         final int[] compUserNumbers = readIntArray(in);
 
-        // 4. Read primitive double metric values
-        final int valLen = in.readInt();
-        final double[] vals = new double[valLen];
-        for (int i = 0; i < valLen; i++)
-        {
-            vals[i] = in.readDouble();
-        }
+        // 4. Read primitive double metric values via bulk ByteBuffer transfer
+        final double[] vals = StorageIoUtils.readDoubleArray(in);
 
         return new DoubleValueChunk(tc, rowCount, minTime, maxTime, timerIds, agentTestCaseIds,
                                     compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compUserNumbers, vals);
@@ -420,11 +411,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
      */
     private static void writeIntArray(final int[] array, final DataOutput out) throws IOException
     {
-        out.writeInt(array.length);
-        for (final int v : array)
-        {
-            out.writeInt(v);
-        }
+        StorageIoUtils.writeIntArray(out, array);
     }
 
     /**
@@ -432,13 +419,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
      */
     private static int[] readIntArray(final DataInput in) throws IOException
     {
-        final int len = in.readInt();
-        final int[] array = new int[len];
-        for (int i = 0; i < len; i++)
-        {
-            array[i] = in.readInt();
-        }
-        return array;
+        return StorageIoUtils.readIntArray(in);
     }
 
     // -------------------------------------------------------------------------
@@ -498,8 +479,13 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 return false;
             }
 
-            final int idx = count;
             final long t = record.getTime();
+            if (count > 0 && (Math.max(maxTime, t) - Math.min(minTime, t)) > Integer.MAX_VALUE)
+            {
+                return false;
+            }
+
+            final int idx = count;
             if (t < minTime) minTime = t;
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;
@@ -546,7 +532,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
             final int[] finalTimerIds = size == timerIdArr.length ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == agentTestCaseIdArr.length ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
             final int[] finalUserNumbers = size == userNumbers.length ? userNumbers : Arrays.copyOf(userNumbers, size);
-            final double[] finalValues = size == values.length ? values : Arrays.copyOf(values, size);
+            final double[] finalValues = Arrays.copyOf(values, size);
 
             final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);

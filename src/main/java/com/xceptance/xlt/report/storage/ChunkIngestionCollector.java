@@ -105,6 +105,7 @@ public class ChunkIngestionCollector
     @SuppressWarnings("unchecked")
     private final ConcurrentLinkedQueue<ChunkBuilder>[] recycledBuilders = new ConcurrentLinkedQueue[128];
 
+
     /**
      * List of pending chunk compression futures that must finish before {@link #finish()} returns.
      */
@@ -207,6 +208,11 @@ public class ChunkIngestionCollector
         });
         // Bounded queue permits to cap in-flight memory accumulation (~150 MB max)
         this.compressionPermits = new Semaphore(64);
+
+        for (int i = 0; i < 128; i++)
+        {
+            this.recycledBuilders[i] = new ConcurrentLinkedQueue<>();
+        }
     }
 
     /**
@@ -280,7 +286,13 @@ public class ChunkIngestionCollector
                         builder = acquireBuilder(typeCode);
                         builders[typeCode] = builder;
                     }
-                    builder.append(record);
+                    if (!builder.append(record))
+                    {
+                        sealAndSpool(builder, typeCode);
+                        builder = acquireBuilder(typeCode);
+                        builders[typeCode] = builder;
+                        builder.append(record);
+                    }
                     if (builder.isFull())
                     {
                         sealAndSpool(builder, typeCode);
@@ -370,7 +382,13 @@ public class ChunkIngestionCollector
         }
 
         // 2. Append record to builder
-        builder.append(record);
+        if (!builder.append(record))
+        {
+            sealAndSpool(builder, typeCode);
+            builder = acquireBuilder(typeCode);
+            builders[typeCode] = builder;
+            builder.append(record);
+        }
 
         // 3. If builder reached maximum chunk capacity, seal and clear slot so next record acquires a fresh/recycled builder
         if (builder.isFull())
@@ -386,10 +404,9 @@ public class ChunkIngestionCollector
      */
     private ChunkBuilder acquireBuilder(final char typeCode)
     {
-        final ConcurrentLinkedQueue<ChunkBuilder> pool = recycledBuilders[typeCode];
-        if (pool != null)
+        if (typeCode < 128 && recycledBuilders[typeCode] != null)
         {
-            final ChunkBuilder builder = pool.poll();
+            final ChunkBuilder builder = recycledBuilders[typeCode].poll();
             if (builder != null)
             {
                 builder.reset();
@@ -405,19 +422,12 @@ public class ChunkIngestionCollector
      */
     private void recycleBuilder(final ChunkBuilder builder, final char typeCode)
     {
-        ConcurrentLinkedQueue<ChunkBuilder> pool;
-        synchronized (recycledBuilders)
+        if (typeCode < 128 && recycledBuilders[typeCode] != null)
         {
-            pool = recycledBuilders[typeCode];
-            if (pool == null)
+            if (recycledBuilders[typeCode].size() < 32)
             {
-                pool = new ConcurrentLinkedQueue<>();
-                recycledBuilders[typeCode] = pool;
+                recycledBuilders[typeCode].offer(builder);
             }
-        }
-        if (pool.size() < 32)
-        {
-            pool.offer(builder);
         }
     }
 

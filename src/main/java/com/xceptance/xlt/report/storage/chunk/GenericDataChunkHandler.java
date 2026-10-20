@@ -49,7 +49,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
     private final char typeCode;
 
     /** Reflection target class for dynamically creating instances during query scans. */
-    private Class<? extends Data> recordClass;
+    private volatile Class<? extends Data> recordClass;
 
     /**
      * Constructs a generic handler for the given type code.
@@ -350,16 +350,9 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         }
     }
 
-    /**
-     * Serializes a primitive int array prefixed with its element count.
-     */
     private static void writeCompressedIntArray(final int[] array, final DataOutput out) throws IOException
     {
-        out.writeInt(array.length);
-        for (final int val : array)
-        {
-            out.writeInt(val);
-        }
+        StorageIoUtils.writeIntArray(out, array);
     }
 
     /**
@@ -367,13 +360,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
      */
     private static int[] readCompressedIntArray(final DataInput in) throws IOException
     {
-        final int len = in.readInt();
-        final int[] array = new int[len];
-        for (int i = 0; i < len; i++)
-        {
-            array[i] = in.readInt();
-        }
-        return array;
+        return StorageIoUtils.readIntArray(in);
     }
 
     // -------------------------------------------------------------------------
@@ -388,6 +375,8 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         private final char typeCode;
         private final GlobalDictionaries dicts;
         private final List<Data> records = new ArrayList<>(DEFAULT_CHUNK_CAPACITY);
+        private long minTime = Long.MAX_VALUE;
+        private long maxTime = Long.MIN_VALUE;
 
         GenericChunkBuilder(final char typeCode, final GlobalDictionaries dicts)
         {
@@ -420,6 +409,16 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
             {
                 return false;
             }
+            if (record != null)
+            {
+                final long t = record.getTime();
+                if (!records.isEmpty() && (Math.max(maxTime, t) - Math.min(minTime, t)) > Integer.MAX_VALUE)
+                {
+                    return false;
+                }
+                if (t < minTime) minTime = t;
+                if (t > maxTime) maxTime = t;
+            }
             if (recordClass == null && record != null)
             {
                 recordClass = record.getClass();
@@ -436,6 +435,8 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         public void reset()
         {
             records.clear();
+            minTime = Long.MAX_VALUE;
+            maxTime = Long.MIN_VALUE;
         }
 
         @Override

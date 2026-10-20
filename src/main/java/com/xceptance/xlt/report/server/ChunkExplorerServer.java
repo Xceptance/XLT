@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -205,13 +206,26 @@ public class ChunkExplorerServer implements AutoCloseable
                 path = "/index.html";
             }
 
-            if (path.contains(".."))
+            final String decodedPath;
+            try
+            {
+                decodedPath = java.net.URLDecoder.decode(path, StandardCharsets.UTF_8);
+            }
+            catch (final Exception e)
+            {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            final Path normalized = Path.of(decodedPath).normalize();
+            final String normStr = normalized.toString().replace('\\', '/');
+            if (normStr.startsWith("..") || normStr.contains("/../") || !normStr.startsWith("/"))
             {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
 
-            final String resourcePath = CLASSPATH_UI_ROOT + path;
+            final String resourcePath = CLASSPATH_UI_ROOT + normStr;
             try (final InputStream in = ChunkExplorerServer.class.getResourceAsStream(resourcePath))
             {
                 if (in == null)
@@ -252,15 +266,31 @@ public class ChunkExplorerServer implements AutoCloseable
             }
 
             final String pathInfo = Objects.requireNonNullElse(req.getPathInfo(), "");
-            if (pathInfo.contains("..") || !pathInfo.contains("/output/"))
+            final String decodedPathInfo;
+            try
+            {
+                decodedPathInfo = java.net.URLDecoder.decode(pathInfo, StandardCharsets.UTF_8);
+            }
+            catch (final Exception e)
+            {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            if (decodedPathInfo.contains("..") || !decodedPathInfo.contains("/output/"))
             {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid Result Browser dump path");
                 return;
             }
 
             final Path base = resultsDir.toPath().toAbsolutePath().normalize();
-            final String relPath = pathInfo.startsWith("/") ? pathInfo.substring(1) : pathInfo;
+            final String relPath = decodedPathInfo.startsWith("/") ? decodedPathInfo.substring(1) : decodedPathInfo;
             final Path target = base.resolve(relPath).normalize();
+            if (!target.startsWith(base))
+            {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Path traversal forbidden");
+                return;
+            }
             if (!Files.isRegularFile(target))
             {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);

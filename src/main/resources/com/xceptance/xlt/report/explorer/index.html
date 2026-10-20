@@ -199,6 +199,9 @@
           <button type="button" id="copyMarkdownBtn" class="btn btn-secondary" title="Copy current table as GitHub Markdown">
             📋 Copy Table as Markdown
           </button>
+          <button type="button" id="exportSummaryCsvBtn" class="btn btn-secondary" title="Export current summary table to CSV">
+            📥 Export CSV
+          </button>
         </div>
 
         <!-- Tab 2 Controls -->
@@ -208,7 +211,10 @@
             <select id="inspectModeSelect">
               <option value="SLOWEST_REQUESTS" selected>🐢 Slowest Requests (Top N by Runtime)</option>
               <option value="FAILED_REQUESTS">❌ Failed Requests (HTTP &ge; 400 or Error)</option>
+              <option value="SLOWEST_TRANSACTIONS">⏳ Slowest Transactions (Top N by Runtime)</option>
               <option value="FAILED_TRANSACTIONS">💥 Failed Transactions (Stack Traces)</option>
+              <option value="SLOWEST_ACTIONS">⚡ Slowest Actions (Top N by Runtime)</option>
+              <option value="FAILED_ACTIONS">⚠️ Failed Actions</option>
             </select>
           </div>
 
@@ -221,6 +227,10 @@
               <option value="500">Top 500</option>
             </select>
           </div>
+
+          <button type="button" id="exportForensicCsvBtn" class="btn btn-secondary" title="Export inspected forensic records to CSV">
+            📥 Export CSV
+          </button>
         </div>
       </div>
 

@@ -31,6 +31,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
+import com.xceptance.xlt.report.storage.StorageIoUtils;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -421,16 +422,9 @@ public class TimerChunkHandler implements ChunkTypeHandler
         };
     }
 
-    /**
-     * Serializes a primitive int array prefixed with its element count.
-     */
     private static void writeIntArray(final int[] array, final DataOutput out) throws IOException
     {
-        out.writeInt(array.length);
-        for (final int v : array)
-        {
-            out.writeInt(v);
-        }
+        StorageIoUtils.writeIntArray(out, array);
     }
 
     /**
@@ -438,13 +432,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
      */
     private static int[] readIntArray(final DataInput in) throws IOException
     {
-        final int len = in.readInt();
-        final int[] array = new int[len];
-        for (int i = 0; i < len; i++)
-        {
-            array[i] = in.readInt();
-        }
-        return array;
+        return StorageIoUtils.readIntArray(in);
     }
 
     // -------------------------------------------------------------------------
@@ -553,10 +541,15 @@ public class TimerChunkHandler implements ChunkTypeHandler
             }
 
             final TimerData td = (TimerData) record;
+            final long t = td.getTime();
+            if (count > 0 && (Math.max(maxTime, t) - Math.min(minTime, t)) > Integer.MAX_VALUE)
+            {
+                return false;
+            }
+
             final int idx = count;
 
             // 1. Maintain bounding timestamps and store raw timestamp
-            final long t = td.getTime();
             if (t < minTime) minTime = t;
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;

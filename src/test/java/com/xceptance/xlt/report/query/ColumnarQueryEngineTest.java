@@ -603,4 +603,159 @@ public class ColumnarQueryEngineTest
             assertTrue(missingUser.items().isEmpty());
         }
     }
+
+    @Test
+    public void testTimeSeriesNetworkTimingsAndByteMetricsNotZero() throws Exception
+    {
+        final File cacheDir = tempFolder.newFolder("cache-ts-net");
+        final File resultsDir = tempFolder.newFolder("results-ts-net");
+        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        {
+            final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
+
+            final TimeSeriesQuerySpec spec = new TimeSeriesQuerySpec(
+                "R", BASE_TIME, BASE_TIME + 10_000L, 5000,
+                null, null, null, null, null, null, null,
+                null, null, false, null, "NONE"
+            );
+            final TimeSeriesResponse res = engine.queryTimeSeries(spec);
+
+            assertEquals("R", res.recordType());
+            assertTrue(res.rowsMatched() > 0);
+
+            // Bucket 0 has requests with 250 bytesSent, 4096 bytesReceived, 5ms DNS, 10ms connect, etc.
+            assertTrue("bytesSent must be > 0 for requests", res.bytesSent()[0] > 0);
+            assertTrue("bytesReceived must be > 0 for requests", res.bytesReceived()[0] > 0);
+            assertTrue("avgDns must be > 0 for requests", res.avgDns()[0] > 0.0);
+            assertTrue("avgConnect must be > 0 for requests", res.avgConnect()[0] > 0.0);
+            assertTrue("avgSend must be > 0 for requests", res.avgSend()[0] > 0.0);
+            assertTrue("avgServerBusy must be > 0 for requests", res.avgServerBusy()[0] > 0.0);
+            assertTrue("avgReceive must be > 0 for requests", res.avgReceive()[0] > 0.0);
+            assertTrue("avgTtfb must be > 0 for requests", res.avgTtfb()[0] > 0.0);
+        }
+    }
+
+    @Test
+    public void testPruneCandidateChunksWithHttpErrors4xx() throws Exception
+    {
+        final File cacheDir = tempFolder.newFolder("cache-4xx");
+        final File resultsDir = tempFolder.newFolder("results-4xx");
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        // Chunk 1: HTTP 200 OK only
+        final RequestData req200 = createRequest(
+            "Req200", "Req200.raw", BASE_TIME, 100, 200, false,
+            "agent-1", "TCheckout", "0", "GET", "text/html", "10.0.0.1",
+            "https://shop.example.com/ok", "req-ok", "resp-ok", ""
+        );
+        collector.collect(req200);
+
+        // Chunk 2: HTTP 404 Not Found (failed flag is false, but responseCode is 404)
+        final RequestData req404 = createRequest(
+            "Req404", "Req404.raw", BASE_TIME + 1000, 150, 404, false,
+            "agent-1", "TCheckout", "0", "GET", "text/html", "10.0.0.1",
+            "https://shop.example.com/notfound", "req-nf", "resp-nf", ""
+        );
+        collector.collect(req404);
+
+        try (final ChunkStorage built = collector.finish())
+        {
+            built.saveToDirectory(cacheDir);
+        }
+
+        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        {
+            final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
+
+            // Query failedOnly = true without minStatusCode
+            final InspectResponse resp = engine.inspectOutliers(new InspectQuerySpec(
+                "FAILED_REQUESTS", 10, BASE_TIME, BASE_TIME + 5000,
+                null, null, null, null, null, null, null,
+                null, null, true, null
+            ));
+
+            assertEquals("Must find exactly 1 failed request (the 404)", 1L, resp.totalMatchingCount());
+            assertEquals(1, resp.records().size());
+            assertEquals("Req404", resp.records().get(0).timerName());
+            assertEquals(404, resp.records().get(0).statusCode());
+        }
+    }
+
+    @Test
+    public void testInspectSlowestRequestsTotalMatchingCount() throws Exception
+    {
+        final File cacheDir = tempFolder.newFolder("cache-slowest-count");
+        final File resultsDir = tempFolder.newFolder("results-slowest-count");
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+
+        // Create 3 chunks by filling small batches
+        for (int i = 0; i < 30; i++)
+        {
+            final RequestData req = createRequest(
+                "Timer." + i, "Timer.raw", BASE_TIME + (i * 100L), 100 + i * 10, 200, false,
+                "agent-1", "TCheckout", "0", "GET", "text/html", "10.0.0.1",
+                "https://shop.example.com/" + i, "req-" + i, "resp-" + i, ""
+            );
+            collector.collect(req);
+        }
+
+        try (final ChunkStorage built = collector.finish())
+        {
+            built.saveToDirectory(cacheDir);
+        }
+
+        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        {
+            final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
+
+            // Request top 5 slowest
+            final InspectResponse resp = engine.inspectOutliers(new InspectQuerySpec(
+                "SLOWEST_REQUESTS", 5, BASE_TIME, BASE_TIME + 100_000L,
+                null, null, null, null, null, null, null,
+                null, null, false, null
+            ));
+
+            assertEquals(5, resp.records().size());
+            assertEquals("totalMatchingCount must equal all 30 matching requests despite top-K pruning", 30L, resp.totalMatchingCount());
+        }
+    }
+
+    @Test
+    public void testInspectSlowestTransactionsAndActions() throws Exception
+    {
+        final File cacheDir = tempFolder.newFolder("cache-slow-tx");
+        final File resultsDir = tempFolder.newFolder("results-slow-tx");
+
+        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        {
+            final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
+
+            // Test SLOWEST_TRANSACTIONS
+            final InspectResponse txResp = engine.inspectOutliers(new InspectQuerySpec(
+                "SLOWEST_TRANSACTIONS", 2, BASE_TIME, BASE_TIME + 20_000L,
+                null, null, null, null, null, null, null,
+                null, null, false, null
+            ));
+
+            assertEquals("SLOWEST_TRANSACTIONS", txResp.mode());
+            assertEquals(2, txResp.records().size());
+            assertEquals("T", txResp.records().get(0).recordType());
+            assertTrue("Slowest transaction must be sorted descending",
+                       txResp.records().get(0).runTime() >= txResp.records().get(1).runTime());
+
+            // Test SLOWEST_ACTIONS
+            final InspectResponse actResp = engine.inspectOutliers(new InspectQuerySpec(
+                "SLOWEST_ACTIONS", 2, BASE_TIME, BASE_TIME + 20_000L,
+                null, null, null, null, null, null, null,
+                null, null, false, null
+            ));
+
+            assertEquals("SLOWEST_ACTIONS", actResp.mode());
+            assertEquals(2, actResp.records().size());
+            assertEquals("A", actResp.records().get(0).recordType());
+            assertTrue("Slowest action must be sorted descending",
+                       actResp.records().get(0).runTime() >= actResp.records().get(1).runTime());
+        }
+    }
 }

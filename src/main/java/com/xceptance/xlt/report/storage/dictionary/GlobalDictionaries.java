@@ -199,6 +199,59 @@ public class GlobalDictionaries
     /** Volatile array of precomputed sample URLs indexed by timer ID for lock-free reads. */
     private volatile CachedSampleUrl[][] cachedSampleUrls = new CachedSampleUrl[INITIAL_CAPACITY][];
 
+    /** Tracked distinct string IDs for HTTP methods, content types, and used IPs for instant metadata facet discovery. */
+    private final RoaringBitmap httpMethodIds = new RoaringBitmap();
+    private final RoaringBitmap contentTypeIds = new RoaringBitmap();
+    private final RoaringBitmap usedIpIds = new RoaringBitmap();
+
+    public void recordHttpMethodId(final int id)
+    {
+        if (id >= 0)
+        {
+            synchronized (httpMethodIds)
+            {
+                httpMethodIds.add(id);
+            }
+        }
+    }
+
+    public void recordContentTypeId(final int id)
+    {
+        if (id >= 0)
+        {
+            synchronized (contentTypeIds)
+            {
+                contentTypeIds.add(id);
+            }
+        }
+    }
+
+    public void recordUsedIpId(final int id)
+    {
+        if (id >= 0)
+        {
+            synchronized (usedIpIds)
+            {
+                usedIpIds.add(id);
+            }
+        }
+    }
+
+    public RoaringBitmap getHttpMethodIds()
+    {
+        return httpMethodIds;
+    }
+
+    public RoaringBitmap getContentTypeIds()
+    {
+        return contentTypeIds;
+    }
+
+    public RoaringBitmap getUsedIpIds()
+    {
+        return usedIpIds;
+    }
+
     // -------------------------------------------------------------------------
     // High-Throughput Thread-Local Ingestion Caches
     // -------------------------------------------------------------------------
@@ -839,7 +892,7 @@ public class GlobalDictionaries
         final String[] split = org.apache.commons.lang3.StringUtils.split(str, '|');
         if (id >= splitIpAddresses.length)
         {
-            splitIpAddresses = Arrays.copyOf(splitIpAddresses, id + 1);
+            splitIpAddresses = Arrays.copyOf(splitIpAddresses, Math.max(splitIpAddresses.length * 2, id + 1));
         }
         splitIpAddresses[id] = split;
         return split;
@@ -891,7 +944,7 @@ public class GlobalDictionaries
         {
             if (timerId >= sampleUrlCounts.length)
             {
-                sampleUrlCounts = Arrays.copyOf(sampleUrlCounts, timerId + 1);
+                sampleUrlCounts = Arrays.copyOf(sampleUrlCounts, Math.max(sampleUrlCounts.length * 2, timerId + 1));
             }
             final int count = sampleUrlCounts[timerId];
             if (count >= MAX_SAMPLE_URLS_PER_TIMER)
@@ -918,7 +971,7 @@ public class GlobalDictionaries
             }
             else if (timerId >= rawSampleUrls.length)
             {
-                rawSampleUrls = Arrays.copyOf(rawSampleUrls, timerId + 1);
+                rawSampleUrls = Arrays.copyOf(rawSampleUrls, Math.max(rawSampleUrls.length * 2, timerId + 1));
             }
 
             String[] bucket = rawSampleUrls[timerId];
@@ -1000,7 +1053,7 @@ public class GlobalDictionaries
             }
             if (timerId >= cachedSampleUrls.length)
             {
-                cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, timerId + 1);
+                cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, Math.max(cachedSampleUrls.length * 2, timerId + 1));
             }
             cachedSampleUrls[timerId] = arr;
             return arr;
@@ -1283,8 +1336,9 @@ public class GlobalDictionaries
             }
             if (timerId >= dict.cachedSampleUrls.length)
             {
-                dict.cachedSampleUrls = Arrays.copyOf(dict.cachedSampleUrls, timerId + 1);
-                dict.sampleUrlCounts = Arrays.copyOf(dict.sampleUrlCounts, timerId + 1);
+                final int newCap = Math.max(dict.cachedSampleUrls.length * 2, timerId + 1);
+                dict.cachedSampleUrls = Arrays.copyOf(dict.cachedSampleUrls, newCap);
+                dict.sampleUrlCounts = Arrays.copyOf(dict.sampleUrlCounts, newCap);
             }
             dict.cachedSampleUrls[timerId] = arr;
             dict.sampleUrlCounts[timerId] = (byte) count;

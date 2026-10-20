@@ -104,12 +104,6 @@ public class ChunkCatalog
     /** Chunks grouped by record type code ('R', 'T', 'A', etc.) for instant type filtering. */
     private final Map<Character, List<Chunk>> chunksByType = new ConcurrentHashMap<>();
 
-    /** Inverted index: timerNameId -> RoaringBitmap of chunk indices containing this timer. */
-    private final Map<Integer, RoaringBitmap> timerToChunksIndex = new ConcurrentHashMap<>();
-
-    /** Inverted index: agentTestCaseId -> RoaringBitmap of chunk indices containing this pair. */
-    private final Map<Integer, RoaringBitmap> agentTestCaseToChunksIndex = new ConcurrentHashMap<>();
-
     /** Optional reference to the enclosing ChunkStorage instance for shared disk read channels. */
     private volatile ChunkStorage storage;
 
@@ -171,26 +165,6 @@ public class ChunkCatalog
             globalMaxTime = cMax;
         }
         totalRowCount += chunk.getRowCount();
-
-        // Index timer IDs present in this chunk into inverted bitmap index
-        final RoaringBitmap timers = chunk.getTimerNameIds();
-        if (timers != null)
-        {
-            for (final int timerId : timers)
-            {
-                timerToChunksIndex.computeIfAbsent(timerId, k -> new RoaringBitmap()).add(chunkIndex);
-            }
-        }
-
-        // Index agent + test case IDs present in this chunk into inverted bitmap index
-        final RoaringBitmap agents = chunk.getAgentTestCaseIds();
-        if (agents != null)
-        {
-            for (final int agentId : agents)
-            {
-                agentTestCaseToChunksIndex.computeIfAbsent(agentId, k -> new RoaringBitmap()).add(chunkIndex);
-            }
-        }
     }
 
     /**
@@ -408,16 +382,6 @@ public class ChunkCatalog
                                                       maxRunTime, hasFailures, vectorPayloadLength);
                 catalog.chunks.add(chunk);
                 catalog.chunksByType.computeIfAbsent(typeCode, k -> Collections.synchronizedList(new ArrayList<>())).add(chunk);
-
-                // Rebuild in-memory inverted RoaringBitmap indexes (timerId -> chunkIdx, agentTestCaseId -> chunkIdx)
-                for (final int timerId : timers)
-                {
-                    catalog.timerToChunksIndex.computeIfAbsent(timerId, k -> new RoaringBitmap()).add(i);
-                }
-                for (final int agentId : agents)
-                {
-                    catalog.agentTestCaseToChunksIndex.computeIfAbsent(agentId, k -> new RoaringBitmap()).add(i);
-                }
             }
 
             return catalog;

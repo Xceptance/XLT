@@ -840,11 +840,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
      */
     private static void writeIntArray(final int[] array, final DataOutput out) throws IOException
     {
-        out.writeInt(array.length);
-        for (final int v : array)
-        {
-            out.writeInt(v);
-        }
+        StorageIoUtils.writeIntArray(out, array);
     }
 
     /**
@@ -852,13 +848,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
      */
     private static int[] readIntArray(final DataInput in) throws IOException
     {
-        final int len = in.readInt();
-        final int[] array = new int[len];
-        for (int i = 0; i < len; i++)
-        {
-            array[i] = in.readInt();
-        }
-        return array;
+        return StorageIoUtils.readIntArray(in);
     }
 
     /**
@@ -1294,10 +1284,15 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
 
             final RequestData req = (RequestData) record;
+            final long t = req.getTime();
+            if (count > 0 && (Math.max(maxTime, t) - Math.min(minTime, t)) > Integer.MAX_VALUE)
+            {
+                return false;
+            }
+
             final int idx = count;
 
             // 1. Maintain time bounds and store raw millisecond timestamp
-            final long t = req.getTime();
             if (t < minTime) minTime = t;
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;
@@ -1386,7 +1381,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 failedRows.add(idx);
                 chunkHasFailures = true;
             }
-            else if (respCode >= 500 || respCode == 0)
+            else if (respCode >= 400 || respCode == 0)
             {
                 chunkHasFailures = true;
             }
@@ -1427,6 +1422,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 lastMethodStr = dicts.getString(lastMethodId);
                 lastMethodRef = method;
                 httpMethods[idx] = lastMethodId;
+                dicts.recordHttpMethodId(lastMethodId);
             }
 
             final CharSequence ct = req.getContentType();
@@ -1449,6 +1445,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 lastContentTypeStr = dicts.getString(lastContentTypeId);
                 lastContentTypeRef = ct;
                 contentTypes[idx] = lastContentTypeId;
+                dicts.recordContentTypeId(lastContentTypeId);
             }
 
             final CharSequence usedIp = req.getUsedIpAddress();
@@ -1471,6 +1468,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 lastUsedIpStr = dicts.getString(lastUsedIpId);
                 lastUsedIpRef = usedIp;
                 usedIps[idx] = lastUsedIpId;
+                dicts.recordUsedIpId(lastUsedIpId);
             }
 
             final String ipAddressesStr = req.getIpAddressesAsString();

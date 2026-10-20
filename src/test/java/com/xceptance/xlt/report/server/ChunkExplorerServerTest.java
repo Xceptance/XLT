@@ -289,6 +289,11 @@ public class ChunkExplorerServerTest
         final HttpResponse<String> uiResp = httpClient.send(uiReq, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, uiResp.statusCode());
         assertTrue(uiResp.body().contains("ChunkDB Explorer"));
+        assertTrue(uiResp.body().contains("SLOWEST_TRANSACTIONS"));
+        assertTrue(uiResp.body().contains("SLOWEST_ACTIONS"));
+        assertTrue(uiResp.body().contains("FAILED_ACTIONS"));
+        assertTrue(uiResp.body().contains("exportSummaryCsvBtn"));
+        assertTrue(uiResp.body().contains("exportForensicCsvBtn"));
 
         final HttpRequest jsReq = HttpRequest.newBuilder()
                                              .uri(URI.create(server.getBaseUrl() + "/explorer/js/explorer.js"))
@@ -296,6 +301,10 @@ public class ChunkExplorerServerTest
                                              .build();
         final HttpResponse<String> jsResp = httpClient.send(jsReq, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, jsResp.statusCode());
+        assertTrue(jsResp.body().contains("exportSummaryCsv"));
+        assertTrue(jsResp.body().contains("exportForensicCsv"));
+        assertTrue(jsResp.body().contains("scheduleChartRender"));
+        assertTrue(jsResp.body().contains("wf-target-row"));
 
         final HttpRequest cssReq = HttpRequest.newBuilder()
                                               .uri(URI.create(server.getBaseUrl() + "/explorer/css/explorer.css"))
@@ -303,6 +312,8 @@ public class ChunkExplorerServerTest
                                               .build();
         final HttpResponse<String> cssResp = httpClient.send(cssReq, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, cssResp.statusCode());
+        assertTrue(cssResp.body().contains(".wf-target-row"));
+        assertTrue(cssResp.body().contains("@media"));
 
         final HttpRequest missingAsset = HttpRequest.newBuilder()
                                                     .uri(URI.create(server.getBaseUrl() + "/explorer/missing.js"))
@@ -330,6 +341,37 @@ public class ChunkExplorerServerTest
                                                         .GET()
                                                         .build();
         assertEquals(403, httpClient.send(forbiddenDumpReq, HttpResponse.BodyHandlers.ofString()).statusCode());
+
+        // Path traversal with .. in DumpResourceServlet
+        final HttpRequest traversalDumpReq = HttpRequest.newBuilder()
+                                                        .uri(URI.create(server.getBaseUrl() + "/dumps/ac001/TCheckout/0/output/../../../../etc/passwd"))
+                                                        .GET()
+                                                        .build();
+        assertTrue("Traversal dump must be rejected with 400 or 403",
+                   httpClient.send(traversalDumpReq, HttpResponse.BodyHandlers.ofString()).statusCode() >= 400);
+
+        // Path traversal with URL-encoded %2e%2e in DumpResourceServlet
+        final HttpRequest encDumpReq = HttpRequest.newBuilder()
+                                                  .uri(URI.create(server.getBaseUrl() + "/dumps/ac001/TCheckout/0/output/%2e%2e/%2e%2e/index.html"))
+                                                  .GET()
+                                                  .build();
+        assertTrue("Encoded traversal dump must be rejected with 400 or 403",
+                   httpClient.send(encDumpReq, HttpResponse.BodyHandlers.ofString()).statusCode() >= 400);
+
+        // Path traversal in ExplorerStaticServlet
+        final HttpRequest traversalStaticReq = HttpRequest.newBuilder()
+                                                          .uri(URI.create(server.getBaseUrl() + "/explorer/../../pom.xml"))
+                                                          .GET()
+                                                          .build();
+        assertTrue("Traversal static asset must be rejected with 400 or 403",
+                   httpClient.send(traversalStaticReq, HttpResponse.BodyHandlers.ofString()).statusCode() >= 400);
+
+        final HttpRequest encStaticReq = HttpRequest.newBuilder()
+                                                    .uri(URI.create(server.getBaseUrl() + "/explorer/%2e%2e/%2e%2e/pom.xml"))
+                                                    .GET()
+                                                    .build();
+        assertTrue("Encoded traversal static asset must be rejected with 400 or 403",
+                   httpClient.send(encStaticReq, HttpResponse.BodyHandlers.ofString()).statusCode() >= 400);
     }
 
     @Test

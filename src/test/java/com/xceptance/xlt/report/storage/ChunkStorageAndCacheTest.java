@@ -2446,7 +2446,7 @@ public class ChunkStorageAndCacheTest
                         ev.setTransactionName(record.getTransactionName());
                         ev.setMessage("m");
                         inner.append(ev);
-                        return isFull();
+                        return true;
                     }
 
                     @Override
@@ -2499,5 +2499,95 @@ public class ChunkStorageAndCacheTest
                 delegate.scan(chunk, predicate, consumer, dicts);
             }
         };
+    }
+
+    @Test
+    public void testDoubleValueChunkBuilderNoAliasingOnSeal()
+    {
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('V');
+        final ChunkBuilder builder = handler.newChunkBuilder(dicts);
+
+        for (int i = 0; i < ChunkBuilder.DEFAULT_CHUNK_CAPACITY; i++)
+        {
+            final CustomValue cv = new CustomValue("Metric1");
+            cv.setTime(1000L + i);
+            cv.setValue(1.2345 + i);
+            builder.append(cv);
+        }
+        final com.xceptance.xlt.report.storage.chunk.DoubleValueChunk chunk1 =
+            (com.xceptance.xlt.report.storage.chunk.DoubleValueChunk) builder.seal();
+        final double[] values1 = chunk1.getValues();
+        Assert.assertEquals(ChunkBuilder.DEFAULT_CHUNK_CAPACITY, values1.length);
+        Assert.assertEquals(1.2345, values1[0], 0.000001);
+
+        builder.reset();
+        // Append new records into the recycled builder
+        for (int i = 0; i < 10; i++)
+        {
+            final CustomValue cv = new CustomValue("Metric2");
+            cv.setTime(2000L + i);
+            cv.setValue(999.0 + i);
+            builder.append(cv);
+        }
+
+        // Verify chunk1's values array was NOT overwritten by builder mutations
+        Assert.assertEquals(1.2345, values1[0], 0.000001);
+        Assert.assertEquals(2.2345, values1[1], 0.000001);
+    }
+
+    @Test
+    public void testRequestSparseForensicRetentionStatusZero()
+    {
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('R');
+        final ChunkBuilder builder = handler.newChunkBuilder(dicts);
+
+        final RequestData req = new RequestData("TestReq");
+        req.setTime(1000L);
+        req.setRunTime(50);
+        req.setResponseCode(0);
+        req.setFailed(false);
+        req.setUrl("http://example.com/failed_conn");
+        req.setRequestId("req-123");
+        builder.append(req);
+
+        final com.xceptance.xlt.report.storage.chunk.RequestChunk chunk =
+            (com.xceptance.xlt.report.storage.chunk.RequestChunk) builder.seal();
+        final com.xceptance.xlt.report.storage.chunk.RequestChunk.ForensicDetails fd = chunk.getForensicDetails(0);
+        Assert.assertNotNull("Forensic details must be preserved for status code 0 in sparse mode", fd);
+        Assert.assertEquals("http://example.com/failed_conn", fd.url());
+        Assert.assertEquals("req-123", fd.requestId());
+    }
+
+    @Test
+    public void testChunkBuilderTimestampDeltaOverflowProtection()
+    {
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('R');
+        final ChunkBuilder builder = handler.newChunkBuilder(dicts);
+
+        final RequestData req1 = new RequestData("Req1");
+        req1.setTime(1000L);
+        req1.setRunTime(50);
+        Assert.assertTrue(builder.append(req1));
+
+        // Attempt to append record spanning > Integer.MAX_VALUE milliseconds
+        final RequestData req2 = new RequestData("Req2");
+        req2.setTime(1000L + (long) Integer.MAX_VALUE + 10_000L);
+        req2.setRunTime(50);
+        Assert.assertFalse("Builder must reject record when timestamp delta would overflow 32-bit int", builder.append(req2));
+    }
+
+    @Test
+    public void testGlobalDictionariesGeometricGrowth()
+    {
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        dicts.addSampleUrl(500, "http://example.com/500");
+        dicts.addSampleUrl(1500, "http://example.com/1500");
+        final GlobalDictionaries.CachedSampleUrl[] urls = dicts.getCachedSampleUrls(1500);
+        Assert.assertNotNull(urls);
+        Assert.assertEquals(1, urls.length);
+        Assert.assertEquals("http://example.com/1500", urls[0].url());
     }
 }

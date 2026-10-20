@@ -27,6 +27,7 @@ import org.roaringbitmap.RoaringBitmap;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.EventData;
+import com.xceptance.xlt.report.storage.StorageIoUtils;
 import com.xceptance.xlt.report.storage.compression.FastIntegerCodec;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -212,11 +213,7 @@ public class EventChunkHandler implements ChunkTypeHandler
      */
     private static void writeIntArray(final int[] array, final DataOutput out) throws IOException
     {
-        out.writeInt(array.length);
-        for (final int v : array)
-        {
-            out.writeInt(v);
-        }
+        StorageIoUtils.writeIntArray(out, array);
     }
 
     /**
@@ -224,13 +221,7 @@ public class EventChunkHandler implements ChunkTypeHandler
      */
     private static int[] readIntArray(final DataInput in) throws IOException
     {
-        final int len = in.readInt();
-        final int[] array = new int[len];
-        for (int i = 0; i < len; i++)
-        {
-            array[i] = in.readInt();
-        }
-        return array;
+        return StorageIoUtils.readIntArray(in);
     }
 
     // -------------------------------------------------------------------------
@@ -289,9 +280,13 @@ public class EventChunkHandler implements ChunkTypeHandler
             }
 
             final EventData r = (EventData) record;
-            final int idx = count;
-
             final long t = r.getTime();
+            if (count > 0 && (Math.max(maxTime, t) - Math.min(minTime, t)) > Integer.MAX_VALUE)
+            {
+                return false;
+            }
+
+            final int idx = count;
             if (t < minTime) minTime = t;
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;

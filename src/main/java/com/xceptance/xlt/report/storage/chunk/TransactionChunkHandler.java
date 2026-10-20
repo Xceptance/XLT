@@ -149,14 +149,22 @@ public class TransactionChunkHandler implements ChunkTypeHandler
 
         // 4. Read sparse failure diagnostic map
         final int errCount = in.readInt();
-        final Map<Integer, TransactionChunk.TransactionError> errors = new HashMap<>(errCount);
-        for (int i = 0; i < errCount; i++)
+        final Map<Integer, TransactionChunk.TransactionError> errors;
+        if (errCount == 0)
         {
-            final int rowIdx = in.readInt();
-            final String action = StorageIoUtils.readUtfString(in);
-            final String stack = StorageIoUtils.readUtfString(in);
-            final String dir = StorageIoUtils.readUtfString(in);
-            errors.put(rowIdx, new TransactionChunk.TransactionError(action, stack, dir));
+            errors = java.util.Collections.emptyMap();
+        }
+        else
+        {
+            errors = new HashMap<>(errCount);
+            for (int i = 0; i < errCount; i++)
+            {
+                final int rowIdx = in.readInt();
+                final String action = StorageIoUtils.readUtfString(in);
+                final String stack = StorageIoUtils.readUtfString(in);
+                final String dir = StorageIoUtils.readUtfString(in);
+                errors.put(rowIdx, new TransactionChunk.TransactionError(action, stack, dir));
+            }
         }
 
         return new TransactionChunk(rowCount, minTime, maxTime, maxRunTime, timerIds, agentTestCaseIds, failedRows,
@@ -420,16 +428,9 @@ public class TransactionChunkHandler implements ChunkTypeHandler
     }
 
 
-    /**
-     * Serializes a primitive int array prefixed with its element count.
-     */
     private static void writeIntArray(final int[] array, final DataOutput out) throws IOException
     {
-        out.writeInt(array.length);
-        for (final int v : array)
-        {
-            out.writeInt(v);
-        }
+        StorageIoUtils.writeIntArray(out, array);
     }
 
     /**
@@ -437,13 +438,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
      */
     private static int[] readIntArray(final DataInput in) throws IOException
     {
-        final int len = in.readInt();
-        final int[] array = new int[len];
-        for (int i = 0; i < len; i++)
-        {
-            array[i] = in.readInt();
-        }
-        return array;
+        return StorageIoUtils.readIntArray(in);
     }
 
     // -------------------------------------------------------------------------
@@ -549,10 +544,15 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             }
 
             final TransactionData td = (TransactionData) record;
+            final long t = td.getTime();
+            if (count > 0 && (Math.max(maxTime, t) - Math.min(minTime, t)) > Integer.MAX_VALUE)
+            {
+                return false;
+            }
+
             final int idx = count;
 
             // 1. Maintain bounding timestamps and store raw timestamp
-            final long t = td.getTime();
             if (t < minTime) minTime = t;
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;
