@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.storage.cache;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.regex.Pattern;
 
@@ -53,6 +55,8 @@ import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
  *   <li><b>Input File Count:</b> Total number of raw timer CSV files in the input results directory tree.</li>
  *   <li><b>Input Total Bytes:</b> Total combined byte size of all discovered raw timer CSV files. Any modification,
  *       appended lines, or deleted log files alters this total.</li>
+ *   <li><b>Max Last-Modified Timestamp:</b> The latest {@code mtime} (milliseconds since epoch) across all discovered
+ *       timer CSV files, ensuring that in-place edits preserving exact byte length still invalidate the cache.</li>
  *   <li><b>Merge, Labeling &amp; Forensic Retention Rules Hash:</b> SHA-256 digest of request merging rules,
  *       labeling rules, index stripping ({@code com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames}),
  *       and request forensic retention mode ({@code sparse} vs {@code full} via {@code --preserve-all-details}).
@@ -67,12 +71,14 @@ import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
  *            the number of timer CSV files scanned
  * @param totalBytes
  *            the aggregated byte length of all timer CSV files
+ * @param maxLastModified
+ *            the maximum last-modified timestamp (ms since epoch) across all timer CSV files, or {@code 0L} if unspecified
  * @param mergeRulesHash
  *            SHA-256 hex digest of transformation and forensic retention rules
  * @param xltVersion
  *            the XLT release version string
  */
-public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes, String mergeRulesHash, String xltVersion)
+public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes, long maxLastModified, String mergeRulesHash, String xltVersion)
 {
     /** Magic header identifier (0x584C5446 = 'XLTF' in ASCII hex). */
     public static final int MAGIC = 0x584C5446;
@@ -82,6 +88,25 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
 
     /** Binary filename storing the serialized cache fingerprint metadata. */
     private static final String FINGERPRINT_FILE_NAME = "fingerprint.bin";
+
+    /**
+     * Backward-compatible convenience constructor without explicit {@code maxLastModified} timestamp.
+     *
+     * @param formatVersion
+     *            the binary ChunkDB storage format version
+     * @param fileCount
+     *            the number of timer CSV files scanned
+     * @param totalBytes
+     *            the aggregated byte length of all timer CSV files
+     * @param mergeRulesHash
+     *            SHA-256 hex digest of transformation and forensic retention rules
+     * @param xltVersion
+     *            the XLT release version string
+     */
+    public CacheFingerprint(final int formatVersion, final int fileCount, final long totalBytes, final String mergeRulesHash, final String xltVersion)
+    {
+        this(formatVersion, fileCount, totalBytes, 0L, mergeRulesHash, xltVersion);
+    }
 
     /**
      * Backward-compatible convenience constructor defaulting formatVersion to {@link ChunkCatalog#VERSION}.
@@ -97,7 +122,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
      */
     public CacheFingerprint(final int fileCount, final long totalBytes, final String mergeRulesHash, final String xltVersion)
     {
-        this(ChunkCatalog.VERSION, fileCount, totalBytes, mergeRulesHash, xltVersion);
+        this(ChunkCatalog.VERSION, fileCount, totalBytes, 0L, mergeRulesHash, xltVersion);
     }
 
     /**
@@ -117,13 +142,18 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
         final String rulesHash = calculateRulesHash(config);
         final String version = ProductInformation.getProductInformation().getVersion();
 
-        return new CacheFingerprint(ChunkCatalog.VERSION, (int) accumulator.fileCount.sum(), accumulator.totalBytes.sum(), rulesHash, version);
+        return new CacheFingerprint(ChunkCatalog.VERSION,
+                                    (int) accumulator.fileCount.sum(),
+                                    accumulator.totalBytes.sum(),
+                                    accumulator.maxLastModified.get(),
+                                    rulesHash,
+                                    version);
     }
 
     /**
      * Walks the results directory tree in parallel across top-level entries using NIO {@link Files#walkFileTree},
-     * discovering raw timer CSV files and accumulating file counts and total byte sizes without redundant
-     * per-file {@code stat()} system calls.
+     * discovering raw timer CSV files and accumulating file counts, total byte sizes, and maximum modification
+     * timestamps without redundant per-file {@code stat()} system calls.
      *
      * @param dir
      *            root directory being inspected
@@ -157,17 +187,18 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
             {
                 acc.fileCount.increment();
                 acc.totalBytes.add(f.length());
+                acc.updateMaxLastModified(f.lastModified());
             }
         });
     }
 
     /**
-     * Walks a single directory subtree using {@link Files#walkFileTree} so that file type and byte size
-     * are obtained directly from {@link BasicFileAttributes} in a single pass.
+     * Walks a single directory subtree using {@link Files#walkFileTree} so that file type, byte size, and
+     * last-modified timestamp are obtained directly from {@link BasicFileAttributes} in a single pass.
      */
     private static void scanSubtree(final Path root, final FileAccumulator acc)
     {
-        final long[] localCounts = new long[2]; // [0] = fileCount, [1] = totalBytes
+        final long[] localCounts = new long[3]; // [0] = fileCount, [1] = totalBytes, [2] = maxLastModified
         try
         {
             Files.walkFileTree(root, new SimpleFileVisitor<Path>()
@@ -196,6 +227,11 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                         {
                             localCounts[0]++;
                             localCounts[1] += attrs.size();
+                            final long mtime = attrs.lastModifiedTime().toMillis();
+                            if (mtime > localCounts[2])
+                            {
+                                localCounts[2] = mtime;
+                            }
                         }
                     }
                     return FileVisitResult.CONTINUE;
@@ -217,6 +253,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
         {
             acc.fileCount.add(localCounts[0]);
             acc.totalBytes.add(localCounts[1]);
+            acc.updateMaxLastModified(localCounts[2]);
         }
     }
 
@@ -326,7 +363,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
      *
      * @param other
      *            the stored fingerprint to compare against
-     * @return true if all file counts, byte sizes, rules hashes, and versions are identical
+     * @return true if all file counts, byte sizes, modification timestamps, rules hashes, and versions are identical
      */
     public boolean matches(final CacheFingerprint other)
     {
@@ -334,9 +371,12 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
         {
             return false;
         }
+        final boolean mtimeMatches = (maxLastModified <= 0L || other.maxLastModified <= 0L)
+            || (maxLastModified == other.maxLastModified);
         return formatVersion == other.formatVersion &&
                fileCount == other.fileCount &&
                totalBytes == other.totalBytes &&
+               mtimeMatches &&
                Objects.equals(mergeRulesHash, other.mergeRulesHash) &&
                Objects.equals(xltVersion, other.xltVersion);
     }
@@ -361,6 +401,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
             out.writeLong(totalBytes);
             StorageIoUtils.writeUtfString(out, mergeRulesHash != null ? mergeRulesHash : "");
             StorageIoUtils.writeUtfString(out, xltVersion != null ? xltVersion : "");
+            out.writeLong(maxLastModified);
         }
     }
 
@@ -399,7 +440,16 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                 final long bytes = in.readLong();
                 final String hash = StorageIoUtils.readUtfString(in);
                 final String version = StorageIoUtils.readUtfString(in);
-                return new CacheFingerprint(fmtVersion, count, bytes, hash, version);
+                long maxMtime = 0L;
+                try
+                {
+                    maxMtime = in.readLong();
+                }
+                catch (final EOFException ignored)
+                {
+                    // Backward compatibility: older V1 fingerprint files without trailing maxLastModified
+                }
+                return new CacheFingerprint(fmtVersion, count, bytes, maxMtime, hash, version);
             }
             else
             {
@@ -409,7 +459,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                 final String hash = in.readUTF();
                 final String version = in.readUTF();
                 // formatVersion 0 will fail matches() against ChunkCatalog.VERSION and trigger safe purge
-                return new CacheFingerprint(0, count, bytes, hash, version);
+                return new CacheFingerprint(0, count, bytes, 0L, hash, version);
             }
         }
     }
@@ -422,10 +472,24 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
         final String cacheDirName;
         final LongAdder fileCount = new LongAdder();
         final LongAdder totalBytes = new LongAdder();
+        final AtomicLong maxLastModified = new AtomicLong(0L);
 
         FileAccumulator(final String cacheDirName)
         {
             this.cacheDirName = cacheDirName != null ? cacheDirName : "xlt-cache";
+        }
+
+        void updateMaxLastModified(final long mtime)
+        {
+            if (mtime <= 0L)
+            {
+                return;
+            }
+            long current = maxLastModified.get();
+            while (mtime > current && !maxLastModified.compareAndSet(current, mtime))
+            {
+                current = maxLastModified.get();
+            }
         }
     }
 }

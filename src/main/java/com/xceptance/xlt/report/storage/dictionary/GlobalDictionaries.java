@@ -1253,6 +1253,20 @@ public class GlobalDictionaries
                 }
             }
         }
+
+        // 5. Facet membership bitmaps (HTTP methods, Content-Types, Used IPs) for O(1) warm-cache metadata discovery
+        synchronized (httpMethodIds)
+        {
+            httpMethodIds.serialize(out);
+        }
+        synchronized (contentTypeIds)
+        {
+            contentTypeIds.serialize(out);
+        }
+        synchronized (usedIpIds)
+        {
+            usedIpIds.serialize(out);
+        }
     }
 
     /**
@@ -1342,6 +1356,18 @@ public class GlobalDictionaries
             }
             dict.cachedSampleUrls[timerId] = arr;
             dict.sampleUrlCounts[timerId] = (byte) count;
+        }
+
+        // 5. Facet membership bitmaps (with backward compatibility for streams ending after sample URLs)
+        try
+        {
+            dict.httpMethodIds.deserialize(in);
+            dict.contentTypeIds.deserialize(in);
+            dict.usedIpIds.deserialize(in);
+        }
+        catch (final java.io.EOFException ignored)
+        {
+            // Older cache format without persisted facet bitmaps; bitmaps remain empty and trigger chunk scan fallback
         }
 
         return dict;

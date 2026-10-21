@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xceptance.xlt.report.query.ColumnarQueryEngine;
+import com.xceptance.xlt.report.query.QueryModels.DashboardQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.InspectQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.SessionQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.SummaryTableQuerySpec;
@@ -40,6 +41,7 @@ import com.xceptance.xlt.report.query.QueryModels.TimeSeriesQuerySpec;
  * <b>Supported Endpoints:</b>
  * <ul>
  *   <li>{@code GET /api/v1/metadata}: Global time bounds, chunk counts, and distinct dimension facets.</li>
+ *   <li>{@code POST /api/v1/dashboard}: Combined single-pass time-series and summary-table query.</li>
  *   <li>{@code POST /api/v1/timeseries}: Auto-bucketed time-series metrics, exact percentiles, and group splits.</li>
  *   <li>{@code POST /api/v1/summary-table}: Multi-dimensional GROUP BY aggregation table.</li>
  *   <li>{@code POST /api/v1/inspect}: Top-K slowest requests, failed requests, and failed transactions with forensic tail details.</li>
@@ -90,14 +92,23 @@ public class ChunkApiServlet extends HttpServlet
             switch (path)
             {
                 case "/metadata" -> {
-                    queryLock.lock();
-                    try
+                    // Fast-path: once immutable metadata is cached in volatile memory, serve directly
+                    // without acquiring queryLock so metadata requests never queue behind active scans.
+                    if (queryEngine.hasCachedMetadata())
                     {
                         writeJson(resp, HttpServletResponse.SC_OK, queryEngine.getMetadata());
                     }
-                    finally
+                    else
                     {
-                        queryLock.unlock();
+                        queryLock.lock();
+                        try
+                        {
+                            writeJson(resp, HttpServletResponse.SC_OK, queryEngine.getMetadata());
+                        }
+                        finally
+                        {
+                            queryLock.unlock();
+                        }
                     }
                 }
                 case "/session" -> {
@@ -144,6 +155,18 @@ public class ChunkApiServlet extends HttpServlet
         {
             switch (path)
             {
+                case "/dashboard" -> {
+                    final DashboardQuerySpec spec = readJsonBody(req, DashboardQuerySpec.class);
+                    queryLock.lock();
+                    try
+                    {
+                        writeJson(resp, HttpServletResponse.SC_OK, queryEngine.queryDashboard(spec));
+                    }
+                    finally
+                    {
+                        queryLock.unlock();
+                    }
+                }
                 case "/timeseries" -> {
                     final TimeSeriesQuerySpec spec = readJsonBody(req, TimeSeriesQuerySpec.class);
                     queryLock.lock();

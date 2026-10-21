@@ -237,6 +237,10 @@ public class ChunkSpooler
         public void reset()
         {
             count = 0;
+            if (buf.length > 4 * 1024 * 1024)
+            {
+                buf = new byte[2 * 1024 * 1024];
+            }
         }
 
         public void release()
@@ -291,59 +295,56 @@ public class ChunkSpooler
                 diskChunks.add(dc);
             }
         }
-        spoolBuffer.release();
 
-        // 2. Write V3 metadata index table starting at currentOffset (tail of chunks.bin):
-        //    Each entry stores file coordinates, typeCode, rowCount, time bounds, Zone Map bounds
-        //    (maxRunTime, hasFailures), vectorPayloadLength (for partial hot-vector reads), and
-        //    the chunk's timerNameIds & agentTestCaseIds RoaringBitmaps.
+        // 2. Write V3 metadata index table starting at currentOffset (tail of chunks.bin) using
+        //    spoolBuffer directly to avoid intermediate ByteArrayOutputStream and toByteArray() copies.
         final long metadataIndexOffset = currentOffset;
-        final ByteArrayOutputStream metaBaos = new ByteArrayOutputStream(Math.max(4096, diskChunks.size() * 128));
-        final DataOutputStream metaDos = new DataOutputStream(metaBaos);
+        spoolBuffer.reset();
 
-        metaDos.writeInt(diskChunks.size());
+        spoolDataOut.writeInt(diskChunks.size());
         for (final DiskChunk dc : diskChunks)
         {
-            metaDos.writeLong(dc.getFileOffset());
-            metaDos.writeInt(dc.getPayloadLength());
-            metaDos.writeChar(dc.getTypeCode());
-            metaDos.writeInt(dc.getRowCount());
-            metaDos.writeLong(dc.getMinTime());
-            metaDos.writeLong(dc.getMaxTime());
-            metaDos.writeInt(dc.getMaxRunTime());
-            metaDos.writeBoolean(dc.hasFailures());
-            metaDos.writeInt(dc.getVectorPayloadLength());
+            spoolDataOut.writeLong(dc.getFileOffset());
+            spoolDataOut.writeInt(dc.getPayloadLength());
+            spoolDataOut.writeChar(dc.getTypeCode());
+            spoolDataOut.writeInt(dc.getRowCount());
+            spoolDataOut.writeLong(dc.getMinTime());
+            spoolDataOut.writeLong(dc.getMaxTime());
+            spoolDataOut.writeInt(dc.getMaxRunTime());
+            spoolDataOut.writeBoolean(dc.hasFailures());
+            spoolDataOut.writeInt(dc.getVectorPayloadLength());
 
             final RoaringBitmap timers = dc.getTimerNameIds();
             if (timers != null)
             {
-                metaDos.writeBoolean(true);
-                timers.serialize(metaDos);
+                spoolDataOut.writeBoolean(true);
+                timers.serialize(spoolDataOut);
             }
             else
             {
-                metaDos.writeBoolean(false);
+                spoolDataOut.writeBoolean(false);
             }
 
             final RoaringBitmap agents = dc.getAgentTestCaseIds();
             if (agents != null)
             {
-                metaDos.writeBoolean(true);
-                agents.serialize(metaDos);
+                spoolDataOut.writeBoolean(true);
+                agents.serialize(spoolDataOut);
             }
             else
             {
-                metaDos.writeBoolean(false);
+                spoolDataOut.writeBoolean(false);
             }
         }
-        metaDos.flush();
+        spoolDataOut.flush();
 
-        final ByteBuffer metaBuf = ByteBuffer.wrap(metaBaos.toByteArray());
+        final ByteBuffer metaBuf = ByteBuffer.wrap(spoolBuffer.getBuffer(), 0, spoolBuffer.size());
         while (metaBuf.hasRemaining())
         {
             final int written = channel.write(metaBuf, currentOffset);
             currentOffset += written;
         }
+        spoolBuffer.release();
 
         // 3. Back-patch the 44-byte V3 header at offset 0 with global bounds and metadataIndexOffset
         final ByteBuffer header = ByteBuffer.allocate(ChunkCatalog.HEADER_SIZE);

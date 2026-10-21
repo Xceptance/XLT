@@ -35,12 +35,16 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.IntStream;
 
 import org.roaringbitmap.RoaringBitmap;
 
+import com.xceptance.xlt.report.query.QueryModels.DashboardQuerySpec;
+import com.xceptance.xlt.report.query.QueryModels.DashboardResponse;
 import com.xceptance.xlt.report.query.QueryModels.ForensicRecord;
 import com.xceptance.xlt.report.query.QueryModels.GroupedSeries;
 import com.xceptance.xlt.report.query.QueryModels.InspectQuerySpec;
@@ -113,9 +117,6 @@ public class ColumnarQueryEngine
 
     /** Default fallback time window padding (30 seconds) when reconstructing a session without an enclosing Transaction. */
     private static final long DEFAULT_SESSION_PADDING_MS = 30_000L;
-
-    /** Maximum number of candidate request chunks for which exact per-row 32-bit URL hash bitmaps are computed. */
-    private static final int MAX_CHUNKS_FOR_EXACT_URL_BITMAP = 32;
 
     // -------------------------------------------------------------------------
     // On-Disk RequestChunk Column Ordinals (0..20)
@@ -269,6 +270,17 @@ public class ColumnarQueryEngine
         return resultsDir;
     }
 
+    /**
+     * Returns {@code true} if the dataset metadata response has already been computed and cached in memory,
+     * allowing HTTP callers to serve {@code GET /api/v1/metadata} without acquiring the heavy query lock.
+     *
+     * @return {@code true} if metadata is already cached
+     */
+    public boolean hasCachedMetadata()
+    {
+        return cachedMetadata != null;
+    }
+
     // =========================================================================
     // In-Memory Column Pointer & Hint Index (RequestChunkIndex)
     // =========================================================================
@@ -392,6 +404,10 @@ public class ColumnarQueryEngine
 
     /**
      * Reads and decompresses a single column directly from disk using the chunk's in-memory column pointer.
+     * <p>
+     * If the column was encoded with {@link FastIntegerCodec}'s constant-column RLE header
+     * ({@code {CONSTANT_MARKER, length, value}}), single-value and status-code hints are learned in \(O(1)\)
+     * directly from the 3-int header without scanning the decompressed array.
      */
     private int[] readDecompressedColumn(final RequestChunkIndex idx, final int colIdx)
     {
@@ -409,12 +425,40 @@ public class ColumnarQueryEngine
             final int[] comp = new int[intLen];
             buf.asIntBuffer().get(comp);
             final int[] decompressed = FastIntegerCodec.decompress(comp);
-            learnColumnHints(idx, colIdx, decompressed);
+            if (FastIntegerCodec.isConstant(comp))
+            {
+                learnConstantColumnHint(idx, colIdx, FastIntegerCodec.getConstantValue(comp));
+            }
+            else
+            {
+                learnColumnHints(idx, colIdx, decompressed);
+            }
             return decompressed;
         }
         catch (final IOException e)
         {
             throw new RuntimeException("Failed to read column " + colIdx + " from DiskChunk: " + idx.dc, e);
+        }
+    }
+
+    private static void learnConstantColumnHint(final RequestChunkIndex idx, final int colIdx, final int constVal)
+    {
+        if (colIdx == IDX_RESPONSE_CODES && idx.minStatusCode < 0 && constVal >= 0 && constVal <= Short.MAX_VALUE)
+        {
+            idx.minStatusCode = (short) constVal;
+            idx.maxStatusCode = (short) constVal;
+        }
+        else if (colIdx == IDX_HTTP_METHODS && idx.singleMethodId == -2)
+        {
+            idx.singleMethodId = constVal >= 0 ? constVal : -1;
+        }
+        else if (colIdx == IDX_CONTENT_TYPES && idx.singleContentTypeId == -2)
+        {
+            idx.singleContentTypeId = constVal >= 0 ? constVal : -1;
+        }
+        else if (colIdx == IDX_USED_IPS && idx.singleUsedIpId == -2)
+        {
+            idx.singleUsedIpId = constVal >= 0 ? constVal : -1;
         }
     }
 
@@ -468,6 +512,15 @@ public class ColumnarQueryEngine
             }
         }
         return first;
+    }
+
+    private static boolean isBitmapSubset(final RoaringBitmap chunkBitmap, final RoaringBitmap filterBitmap)
+    {
+        if (chunkBitmap == null || chunkBitmap.isEmpty())
+        {
+            return false;
+        }
+        return RoaringBitmap.andCardinality(chunkBitmap, filterBitmap) == chunkBitmap.getCardinality();
     }
 
     private Chunk resolveNonRequestChunk(final char typeCode, final Chunk chunk, final GlobalDictionaries dicts)
@@ -739,11 +792,59 @@ public class ColumnarQueryEngine
         final GlobalDictionaries dicts = storage.getDictionaries();
         final AtomicInteger chunksScanned = new AtomicInteger(0);
 
-        // Execute parallel scan using one TimeSeriesAccumulator per ForkJoin worker thread (instead of one per chunk)
-        final TimeSeriesAccumulator merged = candidateChunks.parallelStream().collect(
-            () -> new TimeSeriesAccumulator(bucketCount, hasGroupBy),
-            (acc, chunk) -> {
-                chunksScanned.incrementAndGet();
+        final TimeSeriesAccumulator merged = executeTimeSeriesStripedScan(
+            typeCode, candidateChunks, filter, fromTime, bucketWidthMs, bucketCount, groupBy, hasGroupBy, dicts, chunksScanned
+        );
+
+        return materializeTimeSeriesResponse(
+            typeCode, fromTime, toTime, bucketWidthMs, bucketCount, hasGroupBy,
+            merged, chunksScanned.get(), System.currentTimeMillis() - queryStart
+        );
+    }
+
+    private TimeSeriesAccumulator executeTimeSeriesStripedScan(final char typeCode,
+                                                               final List<Chunk> candidateChunks,
+                                                               final ResolvedFilter filter,
+                                                               final long fromTime,
+                                                               final int bucketWidthMs,
+                                                               final int bucketCount,
+                                                               final String groupBy,
+                                                               final boolean hasGroupBy,
+                                                               final GlobalDictionaries dicts,
+                                                               final AtomicInteger chunksScanned)
+    {
+        final int chunkCount = candidateChunks.size();
+        if (chunkCount == 0)
+        {
+            return new TimeSeriesAccumulator(bucketCount, hasGroupBy);
+        }
+        if (chunkCount == 1)
+        {
+            final TimeSeriesAccumulator acc = new TimeSeriesAccumulator(bucketCount, hasGroupBy);
+            chunksScanned.incrementAndGet();
+            final Chunk chunk = candidateChunks.get(0);
+            if (typeCode == 'R')
+            {
+                scanRequestChunkForTimeSeries(chunk, filter, fromTime, bucketWidthMs, bucketCount, groupBy, dicts, acc);
+            }
+            else
+            {
+                scanTimerOrTransactionChunkForTimeSeries(typeCode, chunk, filter, fromTime, bucketWidthMs, bucketCount, groupBy, dicts, acc);
+            }
+            return acc;
+        }
+
+        // Partition candidateChunks into at most P contiguous worker stripes so ForkJoinPool does not allocate
+        // and merge 4*P leaf TimeSeriesAccumulator instances (each holding `bucketCount` RuntimeHistograms).
+        final int workers = Math.min(chunkCount, Math.max(1, ForkJoinPool.getCommonPoolParallelism()));
+        return IntStream.range(0, workers).parallel().mapToObj(w -> {
+            final int start = (int) ((long) w * chunkCount / workers);
+            final int end = (int) ((long) (w + 1) * chunkCount / workers);
+            final TimeSeriesAccumulator acc = new TimeSeriesAccumulator(bucketCount, hasGroupBy);
+            chunksScanned.addAndGet(end - start);
+            for (int i = start; i < end; i++)
+            {
+                final Chunk chunk = candidateChunks.get(i);
                 if (typeCode == 'R')
                 {
                     scanRequestChunkForTimeSeries(chunk, filter, fromTime, bucketWidthMs, bucketCount, groupBy, dicts, acc);
@@ -752,11 +853,21 @@ public class ColumnarQueryEngine
                 {
                     scanTimerOrTransactionChunkForTimeSeries(typeCode, chunk, filter, fromTime, bucketWidthMs, bucketCount, groupBy, dicts, acc);
                 }
-            },
-            TimeSeriesAccumulator::merge
-        );
+            }
+            return acc;
+        }).reduce(TimeSeriesAccumulator::merge).orElseGet(() -> new TimeSeriesAccumulator(bucketCount, hasGroupBy));
+    }
 
-        // Materialize response arrays
+    private TimeSeriesResponse materializeTimeSeriesResponse(final char typeCode,
+                                                             final long fromTime,
+                                                             final long toTime,
+                                                             final int bucketWidthMs,
+                                                             final int bucketCount,
+                                                             final boolean hasGroupBy,
+                                                             final TimeSeriesAccumulator merged,
+                                                             final int chunksScanned,
+                                                             final long queryTimeMs)
+    {
         final long[] timestamps = new long[bucketCount];
         final double[] rps = new double[bucketCount];
         final double[] mean = new double[bucketCount];
@@ -801,9 +912,8 @@ public class ColumnarQueryEngine
             }
         }
 
-        // Materialize grouped series if groupBy != NONE
         final List<GroupedSeries> groupedSeriesList;
-        if (hasGroupBy && !merged.groups.isEmpty())
+        if (hasGroupBy && merged.groups != null && !merged.groups.isEmpty())
         {
             groupedSeriesList = buildTopGroupedSeries(merged.groups, bucketCount, bucketSeconds);
         }
@@ -812,7 +922,6 @@ public class ColumnarQueryEngine
             groupedSeriesList = Collections.emptyList();
         }
 
-        final long queryTimeMs = System.currentTimeMillis() - queryStart;
         return new TimeSeriesResponse(
             String.valueOf(typeCode),
             fromTime,
@@ -820,7 +929,7 @@ public class ColumnarQueryEngine
             bucketWidthMs,
             bucketCount,
             queryTimeMs,
-            chunksScanned.get(),
+            chunksScanned,
             totalRowsMatched,
             timestamps,
             merged.count,
@@ -937,11 +1046,11 @@ public class ColumnarQueryEngine
         int[] agentIds = null;
         final int constAgentId;
         int[] usedIpIds = null;
-        final int constUsedIpId;
+        int constUsedIpId;
         int[] methodIds = null;
-        final int constMethodId;
+        int constMethodId;
         int[] contentTypeIds = null;
-        final int constContentTypeId;
+        int constContentTypeId;
 
         if (idx != null)
         {
@@ -955,8 +1064,17 @@ public class ColumnarQueryEngine
             }
             else
             {
-                statusCodes = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
-                constStatus = -1;
+                final int[] sc = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
+                if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+                {
+                    constStatus = idx.minStatusCode;
+                    statusCodes = null;
+                }
+                else
+                {
+                    constStatus = -1;
+                    statusCodes = sc;
+                }
             }
 
             // Early exit if learned status code bounds prove no row in this chunk can match
@@ -976,9 +1094,6 @@ public class ColumnarQueryEngine
                 }
             }
 
-            timeOffsets = readDecompressedColumn(idx, IDX_TIME_OFFSETS);
-            runTimes = readDecompressedColumn(idx, IDX_RUN_TIMES);
-
             constTimerId = idx.singleTimerId;
             if (filter.timerIds != null && constTimerId < 0)
             {
@@ -995,19 +1110,49 @@ public class ColumnarQueryEngine
             if (filter.usedIpIds != null && constUsedIpId < 0)
             {
                 usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
+                if (idx.singleUsedIpId >= 0)
+                {
+                    constUsedIpId = idx.singleUsedIpId;
+                    usedIpIds = null;
+                    if (!filter.usedIpIds.contains(constUsedIpId))
+                    {
+                        return;
+                    }
+                }
             }
 
             constMethodId = idx.singleMethodId >= 0 ? idx.singleMethodId : -1;
             if (filter.httpMethodIds != null && constMethodId < 0)
             {
                 methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
+                if (idx.singleMethodId >= 0)
+                {
+                    constMethodId = idx.singleMethodId;
+                    methodIds = null;
+                    if (!filter.httpMethodIds.contains(constMethodId))
+                    {
+                        return;
+                    }
+                }
             }
 
             constContentTypeId = idx.singleContentTypeId >= 0 ? idx.singleContentTypeId : -1;
             if (filter.contentTypeIds != null && constContentTypeId < 0)
             {
                 contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+                if (idx.singleContentTypeId >= 0)
+                {
+                    constContentTypeId = idx.singleContentTypeId;
+                    contentTypeIds = null;
+                    if (!filter.contentTypeIds.contains(constContentTypeId))
+                    {
+                        return;
+                    }
+                }
             }
+
+            timeOffsets = readDecompressedColumn(idx, IDX_TIME_OFFSETS);
+            runTimes = readDecompressedColumn(idx, IDX_RUN_TIMES);
         }
         else
         {
@@ -1087,17 +1232,44 @@ public class ColumnarQueryEngine
                 if (needUsedIp && usedIpIds == null && constUsedIpId < 0)
                 {
                     usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
-                    usedIpId = usedIpIds[i];
+                    if (idx.singleUsedIpId >= 0)
+                    {
+                        constUsedIpId = idx.singleUsedIpId;
+                        usedIpIds = null;
+                        usedIpId = constUsedIpId;
+                    }
+                    else
+                    {
+                        usedIpId = usedIpIds[i];
+                    }
                 }
                 if (needMethod && methodIds == null && constMethodId < 0)
                 {
                     methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
-                    methodId = methodIds[i];
+                    if (idx.singleMethodId >= 0)
+                    {
+                        constMethodId = idx.singleMethodId;
+                        methodIds = null;
+                        methodId = constMethodId;
+                    }
+                    else
+                    {
+                        methodId = methodIds[i];
+                    }
                 }
                 if (needContentType && contentTypeIds == null && constContentTypeId < 0)
                 {
                     contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
-                    contentTypeId = contentTypeIds[i];
+                    if (idx.singleContentTypeId >= 0)
+                    {
+                        constContentTypeId = idx.singleContentTypeId;
+                        contentTypeIds = null;
+                        contentTypeId = constContentTypeId;
+                    }
+                    else
+                    {
+                        contentTypeId = contentTypeIds[i];
+                    }
                 }
             }
 
@@ -1330,16 +1502,57 @@ public class ColumnarQueryEngine
 
         final List<Chunk> candidateChunks = pruneCandidateChunks(typeCode, filter);
         final GlobalDictionaries dicts = storage.getDictionaries();
-        final boolean includeUrlHashes = typeCode == 'R'
-                                         && "TIMER".equals(groupBy)
-                                         && candidateChunks.size() <= MAX_CHUNKS_FOR_EXACT_URL_BITMAP;
+        final boolean includeUrlHashes = typeCode == 'R' && "TIMER".equals(groupBy);
         final AtomicInteger chunksScanned = new AtomicInteger(0);
 
-        // Execute parallel scan using one accumulator map per ForkJoin worker thread
-        final Map<String, SummaryGroupAccumulator> mergedGroups = candidateChunks.parallelStream().collect(
-            HashMap::new,
-            (localMap, chunk) -> {
-                chunksScanned.incrementAndGet();
+        final Map<String, SummaryGroupAccumulator> mergedGroups = executeSummaryStripedScan(
+            typeCode, candidateChunks, filter, groupBy, includeUrlHashes, dicts, chunksScanned
+        );
+
+        return materializeSummaryResponse(
+            typeCode, groupBy, filter, dicts, mergedGroups, chunksScanned.get(), System.currentTimeMillis() - queryStart
+        );
+    }
+
+    private Map<String, SummaryGroupAccumulator> executeSummaryStripedScan(final char typeCode,
+                                                                           final List<Chunk> candidateChunks,
+                                                                           final ResolvedFilter filter,
+                                                                           final String groupBy,
+                                                                           final boolean includeUrlHashes,
+                                                                           final GlobalDictionaries dicts,
+                                                                           final AtomicInteger chunksScanned)
+    {
+        final int chunkCount = candidateChunks.size();
+        if (chunkCount == 0)
+        {
+            return Collections.emptyMap();
+        }
+        if (chunkCount == 1)
+        {
+            final Map<String, SummaryGroupAccumulator> localMap = new HashMap<>();
+            chunksScanned.incrementAndGet();
+            final Chunk chunk = candidateChunks.get(0);
+            if (typeCode == 'R')
+            {
+                scanRequestChunkForSummary(chunk, filter, groupBy, includeUrlHashes, dicts, localMap);
+            }
+            else
+            {
+                scanTimerOrTransactionChunkForSummary(typeCode, chunk, filter, groupBy, dicts, localMap);
+            }
+            return localMap;
+        }
+
+        // Partition candidateChunks into at most P contiguous worker stripes
+        final int workers = Math.min(chunkCount, Math.max(1, ForkJoinPool.getCommonPoolParallelism()));
+        return IntStream.range(0, workers).parallel().mapToObj(w -> {
+            final int start = (int) ((long) w * chunkCount / workers);
+            final int end = (int) ((long) (w + 1) * chunkCount / workers);
+            final Map<String, SummaryGroupAccumulator> localMap = new HashMap<>();
+            chunksScanned.addAndGet(end - start);
+            for (int i = start; i < end; i++)
+            {
+                final Chunk chunk = candidateChunks.get(i);
                 if (typeCode == 'R')
                 {
                     scanRequestChunkForSummary(chunk, filter, groupBy, includeUrlHashes, dicts, localMap);
@@ -1348,15 +1561,25 @@ public class ColumnarQueryEngine
                 {
                     scanTimerOrTransactionChunkForSummary(typeCode, chunk, filter, groupBy, dicts, localMap);
                 }
-            },
-            (accMap, chunkMap) -> {
-                for (final Map.Entry<String, SummaryGroupAccumulator> e : chunkMap.entrySet())
-                {
-                    accMap.merge(e.getKey(), e.getValue(), SummaryGroupAccumulator::merge);
-                }
             }
-        );
+            return localMap;
+        }).reduce((accMap, stripeMap) -> {
+            for (final Map.Entry<String, SummaryGroupAccumulator> e : stripeMap.entrySet())
+            {
+                accMap.merge(e.getKey(), e.getValue(), SummaryGroupAccumulator::merge);
+            }
+            return accMap;
+        }).orElseGet(Collections::emptyMap);
+    }
 
+    private SummaryTableResponse materializeSummaryResponse(final char typeCode,
+                                                            final String groupBy,
+                                                            final ResolvedFilter filter,
+                                                            final GlobalDictionaries dicts,
+                                                            final Map<String, SummaryGroupAccumulator> mergedGroups,
+                                                            final int chunksScanned,
+                                                            final long queryTimeMs)
+    {
         final double windowSeconds = Math.max(0.001, (filter.toTime - filter.fromTime) / 1000.0);
         final List<SummaryRow> rows = new ArrayList<>(mergedGroups.size());
         long totalRowsMatched = 0;
@@ -1378,23 +1601,579 @@ public class ColumnarQueryEngine
                 }
             }
 
-            final int distinctUrls = g.urlHashes != null ? g.urlHashes.getCardinality() : fallbackDistinctUrls;
+            final int distinctUrls = g.getDistinctUrlCount(fallbackDistinctUrls);
             rows.add(g.toSummaryRow(entry.getKey(), windowSeconds, distinctUrls, sampleUrl));
         }
 
         rows.sort((a, b) -> Long.compare(b.count(), a.count()));
 
-        final long queryTimeMs = System.currentTimeMillis() - queryStart;
         return new SummaryTableResponse(
             groupBy,
             String.valueOf(typeCode),
             filter.fromTime,
             filter.toTime,
             queryTimeMs,
-            chunksScanned.get(),
+            chunksScanned,
             totalRowsMatched,
             rows
         );
+    }
+
+    // =========================================================================
+    // 3b. Combined Single-Pass Dashboard Query Engine (POST /api/v1/dashboard)
+    // =========================================================================
+
+    /**
+     * Executes both the time-series bucketing aggregation and the multi-dimensional summary table
+     * {@code GROUP BY} aggregation in a <b>single shared pass</b> over the pruned candidate chunks.
+     * <p>
+     * <b>Why this exists:</b> Whenever the user changes any filter or zooms into a time window in the
+     * Explorer UI, both the time-series charts and the summary table must update over the identical filter
+     * predicate. Executing two separate HTTP endpoints required reading and SIMD-decompressing every
+     * matching chunk twice. This combined endpoint reads and decompresses each column of each matching
+     * chunk once per worker stripe and feeds both accumulators simultaneously, cutting disk I/O and
+     * CPU decompression work in half.
+     *
+     * @param spec
+     *            the combined dashboard query specification
+     * @return combined {@link DashboardResponse} containing both {@link TimeSeriesResponse} and {@link SummaryTableResponse}
+     */
+    public DashboardResponse queryDashboard(final DashboardQuerySpec spec)
+    {
+        Objects.requireNonNull(spec, "spec cannot be null");
+        final long queryStart = System.currentTimeMillis();
+        final char typeCode = parseRecordType(spec.recordType());
+        final String tsGroupBy = normalizeGroupBy(spec.timeseriesGroupBy(), "NONE");
+        final boolean hasTsGroupBy = !"NONE".equals(tsGroupBy);
+        final String sumGroupBy = normalizeGroupBy(spec.summaryGroupBy(), "TIMER");
+
+        final ResolvedFilter filter = resolveFilter(
+            typeCode,
+            spec.fromTime(),
+            spec.toTime(),
+            spec.timers(),
+            spec.timerQuery(),
+            spec.agents(),
+            spec.scenarios(),
+            spec.usedIps(),
+            spec.httpMethods(),
+            spec.contentTypes(),
+            spec.minStatusCode(),
+            spec.maxStatusCode(),
+            spec.failedOnly(),
+            spec.minRunTime()
+        );
+
+        final long fromTime = filter.fromTime;
+        final long toTime = Math.max(fromTime + 1, filter.toTime);
+        final int bucketWidthMs = resolveBucketWidthMs(fromTime, toTime, spec.bucketWidthMs());
+        final int bucketCount = Math.max(1, (int) Math.min(MAX_BUCKETS, ((toTime - fromTime) / bucketWidthMs) + 1));
+
+        final List<Chunk> candidateChunks = pruneCandidateChunks(typeCode, filter);
+        final GlobalDictionaries dicts = storage.getDictionaries();
+        final boolean includeUrlHashes = typeCode == 'R' && "TIMER".equals(sumGroupBy);
+        final AtomicInteger chunksScanned = new AtomicInteger(0);
+
+        final int chunkCount = candidateChunks.size();
+        final DashboardStripeAccumulator combined;
+        if (chunkCount == 0)
+        {
+            combined = new DashboardStripeAccumulator(bucketCount, hasTsGroupBy);
+        }
+        else if (chunkCount == 1)
+        {
+            combined = new DashboardStripeAccumulator(bucketCount, hasTsGroupBy);
+            chunksScanned.incrementAndGet();
+            scanChunkForDashboard(
+                typeCode, candidateChunks.get(0), filter, fromTime, bucketWidthMs, bucketCount,
+                tsGroupBy, sumGroupBy, includeUrlHashes, dicts, combined
+            );
+        }
+        else
+        {
+            final int workers = Math.min(chunkCount, Math.max(1, ForkJoinPool.getCommonPoolParallelism()));
+            combined = IntStream.range(0, workers).parallel().mapToObj(w -> {
+                final int start = (int) ((long) w * chunkCount / workers);
+                final int end = (int) ((long) (w + 1) * chunkCount / workers);
+                final DashboardStripeAccumulator stripe = new DashboardStripeAccumulator(bucketCount, hasTsGroupBy);
+                chunksScanned.addAndGet(end - start);
+                for (int i = start; i < end; i++)
+                {
+                    scanChunkForDashboard(
+                        typeCode, candidateChunks.get(i), filter, fromTime, bucketWidthMs, bucketCount,
+                        tsGroupBy, sumGroupBy, includeUrlHashes, dicts, stripe
+                    );
+                }
+                return stripe;
+            }).reduce(DashboardStripeAccumulator::merge)
+              .orElseGet(() -> new DashboardStripeAccumulator(bucketCount, hasTsGroupBy));
+        }
+
+        final long queryTimeMs = System.currentTimeMillis() - queryStart;
+        final int scanned = chunksScanned.get();
+        final TimeSeriesResponse tsResp = materializeTimeSeriesResponse(
+            typeCode, fromTime, toTime, bucketWidthMs, bucketCount, hasTsGroupBy,
+            combined.tsAcc, scanned, queryTimeMs
+        );
+        final SummaryTableResponse sumResp = materializeSummaryResponse(
+            typeCode, sumGroupBy, filter, dicts, combined.sumMap, scanned, queryTimeMs
+        );
+        return new DashboardResponse(queryTimeMs, tsResp, sumResp);
+    }
+
+    private void scanChunkForDashboard(final char typeCode,
+                                       final Chunk chunk,
+                                       final ResolvedFilter filter,
+                                       final long fromTime,
+                                       final int bucketWidthMs,
+                                       final int bucketCount,
+                                       final String tsGroupBy,
+                                       final String sumGroupBy,
+                                       final boolean includeUrlHashes,
+                                       final GlobalDictionaries dicts,
+                                       final DashboardStripeAccumulator stripe)
+    {
+        if (typeCode == 'R')
+        {
+            scanRequestChunkForDashboard(
+                chunk, filter, fromTime, bucketWidthMs, bucketCount,
+                tsGroupBy, sumGroupBy, includeUrlHashes, dicts, stripe.tsAcc, stripe.sumMap
+            );
+        }
+        else
+        {
+            final DecompressedTimerChunk dtc = decompressTimerOrTransactionChunk(typeCode, chunk, dicts);
+            if (dtc == null)
+            {
+                return;
+            }
+            final boolean hasTsGroup = !"NONE".equals(tsGroupBy);
+            final String[] timerNames = dicts.getTimerNamesArray();
+            final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
+            final String[] strings = dicts.getStringsArray();
+
+            for (int i = 0; i < dtc.rowCount; i++)
+            {
+                final long time = dtc.baseTime + dtc.timeOffsets[i];
+                final int rt = dtc.runTimes[i];
+                final boolean isFailed = dtc.hasFailedRows && dtc.failedRows.contains(i);
+                final int timerId = dtc.timerIds[i];
+                final int agentId = dtc.agentIds[i];
+
+                if (!filter.matchesTimerRow(time, rt, isFailed, timerId, agentId))
+                {
+                    continue;
+                }
+
+                final int b = Math.min(bucketCount - 1, Math.max(0, (int) ((time - fromTime) / bucketWidthMs)));
+                stripe.tsAcc.recordTimer(b, rt, isFailed);
+                final int syntheticStatus = isFailed ? 500 : 200;
+
+                final String sumKey = resolveGroupKey(
+                    sumGroupBy, timerId, agentId, syntheticStatus, -1, -1, -1,
+                    timerNames, agentPairs, strings
+                );
+                SummaryGroupAccumulator groupAcc = stripe.sumMap.get(sumKey);
+                if (groupAcc == null)
+                {
+                    groupAcc = new SummaryGroupAccumulator(false);
+                    stripe.sumMap.put(sumKey, groupAcc);
+                }
+                groupAcc.recordTimer(rt, isFailed);
+
+                if (hasTsGroup)
+                {
+                    final String tsKey = tsGroupBy.equals(sumGroupBy)
+                        ? sumKey
+                        : resolveGroupKey(tsGroupBy, timerId, agentId, syntheticStatus, -1, -1, -1, timerNames, agentPairs, strings);
+                    stripe.tsAcc.recordGroup(tsKey, b, rt, isFailed);
+                }
+            }
+        }
+    }
+
+    private void scanRequestChunkForDashboard(final Chunk chunk,
+                                              final ResolvedFilter filter,
+                                              final long fromTime,
+                                              final int bucketWidthMs,
+                                              final int bucketCount,
+                                              final String tsGroupBy,
+                                              final String sumGroupBy,
+                                              final boolean includeUrlHashes,
+                                              final GlobalDictionaries dicts,
+                                              final TimeSeriesAccumulator tsAcc,
+                                              final Map<String, SummaryGroupAccumulator> sumMap)
+    {
+        final int rowCount = chunk.getRowCount();
+        if (rowCount == 0)
+        {
+            return;
+        }
+
+        final RequestChunkIndex idx = getOrBuildRequestIndex(chunk);
+        final long baseTime = chunk.getMinTime();
+        final RoaringBitmap failedRows;
+        final boolean hasFailedRows;
+
+        final int[] timeOffsets;
+        final int[] runTimes;
+        final int[] statusCodes;
+        final int constStatus;
+        int[] bytesSent = null;
+        int[] bytesReceived = null;
+        int[] dnsTimes = null;
+        int[] connectTimes = null;
+        int[] sendTimes = null;
+        int[] busyTimes = null;
+        int[] receiveTimes = null;
+        int[] ttfbTimes = null;
+        int[] ttlbTimes = null;
+        int[] urlHashes = null;
+
+        final boolean needTimer = filter.timerIds != null || "TIMER".equals(tsGroupBy) || "TIMER".equals(sumGroupBy);
+        final boolean needAgent = filter.agentTestCaseIds != null
+                                  || "AGENT".equals(tsGroupBy) || "SCENARIO".equals(tsGroupBy)
+                                  || "AGENT".equals(sumGroupBy) || "SCENARIO".equals(sumGroupBy);
+        final boolean needUsedIp = filter.usedIpIds != null || "USED_IP".equals(tsGroupBy) || "USED_IP".equals(sumGroupBy);
+        final boolean needMethod = filter.httpMethodIds != null || "HTTP_METHOD".equals(tsGroupBy) || "HTTP_METHOD".equals(sumGroupBy);
+        final boolean needContentType = filter.contentTypeIds != null || "CONTENT_TYPE".equals(tsGroupBy) || "CONTENT_TYPE".equals(sumGroupBy);
+
+        int[] timerIds = null;
+        final int constTimerId;
+        int[] agentIds = null;
+        final int constAgentId;
+        int[] usedIpIds = null;
+        int constUsedIpId;
+        int[] methodIds = null;
+        int constMethodId;
+        int[] contentTypeIds = null;
+        int constContentTypeId;
+
+        if (idx != null)
+        {
+            failedRows = idx.failedRows;
+            hasFailedRows = idx.hasFailedRows;
+
+            if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+            {
+                constStatus = idx.minStatusCode;
+                statusCodes = null;
+            }
+            else
+            {
+                final int[] sc = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
+                if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+                {
+                    constStatus = idx.minStatusCode;
+                    statusCodes = null;
+                }
+                else
+                {
+                    constStatus = -1;
+                    statusCodes = sc;
+                }
+            }
+
+            if (idx.minStatusCode >= 0)
+            {
+                if (filter.minStatusCode != null && idx.maxStatusCode < filter.minStatusCode) return;
+                if (filter.maxStatusCode != null && idx.minStatusCode > filter.maxStatusCode) return;
+                if (filter.failedOnly && !hasFailedRows && idx.maxStatusCode < 400 && idx.minStatusCode > 0) return;
+            }
+
+            constTimerId = idx.singleTimerId;
+            if (filter.timerIds != null && constTimerId < 0)
+            {
+                timerIds = readDecompressedColumn(idx, IDX_TIMER_IDS);
+            }
+
+            constAgentId = idx.singleAgentId;
+            if (filter.agentTestCaseIds != null && constAgentId < 0)
+            {
+                agentIds = readDecompressedColumn(idx, IDX_AGENT_IDS);
+            }
+
+            constUsedIpId = idx.singleUsedIpId >= 0 ? idx.singleUsedIpId : -1;
+            if (filter.usedIpIds != null && constUsedIpId < 0)
+            {
+                usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
+                if (idx.singleUsedIpId >= 0)
+                {
+                    constUsedIpId = idx.singleUsedIpId;
+                    usedIpIds = null;
+                    if (!filter.usedIpIds.contains(constUsedIpId)) return;
+                }
+            }
+
+            constMethodId = idx.singleMethodId >= 0 ? idx.singleMethodId : -1;
+            if (filter.httpMethodIds != null && constMethodId < 0)
+            {
+                methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
+                if (idx.singleMethodId >= 0)
+                {
+                    constMethodId = idx.singleMethodId;
+                    methodIds = null;
+                    if (!filter.httpMethodIds.contains(constMethodId)) return;
+                }
+            }
+
+            constContentTypeId = idx.singleContentTypeId >= 0 ? idx.singleContentTypeId : -1;
+            if (filter.contentTypeIds != null && constContentTypeId < 0)
+            {
+                contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+                if (idx.singleContentTypeId >= 0)
+                {
+                    constContentTypeId = idx.singleContentTypeId;
+                    contentTypeIds = null;
+                    if (!filter.contentTypeIds.contains(constContentTypeId)) return;
+                }
+            }
+
+            timeOffsets = readDecompressedColumn(idx, IDX_TIME_OFFSETS);
+            runTimes = readDecompressedColumn(idx, IDX_RUN_TIMES);
+        }
+        else
+        {
+            final int colMask = computeRequestColumnMask(filter, tsGroupBy, includeUrlHashes)
+                                | computeRequestColumnMask(filter, sumGroupBy, includeUrlHashes);
+            final RequestChunk rc = RequestChunkHandler.loadSelectedColumns(chunk, colMask);
+            failedRows = rc.getFailedRows();
+            hasFailedRows = failedRows != null && !failedRows.isEmpty();
+            timeOffsets = FastIntegerCodec.decompress(rc.getCompTimeOffsets());
+            runTimes = FastIntegerCodec.decompress(rc.getCompRunTimes());
+            statusCodes = FastIntegerCodec.decompress(rc.getCompResponseCodes());
+            constStatus = -1;
+            bytesSent = FastIntegerCodec.decompress(rc.getCompBytesSent());
+            bytesReceived = FastIntegerCodec.decompress(rc.getCompBytesReceived());
+            dnsTimes = FastIntegerCodec.decompress(rc.getCompDnsTimes());
+            connectTimes = FastIntegerCodec.decompress(rc.getCompConnectTimes());
+            sendTimes = FastIntegerCodec.decompress(rc.getCompSendTimes());
+            busyTimes = FastIntegerCodec.decompress(rc.getCompServerBusyTimes());
+            receiveTimes = FastIntegerCodec.decompress(rc.getCompReceiveTimes());
+            ttfbTimes = FastIntegerCodec.decompress(rc.getCompTimeToFirstBytes());
+            ttlbTimes = FastIntegerCodec.decompress(rc.getCompTimeToLastBytes());
+            urlHashes = includeUrlHashes ? FastIntegerCodec.decompress(rc.getCompUrlHashes()) : null;
+            constTimerId = -1;
+            timerIds = needTimer ? FastIntegerCodec.decompress(rc.getCompTimerNameIds()) : null;
+            constAgentId = -1;
+            agentIds = needAgent ? FastIntegerCodec.decompress(rc.getCompAgentTestCaseIds()) : null;
+            constUsedIpId = -1;
+            usedIpIds = needUsedIp ? FastIntegerCodec.decompress(rc.getCompUsedIps()) : null;
+            constMethodId = -1;
+            methodIds = needMethod ? FastIntegerCodec.decompress(rc.getCompHttpMethods()) : null;
+            constContentTypeId = -1;
+            contentTypeIds = needContentType ? FastIntegerCodec.decompress(rc.getCompContentTypes()) : null;
+        }
+
+        final boolean hasTsGroupBy = !"NONE".equals(tsGroupBy);
+        final boolean sameGroupBy = hasTsGroupBy && tsGroupBy.equals(sumGroupBy);
+        final String[] timerNames = dicts.getTimerNamesArray();
+        final GlobalDictionaries.AgentTestCase[] agentPairs = dicts.getAgentTestCasesArray();
+        final String[] strings = dicts.getStringsArray();
+
+        int lastSumGroupId = -999999;
+        String lastSumKey = null;
+        SummaryGroupAccumulator lastSumAcc = null;
+        int lastTsGroupId = -999999;
+        String lastTsKey = null;
+
+        for (int i = 0; i < rowCount; i++)
+        {
+            final long time = baseTime + timeOffsets[i];
+            final int rt = runTimes[i];
+            final int status = statusCodes != null ? statusCodes[i] : constStatus;
+            final boolean isFailed = (hasFailedRows && failedRows.contains(i)) || status >= 400 || status == 0;
+            int timerId = timerIds != null ? timerIds[i] : constTimerId;
+            int agentId = agentIds != null ? agentIds[i] : constAgentId;
+            int usedIpId = usedIpIds != null ? usedIpIds[i] : constUsedIpId;
+            int methodId = methodIds != null ? methodIds[i] : constMethodId;
+            int contentTypeId = contentTypeIds != null ? contentTypeIds[i] : constContentTypeId;
+
+            if (!filter.matchesRequestRow(time, rt, status, isFailed, timerId, agentId, usedIpId, methodId, contentTypeId))
+            {
+                continue;
+            }
+
+            if (bytesSent == null && idx != null)
+            {
+                bytesSent = readDecompressedColumn(idx, IDX_BYTES_SENT);
+                bytesReceived = readDecompressedColumn(idx, IDX_BYTES_RECEIVED);
+                dnsTimes = readDecompressedColumn(idx, IDX_DNS_TIMES);
+                connectTimes = readDecompressedColumn(idx, IDX_CONNECT_TIMES);
+                sendTimes = readDecompressedColumn(idx, IDX_SEND_TIMES);
+                busyTimes = readDecompressedColumn(idx, IDX_SERVER_BUSY_TIMES);
+                receiveTimes = readDecompressedColumn(idx, IDX_RECEIVE_TIMES);
+                ttfbTimes = readDecompressedColumn(idx, IDX_TTFB);
+                ttlbTimes = readDecompressedColumn(idx, IDX_TTLB);
+                if (includeUrlHashes)
+                {
+                    urlHashes = readDecompressedColumn(idx, IDX_URL_HASHES);
+                }
+                if (needTimer && timerIds == null && constTimerId < 0)
+                {
+                    timerIds = readDecompressedColumn(idx, IDX_TIMER_IDS);
+                    timerId = timerIds[i];
+                }
+                if (needAgent && agentIds == null && constAgentId < 0)
+                {
+                    agentIds = readDecompressedColumn(idx, IDX_AGENT_IDS);
+                    agentId = agentIds[i];
+                }
+                if (needUsedIp && usedIpIds == null && constUsedIpId < 0)
+                {
+                    usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
+                    if (idx.singleUsedIpId >= 0)
+                    {
+                        constUsedIpId = idx.singleUsedIpId;
+                        usedIpIds = null;
+                        usedIpId = constUsedIpId;
+                    }
+                    else
+                    {
+                        usedIpId = usedIpIds[i];
+                    }
+                }
+                if (needMethod && methodIds == null && constMethodId < 0)
+                {
+                    methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
+                    if (idx.singleMethodId >= 0)
+                    {
+                        constMethodId = idx.singleMethodId;
+                        methodIds = null;
+                        methodId = constMethodId;
+                    }
+                    else
+                    {
+                        methodId = methodIds[i];
+                    }
+                }
+                if (needContentType && contentTypeIds == null && constContentTypeId < 0)
+                {
+                    contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+                    if (idx.singleContentTypeId >= 0)
+                    {
+                        constContentTypeId = idx.singleContentTypeId;
+                        contentTypeIds = null;
+                        contentTypeId = constContentTypeId;
+                    }
+                    else
+                    {
+                        contentTypeId = contentTypeIds[i];
+                    }
+                }
+            }
+
+            final int sent = bytesSent[i];
+            final int recv = bytesReceived[i];
+            final int dns = dnsTimes[i];
+            final int conn = connectTimes[i];
+            final int send = sendTimes[i];
+            final int busy = busyTimes[i];
+            final int rcv = receiveTimes[i];
+            final int ttfb = ttfbTimes[i];
+            final int ttlb = ttlbTimes[i];
+            final int urlHash = urlHashes != null ? urlHashes[i] : 0;
+
+            final int b = Math.min(bucketCount - 1, Math.max(0, (int) ((time - fromTime) / bucketWidthMs)));
+            tsAcc.recordRequest(b, rt, isFailed, sent, recv, dns, conn, send, busy, rcv, ttfb);
+
+            final int sumGroupId = switch (sumGroupBy)
+            {
+                case "TIMER" -> timerId;
+                case "STATUS_CODE" -> status;
+                case "USED_IP" -> usedIpId;
+                case "HTTP_METHOD" -> methodId;
+                case "CONTENT_TYPE" -> contentTypeId;
+                case "AGENT", "SCENARIO" -> agentId;
+                default -> 0;
+            };
+
+            final SummaryGroupAccumulator groupAcc;
+            if (sumGroupId == lastSumGroupId && lastSumAcc != null)
+            {
+                groupAcc = lastSumAcc;
+            }
+            else
+            {
+                final String key = resolveGroupKey(
+                    sumGroupBy, timerId, agentId, status, usedIpId, methodId, contentTypeId,
+                    timerNames, agentPairs, strings
+                );
+                SummaryGroupAccumulator found = sumMap.get(key);
+                if (found == null)
+                {
+                    found = new SummaryGroupAccumulator(includeUrlHashes);
+                    if ("TIMER".equals(sumGroupBy))
+                    {
+                        found.representativeTimerId = timerId;
+                    }
+                    sumMap.put(key, found);
+                }
+                groupAcc = found;
+                lastSumGroupId = sumGroupId;
+                lastSumKey = key;
+                lastSumAcc = found;
+            }
+
+            groupAcc.recordRequest(rt, isFailed, sent, recv, dns, conn, send, busy, rcv, ttfb, ttlb, urlHash);
+
+            if (hasTsGroupBy)
+            {
+                final String tsKey;
+                if (sameGroupBy)
+                {
+                    tsKey = lastSumKey;
+                }
+                else
+                {
+                    final int tsGroupId = switch (tsGroupBy)
+                    {
+                        case "TIMER" -> timerId;
+                        case "STATUS_CODE" -> status;
+                        case "USED_IP" -> usedIpId;
+                        case "HTTP_METHOD" -> methodId;
+                        case "CONTENT_TYPE" -> contentTypeId;
+                        case "AGENT", "SCENARIO" -> agentId;
+                        default -> 0;
+                    };
+                    if (tsGroupId == lastTsGroupId && lastTsKey != null)
+                    {
+                        tsKey = lastTsKey;
+                    }
+                    else
+                    {
+                        tsKey = resolveGroupKey(
+                            tsGroupBy, timerId, agentId, status, usedIpId, methodId, contentTypeId,
+                            timerNames, agentPairs, strings
+                        );
+                        lastTsGroupId = tsGroupId;
+                        lastTsKey = tsKey;
+                    }
+                }
+                tsAcc.recordGroup(tsKey, b, rt, isFailed);
+            }
+        }
+    }
+
+    private static final class DashboardStripeAccumulator
+    {
+        final TimeSeriesAccumulator tsAcc;
+        final Map<String, SummaryGroupAccumulator> sumMap = new HashMap<>();
+
+        DashboardStripeAccumulator(final int bucketCount, final boolean hasTsGroupBy)
+        {
+            this.tsAcc = new TimeSeriesAccumulator(bucketCount, hasTsGroupBy);
+        }
+
+        DashboardStripeAccumulator merge(final DashboardStripeAccumulator other)
+        {
+            this.tsAcc.merge(other.tsAcc);
+            for (final Map.Entry<String, SummaryGroupAccumulator> e : other.sumMap.entrySet())
+            {
+                this.sumMap.merge(e.getKey(), e.getValue(), SummaryGroupAccumulator::merge);
+            }
+            return this;
+        }
     }
 
     private void scanRequestChunkForSummary(final Chunk chunk,
@@ -1441,11 +2220,11 @@ public class ColumnarQueryEngine
         int[] agentIds = null;
         final int constAgentId;
         int[] usedIpIds = null;
-        final int constUsedIpId;
+        int constUsedIpId;
         int[] methodIds = null;
-        final int constMethodId;
+        int constMethodId;
         int[] contentTypeIds = null;
-        final int constContentTypeId;
+        int constContentTypeId;
 
         if (idx != null)
         {
@@ -1459,8 +2238,17 @@ public class ColumnarQueryEngine
             }
             else
             {
-                statusCodes = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
-                constStatus = -1;
+                final int[] sc = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
+                if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+                {
+                    constStatus = idx.minStatusCode;
+                    statusCodes = null;
+                }
+                else
+                {
+                    constStatus = -1;
+                    statusCodes = sc;
+                }
             }
 
             // Early exit if learned status code bounds prove no row in this chunk can match
@@ -1480,9 +2268,6 @@ public class ColumnarQueryEngine
                 }
             }
 
-            timeOffsets = readDecompressedColumn(idx, IDX_TIME_OFFSETS);
-            runTimes = readDecompressedColumn(idx, IDX_RUN_TIMES);
-
             constTimerId = idx.singleTimerId;
             if (filter.timerIds != null && constTimerId < 0)
             {
@@ -1499,19 +2284,49 @@ public class ColumnarQueryEngine
             if (filter.usedIpIds != null && constUsedIpId < 0)
             {
                 usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
+                if (idx.singleUsedIpId >= 0)
+                {
+                    constUsedIpId = idx.singleUsedIpId;
+                    usedIpIds = null;
+                    if (!filter.usedIpIds.contains(constUsedIpId))
+                    {
+                        return;
+                    }
+                }
             }
 
             constMethodId = idx.singleMethodId >= 0 ? idx.singleMethodId : -1;
             if (filter.httpMethodIds != null && constMethodId < 0)
             {
                 methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
+                if (idx.singleMethodId >= 0)
+                {
+                    constMethodId = idx.singleMethodId;
+                    methodIds = null;
+                    if (!filter.httpMethodIds.contains(constMethodId))
+                    {
+                        return;
+                    }
+                }
             }
 
             constContentTypeId = idx.singleContentTypeId >= 0 ? idx.singleContentTypeId : -1;
             if (filter.contentTypeIds != null && constContentTypeId < 0)
             {
                 contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+                if (idx.singleContentTypeId >= 0)
+                {
+                    constContentTypeId = idx.singleContentTypeId;
+                    contentTypeIds = null;
+                    if (!filter.contentTypeIds.contains(constContentTypeId))
+                    {
+                        return;
+                    }
+                }
             }
+
+            timeOffsets = readDecompressedColumn(idx, IDX_TIME_OFFSETS);
+            runTimes = readDecompressedColumn(idx, IDX_RUN_TIMES);
         }
         else
         {
@@ -1597,17 +2412,44 @@ public class ColumnarQueryEngine
                 if (needUsedIp && usedIpIds == null && constUsedIpId < 0)
                 {
                     usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
-                    usedIpId = usedIpIds[i];
+                    if (idx.singleUsedIpId >= 0)
+                    {
+                        constUsedIpId = idx.singleUsedIpId;
+                        usedIpIds = null;
+                        usedIpId = constUsedIpId;
+                    }
+                    else
+                    {
+                        usedIpId = usedIpIds[i];
+                    }
                 }
                 if (needMethod && methodIds == null && constMethodId < 0)
                 {
                     methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
-                    methodId = methodIds[i];
+                    if (idx.singleMethodId >= 0)
+                    {
+                        constMethodId = idx.singleMethodId;
+                        methodIds = null;
+                        methodId = constMethodId;
+                    }
+                    else
+                    {
+                        methodId = methodIds[i];
+                    }
                 }
                 if (needContentType && contentTypeIds == null && constContentTypeId < 0)
                 {
                     contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
-                    contentTypeId = contentTypeIds[i];
+                    if (idx.singleContentTypeId >= 0)
+                    {
+                        constContentTypeId = idx.singleContentTypeId;
+                        contentTypeIds = null;
+                        contentTypeId = constContentTypeId;
+                    }
+                    else
+                    {
+                        contentTypeId = contentTypeIds[i];
+                    }
                 }
             }
 
@@ -1788,172 +2630,71 @@ public class ColumnarQueryEngine
         final PriorityQueue<ForensicRecord> topKHeap = bySlowest ? new PriorityQueue<>(limit + 1, heapComparator) : null;
         final List<ForensicRecord> records = bySlowest ? null : new ArrayList<>();
 
-        int totalMatching = 0;
-        int chunksScanned = 0;
+        final AtomicInteger totalMatching = new AtomicInteger(0);
+        final AtomicInteger chunksScanned = new AtomicInteger(0);
+        final AtomicInteger globalThreshold = new AtomicInteger(0);
 
-        for (final Chunk chunk : candidateChunks)
+        final int chunkCount = candidateChunks.size();
+        if (chunkCount > 0)
         {
-            if (bySlowest && topKHeap.size() >= limit && chunk.getMaxRunTime() > 0
-                && chunk.getMaxRunTime() < topKHeap.peek().runTime())
+            // Seed the first (slowest) chunk synchronously when bySlowest is active so topKHeap immediately
+            // establishes a high k-th runtime threshold before parallel workers inspect remaining chunks.
+            final int startIdx;
+            if (bySlowest || chunkCount <= 2)
             {
-                totalMatching += countMatchingTimerRows(typeCode, chunk, filter, dicts);
-                continue;
-            }
-
-            final int rowCount = chunk.getRowCount();
-            if (rowCount == 0)
-            {
-                continue;
-            }
-
-            chunksScanned++;
-            final Chunk resolved = resolveNonRequestChunk(typeCode, chunk, dicts);
-            final RoaringBitmap failedRows;
-            final int[] timeOffsets;
-            final int[] timerIds;
-            final int[] agentIds;
-            final int[] runTimes;
-            final int[] userNumbers;
-            final Map<Integer, TransactionChunk.TransactionError> errorDetails;
-
-            if (resolved instanceof TransactionChunk tc)
-            {
-                failedRows = tc.getFailedRows();
-                timeOffsets = FastIntegerCodec.decompress(tc.getCompTimeOffsets());
-                timerIds = FastIntegerCodec.decompress(tc.getCompTimerNameIds());
-                agentIds = FastIntegerCodec.decompress(tc.getCompAgentTestCaseIds());
-                runTimes = FastIntegerCodec.decompress(tc.getCompRunTimes());
-                userNumbers = FastIntegerCodec.decompress(tc.getCompUserNumbers());
-                errorDetails = tc.getErrorDetails();
-            }
-            else if (resolved instanceof TimerChunk tmc)
-            {
-                failedRows = tmc.getFailedRows();
-                timeOffsets = FastIntegerCodec.decompress(tmc.getCompTimeOffsets());
-                timerIds = FastIntegerCodec.decompress(tmc.getCompTimerNameIds());
-                agentIds = FastIntegerCodec.decompress(tmc.getCompAgentTestCaseIds());
-                runTimes = FastIntegerCodec.decompress(tmc.getCompRunTimes());
-                userNumbers = FastIntegerCodec.decompress(tmc.getCompUserNumbers());
-                errorDetails = null;
+                scanSingleTimerChunkForInspect(
+                    typeCode, candidateChunks.get(0), bySlowest, filter, limit, dicts,
+                    timerNames, agentPairs, strings, topKHeap, records, totalMatching, chunksScanned, globalThreshold
+                );
+                startIdx = 1;
             }
             else
             {
-                continue;
+                startIdx = 0;
             }
 
-            final long baseTime = resolved.getMinTime();
-            final boolean hasFailedRows = failedRows != null && !failedRows.isEmpty();
-
-            if (!bySlowest && !hasFailedRows)
+            final int remaining = chunkCount - startIdx;
+            if (remaining == 1)
             {
-                continue;
+                scanSingleTimerChunkForInspect(
+                    typeCode, candidateChunks.get(startIdx), bySlowest, filter, limit, dicts,
+                    timerNames, agentPairs, strings, topKHeap, records, totalMatching, chunksScanned, globalThreshold
+                );
             }
-
-            final int scanCount = bySlowest ? rowCount : (failedRows != null ? failedRows.getCardinality() : 0);
-            if (scanCount == 0)
+            else if (remaining > 1)
             {
-                continue;
-            }
+                final int workers = Math.min(remaining, Math.max(1, ForkJoinPool.getCommonPoolParallelism()));
+                final List<TimerInspectStripe> stripes = IntStream.range(0, workers).parallel().mapToObj(w -> {
+                    final int s = startIdx + (int) ((long) w * remaining / workers);
+                    final int e = startIdx + (int) ((long) (w + 1) * remaining / workers);
+                    final PriorityQueue<ForensicRecord> localHeap = bySlowest ? new PriorityQueue<>(limit + 1, heapComparator) : null;
+                    final List<ForensicRecord> localRecords = bySlowest ? null : new ArrayList<>();
+                    for (int i = s; i < e; i++)
+                    {
+                        scanSingleTimerChunkForInspect(
+                            typeCode, candidateChunks.get(i), bySlowest, filter, limit, dicts,
+                            timerNames, agentPairs, strings, localHeap, localRecords, totalMatching, chunksScanned, globalThreshold
+                        );
+                    }
+                    return new TimerInspectStripe(localHeap, localRecords);
+                }).toList();
 
-            if (!bySlowest)
-            {
-                for (final int rowIdx : failedRows)
+                for (final TimerInspectStripe stripe : stripes)
                 {
-                    final int rt = runTimes[rowIdx];
-                    final long time = baseTime + timeOffsets[rowIdx];
-                    final int timerId = timerIds[rowIdx];
-                    final int agentId = agentIds[rowIdx];
-                    if (!filter.matchesTimerRow(time, rt, true, timerId, agentId))
+                    if (bySlowest && stripe.heap != null)
                     {
-                        continue;
+                        for (final ForensicRecord rec : stripe.heap)
+                        {
+                            topKHeap.offer(rec);
+                            if (topKHeap.size() > limit)
+                            {
+                                topKHeap.poll();
+                            }
+                        }
                     }
-
-                    totalMatching++;
-                    final String timerName = safeLookup(timerNames, timerId);
-                    final GlobalDictionaries.AgentTestCase pair = safeLookup(agentPairs, agentId);
-                    final String agent = pair != null ? pair.agentName() : "";
-                    final String scenario = pair != null ? pair.testCaseName() : "";
-                    final String userNumber = (userNumbers != null && rowIdx < userNumbers.length)
-                        ? safeLookup(strings, userNumbers[rowIdx]) : "";
-
-                    final TransactionChunk.TransactionError err = errorDetails != null ? errorDetails.get(rowIdx) : null;
-                    final String failedAction = err != null ? err.failedActionName() : null;
-                    final String stackTrace = err != null ? err.stackTrace() : null;
-                    final String dirName = err != null ? err.directoryName() : null;
-                    final String dumpUrl = buildDumpUrl(agent, scenario, userNumber, dirName);
-
-                    records.add(new ForensicRecord(
-                        time,
-                        String.valueOf(typeCode),
-                        timerName,
-                        timerName,
-                        agent,
-                        scenario,
-                        userNumber,
-                        rt,
-                        0,
-                        true,
-                        null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        null, true, null, null, null,
-                        failedAction, stackTrace, dirName, dumpUrl
-                    ));
-                }
-            }
-            else
-            {
-                for (int rowIdx = 0; rowIdx < rowCount; rowIdx++)
-                {
-                    final int rt = runTimes[rowIdx];
-                    final long time = baseTime + timeOffsets[rowIdx];
-                    final boolean isFailed = hasFailedRows && failedRows.contains(rowIdx);
-                    final int timerId = timerIds[rowIdx];
-                    final int agentId = agentIds[rowIdx];
-
-                    if (!filter.matchesTimerRow(time, rt, isFailed, timerId, agentId))
+                    else if (!bySlowest && stripe.records != null)
                     {
-                        continue;
-                    }
-
-                    totalMatching++;
-
-                    if (topKHeap.size() >= limit && rt <= topKHeap.peek().runTime())
-                    {
-                        continue;
-                    }
-
-                    final String timerName = safeLookup(timerNames, timerId);
-                    final GlobalDictionaries.AgentTestCase pair = safeLookup(agentPairs, agentId);
-                    final String agent = pair != null ? pair.agentName() : "";
-                    final String scenario = pair != null ? pair.testCaseName() : "";
-                    final String userNumber = (userNumbers != null && rowIdx < userNumbers.length)
-                        ? safeLookup(strings, userNumbers[rowIdx]) : "";
-
-                    final TransactionChunk.TransactionError err = errorDetails != null ? errorDetails.get(rowIdx) : null;
-                    final String failedAction = err != null ? err.failedActionName() : null;
-                    final String stackTrace = err != null ? err.stackTrace() : null;
-                    final String dirName = err != null ? err.directoryName() : null;
-                    final String dumpUrl = buildDumpUrl(agent, scenario, userNumber, dirName);
-
-                    final ForensicRecord rec = new ForensicRecord(
-                        time,
-                        String.valueOf(typeCode),
-                        timerName,
-                        timerName,
-                        agent,
-                        scenario,
-                        userNumber,
-                        rt,
-                        0,
-                        isFailed,
-                        null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        null, true, null, null, null,
-                        failedAction, stackTrace, dirName, dumpUrl
-                    );
-
-                    topKHeap.offer(rec);
-                    if (topKHeap.size() > limit)
-                    {
-                        topKHeap.poll();
+                        records.addAll(stripe.records);
                     }
                 }
             }
@@ -1978,7 +2719,206 @@ public class ColumnarQueryEngine
         }
 
         final long queryTimeMs = System.currentTimeMillis() - queryStart;
-        return new InspectResponse(mode, queryTimeMs, chunksScanned, totalMatching, resultList);
+        return new InspectResponse(mode, queryTimeMs, chunksScanned.get(), totalMatching.get(), resultList);
+    }
+
+    private record TimerInspectStripe(PriorityQueue<ForensicRecord> heap, List<ForensicRecord> records)
+    {
+    }
+
+    private void scanSingleTimerChunkForInspect(final char typeCode,
+                                                final Chunk chunk,
+                                                final boolean bySlowest,
+                                                final ResolvedFilter filter,
+                                                final int limit,
+                                                final GlobalDictionaries dicts,
+                                                final String[] timerNames,
+                                                final GlobalDictionaries.AgentTestCase[] agentPairs,
+                                                final String[] strings,
+                                                final PriorityQueue<ForensicRecord> localHeap,
+                                                final List<ForensicRecord> localRecords,
+                                                final AtomicInteger totalMatching,
+                                                final AtomicInteger chunksScanned,
+                                                final AtomicInteger globalThreshold)
+    {
+        final int currentThreshold = bySlowest
+            ? Math.max(globalThreshold.get(), (localHeap.size() >= limit ? localHeap.peek().runTime() : 0))
+            : 0;
+        if (bySlowest && currentThreshold > 0 && chunk.getMaxRunTime() > 0 && chunk.getMaxRunTime() < currentThreshold)
+        {
+            totalMatching.addAndGet(countMatchingTimerRows(typeCode, chunk, filter, dicts));
+            return;
+        }
+
+        final int rowCount = chunk.getRowCount();
+        if (rowCount == 0)
+        {
+            return;
+        }
+
+        chunksScanned.incrementAndGet();
+        final Chunk resolved = resolveNonRequestChunk(typeCode, chunk, dicts);
+        final RoaringBitmap failedRows;
+        final int[] timeOffsets;
+        final int[] timerIds;
+        final int[] agentIds;
+        final int[] runTimes;
+        final int[] userNumbers;
+        final Map<Integer, TransactionChunk.TransactionError> errorDetails;
+
+        if (resolved instanceof TransactionChunk tc)
+        {
+            failedRows = tc.getFailedRows();
+            timeOffsets = FastIntegerCodec.decompress(tc.getCompTimeOffsets());
+            timerIds = FastIntegerCodec.decompress(tc.getCompTimerNameIds());
+            agentIds = FastIntegerCodec.decompress(tc.getCompAgentTestCaseIds());
+            runTimes = FastIntegerCodec.decompress(tc.getCompRunTimes());
+            userNumbers = FastIntegerCodec.decompress(tc.getCompUserNumbers());
+            errorDetails = tc.getErrorDetails();
+        }
+        else if (resolved instanceof TimerChunk tmc)
+        {
+            failedRows = tmc.getFailedRows();
+            timeOffsets = FastIntegerCodec.decompress(tmc.getCompTimeOffsets());
+            timerIds = FastIntegerCodec.decompress(tmc.getCompTimerNameIds());
+            agentIds = FastIntegerCodec.decompress(tmc.getCompAgentTestCaseIds());
+            runTimes = FastIntegerCodec.decompress(tmc.getCompRunTimes());
+            userNumbers = FastIntegerCodec.decompress(tmc.getCompUserNumbers());
+            errorDetails = null;
+        }
+        else
+        {
+            return;
+        }
+
+        final long baseTime = resolved.getMinTime();
+        final boolean hasFailedRows = failedRows != null && !failedRows.isEmpty();
+
+        if (!bySlowest && !hasFailedRows)
+        {
+            return;
+        }
+
+        final int scanCount = bySlowest ? rowCount : (failedRows != null ? failedRows.getCardinality() : 0);
+        if (scanCount == 0)
+        {
+            return;
+        }
+
+        int localMatched = 0;
+        if (!bySlowest)
+        {
+            for (final int rowIdx : failedRows)
+            {
+                final int rt = runTimes[rowIdx];
+                final long time = baseTime + timeOffsets[rowIdx];
+                final int timerId = timerIds[rowIdx];
+                final int agentId = agentIds[rowIdx];
+                if (!filter.matchesTimerRow(time, rt, true, timerId, agentId))
+                {
+                    continue;
+                }
+
+                localMatched++;
+                final String timerName = safeLookup(timerNames, timerId);
+                final GlobalDictionaries.AgentTestCase pair = safeLookup(agentPairs, agentId);
+                final String agent = pair != null ? pair.agentName() : "";
+                final String scenario = pair != null ? pair.testCaseName() : "";
+                final String userNumber = (userNumbers != null && rowIdx < userNumbers.length)
+                    ? safeLookup(strings, userNumbers[rowIdx]) : "";
+
+                final TransactionChunk.TransactionError err = errorDetails != null ? errorDetails.get(rowIdx) : null;
+                final String failedAction = err != null ? err.failedActionName() : null;
+                final String stackTrace = err != null ? err.stackTrace() : null;
+                final String dirName = err != null ? err.directoryName() : null;
+                final String dumpUrl = buildDumpUrl(agent, scenario, userNumber, dirName);
+
+                localRecords.add(new ForensicRecord(
+                    time,
+                    String.valueOf(typeCode),
+                    timerName,
+                    timerName,
+                    agent,
+                    scenario,
+                    userNumber,
+                    rt,
+                    0,
+                    true,
+                    null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    null, true, null, null, null,
+                    failedAction, stackTrace, dirName, dumpUrl
+                ));
+            }
+        }
+        else
+        {
+            int minTopK = Math.max(globalThreshold.get(), (localHeap.size() >= limit ? localHeap.peek().runTime() : 0));
+            for (int rowIdx = 0; rowIdx < rowCount; rowIdx++)
+            {
+                final int rt = runTimes[rowIdx];
+                final long time = baseTime + timeOffsets[rowIdx];
+                final boolean isFailed = hasFailedRows && failedRows.contains(rowIdx);
+                final int timerId = timerIds[rowIdx];
+                final int agentId = agentIds[rowIdx];
+
+                if (!filter.matchesTimerRow(time, rt, isFailed, timerId, agentId))
+                {
+                    continue;
+                }
+
+                localMatched++;
+
+                if (minTopK > 0 && rt <= minTopK && localHeap.size() >= limit)
+                {
+                    continue;
+                }
+
+                final String timerName = safeLookup(timerNames, timerId);
+                final GlobalDictionaries.AgentTestCase pair = safeLookup(agentPairs, agentId);
+                final String agent = pair != null ? pair.agentName() : "";
+                final String scenario = pair != null ? pair.testCaseName() : "";
+                final String userNumber = (userNumbers != null && rowIdx < userNumbers.length)
+                    ? safeLookup(strings, userNumbers[rowIdx]) : "";
+
+                final TransactionChunk.TransactionError err = errorDetails != null ? errorDetails.get(rowIdx) : null;
+                final String failedAction = err != null ? err.failedActionName() : null;
+                final String stackTrace = err != null ? err.stackTrace() : null;
+                final String dirName = err != null ? err.directoryName() : null;
+                final String dumpUrl = buildDumpUrl(agent, scenario, userNumber, dirName);
+
+                final ForensicRecord rec = new ForensicRecord(
+                    time,
+                    String.valueOf(typeCode),
+                    timerName,
+                    timerName,
+                    agent,
+                    scenario,
+                    userNumber,
+                    rt,
+                    0,
+                    isFailed,
+                    null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    null, true, null, null, null,
+                    failedAction, stackTrace, dirName, dumpUrl
+                );
+
+                localHeap.offer(rec);
+                if (localHeap.size() > limit)
+                {
+                    localHeap.poll();
+                }
+                if (localHeap.size() >= limit)
+                {
+                    minTopK = Math.max(minTopK, localHeap.peek().runTime());
+                }
+            }
+            if (localHeap.size() >= limit)
+            {
+                final int newFloor = localHeap.peek().runTime();
+                globalThreshold.accumulateAndGet(newFloor, Math::max);
+            }
+        }
+        totalMatching.addAndGet(localMatched);
     }
 
     private int countMatchingTimerRows(final char typeCode,
@@ -1993,11 +2933,13 @@ public class ColumnarQueryEngine
         }
         final boolean allTimeMatch = chunk.getMinTime() >= filter.fromTime && chunk.getMaxTime() <= filter.toTime;
         final boolean noMinRunTime = filter.minRunTime <= 0;
-        final boolean noTimerFilter = filter.timerIds == null;
-        final boolean noAgentFilter = filter.agentTestCaseIds == null;
+        final boolean allTimerMatch = filter.timerIds == null
+            || isBitmapSubset(chunk.getTimerNameIds(), filter.timerIds);
+        final boolean allAgentMatch = filter.agentTestCaseIds == null
+            || isBitmapSubset(chunk.getAgentTestCaseIds(), filter.agentTestCaseIds);
         final boolean noFailedFilter = !filter.failedOnly;
 
-        if (allTimeMatch && noMinRunTime && noTimerFilter && noAgentFilter && noFailedFilter)
+        if (allTimeMatch && noMinRunTime && allTimerMatch && allAgentMatch && noFailedFilter)
         {
             return rowCount;
         }
@@ -2012,18 +2954,18 @@ public class ColumnarQueryEngine
         if (resolved instanceof TransactionChunk tc)
         {
             failedRows = tc.getFailedRows();
-            timeOffsets = FastIntegerCodec.decompress(tc.getCompTimeOffsets());
-            timerIds = FastIntegerCodec.decompress(tc.getCompTimerNameIds());
-            agentIds = FastIntegerCodec.decompress(tc.getCompAgentTestCaseIds());
-            runTimes = FastIntegerCodec.decompress(tc.getCompRunTimes());
+            timeOffsets = allTimeMatch ? null : FastIntegerCodec.decompress(tc.getCompTimeOffsets());
+            timerIds = allTimerMatch ? null : FastIntegerCodec.decompress(tc.getCompTimerNameIds());
+            agentIds = allAgentMatch ? null : FastIntegerCodec.decompress(tc.getCompAgentTestCaseIds());
+            runTimes = noMinRunTime ? null : FastIntegerCodec.decompress(tc.getCompRunTimes());
         }
         else if (resolved instanceof TimerChunk tmc)
         {
             failedRows = tmc.getFailedRows();
-            timeOffsets = FastIntegerCodec.decompress(tmc.getCompTimeOffsets());
-            timerIds = FastIntegerCodec.decompress(tmc.getCompTimerNameIds());
-            agentIds = FastIntegerCodec.decompress(tmc.getCompAgentTestCaseIds());
-            runTimes = FastIntegerCodec.decompress(tmc.getCompRunTimes());
+            timeOffsets = allTimeMatch ? null : FastIntegerCodec.decompress(tmc.getCompTimeOffsets());
+            timerIds = allTimerMatch ? null : FastIntegerCodec.decompress(tmc.getCompTimerNameIds());
+            agentIds = allAgentMatch ? null : FastIntegerCodec.decompress(tmc.getCompAgentTestCaseIds());
+            runTimes = noMinRunTime ? null : FastIntegerCodec.decompress(tmc.getCompRunTimes());
         }
         else
         {
@@ -2036,15 +2978,30 @@ public class ColumnarQueryEngine
         int count = 0;
         for (int i = 0; i < rowCount; i++)
         {
-            final int rt = runTimes[i];
-            final long time = baseTime + timeOffsets[i];
+            final int rt = runTimes != null ? runTimes[i] : 0;
+            final long time = timeOffsets != null ? (baseTime + timeOffsets[i]) : baseTime;
             final boolean isFailed = hasFailedRows && failedRows.contains(i);
-            final int timerId = timerIds[i];
-            final int agentId = agentIds[i];
-            if (filter.matchesTimerRow(time, rt, isFailed, timerId, agentId))
+            if (!allTimeMatch && (time < filter.fromTime || time > filter.toTime))
             {
-                count++;
+                continue;
             }
+            if (!noMinRunTime && rt < filter.minRunTime)
+            {
+                continue;
+            }
+            if (filter.failedOnly && !isFailed)
+            {
+                continue;
+            }
+            if (!allTimerMatch && !filter.timerIds.contains(timerIds[i]))
+            {
+                continue;
+            }
+            if (!allAgentMatch && !filter.agentTestCaseIds.contains(agentIds[i]))
+            {
+                continue;
+            }
+            count++;
         }
         return count;
     }
@@ -2082,206 +3039,55 @@ public class ColumnarQueryEngine
                                    | RequestChunkHandler.COL_USED_IPS
                                    | RequestChunkHandler.COL_USER_NUMBERS;
 
-        int chunksScanned = 0;
-        int totalMatching = 0;
+        final AtomicInteger chunksScanned = new AtomicInteger(0);
+        final AtomicInteger totalMatching = new AtomicInteger(0);
+        final AtomicInteger globalThreshold = new AtomicInteger(0);
 
-        for (final Chunk chunk : candidateChunks)
+        final int chunkCount = candidateChunks.size();
+        if (chunkCount > 0)
         {
-            // Dynamic Zone Map Top-K Pruning: if we already have `limit` rows and the chunk's maxRunTime
-            // is strictly less than the smallest runtime in our top-K heap, skip reading the chunk entirely!
-            if (bySlowest && topKHeap.size() >= limit && chunk.getMaxRunTime() > 0
-                && chunk.getMaxRunTime() < topKHeap.peek().runTime())
+            // Scan the first (slowest) chunk synchronously so topKHeap immediately establishes a near-final
+            // k-th runtime floor before parallel workers inspect the remaining candidate chunks.
+            scanSingleRequestChunkForInspect(
+                candidateChunks.get(0), bySlowest, filter, limit, inspectColMask,
+                topKHeap, chunksScanned, totalMatching, globalThreshold
+            );
+
+            final int remaining = chunkCount - 1;
+            if (remaining == 1)
             {
-                totalMatching += countMatchingRequestRows(chunk, filter);
-                continue;
-            }
-
-            final int rowCount = chunk.getRowCount();
-            if (rowCount == 0)
-            {
-                continue;
-            }
-
-            chunksScanned++;
-            final RequestChunkIndex idx = getOrBuildRequestIndex(chunk);
-            final RequestChunk fallbackRc = (idx == null) ? RequestChunkHandler.loadSelectedColumns(chunk, inspectColMask) : null;
-
-            final long baseTime = chunk.getMinTime();
-            final RoaringBitmap failedRows = (idx != null) ? idx.failedRows : fallbackRc.getFailedRows();
-            final boolean hasFailedRows = (idx != null) ? idx.hasFailedRows : (failedRows != null && !failedRows.isEmpty());
-
-            final int[] timeOffsets = (idx != null)
-                ? readDecompressedColumn(idx, IDX_TIME_OFFSETS)
-                : FastIntegerCodec.decompress(fallbackRc.getCompTimeOffsets());
-            final int[] runTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_RUN_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompRunTimes());
-
-            final int constStatus;
-            final int[] statusCodes;
-            if (idx != null && idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
-            {
-                constStatus = idx.minStatusCode;
-                statusCodes = null;
-            }
-            else
-            {
-                constStatus = -1;
-                statusCodes = (idx != null)
-                    ? readDecompressedColumn(idx, IDX_RESPONSE_CODES)
-                    : FastIntegerCodec.decompress(fallbackRc.getCompResponseCodes());
-            }
-
-            // Read filter columns upfront only if actively filtered (or resolve via O(1) chunk hints)
-            int[] timerIds = null;
-            final int constTimerId = (idx != null) ? idx.singleTimerId : -1;
-            if (filter.timerIds != null && constTimerId < 0)
-            {
-                timerIds = (idx != null)
-                    ? readDecompressedColumn(idx, IDX_TIMER_IDS)
-                    : FastIntegerCodec.decompress(fallbackRc.getCompTimerNameIds());
-            }
-
-            int[] agentIds = null;
-            final int constAgentId = (idx != null) ? idx.singleAgentId : -1;
-            if (filter.agentTestCaseIds != null && constAgentId < 0)
-            {
-                agentIds = (idx != null)
-                    ? readDecompressedColumn(idx, IDX_AGENT_IDS)
-                    : FastIntegerCodec.decompress(fallbackRc.getCompAgentTestCaseIds());
-            }
-
-            int[] usedIpIds = null;
-            final int constUsedIpId = (idx != null && idx.singleUsedIpId >= 0) ? idx.singleUsedIpId : -1;
-            if (filter.usedIpIds != null && constUsedIpId < 0)
-            {
-                usedIpIds = (idx != null)
-                    ? readDecompressedColumn(idx, IDX_USED_IPS)
-                    : FastIntegerCodec.decompress(fallbackRc.getCompUsedIps());
-            }
-
-            int[] methodIds = null;
-            final int constMethodId = (idx != null && idx.singleMethodId >= 0) ? idx.singleMethodId : -1;
-            if (filter.httpMethodIds != null && constMethodId < 0)
-            {
-                methodIds = (idx != null)
-                    ? readDecompressedColumn(idx, IDX_HTTP_METHODS)
-                    : FastIntegerCodec.decompress(fallbackRc.getCompHttpMethods());
-            }
-
-            int[] contentTypeIds = null;
-            final int constContentTypeId = (idx != null && idx.singleContentTypeId >= 0) ? idx.singleContentTypeId : -1;
-            if (filter.contentTypeIds != null && constContentTypeId < 0)
-            {
-                contentTypeIds = (idx != null)
-                    ? readDecompressedColumn(idx, IDX_CONTENT_TYPES)
-                    : FastIntegerCodec.decompress(fallbackRc.getCompContentTypes());
-            }
-
-            // Lazy decompression of secondary display/network arrays only if at least one row in this chunk enters top-K
-            int[] bytesSent = null;
-            int[] bytesReceived = null;
-            int[] dnsTimes = null;
-            int[] connectTimes = null;
-            int[] sendTimes = null;
-            int[] busyTimes = null;
-            int[] receiveTimes = null;
-            int[] ttfbTimes = null;
-            int[] ttlbTimes = null;
-            int[] userNumbers = null;
-
-            for (int i = 0; i < rowCount; i++)
-            {
-                final int rt = runTimes[i];
-                final long time = baseTime + timeOffsets[i];
-                final int status = statusCodes != null ? statusCodes[i] : constStatus;
-                final boolean isFailed = (hasFailedRows && failedRows.contains(i)) || status >= 400 || status == 0;
-                final int timerId = timerIds != null ? timerIds[i] : constTimerId;
-                final int agentId = agentIds != null ? agentIds[i] : constAgentId;
-                final int usedIpId = usedIpIds != null ? usedIpIds[i] : constUsedIpId;
-                final int methodId = methodIds != null ? methodIds[i] : constMethodId;
-                final int contentTypeId = contentTypeIds != null ? contentTypeIds[i] : constContentTypeId;
-
-                if (!filter.matchesRequestRow(time, rt, status, isFailed, timerId, agentId, usedIpId, methodId, contentTypeId))
-                {
-                    continue;
-                }
-
-                totalMatching++;
-
-                if (topKHeap.size() >= limit && rt <= topKHeap.peek().runTime())
-                {
-                    continue;
-                }
-
-                if (bytesSent == null)
-                {
-                    if (idx != null)
-                    {
-                        if (timerIds == null && constTimerId < 0) timerIds = readDecompressedColumn(idx, IDX_TIMER_IDS);
-                        if (agentIds == null && constAgentId < 0) agentIds = readDecompressedColumn(idx, IDX_AGENT_IDS);
-                        if (usedIpIds == null && constUsedIpId < 0) usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
-                        if (methodIds == null && constMethodId < 0) methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
-                        if (contentTypeIds == null && constContentTypeId < 0) contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
-                        bytesSent = readDecompressedColumn(idx, IDX_BYTES_SENT);
-                        bytesReceived = readDecompressedColumn(idx, IDX_BYTES_RECEIVED);
-                        dnsTimes = readDecompressedColumn(idx, IDX_DNS_TIMES);
-                        connectTimes = readDecompressedColumn(idx, IDX_CONNECT_TIMES);
-                        sendTimes = readDecompressedColumn(idx, IDX_SEND_TIMES);
-                        busyTimes = readDecompressedColumn(idx, IDX_SERVER_BUSY_TIMES);
-                        receiveTimes = readDecompressedColumn(idx, IDX_RECEIVE_TIMES);
-                        ttfbTimes = readDecompressedColumn(idx, IDX_TTFB);
-                        ttlbTimes = readDecompressedColumn(idx, IDX_TTLB);
-                        userNumbers = readDecompressedColumn(idx, IDX_USER_NUMBERS);
-                    }
-                    else
-                    {
-                        if (timerIds == null) timerIds = FastIntegerCodec.decompress(fallbackRc.getCompTimerNameIds());
-                        if (agentIds == null) agentIds = FastIntegerCodec.decompress(fallbackRc.getCompAgentTestCaseIds());
-                        if (usedIpIds == null) usedIpIds = FastIntegerCodec.decompress(fallbackRc.getCompUsedIps());
-                        if (methodIds == null) methodIds = FastIntegerCodec.decompress(fallbackRc.getCompHttpMethods());
-                        if (contentTypeIds == null) contentTypeIds = FastIntegerCodec.decompress(fallbackRc.getCompContentTypes());
-                        bytesSent = FastIntegerCodec.decompress(fallbackRc.getCompBytesSent());
-                        bytesReceived = FastIntegerCodec.decompress(fallbackRc.getCompBytesReceived());
-                        dnsTimes = FastIntegerCodec.decompress(fallbackRc.getCompDnsTimes());
-                        connectTimes = FastIntegerCodec.decompress(fallbackRc.getCompConnectTimes());
-                        sendTimes = FastIntegerCodec.decompress(fallbackRc.getCompSendTimes());
-                        busyTimes = FastIntegerCodec.decompress(fallbackRc.getCompServerBusyTimes());
-                        receiveTimes = FastIntegerCodec.decompress(fallbackRc.getCompReceiveTimes());
-                        ttfbTimes = FastIntegerCodec.decompress(fallbackRc.getCompTimeToFirstBytes());
-                        ttlbTimes = FastIntegerCodec.decompress(fallbackRc.getCompTimeToLastBytes());
-                        userNumbers = FastIntegerCodec.decompress(fallbackRc.getCompUserNumbers());
-                    }
-                }
-
-                final CandidateRequestRow candidate = new CandidateRequestRow(
-                    chunk,
-                    i,
-                    time,
-                    timerIds != null ? timerIds[i] : constTimerId,
-                    agentIds != null ? agentIds[i] : constAgentId,
-                    userNumbers[i],
-                    rt,
-                    status,
-                    isFailed,
-                    methodIds != null ? methodIds[i] : constMethodId,
-                    contentTypeIds != null ? contentTypeIds[i] : constContentTypeId,
-                    usedIpIds != null ? usedIpIds[i] : constUsedIpId,
-                    bytesSent[i],
-                    bytesReceived[i],
-                    dnsTimes[i],
-                    connectTimes[i],
-                    sendTimes[i],
-                    busyTimes[i],
-                    receiveTimes[i],
-                    ttfbTimes[i],
-                    ttlbTimes[i]
+                scanSingleRequestChunkForInspect(
+                    candidateChunks.get(1), bySlowest, filter, limit, inspectColMask,
+                    topKHeap, chunksScanned, totalMatching, globalThreshold
                 );
+            }
+            else if (remaining > 1)
+            {
+                final int workers = Math.min(remaining, Math.max(1, ForkJoinPool.getCommonPoolParallelism()));
+                final List<PriorityQueue<CandidateRequestRow>> stripeHeaps = IntStream.range(0, workers).parallel().mapToObj(w -> {
+                    final int s = 1 + (int) ((long) w * remaining / workers);
+                    final int e = 1 + (int) ((long) (w + 1) * remaining / workers);
+                    final PriorityQueue<CandidateRequestRow> localHeap = new PriorityQueue<>(limit + 1, heapComparator);
+                    for (int i = s; i < e; i++)
+                    {
+                        scanSingleRequestChunkForInspect(
+                            candidateChunks.get(i), bySlowest, filter, limit, inspectColMask,
+                            localHeap, chunksScanned, totalMatching, globalThreshold
+                        );
+                    }
+                    return localHeap;
+                }).toList();
 
-                topKHeap.offer(candidate);
-                if (topKHeap.size() > limit)
+                for (final PriorityQueue<CandidateRequestRow> stripeHeap : stripeHeaps)
                 {
-                    topKHeap.poll();
+                    for (final CandidateRequestRow row : stripeHeap)
+                    {
+                        topKHeap.offer(row);
+                        if (topKHeap.size() > limit)
+                        {
+                            topKHeap.poll();
+                        }
+                    }
                 }
             }
         }
@@ -2380,7 +3186,259 @@ public class ColumnarQueryEngine
         }
 
         final long queryTimeMs = System.currentTimeMillis() - queryStart;
-        return new InspectResponse(mode, queryTimeMs, chunksScanned, totalMatching, result);
+        return new InspectResponse(mode, queryTimeMs, chunksScanned.get(), totalMatching.get(), result);
+    }
+
+    private void scanSingleRequestChunkForInspect(final Chunk chunk,
+                                                  final boolean bySlowest,
+                                                  final ResolvedFilter filter,
+                                                  final int limit,
+                                                  final int inspectColMask,
+                                                  final PriorityQueue<CandidateRequestRow> localHeap,
+                                                  final AtomicInteger chunksScanned,
+                                                  final AtomicInteger totalMatching,
+                                                  final AtomicInteger globalThreshold)
+    {
+        // Dynamic Zone Map Top-K Pruning: if the global/local top-K runtime floor is already higher than
+        // this chunk's maxRunTime, skip decompressing row payloads and count matching rows via fast-path.
+        final int currentThreshold = bySlowest
+            ? Math.max(globalThreshold.get(), (localHeap.size() >= limit ? localHeap.peek().runTime() : 0))
+            : 0;
+        if (bySlowest && currentThreshold > 0 && chunk.getMaxRunTime() > 0 && chunk.getMaxRunTime() < currentThreshold)
+        {
+            totalMatching.addAndGet(countMatchingRequestRows(chunk, filter));
+            return;
+        }
+
+        final int rowCount = chunk.getRowCount();
+        if (rowCount == 0)
+        {
+            return;
+        }
+
+        chunksScanned.incrementAndGet();
+        final RequestChunkIndex idx = getOrBuildRequestIndex(chunk);
+        final RequestChunk fallbackRc = (idx == null) ? RequestChunkHandler.loadSelectedColumns(chunk, inspectColMask) : null;
+
+        final long baseTime = chunk.getMinTime();
+        final RoaringBitmap failedRows = (idx != null) ? idx.failedRows : fallbackRc.getFailedRows();
+        final boolean hasFailedRows = (idx != null) ? idx.hasFailedRows : (failedRows != null && !failedRows.isEmpty());
+
+        final int[] timeOffsets = (idx != null)
+            ? readDecompressedColumn(idx, IDX_TIME_OFFSETS)
+            : FastIntegerCodec.decompress(fallbackRc.getCompTimeOffsets());
+        final int[] runTimes = (idx != null)
+            ? readDecompressedColumn(idx, IDX_RUN_TIMES)
+            : FastIntegerCodec.decompress(fallbackRc.getCompRunTimes());
+
+        final int constStatus;
+        final int[] statusCodes;
+        if (idx != null && idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+        {
+            constStatus = idx.minStatusCode;
+            statusCodes = null;
+        }
+        else if (idx != null)
+        {
+            final int[] sc = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
+            if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+            {
+                constStatus = idx.minStatusCode;
+                statusCodes = null;
+            }
+            else
+            {
+                constStatus = -1;
+                statusCodes = sc;
+            }
+        }
+        else
+        {
+            constStatus = -1;
+            statusCodes = FastIntegerCodec.decompress(fallbackRc.getCompResponseCodes());
+        }
+
+        // Read filter columns upfront only if actively filtered (or resolve via O(1) chunk hints)
+        int[] timerIds = null;
+        final int constTimerId = (idx != null) ? idx.singleTimerId : -1;
+        if (filter.timerIds != null && constTimerId < 0)
+        {
+            timerIds = (idx != null)
+                ? readDecompressedColumn(idx, IDX_TIMER_IDS)
+                : FastIntegerCodec.decompress(fallbackRc.getCompTimerNameIds());
+        }
+
+        int[] agentIds = null;
+        final int constAgentId = (idx != null) ? idx.singleAgentId : -1;
+        if (filter.agentTestCaseIds != null && constAgentId < 0)
+        {
+            agentIds = (idx != null)
+                ? readDecompressedColumn(idx, IDX_AGENT_IDS)
+                : FastIntegerCodec.decompress(fallbackRc.getCompAgentTestCaseIds());
+        }
+
+        int[] usedIpIds = null;
+        int constUsedIpId = (idx != null && idx.singleUsedIpId >= 0) ? idx.singleUsedIpId : -1;
+        if (filter.usedIpIds != null && constUsedIpId < 0)
+        {
+            usedIpIds = (idx != null)
+                ? readDecompressedColumn(idx, IDX_USED_IPS)
+                : FastIntegerCodec.decompress(fallbackRc.getCompUsedIps());
+            if (idx != null && idx.singleUsedIpId >= 0)
+            {
+                constUsedIpId = idx.singleUsedIpId;
+                usedIpIds = null;
+            }
+        }
+
+        int[] methodIds = null;
+        int constMethodId = (idx != null && idx.singleMethodId >= 0) ? idx.singleMethodId : -1;
+        if (filter.httpMethodIds != null && constMethodId < 0)
+        {
+            methodIds = (idx != null)
+                ? readDecompressedColumn(idx, IDX_HTTP_METHODS)
+                : FastIntegerCodec.decompress(fallbackRc.getCompHttpMethods());
+            if (idx != null && idx.singleMethodId >= 0)
+            {
+                constMethodId = idx.singleMethodId;
+                methodIds = null;
+            }
+        }
+
+        int[] contentTypeIds = null;
+        int constContentTypeId = (idx != null && idx.singleContentTypeId >= 0) ? idx.singleContentTypeId : -1;
+        if (filter.contentTypeIds != null && constContentTypeId < 0)
+        {
+            contentTypeIds = (idx != null)
+                ? readDecompressedColumn(idx, IDX_CONTENT_TYPES)
+                : FastIntegerCodec.decompress(fallbackRc.getCompContentTypes());
+            if (idx != null && idx.singleContentTypeId >= 0)
+            {
+                constContentTypeId = idx.singleContentTypeId;
+                contentTypeIds = null;
+            }
+        }
+
+        // Lazy decompression of secondary display/network arrays only if at least one row in this chunk enters top-K
+        int[] bytesSent = null;
+        int[] bytesReceived = null;
+        int[] dnsTimes = null;
+        int[] connectTimes = null;
+        int[] sendTimes = null;
+        int[] busyTimes = null;
+        int[] receiveTimes = null;
+        int[] ttfbTimes = null;
+        int[] ttlbTimes = null;
+        int[] userNumbers = null;
+
+        int localMatched = 0;
+        int minTopK = Math.max(globalThreshold.get(), (localHeap.size() >= limit ? localHeap.peek().runTime() : 0));
+
+        for (int i = 0; i < rowCount; i++)
+        {
+            final int rt = runTimes[i];
+            final long time = baseTime + timeOffsets[i];
+            final int status = statusCodes != null ? statusCodes[i] : constStatus;
+            final boolean isFailed = (hasFailedRows && failedRows.contains(i)) || status >= 400 || status == 0;
+            final int timerId = timerIds != null ? timerIds[i] : constTimerId;
+            final int agentId = agentIds != null ? agentIds[i] : constAgentId;
+            final int usedIpId = usedIpIds != null ? usedIpIds[i] : constUsedIpId;
+            final int methodId = methodIds != null ? methodIds[i] : constMethodId;
+            final int contentTypeId = contentTypeIds != null ? contentTypeIds[i] : constContentTypeId;
+
+            if (!filter.matchesRequestRow(time, rt, status, isFailed, timerId, agentId, usedIpId, methodId, contentTypeId))
+            {
+                continue;
+            }
+
+            localMatched++;
+
+            if (minTopK > 0 && rt <= minTopK && localHeap.size() >= limit)
+            {
+                continue;
+            }
+
+            if (bytesSent == null)
+            {
+                if (idx != null)
+                {
+                    if (timerIds == null && constTimerId < 0) timerIds = readDecompressedColumn(idx, IDX_TIMER_IDS);
+                    if (agentIds == null && constAgentId < 0) agentIds = readDecompressedColumn(idx, IDX_AGENT_IDS);
+                    if (usedIpIds == null && constUsedIpId < 0) usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
+                    if (methodIds == null && constMethodId < 0) methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
+                    if (contentTypeIds == null && constContentTypeId < 0) contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+                    bytesSent = readDecompressedColumn(idx, IDX_BYTES_SENT);
+                    bytesReceived = readDecompressedColumn(idx, IDX_BYTES_RECEIVED);
+                    dnsTimes = readDecompressedColumn(idx, IDX_DNS_TIMES);
+                    connectTimes = readDecompressedColumn(idx, IDX_CONNECT_TIMES);
+                    sendTimes = readDecompressedColumn(idx, IDX_SEND_TIMES);
+                    busyTimes = readDecompressedColumn(idx, IDX_SERVER_BUSY_TIMES);
+                    receiveTimes = readDecompressedColumn(idx, IDX_RECEIVE_TIMES);
+                    ttfbTimes = readDecompressedColumn(idx, IDX_TTFB);
+                    ttlbTimes = readDecompressedColumn(idx, IDX_TTLB);
+                    userNumbers = readDecompressedColumn(idx, IDX_USER_NUMBERS);
+                }
+                else
+                {
+                    if (timerIds == null) timerIds = FastIntegerCodec.decompress(fallbackRc.getCompTimerNameIds());
+                    if (agentIds == null) agentIds = FastIntegerCodec.decompress(fallbackRc.getCompAgentTestCaseIds());
+                    if (usedIpIds == null) usedIpIds = FastIntegerCodec.decompress(fallbackRc.getCompUsedIps());
+                    if (methodIds == null) methodIds = FastIntegerCodec.decompress(fallbackRc.getCompHttpMethods());
+                    if (contentTypeIds == null) contentTypeIds = FastIntegerCodec.decompress(fallbackRc.getCompContentTypes());
+                    bytesSent = FastIntegerCodec.decompress(fallbackRc.getCompBytesSent());
+                    bytesReceived = FastIntegerCodec.decompress(fallbackRc.getCompBytesReceived());
+                    dnsTimes = FastIntegerCodec.decompress(fallbackRc.getCompDnsTimes());
+                    connectTimes = FastIntegerCodec.decompress(fallbackRc.getCompConnectTimes());
+                    sendTimes = FastIntegerCodec.decompress(fallbackRc.getCompSendTimes());
+                    busyTimes = FastIntegerCodec.decompress(fallbackRc.getCompServerBusyTimes());
+                    receiveTimes = FastIntegerCodec.decompress(fallbackRc.getCompReceiveTimes());
+                    ttfbTimes = FastIntegerCodec.decompress(fallbackRc.getCompTimeToFirstBytes());
+                    ttlbTimes = FastIntegerCodec.decompress(fallbackRc.getCompTimeToLastBytes());
+                    userNumbers = FastIntegerCodec.decompress(fallbackRc.getCompUserNumbers());
+                }
+            }
+
+            final CandidateRequestRow candidate = new CandidateRequestRow(
+                chunk,
+                i,
+                time,
+                timerIds != null ? timerIds[i] : constTimerId,
+                agentIds != null ? agentIds[i] : constAgentId,
+                userNumbers[i],
+                rt,
+                status,
+                isFailed,
+                methodIds != null ? methodIds[i] : constMethodId,
+                contentTypeIds != null ? contentTypeIds[i] : constContentTypeId,
+                usedIpIds != null ? usedIpIds[i] : constUsedIpId,
+                bytesSent[i],
+                bytesReceived[i],
+                dnsTimes[i],
+                connectTimes[i],
+                sendTimes[i],
+                busyTimes[i],
+                receiveTimes[i],
+                ttfbTimes[i],
+                ttlbTimes[i]
+            );
+
+            localHeap.offer(candidate);
+            if (localHeap.size() > limit)
+            {
+                localHeap.poll();
+            }
+            if (localHeap.size() >= limit)
+            {
+                minTopK = Math.max(minTopK, localHeap.peek().runTime());
+            }
+        }
+
+        if (localHeap.size() >= limit)
+        {
+            final int newFloor = localHeap.peek().runTime();
+            globalThreshold.accumulateAndGet(newFloor, Math::max);
+        }
+        totalMatching.addAndGet(localMatched);
     }
 
     private int countMatchingRequestRows(final Chunk chunk, final ResolvedFilter filter)
@@ -2400,8 +3458,12 @@ public class ColumnarQueryEngine
         }
 
         final boolean allTimeMatch = chunk.getMinTime() >= filter.fromTime && chunk.getMaxTime() <= filter.toTime;
-        final boolean allTimerMatch = filter.timerIds == null || (idx != null && idx.singleTimerId >= 0 && filter.timerIds.contains(idx.singleTimerId));
-        final boolean allAgentMatch = filter.agentTestCaseIds == null || (idx != null && idx.singleAgentId >= 0 && filter.agentTestCaseIds.contains(idx.singleAgentId));
+        final boolean allTimerMatch = filter.timerIds == null
+            || (idx != null && idx.singleTimerId >= 0 && filter.timerIds.contains(idx.singleTimerId))
+            || isBitmapSubset(chunk.getTimerNameIds(), filter.timerIds);
+        final boolean allAgentMatch = filter.agentTestCaseIds == null
+            || (idx != null && idx.singleAgentId >= 0 && filter.agentTestCaseIds.contains(idx.singleAgentId))
+            || isBitmapSubset(chunk.getAgentTestCaseIds(), filter.agentTestCaseIds);
         final boolean allUsedIpMatch = filter.usedIpIds == null || (idx != null && idx.singleUsedIpId >= 0 && filter.usedIpIds.contains(idx.singleUsedIpId));
         final boolean allMethodMatch = filter.httpMethodIds == null || (idx != null && idx.singleMethodId >= 0 && filter.httpMethodIds.contains(idx.singleMethodId));
         final boolean allContentTypeMatch = filter.contentTypeIds == null || (idx != null && idx.singleContentTypeId >= 0 && filter.contentTypeIds.contains(idx.singleContentTypeId));
@@ -2426,17 +3488,22 @@ public class ColumnarQueryEngine
         int[] agentIds = null;
         final int constAgentId = (idx != null) ? idx.singleAgentId : -1;
         int[] usedIpIds = null;
-        final int constUsedIpId = (idx != null && idx.singleUsedIpId >= 0) ? idx.singleUsedIpId : -1;
+        int constUsedIpId = (idx != null && idx.singleUsedIpId >= 0) ? idx.singleUsedIpId : -1;
         int[] methodIds = null;
-        final int constMethodId = (idx != null && idx.singleMethodId >= 0) ? idx.singleMethodId : -1;
+        int constMethodId = (idx != null && idx.singleMethodId >= 0) ? idx.singleMethodId : -1;
         int[] contentTypeIds = null;
-        final int constContentTypeId = (idx != null && idx.singleContentTypeId >= 0) ? idx.singleContentTypeId : -1;
+        int constContentTypeId = (idx != null && idx.singleContentTypeId >= 0) ? idx.singleContentTypeId : -1;
 
         if (idx != null)
         {
             failedRows = idx.failedRows;
             hasFailedRows = idx.hasFailedRows;
-            if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
+            if (noStatusFilter)
+            {
+                constStatus = 200;
+                statusCodes = null;
+            }
+            else if (idx.minStatusCode >= 0 && idx.minStatusCode == idx.maxStatusCode)
             {
                 constStatus = idx.minStatusCode;
                 statusCodes = null;
@@ -2446,14 +3513,41 @@ public class ColumnarQueryEngine
                 constStatus = -1;
                 statusCodes = readDecompressedColumn(idx, IDX_RESPONSE_CODES);
             }
-            timeOffsets = readDecompressedColumn(idx, IDX_TIME_OFFSETS);
-            runTimes = readDecompressedColumn(idx, IDX_RUN_TIMES);
+            timeOffsets = allTimeMatch ? null : readDecompressedColumn(idx, IDX_TIME_OFFSETS);
+            runTimes = noMinRunTime ? null : readDecompressedColumn(idx, IDX_RUN_TIMES);
 
-            if (filter.timerIds != null && constTimerId < 0) timerIds = readDecompressedColumn(idx, IDX_TIMER_IDS);
-            if (filter.agentTestCaseIds != null && constAgentId < 0) agentIds = readDecompressedColumn(idx, IDX_AGENT_IDS);
-            if (filter.usedIpIds != null && constUsedIpId < 0) usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
-            if (filter.httpMethodIds != null && constMethodId < 0) methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
-            if (filter.contentTypeIds != null && constContentTypeId < 0) contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+            if (!allTimerMatch && constTimerId < 0) timerIds = readDecompressedColumn(idx, IDX_TIMER_IDS);
+            if (!allAgentMatch && constAgentId < 0) agentIds = readDecompressedColumn(idx, IDX_AGENT_IDS);
+            if (!allUsedIpMatch && constUsedIpId < 0)
+            {
+                usedIpIds = readDecompressedColumn(idx, IDX_USED_IPS);
+                if (idx.singleUsedIpId >= 0)
+                {
+                    constUsedIpId = idx.singleUsedIpId;
+                    usedIpIds = null;
+                    if (!filter.usedIpIds.contains(constUsedIpId)) return 0;
+                }
+            }
+            if (!allMethodMatch && constMethodId < 0)
+            {
+                methodIds = readDecompressedColumn(idx, IDX_HTTP_METHODS);
+                if (idx.singleMethodId >= 0)
+                {
+                    constMethodId = idx.singleMethodId;
+                    methodIds = null;
+                    if (!filter.httpMethodIds.contains(constMethodId)) return 0;
+                }
+            }
+            if (!allContentTypeMatch && constContentTypeId < 0)
+            {
+                contentTypeIds = readDecompressedColumn(idx, IDX_CONTENT_TYPES);
+                if (idx.singleContentTypeId >= 0)
+                {
+                    constContentTypeId = idx.singleContentTypeId;
+                    contentTypeIds = null;
+                    if (!filter.contentTypeIds.contains(constContentTypeId)) return 0;
+                }
+            }
         }
         else
         {
@@ -2461,34 +3555,33 @@ public class ColumnarQueryEngine
             final RequestChunk rc = RequestChunkHandler.loadSelectedColumns(chunk, colMask);
             failedRows = rc.getFailedRows();
             hasFailedRows = failedRows != null && !failedRows.isEmpty();
-            timeOffsets = FastIntegerCodec.decompress(rc.getCompTimeOffsets());
-            runTimes = FastIntegerCodec.decompress(rc.getCompRunTimes());
-            statusCodes = FastIntegerCodec.decompress(rc.getCompResponseCodes());
-            constStatus = -1;
-            if (filter.timerIds != null) timerIds = FastIntegerCodec.decompress(rc.getCompTimerNameIds());
-            if (filter.agentTestCaseIds != null) agentIds = FastIntegerCodec.decompress(rc.getCompAgentTestCaseIds());
-            if (filter.usedIpIds != null) usedIpIds = FastIntegerCodec.decompress(rc.getCompUsedIps());
-            if (filter.httpMethodIds != null) methodIds = FastIntegerCodec.decompress(rc.getCompHttpMethods());
-            if (filter.contentTypeIds != null) contentTypeIds = FastIntegerCodec.decompress(rc.getCompContentTypes());
+            timeOffsets = allTimeMatch ? null : FastIntegerCodec.decompress(rc.getCompTimeOffsets());
+            runTimes = noMinRunTime ? null : FastIntegerCodec.decompress(rc.getCompRunTimes());
+            statusCodes = noStatusFilter ? null : FastIntegerCodec.decompress(rc.getCompResponseCodes());
+            constStatus = noStatusFilter ? 200 : -1;
+            if (!allTimerMatch) timerIds = FastIntegerCodec.decompress(rc.getCompTimerNameIds());
+            if (!allAgentMatch) agentIds = FastIntegerCodec.decompress(rc.getCompAgentTestCaseIds());
+            if (!allUsedIpMatch) usedIpIds = FastIntegerCodec.decompress(rc.getCompUsedIps());
+            if (!allMethodMatch) methodIds = FastIntegerCodec.decompress(rc.getCompHttpMethods());
+            if (!allContentTypeMatch) contentTypeIds = FastIntegerCodec.decompress(rc.getCompContentTypes());
         }
 
         int count = 0;
         for (int i = 0; i < rowCount; i++)
         {
-            final int rt = runTimes[i];
-            final long time = baseTime + timeOffsets[i];
+            final int rt = runTimes != null ? runTimes[i] : 0;
+            final long time = timeOffsets != null ? (baseTime + timeOffsets[i]) : baseTime;
             final int status = statusCodes != null ? statusCodes[i] : constStatus;
             final boolean isFailed = (hasFailedRows && failedRows.contains(i)) || status >= 400 || status == 0;
-            final int timerId = timerIds != null ? timerIds[i] : constTimerId;
-            final int agentId = agentIds != null ? agentIds[i] : constAgentId;
-            final int usedIpId = usedIpIds != null ? usedIpIds[i] : constUsedIpId;
-            final int methodId = methodIds != null ? methodIds[i] : constMethodId;
-            final int contentTypeId = contentTypeIds != null ? contentTypeIds[i] : constContentTypeId;
-
-            if (filter.matchesRequestRow(time, rt, status, isFailed, timerId, agentId, usedIpId, methodId, contentTypeId))
-            {
-                count++;
-            }
+            if (!allTimeMatch && (time < filter.fromTime || time > filter.toTime)) continue;
+            if (!noMinRunTime && rt < filter.minRunTime) continue;
+            if (!noStatusFilter && !filter.matchesStatusAndFailure(status, isFailed)) continue;
+            if (!allTimerMatch && !filter.timerIds.contains(timerIds != null ? timerIds[i] : constTimerId)) continue;
+            if (!allAgentMatch && !filter.agentTestCaseIds.contains(agentIds != null ? agentIds[i] : constAgentId)) continue;
+            if (!allUsedIpMatch && !filter.usedIpIds.contains(usedIpIds != null ? usedIpIds[i] : constUsedIpId)) continue;
+            if (!allMethodMatch && !filter.httpMethodIds.contains(methodIds != null ? methodIds[i] : constMethodId)) continue;
+            if (!allContentTypeMatch && !filter.contentTypeIds.contains(contentTypeIds != null ? contentTypeIds[i] : constContentTypeId)) continue;
+            count++;
         }
         return count;
     }
@@ -2561,50 +3654,55 @@ public class ColumnarQueryEngine
         final String[] strings = dicts.getStringsArray();
 
         // Step 1: Scan Transaction ('T') chunks for this (agentTestCaseId, userNumId) to resolve the exact iteration bounds
-        final List<SessionNode> userTransactions = new ArrayList<>();
         final List<Chunk> txChunks = storage.getCatalog().queryChunks(
             'T', new ScanPredicate(0L, Long.MAX_VALUE, null, agentFilterBitmap)
         );
 
-        for (final Chunk chunk : txChunks)
-        {
-            final TransactionChunk tc = (TransactionChunk) resolveNonRequestChunk('T', chunk, dicts);
-            final int rowCount = tc.getRowCount();
-            final long baseTime = tc.getMinTime();
-            final int[] timeOffsets = FastIntegerCodec.decompress(tc.getCompTimeOffsets());
-            final int[] timerIds = FastIntegerCodec.decompress(tc.getCompTimerNameIds());
-            final int[] agentIds = FastIntegerCodec.decompress(tc.getCompAgentTestCaseIds());
-            final int[] runTimes = FastIntegerCodec.decompress(tc.getCompRunTimes());
-            final int[] userNums = FastIntegerCodec.decompress(tc.getCompUserNumbers());
-            final RoaringBitmap failedRows = tc.getFailedRows();
-            final Map<Integer, TransactionChunk.TransactionError> errorDetails = tc.getErrorDetails();
+        final List<SessionNode> userTransactions = (txChunks.size() <= 1 ? txChunks.stream() : txChunks.parallelStream())
+            .flatMap(chunk -> {
+                final TransactionChunk tc = (TransactionChunk) resolveNonRequestChunk('T', chunk, dicts);
+                final int rowCount = tc.getRowCount();
+                final long baseTime = tc.getMinTime();
+                final int[] timeOffsets = FastIntegerCodec.decompress(tc.getCompTimeOffsets());
+                final int[] timerIds = FastIntegerCodec.decompress(tc.getCompTimerNameIds());
+                final int[] agentIds = FastIntegerCodec.decompress(tc.getCompAgentTestCaseIds());
+                final int[] runTimes = FastIntegerCodec.decompress(tc.getCompRunTimes());
+                final int[] userNums = FastIntegerCodec.decompress(tc.getCompUserNumbers());
+                final RoaringBitmap failedRows = tc.getFailedRows();
+                final Map<Integer, TransactionChunk.TransactionError> errorDetails = tc.getErrorDetails();
 
-            for (int i = 0; i < rowCount; i++)
-            {
-                if (agentIds[i] != agentTestCaseId || userNums[i] != userNumId)
+                List<SessionNode> found = null;
+                for (int i = 0; i < rowCount; i++)
                 {
-                    continue;
+                    if (agentIds[i] != agentTestCaseId || userNums[i] != userNumId)
+                    {
+                        continue;
+                    }
+                    final long time = baseTime + timeOffsets[i];
+                    final int rt = runTimes[i];
+                    final String name = safeLookup(timerNames, timerIds[i]);
+                    final boolean failed = failedRows != null && failedRows.contains(i);
+                    final TransactionChunk.TransactionError err = errorDetails != null ? errorDetails.get(i) : null;
+                    final String failedAction = err != null ? err.failedActionName() : null;
+                    final String stackTrace = err != null ? err.stackTrace() : null;
+                    final String dirName = err != null ? err.directoryName() : null;
+                    final String dumpUrl = buildDumpUrl(agent, scenario, userNumber, dirName);
+
+                    if (found == null)
+                    {
+                        found = new ArrayList<>();
+                    }
+                    found.add(new SessionNode(
+                        "T", time, rt, time + rt, name, name, failed, 0,
+                        null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        null, true, null, null, null, stackTrace, failedAction, dirName, dumpUrl,
+                        new ArrayList<>()
+                    ));
                 }
-                final long time = baseTime + timeOffsets[i];
-                final int rt = runTimes[i];
-                final String name = safeLookup(timerNames, timerIds[i]);
-                final boolean failed = failedRows != null && failedRows.contains(i);
-                final TransactionChunk.TransactionError err = errorDetails != null ? errorDetails.get(i) : null;
-                final String failedAction = err != null ? err.failedActionName() : null;
-                final String stackTrace = err != null ? err.stackTrace() : null;
-                final String dirName = err != null ? err.directoryName() : null;
-                final String dumpUrl = buildDumpUrl(agent, scenario, userNumber, dirName);
-
-                userTransactions.add(new SessionNode(
-                    "T", time, rt, time + rt, name, name, failed, 0,
-                    null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    null, true, null, null, null, stackTrace, failedAction, dirName, dumpUrl,
-                    new ArrayList<>()
-                ));
-            }
-        }
-
-        userTransactions.sort(Comparator.comparingLong(SessionNode::time));
+                return found != null ? found.stream() : java.util.stream.Stream.empty();
+            })
+            .sorted(Comparator.comparingLong(SessionNode::time))
+            .toList();
 
         // Locate enclosing transaction (or closest transaction within paddingMs)
         int matchedTxIdx = -1;
@@ -2741,177 +3839,182 @@ public class ColumnarQueryEngine
                             | RequestChunkHandler.COL_USED_IPS
                             | RequestChunkHandler.COL_USER_NUMBERS;
 
-        for (final Chunk chunk : storage.getCatalog().queryChunks('R', windowPredicate))
-        {
-            final int rowCount = chunk.getRowCount();
-            if (rowCount == 0)
-            {
-                continue;
-            }
-
-            final RequestChunkIndex idx = getOrBuildRequestIndex(chunk);
-            if (idx != null && idx.singleAgentId >= 0 && idx.singleAgentId != agentTestCaseId)
-            {
-                continue;
-            }
-
-            final RequestChunk fallbackRc = (idx == null) ? RequestChunkHandler.loadSelectedColumns(chunk, reqMask) : null;
-            final long baseTime = chunk.getMinTime();
-            final int[] timeOffsets = (idx != null)
-                ? readDecompressedColumn(idx, IDX_TIME_OFFSETS)
-                : FastIntegerCodec.decompress(fallbackRc.getCompTimeOffsets());
-            final int[] agentIds = (idx != null)
-                ? (idx.singleAgentId >= 0 ? null : readDecompressedColumn(idx, IDX_AGENT_IDS))
-                : FastIntegerCodec.decompress(fallbackRc.getCompAgentTestCaseIds());
-            final int[] userNums = (idx != null)
-                ? readDecompressedColumn(idx, IDX_USER_NUMBERS)
-                : FastIntegerCodec.decompress(fallbackRc.getCompUserNumbers());
-
-            // First pass: check if this chunk contains any rows for our target virtual user in the time window
-            List<Integer> matchingRowIndices = null;
-            for (int i = 0; i < rowCount; i++)
-            {
-                final int aId = agentIds != null ? agentIds[i] : idx.singleAgentId;
-                if (aId != agentTestCaseId || userNums[i] != userNumId)
+        final List<Chunk> reqChunks = storage.getCatalog().queryChunks('R', windowPredicate);
+        final List<SessionNode> reqNodes = (reqChunks.size() <= 1 ? reqChunks.stream() : reqChunks.parallelStream())
+            .flatMap(chunk -> {
+                final int rowCount = chunk.getRowCount();
+                if (rowCount == 0)
                 {
-                    continue;
+                    return java.util.stream.Stream.<SessionNode>empty();
                 }
-                final long time = baseTime + timeOffsets[i];
-                if (time >= windowStart && time <= windowEnd)
+
+                final RequestChunkIndex idx = getOrBuildRequestIndex(chunk);
+                if (idx != null && idx.singleAgentId >= 0 && idx.singleAgentId != agentTestCaseId)
                 {
-                    if (matchingRowIndices == null)
+                    return java.util.stream.Stream.<SessionNode>empty();
+                }
+
+                final RequestChunk fallbackRc = (idx == null) ? RequestChunkHandler.loadSelectedColumns(chunk, reqMask) : null;
+                final long baseTime = chunk.getMinTime();
+                final int[] timeOffsets = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_TIME_OFFSETS)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompTimeOffsets());
+                final int[] agentIds = (idx != null)
+                    ? (idx.singleAgentId >= 0 ? null : readDecompressedColumn(idx, IDX_AGENT_IDS))
+                    : FastIntegerCodec.decompress(fallbackRc.getCompAgentTestCaseIds());
+                final int[] userNums = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_USER_NUMBERS)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompUserNumbers());
+
+                // First pass: check if this chunk contains any rows for our target virtual user in the time window
+                List<Integer> matchingRowIndices = null;
+                for (int i = 0; i < rowCount; i++)
+                {
+                    final int aId = agentIds != null ? agentIds[i] : idx.singleAgentId;
+                    if (aId != agentTestCaseId || userNums[i] != userNumId)
                     {
-                        matchingRowIndices = new ArrayList<>();
+                        continue;
                     }
-                    matchingRowIndices.add(i);
+                    final long time = baseTime + timeOffsets[i];
+                    if (time >= windowStart && time <= windowEnd)
+                    {
+                        if (matchingRowIndices == null)
+                        {
+                            matchingRowIndices = new ArrayList<>();
+                        }
+                        matchingRowIndices.add(i);
+                    }
                 }
-            }
 
-            if (matchingRowIndices == null)
-            {
-                continue;
-            }
-
-            // Decompress the remaining columns and load forensic tail only for this matching chunk
-            final int[] timerIds = (idx != null)
-                ? (idx.singleTimerId >= 0 ? null : readDecompressedColumn(idx, IDX_TIMER_IDS))
-                : FastIntegerCodec.decompress(fallbackRc.getCompTimerNameIds());
-            final int[] runTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_RUN_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompRunTimes());
-            final int[] statusCodes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_RESPONSE_CODES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompResponseCodes());
-            final int[] bytesSent = (idx != null)
-                ? readDecompressedColumn(idx, IDX_BYTES_SENT)
-                : FastIntegerCodec.decompress(fallbackRc.getCompBytesSent());
-            final int[] bytesReceived = (idx != null)
-                ? readDecompressedColumn(idx, IDX_BYTES_RECEIVED)
-                : FastIntegerCodec.decompress(fallbackRc.getCompBytesReceived());
-            final int[] dnsTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_DNS_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompDnsTimes());
-            final int[] connectTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_CONNECT_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompConnectTimes());
-            final int[] sendTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_SEND_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompSendTimes());
-            final int[] busyTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_SERVER_BUSY_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompServerBusyTimes());
-            final int[] receiveTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_RECEIVE_TIMES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompReceiveTimes());
-            final int[] ttfbTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_TTFB)
-                : FastIntegerCodec.decompress(fallbackRc.getCompTimeToFirstBytes());
-            final int[] ttlbTimes = (idx != null)
-                ? readDecompressedColumn(idx, IDX_TTLB)
-                : FastIntegerCodec.decompress(fallbackRc.getCompTimeToLastBytes());
-            final int[] methodIds = (idx != null)
-                ? readDecompressedColumn(idx, IDX_HTTP_METHODS)
-                : FastIntegerCodec.decompress(fallbackRc.getCompHttpMethods());
-            final int[] contentTypeIds = (idx != null)
-                ? readDecompressedColumn(idx, IDX_CONTENT_TYPES)
-                : FastIntegerCodec.decompress(fallbackRc.getCompContentTypes());
-            final int[] usedIpIds = (idx != null)
-                ? readDecompressedColumn(idx, IDX_USED_IPS)
-                : FastIntegerCodec.decompress(fallbackRc.getCompUsedIps());
-            final RoaringBitmap failedRows = (idx != null) ? idx.failedRows : fallbackRc.getFailedRows();
-            final Map<Integer, RequestChunk.ForensicDetails> forensics = RequestChunk.loadForensicDetails(chunk);
-
-            for (final int rowIdx : matchingRowIndices)
-            {
-                final long time = baseTime + timeOffsets[rowIdx];
-                final int rt = runTimes[rowIdx];
-                final int timerId = timerIds != null ? timerIds[rowIdx] : idx.singleTimerId;
-                final String timerName = safeLookup(timerNames, timerId);
-                final int status = statusCodes[rowIdx];
-                final boolean failed = (failedRows != null && failedRows.contains(rowIdx)) || status >= 400 || status == 0;
-
-                final RequestChunk.ForensicDetails fd = forensics != null ? forensics.get(rowIdx) : null;
-                final String url;
-                final boolean forensicExact;
-                final String rawName;
-                final String reqId;
-                final String respId;
-                final String formData;
-
-                if (fd != null)
+                if (matchingRowIndices == null)
                 {
-                    url = fd.url();
-                    forensicExact = true;
-                    rawName = (fd.rawName() != null && !fd.rawName().isEmpty()) ? fd.rawName() : timerName;
-                    reqId = fd.requestId();
-                    respId = fd.responseId();
-                    formData = fd.formData();
-                }
-                else
-                {
-                    final GlobalDictionaries.CachedSampleUrl[] samples = dicts.getCachedSampleUrls(timerId);
-                    url = (samples != null && samples.length > 0) ? samples[0].url() : "";
-                    forensicExact = false;
-                    rawName = timerName;
-                    reqId = "";
-                    respId = "";
-                    formData = "";
+                    return java.util.stream.Stream.<SessionNode>empty();
                 }
 
-                childItems.add(new SessionNode(
-                    "R",
-                    time,
-                    rt,
-                    time + rt,
-                    timerName,
-                    rawName,
-                    failed,
-                    status,
-                    safeLookup(strings, methodIds[rowIdx]),
-                    safeLookup(strings, contentTypeIds[rowIdx]),
-                    safeLookup(strings, usedIpIds[rowIdx]),
-                    bytesSent[rowIdx],
-                    bytesReceived[rowIdx],
-                    dnsTimes[rowIdx],
-                    connectTimes[rowIdx],
-                    sendTimes[rowIdx],
-                    busyTimes[rowIdx],
-                    receiveTimes[rowIdx],
-                    ttfbTimes[rowIdx],
-                    ttlbTimes[rowIdx],
-                    url,
-                    forensicExact,
-                    reqId,
-                    respId,
-                    formData,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Collections.emptyList()
-                ));
-            }
-        }
+                // Decompress the remaining columns and load forensic tail only for this matching chunk
+                final int[] timerIds = (idx != null)
+                    ? (idx.singleTimerId >= 0 ? null : readDecompressedColumn(idx, IDX_TIMER_IDS))
+                    : FastIntegerCodec.decompress(fallbackRc.getCompTimerNameIds());
+                final int[] runTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_RUN_TIMES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompRunTimes());
+                final int[] statusCodes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_RESPONSE_CODES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompResponseCodes());
+                final int[] bytesSent = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_BYTES_SENT)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompBytesSent());
+                final int[] bytesReceived = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_BYTES_RECEIVED)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompBytesReceived());
+                final int[] dnsTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_DNS_TIMES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompDnsTimes());
+                final int[] connectTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_CONNECT_TIMES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompConnectTimes());
+                final int[] sendTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_SEND_TIMES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompSendTimes());
+                final int[] busyTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_SERVER_BUSY_TIMES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompServerBusyTimes());
+                final int[] receiveTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_RECEIVE_TIMES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompReceiveTimes());
+                final int[] ttfbTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_TTFB)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompTimeToFirstBytes());
+                final int[] ttlbTimes = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_TTLB)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompTimeToLastBytes());
+                final int[] methodIds = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_HTTP_METHODS)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompHttpMethods());
+                final int[] contentTypeIds = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_CONTENT_TYPES)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompContentTypes());
+                final int[] usedIpIds = (idx != null)
+                    ? readDecompressedColumn(idx, IDX_USED_IPS)
+                    : FastIntegerCodec.decompress(fallbackRc.getCompUsedIps());
+                final RoaringBitmap failedRows = (idx != null) ? idx.failedRows : fallbackRc.getFailedRows();
+                final Map<Integer, RequestChunk.ForensicDetails> forensics = RequestChunk.loadForensicDetails(chunk);
+
+                final List<SessionNode> chunkNodes = new ArrayList<>(matchingRowIndices.size());
+                for (final int rowIdx : matchingRowIndices)
+                {
+                    final long time = baseTime + timeOffsets[rowIdx];
+                    final int rt = runTimes[rowIdx];
+                    final int timerId = timerIds != null ? timerIds[rowIdx] : idx.singleTimerId;
+                    final String timerName = safeLookup(timerNames, timerId);
+                    final int status = statusCodes[rowIdx];
+                    final boolean failed = (failedRows != null && failedRows.contains(rowIdx)) || status >= 400 || status == 0;
+
+                    final RequestChunk.ForensicDetails fd = forensics != null ? forensics.get(rowIdx) : null;
+                    final String url;
+                    final boolean forensicExact;
+                    final String rawName;
+                    final String reqId;
+                    final String respId;
+                    final String formData;
+
+                    if (fd != null)
+                    {
+                        url = fd.url();
+                        forensicExact = true;
+                        rawName = (fd.rawName() != null && !fd.rawName().isEmpty()) ? fd.rawName() : timerName;
+                        reqId = fd.requestId();
+                        respId = fd.responseId();
+                        formData = fd.formData();
+                    }
+                    else
+                    {
+                        final GlobalDictionaries.CachedSampleUrl[] samples = dicts.getCachedSampleUrls(timerId);
+                        url = (samples != null && samples.length > 0) ? samples[0].url() : "";
+                        forensicExact = false;
+                        rawName = timerName;
+                        reqId = "";
+                        respId = "";
+                        formData = "";
+                    }
+
+                    chunkNodes.add(new SessionNode(
+                        "R",
+                        time,
+                        rt,
+                        time + rt,
+                        timerName,
+                        rawName,
+                        failed,
+                        status,
+                        safeLookup(strings, methodIds[rowIdx]),
+                        safeLookup(strings, contentTypeIds[rowIdx]),
+                        safeLookup(strings, usedIpIds[rowIdx]),
+                        bytesSent[rowIdx],
+                        bytesReceived[rowIdx],
+                        dnsTimes[rowIdx],
+                        connectTimes[rowIdx],
+                        sendTimes[rowIdx],
+                        busyTimes[rowIdx],
+                        receiveTimes[rowIdx],
+                        ttfbTimes[rowIdx],
+                        ttlbTimes[rowIdx],
+                        url,
+                        forensicExact,
+                        reqId,
+                        respId,
+                        formData,
+                        null,
+                        null,
+                        null,
+                        null,
+                        Collections.emptyList()
+                    ));
+                }
+                return chunkNodes.stream();
+            })
+            .toList();
+        childItems.addAll(reqNodes);
 
         // Step 3: Sort actions and child items chronologically and nest child items under their enclosing Action
         actions.sort(Comparator.comparingLong(SessionNode::time));
@@ -3729,8 +4832,25 @@ public class ColumnarQueryEngine
         }
     }
 
+    /**
+     * Per-group summary accumulator with two-tier URL cardinality tracking:
+     * <ol>
+     *   <li><b>Tier 1 (Exact Open-Addressed Hash Set):</b> Up to {@link #EXACT_URL_HASH_LIMIT} (512) distinct
+     *       non-zero 32-bit URL hashes stored in a power-of-two linear-probing {@code int[]} table (16..1024 slots).</li>
+     *   <li><b>Tier 2 (HyperLogLog, \(p = 12\)):</b> Automatically promoted to a fixed 4,096-byte register array
+     *       when cardinality exceeds 512, bounding memory at 4 KB per group while preserving \(\approx 1.6\%\)
+     *       standard error across datasets of any size.</li>
+     * </ol>
+     */
     private static final class SummaryGroupAccumulator
     {
+        private static final int EXACT_URL_HASH_LIMIT = 512;
+        private static final int HLL_PRECISION = 12;
+        private static final int HLL_REGISTERS = 1 << HLL_PRECISION;
+        private static final int HLL_MASK = HLL_REGISTERS - 1;
+        private static final double HLL_ALPHA_MM =
+            (0.7213 / (1.0 + 1.079 / HLL_REGISTERS)) * HLL_REGISTERS * HLL_REGISTERS;
+
         int representativeTimerId = -1;
         long count;
         long errors;
@@ -3747,11 +4867,17 @@ public class ColumnarQueryEngine
         long sumReceive;
         long sumTtfb;
         long sumTtlb;
-        final RoaringBitmap urlHashes;
+
+        final boolean trackUrls;
+        boolean hasLastUrlHash;
+        int lastUrlHash;
+        int exactUrlCount;
+        int[] exactUrlTable;
+        byte[] urlHll;
 
         SummaryGroupAccumulator(final boolean trackUrls)
         {
-            this.urlHashes = trackUrls ? new RoaringBitmap() : null;
+            this.trackUrls = trackUrls;
         }
 
         void recordRequest(final int rt,
@@ -3777,10 +4903,161 @@ public class ColumnarQueryEngine
             sumReceive += Math.max(0, receive);
             sumTtfb += Math.max(0, ttfb);
             sumTtlb += Math.max(0, ttlb);
-            if (urlHashes != null && urlHash != 0)
+            if (trackUrls && urlHash != 0)
             {
-                urlHashes.add(urlHash);
+                addUrlHash(urlHash);
             }
+        }
+
+        void addUrlHash(final int hash)
+        {
+            if (hash == 0)
+            {
+                return;
+            }
+            if (hasLastUrlHash && hash == lastUrlHash)
+            {
+                return;
+            }
+            hasLastUrlHash = true;
+            lastUrlHash = hash;
+
+            if (urlHll != null)
+            {
+                addHllRegister(urlHll, hash);
+                return;
+            }
+
+            if (exactUrlTable == null)
+            {
+                exactUrlTable = new int[16];
+                exactUrlTable[mix32(hash) & 15] = hash;
+                exactUrlCount = 1;
+                return;
+            }
+
+            final int mask = exactUrlTable.length - 1;
+            int slot = mix32(hash) & mask;
+            while (true)
+            {
+                final int existing = exactUrlTable[slot];
+                if (existing == hash)
+                {
+                    return;
+                }
+                if (existing == 0)
+                {
+                    break;
+                }
+                slot = (slot + 1) & mask;
+            }
+
+            if (exactUrlCount + 1 <= EXACT_URL_HASH_LIMIT)
+            {
+                exactUrlTable[slot] = hash;
+                exactUrlCount++;
+                if ((exactUrlCount << 1) > exactUrlTable.length && exactUrlTable.length < 1024)
+                {
+                    rehashExactTable();
+                }
+            }
+            else
+            {
+                promoteToHll();
+                addHllRegister(urlHll, hash);
+            }
+        }
+
+        private void rehashExactTable()
+        {
+            final int[] oldTable = this.exactUrlTable;
+            final int newCap = oldTable.length << 1;
+            final int newMask = newCap - 1;
+            final int[] newTable = new int[newCap];
+            for (final int h : oldTable)
+            {
+                if (h != 0)
+                {
+                    int slot = mix32(h) & newMask;
+                    while (newTable[slot] != 0)
+                    {
+                        slot = (slot + 1) & newMask;
+                    }
+                    newTable[slot] = h;
+                }
+            }
+            this.exactUrlTable = newTable;
+        }
+
+        private void promoteToHll()
+        {
+            this.urlHll = new byte[HLL_REGISTERS];
+            if (this.exactUrlTable != null)
+            {
+                for (final int h : this.exactUrlTable)
+                {
+                    if (h != 0)
+                    {
+                        addHllRegister(this.urlHll, h);
+                    }
+                }
+                this.exactUrlTable = null;
+                this.exactUrlCount = 0;
+            }
+        }
+
+        private static void addHllRegister(final byte[] hll, final int rawHash)
+        {
+            final int mixed = mix32(rawHash);
+            final int idx = mixed & HLL_MASK;
+            final int w = mixed >>> HLL_PRECISION;
+            final byte rank = (byte) Math.min(
+                32 - HLL_PRECISION + 1,
+                Integer.numberOfLeadingZeros(w) - HLL_PRECISION + 1
+            );
+            if (rank > hll[idx])
+            {
+                hll[idx] = rank;
+            }
+        }
+
+        private static int mix32(int h)
+        {
+            h ^= h >>> 16;
+            h *= 0x85ebca6b;
+            h ^= h >>> 13;
+            h *= 0xc2b2ae35;
+            h ^= h >>> 16;
+            return h;
+        }
+
+        int getDistinctUrlCount(final int fallbackCount)
+        {
+            if (!trackUrls)
+            {
+                return fallbackCount;
+            }
+            if (urlHll != null)
+            {
+                double sum = 0.0;
+                int zeros = 0;
+                for (int i = 0; i < HLL_REGISTERS; i++)
+                {
+                    final int val = urlHll[i];
+                    sum += 1.0 / (1L << val);
+                    if (val == 0)
+                    {
+                        zeros++;
+                    }
+                }
+                double estimate = HLL_ALPHA_MM / sum;
+                if (estimate <= 2.5 * HLL_REGISTERS && zeros > 0)
+                {
+                    estimate = HLL_REGISTERS * Math.log((double) HLL_REGISTERS / zeros);
+                }
+                return Math.max(fallbackCount, (int) Math.round(estimate));
+            }
+            return exactUrlCount > 0 ? exactUrlCount : fallbackCount;
         }
 
         void recordTimer(final int rt, final boolean isFailed)
@@ -3829,9 +5106,32 @@ public class ColumnarQueryEngine
             this.sumReceive += other.sumReceive;
             this.sumTtfb += other.sumTtfb;
             this.sumTtlb += other.sumTtlb;
-            if (this.urlHashes != null && other.urlHashes != null)
+            if (this.trackUrls && other.trackUrls)
             {
-                this.urlHashes.or(other.urlHashes);
+                if (other.urlHll != null)
+                {
+                    if (this.urlHll == null)
+                    {
+                        this.promoteToHll();
+                    }
+                    for (int i = 0; i < HLL_REGISTERS; i++)
+                    {
+                        if (other.urlHll[i] > this.urlHll[i])
+                        {
+                            this.urlHll[i] = other.urlHll[i];
+                        }
+                    }
+                }
+                else if (other.exactUrlTable != null)
+                {
+                    for (final int h : other.exactUrlTable)
+                    {
+                        if (h != 0)
+                        {
+                            this.addUrlHash(h);
+                        }
+                    }
+                }
             }
             return this;
         }

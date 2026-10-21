@@ -248,6 +248,28 @@ public class EventChunkHandler implements ChunkTypeHandler
         private final RoaringBitmap timerIds = new RoaringBitmap();
         private final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
 
+        // Single-entry register caches and bitmasks to avoid redundant dictionary and RoaringBitmap operations
+        private CharSequence lastTimerRef;
+        private String lastTimerStr;
+        private int lastTimerId = -1;
+
+        private CharSequence lastAgentRef;
+        private CharSequence lastTxnRef;
+        private String lastAgentStr;
+        private String lastTxnStr;
+        private int lastAgentId = -1;
+
+        private CharSequence lastMsgRef;
+        private String lastMsgStr;
+        private int lastMsgId = -1;
+
+        private CharSequence lastUserNumRef;
+        private String lastUserNumStr;
+        private int lastUserNumId = -1;
+
+        private long[] seenTimers = new long[64];
+        private long[] seenAgents = new long[64];
+
         EventChunkBuilder(final GlobalDictionaries dicts)
         {
             this.dicts = dicts;
@@ -291,17 +313,128 @@ public class EventChunkHandler implements ChunkTypeHandler
             if (t > maxTime) maxTime = t;
             rawTimes[idx] = t;
 
-            final int tid = dicts.getOrCreateTimerNameId(r.getName());
+            // 1. Intern event name with register cache and bitmask-deduplicated RoaringBitmap update
+            final CharSequence timerName = r.getName();
+            final int tid;
+            if (timerName == lastTimerRef && lastTimerId != -1)
+            {
+                tid = lastTimerId;
+            }
+            else if (lastTimerStr != null && GlobalDictionaries.charSequenceEquals(timerName, lastTimerStr))
+            {
+                tid = lastTimerId;
+                lastTimerRef = timerName;
+            }
+            else
+            {
+                tid = dicts.getOrCreateTimerNameId(timerName);
+                lastTimerId = tid;
+                lastTimerRef = timerName;
+                lastTimerStr = dicts.getTimerName(tid);
+                if (tid >= 0)
+                {
+                    final int timerWord = tid >>> 6;
+                    if (timerWord >= seenTimers.length)
+                    {
+                        seenTimers = Arrays.copyOf(seenTimers, Math.max(seenTimers.length * 2, timerWord + 16));
+                    }
+                    final long timerMask = 1L << tid;
+                    if ((seenTimers[timerWord] & timerMask) == 0L)
+                    {
+                        seenTimers[timerWord] |= timerMask;
+                        timerIds.add(tid);
+                    }
+                }
+            }
             timerIdArr[idx] = tid;
-            timerIds.add(tid);
 
-            final String testCase = r.getTestCaseName() != null ? r.getTestCaseName() : r.getTransactionName();
-            final int aid = dicts.getOrCreateAgentTestCaseId(r.getAgentName(), testCase);
+            // 2. Intern unified (agent, testCase) pair with register cache
+            final CharSequence agentName = r.getAgentName();
+            final CharSequence testCase = r.getTestCaseName() != null ? r.getTestCaseName() : r.getTransactionName();
+            final int aid;
+            if (agentName == lastAgentRef && testCase == lastTxnRef && lastAgentId != -1)
+            {
+                aid = lastAgentId;
+            }
+            else if (lastAgentStr != null && lastTxnStr != null
+                     && GlobalDictionaries.charSequenceEquals(agentName, lastAgentStr)
+                     && GlobalDictionaries.charSequenceEquals(testCase, lastTxnStr))
+            {
+                aid = lastAgentId;
+                lastAgentRef = agentName;
+                lastTxnRef = testCase;
+            }
+            else
+            {
+                aid = dicts.getOrCreateAgentTestCaseId(agentName, testCase);
+                lastAgentId = aid;
+                lastAgentRef = agentName;
+                lastTxnRef = testCase;
+                final GlobalDictionaries.AgentTestCase pair = dicts.getAgentTestCase(aid);
+                lastAgentStr = pair != null ? pair.agentName() : null;
+                lastTxnStr = pair != null ? pair.testCaseName() : null;
+                if (aid >= 0)
+                {
+                    final int agentWord = aid >>> 6;
+                    if (agentWord >= seenAgents.length)
+                    {
+                        seenAgents = Arrays.copyOf(seenAgents, Math.max(seenAgents.length * 2, agentWord + 16));
+                    }
+                    final long agentMask = 1L << aid;
+                    if ((seenAgents[agentWord] & agentMask) == 0L)
+                    {
+                        seenAgents[agentWord] |= agentMask;
+                        agentTestCaseIds.add(aid);
+                    }
+                }
+            }
             agentTestCaseIdArr[idx] = aid;
-            agentTestCaseIds.add(aid);
 
-            msgArr[idx] = dicts.getOrCreateStringId(r.getMessage());
-            userNumbers[idx] = dicts.getOrCreateStringId(r.getTestUserNumber());
+            // 3. Intern event message with register cache
+            final CharSequence msg = r.getMessage();
+            if (msg == null)
+            {
+                msgArr[idx] = -1;
+            }
+            else if (msg == lastMsgRef)
+            {
+                msgArr[idx] = lastMsgId;
+            }
+            else if (lastMsgStr != null && GlobalDictionaries.charSequenceEquals(msg, lastMsgStr))
+            {
+                msgArr[idx] = lastMsgId;
+                lastMsgRef = msg;
+            }
+            else
+            {
+                lastMsgId = dicts.getOrCreateStringId(msg);
+                lastMsgStr = dicts.getString(lastMsgId);
+                lastMsgRef = msg;
+                msgArr[idx] = lastMsgId;
+            }
+
+            // 4. Intern virtual user number with register cache
+            final CharSequence userNum = r.getTestUserNumber();
+            if (userNum == null)
+            {
+                userNumbers[idx] = -1;
+            }
+            else if (userNum == lastUserNumRef)
+            {
+                userNumbers[idx] = lastUserNumId;
+            }
+            else if (lastUserNumStr != null && GlobalDictionaries.charSequenceEquals(userNum, lastUserNumStr))
+            {
+                userNumbers[idx] = lastUserNumId;
+                lastUserNumRef = userNum;
+            }
+            else
+            {
+                lastUserNumId = dicts.getOrCreateStringId(userNum);
+                lastUserNumStr = dicts.getString(lastUserNumId);
+                lastUserNumRef = userNum;
+                userNumbers[idx] = lastUserNumId;
+            }
 
             count++;
             return true;
@@ -346,6 +479,22 @@ public class EventChunkHandler implements ChunkTypeHandler
             maxTime = Long.MIN_VALUE;
             timerIds.clear();
             agentTestCaseIds.clear();
+            Arrays.fill(seenTimers, 0L);
+            Arrays.fill(seenAgents, 0L);
+            lastTimerRef = null;
+            lastTimerStr = null;
+            lastTimerId = -1;
+            lastAgentRef = null;
+            lastTxnRef = null;
+            lastAgentStr = null;
+            lastTxnStr = null;
+            lastAgentId = -1;
+            lastMsgRef = null;
+            lastMsgStr = null;
+            lastMsgId = -1;
+            lastUserNumRef = null;
+            lastUserNumStr = null;
+            lastUserNumId = -1;
         }
     }
 }

@@ -758,4 +758,83 @@ public class ColumnarQueryEngineTest
                        actResp.records().get(0).runTime() >= actResp.records().get(1).runTime());
         }
     }
+
+    @Test
+    public void testCombinedDashboardSinglePassQuery() throws Exception
+    {
+        final File cacheDir = tempFolder.newFolder("cache-dash");
+        final File resultsDir = tempFolder.newFolder("results-dash");
+
+        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        {
+            final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
+            assertFalse(engine.hasCachedMetadata());
+            engine.getMetadata();
+            assertTrue(engine.hasCachedMetadata());
+
+            final QueryModels.DashboardResponse dash = engine.queryDashboard(new QueryModels.DashboardQuerySpec(
+                "R", BASE_TIME, BASE_TIME + 10_000L, 5000,
+                null, null, null, null, null, null, null,
+                null, null, false, null, "USED_IP", "TIMER"
+            ));
+            assertNotNull(dash);
+            assertNotNull(dash.timeSeries());
+            assertNotNull(dash.summaryTable());
+            assertEquals(4L, dash.timeSeries().rowsMatched());
+            assertEquals(4L, dash.summaryTable().totalRowsMatched());
+            assertEquals(2, dash.timeSeries().series().size());
+            assertEquals(3, dash.summaryTable().rows().size());
+
+            // Also test non-Request recordType ("T" and "A") through queryDashboard
+            for (final String type : List.of("T", "A"))
+            {
+                final QueryModels.DashboardResponse timerDash = engine.queryDashboard(new QueryModels.DashboardQuerySpec(
+                    type, 0L, 0L, 0,
+                    null, null, null, null, null, null, null,
+                    null, null, false, null, "TIMER", "AGENT"
+                ));
+                assertTrue(timerDash.timeSeries().rowsMatched() >= 2L);
+                assertEquals(timerDash.timeSeries().rowsMatched(), timerDash.summaryTable().totalRowsMatched());
+            }
+        }
+    }
+
+    @Test
+    public void testHighCardinalityDistinctUrlsHyperLogLogPromotion() throws Exception
+    {
+        final File cacheDir = tempFolder.newFolder("cache-hll");
+        final File resultsDir = tempFolder.newFolder("results-hll");
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+
+        final int distinctTarget = 1200;
+        for (int i = 0; i < distinctTarget; i++)
+        {
+            final RequestData req = createRequest(
+                "ProductDetail", "ProductDetail.raw", BASE_TIME + i * 10L, 40 + (i % 50), 200, false,
+                "agent-1", "TBrowse", "0", "GET", "text/html", "10.0.0.1",
+                "https://shop.example.com/p/sku-" + i + "?session=" + (i * 31),
+                "req-" + i, "resp-" + i, ""
+            );
+            collector.collect(req);
+        }
+
+        try (final ChunkStorage built = collector.finish())
+        {
+            built.saveToDirectory(cacheDir);
+        }
+
+        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        {
+            final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
+            final SummaryTableResponse sum = engine.querySummaryTable(new SummaryTableQuerySpec(
+                "R", 0L, 0L, null, null, null, null, null, null, null,
+                null, null, false, null, "TIMER"
+            ));
+            assertEquals(1, sum.rows().size());
+            final int estimatedDistinct = sum.rows().get(0).distinctUrls();
+            // 12-bit HLL standard error is ~1.6%; allow generous 8% bound for deterministic test stability
+            assertTrue("HLL estimate (" + estimatedDistinct + ") should be close to " + distinctTarget,
+                       estimatedDistinct >= 1100 && estimatedDistinct <= 1300);
+        }
+    }
 }

@@ -115,9 +115,13 @@ public class ChunkQueryEngine
     {
         final long start = System.currentTimeMillis();
 
-        // Step 1: Candidate chunk pruning via metadata min/max timestamps & RoaringBitmaps
+        // Step 1: Candidate chunk pruning via metadata min/max timestamps & RoaringBitmaps.
+        // Sort matching chunks by typeCode ('A', 'C', 'E', 'P', 'R', 'T', 'V', 'W') so parallel worker
+        // threads scan contiguous runs of homogeneous chunk types, keeping a single ChunkTypeHandler
+        // and its corresponding StatisticsProcessor.WorkerProviderSet routing slot hot in L1 instruction cache.
         final List<Chunk> candidateChunks = storage.getCatalog().getAllChunks().stream()
             .filter(predicate::mayMatchChunk)
+            .sorted((a, b) -> Character.compare(a.getTypeCode(), b.getTypeCode()))
             .collect(Collectors.toList());
 
         LOG.info("ChunkDB query matched {} of {} chunks", candidateChunks.size(), storage.getCatalog().getChunkCount());

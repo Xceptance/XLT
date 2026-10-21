@@ -394,8 +394,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         if (countDistinctUrls)
         {
-            final String url = reqData.getUrl();
-            if (url != null)
+            if (reqData.hasUrlBytes() || reqData.getUrl() != null)
             {
                 final int urlHash = reqData.hashCodeOfUrlWithoutFragment();
                 if (urlHash != lastUrlHash || lastUrl == null)
@@ -404,13 +403,22 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
                     lastUrlHash = urlHash;
                 }
 
-                // Remember up to MAXIMUM_NUMBER_OF_URLS sample URLs
-                if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS && url != lastUrl)
+                // Remember up to MAXIMUM_NUMBER_OF_URLS sample URLs.
+                // Only materialize reqData.getUrl() while the sample set has fewer than 10 entries;
+                // once 10 sample URLs are collected, avoid allocating String instances from raw CSV urlBytes.
+                if (distinctUrlSetLimitedSize < MAXIMUM_NUMBER_OF_URLS)
                 {
-                    addSampleUrl(url);
+                    final String url = reqData.getUrl();
+                    if (url != null && url != lastUrl)
+                    {
+                        addSampleUrl(url);
+                        lastUrl = url;
+                    }
                 }
-
-                lastUrl = url;
+                else if (lastUrl == null)
+                {
+                    lastUrl = "";
+                }
             }
         }
 

@@ -65,4 +65,92 @@ public class UrlHostParser
             return url.substring(start);
         }
     }
+
+    /**
+     * Thread-local 16-slot direct-mapped cache mapping raw UTF-8 host byte slices to canonical
+     * {@link String} instances. Eliminates both full-URL {@link String} materialization and
+     * substring allocations when extracting hosts from CSV byte buffers in {@code RequestData.getHost()}.
+     */
+    private static final ThreadLocal<HostByteCache> HOST_BYTE_CACHE = ThreadLocal.withInitial(HostByteCache::new);
+
+    private static final class HostByteCache
+    {
+        private static final int SLOTS = 16;
+        private static final int MASK = SLOTS - 1;
+        final byte[][] bytes = new byte[SLOTS][];
+        final String[] hosts = new String[SLOTS];
+    }
+
+    /**
+     * Extracts the host name directly from a raw UTF-8 URL byte slice without materializing the full
+     * URL {@link String}, returning a cached {@link String} instance for repeated hosts.
+     *
+     * @param urlBytes
+     *            backing UTF-8 byte buffer containing the URL
+     * @param offset
+     *            start offset of the URL within {@code urlBytes}
+     * @param length
+     *            byte length of the URL slice
+     * @return the extracted host name, or {@code ""} if empty
+     */
+    public static String retrieveHostFromUrl(final byte[] urlBytes, final int offset, final int length)
+    {
+        if (urlBytes == null || length <= 0)
+        {
+            return "";
+        }
+
+        final int limit = offset + length;
+        int start = offset;
+
+        // Strip protocol prefix "://" if present
+        final int sepLimit = limit - 2;
+        for (int i = offset; i < sepLimit; i++)
+        {
+            if (urlBytes[i] == ':' && urlBytes[i + 1] == '/' && urlBytes[i + 2] == '/')
+            {
+                start = i + 3;
+                break;
+            }
+        }
+
+        // Strip path ('/'), query ('?'), or fragment ('#')
+        int end = limit;
+        for (int i = start; i < limit; i++)
+        {
+            final int b = urlBytes[i] & 0xFF;
+            if (b <= MAX_CHAR && (b == '/' || b == '?' || b == '#'))
+            {
+                end = i;
+                break;
+            }
+        }
+
+        final int hostLen = end - start;
+        if (hostLen <= 0)
+        {
+            return "";
+        }
+
+        // Compute FNV-1a hash of the host byte slice and probe the thread-local 16-slot cache
+        int hash = 0x811c9dc5;
+        for (int i = start; i < end; i++)
+        {
+            hash ^= (urlBytes[i] & 0xFF);
+            hash *= 0x01000193;
+        }
+        final int slot = (hash ^ (hash >>> 4)) & HostByteCache.MASK;
+        final HostByteCache cache = HOST_BYTE_CACHE.get();
+        final byte[] cachedBytes = cache.bytes[slot];
+        if (cachedBytes != null && cachedBytes.length == hostLen
+            && java.util.Arrays.equals(urlBytes, start, end, cachedBytes, 0, hostLen))
+        {
+            return cache.hosts[slot];
+        }
+
+        final String host = new String(urlBytes, start, hostLen, java.nio.charset.StandardCharsets.UTF_8);
+        cache.bytes[slot] = java.util.Arrays.copyOfRange(urlBytes, start, end);
+        cache.hosts[slot] = host;
+        return host;
+    }
 }

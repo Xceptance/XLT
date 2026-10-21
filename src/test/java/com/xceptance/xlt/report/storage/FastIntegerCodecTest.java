@@ -120,4 +120,80 @@ public class FastIntegerCodecTest
         Assert.assertEquals("GET", restored.getString(str1));
         Assert.assertEquals("POST", restored.getString(str2));
     }
+
+    @Test
+    public void testConstantColumnRleAndDecompressTo()
+    {
+        final int size = 64_000;
+        final int[] constantCol = new int[size];
+        java.util.Arrays.fill(constantCol, 200);
+
+        final int[] compressed = FastIntegerCodec.compress(constantCol);
+        Assert.assertEquals("Constant column RLE must compress to 3 words", 3, compressed.length);
+        Assert.assertTrue(FastIntegerCodec.isConstant(compressed));
+        Assert.assertEquals(200, FastIntegerCodec.getConstantValue(compressed));
+        Assert.assertEquals(size, FastIntegerCodec.getUncompressedLength(compressed));
+
+        // Decompress into a fresh array
+        final int[] decompressed = FastIntegerCodec.decompress(compressed);
+        Assert.assertArrayEquals(constantCol, decompressed);
+
+        // Zero-allocation decompressTo with a reusable scratch buffer
+        final int[] scratch = new int[size + 128];
+        final int[] reused = FastIntegerCodec.decompressTo(compressed, scratch);
+        Assert.assertSame("decompressTo must reuse caller buffer when capacity is sufficient", scratch, reused);
+        for (int i = 0; i < size; i++)
+        {
+            Assert.assertEquals(200, reused[i]);
+        }
+
+        // Also test decompressTo on a non-constant SIMD-packed array
+        final int[] nonConstant = new int[size];
+        for (int i = 0; i < size; i++)
+        {
+            nonConstant[i] = i % 300;
+        }
+        final int[] compNonConst = FastIntegerCodec.compress(nonConstant);
+        Assert.assertFalse(FastIntegerCodec.isConstant(compNonConst));
+        Assert.assertEquals(size, FastIntegerCodec.getUncompressedLength(compNonConst));
+
+        final int[] reusedNonConst = FastIntegerCodec.decompressTo(compNonConst, scratch);
+        Assert.assertSame(scratch, reusedNonConst);
+        for (int i = 0; i < size; i++)
+        {
+            Assert.assertEquals(nonConstant[i], reusedNonConst[i]);
+        }
+
+        // Edge cases: null, empty, and undersized reuseBuffer
+        Assert.assertEquals(0, FastIntegerCodec.compress(null).length);
+        Assert.assertEquals(0, FastIntegerCodec.compress(new int[0]).length);
+        Assert.assertFalse(FastIntegerCodec.isConstant(null));
+        Assert.assertEquals(0, FastIntegerCodec.getUncompressedLength(null));
+        Assert.assertEquals(0, FastIntegerCodec.decompressTo(new int[0], scratch).length);
+        final int[] reallocated = FastIntegerCodec.decompressTo(compressed, new int[10]);
+        Assert.assertEquals(size, reallocated.length);
+        Assert.assertEquals(200, reallocated[size - 1]);
+    }
+
+    @Test
+    public void testGlobalDictionariesFacetBitmapsSerialization() throws Exception
+    {
+        final GlobalDictionaries dict = new GlobalDictionaries();
+        final int methodId = dict.getOrCreateStringId("PATCH");
+        final int contentTypeId = dict.getOrCreateStringId("application/x-protobuf");
+        final int usedIpId = dict.getOrCreateStringId("192.168.10.42");
+
+        dict.recordHttpMethodId(methodId);
+        dict.recordContentTypeId(contentTypeId);
+        dict.recordUsedIpId(usedIpId);
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        dict.writeTo(new DataOutputStream(baos));
+
+        final GlobalDictionaries restored = GlobalDictionaries.readFrom(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
+        Assert.assertTrue(restored.getHttpMethodIds().contains(methodId));
+        Assert.assertTrue(restored.getContentTypeIds().contains(contentTypeId));
+        Assert.assertTrue(restored.getUsedIpIds().contains(usedIpId));
+        Assert.assertFalse(restored.getUsedIpIds().contains(methodId));
+    }
 }

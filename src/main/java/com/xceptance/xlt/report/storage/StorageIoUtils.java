@@ -34,6 +34,20 @@ public final class StorageIoUtils
 {
     private static final int BUFFER_INTS = 2048; // 8 KB buffer for bulk int serialization
     private static final int BUFFER_DOUBLES = 1024; // 8 KB buffer for bulk double serialization
+    private static final int SCRATCH_BYTES = BUFFER_INTS * 4;
+
+    /**
+     * Thread-local 8 KB scratch buffer and pre-wrapped big-endian {@link ByteBuffer} view,
+     * eliminating thousands of temporary {@code byte[8192]} and {@link ByteBuffer} heap allocations
+     * when reading or writing 21+ compressed columnar vectors per chunk.
+     */
+    private static final ThreadLocal<IoScratch> IO_SCRATCH = ThreadLocal.withInitial(IoScratch::new);
+
+    private static final class IoScratch
+    {
+        final byte[] bytes = new byte[SCRATCH_BYTES];
+        final ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN);
+    }
 
     private StorageIoUtils()
     {
@@ -112,15 +126,16 @@ public final class StorageIoUtils
         {
             return;
         }
-        final byte[] byteBuf = new byte[Math.min(len, BUFFER_INTS) * 4];
-        final ByteBuffer bb = ByteBuffer.wrap(byteBuf).order(ByteOrder.BIG_ENDIAN);
+        final IoScratch scratch = IO_SCRATCH.get();
+        final byte[] byteBuf = scratch.bytes;
+        final ByteBuffer bb = scratch.buffer;
         int offset = 0;
         while (offset < len)
         {
             final int chunkLen = Math.min(len - offset, BUFFER_INTS);
             bb.clear();
             bb.asIntBuffer().put(array, offset, chunkLen);
-            out.write(byteBuf, 0, chunkLen * 4);
+            out.write(byteBuf, 0, chunkLen << 2);
             offset += chunkLen;
         }
     }
@@ -146,13 +161,14 @@ public final class StorageIoUtils
         {
             return array;
         }
-        final byte[] byteBuf = new byte[Math.min(len, BUFFER_INTS) * 4];
-        final ByteBuffer bb = ByteBuffer.wrap(byteBuf).order(ByteOrder.BIG_ENDIAN);
+        final IoScratch scratch = IO_SCRATCH.get();
+        final byte[] byteBuf = scratch.bytes;
+        final ByteBuffer bb = scratch.buffer;
         int offset = 0;
         while (offset < len)
         {
             final int chunkLen = Math.min(len - offset, BUFFER_INTS);
-            in.readFully(byteBuf, 0, chunkLen * 4);
+            in.readFully(byteBuf, 0, chunkLen << 2);
             bb.clear();
             bb.asIntBuffer().get(array, offset, chunkLen);
             offset += chunkLen;
@@ -183,15 +199,16 @@ public final class StorageIoUtils
         {
             return;
         }
-        final byte[] byteBuf = new byte[Math.min(len, BUFFER_DOUBLES) * 8];
-        final ByteBuffer bb = ByteBuffer.wrap(byteBuf).order(ByteOrder.BIG_ENDIAN);
+        final IoScratch scratch = IO_SCRATCH.get();
+        final byte[] byteBuf = scratch.bytes;
+        final ByteBuffer bb = scratch.buffer;
         int offset = 0;
         while (offset < len)
         {
             final int chunkLen = Math.min(len - offset, BUFFER_DOUBLES);
             bb.clear();
             bb.asDoubleBuffer().put(array, offset, chunkLen);
-            out.write(byteBuf, 0, chunkLen * 8);
+            out.write(byteBuf, 0, chunkLen << 3);
             offset += chunkLen;
         }
     }
@@ -217,13 +234,14 @@ public final class StorageIoUtils
         {
             return array;
         }
-        final byte[] byteBuf = new byte[Math.min(len, BUFFER_DOUBLES) * 8];
-        final ByteBuffer bb = ByteBuffer.wrap(byteBuf).order(ByteOrder.BIG_ENDIAN);
+        final IoScratch scratch = IO_SCRATCH.get();
+        final byte[] byteBuf = scratch.bytes;
+        final ByteBuffer bb = scratch.buffer;
         int offset = 0;
         while (offset < len)
         {
             final int chunkLen = Math.min(len - offset, BUFFER_DOUBLES);
-            in.readFully(byteBuf, 0, chunkLen * 8);
+            in.readFully(byteBuf, 0, chunkLen << 3);
             bb.clear();
             bb.asDoubleBuffer().get(array, offset, chunkLen);
             offset += chunkLen;

@@ -408,15 +408,23 @@ public class RequestData extends TimerData
     {
         if (host == null)
         {
-            final String u = getUrl();
-            if (u != null)
+            if (url == null && urlBytes != null)
             {
-                final String hostName = UrlHostParser.retrieveHostFromUrl(u);
+                final String hostName = UrlHostParser.retrieveHostFromUrl(urlBytes, urlOffset, urlLength);
                 this.host = (hostName == null || hostName.length() == 0) ? UNKNOWN_HOST : hostName;
             }
             else
             {
-                this.host = UNKNOWN_HOST;
+                final String u = getUrl();
+                if (u != null)
+                {
+                    final String hostName = UrlHostParser.retrieveHostFromUrl(u);
+                    this.host = (hostName == null || hostName.length() == 0) ? UNKNOWN_HOST : hostName;
+                }
+                else
+                {
+                    this.host = UNKNOWN_HOST;
+                }
             }
         }
         return host != null ? host : UNKNOWN_HOST;

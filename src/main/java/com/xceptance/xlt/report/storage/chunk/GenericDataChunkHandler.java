@@ -449,13 +449,24 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
             final RoaringBitmap timerIds = new RoaringBitmap();
             final RoaringBitmap agentTestCaseIds = new RoaringBitmap();
 
-            // 1. Determine bounding timestamps
+            // 1. Determine bounding timestamps and maximum column count across all rows in a single pass,
+            //    caching each row's serialized field list so r.toList() is never allocated twice.
+            @SuppressWarnings("unchecked")
+            final List<String>[] rowFields = new List[size];
+            int colCount = 0;
             for (int i = 0; i < size; i++)
             {
                 final Data r = records.get(i);
                 final long t = r.getTime();
                 if (t < minTime) minTime = t;
                 if (t > maxTime) maxTime = t;
+
+                final List<String> fields = r.toList();
+                rowFields[i] = fields;
+                if (fields != null && fields.size() > colCount)
+                {
+                    colCount = fields.size();
+                }
             }
             if (size == 0)
             {
@@ -463,13 +474,10 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
                 maxTime = 0;
             }
 
-            // 2. Allocate columnar primitive arrays
+            // 2. Allocate columnar primitive arrays sized to the widest row in the chunk
             final int[] timeOffsets = new int[size];
             final int[] timerNameIdArr = new int[size];
             final int[] agentTestCaseIdArr = new int[size];
-
-            // Determine columns from first record
-            final int colCount = (size > 0 && records.get(0).toList() != null) ? records.get(0).toList().size() : 0;
             final int[][] colStringIds = new int[colCount][size];
 
             // Chunk-local dictionary: prevents arbitrary or high-cardinality generic record attributes
@@ -477,7 +485,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
             final Map<String, Integer> chunkLocalStringMap = new HashMap<>();
             final List<String> chunkStringsList = new ArrayList<>();
 
-            // 3. Populate columnar arrays and dictionaries
+            // 3. Populate columnar arrays and dictionaries using cached rowFields
             for (int i = 0; i < size; i++)
             {
                 final Data r = records.get(i);
@@ -491,10 +499,11 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
                 agentTestCaseIdArr[i] = aid;
                 agentTestCaseIds.add(aid);
 
-                final List<String> fields = r.toList();
+                final List<String> fields = rowFields[i];
                 if (fields != null)
                 {
-                    for (int c = 0; c < Math.min(colCount, fields.size()); c++)
+                    final int fieldSize = fields.size();
+                    for (int c = 0; c < fieldSize; c++)
                     {
                         final String val = fields.get(c);
                         if (val != null)

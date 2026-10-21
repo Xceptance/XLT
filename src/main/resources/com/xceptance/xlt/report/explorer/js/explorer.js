@@ -31,7 +31,12 @@
     feedbackLabel: "",
     timerInterval: null,
     sessionContext: null,
-    lastSessionResponse: null
+    lastSessionResponse: null,
+    usedIpFilter: null,
+    httpMethodFilter: null,
+    contentTypeFilter: null,
+    exactStatusCodeFilter: null,
+    lastDatalistKey: ""
   };
 
   // DOM Elements
@@ -51,6 +56,7 @@
     statusFilterGroup: document.getElementById("statusFilterGroup"),
     statusPresetSelect: document.getElementById("statusPresetSelect"),
     failedOnlyCheckbox: document.getElementById("failedOnlyCheckbox"),
+    activeDimensionFilters: document.getElementById("activeDimensionFilters"),
     runQueryBtn: document.getElementById("runQueryBtn"),
     resetZoomBtn: document.getElementById("resetZoomBtn"),
     resetFiltersBtn: document.getElementById("resetFiltersBtn"),
@@ -241,9 +247,18 @@
     return "both";
   }
 
+  const MAX_DATALIST_OPTIONS = 200;
+  const REQUEST_ONLY_GROUP_BYS = ["USED_IP", "STATUS_CODE", "CONTENT_TYPE", "HTTP_METHOD"];
+
   function getStatusCodeBounds() {
     if (el.recordTypeSelect.value !== "R") {
       return { minStatusCode: null, maxStatusCode: null };
+    }
+    if (state.exactStatusCodeFilter !== null && state.exactStatusCodeFilter !== undefined) {
+      return {
+        minStatusCode: state.exactStatusCodeFilter,
+        maxStatusCode: state.exactStatusCodeFilter
+      };
     }
     switch (el.statusPresetSelect.value) {
       case "4XX_5XX": return { minStatusCode: 400, maxStatusCode: 599 };
@@ -255,14 +270,156 @@
     }
   }
 
-  function populateTimerNamesForType() {
+  /**
+   * Populates the timer name `<datalist>` with at most {@link MAX_DATALIST_OPTIONS} options.
+   *
+   * <p>When a test contains more than {@code MAX_DATALIST_OPTIONS} distinct timer names for the
+   * active record type, options are dynamically filtered on user input (prefix matches first,
+   * followed by substring matches) so timers alphabetically beyond the initial slice remain
+   * discoverable without bloating the DOM with thousands of `<option>` nodes.</p>
+   */
+  function populateTimerNamesForType(filterText = "") {
     if (!state.meta || !state.meta.timers) return;
     const type = el.recordTypeSelect.value;
     const names = state.meta.timers[type] || [];
-    el.timerNameList.innerHTML = names
-      .slice(0, 500)
+    const q = (filterText || "").trim().toLowerCase();
+
+    let selected;
+    if (!q || names.length <= MAX_DATALIST_OPTIONS) {
+      selected = names.slice(0, MAX_DATALIST_OPTIONS);
+    } else {
+      const prefixMatches = [];
+      const substringMatches = [];
+      for (let i = 0; i < names.length; i++) {
+        const name = names[i];
+        const lower = name.toLowerCase();
+        if (lower.startsWith(q)) {
+          prefixMatches.push(name);
+          if (prefixMatches.length >= MAX_DATALIST_OPTIONS) break;
+        } else if (
+          prefixMatches.length + substringMatches.length < MAX_DATALIST_OPTIONS &&
+          lower.includes(q)
+        ) {
+          substringMatches.push(name);
+        }
+      }
+      selected = prefixMatches.concat(substringMatches).slice(0, MAX_DATALIST_OPTIONS);
+    }
+
+    const cacheKey = `${type}:${selected.length}:${selected[0] || ""}:${selected[selected.length - 1] || ""}`;
+    if (state.lastDatalistKey === cacheKey) return;
+    state.lastDatalistKey = cacheKey;
+
+    el.timerNameList.innerHTML = selected
       .map(n => `<option value="${escapeHtml(n)}"></option>`)
       .join("");
+  }
+
+  /**
+   * Renders removable filter chips for active request-dimension filters (`USED_IP`,
+   * `HTTP_METHOD`, `CONTENT_TYPE`, or exact `STATUS_CODE` selected from the Summary Table).
+   */
+  function renderActiveDimensionFilters() {
+    if (!el.activeDimensionFilters) return;
+    if (el.recordTypeSelect.value !== "R") {
+      el.activeDimensionFilters.classList.add("hidden");
+      el.activeDimensionFilters.innerHTML = "";
+      return;
+    }
+
+    const chips = [];
+    if (state.usedIpFilter) {
+      chips.push({ field: "usedIpFilter", label: `Used IP: ${state.usedIpFilter}` });
+    }
+    if (state.httpMethodFilter) {
+      chips.push({ field: "httpMethodFilter", label: `HTTP Method: ${state.httpMethodFilter}` });
+    }
+    if (state.contentTypeFilter) {
+      chips.push({ field: "contentTypeFilter", label: `Content-Type: ${state.contentTypeFilter}` });
+    }
+    if (state.exactStatusCodeFilter !== null && state.exactStatusCodeFilter !== undefined) {
+      chips.push({ field: "exactStatusCodeFilter", label: `HTTP Status: ${state.exactStatusCodeFilter}` });
+    }
+
+    if (chips.length === 0) {
+      el.activeDimensionFilters.classList.add("hidden");
+      el.activeDimensionFilters.innerHTML = "";
+      return;
+    }
+
+    el.activeDimensionFilters.classList.remove("hidden");
+    el.activeDimensionFilters.innerHTML =
+      `<span class="active-dim-filters-label">Active Dimension Filters:</span>` +
+      chips.map(c => `
+        <span class="dim-filter-chip">
+          <span>${escapeHtml(c.label)}</span>
+          <button type="button" data-clear-field="${escapeHtml(c.field)}" title="Remove ${escapeHtml(c.label)} filter">&times;</button>
+        </span>
+      `).join("");
+
+    el.activeDimensionFilters.querySelectorAll("button[data-clear-field]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const field = btn.getAttribute("data-clear-field");
+        if (field && field in state) {
+          state[field] = null;
+          renderActiveDimensionFilters();
+          markPendingChanges("Dimension filter removed — click ▶ Update to run");
+        }
+      });
+    });
+  }
+
+  /**
+   * Synchronizes request-only `Group By` / `View` options and the Forensic Mode selector
+   * whenever `recordTypeSelect` changes.
+   */
+  function syncRecordTypeDependentControls(syncInspectMode = true) {
+    const type = el.recordTypeSelect.value;
+    const isReq = type === "R";
+    el.statusFilterGroup.classList.toggle("hidden", !isReq);
+
+    // Enable/disable request-only chart metric option (NETWORK_PHASES)
+    if (el.chartMetricSelect) {
+      Array.from(el.chartMetricSelect.options).forEach(opt => {
+        if (opt.value === "NETWORK_PHASES") {
+          opt.disabled = !isReq;
+        }
+      });
+      if (!isReq && el.chartMetricSelect.value === "NETWORK_PHASES") {
+        el.chartMetricSelect.value = "LATENCY";
+      }
+    }
+
+    // Enable/disable request-only Group By options in chart and summary table
+    [
+      { select: el.chartGroupBySelect, fallback: "NONE" },
+      { select: el.summaryGroupBySelect, fallback: "TIMER" }
+    ].forEach(({ select, fallback }) => {
+      if (!select) return;
+      Array.from(select.options).forEach(opt => {
+        if (REQUEST_ONLY_GROUP_BYS.includes(opt.value)) {
+          opt.disabled = !isReq;
+        }
+      });
+      if (!isReq && REQUEST_ONLY_GROUP_BYS.includes(select.value)) {
+        select.value = fallback;
+      }
+    });
+
+    // Synchronize Forensic Inspector mode with selected Record Type
+    if (syncInspectMode && el.inspectModeSelect) {
+      const curMode = el.inspectModeSelect.value;
+      const preferFailed = el.failedOnlyCheckbox && el.failedOnlyCheckbox.checked;
+      if (type === "R" && !curMode.endsWith("_REQUESTS")) {
+        el.inspectModeSelect.value = preferFailed ? "FAILED_REQUESTS" : "SLOWEST_REQUESTS";
+      } else if (type === "T" && !curMode.endsWith("_TRANSACTIONS")) {
+        el.inspectModeSelect.value = preferFailed ? "FAILED_TRANSACTIONS" : "SLOWEST_TRANSACTIONS";
+      } else if (type === "A" && !curMode.endsWith("_ACTIONS")) {
+        el.inspectModeSelect.value = preferFailed ? "FAILED_ACTIONS" : "SLOWEST_ACTIONS";
+      }
+    }
+
+    renderActiveDimensionFilters();
   }
 
   // Load Dataset Metadata
@@ -295,7 +452,8 @@
       el.agentSelect.innerHTML = `<option value="">All Agents (${(meta.agents || []).length})</option>` +
         (meta.agents || []).map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
 
-      populateTimerNamesForType();
+      syncRecordTypeDependentControls(true);
+      populateTimerNamesForType(el.nameFilterInput.value);
       stopQueryFeedback(t0, `${fmtInt(meta.totalRecords)} records`);
       renderTimeSeriesChart(null);
       markPendingChanges(`Ready (${fmtInt(meta.totalRecords)} records) — configure filters and click ▶ Update to run`);
@@ -334,20 +492,27 @@
     state.hasExecutedQuery = true;
     const doChart = scope === "both" || scope === "chart";
     const doBottom = scope === "both" || scope === "bottom";
+    const useCombinedDashboardEndpoint = doChart && doBottom && state.activeTab === "summaryTab";
 
     const t0 = startQueryFeedback(
-      doChart && doBottom
-        ? "1/2 · Querying time-series"
-        : doChart
-          ? "Querying time-series"
-          : "Querying table"
+      useCombinedDashboardEndpoint
+        ? "Querying time-series & summary table (single pass)"
+        : doChart && doBottom
+          ? "1/2 · Querying time-series"
+          : doChart
+            ? "Querying time-series"
+            : "Querying table"
     );
 
+    const isReq = el.recordTypeSelect.value === "R";
     const { minStatusCode, maxStatusCode } = getStatusCodeBounds();
     const timerQuery = el.nameFilterInput.value.trim() || null;
     const agents = el.agentSelect.value ? [el.agentSelect.value] : null;
     const scenarios = el.scenarioSelect.value ? [el.scenarioSelect.value] : null;
     const failedOnly = el.failedOnlyCheckbox.checked || null;
+    const usedIps = isReq && state.usedIpFilter ? [state.usedIpFilter] : null;
+    const httpMethods = isReq && state.httpMethodFilter ? [state.httpMethodFilter] : null;
+    const contentTypes = isReq && state.contentTypeFilter ? [state.contentTypeFilter] : null;
 
     const commonFilter = {
       recordType: el.recordTypeSelect.value,
@@ -356,6 +521,9 @@
       timerQuery,
       agents,
       scenarios,
+      usedIps,
+      httpMethods,
+      contentTypes,
       failedOnly,
       minStatusCode,
       maxStatusCode
@@ -369,6 +537,37 @@
 
     try {
       let summaryBadgeInfo = "";
+
+      // Fast Path: Combined Single-Pass Dashboard Query (/api/v1/dashboard) when both Chart and Summary Table are active
+      if (useCombinedDashboardEndpoint) {
+        const dashResp = await fetch("/api/v1/dashboard", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...commonFilter,
+            bucketWidthMs: parseInt(el.bucketSizeSelect.value, 10) || 0,
+            chartGroupBy: el.chartGroupBySelect.value,
+            summaryGroupBy: el.summaryGroupBySelect.value
+          })
+        });
+        if (!dashResp.ok) throw new Error(`HTTP ${dashResp.status}`);
+        const dashData = await dashResp.json();
+        const tsData = dashData.timeSeries;
+        const bottomData = dashData.summaryTable;
+
+        if (tsData) {
+          state.lastTimeSeries = tsData;
+          el.bucketBadge.textContent = `Bucket: ${fmtDuration(tsData.bucketWidthMs)}`;
+          renderTimeSeriesChart(tsData);
+        }
+        state.summaryRows = (bottomData && bottomData.rows) || [];
+        renderSummaryTable();
+        summaryBadgeInfo = tsData
+          ? `${fmtInt(tsData.rowsMatched)} rows · ${tsData.chunksScanned} chunks · ${state.summaryRows.length} groups`
+          : `${state.summaryRows.length} groups`;
+        stopQueryFeedback(t0, summaryBadgeInfo);
+        return;
+      }
 
       // Step 1: Time-Series Query (if needed)
       if (doChart) {
@@ -433,6 +632,9 @@
               timerQuery,
               agents,
               scenarios,
+              usedIps,
+              httpMethods,
+              contentTypes,
               minStatusCode,
               maxStatusCode,
               failedOnly
@@ -844,13 +1046,30 @@
   }
 
   function applyDimensionFilter(groupBy, key, switchToForensics) {
+    if (!key || key === "(none)") return;
     if (groupBy === "TIMER") {
       el.nameFilterInput.value = key;
       el.clearNameFilterBtn.classList.remove("hidden");
+      populateTimerNamesForType(key);
     } else if (groupBy === "AGENT") {
       el.agentSelect.value = key;
     } else if (groupBy === "SCENARIO") {
       el.scenarioSelect.value = key;
+    } else if (groupBy === "USED_IP") {
+      state.usedIpFilter = key;
+      renderActiveDimensionFilters();
+    } else if (groupBy === "HTTP_METHOD") {
+      state.httpMethodFilter = key;
+      renderActiveDimensionFilters();
+    } else if (groupBy === "CONTENT_TYPE") {
+      state.contentTypeFilter = key;
+      renderActiveDimensionFilters();
+    } else if (groupBy === "STATUS_CODE") {
+      const m = String(key).match(/(\d+)/);
+      if (m) {
+        state.exactStatusCodeFilter = parseInt(m[1], 10);
+        renderActiveDimensionFilters();
+      }
     }
     if (switchToForensics) {
       switchTab("forensicTab");
@@ -1308,14 +1527,14 @@
     });
 
     el.recordTypeSelect.addEventListener("change", () => {
-      const isReq = el.recordTypeSelect.value === "R";
-      el.statusFilterGroup.classList.toggle("hidden", !isReq);
-      populateTimerNamesForType();
+      syncRecordTypeDependentControls(true);
+      populateTimerNamesForType(el.nameFilterInput.value);
       markPendingChanges();
     });
 
     el.nameFilterInput.addEventListener("input", () => {
       el.clearNameFilterBtn.classList.toggle("hidden", !el.nameFilterInput.value);
+      populateTimerNamesForType(el.nameFilterInput.value);
       markPendingChanges();
     });
 
@@ -1341,14 +1560,41 @@
     el.clearNameFilterBtn.addEventListener("click", () => {
       el.nameFilterInput.value = "";
       el.clearNameFilterBtn.classList.add("hidden");
+      populateTimerNamesForType("");
       markPendingChanges();
     });
 
+    if (el.statusPresetSelect) {
+      el.statusPresetSelect.addEventListener("change", () => {
+        if (state.exactStatusCodeFilter !== null) {
+          state.exactStatusCodeFilter = null;
+          renderActiveDimensionFilters();
+        }
+        markPendingChanges();
+      });
+    }
+
+    if (el.inspectModeSelect) {
+      el.inspectModeSelect.addEventListener("change", () => {
+        const mode = el.inspectModeSelect.value;
+        let targetType = null;
+        if (mode.endsWith("_REQUESTS")) targetType = "R";
+        else if (mode.endsWith("_TRANSACTIONS")) targetType = "T";
+        else if (mode.endsWith("_ACTIONS")) targetType = "A";
+        if (targetType && el.recordTypeSelect.value !== targetType) {
+          el.recordTypeSelect.value = targetType;
+          syncRecordTypeDependentControls(false);
+          populateTimerNamesForType(el.nameFilterInput.value);
+        }
+        markPendingChanges();
+      });
+    }
+
     // Global filter controls mark pending so user can combine filters before clicking ▶ Update
     [
-      el.scenarioSelect, el.agentSelect, el.statusPresetSelect, el.failedOnlyCheckbox,
+      el.scenarioSelect, el.agentSelect, el.failedOnlyCheckbox,
       el.chartGroupBySelect, el.bucketSizeSelect,
-      el.summaryGroupBySelect, el.inspectModeSelect, el.inspectLimitSelect
+      el.summaryGroupBySelect, el.inspectLimitSelect
     ].forEach(ctrl => {
       if (ctrl) ctrl.addEventListener("change", () => markPendingChanges());
     });
@@ -1382,7 +1628,6 @@
     el.resetFiltersBtn.addEventListener("click", () => {
       if (!state.meta) return;
       el.recordTypeSelect.value = "R";
-      el.statusFilterGroup.classList.remove("hidden");
       el.nameFilterInput.value = "";
       el.clearNameFilterBtn.classList.add("hidden");
       el.scenarioSelect.value = "";
@@ -1392,13 +1637,18 @@
       el.chartGroupBySelect.value = "NONE";
       el.bucketSizeSelect.value = "0";
       el.summarySearchInput.value = "";
+      state.usedIpFilter = null;
+      state.httpMethodFilter = null;
+      state.contentTypeFilter = null;
+      state.exactStatusCodeFilter = null;
       state.fromTime = state.meta.minTime;
       state.toTime = state.meta.maxTime;
       state.zoomed = false;
       chartInteraction.pendingBrushX1 = null;
       chartInteraction.pendingBrushX2 = null;
+      syncRecordTypeDependentControls(true);
       syncTimeInputsFromState();
-      populateTimerNamesForType();
+      populateTimerNamesForType("");
       if (state.lastTimeSeries) renderTimeSeriesChart(state.lastTimeSeries);
       markPendingChanges("All filters reset — click ▶ Update to run");
     });

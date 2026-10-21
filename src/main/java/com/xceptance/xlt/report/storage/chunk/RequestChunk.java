@@ -816,6 +816,12 @@ public class RequestChunk implements Chunk
     }
 
     /**
+     * Thread-local {@link Inflater} instance reused across Cold Forensic Tail Block decompressions to avoid
+     * native zlib {@code z_stream} JNI allocation and deallocation overhead.
+     */
+    private static final ThreadLocal<Inflater> FORENSIC_INFLATER = ThreadLocal.withInitial(Inflater::new);
+
+    /**
      * Inflates and parses a Cold Forensic Tail Block given its row bitmap, uncompressed byte length, and
      * Deflate-compressed payload bytes.
      *
@@ -840,7 +846,8 @@ public class RequestChunk implements Chunk
 
         // 1. Inflate the Deflate-compressed byte stream into an exact-sized uncompressed buffer
         final byte[] raw = new byte[uncompressedForensicLength];
-        final Inflater inflater = new Inflater();
+        final Inflater inflater = FORENSIC_INFLATER.get();
+        inflater.reset();
         try
         {
             inflater.setInput(compressedForensicTail);
@@ -861,7 +868,7 @@ public class RequestChunk implements Chunk
         }
         finally
         {
-            inflater.end();
+            inflater.reset();
         }
 
         // 2. Reconstruct the (rowIdx -> ForensicDetails) map by iterating forensicRows in ascending order.

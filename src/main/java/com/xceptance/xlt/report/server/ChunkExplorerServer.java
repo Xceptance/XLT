@@ -55,16 +55,24 @@ public class ChunkExplorerServer implements AutoCloseable
     private static final Map<String, String> CONTENT_TYPES = Map.ofEntries(
         Map.entry("html", "text/html; charset=UTF-8"),
         Map.entry("htm", "text/html; charset=UTF-8"),
+        Map.entry("xhtml", "application/xhtml+xml; charset=UTF-8"),
         Map.entry("css", "text/css; charset=UTF-8"),
         Map.entry("js", "application/javascript; charset=UTF-8"),
         Map.entry("json", "application/json; charset=UTF-8"),
+        Map.entry("har", "application/json; charset=UTF-8"),
+        Map.entry("xml", "application/xml; charset=UTF-8"),
+        Map.entry("txt", "text/plain; charset=UTF-8"),
+        Map.entry("log", "text/plain; charset=UTF-8"),
         Map.entry("svg", "image/svg+xml"),
         Map.entry("png", "image/png"),
         Map.entry("jpg", "image/jpeg"),
         Map.entry("jpeg", "image/jpeg"),
         Map.entry("gif", "image/gif"),
         Map.entry("webp", "image/webp"),
-        Map.entry("ico", "image/x-icon")
+        Map.entry("ico", "image/x-icon"),
+        Map.entry("woff", "font/woff"),
+        Map.entry("woff2", "font/woff2"),
+        Map.entry("ttf", "font/ttf")
     );
 
     /** Backing columnar query engine. */
@@ -297,11 +305,10 @@ public class ChunkExplorerServer implements AutoCloseable
                 return;
             }
 
-            final byte[] bytes = Files.readAllBytes(target);
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.setContentType(guessContentType(target.getFileName().toString()));
-            resp.setContentLength(bytes.length);
-            resp.getOutputStream().write(bytes);
+            resp.setContentLengthLong(Files.size(target));
+            Files.copy(target, resp.getOutputStream());
         }
     }
 

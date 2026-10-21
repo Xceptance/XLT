@@ -797,4 +797,56 @@ public final class QueryModels
     )
     {
     }
+
+    /**
+     * Combined request payload for {@code POST /api/v1/dashboard}, allowing the interactive Explorer UI
+     * to compute both the time-series charts and the multi-dimensional summary table in a single HTTP
+     * round-trip and a single columnar chunk scan pass.
+     */
+    public record DashboardQuerySpec(
+        String recordType,
+        long fromTime,
+        long toTime,
+        int bucketWidthMs,
+        List<String> timers,
+        String timerQuery,
+        List<String> agents,
+        List<String> scenarios,
+        List<String> usedIps,
+        List<String> httpMethods,
+        List<String> contentTypes,
+        Integer minStatusCode,
+        Integer maxStatusCode,
+        Boolean failedOnly,
+        Integer minRunTime,
+        String chartGroupBy,
+        String summaryGroupBy
+    )
+    {
+        /**
+         * Returns the requested time-series group-by dimension (defaults to {@code "NONE"} when null).
+         */
+        public String timeseriesGroupBy()
+        {
+            return chartGroupBy;
+        }
+    }
+
+    /**
+     * Combined response payload for {@code POST /api/v1/dashboard}.
+     *
+     * @param queryTimeMs
+     *            total wall-clock execution time in milliseconds for the combined single-pass scan
+     * @param timeSeries
+     *            bucketed time-series response
+     * @param summaryTable
+     *            multi-dimensional summary table response
+     */
+    public record DashboardResponse(
+        long queryTimeMs,
+        TimeSeriesResponse timeSeries,
+        SummaryTableResponse summaryTable
+    )
+    {
+    }
 }

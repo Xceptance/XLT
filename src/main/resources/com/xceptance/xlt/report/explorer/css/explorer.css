@@ -928,3 +928,49 @@ input[type="text"]:focus {
     justify-content: space-between;
   }
 }
+
+/* Active Dimension Filter Chips */
+.active-dim-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  font-size: 12px;
+}
+
+.active-dim-filters-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.dim-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(2, 132, 199, 0.12);
+  border: 1px solid var(--accent);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.dim-filter-chip button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.dim-filter-chip button:hover {
+  color: var(--danger);
+}
+

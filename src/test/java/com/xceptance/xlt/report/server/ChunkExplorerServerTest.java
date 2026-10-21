@@ -423,11 +423,41 @@ public class ChunkExplorerServerTest
     public void testApiEdgeCasesAndContentTypes() throws Exception
     {
         assertEquals("text/html; charset=UTF-8", ChunkExplorerServer.guessContentType("index.html"));
+        assertEquals("application/xhtml+xml; charset=UTF-8", ChunkExplorerServer.guessContentType("page.xhtml"));
+        assertEquals("application/json; charset=UTF-8", ChunkExplorerServer.guessContentType("network.har"));
+        assertEquals("application/xml; charset=UTF-8", ChunkExplorerServer.guessContentType("data.xml"));
+        assertEquals("text/plain; charset=UTF-8", ChunkExplorerServer.guessContentType("notes.txt"));
+        assertEquals("text/plain; charset=UTF-8", ChunkExplorerServer.guessContentType("output.log"));
+        assertEquals("font/woff2", ChunkExplorerServer.guessContentType("inter.woff2"));
+        assertEquals("font/woff", ChunkExplorerServer.guessContentType("inter.woff"));
+        assertEquals("font/ttf", ChunkExplorerServer.guessContentType("inter.ttf"));
         assertEquals("text/css; charset=UTF-8", ChunkExplorerServer.guessContentType("style.css"));
         assertEquals("application/javascript; charset=UTF-8", ChunkExplorerServer.guessContentType("app.js"));
         assertEquals("image/png", ChunkExplorerServer.guessContentType("logo.png"));
         assertEquals("application/octet-stream", ChunkExplorerServer.guessContentType("archive.bin"));
         assertEquals("application/octet-stream", ChunkExplorerServer.guessContentType("noext"));
+
+        // Combined single-pass POST /api/v1/dashboard endpoint
+        final String dashBody = """
+            {
+              "recordType": "R",
+              "fromTime": 999000,
+              "toTime": 1002000,
+              "bucketWidthMs": 1000,
+              "chartGroupBy": "USED_IP",
+              "summaryGroupBy": "TIMER"
+            }
+            """;
+        final HttpRequest dashReq = HttpRequest.newBuilder()
+                                               .uri(URI.create(server.getBaseUrl() + "/api/v1/dashboard"))
+                                               .header("Content-Type", "application/json")
+                                               .POST(HttpRequest.BodyPublishers.ofString(dashBody))
+                                               .build();
+        final HttpResponse<String> dashResp = httpClient.send(dashReq, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, dashResp.statusCode());
+        assertTrue(dashResp.body().contains("\"timeSeries\""));
+        assertTrue(dashResp.body().contains("\"summaryTable\""));
+        assertTrue(dashResp.body().contains("\"PlaceOrder.1\""));
 
         // Empty body POST on /api/v1/timeseries should deserialize default {} spec and return 200
         final HttpRequest emptyPost = HttpRequest.newBuilder()

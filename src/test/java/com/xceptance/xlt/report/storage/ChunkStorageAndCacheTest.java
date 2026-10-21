@@ -2590,4 +2590,125 @@ public class ChunkStorageAndCacheTest
         Assert.assertEquals(1, urls.length);
         Assert.assertEquals("http://example.com/1500", urls[0].url());
     }
+
+    @Test
+    public void testCacheFingerprintDetectsInPlaceModificationTimestampChange() throws Exception
+    {
+        final File resultsDir = new File(tempDir, "fp-mtime-results");
+        final File cacheDir = new File(resultsDir, "xlt-cache");
+        resultsDir.mkdirs();
+        cacheDir.mkdirs();
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName("xlt-cache");
+
+        final File log = new File(resultsDir, "timers.csv");
+        Files.writeString(log.toPath(), "R,1,100,false,200\n", StandardCharsets.UTF_8);
+        final long initialMtime = 1_700_000_000_000L;
+        Assert.assertTrue(log.setLastModified(initialMtime));
+
+        final CacheFingerprint fp1 = CacheFingerprint.calculate(resultsDir, config);
+        Assert.assertEquals(1, fp1.fileCount());
+        Assert.assertEquals(initialMtime, fp1.maxLastModified());
+        fp1.saveToDirectory(cacheDir);
+
+        final CacheFingerprint loadedFp = CacheFingerprint.loadFromDirectory(cacheDir);
+        Assert.assertNotNull(loadedFp);
+        Assert.assertTrue(loadedFp.matches(fp1));
+
+        // Overwrite log in-place with the EXACT same byte length (18 bytes) but newer mtime
+        Files.writeString(log.toPath(), "R,1,999,false,200\n", StandardCharsets.UTF_8);
+        Assert.assertTrue(log.setLastModified(initialMtime + 5000L));
+
+        final CacheFingerprint fp2 = CacheFingerprint.calculate(resultsDir, config);
+        Assert.assertEquals("Byte size is identical", fp1.totalBytes(), fp2.totalBytes());
+        Assert.assertFalse("Fingerprint must detect in-place modification via maxLastModified", loadedFp.matches(fp2));
+
+        // Legacy 5-argument constructor (maxLastModified == 0L) remains backward compatible
+        final CacheFingerprint legacyFp = new CacheFingerprint(fp1.formatVersion(), fp1.fileCount(), fp1.totalBytes(), fp1.mergeRulesHash(), fp1.xltVersion());
+        Assert.assertEquals(0L, legacyFp.maxLastModified());
+        Assert.assertTrue(legacyFp.matches(fp1));
+    }
+
+    @Test
+    public void testGenericDataChunkVariableColumnCountsInLaterRows() throws Exception
+    {
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('Y');
+        final ChunkBuilder builder = handler.newChunkBuilder(dicts);
+
+        // First row has 5 columns; second row has 7 columns
+        final Data row1 = new VariableColumnRecord("VarRec-1", 1000L, List.of("Y", "VarRec-1", "1000", "col3", "col4"));
+        final Data row2 = new VariableColumnRecord("VarRec-2", 1005L, List.of("Y", "VarRec-2", "1005", "col3", "col4", "col5-extra", "col6-extra"));
+        Assert.assertTrue(builder.append(row1));
+        Assert.assertTrue(builder.append(row2));
+
+        final Chunk chunk = builder.seal();
+        final List<List<String>> decodedRows = new ArrayList<>();
+        handler.scan(chunk, ScanPredicate.ALL, d -> {
+            if (d instanceof VariableColumnRecord vcr)
+            {
+                decodedRows.add(vcr.parsedColumns);
+            }
+        }, dicts);
+
+        Assert.assertEquals(2, decodedRows.size());
+        Assert.assertEquals("col5-extra", decodedRows.get(1).get(5));
+        Assert.assertEquals("col6-extra", decodedRows.get(1).get(6));
+    }
+
+    @Test
+    public void testUrlHostParserByteSliceZeroAllocationAndCache()
+    {
+        final byte[] raw1 = "https://shop.example.com:8443/api/order?id=42".getBytes(StandardCharsets.UTF_8);
+        final String host1 = com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(raw1, 0, raw1.length);
+        Assert.assertEquals("shop.example.com:8443", host1);
+
+        // Second call with identical bytes must hit the thread-local cache and return the same String instance
+        final String host1Cached = com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(raw1, 0, raw1.length);
+        Assert.assertSame(host1, host1Cached);
+
+        // Slice inside a larger CSV buffer
+        final byte[] csvLine = "R,OpenHome,1000,50,false,100,200,200,http://backend-01.internal/health,text/html".getBytes(StandardCharsets.UTF_8);
+        final int urlOffset = 37;
+        final int urlLen = "http://backend-01.internal/health".length();
+        Assert.assertEquals("backend-01.internal",
+                            com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(csvLine, urlOffset, urlLen));
+        Assert.assertEquals("", com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(csvLine, 0, 0));
+    }
+
+    public static class VariableColumnRecord extends com.xceptance.xlt.api.engine.AbstractData
+    {
+        private List<String> serializeColumns;
+        public List<String> parsedColumns;
+
+        public VariableColumnRecord()
+        {
+            super('Y');
+        }
+
+        public VariableColumnRecord(final String name, final long time, final List<String> cols)
+        {
+            super(name, 'Y');
+            setTime(time);
+            this.serializeColumns = cols;
+        }
+
+        @Override
+        public List<String> toList()
+        {
+            return serializeColumns;
+        }
+
+        @Override
+        public void setRemainingValues(final CsvByteColumns columns)
+        {
+            parsedColumns = new ArrayList<>(columns.size());
+            for (int i = 0; i < columns.size(); i++)
+            {
+                parsedColumns.add(columns.getString(i));
+            }
+        }
+    }
 }

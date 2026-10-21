@@ -54,6 +54,13 @@ public class RequestChunkHandler implements ChunkTypeHandler
     /** Maximum number of slowest requests per chunk retained in the Cold Forensic Tail Block in sparse mode. */
     public static final int MAX_SLOWEST_FORENSIC_ROWS = 256;
 
+    /**
+     * Thread-local {@link Deflater} instance reused across Cold Forensic Tail Block compressions to avoid
+     * native zlib {@code z_stream} JNI allocation and deallocation overhead.
+     */
+    private static final ThreadLocal<Deflater> FORENSIC_DEFLATER =
+        ThreadLocal.withInitial(() -> new Deflater(Deflater.BEST_SPEED));
+
     /** Process-wide default request details mode ("sparse" or "full"). */
     private static volatile String defaultRequestDetailsMode = "sparse";
 
@@ -327,6 +334,37 @@ public class RequestChunkHandler implements ChunkTypeHandler
     }
 
     /**
+     * Thread-local reusable column buffers for {@link #scan}, avoiding 21 {@code int[64000]} (5.37 MB)
+     * heap allocations per chunk during high-throughput batch report scans.
+     */
+    private static final ThreadLocal<ScanScratch> SCAN_SCRATCH = ThreadLocal.withInitial(ScanScratch::new);
+
+    private static final class ScanScratch
+    {
+        final int[] timeOffsets       = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] timerIds          = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] agentTestCaseIds  = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] runTimes          = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] responseCodes     = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] bytesSent         = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] bytesReceived     = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] dnsTimes          = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] connectTimes      = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] sendTimes         = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] serverBusyTimes   = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] receiveTimes      = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] timeToFirstBytes  = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] timeToLastBytes   = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] httpMethods       = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] contentTypes      = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] usedIps           = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] ipAddresses       = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] userNumbers       = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] formDataEncodings = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        final int[] urlHashes         = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+    }
+
+    /**
      * Decompresses columnar arrays and evaluates rows against the predicate, reconstructing
      * {@link RequestData} instances (including any forensic details retained in the Cold Forensic Tail Block)
      * and feeding them directly to the provided consumer.
@@ -352,11 +390,12 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final RequestChunk c = (RequestChunk) resolveChunk(chunk, dicts);
         final int rowCount = c.getRowCount();
         final long baseTime = c.getMinTime();
+        final ScanScratch scratch = SCAN_SCRATCH.get();
 
-        // 2. Filter column decompression
-        final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
-        final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
-        final int[] agentTestCaseIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+        // 2. Filter column decompression into thread-local scratch buffers
+        final int[] timeOffsets = FastIntegerCodec.decompressTo(c.compTimeOffsets, scratch.timeOffsets);
+        final int[] timerIds = FastIntegerCodec.decompressTo(c.compTimerNameIds, scratch.timerIds);
+        final int[] agentTestCaseIds = FastIntegerCodec.decompressTo(c.compAgentTestCaseIds, scratch.agentTestCaseIds);
 
         final boolean allMatch = predicate.matchesAllRows(chunk);
         if (!allMatch)
@@ -377,32 +416,38 @@ public class RequestChunkHandler implements ChunkTypeHandler
         }
 
         // 3. Decompress remaining 18 columns only when matching rows exist
-        final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
-        final int[] responseCodes = FastIntegerCodec.decompress(c.compResponseCodes);
-        final int[] bytesSent = FastIntegerCodec.decompress(c.compBytesSent);
-        final int[] bytesReceived = FastIntegerCodec.decompress(c.compBytesReceived);
+        final int[] runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
+        final int[] responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+        final int[] bytesSent = FastIntegerCodec.decompressTo(c.compBytesSent, scratch.bytesSent);
+        final int[] bytesReceived = FastIntegerCodec.decompressTo(c.compBytesReceived, scratch.bytesReceived);
 
-        final int[] dnsTimes = FastIntegerCodec.decompress(c.compDnsTimes);
-        final int[] connectTimes = FastIntegerCodec.decompress(c.compConnectTimes);
-        final int[] sendTimes = FastIntegerCodec.decompress(c.compSendTimes);
-        final int[] serverBusyTimes = FastIntegerCodec.decompress(c.compServerBusyTimes);
-        final int[] receiveTimes = FastIntegerCodec.decompress(c.compReceiveTimes);
-        final int[] timeToFirstBytes = FastIntegerCodec.decompress(c.compTimeToFirstBytes);
-        final int[] timeToLastBytes = FastIntegerCodec.decompress(c.compTimeToLastBytes);
+        final int[] dnsTimes = FastIntegerCodec.decompressTo(c.compDnsTimes, scratch.dnsTimes);
+        final int[] connectTimes = FastIntegerCodec.decompressTo(c.compConnectTimes, scratch.connectTimes);
+        final int[] sendTimes = FastIntegerCodec.decompressTo(c.compSendTimes, scratch.sendTimes);
+        final int[] serverBusyTimes = FastIntegerCodec.decompressTo(c.compServerBusyTimes, scratch.serverBusyTimes);
+        final int[] receiveTimes = FastIntegerCodec.decompressTo(c.compReceiveTimes, scratch.receiveTimes);
+        final int[] timeToFirstBytes = FastIntegerCodec.decompressTo(c.compTimeToFirstBytes, scratch.timeToFirstBytes);
+        final int[] timeToLastBytes = FastIntegerCodec.decompressTo(c.compTimeToLastBytes, scratch.timeToLastBytes);
 
-        final int[] httpMethods = FastIntegerCodec.decompress(c.compHttpMethods);
-        final int[] contentTypes = FastIntegerCodec.decompress(c.compContentTypes);
-        final int[] usedIps = FastIntegerCodec.decompress(c.compUsedIps);
-        final int[] ipAddresses = FastIntegerCodec.decompress(c.compIpAddresses);
-        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
-            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
-        final int[] formDataEncodings = c.compFormDataEncodings != null && c.compFormDataEncodings.length > 0
-            ? FastIntegerCodec.decompress(c.compFormDataEncodings) : null;
-        final int[] urlHashes = c.compUrlHashes != null && c.compUrlHashes.length > 0
-            ? FastIntegerCodec.decompress(c.compUrlHashes) : null;
+        final int[] httpMethods = FastIntegerCodec.decompressTo(c.compHttpMethods, scratch.httpMethods);
+        final int[] contentTypes = FastIntegerCodec.decompressTo(c.compContentTypes, scratch.contentTypes);
+        final int[] usedIps = FastIntegerCodec.decompressTo(c.compUsedIps, scratch.usedIps);
+        final int[] ipAddresses = FastIntegerCodec.decompressTo(c.compIpAddresses, scratch.ipAddresses);
+        final boolean hasUserNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0;
+        final int[] userNumbers = hasUserNumbers
+            ? FastIntegerCodec.decompressTo(c.compUserNumbers, scratch.userNumbers) : null;
+        final boolean hasFormDataEncodings = c.compFormDataEncodings != null && c.compFormDataEncodings.length > 0;
+        final int[] formDataEncodings = hasFormDataEncodings
+            ? FastIntegerCodec.decompressTo(c.compFormDataEncodings, scratch.formDataEncodings) : null;
+        final boolean hasUrlHashes = c.compUrlHashes != null && c.compUrlHashes.length > 0;
+        final int[] urlHashes = hasUrlHashes
+            ? FastIntegerCodec.decompressTo(c.compUrlHashes, scratch.urlHashes) : null;
 
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
+        final org.roaringbitmap.IntIterator failIter = anyFailed ? failedRows.getIntIterator() : null;
+        int nextFailedRow = (failIter != null && failIter.hasNext()) ? failIter.next() : -1;
+
         final RoaringBitmap forensicRows = c.getForensicRows();
         final boolean anyForensic = forensicRows != null && !forensicRows.isEmpty();
 
@@ -424,6 +469,11 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 continue;
             }
 
+            while (nextFailedRow != -1 && nextFailedRow < i)
+            {
+                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
+            }
+
             // Reconstruct RequestData instance
             final RequestData req = new RequestData();
             req.setTime(time);
@@ -437,7 +487,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
 
             req.setRunTime(runTimes[i]);
-            req.setFailed(anyFailed && failedRows.contains(i));
+            req.setFailed(nextFailedRow == i);
             req.setResponseCode(responseCodes[i]);
             req.setBytesSent(bytesSent[i]);
             req.setBytesReceived(bytesReceived[i]);
@@ -462,13 +512,13 @@ public class RequestChunkHandler implements ChunkTypeHandler
             // Cached pre-split IP addresses array lookup (avoids 4.5M regex splits)
             req.setIpAddresses(dicts.getSplitIpAddresses(ipAddresses[i]));
 
-            if (userNumbers != null && i < userNumbers.length)
+            if (userNumbers != null)
             {
                 final int userNumId = userNumbers[i];
                 req.setTestUserNumber(userNumId >= 0 && userNumId < stringBuffers.length ? stringBuffers[userNumId] : null);
             }
 
-            if (formDataEncodings != null && i < formDataEncodings.length)
+            if (formDataEncodings != null)
             {
                 final int encId = formDataEncodings[i];
                 req.setFormDataEncoding(encId >= 0 && encId < stringBuffers.length ? stringBuffers[encId] : null);
@@ -479,7 +529,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             if (sampleUrls != null && sampleUrls.length > 0)
             {
                 final GlobalDictionaries.CachedSampleUrl sample = (sampleUrls.length == 1) ? sampleUrls[0] : sampleUrls[i % sampleUrls.length];
-                final int urlHash = (urlHashes != null && i < urlHashes.length)
+                final int urlHash = (urlHashes != null)
                     ? urlHashes[i]
                     : sample.hashCodeOfUrlWithoutFragment();
                 req.setUrlFast(sample.url(), sample.host(), urlHash);
@@ -539,11 +589,12 @@ public class RequestChunkHandler implements ChunkTypeHandler
             : (RequestChunk) resolveChunk(chunk, dicts);
         final int rowCount = c.getRowCount();
         final long baseTime = c.getMinTime();
+        final ScanScratch scratch = SCAN_SCRATCH.get();
 
-        // 2. Filter column decompression
-        final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
-        final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
-        final int[] agentTestCaseIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+        // 2. Filter column decompression into thread-local scratch buffers
+        final int[] timeOffsets = FastIntegerCodec.decompressTo(c.compTimeOffsets, scratch.timeOffsets);
+        final int[] timerIds = FastIntegerCodec.decompressTo(c.compTimerNameIds, scratch.timerIds);
+        final int[] agentTestCaseIds = FastIntegerCodec.decompressTo(c.compAgentTestCaseIds, scratch.agentTestCaseIds);
 
         final boolean allMatch = predicate.matchesAllRows(chunk);
         if (!allMatch)
@@ -563,47 +614,39 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
         }
 
-        // 3. Decompress remaining 18 columns only when matching rows exist
-        final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
-        final int[] responseCodes = FastIntegerCodec.decompress(c.compResponseCodes);
-        final int[] bytesSent = FastIntegerCodec.decompress(c.compBytesSent);
-        final int[] bytesReceived = FastIntegerCodec.decompress(c.compBytesReceived);
+        // 3. Decompress remaining 18 columns into thread-local scratch buffers only when matching rows exist
+        final int[] runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
+        final int[] responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+        final int[] bytesSent = FastIntegerCodec.decompressTo(c.compBytesSent, scratch.bytesSent);
+        final int[] bytesReceived = FastIntegerCodec.decompressTo(c.compBytesReceived, scratch.bytesReceived);
 
-        final int[] dnsTimes = FastIntegerCodec.decompress(c.compDnsTimes);
-        final int[] connectTimes = FastIntegerCodec.decompress(c.compConnectTimes);
-        final int[] sendTimes = FastIntegerCodec.decompress(c.compSendTimes);
-        final int[] serverBusyTimes = FastIntegerCodec.decompress(c.compServerBusyTimes);
-        final int[] receiveTimes = FastIntegerCodec.decompress(c.compReceiveTimes);
-        final int[] timeToFirstBytes = FastIntegerCodec.decompress(c.compTimeToFirstBytes);
-        final int[] timeToLastBytes = FastIntegerCodec.decompress(c.compTimeToLastBytes);
+        final int[] dnsTimes = FastIntegerCodec.decompressTo(c.compDnsTimes, scratch.dnsTimes);
+        final int[] connectTimes = FastIntegerCodec.decompressTo(c.compConnectTimes, scratch.connectTimes);
+        final int[] sendTimes = FastIntegerCodec.decompressTo(c.compSendTimes, scratch.sendTimes);
+        final int[] serverBusyTimes = FastIntegerCodec.decompressTo(c.compServerBusyTimes, scratch.serverBusyTimes);
+        final int[] receiveTimes = FastIntegerCodec.decompressTo(c.compReceiveTimes, scratch.receiveTimes);
+        final int[] timeToFirstBytes = FastIntegerCodec.decompressTo(c.compTimeToFirstBytes, scratch.timeToFirstBytes);
+        final int[] timeToLastBytes = FastIntegerCodec.decompressTo(c.compTimeToLastBytes, scratch.timeToLastBytes);
 
-        final int[] httpMethods = FastIntegerCodec.decompress(c.compHttpMethods);
-        final int[] contentTypes = FastIntegerCodec.decompress(c.compContentTypes);
-        final int[] usedIps = FastIntegerCodec.decompress(c.compUsedIps);
-        final int[] ipAddresses = FastIntegerCodec.decompress(c.compIpAddresses);
-        final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
-            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
-        final int[] formDataEncodings = c.compFormDataEncodings != null && c.compFormDataEncodings.length > 0
-            ? FastIntegerCodec.decompress(c.compFormDataEncodings) : null;
-        final int[] urlHashes = c.compUrlHashes != null && c.compUrlHashes.length > 0
-            ? FastIntegerCodec.decompress(c.compUrlHashes) : null;
+        final int[] httpMethods = FastIntegerCodec.decompressTo(c.compHttpMethods, scratch.httpMethods);
+        final int[] contentTypes = FastIntegerCodec.decompressTo(c.compContentTypes, scratch.contentTypes);
+        final int[] usedIps = FastIntegerCodec.decompressTo(c.compUsedIps, scratch.usedIps);
+        final int[] ipAddresses = FastIntegerCodec.decompressTo(c.compIpAddresses, scratch.ipAddresses);
+        final boolean hasUserNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0;
+        final int[] userNumbers = hasUserNumbers
+            ? FastIntegerCodec.decompressTo(c.compUserNumbers, scratch.userNumbers) : null;
+        final boolean hasFormDataEncodings = c.compFormDataEncodings != null && c.compFormDataEncodings.length > 0;
+        final int[] formDataEncodings = hasFormDataEncodings
+            ? FastIntegerCodec.decompressTo(c.compFormDataEncodings, scratch.formDataEncodings) : null;
+        final boolean hasUrlHashes = c.compUrlHashes != null && c.compUrlHashes.length > 0;
+        final int[] urlHashes = hasUrlHashes
+            ? FastIntegerCodec.decompressTo(c.compUrlHashes, scratch.urlHashes) : null;
 
+        // Monotonic cursor over failedRows RoaringBitmap (avoids allocating a 64 KB boolean[] per chunk)
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
-
-        // Convert failed bitmap to fast boolean lookup table if any rows failed
-        boolean[] failedLookup = null;
-        if (anyFailed)
-        {
-            failedLookup = new boolean[rowCount];
-            for (final int r : failedRows)
-            {
-                if (r < rowCount)
-                {
-                    failedLookup[r] = true;
-                }
-            }
-        }
+        final org.roaringbitmap.IntIterator failIter = anyFailed ? failedRows.getIntIterator() : null;
+        int nextFailedRow = (failIter != null && failIter.hasNext()) ? failIter.next() : -1;
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
@@ -653,6 +696,11 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 continue;
             }
 
+            while (nextFailedRow != -1 && nextFailedRow < i)
+            {
+                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
+            }
+
             if (time < minTime)
             {
                 minTime = time;
@@ -683,7 +731,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             if (lastUrls != null && lastUrls.length > 0)
             {
                 final GlobalDictionaries.CachedSampleUrl sample = (lastUrls.length == 1) ? lastUrls[0] : lastUrls[i % lastUrls.length];
-                final int urlHash = (urlHashes != null && i < urlHashes.length)
+                final int urlHash = (urlHashes != null)
                     ? urlHashes[i]
                     : sample.hashCodeOfUrlWithoutFragment();
                 req.setUrlFast(sample.url(), sample.host(), urlHash);
@@ -720,7 +768,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
 
             req.setRunTime(runTimes[i]);
-            req.setFailed(failedLookup != null && failedLookup[i]);
+            req.setFailed(nextFailedRow == i);
 
             final int code = responseCodes[i];
             req.setResponseCode(code);
@@ -1779,9 +1827,11 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 final byte[] rawBytes = rawBaos.toByteArray();
                 uncompressedForensicLength = rawBytes.length;
 
-                // Compress the UTF-8 forensic tuples with Deflater.BEST_SPEED: URLs and form payloads share
-                // high prefix/substring redundancy within a chunk, achieving ~5-8x compression at minimal CPU cost.
-                final Deflater deflater = new Deflater(Deflater.BEST_SPEED);
+                // Compress the UTF-8 forensic tuples with a thread-local Deflater (BEST_SPEED): URLs and form
+                // payloads share high prefix/substring redundancy within a chunk, achieving ~5-8x compression
+                // while reusing the native zlib z_stream across chunks without JNI malloc/free churn.
+                final Deflater deflater = FORENSIC_DEFLATER.get();
+                deflater.reset();
                 try
                 {
                     deflater.setInput(rawBytes);
@@ -1800,7 +1850,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 }
                 finally
                 {
-                    deflater.end();
+                    deflater.reset();
                 }
             }
 
