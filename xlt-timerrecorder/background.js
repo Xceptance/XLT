@@ -606,6 +606,7 @@ function getHeaderValue(headerArray, headerName) {
 function createRecordEntry(dataEntry) {
 
   function enrichRequestEntry(reqEntry, timingEntry) {
+    // GH#715: don't overwrite start time if set
     if (!reqEntry.startTime) {
       reqEntry.startTime = timingEntry.startTime
         ? Math.round(timingEntry.startTime)
