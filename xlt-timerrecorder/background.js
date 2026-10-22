@@ -613,22 +613,22 @@ function createRecordEntry(dataEntry) {
     }
     reqEntry.connectTime = timingEntry.connectTime
       ? Math.round(timingEntry.connectTime)
-      : timingEntry.connectTime;
+      : reqEntry.connectTime;
     reqEntry.sendTime = timingEntry.sendTime
       ? Math.round(timingEntry.sendTime)
-      : timingEntry.sendTime;
+      : reqEntry.sendTime;
     reqEntry.busyTime = timingEntry.busyTime
       ? Math.round(timingEntry.busyTime)
-      : timingEntry.busyTime;
+      : reqEntry.busyTime;
     reqEntry.receiveTime = timingEntry.receiveTime
       ? Math.round(timingEntry.receiveTime)
-      : timingEntry.receiveTime;
+      : reqEntry.receiveTime;
     reqEntry.firstBytesTime = timingEntry.firstBytesTime
       ? Math.round(timingEntry.firstBytesTime)
-      : timingEntry.firstBytesTime;
+      : reqEntry.firstBytesTime;
     reqEntry.lastBytesTime = timingEntry.lastBytesTime
       ? Math.round(timingEntry.lastBytesTime)
-      : timingEntry.lastBytesTime;
+      : reqEntry.lastBytesTime;
     reqEntry.duration = timingEntry.duration
       ? Math.round(timingEntry.duration)
       : reqEntry.duration;
