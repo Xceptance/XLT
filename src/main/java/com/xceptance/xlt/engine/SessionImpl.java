@@ -517,7 +517,7 @@ public class SessionImpl extends Session
             }
             catch (IOException e)
             {
-                throw new XltException("Failed to create output directory: " + sessionOutputDir, e);
+                throw new XltException("Failed to create results output directory: " + sessionOutputDir, e);
             }
 
             outputDir = sessionOutputDir;
