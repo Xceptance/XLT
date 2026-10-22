@@ -50,8 +50,7 @@ public abstract class TimerData extends AbstractData
     }
 
     /**
-     * Creates a new {@link TimerData} object and gives it the specified name and type code. Furthermore, the start time
-     * attribute is set to the current time.
+     * Creates a new {@link TimerData} object and gives it the specified name and type code.
      *
      * @param name
      *            the request name

@@ -86,8 +86,7 @@ public class TransactionData extends TimerData
     }
 
     /**
-     * Creates a new TransactionData object and gives it the specified name. Furthermore, the time attribute is set to
-     * the current time.
+     * Creates a new TransactionData object and gives it the specified name.
      *
      * @param name
      *            the transaction name

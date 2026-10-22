@@ -37,8 +37,7 @@ public class CustomValue extends AbstractData
     private double value;
 
     /**
-     * Creates a new {@link CustomValue} object and gives it the specified name. Furthermore, the start time attribute
-     * is set to the current time.
+     * Creates a new {@link CustomValue} object and gives it the specified name.
      *
      * @param name
      *            the statistics name
@@ -55,7 +54,6 @@ public class CustomValue extends AbstractData
     {
         super(TYPE_CODE);
     }
-
 
     /**
      * Sets the value.

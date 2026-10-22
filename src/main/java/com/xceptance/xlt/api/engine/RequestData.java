@@ -59,7 +59,7 @@ public class RequestData extends TimerData
      * The value to show if the host could not be determined from a URL.
      */
     public final static XltCharBuffer UNKNOWN_HOST = XltCharBuffer.valueOf("(unknown)");
-    
+
     /**
      * No response code available
      */
@@ -94,6 +94,7 @@ public class RequestData extends TimerData
      * The response code.
      */
     private int responseCode;
+
     private XltCharBuffer responseCodeAsChars;
 
     /**
@@ -168,8 +169,8 @@ public class RequestData extends TimerData
 
     /**
      * The list of IP addresses reported by DNS for the host name used when making the request. If there is more than
-     * one IP address, they will be stored separated by IP_ADDRESSES_SEPARATOR. Will not be set if the request did not trigger
-     * a DNS address resolution, for example, in case of keep-alive connections.
+     * one IP address, they will be stored separated by IP_ADDRESSES_SEPARATOR. Will not be set if the request did not
+     * trigger a DNS address resolution, for example, in case of keep-alive connections.
      */
     private String ipAddresses;
 
@@ -189,8 +190,7 @@ public class RequestData extends TimerData
     }
 
     /**
-     * Creates a new RequestData object and gives it the specified name. Furthermore, the start time attribute is set to
-     * the current time.
+     * Creates a new RequestData object and gives it the specified name.
      *
      * @param name
      *            the request name
@@ -351,8 +351,7 @@ public class RequestData extends TimerData
     }
 
     /**
-     * Returns the host parsed from the url or
-     * UNKNOWN_HOST if it does not exist. Never null or empty.
+     * Returns the host parsed from the url or UNKNOWN_HOST if it does not exist. Never null or empty.
      *
      * @return the host from the url
      */
@@ -659,10 +658,8 @@ public class RequestData extends TimerData
     }
 
     /**
-     * Sets the request's URL. Uses a char buffer for efficiency.
-     * This is for decoding. We do it here because it is more efficient
-     * because the data is hotter and we have more cpu available
-     * than later in the providers.
+     * Sets the request's URL. Uses a char buffer for efficiency. This is for decoding. We do it here because it is more
+     * efficient because the data is hotter and we have more cpu available than later in the providers.
      *
      * @param url
      *            the URL
