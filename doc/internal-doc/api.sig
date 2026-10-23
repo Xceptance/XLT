@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 10.0.0-beta-5
+#Version 10.0.0-beta-7
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -503,6 +503,7 @@ meth public abstract java.lang.String getUserName()
 meth public abstract java.lang.String getWebDriverActionName()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract java.nio.file.Path getResultsDirectory()
+meth public abstract java.nio.file.Path getResultsOutputDirectory()
 meth public abstract java.util.Map<java.lang.String,java.lang.Object> getValueLog()
 meth public abstract void addShutdownListener(com.xceptance.xlt.api.engine.SessionShutdownListener)
 meth public abstract void clear()

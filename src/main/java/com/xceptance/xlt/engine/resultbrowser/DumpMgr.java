@@ -57,7 +57,6 @@ import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
-import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.har.HarWriter;
 import com.xceptance.xlt.engine.util.CssUtils;
 import com.xceptance.xlt.engine.util.URLCleaner;
@@ -207,9 +206,7 @@ class DumpMgr
     {
         if (dumpDirectory == null)
         {
-            final SessionImpl session = SessionImpl.getCurrent();
-            dumpDirectory = new File(new File(session.getResultsDirectory().toFile(), XltConstants.DUMP_OUTPUT_DIR), session.getID());
-            dumpDirectory.mkdirs();
+            dumpDirectory = Session.getCurrent().getResultsOutputDirectory().toFile();
         }
 
         return dumpDirectory;

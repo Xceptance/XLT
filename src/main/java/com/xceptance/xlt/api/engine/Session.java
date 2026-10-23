@@ -57,10 +57,10 @@ public abstract class Session
     {
         getCurrent().getDataManager().logEvent(eventName, eventMessage);
     }
-    
+
     /**
-     * Logs a line of custom data in the datalogger of the given scope.
-     * (Shortcut method for getDataManager().dataLogger(scope).log(lineOfData))
+     * Logs a line of custom data in the datalogger of the given scope. (Shortcut method for
+     * getDataManager().dataLogger(scope).log(lineOfData))
      * 
      * @param scope
      *            scope of the data logger to be used
@@ -188,11 +188,27 @@ public abstract class Session
     public abstract boolean isLoadTest();
 
     /**
-     * Returns the session's results directory.
+     * Returns the session's results directory. This is typically a path similar to <code>./results/TOrder/0</code>. If
+     * the results directory does not exist yet, it will be created.
      *
-     * @return the result directory
+     * @return the results directory
+     * @see #getResultsOutputDirectory()
      */
     public abstract Path getResultsDirectory();
+
+    /**
+     * Returns the session's output directory within its results directory. This is typically a path similar to
+     * <code>./results/TOrder/0/output/1781181703962</code>. If the output directory does not exist yet, it will be
+     * created.
+     * <p>
+     * Use the output directory to store additional diagnostic data files for the current session, but make sure that
+     * those files do not clash with the standard XLT result browser files and directories that live in the output
+     * directory as well.
+     *
+     * @return the output directory
+     * @see #getResultsDirectory()
+     */
+    public abstract Path getResultsOutputDirectory();
 
     /**
      * Unregisters the passed shutdown listener.
