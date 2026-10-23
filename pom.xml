@@ -59,7 +59,8 @@
         <htmlunit.version>5.4.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
-        <log4j.version>2.24.3</log4j.version>
+        <slf4j.version>2.0.19</slf4j.version>
+        <logback.version>1.6.5</logback.version>
         <selenium.version>4.47.0</selenium.version>
         <htmlunitdriver.version>4.47.0</htmlunitdriver.version>
         <otel.version>1.46.0</otel.version>
@@ -129,7 +130,8 @@
             <id>central</id>
             <build>
                 <plugins>
-                    <!-- HACK: Copy existing main artifact over empty build artifact (necessary as pre-existing main artifacts cannot be attached) -->
+                    <!-- HACK: Copy existing main artifact over empty build artifact (necessary as pre-existing main artifacts cannot be
+                    attached) -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
@@ -241,6 +243,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Forces any transitive commons-logging to be treated as provided/dummy, preventing it from inclusion in target JAR/WAR -->
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.4.0</version> <!-- or your preferred version -->
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -260,11 +269,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlunit</groupId>
@@ -354,6 +358,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
             <version>2.11.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -379,6 +389,10 @@
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-hdfs-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -429,30 +443,9 @@
             <version>4.13.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jcl</artifactId>
-            <version>${log4j.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>${log4j.version}</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>info.schnatterer.moby-names-generator</groupId>
@@ -517,11 +510,16 @@
             <artifactId>guava</artifactId>
             <version>33.4.0-jre</version>
         </dependency>
-        <!-- slf4j is used by many libs. Ensure that the version used by log4j-slf4j2-impl wins. -->
+        <!-- slf4j is used by many libs. Ensure that the version used by logback-classic wins. -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.16</version>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- flexmark-java for Markdown-to-HTML conversion (report comments) -->
         <dependency>
@@ -637,6 +635,12 @@
             <groupId>com.openhtmltopdf</groupId>
             <artifactId>openhtmltopdf-pdfbox</artifactId>
             <version>${openhtmltopdf.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- ================= -->

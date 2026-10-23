@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+#############################################################################
+#
+# Logback Settings - Development Mode
+#
+# The Logback configuration used by XLT when running the web tests from inside
+# your IDE during development.
+#
+#############################################################################
+-->
+<configuration>
+
+    <!-- Console Appender -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}] %-5p [%t] - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Custom Loggers -->
+    <logger name="runtime" level="DEBUG" />
+    <logger name="com.xceptance" level="DEBUG" />
+    <logger name="org.htmlunit" level="DEBUG" />
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="Console" />
+    </root>
+
+</configuration>
