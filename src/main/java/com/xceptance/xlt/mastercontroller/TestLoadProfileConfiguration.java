@@ -317,9 +317,8 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
         final DefaultTestCaseLoadProfileConfiguration defaultTestCaseConfig = getDefaultTestCaseLoadProfileConfiguration();
 
         // determine the active test cases
-
         final String activeTestCasesPropertyValue = getStringProperty(PROP_ACTIVE_LOAD_TESTS, "");
-        final String[] activeTestCaseNames = StringUtils.split(activeTestCasesPropertyValue, " ,;");
+        final String[] activeTestCaseNames = StringUtils.split(activeTestCasesPropertyValue, " ,;\t\f");
 
         // store list of active test case names in the same order as configured
         activeTestCases = new LinkedHashSet<String>();
