@@ -269,7 +269,8 @@ public final class ChunkExplorerMain
 
             server.start();
             XltLogger.reportLogger.info(Console.horizontalBar());
-            XltLogger.reportLogger.info("ChunkDB Explorer UI running at: {}", server.getBaseUrl());
+            XltLogger.reportLogger.info("ChunkDB Explorer (Direct Workbench): {}", server.getBaseUrl());
+            XltLogger.reportLogger.info("ChunkDB Explorer (Guided Dashboard): {}/guided", server.getBaseUrl());
             XltLogger.reportLogger.info("Press Ctrl+C to stop the server.");
             XltLogger.reportLogger.info(Console.horizontalBar());
 

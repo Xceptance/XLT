@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      document.querySelector('meta[name="color-scheme"]').content = localStorage.getItem("color-scheme") ?? "light dark";
+    } catch (_) {}
+  </script>
+  <title>XLT Guided Result Explorer</title>
+  <link rel="stylesheet" href="/explorer/css/guided.css">
+</head>
+<body>
+  <!-- Top Header & Navigation -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-title">
+        <span class="brand-badge">XLT</span>
+        <h1>Guided Result Explorer</h1>
+        <span class="edition-tag">Diagnostic Storyboard</span>
+      </div>
+      <div class="dataset-meta" id="datasetMeta">
+        <span class="meta-pill">Loading dataset...</span>
+      </div>
+      <div class="topbar-right">
+        <div class="query-status" id="queryStatus" aria-live="polite">
+          <span class="status-dot idle" id="statusDot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+        <a href="/index.html" class="btn btn-secondary btn-xs" title="Switch to the classic Direct Workbench Explorer">
+          ⚡ Direct Workbench
+        </a>
+        <button type="button" id="themeToggleBtn" class="btn btn-secondary btn-xs" title="Cycle theme preference (System / Light / Dark)">
+          <span class="theme-label-dark">🌙 Dark</span>
+          <span class="theme-label-light">☀️ Light</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Interactive Drill-Down Funnel & Baseline Comparison Bar -->
+    <div class="funnel-bar">
+      <div class="funnel-trail" id="funnelTrail" aria-label="Investigation drill-down path">
+        <span class="funnel-step active">🌐 All Traffic</span>
+      </div>
+      <div class="funnel-actions">
+        <span class="baseline-badge hidden" id="baselineBadge"></span>
+        <button type="button" id="pinBaselineBtn" class="btn btn-secondary btn-xs" title="Pin current time window &amp; metrics as a baseline to compare against spikes">
+          📌 Pin Window as Baseline
+        </button>
+        <button type="button" id="clearBaselineBtn" class="btn btn-secondary btn-xs hidden" title="Clear pinned baseline comparison">
+          &times; Clear Baseline
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter & Scope Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label for="recordTypeSelect">Telemetry Layer</label>
+        <select id="recordTypeSelect">
+          <option value="R" selected>Requests (HTTP)</option>
+          <option value="T">Transactions (Scenarios)</option>
+          <option value="A">Actions (Steps)</option>
+          <option value="P">Page Loads</option>
+          <option value="C">Custom Timers</option>
+        </select>
+      </div>
+
+      <div class="filter-group filter-group-wide">
+        <label for="nameFilterInput">Timer Name / Regex</label>
+        <div class="input-with-clear">
+          <input type="text" id="nameFilterInput" list="timerNameList" placeholder="Filter by timer name or regex (e.g. Checkout.*)" autocomplete="off">
+          <button type="button" id="clearNameFilterBtn" class="icon-btn hidden" title="Clear timer filter">&times;</button>
+        </div>
+        <datalist id="timerNameList"></datalist>
+      </div>
+
+      <div class="filter-group">
+        <label for="fromTimeInput">From (UTC)</label>
+        <input type="text" id="fromTimeInput" class="time-input" placeholder="YYYY-MM-DD HH:mm:ss" autocomplete="off">
+      </div>
+
+      <div class="filter-group">
+        <label for="toTimeInput">To (UTC)</label>
+        <input type="text" id="toTimeInput" class="time-input" placeholder="YYYY-MM-DD HH:mm:ss" autocomplete="off">
+      </div>
+
+      <div class="filter-group">
+        <label for="scenarioSelect">Scenario</label>
+        <select id="scenarioSelect">
+          <option value="">All Scenarios</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="agentSelect">Agent</label>
+        <select id="agentSelect">
+          <option value="">All Agents</option>
+        </select>
+      </div>
+
+      <div class="filter-group" id="statusFilterGroup">
+        <label for="statusPresetSelect">HTTP Status</label>
+        <select id="statusPresetSelect">
+          <option value="ALL">All Statuses</option>
+          <option value="4XX_5XX">4xx &amp; 5xx (&ge; 400)</option>
+          <option value="5XX">5xx Server Errors (&ge; 500)</option>
+          <option value="4XX">4xx Client Errors (400-499)</option>
+          <option value="2XX">2xx Success (200-299)</option>
+          <option value="0">0 Connection Failed</option>
+        </select>
+      </div>
+
+      <div class="filter-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="failedOnlyCheckbox">
+          <span>Failed Only</span>
+        </label>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" id="runQueryBtn" class="btn btn-primary" title="Run guided analysis with selected filters (Enter)">
+          ▶ Analyze
+        </button>
+        <button type="button" id="resetZoomBtn" class="btn btn-accent hidden" title="Restore full test duration">
+          Full Time
+        </button>
+        <button type="button" id="resetFiltersBtn" class="btn btn-secondary" title="Reset all filters and funnel steps">
+          Reset All
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Scrollable Guided Storyboard Workspace -->
+  <main class="guided-workspace">
+    <!-- STAGE 1: Executive Health Scorecard & Automated Guided Findings -->
+    <section class="stage-section" aria-labelledby="stageTriageHeading">
+      <div class="stage-header">
+        <div class="stage-title-group">
+          <span class="stage-step-badge">1</span>
+          <h2 id="stageTriageHeading">Executive Health &amp; Guided Triage</h2>
+          <span class="stage-subtitle" id="activeScopeSubtitle">Evaluating full test window</span>
+        </div>
+        <div class="layer-quick-pills" id="layerQuickPills" role="group" aria-label="Quick layer switcher">
+          <button type="button" class="layer-pill active" data-layer="R">Requests</button>
+          <button type="button" class="layer-pill" data-layer="T">Transactions</button>
+          <button type="button" class="layer-pill" data-layer="A">Actions</button>
+          <button type="button" class="layer-pill" data-layer="P">Page Loads</button>
+          <button type="button" class="layer-pill" data-layer="C">Custom</button>
+        </div>
+      </div>
+
+      <!-- 6-Card KPI Scorecard Strip -->
+      <div class="kpi-grid" id="kpiGrid">
+        <article class="kpi-card">
+          <div class="kpi-label">Throughput &amp; Volume</div>
+          <div class="kpi-value" id="kpiVolumeVal">—</div>
+          <div class="kpi-sub" id="kpiVolumeSub">Waiting for scan...</div>
+        </article>
+        <article class="kpi-card" id="kpiReliabilityCard">
+          <div class="kpi-label">Reliability &amp; Errors</div>
+          <div class="kpi-value" id="kpiErrorVal">—</div>
+          <div class="kpi-sub" id="kpiErrorSub">Waiting for scan...</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Latency Pulse (p50 &rarr; p95)</div>
+          <div class="kpi-value" id="kpiLatencyVal">—</div>
+          <div class="kpi-sub" id="kpiLatencySub">Waiting for scan...</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Tail Amplification (p99 / Max)</div>
+          <div class="kpi-value" id="kpiTailVal">—</div>
+          <div class="kpi-sub" id="kpiTailSub">Waiting for scan...</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Dominant Time Phase</div>
+          <div class="kpi-value" id="kpiPhaseVal">—</div>
+          <div class="kpi-phase-bar" id="kpiPhaseBar"></div>
+          <div class="kpi-sub" id="kpiPhaseSub">Connect · Send · Busy · Recv</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Network Bandwidth</div>
+          <div class="kpi-value" id="kpiBandwidthVal">—</div>
+          <div class="kpi-sub" id="kpiBandwidthSub">Waiting for scan...</div>
+        </article>
+      </div>
+
+      <!-- Automated Guided Findings ("What to Investigate First") -->
+      <div class="findings-container">
+        <div class="findings-header">
+          <h3>🧭 Guided Findings — Recommended Next Steps</h3>
+          <span class="findings-hint">Automatically diagnosed from time-series buckets &amp; dimension skew. Click any card action to drill down.</span>
+        </div>
+        <div class="findings-grid" id="findingsGrid">
+          <div class="finding-card finding-neutral">
+            <div class="finding-badge">⏳ Ready</div>
+            <h4>Run Analysis to Generate Guided Triage</h4>
+            <p>Click <strong>▶ Analyze</strong> above to scan the dataset and automatically detect error bursts, tail-latency bottlenecks, and backend hotspots.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 2: Synchronized 4-Panel Golden Signals Telemetry Grid -->
+    <section class="stage-section" aria-labelledby="stageSignalsHeading">
+      <div class="stage-header">
+        <div class="stage-title-group">
+          <span class="stage-step-badge">2</span>
+          <h2 id="stageSignalsHeading">Synchronized Golden Signals Telemetry</h2>
+          <span class="time-window-badge" id="timeWindowBadge">Full Test Window</span>
+          <span class="bucket-badge" id="bucketBadge">Bucket: auto</span>
+        </div>
+        <div class="workbench-controls">
+          <div class="control-inline">
+            <label for="chartGroupBySelect">Panel 4 Split By:</label>
+            <select id="chartGroupBySelect">
+              <option value="NONE" selected>Network Phases (Default)</option>
+              <option value="TIMER">Timer Name (Top Series)</option>
+              <option value="USED_IP">Used IP / Host</option>
+              <option value="AGENT">Load Agent</option>
+              <option value="SCENARIO">Scenario</option>
+              <option value="STATUS_CODE">HTTP Status</option>
+              <option value="CONTENT_TYPE">Content-Type</option>
+              <option value="HTTP_METHOD">HTTP Method</option>
+            </select>
+          </div>
+          <div class="control-inline">
+            <label for="bucketSizeSelect">Resolution:</label>
+            <select id="bucketSizeSelect">
+              <option value="0" selected>Auto (120 buckets)</option>
+              <option value="100">100 ms</option>
+              <option value="500">500 ms</option>
+              <option value="1000">1 s</option>
+              <option value="5000">5 s</option>
+              <option value="10000">10 s</option>
+              <option value="30000">30 s</option>
+              <option value="60000">60 s</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brush Selection Action Banner (appears when user drags a time range on any chart) -->
+      <div class="brush-action-banner hidden" id="brushActionBanner">
+        <span id="brushBannerText">Selected time window</span>
+        <div class="brush-banner-buttons">
+          <button type="button" id="applyBrushZoomBtn" class="btn btn-primary btn-xs">🔍 Zoom &amp; Analyze Window</button>
+          <button type="button" id="compareBrushWithBaselineBtn" class="btn btn-accent btn-xs">⚖️ Compare Against Current Baseline</button>
+          <button type="button" id="cancelBrushBtn" class="btn btn-secondary btn-xs">Cancel</button>
+        </div>
+      </div>
+
+      <!-- 2x2 Synchronized Canvas Grid -->
+      <div class="signals-grid">
+        <div class="signal-panel">
+          <div class="signal-panel-header">
+            <span class="signal-title">① Load &amp; Throughput (RPS)</span>
+            <span class="signal-readout" id="readoutThroughput">Hover chart to inspect</span>
+          </div>
+          <div class="signal-canvas-wrap" data-chart-id="throughput">
+            <canvas id="canvasThroughput"></canvas>
+          </div>
+        </div>
+
+        <div class="signal-panel">
+          <div class="signal-panel-header">
+            <span class="signal-title">② Error Rate &amp; Failure Bursts</span>
+            <span class="signal-readout" id="readoutErrors">Hover chart to inspect</span>
+          </div>
+          <div class="signal-canvas-wrap" data-chart-id="errors">
+            <canvas id="canvasErrors"></canvas>
+          </div>
+        </div>
+
+        <div class="signal-panel">
+          <div class="signal-panel-header">
+            <span class="signal-title">③ Latency Distribution (p50 / p90 / p95 / p99)</span>
+            <span class="signal-readout" id="readoutLatency">Hover chart to inspect</span>
+          </div>
+          <div class="signal-canvas-wrap" data-chart-id="latency">
+            <canvas id="canvasLatency"></canvas>
+          </div>
+        </div>
+
+        <div class="signal-panel">
+          <div class="signal-panel-header">
+            <span class="signal-title" id="panel4Title">④ Network Phase Breakdown (ms)</span>
+            <span class="signal-readout" id="readoutPhases">Hover chart to inspect</span>
+          </div>
+          <div class="signal-canvas-wrap" data-chart-id="phases">
+            <canvas id="canvasPhases"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="signals-footer-hint">
+        💡 <strong>Tip:</strong> Hover any chart for synchronized crosshairs across all 4 signals. Drag horizontally on any chart to isolate an incident window, or double-click to reset zoom.
+      </div>
+    </section>
+
+    <!-- STAGE 3: Deep-Dive Dimension Breakdown & Forensic Scatter Workbench -->
+    <section class="stage-section stage-section-bottom" aria-labelledby="stageDrilldownHeading">
+      <div class="stage-header">
+        <div class="stage-title-group">
+          <span class="stage-step-badge">3</span>
+          <h2 id="stageDrilldownHeading">Interactive Drill-Down &amp; Forensics</h2>
+        </div>
+
+        <div class="tab-buttons">
+          <button type="button" class="tab-btn active" id="tabBtnSummary">
+            📊 Visual Dimension Breakdown
+          </button>
+          <button type="button" class="tab-btn" id="tabBtnForensic">
+            🔬 Outlier Scatter &amp; Session Forensics
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 1: Visual Dimension Breakdown -->
+      <div class="tab-content active" id="summaryTab">
+        <div class="dimension-toolbar">
+          <div class="dim-pill-group" id="dimPillGroup" role="group" aria-label="Group by dimension">
+            <span class="toolbar-label">Group By:</span>
+            <button type="button" class="dim-pill active" data-dim="TIMER">Timer Name</button>
+            <button type="button" class="dim-pill" data-dim="SCENARIO">Scenario</button>
+            <button type="button" class="dim-pill" data-dim="USED_IP" data-req-only="true">Backend IP / Host</button>
+            <button type="button" class="dim-pill" data-dim="STATUS_CODE" data-req-only="true">HTTP Status</button>
+            <button type="button" class="dim-pill" data-dim="AGENT">Load Agent</button>
+            <button type="button" class="dim-pill" data-dim="CONTENT_TYPE" data-req-only="true">Content-Type</button>
+            <button type="button" class="dim-pill" data-dim="HTTP_METHOD" data-req-only="true">HTTP Method</button>
+          </div>
+
+          <div class="toolbar-right">
+            <input type="text" id="summarySearchInput" placeholder="Search dimension keys..." class="toolbar-input">
+            <button type="button" id="copyMarkdownBtn" class="btn btn-secondary btn-xs" title="Copy breakdown table as GitHub Markdown">
+              📋 Copy Markdown
+            </button>
+            <button type="button" id="exportSummaryCsvBtn" class="btn btn-secondary btn-xs" title="Export breakdown table to CSV">
+              📥 Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div tabindex="0" role="region" aria-labelledby="summaryTableCaption" class="table-wrapper">
+          <table class="data-table" id="summaryTable">
+            <caption id="summaryTableCaption" class="sr-only">Multi-dimensional performance breakdown table with visual latency and network phase bars</caption>
+            <thead>
+              <tr>
+                <th data-sort="key" class="sortable">Dimension Key</th>
+                <th data-sort="count" class="sortable num">Volume &amp; Share</th>
+                <th data-sort="rps" class="sortable num">RPS</th>
+                <th data-sort="errors" class="sortable num">Errors</th>
+                <th data-sort="errorPct" class="sortable num">Error %</th>
+                <th data-sort="p50" class="sortable num">p50</th>
+                <th data-sort="p95" class="sortable num sort-desc">p95 (ms)</th>
+                <th data-sort="p99" class="sortable num">p99</th>
+                <th data-sort="max" class="sortable num">Max</th>
+                <th>Latency Profile (p50 / p95 / p99)</th>
+                <th>Network Phase Split (Conn · Send · Busy · Recv)</th>
+                <th class="actions-col">Guided Drill-Down</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTableBody">
+              <tr><td colspan="12" class="empty-cell">Loading guided breakdown...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: Forensic Outlier Scatter Plot & Record Inspector -->
+      <div class="tab-content" id="forensicTab">
+        <div class="dimension-toolbar">
+          <div class="control-inline">
+            <label for="inspectModeSelect">Forensic Mode:</label>
+            <select id="inspectModeSelect">
+              <option value="SLOWEST_REQUESTS" selected>🐢 Slowest Requests (Top N by Runtime)</option>
+              <option value="FAILED_REQUESTS">❌ Failed Requests (HTTP &ge; 400 or Error)</option>
+              <option value="SLOWEST_TRANSACTIONS">⏳ Slowest Transactions (Top N by Runtime)</option>
+              <option value="FAILED_TRANSACTIONS">💥 Failed Transactions (Stack Traces)</option>
+              <option value="SLOWEST_ACTIONS">⚡ Slowest Actions (Top N by Runtime)</option>
+              <option value="FAILED_ACTIONS">⚠️ Failed Actions</option>
+            </select>
+          </div>
+
+          <div class="control-inline">
+            <label for="inspectLimitSelect">Sample Size:</label>
+            <select id="inspectLimitSelect">
+              <option value="50">Top 50</option>
+              <option value="100" selected>Top 100</option>
+              <option value="250">Top 250</option>
+              <option value="500">Top 500</option>
+            </select>
+          </div>
+
+          <div class="toolbar-right">
+            <span class="scatter-hint">Click any point on the scatter plot below to inspect its forensic drawer or reconstruct the Virtual User session</span>
+            <button type="button" id="exportForensicCsvBtn" class="btn btn-secondary btn-xs" title="Export inspected forensic records to CSV">
+              📥 Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Outlier Scatter Timeline Plot -->
+        <div class="scatter-panel">
+          <div class="scatter-header">
+            <span class="signal-title">Outlier Timeline Scatter (Time vs. Runtime ms)</span>
+            <span class="signal-readout" id="scatterReadout">Click a dot to jump to record</span>
+          </div>
+          <div class="scatter-canvas-wrap" id="scatterWrap">
+            <canvas id="scatterCanvas"></canvas>
+          </div>
+        </div>
+
+        <div tabindex="0" role="region" aria-labelledby="forensicTableCaption" class="table-wrapper">
+          <table class="data-table" id="forensicTable">
+            <caption id="forensicTableCaption" class="sr-only">Inspected forensic outlier and failure records</caption>
+            <thead>
+              <tr>
+                <th>Timer / Record Name</th>
+                <th>Time (UTC)</th>
+                <th class="num">Runtime (ms)</th>
+                <th>Status</th>
+                <th>Scenario / Agent / VU</th>
+                <th>Method &amp; URL / Failure Details</th>
+                <th>Used IP</th>
+                <th>Request ID</th>
+                <th class="actions-col">Session</th>
+              </tr>
+            </thead>
+            <tbody id="forensicTableBody">
+              <tr><td colspan="9" class="empty-cell">Select a forensic mode or click <strong>🔬 Outliers</strong> on any row to inspect records.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Native <dialog> Modal for Virtual User Session Reconstruction -->
+  <dialog id="sessionModalDialog" closedby="any" aria-labelledby="sessionModalTitle" class="session-dialog">
+    <div class="modal-header">
+      <div>
+        <h2 id="sessionModalTitle">Virtual User Session Reconstruction</h2>
+        <div class="session-meta-bar" id="sessionMetaBar"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="prevIterationBtn" class="btn btn-secondary" title="Inspect previous transaction iteration for this Virtual User">
+          ◀ Prev Iteration
+        </button>
+        <button type="button" id="nextIterationBtn" class="btn btn-secondary" title="Inspect next transaction iteration for this Virtual User">
+          Next Iteration ▶
+        </button>
+        <a id="openResultDumpLink" href="#" target="_blank" rel="noopener" class="btn btn-accent hidden">
+          🌐 Open Result Browser Dump
+        </a>
+        <button type="button" id="closeSessionModalBtn" class="btn btn-close" title="Close modal (Esc)">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" id="sessionModalBody">
+      <div class="empty-cell">Reconstructing Virtual User session...</div>
+    </div>
+  </dialog>
+
+  <script src="/explorer/js/guided.js"></script>
+</body>
+</html>

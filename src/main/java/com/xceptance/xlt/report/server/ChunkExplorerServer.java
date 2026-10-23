@@ -213,6 +213,10 @@ public class ChunkExplorerServer implements AutoCloseable
             {
                 path = "/index.html";
             }
+            else if ("/guided".equals(path) || "/dashboard".equals(path))
+            {
+                path = "/guided.html";
+            }
 
             final String decodedPath;
             try

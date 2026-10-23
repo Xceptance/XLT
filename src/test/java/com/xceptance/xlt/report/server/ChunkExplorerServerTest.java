@@ -315,6 +315,34 @@ public class ChunkExplorerServerTest
         assertTrue(cssResp.body().contains(".wf-target-row"));
         assertTrue(cssResp.body().contains("@media"));
 
+        // Guided Dashboard UI & assets (/guided, /guided.html, guided.css, guided.js)
+        final HttpRequest guidedReq = HttpRequest.newBuilder()
+                                                 .uri(URI.create(server.getBaseUrl() + "/guided"))
+                                                 .GET()
+                                                 .build();
+        final HttpResponse<String> guidedResp = httpClient.send(guidedReq, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, guidedResp.statusCode());
+        assertTrue(guidedResp.body().contains("Guided Result Explorer"));
+        assertTrue(guidedResp.body().contains("closedby=\"any\""));
+
+        final HttpRequest guidedJsReq = HttpRequest.newBuilder()
+                                                   .uri(URI.create(server.getBaseUrl() + "/explorer/js/guided.js"))
+                                                   .GET()
+                                                   .build();
+        final HttpResponse<String> guidedJsResp = httpClient.send(guidedJsReq, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, guidedJsResp.statusCode());
+        assertTrue(guidedJsResp.body().contains("renderGuidedFindings"));
+        assertTrue(guidedJsResp.body().contains("renderAllSignalCharts"));
+
+        final HttpRequest guidedCssReq = HttpRequest.newBuilder()
+                                                    .uri(URI.create(server.getBaseUrl() + "/explorer/css/guided.css"))
+                                                    .GET()
+                                                    .build();
+        final HttpResponse<String> guidedCssResp = httpClient.send(guidedCssReq, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, guidedCssResp.statusCode());
+        assertTrue(guidedCssResp.body().contains("@container"));
+        assertTrue(guidedCssResp.body().contains("light-dark("));
+
         final HttpRequest missingAsset = HttpRequest.newBuilder()
                                                     .uri(URI.create(server.getBaseUrl() + "/explorer/missing.js"))
                                                     .GET()
