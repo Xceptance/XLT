@@ -181,9 +181,9 @@ Everything else in the file is a single aggregate over the whole run. This secti
 "when did it get slow" and "did the errors arrive in a burst" answerable.
 
 ```
-| Elapsed | Time | Transaction Mean | Transactions/s | Transaction Errors/s | Action Mean | Request Mean | Requests/s |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-|  900 | 17:12:00 | 41683 | 22.5 | 0.02 | 512 | 98 | 201.4 |
+| Elapsed | Time | Transaction Mean | Transactions/s | Transaction Errors/s | Action Mean | Actions/s | Action Errors/s | Request Mean | Requests/s | Request Errors/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+|  900 | 17:12:00 | 41683 | 22.5 | 0.02 | 512 | 201.4 | 0.01 | 98 | 201.4 | 0.01 |
 ```
 
 `Elapsed` is seconds since the run started, so comparing it against `rampUpPeriod` needs no

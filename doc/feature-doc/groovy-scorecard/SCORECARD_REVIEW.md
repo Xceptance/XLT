@@ -187,7 +187,7 @@ This review evaluates the feature from seven perspectives: Performance Engineer,
 |:---|:---|:---|
 | **Performance Engineer** | ⭐⭐⭐⭐½ | Tiered grading is unique; needs trend comparison and abort-on-fail |
 | **DevOps/CI-CD** | ⭐⭐⭐⭐ | `failsTest` is clean; needs structured JSON/JUnit output |
-| **Developer Experience** | ⭐⭐⭐⭐⭐ | `selectors.*` API is best-in-class; IDE completion would perfect it |
+| **Developer Experience** | ⭐⭐⭐⭐⭐ | `xpathBuilder.*` API is best-in-class; IDE completion would perfect it |
 | **Product Manager** | ⭐⭐⭐⭐ | Strong differentiator; needs trend visualization |
 | **AI Agent** | ⭐⭐⭐⭐⭐ | Highly structured and composable; needs validation mode |
 | **Framework Architect** | ⭐⭐⭐⭐ | Clean design; XPath coupling is a long-term risk |

@@ -29,8 +29,8 @@ Since `${}` is resolved before Groovy evaluation, property values are pasted lit
 ```properties
 maxUsers = 100
 
-# ${maxUsers} is replaced with the literal text 100 before Groovy sees it
-browse.users = #{ (${maxUsers} * 0.4).intValue() }  # Results in: 40
+# ${maxUsers} is replaced with the literal text 100 before Groovy sees it (results in: 40)
+browse.users = #{ (${maxUsers} * 0.4).intValue() }
 ```
 
 > **Important — String Quoting**: Because `${...}` pastes the raw value directly into the Groovy script, **numeric values** work naturally (e.g. `${totalUsers}` becomes `100`), but **string values** must be explicitly quoted so that Groovy interprets them as strings rather than variable names:
@@ -58,6 +58,19 @@ com.xceptance.xlt.loadtests.TBrowse.users = #{ \
 ```
 
 > **Note**: Java properties do not support multi-line text directly. If you need to use multi-line scripts, you must use the `\` line ending to tell the properties file parser that the data continues on the next line.
+
+## Chained References & Multiple Expressions
+
+* **Chained references**: When a property references another property that evaluates a Groovy expression, references are resolved recursively before being evaluated:
+  ```properties
+  totalUsers = 100
+  browse.users = #{ (${totalUsers} * 0.4).intValue() }
+  search.users = #{ (${browse.users} * 2).intValue() }
+  ```
+* **Multiple expressions in one line**: A property value can contain multiple `#{...}` blocks or mix literal text with expressions:
+  ```properties
+  report.header = Test Run #{ 1 + 1 } (scale: #{ 2 * 5 })
+  ```
 
 ## Practical Examples
 
@@ -142,7 +155,7 @@ Failed to evaluate Groovy expression: #{invalid syntax} - ...
 
 ## Tips
 
-1. **Use `.intValue()`** for integer results after multiplication/division (Groovy defaults to `BigDecimal` which otherwise evaluates to a float string like `40.0`).
+1. **Use `.intValue()` or `as int`** for integer results after multiplication/division (Groovy defaults to `BigDecimal` which otherwise evaluates to a float string like `40.0`).
 2. **Quote string values** when using `${...}` inside Groovy — write `'${myProp}'` so Groovy sees a string literal, not a bare identifier.
 3. **Use `${...}` for property access** — all property values must be referenced via `${...}` variable substitution, which is resolved before Groovy evaluation.
 4. **Test expressions** — verify calculations produce expected values.

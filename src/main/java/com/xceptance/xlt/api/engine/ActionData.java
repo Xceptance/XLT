@@ -50,8 +50,7 @@ public class ActionData extends TimerData
     }
 
     /**
-     * Creates a new ActionData object and gives it the specified name. Furthermore, the start time attribute is set to
-     * the current time.
+     * Creates a new ActionData object and gives it the specified name.
      *
      * @param name
      *            the action name
