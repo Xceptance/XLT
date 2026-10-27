@@ -15,10 +15,13 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,6 +54,23 @@ public class TestLoadProfileConfigurationTest
 
         final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
         Assert.assertTrue(loadProfile.getLoadTestConfiguration().isEmpty());
+    }
+
+    @Test
+    public void testActiveTestCaseNamesParsing()
+    {
+        final Properties properties = getDefaultProperties();
+
+        // add a list of scenarios separated with a combination of the allowed separator chars [ ,;\t\f]
+        properties.put(LOADTESTS, "TBrowse\t;\f, TSearch");
+
+        final TestLoadProfileConfiguration loadProfile = new TestLoadProfileConfiguration(new XltPropertiesImpl(properties));
+        final List<TestCaseLoadProfileConfiguration> loadTestConfiguration = loadProfile.getLoadTestConfiguration();
+        Assert.assertFalse(loadTestConfiguration.isEmpty());
+
+        final Set<String> activeTestCaseNames = loadProfile.getActiveTestCaseNames();
+        Assert.assertEquals(2, loadTestConfiguration.size());
+        MatcherAssert.assertThat(activeTestCaseNames, IsCollectionContaining.hasItems("TBrowse", "TSearch"));
     }
 
     @Test()
