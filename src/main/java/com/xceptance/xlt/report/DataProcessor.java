@@ -392,13 +392,24 @@ public class DataProcessor
         throws Exception
     {
         dispatcher.incremementDirectoryCount();
-
-        // create a new reader for each user directory and enqueue it for execution
-        final String userNumber = testUserDir.getName();
-        final DataReaderThread reader = new DataReaderThread(testUserDir, agentName, testCaseName, userNumber,
-                                                             totalLinesCounter,
-                                                             dispatcher);
-        dataReaderExecutor.execute(reader);
+        boolean submitted = false;
+        try
+        {
+            // create a new reader for each user directory and enqueue it for execution
+            final String userNumber = testUserDir.getName();
+            final DataReaderThread reader = new DataReaderThread(testUserDir, agentName, testCaseName, userNumber,
+                                                                 totalLinesCounter,
+                                                                 dispatcher);
+            dataReaderExecutor.execute(reader);
+            submitted = true;
+        }
+        finally
+        {
+            if (!submitted)
+            {
+                dispatcher.finishedReading();
+            }
+        }
     }
 
     /**

@@ -118,6 +118,10 @@ class DataReaderThread implements Runnable
 
             readLogsFromTestUserDir();
         }
+        catch (final InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+        }
         catch (final Exception e)
         {
             final String msg = String.format("Failed to read test results from directory '%s'", directory);
@@ -196,7 +200,7 @@ class DataReaderThread implements Runnable
      *            optional counter tracking unparsed chunks when action names must be collected first
      */
     private void readTimerLog(final FsResource file, final boolean collectActionNames, final boolean adjustTimerName,
-                              final SynchronizingCounter actionNamesCounter)
+                              final SynchronizingCounter actionNamesCounter) throws InterruptedException
     {
         final boolean isCompressed = "gz".equalsIgnoreCase(file.getExtension());
         final int chunkSize = dispatcher.chunkSize;
@@ -222,13 +226,8 @@ class DataReaderThread implements Runnable
                     final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
                                                               collectActionNames, adjustTimerName, actionNames, actionNamesCounter);
 
-                    if (actionNamesCounter != null)
-                    {
-                        actionNamesCounter.increment();
-                    }
-
                     // deliver to dispatcher, this might block
-                    dispatcher.addReadData(lineChunk);
+                    enqueueChunk(lineChunk, actionNamesCounter);
 
                     // start a new chunk
                     lines = new SimpleArrayList<>(chunkSize);
@@ -245,17 +244,40 @@ class DataReaderThread implements Runnable
             {
                 final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
                                                           collectActionNames, adjustTimerName, actionNames, actionNamesCounter);
-                if (actionNamesCounter != null)
-                {
-                    actionNamesCounter.increment();
-                }
-                dispatcher.addReadData(lineChunk);
+                enqueueChunk(lineChunk, actionNamesCounter);
                 totalLineCounter.addAndGet(linesRead);
             }
+        }
+        catch (final InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+            throw ex;
         }
         catch (final Exception ex)
         {
             LOG.error(String.format("Failed to read timer input file '%s'", file), ex);
+        }
+    }
+
+    private void enqueueChunk(final DataChunk lineChunk, final SynchronizingCounter actionNamesCounter)
+        throws InterruptedException
+    {
+        if (actionNamesCounter != null)
+        {
+            actionNamesCounter.increment();
+        }
+        boolean enqueued = false;
+        try
+        {
+            dispatcher.addReadData(lineChunk);
+            enqueued = true;
+        }
+        finally
+        {
+            if (!enqueued && actionNamesCounter != null)
+            {
+                actionNamesCounter.decrement();
+            }
         }
     }
 }

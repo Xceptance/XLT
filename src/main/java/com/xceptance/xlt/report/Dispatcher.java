@@ -159,7 +159,19 @@ public class Dispatcher
     public void addReadData(final DataChunk chunkOfLines) throws InterruptedException
     {
         openDataChunkCount.increment();
-        readDataQueue.put(chunkOfLines);
+        boolean enqueued = false;
+        try
+        {
+            readDataQueue.put(chunkOfLines);
+            enqueued = true;
+        }
+        finally
+        {
+            if (!enqueued)
+            {
+                openDataChunkCount.decrement();
+            }
+        }
     }
 
     /**
@@ -199,24 +211,30 @@ public class Dispatcher
      */
     public void addPostprocessedData(final PostProcessedDataContainer postprocessedData, final boolean isLastSubchunk) throws InterruptedException
     {
-        if (chunkCollector != null)
+        try
         {
-            chunkCollector.collect(postprocessedData);
+            if (chunkCollector != null)
+            {
+                chunkCollector.collect(postprocessedData);
+            }
+            else if (statisticsProcessor != null)
+            {
+                statisticsProcessor.process(postprocessedData);
+            }
         }
-        else if (statisticsProcessor != null)
+        finally
         {
-            statisticsProcessor.process(postprocessedData);
-        }
-        if (isLastSubchunk)
-        {
-            finishedProcessing();
+            if (isLastSubchunk)
+            {
+                finishedProcessing();
+            }
         }
     }
 
     /**
      * Indicates that a chunk has finished processing
      */
-    private void finishedProcessing()
+    void finishedProcessing()
     {
         openDataChunkCount.decrement();
     }

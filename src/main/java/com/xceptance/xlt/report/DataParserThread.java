@@ -129,156 +129,186 @@ class DataParserThread implements Runnable
                 // get a chunk of lines
                 final DataChunk chunk = dispatcher.retrieveReadData();
 
-                final List<byte[]> lines = chunk.getLines();
-
-                final String agentName = chunk.getAgentName();
-                final String testCaseName = chunk.getTestCaseName();
-                final String userNumber = chunk.getUserNumber();
-                final boolean collectActionNames = chunk.getCollectActionNames();
-                final boolean adjustTimerName = chunk.getAdjustTimerNames();
-                final FsResource file = chunk.getFile();
-
-                final long _fromTime = fromTime;
-                final long _toTime = toTime;
-
-                // reset reusable containers for this chunk
-                postProcessedData.reset();
-                if (nonRequestData != null)
-                {
-                    nonRequestData.reset();
-                }
-
-                final int baseLineNumber = chunk.getBaseLineNumber();
-                final int size = lines.size();
-
+                boolean finishedNotified = false;
                 try
                 {
-                    for (int i = 0; i < size; i++)
+                    final List<byte[]> lines = chunk.getLines();
+
+                    final String agentName = chunk.getAgentName();
+                    final String testCaseName = chunk.getTestCaseName();
+                    final String userNumber = chunk.getUserNumber();
+                    final boolean collectActionNames = chunk.getCollectActionNames();
+                    final boolean adjustTimerName = chunk.getAdjustTimerNames();
+                    final FsResource file = chunk.getFile();
+
+                    final long _fromTime = fromTime;
+                    final long _toTime = toTime;
+
+                    // reset reusable containers for this chunk
+                    postProcessedData.reset();
+                    if (nonRequestData != null)
                     {
-                        Data data = null;
+                        nonRequestData.reset();
+                    }
 
-                        try
+                    final int baseLineNumber = chunk.getBaseLineNumber();
+                    final int size = lines.size();
+
+                    try
+                    {
+                        for (int i = 0; i < size; i++)
                         {
-                            final byte[] line = lines.get(i);
-                            if (line.length == 0)
+                            try
                             {
+                                final byte[] line = lines.get(i);
+                                if (line.length == 0)
+                                {
+                                    continue;
+                                }
+
+                                // parse, the columns structure is reused
+                                CsvByteLineDecoder.parse(csvColumns, line);
+
+                                // get us the minimal data aka type and time
+                                Data data = dataRecordFactory.createStatistics(line[0]);
+                                if (data == null)
+                                {
+                                    continue;
+                                }
+                                data.setBaseValues(csvColumns);
+
+                                // see if we have to keep it
+                                final long time = data.getTime();
+                                if (time < _fromTime || time > _toTime)
+                                {
+                                    // nope
+                                    continue;
+                                }
+
+                                // finish parsing
+                                data.setRemainingValues(csvColumns);
+
+                                // set general fields
+                                data.setAgentName(agentName);
+                                data.setTransactionName(testCaseName);
+
+                                // let's see if this data requires post processing aka filtering/merging
+                                data = applyDataAdjustments(data, userNumber, collectActionNames, chunk, adjustTimerName);
+
+                                // if this is request, filter it aka apply merge rules
+                                if (data instanceof RequestData)
+                                {
+                                    final RequestData reqData = (RequestData) data;
+                                    // Snapshot the original unmerged timer name (e.g. "Homepage.1.2") BEFORE MergeRuleProcessor
+                                    // mutates reqData.setName(...) in-place, so ChunkDB's Cold Forensic Tail Block can preserve
+                                    // both the post-merge group name and the pre-merge raw request name for forensic drill-down.
+                                    if (reqData.getRawName() == null)
+                                    {
+                                        reqData.setRawName(reqData.getName());
+                                    }
+                                    final RequestData result = requestProcessing.postprocess(reqData);
+                                    if (result != null)
+                                    {
+                                        postProcessedData.add(result);
+                                    }
+                                }
+                                else
+                                {
+                                    // get us a hashcode for later while the cache is warm
+                                    // for RequestData, we did that already
+                                    final String name = data.getName();
+                                    if (name != null)
+                                    {
+                                        name.hashCode();
+                                    }
+                                    if (nonRequestData == null)
+                                    {
+                                        nonRequestData = new PostProcessedDataContainer(64);
+                                    }
+                                    nonRequestData.add(data);
+                                }
+                            }
+                            catch (final Exception ex)
+                            {
+                                final int lineNumber = baseLineNumber + i;
+                                final String lineStr = new String(lines.get(i), java.nio.charset.StandardCharsets.UTF_8);
+                                final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
+                                                                 file, ex, lineStr);
+                                LOG.error(msg, ex);
+
                                 continue;
                             }
-
-                            // parse, the columns structure is reused
-                            CsvByteLineDecoder.parse(csvColumns, line);
-
-                            // get us the minimal data aka type and time
-                            data = dataRecordFactory.createStatistics(line[0]);
-                            if (data == null)
-                            {
-                                continue;
-                            }
-                            data.setBaseValues(csvColumns);
-
-                            // see if we have to keep it
-                            final long time = data.getTime();
-                            if (time < _fromTime || time > _toTime)
-                            {
-                                // nope
-                                continue;
-                            }
-
-                            // finish parsing
-                            data.setRemainingValues(csvColumns);
-                        }
-                        catch (final Exception ex)
-                        {
-                            final int lineNumber = baseLineNumber + i;
-                            final String lineStr = new String(lines.get(i), java.nio.charset.StandardCharsets.UTF_8);
-                            final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
-                                                             file, ex, lineStr);
-                            LOG.error(msg, ex);
-
-                            continue;
-                        }
-
-                        // set general fields
-                        data.setAgentName(agentName);
-                        data.setTransactionName(testCaseName);
-                        
-                        // let's see if this data requires post processing aka filtering/merging
-                        data = applyDataAdjustments(data, userNumber, collectActionNames, chunk, adjustTimerName);
-
-                        // if this is request, filter it aka apply merge rules
-                        if (data instanceof RequestData)
-                        {
-                            final RequestData reqData = (RequestData) data;
-                            // Snapshot the original unmerged timer name (e.g. "Homepage.1.2") BEFORE MergeRuleProcessor
-                            // mutates reqData.setName(...) in-place, so ChunkDB's Cold Forensic Tail Block can preserve
-                            // both the post-merge group name and the pre-merge raw request name for forensic drill-down.
-                            if (reqData.getRawName() == null)
-                            {
-                                reqData.setRawName(reqData.getName());
-                            }
-                            final RequestData result = requestProcessing.postprocess(reqData);
-                            if (result != null)
-                            {
-                                postProcessedData.add(result);
-                            }
-                        }
-                        else
-                        {
-                            // get us a hashcode for later while the cache is warm
-                            // for RequestData, we did that already
-                            data.getName().hashCode();
-                            if (nonRequestData == null)
-                            {
-                                nonRequestData = new PostProcessedDataContainer(64);
-                            }
-                            nonRequestData.add(data);
                         }
                     }
+                    finally
+                    {
+                        chunk.notifyActionNamesCollected();
+                    }
+
+                    final boolean hasNonReq = nonRequestData != null && nonRequestData.size() > 0;
+                    final boolean hasReq = postProcessedData.size() > 0;
+
+                    // Deliver non-request records if present (tagged with homogeneous typeCode if applicable)
+                    if (hasNonReq)
+                    {
+                        final int nonReqCount = nonRequestData.size();
+                        final char firstTc = nonRequestData.dataList.get(0).getTypeCode();
+                        boolean homogeneous = true;
+                        final Object[] internalArr = nonRequestData.dataList.getInternalArray();
+                        for (int k = 1; k < nonReqCount; k++)
+                        {
+                            if (((Data) internalArr[k]).getTypeCode() != firstTc)
+                            {
+                                homogeneous = false;
+                                break;
+                            }
+                        }
+                        if (homogeneous)
+                        {
+                            nonRequestData.typeCode = firstTc;
+                        }
+                        final boolean isLast = !hasReq;
+                        if (isLast)
+                        {
+                            finishedNotified = true;
+                        }
+                        dispatcher.addPostprocessedData(nonRequestData, isLast);
+                    }
+
+                    // Deliver request records if present (guaranteed 100% homogeneous 'R' chunk)
+                    if (hasReq)
+                    {
+                        postProcessedData.typeCode = 'R';
+                        finishedNotified = true;
+                        dispatcher.addPostprocessedData(postProcessedData, true);
+                    }
+                    else if (!hasNonReq)
+                    {
+                        // Neither requests nor non-requests (e.g. all out of time range)
+                        finishedNotified = true;
+                        dispatcher.addPostprocessedData(postProcessedData, true);
+                    }
+                }
+                catch (final InterruptedException e)
+                {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                catch (final Exception e)
+                {
+                    LOG.error(String.format("Failed to process data chunk from file '%s'", chunk.getFile()), e);
                 }
                 finally
                 {
-                    chunk.notifyActionNamesCollected();
-                }
-
-                final boolean hasNonReq = nonRequestData != null && nonRequestData.size() > 0;
-                final boolean hasReq = postProcessedData.size() > 0;
-
-                // Deliver non-request records if present (tagged with homogeneous typeCode if applicable)
-                if (hasNonReq)
-                {
-                    final int nonReqCount = nonRequestData.size();
-                    final char firstTc = nonRequestData.dataList.get(0).getTypeCode();
-                    boolean homogeneous = true;
-                    final Object[] internalArr = nonRequestData.dataList.getInternalArray();
-                    for (int k = 1; k < nonReqCount; k++)
+                    if (!finishedNotified)
                     {
-                        if (((Data) internalArr[k]).getTypeCode() != firstTc)
-                        {
-                            homogeneous = false;
-                            break;
-                        }
+                        dispatcher.finishedProcessing();
                     }
-                    if (homogeneous)
-                    {
-                        nonRequestData.typeCode = firstTc;
-                    }
-                    dispatcher.addPostprocessedData(nonRequestData, !hasReq);
-                }
-
-                // Deliver request records if present (guaranteed 100% homogeneous 'R' chunk)
-                if (hasReq)
-                {
-                    postProcessedData.typeCode = 'R';
-                    dispatcher.addPostprocessedData(postProcessedData, true);
-                }
-                else if (!hasNonReq)
-                {
-                    // Neither requests nor non-requests (e.g. all out of time range)
-                    dispatcher.addPostprocessedData(postProcessedData, true);
                 }
             }
             catch (final InterruptedException e)
             {
+                Thread.currentThread().interrupt();
                 break;
             }
         }
