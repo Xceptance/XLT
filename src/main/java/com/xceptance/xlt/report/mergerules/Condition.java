@@ -65,24 +65,21 @@ public abstract class Condition
     /**
      * Constructor.
      *
-     * @param typeCode
-     *            the type code of this request filter
      * @param regex
      *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
      * @param cacheSize
-     *           the size of the cache for match results, must be larger than 0, it might happen
-     *           that we configure one but don't use it at all, such as for runtimes
+     *            the size of the cache for match results, must be larger than 0
+     * @param useFastRegex
+     *            whether to use the FastRegex engine (true) or standard JDK Pattern (false)
      */
-    public Condition(final String regex, final int cacheSize)
+    public Condition(final String regex, final int cacheSize, final boolean useFastRegex)
     {
         if (StringUtils.isBlank(regex))
         {
             this.fastMatcher = null;
             this.matcher = null;
         }
-        else if (RegExUtils.isFastRegexEnabled())
+        else if (useFastRegex)
         {
             this.fastMatcher = FastRegex.compile(regex).matcher();
             this.matcher = null;
@@ -98,6 +95,19 @@ public abstract class Condition
             throw new IllegalArgumentException("Cache size must be larger than 0");
         }
         this.cache = new LRUClockMap<>(cacheSize);
+    }
+
+    /**
+     * Constructor delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     *
+     * @param regex
+     *            the regular expression to identify matching requests
+     * @param cacheSize
+     *            the size of the cache for match results, must be larger than 0
+     */
+    public Condition(final String regex, final int cacheSize)
+    {
+        this(regex, cacheSize, RegExUtils.isFastRegexEnabled());
     }
     
     /**

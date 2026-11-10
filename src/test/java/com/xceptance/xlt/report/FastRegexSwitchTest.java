@@ -17,9 +17,12 @@ package com.xceptance.xlt.report;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -36,8 +39,10 @@ import com.xceptance.common.util.StringMatcher;
 import com.xceptance.util.fastregex.FastRegex;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.labelingrules.LabelingRule;
+import com.xceptance.xlt.report.mergerules.Condition;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.providers.RequestReport;
+import com.xceptance.xlt.report.storage.cache.CacheFingerprint;
 
 /**
  * Verifies the {@code com.xceptance.xlt.reportgenerator.requestMergeRules.fastRegex.enabled} configuration switch
@@ -259,5 +264,155 @@ public class FastRegexSwitchTest extends ReportGeneratorConfigurationTestBase
         {
             pool.shutdownNow();
         }
+    }
+
+    @Test
+    public void testRuleOverrideToStandardRegexWhenGloballyEnabled()
+    {
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/test/(.+)");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "false");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        assertTrue(config.isFastRegexEnabled());
+        final List<MergeRule> rules = config.getMergeRules();
+        assertEquals(1, rules.size());
+        assertFalse(rules.get(0).isUsingFastRegex());
+        assertFalse(rules.get(0).getIncludeConditions()[0].isUsingFastRegex());
+    }
+
+    @Test
+    public void testRuleExplicitFastRegexWhenGloballyEnabled()
+    {
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/test/(.+)");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "true");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        assertTrue(config.isFastRegexEnabled());
+        final List<MergeRule> rules = config.getMergeRules();
+        assertEquals(1, rules.size());
+        assertTrue(rules.get(0).isUsingFastRegex());
+        assertTrue(rules.get(0).getIncludeConditions()[0].isUsingFastRegex());
+    }
+
+    @Test
+    public void testRuleDefaultFastRegexWhenGloballyEnabled()
+    {
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/test/(.+)");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        assertTrue(config.isFastRegexEnabled());
+        final List<MergeRule> rules = config.getMergeRules();
+        assertEquals(1, rules.size());
+        assertTrue(rules.get(0).isUsingFastRegex());
+        assertTrue(rules.get(0).getIncludeConditions()[0].isUsingFastRegex());
+    }
+
+    @Test
+    public void testGlobalDisabledWithRuleExplicitTrue()
+    {
+        appendPropertyToFile(ReportGeneratorConfiguration.PROP_FAST_REGEX_ENABLED, "false");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/test/(.+)");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "true");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        assertFalse(config.isFastRegexEnabled());
+        final List<MergeRule> rules = config.getMergeRules();
+        assertEquals(1, rules.size());
+        assertFalse(rules.get(0).isUsingFastRegex());
+        assertFalse(rules.get(0).getIncludeConditions()[0].isUsingFastRegex());
+    }
+
+    @Test
+    public void testGlobalDisabledWithRuleExplicitFalse()
+    {
+        appendPropertyToFile(ReportGeneratorConfiguration.PROP_FAST_REGEX_ENABLED, "false");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/test/(.+)");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "false");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        assertFalse(config.isFastRegexEnabled());
+        final List<MergeRule> rules = config.getMergeRules();
+        assertEquals(1, rules.size());
+        assertFalse(rules.get(0).isUsingFastRegex());
+        assertFalse(rules.get(0).getIncludeConditions()[0].isUsingFastRegex());
+    }
+
+    @Test
+    public void testGlobalDisabledWithRuleUnspecified()
+    {
+        appendPropertyToFile(ReportGeneratorConfiguration.PROP_FAST_REGEX_ENABLED, "false");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/test/(.+)");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        assertFalse(config.isFastRegexEnabled());
+        final List<MergeRule> rules = config.getMergeRules();
+        assertEquals(1, rules.size());
+        assertFalse(rules.get(0).isUsingFastRegex());
+        assertFalse(rules.get(0).getIncludeConditions()[0].isUsingFastRegex());
+    }
+
+    @Test
+    public void testAllConditionTypesInheritRuleFastRegexSetting()
+    {
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.newName", "AllConditions");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/url/.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.namePattern", "name_.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.contentTypePattern", "text/.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.statusCodePattern", "20[0-9]");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.agentPattern", "agent_.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.transactionPattern", "trans_.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.methodPattern", "GET|POST");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.urlPattern.exclude", "/ex_url/.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.namePattern.exclude", "ex_name_.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.contentTypePattern.exclude", "image/.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.statusCodePattern.exclude", "40[0-9]");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.agentPattern.exclude", "ex_agent_.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.transactionPattern.exclude", "ex_trans_.*");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.methodPattern.exclude", "HEAD");
+        appendPropertyToFile(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "false");
+
+        final ReportGeneratorConfiguration config = readReportGeneratorProperties();
+        final MergeRule rule = config.getMergeRules().get(0);
+        assertFalse(rule.isUsingFastRegex());
+
+        for (final Condition c : rule.getIncludeConditions())
+        {
+            assertFalse(c.isUsingFastRegex());
+        }
+        for (final Condition c : rule.getExcludeConditions())
+        {
+            assertFalse(c.isUsingFastRegex());
+        }
+    }
+
+    @Test
+    public void testCacheFingerprintDivergesOnFastRegexToggle() throws IOException
+    {
+        final File resultsDir = tempFolder.newFolder("results");
+        final Properties propsFast = new Properties();
+        propsFast.setProperty(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        propsFast.setProperty(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/catalog/([^/]+)");
+        propsFast.setProperty(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "true");
+        final ReportGeneratorConfiguration configFast =
+            new ReportGeneratorConfiguration(homeDir, configDir, null, null, propsFast);
+
+        final Properties propsStandard = new Properties();
+        propsStandard.setProperty(PROP_MERGE_RULES_PREFIX + "1.newName", "Rule1");
+        propsStandard.setProperty(PROP_MERGE_RULES_PREFIX + "1.urlPattern", "/catalog/([^/]+)");
+        propsStandard.setProperty(PROP_MERGE_RULES_PREFIX + "1.fastRegex", "false");
+        final ReportGeneratorConfiguration configStandard =
+            new ReportGeneratorConfiguration(homeDir, configDir, null, null, propsStandard);
+
+        final CacheFingerprint fp1 = CacheFingerprint.calculate(resultsDir, configFast);
+        final CacheFingerprint fp2 = CacheFingerprint.calculate(resultsDir, configStandard);
+
+        assertNotEquals(fp1.mergeRulesHash(), fp2.mergeRulesHash());
+        assertFalse(fp1.matches(fp2));
     }
 }

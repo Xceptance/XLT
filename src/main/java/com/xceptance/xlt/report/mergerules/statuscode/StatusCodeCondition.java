@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.mergerules.statuscode;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -31,6 +32,19 @@ public class StatusCodeCondition extends Condition
 {
     /**
      * Constructor
+     * 
+     * @param regex
+     *            the regular expression to identify matching requests
+     * @param useFastRegex
+     *            whether to use FastRegex (true) or standard JDK Pattern (false)
+     */
+    public StatusCodeCondition(final String regex, final boolean useFastRegex)
+    {
+        super(regex, 50, useFastRegex);
+    }
+
+    /**
+     * Constructor delegating to global {@link RegExUtils#isFastRegexEnabled()}.
      * 
      * @param regex
      *            the regular expression to identify matching requests
@@ -62,18 +76,31 @@ public class StatusCodeCondition extends Condition
      * Returns the right condition
      * 
      * @param regex the regular expression to identify matching requests
+     * @param useFastRegex whether to use FastRegex (true) or standard JDK Pattern (false)
      * 
      * @return the condition
      */
-    public static Condition build(final String regex)
+    public static Condition build(final String regex, final boolean useFastRegex)
     {
         if (!StringUtils.isBlank(regex)) 
         {
-            return new StatusCodeCondition(regex);
+            return new StatusCodeCondition(regex, useFastRegex);
         }
         else
         {
             return new StatusCodeEmptyCondition();
         }
+    }
+
+    /**
+     * Returns the right condition delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     * 
+     * @param regex the regular expression to identify matching requests
+     * 
+     * @return the condition
+     */
+    public static Condition build(final String regex)
+    {
+        return build(regex, RegExUtils.isFastRegexEnabled());
     }
 }

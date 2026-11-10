@@ -76,6 +76,7 @@ import com.xceptance.xlt.report.mergerules.MergeRule.UrlExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlPattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlText;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlTextExclude;
+import com.xceptance.xlt.report.mergerules.MergeRule.UseFastRegex;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
 
@@ -1934,6 +1935,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                                                                           "", false));
             final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude",
                                                                                                 "", false));
+
+            // fast regex switch for this rule (default true; effective fastRegex is only true if globally enabled)
+            final boolean ruleFastRegex = getBooleanProperty(basePropertyName + ".fastRegex", true);
+            final boolean effectiveFastRegex = this.fastRegexEnabled && ruleFastRegex;
+            final var useFastRegex = new UseFastRegex(effectiveFastRegex);
+
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName.value()) == dropOnMatch.value())
             {
@@ -1956,7 +1963,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                           stopOnMatch, requestNameExcludePattern, urlExcludePattern,
                                                           contentTypeExcludePattern, statusCodeExcludePattern, agentNameExcludePattern,
                                                           transactionNameExcludePattern, httpMethodExcludePattern, continueOnMatchAtId,
-                                                          continueOnNoMatchAtId, dropOnMatch, urlText, urlTextExclude);
+                                                          continueOnNoMatchAtId, dropOnMatch, urlText, urlTextExclude, useFastRegex);
                 requestProcessingRules.add(mergeRule);
             }
             catch (final InvalidMergeRuleException imre)

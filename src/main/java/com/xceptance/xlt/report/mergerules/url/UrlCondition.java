@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.mergerules.url;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -33,11 +34,24 @@ public class UrlCondition extends Condition
      *
      * @param regex
      *            the regular expression to identify matching requests
+     * @param useFastRegex
+     *            whether to use FastRegex (true) or standard JDK Pattern (false)
      */
-    public UrlCondition(final String regex)
+    public UrlCondition(final String regex, final boolean useFastRegex)
     {
         // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
+        super(regex, 2500, useFastRegex);
+    }
+
+    /**
+     * Constructor delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     *
+     * @param regex
+     *            the regular expression to identify matching requests
+     */
+    public UrlCondition(final String regex)
+    {
         super(regex, 2500);
     }
 
@@ -65,14 +79,15 @@ public class UrlCondition extends Condition
      * 
      * @param regex the regular expression to identify matching requests
      * @param text the text to check first before we executed the expensive regex match, if any regex was given
+     * @param useFastRegex whether to use FastRegex (true) or standard JDK Pattern (false)
      * 
      * @return the condition that checks urls
      */
-    public static Condition build(final String regex, final String text)
+    public static Condition build(final String regex, final String text, final boolean useFastRegex)
     {
         if (!StringUtils.isBlank(text) && !StringUtils.isBlank(regex)) 
         {
-            return new UrlConditionAndText(regex, text);
+            return new UrlConditionAndText(regex, text, useFastRegex);
         }
         else if (!StringUtils.isBlank(text))
         {
@@ -80,12 +95,25 @@ public class UrlCondition extends Condition
         }
         else if (!StringUtils.isBlank(regex))
         {
-            return new UrlCondition(regex);
+            return new UrlCondition(regex, useFastRegex);
         }
         else
         {
             return new UrlEmptyCondition();
         }
+    }
+
+    /**
+     * Returns the right condition delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     * 
+     * @param regex the regular expression to identify matching requests
+     * @param text the text to check first before we executed the expensive regex match, if any regex was given
+     * 
+     * @return the condition that checks urls
+     */
+    public static Condition build(final String regex, final String text)
+    {
+        return build(regex, text, RegExUtils.isFastRegexEnabled());
     }
     
     /**

@@ -86,6 +86,29 @@ com.xceptance.xlt.reportgenerator.fastRegex.enabled = true
    RegExUtils.setFastRegexEnabled(false);
    ```
 
+### Per-Rule Engine Override
+
+In addition to the global toggle, individual request merge rules can explicitly configure whether to use FastRegex or standard Java regex via:
+
+```properties
+com.xceptance.xlt.reportgenerator.requestMergeRules.<id>.fastRegex = true|false
+```
+
+* **Default**: `true` (inherits global FastRegex execution).
+* **Per-Rule Opt-Out**: When set to `false`, that specific rule evaluates its patterns using standard `java.util.regex.Pattern`, while all other rules continue running under FastRegex.
+* **Global Master Switch Precedence**: The global setting (`fastRegex.enabled = false`) acts as an absolute master kill-switch. If FastRegex is globally disabled, no individual rule can enable FastRegex.
+
+#### Precedence Truth Table
+
+| Global `fastRegex.enabled` | Rule `<id>.fastRegex` | Effective Engine | Justification |
+| :--- | :--- | :--- | :--- |
+| `true` | *(unspecified, defaults `true`)* | **FastRegex** | Inherits global enabled state |
+| `true` | `true` | **FastRegex** | Explicit rule opt-in under global enablement |
+| `true` | `false` | **Standard `Pattern`** | Per-rule explicit opt-out |
+| `false` | *(unspecified, defaults `true`)* | **Standard `Pattern`** | Inherits global disabled state |
+| `false` | `true` | **Standard `Pattern`** | Global kill-switch strictly overrides rule preference |
+| `false` | `false` | **Standard `Pattern`** | Both global and rule agree on standard engine |
+
 ---
 
 ## 4. Supported Regular Expression Syntax Specification
@@ -303,6 +326,20 @@ com.xceptance.xlt.reportgenerator.requestMergeRules.4.stopOnMatch = true
 
 * The positive lookahead `(?=\?|$)` triggers transparent fallback to `java.util.regex.Pattern`.
 * Match results and replacements `{u:1}` are handled identically without user intervention.
+
+### Example 5: Explicit Rule Fallback to Standard Regex (`fastRegex = false`)
+
+When a rule contains idiosyncratic regular expression patterns that should explicitly bypass FastRegex without disabling FastRegex globally:
+
+```properties
+com.xceptance.xlt.reportgenerator.requestMergeRules.5.newName = LegacyCatalog.{u:1}
+com.xceptance.xlt.reportgenerator.requestMergeRules.5.urlPattern = /catalog/([^/]+)
+com.xceptance.xlt.reportgenerator.requestMergeRules.5.fastRegex = false
+com.xceptance.xlt.reportgenerator.requestMergeRules.5.stopOnMatch = true
+```
+
+* Rule 5 is compiled and executed exclusively using standard `java.util.regex.Pattern`.
+* Other rules (e.g. Rules 1–4) continue running under FastRegex at maximum throughput.
 
 ---
 
