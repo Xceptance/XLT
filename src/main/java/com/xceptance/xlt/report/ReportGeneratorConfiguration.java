@@ -627,6 +627,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         slowestRequestsTotal = getIntProperty(PROP_SLOWEST_REQUESTS_TOTAL, 500);
         slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3_000);
         slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 600_000);
+        com.xceptance.xlt.report.storage.chunk.RequestChunkHandler.configureSlowestForensicRetention(
+            slowestRequestsPerBucket, slowestRequestsMaxRuntime);
 
         aggregateCustomData = getBooleanProperty(PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS, true);
 

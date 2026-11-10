@@ -347,8 +347,14 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
 
             // 4. Request forensic details retention mode ("sparse" vs "full") and URL hash schema version
             final String detailsMode = config.getRequestDetailsMode();
-            md.update((detailsMode != null ? detailsMode.toLowerCase() : "sparse").getBytes(StandardCharsets.UTF_8));
+            final String normalizedMode = detailsMode != null ? detailsMode.toLowerCase() : "sparse";
+            md.update(normalizedMode.getBytes(StandardCharsets.UTF_8));
             md.update("url-hashes-v1".getBytes(StandardCharsets.UTF_8));
+            if ("sparse".equals(normalizedMode))
+            {
+                md.update(Integer.toString(config.getSlowestRequestsPerBucket()).getBytes(StandardCharsets.UTF_8));
+                md.update(Integer.toString(config.getSlowestRequestsMaxRuntime()).getBytes(StandardCharsets.UTF_8));
+            }
 
             return HexFormat.of().formatHex(md.digest());
         }

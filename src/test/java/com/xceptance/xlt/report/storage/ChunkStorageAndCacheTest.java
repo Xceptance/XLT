@@ -72,6 +72,7 @@ public class ChunkStorageAndCacheTest
     public void setUp() throws Exception
     {
         RequestChunkHandler.setRequestDetailsMode("sparse");
+        RequestChunkHandler.resetSlowestForensicRetention();
         tempDir = Files.createTempDirectory("chunkdb-test").toFile();
     }
 
@@ -79,6 +80,7 @@ public class ChunkStorageAndCacheTest
     public void tearDown() throws Exception
     {
         RequestChunkHandler.setRequestDetailsMode("sparse");
+        RequestChunkHandler.resetSlowestForensicRetention();
         if (tempDir != null && tempDir.exists())
         {
             FileUtils.deleteDirectory(tempDir);
@@ -2676,6 +2678,168 @@ public class ChunkStorageAndCacheTest
         Assert.assertEquals("backend-01.internal",
                             com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(csvLine, urlOffset, urlLen));
         Assert.assertEquals("", com.xceptance.xlt.report.util.UrlHostParser.retrieveHostFromUrl(csvLine, 0, 0));
+    }
+
+    /**
+     * C6 regression test: Verifies that sparse forensic retention in {@link RequestChunkHandler} respects
+     * {@link ReportGeneratorConfiguration}'s slowest-requests settings ({@code requestsPerBucket > 20},
+     * {@code totalRequests > 256}, {@code maxRuntime} filtering, and equal-runtime tie-breaking) so that
+     * {@link com.xceptance.xlt.report.providers.SlowestRequestsReportProvider} never loses forensic details.
+     */
+    @Test
+    public void testSparseForensicRetentionRespectsSlowestRequestsConfig() throws Exception
+    {
+        final java.util.Properties props = new java.util.Properties();
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.requestsPerBucket", "30");
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.totalRequests", "300");
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.minRuntime", "1000");
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.maxRuntime", "10000");
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration(null, null, props);
+        final File spoolDir = new File(tempDir, "c6-sparse-forensics");
+        spoolDir.mkdirs();
+
+        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final long baseTime = 1_700_000_000_000L;
+        long seq = 0;
+
+        // 1. Fill sample URLs for "Search" and "EqualBucket" with fast requests so fallback URLs would be wrong
+        for (int i = 0; i < 15; i++)
+        {
+            final RequestData fastSearch = new RequestData("Search");
+            fastSearch.setTime(baseTime + seq++);
+            fastSearch.setRunTime(20);
+            fastSearch.setResponseCode(200);
+            fastSearch.setUrl("https://example.com/search?sample=" + i);
+            collector.collect(fastSearch);
+
+            final RequestData fastEqual = new RequestData("EqualBucket");
+            fastEqual.setTime(baseTime + seq++);
+            fastEqual.setRunTime(20);
+            fastEqual.setResponseCode(200);
+            fastEqual.setUrl("https://example.com/equal?sample=" + i);
+            collector.collect(fastEqual);
+        }
+
+        // 2. Ingest 260 requests for "OtherTimer" with runtime 25,000 ms (> maxRuntime = 10,000 ms)
+        //    and 25 requests for "Search" with runtime 25,000 ms (> maxRuntime = 10,000 ms).
+        //    Without C6 fix, these > maxRuntime outliers saturate both the chunk-wide heap and Search's per-timer heap!
+        for (int i = 0; i < 260; i++)
+        {
+            final RequestData overMaxOther = new RequestData("OtherTimer");
+            overMaxOther.setTime(baseTime + seq++);
+            overMaxOther.setRunTime(25_000 + i);
+            overMaxOther.setResponseCode(200);
+            overMaxOther.setUrl("https://example.com/other?overmax=" + i);
+            overMaxOther.setRequestId("other-overmax-" + i);
+            collector.collect(overMaxOther);
+        }
+        for (int i = 0; i < 25; i++)
+        {
+            final RequestData overMaxSearch = new RequestData("Search");
+            overMaxSearch.setTime(baseTime + seq++);
+            overMaxSearch.setRunTime(25_000 + i);
+            overMaxSearch.setResponseCode(200);
+            overMaxSearch.setUrl("https://example.com/search?overmax=" + i);
+            overMaxSearch.setRequestId("search-overmax-" + i);
+            collector.collect(overMaxSearch);
+        }
+
+        // 3. Ingest 30 valid slow requests for "Search" within [minRuntime, maxRuntime] (5,000..5,029 ms)
+        for (int i = 0; i < 30; i++)
+        {
+            final RequestData slowSearch = new RequestData("Search");
+            slowSearch.setTime(baseTime + seq++);
+            slowSearch.setRunTime(5_000 + i);
+            slowSearch.setResponseCode(200);
+            slowSearch.setUrl("https://example.com/search?exact=" + i);
+            slowSearch.setRequestId("search-req-" + i);
+            slowSearch.setResponseId("search-resp-" + i);
+            slowSearch.setFormData("searchQuery=" + i);
+            collector.collect(slowSearch);
+        }
+
+        // 4. Ingest 30 equal-runtime slow requests (4,000 ms) for "EqualBucket", followed by 1 slower request (4,500 ms).
+        //    SlowestRequestsReportProvider keeps the 4,500 ms request and the first 29 (i = 0..28) of the 4,000 ms requests.
+        for (int i = 0; i < 30; i++)
+        {
+            final RequestData eqReq = new RequestData("EqualBucket");
+            eqReq.setTime(baseTime + seq++);
+            eqReq.setRunTime(4_000);
+            eqReq.setResponseCode(200);
+            eqReq.setUrl("https://example.com/equal?exact=" + i);
+            eqReq.setRequestId("eq-req-" + i);
+            eqReq.setResponseId("eq-resp-" + i);
+            eqReq.setFormData("eqData=" + i);
+            collector.collect(eqReq);
+        }
+        final RequestData slowerEqReq = new RequestData("EqualBucket");
+        slowerEqReq.setTime(baseTime + seq++);
+        slowerEqReq.setRunTime(4_500);
+        slowerEqReq.setResponseCode(200);
+        slowerEqReq.setUrl("https://example.com/equal?exact=winner");
+        slowerEqReq.setRequestId("eq-req-winner");
+        slowerEqReq.setResponseId("eq-resp-winner");
+        slowerEqReq.setFormData("eqData=winner");
+        collector.collect(slowerEqReq);
+
+        try (final ChunkStorage storage = collector.finish())
+        {
+            final DiskChunk dc = (DiskChunk) storage.getCatalog().getChunksForType('R').get(0);
+            final RequestChunkHandler handler = (RequestChunkHandler) ChunkTypeRegistry.getInstance().getHandler('R');
+            final com.xceptance.xlt.api.report.PostProcessedDataContainer container =
+                new com.xceptance.xlt.api.report.PostProcessedDataContainer(512);
+            container.typeCode = 'R';
+            handler.scan(dc, ScanPredicate.ALL, container, storage.getDictionaries());
+
+            final com.xceptance.xlt.report.providers.SlowestRequestsReportProvider provider =
+                new com.xceptance.xlt.report.providers.SlowestRequestsReportProvider();
+            provider.setConfiguration(config);
+            provider.processAll(container);
+
+            final com.xceptance.xlt.report.providers.SlowestRequestsReport report =
+                (com.xceptance.xlt.report.providers.SlowestRequestsReport) provider.createReportFragment();
+
+            Assert.assertEquals("Expected 30 Search + 30 EqualBucket slow requests", 60, report.slowestRequests.size());
+
+            // Verify all 30 Search requests (5,029 down to 5,000 ms) have exact forensic details
+            for (int i = 0; i < 30; i++)
+            {
+                final int expectedIdx = 29 - i;
+                final com.xceptance.xlt.report.providers.SlowRequestReport sr = report.slowestRequests.get(i);
+                Assert.assertEquals("Search", sr.name);
+                Assert.assertEquals(5_000L + expectedIdx, sr.runtime);
+                Assert.assertEquals("https://example.com/search?exact=" + expectedIdx, sr.url);
+                Assert.assertEquals("search-req-" + expectedIdx, sr.requestId);
+                Assert.assertEquals("search-resp-" + expectedIdx, sr.responseId);
+                Assert.assertEquals("searchQuery=" + expectedIdx, sr.formData);
+            }
+
+            // Verify EqualBucket winner (4,500 ms) and first 29 equal-runtime requests (i = 0..28) have exact forensics
+            final com.xceptance.xlt.report.providers.SlowRequestReport eqWinner = report.slowestRequests.get(30);
+            Assert.assertEquals("EqualBucket", eqWinner.name);
+            Assert.assertEquals(4_500L, eqWinner.runtime);
+            Assert.assertEquals("https://example.com/equal?exact=winner", eqWinner.url);
+            Assert.assertEquals("eq-req-winner", eqWinner.requestId);
+
+            for (int i = 0; i < 29; i++)
+            {
+                final com.xceptance.xlt.report.providers.SlowRequestReport eqSr = report.slowestRequests.get(31 + i);
+                Assert.assertEquals("EqualBucket", eqSr.name);
+                Assert.assertEquals(4_000L, eqSr.runtime);
+                Assert.assertEquals("https://example.com/equal?exact=" + i, eqSr.url);
+                Assert.assertEquals("eq-req-" + i, eqSr.requestId);
+                Assert.assertEquals("eq-resp-" + i, eqSr.responseId);
+                Assert.assertEquals("eqData=" + i, eqSr.formData);
+            }
+        }
+
+        // Verify CacheFingerprint changes when slowestRequestsPerBucket or slowestRequestsMaxRuntime changes in sparse mode
+        final ReportGeneratorConfiguration defaultConfig = new ReportGeneratorConfiguration();
+        final CacheFingerprint fpCustom = CacheFingerprint.calculate(spoolDir, config);
+        final CacheFingerprint fpDefault = CacheFingerprint.calculate(spoolDir, defaultConfig);
+        Assert.assertNotEquals("Sparse forensic retention config changes must alter CacheFingerprint mergeRulesHash",
+                               fpDefault.mergeRulesHash(), fpCustom.mergeRulesHash());
     }
 
     public static class VariableColumnRecord extends com.xceptance.xlt.api.engine.AbstractData

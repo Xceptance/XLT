@@ -57,6 +57,12 @@ public class RequestChunkHandler implements ChunkTypeHandler
     /** Maximum number of slowest requests per timer ID per chunk retained in the Cold Forensic Tail Block in sparse mode. */
     public static final int MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS = 20;
 
+    /** Configured per-timer slowest forensic rows in sparse mode (at least {@link #MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS}). */
+    private static volatile int maxSlowestPerTimerForensicRows = MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS;
+
+    /** Configured maximum runtime (inclusive) for per-timer slowest forensic retention in sparse mode. */
+    private static volatile int slowestForensicMaxRuntime = Integer.MAX_VALUE;
+
     /**
      * Thread-local {@link Deflater} instance reused across Cold Forensic Tail Block compressions to avoid
      * native zlib {@code z_stream} JNI allocation and deallocation overhead.
@@ -108,6 +114,37 @@ public class RequestChunkHandler implements ChunkTypeHandler
     public static String getRequestDetailsMode()
     {
         return defaultRequestDetailsMode;
+    }
+
+    /**
+     * Configures sparse forensic per-timer retention limits to match {@code SlowestRequestsReportProvider}
+     * thresholds ({@code slowestRequestsPerBucket} and {@code slowestRequestsMaxRuntime}).
+     * <p>
+     * Because {@code SlowestRequestsReportProvider} selects at most {@code slowestRequestsPerBucket} requests
+     * per timer with {@code runtime <= slowestRequestsMaxRuntime}, sizing per-timer forensic heaps to
+     * {@code max(20, perTimerLimit)} and bounding per-timer admission by {@code maxRuntime} guarantees that
+     * every winning slow request retains its exact forensic details while keeping the chunk-wide top-256
+     * heap unbounded for interactive ChunkDB Explorer queries.
+     *
+     * @param perTimerLimit
+     *            configured {@code slowestRequestsPerBucket}
+     * @param maxRuntime
+     *            configured {@code slowestRequestsMaxRuntime}
+     */
+    public static void configureSlowestForensicRetention(final int perTimerLimit, final int maxRuntime)
+    {
+        maxSlowestPerTimerForensicRows = Math.min(ChunkBuilder.DEFAULT_CHUNK_CAPACITY,
+                                                  Math.max(MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS, perTimerLimit));
+        slowestForensicMaxRuntime = maxRuntime > 0 ? maxRuntime : Integer.MAX_VALUE;
+    }
+
+    /**
+     * Resets sparse forensic retention limits to their baseline defaults.
+     */
+    public static void resetSlowestForensicRetention()
+    {
+        maxSlowestPerTimerForensicRows = MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS;
+        slowestForensicMaxRuntime = Integer.MAX_VALUE;
     }
 
     /**
@@ -1319,12 +1356,14 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private final RoaringBitmap failedRows = new RoaringBitmap();
 
         // ---------------------------------------------------------------------
-        // Cold Forensic Tail Block Tracking (Sparse Top-256 + Per-Timer Top-20 + Errors or Full)
+        // Cold Forensic Tail Block Tracking (Sparse Top-256 + Per-Timer Top-K + Errors or Full)
         // ---------------------------------------------------------------------
         private final byte[] forensicRefCounts = new byte[DEFAULT_CHUNK_CAPACITY];
         private final int[] slowestHeapRunTimes = new int[MAX_SLOWEST_FORENSIC_ROWS];
         private final int[] slowestHeapRowIndices = new int[MAX_SLOWEST_FORENSIC_ROWS];
         private int slowestHeapSize = 0;
+        private int maxPerTimerSlowestRows = maxSlowestPerTimerForensicRows;
+        private int maxEligibleRunTime = slowestForensicMaxRuntime;
         private int[][] perTimerHeapRunTimes = new int[256][];
         private int[][] perTimerHeapRowIndices = new int[256][];
         private int[] perTimerHeapSizes = new int[256];
@@ -1713,7 +1752,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                     heapSiftDown(0);
                 }
 
-                if (timerId >= 0)
+                if (timerId >= 0 && rt <= maxEligibleRunTime)
                 {
                     updatePerTimerSlowestHeap(timerId, rt, idx, req);
                 }
@@ -1739,6 +1778,19 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
         }
 
+        /**
+         * Returns {@code true} if entry {@code A} should sit above entry {@code B} in the min-heap
+         * (i.e., {@code A} is more evictable than {@code B}).
+         * <p>
+         * Matches {@code SlowRequestReport.BUCKET_COMPARATOR} / {@code COMPARATOR}: lower runtimes are evicted
+         * first, and among equal runtimes, later rows in the chunk ({@code idxA > idxB}) are evicted first so
+         * earlier rows are preserved.
+         */
+        private static boolean isMoreEvictable(final int rtA, final int idxA, final int rtB, final int idxB)
+        {
+            return rtA < rtB || (rtA == rtB && idxA > idxB);
+        }
+
         private void updatePerTimerSlowestHeap(final int timerId, final int rt, final int idx, final RequestData req)
         {
             if (timerId >= perTimerHeapSizes.length)
@@ -1752,18 +1804,19 @@ public class RequestChunkHandler implements ChunkTypeHandler
             {
                 maxTimerIdInHeaps = timerId;
             }
+            final int limit = maxPerTimerSlowestRows;
             int[] tRts = perTimerHeapRunTimes[timerId];
             int[] tIdxs = perTimerHeapRowIndices[timerId];
             if (tRts == null)
             {
-                tRts = new int[MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS];
-                tIdxs = new int[MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS];
+                tRts = new int[limit];
+                tIdxs = new int[limit];
                 perTimerHeapRunTimes[timerId] = tRts;
                 perTimerHeapRowIndices[timerId] = tIdxs;
             }
 
             final int tSize = perTimerHeapSizes[timerId];
-            if (tSize < MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS)
+            if (tSize < limit)
             {
                 retainForensicRow(idx, req);
                 int pos = tSize;
@@ -1773,7 +1826,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 while (pos > 0)
                 {
                     final int parent = (pos - 1) >>> 1;
-                    if (tRts[pos] >= tRts[parent])
+                    if (!isMoreEvictable(tRts[pos], tIdxs[pos], tRts[parent], tIdxs[parent]))
                     {
                         break;
                     }
@@ -1793,16 +1846,16 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 tRts[0] = rt;
                 tIdxs[0] = idx;
                 int pos = 0;
-                final int half = MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS >>> 1;
+                final int half = limit >>> 1;
                 while (pos < half)
                 {
                     int child = (pos << 1) + 1;
                     final int right = child + 1;
-                    if (right < MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS && tRts[right] < tRts[child])
+                    if (right < limit && isMoreEvictable(tRts[right], tIdxs[right], tRts[child], tIdxs[child]))
                     {
                         child = right;
                     }
-                    if (tRts[pos] <= tRts[child])
+                    if (!isMoreEvictable(tRts[child], tIdxs[child], tRts[pos], tIdxs[pos]))
                     {
                         break;
                     }
@@ -1845,7 +1898,8 @@ public class RequestChunkHandler implements ChunkTypeHandler
             while (pos > 0)
             {
                 final int parent = (pos - 1) >>> 1;
-                if (slowestHeapRunTimes[pos] >= slowestHeapRunTimes[parent])
+                if (!isMoreEvictable(slowestHeapRunTimes[pos], slowestHeapRowIndices[pos],
+                                     slowestHeapRunTimes[parent], slowestHeapRowIndices[parent]))
                 {
                     break;
                 }
@@ -1870,11 +1924,14 @@ public class RequestChunkHandler implements ChunkTypeHandler
             {
                 int child = (pos << 1) + 1;
                 final int right = child + 1;
-                if (right < slowestHeapSize && slowestHeapRunTimes[right] < slowestHeapRunTimes[child])
+                if (right < slowestHeapSize
+                    && isMoreEvictable(slowestHeapRunTimes[right], slowestHeapRowIndices[right],
+                                       slowestHeapRunTimes[child], slowestHeapRowIndices[child]))
                 {
                     child = right;
                 }
-                if (slowestHeapRunTimes[pos] <= slowestHeapRunTimes[child])
+                if (!isMoreEvictable(slowestHeapRunTimes[child], slowestHeapRowIndices[child],
+                                     slowestHeapRunTimes[pos], slowestHeapRowIndices[pos]))
                 {
                     break;
                 }
@@ -2046,6 +2103,14 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 Arrays.fill(perTimerHeapSizes, 0, maxTimerIdInHeaps + 1, 0);
                 maxTimerIdInHeaps = -1;
             }
+            final int configuredPerTimer = maxSlowestPerTimerForensicRows;
+            if (configuredPerTimer != maxPerTimerSlowestRows)
+            {
+                maxPerTimerSlowestRows = configuredPerTimer;
+                Arrays.fill(perTimerHeapRunTimes, null);
+                Arrays.fill(perTimerHeapRowIndices, null);
+            }
+            maxEligibleRunTime = slowestForensicMaxRuntime;
             count = 0;
             minTime = Long.MAX_VALUE;
             maxTime = Long.MIN_VALUE;
