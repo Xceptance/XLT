@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Report provider for the slowest requests in the test run.
@@ -76,10 +77,12 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
     private long lastMinStoredRuntime = -1;
 
     /**
-     * The number indicating how many requests were processed (and not skipped) by the provider. Used to keep track of
-     * the order in which requests were processed.
+     * Global monotonic sequence number assigned to stored {@link SlowRequestReport} instances across all
+     * worker {@link SlowestRequestsReportProvider} copies. Using a shared counter ensures that two worker
+     * threads recording slow requests with identical bucket names and runtimes never collide on
+     * {@code processingOrder} when merged via {@link #merge(SlowestRequestsReportProvider)}.
      */
-    private long processingOrder = 0;
+    private static final AtomicLong NEXT_PROCESSING_ORDER = new AtomicLong();
 
     /**
      * {@inheritDoc}
@@ -249,7 +252,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         if (requests.size() < requestsPerBucket)
         {
             // if bucket limit isn't reached, add any request; request set is sorted automatically
-            requests.add(new SlowRequestReport(reqData, processingOrder++, sourceChunk, sourceRowIndex));
+            requests.add(new SlowRequestReport(reqData, NEXT_PROCESSING_ORDER.getAndIncrement(), sourceChunk, sourceRowIndex));
             if (requests.size() >= requestsPerBucket)
             {
                 minStoredRuntime = requests.last().runtime;
@@ -260,7 +263,7 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         else if (runtime > minStoredRuntime)
         {
             // add the request; the request set is sorted automatically
-            requests.add(new SlowRequestReport(reqData, processingOrder++, sourceChunk, sourceRowIndex));
+            requests.add(new SlowRequestReport(reqData, NEXT_PROCESSING_ORDER.getAndIncrement(), sourceChunk, sourceRowIndex));
 
             // remove request that is the last after sorting to stay within bucket limit
             requests.remove(requests.last());
@@ -315,7 +318,16 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
                     requests.remove(requests.last());
                 }
             }
+
+            if (requests.size() >= requestsPerBucket)
+            {
+                bucketMinRuntimes.put(bucketName, requests.last().runtime);
+            }
         }
+
+        lastBucketName = null;
+        lastBucketRequests = null;
+        lastMinStoredRuntime = -1;
     }
 
     /**

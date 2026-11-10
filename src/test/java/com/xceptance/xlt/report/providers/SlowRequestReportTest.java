@@ -15,7 +15,11 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.util.List;
+import java.util.Properties;
+
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -84,5 +88,54 @@ public class SlowRequestReportTest
         data.setName(name);
 
         return new SlowRequestReport(data, processingOrder);
+    }
+
+    /**
+     * C4 regression test: Merging multiple worker {@link SlowestRequestsReportProvider} instances that
+     * independently recorded requests with the same bucket name and runtime must not silently drop
+     * requests due to colliding per-instance {@code processingOrder} values.
+     */
+    @Test
+    public void mergeMultipleWorkers_SameBucketAndRuntimeDoesNotDropRequests() throws Exception
+    {
+        final Properties props = new Properties();
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.requestsPerBucket", "5");
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.totalRequests", "5");
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.minRuntime", "3000");
+        props.setProperty("com.xceptance.xlt.reportgenerator.slowestRequests.maxRuntime", "20000");
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration(null, null, props);
+
+        final SlowestRequestsReportProvider master = new SlowestRequestsReportProvider();
+        master.setConfiguration(config);
+
+        final SlowestRequestsReportProvider worker1 = new SlowestRequestsReportProvider();
+        worker1.setConfiguration(config);
+        worker1.processDataRecord(createRequest("Checkout", 10_000, "req-worker1-0"));
+        worker1.processDataRecord(createRequest("Checkout", 9_000, "req-worker1-1"));
+
+        final SlowestRequestsReportProvider worker2 = new SlowestRequestsReportProvider();
+        worker2.setConfiguration(config);
+        worker2.processDataRecord(createRequest("Checkout", 10_000, "req-worker2-0"));
+        worker2.processDataRecord(createRequest("Checkout", 9_000, "req-worker2-1"));
+
+        master.merge(worker1);
+        master.merge(worker2);
+
+        final List<SlowRequestReport> reports = ((SlowestRequestsReport) master.createReportFragment()).slowestRequests;
+        Assert.assertEquals("All 4 slow requests across both workers must be retained after merge",
+                            4, reports.size());
+        Assert.assertEquals("req-worker1-0", reports.get(0).requestId);
+        Assert.assertEquals("req-worker2-0", reports.get(1).requestId);
+        Assert.assertEquals("req-worker1-1", reports.get(2).requestId);
+        Assert.assertEquals("req-worker2-1", reports.get(3).requestId);
+    }
+
+    private static RequestData createRequest(final String name, final int runtime, final String requestId)
+    {
+        final RequestData data = new RequestData();
+        data.setName(name);
+        data.setRunTime(runtime);
+        data.setRequestId(requestId);
+        return data;
     }
 }
