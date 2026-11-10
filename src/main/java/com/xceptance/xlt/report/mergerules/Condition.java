@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.xceptance.common.collection.LRUClockMap;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.RegExUtils;
+import com.xceptance.util.fastregex.FastRegex;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
@@ -46,9 +47,14 @@ public abstract class Condition
     private final LRUClockMap<CharSequence, MatchResult> cache;
 
     /**
-     * The matcher we use when we don't want to cache anything
+     * The matcher we use when FastRegex is disabled.
      */
     private final Matcher matcher;
+
+    /**
+     * The FastRegex matcher we use when FastRegex is enabled (default).
+     */
+    private final FastRegex.Matcher fastMatcher;
 
     /**
      * The last state of the evaluation, so we don't have look anything up. All filters are already
@@ -71,13 +77,37 @@ public abstract class Condition
      */
     public Condition(final String regex, final int cacheSize)
     {
-        this.matcher = StringUtils.isBlank(regex) ? null : RegExUtils.getPattern(regex, 0).matcher("any");
+        if (StringUtils.isBlank(regex))
+        {
+            this.fastMatcher = null;
+            this.matcher = null;
+        }
+        else if (RegExUtils.isFastRegexEnabled())
+        {
+            this.fastMatcher = FastRegex.compile(regex).matcher();
+            this.matcher = null;
+        }
+        else
+        {
+            this.fastMatcher = null;
+            this.matcher = Pattern.compile(regex).matcher("any");
+        }
         
         if (cacheSize <= 0)
         {
             throw new IllegalArgumentException("Cache size must be larger than 0");
         }
         this.cache = new LRUClockMap<>(cacheSize);
+    }
+    
+    /**
+     * Returns whether this condition is executing via the {@link FastRegex} engine.
+     *
+     * @return {@code true} if backed by {@link FastRegex}, {@code false} otherwise
+     */
+    public boolean isUsingFastRegex()
+    {
+        return fastMatcher != null;
     }
     
     /**
@@ -132,6 +162,27 @@ public abstract class Condition
         
         // not found, produce and cache, recycle the matcher
         // cache only the result, not the matcher itself
+        if (this.fastMatcher != null)
+        {
+            final FastRegex.Matcher fm = this.fastMatcher.reset(text);
+            if (fm.find())
+            {
+                result = fm.snapshot();
+                cache.put(text, result);
+
+                this.lastFilterState = result;
+                return true;
+            }
+            else
+            {
+                // remember the miss
+                cache.put(text, NULL);
+
+                this.lastFilterState = null;
+                return false;
+            }
+        }
+
         final Matcher m = this.matcher.reset(text);
         if (m.find())
         {
@@ -162,7 +213,14 @@ public abstract class Condition
          */
         try
         {
-            return capturingGroupIndex == -1 ? getText(requestData) : this.getLastFilterState().group(capturingGroupIndex);
+            if (capturingGroupIndex == -1)
+            {
+                return getText(requestData);
+            }
+            final MatchResult state = this.getLastFilterState();
+            return (state instanceof FastRegex.FastMatchResult fastState)
+                ? fastState.groupView(capturingGroupIndex)
+                : state.group(capturingGroupIndex);
         }
         catch (final IndexOutOfBoundsException ioobe)
         {
@@ -178,6 +236,10 @@ public abstract class Condition
      */
     protected String getPattern()
     {
+        if (fastMatcher != null)
+        {
+            return fastMatcher.pattern().pattern();
+        }
         return (matcher == null) ? StringUtils.EMPTY : matcher.pattern().pattern();
     }
 
@@ -186,7 +248,7 @@ public abstract class Condition
      */
     protected boolean isEmpty()
     {
-        return matcher == null;
+        return fastMatcher == null && matcher == null;
     }
     
     /**

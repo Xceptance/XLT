@@ -173,6 +173,9 @@ public class DataProcessor
         // create the dispatcher
         dispatcher = new Dispatcher(config, statisticsProcessor, chunkCollector);
 
+        // Validate merge rules upfront so any configuration or regex syntax errors fail fast on the main thread
+        config.getMergeRules();
+
         // start the threads
         for (int i = 0; i < config.parserThreadCount; i++)
         {

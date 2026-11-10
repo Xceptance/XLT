@@ -206,6 +206,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /** Configuration property key specifying the request forensic details retention mode ("sparse" or "full"). */
     public static final String PROP_REQUEST_DETAILS_MODE = "com.xceptance.xlt.report.storage.requestDetailsMode";
 
+    /** Configuration property key to enable (default) or disable the FastRegex regular expression engine for request merge rules. */
+    public static final String PROP_FAST_REGEX_ENABLED = RegExUtils.PROP_FAST_REGEX_ENABLED;
+
+    /** Alias configuration property key for request merge rules. */
+    public static final String PROP_FAST_REGEX_ENABLED_ALIAS = RegExUtils.PROP_FAST_REGEX_ENABLED_ALIAS;
+
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
     static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
@@ -392,6 +398,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private String requestDetailsMode;
 
+    private boolean fastRegexEnabled;
+
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
     private double defaultApdexThreshold;
@@ -544,6 +552,15 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         dataCacheDirectoryName = getStringProperty(PROP_DATA_CACHE_DIR, "xlt-cache");
         setRequestDetailsMode(getStringProperty(PROP_REQUEST_DETAILS_MODE, "sparse"));
 
+        // regex engine setting for request merge rules (enabled by default; honors JVM system property if not overridden in config/CLI)
+        String sysFastRegex = System.getProperty(PROP_FAST_REGEX_ENABLED);
+        if (sysFastRegex == null || sysFastRegex.isBlank())
+        {
+            sysFastRegex = System.getProperty(PROP_FAST_REGEX_ENABLED_ALIAS);
+        }
+        final boolean defaultFastRegex = (sysFastRegex == null || sysFastRegex.isBlank()) ? true : Boolean.parseBoolean(sysFastRegex.trim());
+        setFastRegexEnabled(getBooleanProperty(PROP_FAST_REGEX_ENABLED, getBooleanProperty(PROP_FAST_REGEX_ENABLED_ALIAS, defaultFastRegex)));
+
         // error settings
         generateErrorLinks = getBooleanProperty(PROP_GENERATE_ERROR_LINKS, false);
         linkedResultsBaseUri = getUriProperty(PROP_RESULTS_BASE_URI, null);
@@ -641,6 +658,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         final Set<String> ruleNumberStrings = getPropertyKeyFragment(rulePrefix);
         for (final String s : ruleNumberStrings)
         {
+            if (!StringUtils.isNumeric(s))
+            {
+                continue;
+            }
+
             // check for leading zero digits
             if (s.length() > 1 && s.startsWith("0"))
             {
@@ -1001,6 +1023,28 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         this.requestDetailsMode = "full".equalsIgnoreCase(requestDetailsMode) ? "full" : "sparse";
         com.xceptance.xlt.report.storage.chunk.RequestChunkHandler.setRequestDetailsMode(this.requestDetailsMode);
+    }
+
+    /**
+     * Indicates whether the {@link com.xceptance.util.fastregex.FastRegex} regular expression engine is enabled for request merge rules.
+     *
+     * @return {@code true} if enabled (default), {@code false} if disabled
+     */
+    public boolean isFastRegexEnabled()
+    {
+        return fastRegexEnabled;
+    }
+
+    /**
+     * Enables or disables the {@link com.xceptance.util.fastregex.FastRegex} engine for request merge rules and updates {@link RegExUtils}.
+     *
+     * @param fastRegexEnabled
+     *            {@code true} to enable the new engine, {@code false} to fall back to {@link Pattern}
+     */
+    public void setFastRegexEnabled(final boolean fastRegexEnabled)
+    {
+        this.fastRegexEnabled = fastRegexEnabled;
+        RegExUtils.setFastRegexEnabled(fastRegexEnabled);
     }
 
     public int[] getRuntimeIntervalBoundaries()

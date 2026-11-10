@@ -24,6 +24,7 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.common.collection.ConcurrentLRUCache;
+import com.xceptance.util.fastregex.FastRegex;
 
 /**
  * The RegExUtils class provides some helper functions to make dealing with regular expressions easier.
@@ -38,6 +39,17 @@ import com.xceptance.common.collection.ConcurrentLRUCache;
 public final class RegExUtils
 {
     /**
+     * Configuration and system property key controlling whether the {@link FastRegex} engine is enabled for request
+     * merge rules (default: {@code true}).
+     */
+    public static final String PROP_FAST_REGEX_ENABLED = "com.xceptance.xlt.reportgenerator.fastRegex.enabled";
+
+    /**
+     * Alias configuration and system property key for request merge rules.
+     */
+    public static final String PROP_FAST_REGEX_ENABLED_ALIAS = "com.xceptance.xlt.reportgenerator.requestMergeRules.fastRegex.enabled";
+
+    /**
      * Maps regular expression strings to their compiled equivalents.
      */
     private static final ConcurrentLRUCache<CacheKey, Pattern> patternCache = new ConcurrentLRUCache<CacheKey, Pattern>(5003);
@@ -46,6 +58,22 @@ public final class RegExUtils
      * Maps regular expression evaluation results to the string to save operations
      */
     private static final ConcurrentLRUCache<String, String> resultCache = new ConcurrentLRUCache<String, String>(1001);
+
+    /**
+     * Whether the {@link FastRegex} engine is enabled for request merge rules (defaults to {@code true} unless
+     * overridden via system property).
+     */
+    private static volatile boolean fastRegexEnabled = getInitialFastRegexEnabled();
+
+    private static boolean getInitialFastRegexEnabled()
+    {
+        String sysProp = System.getProperty(PROP_FAST_REGEX_ENABLED);
+        if (sysProp == null || sysProp.isBlank())
+        {
+            sysProp = System.getProperty(PROP_FAST_REGEX_ENABLED_ALIAS);
+        }
+        return (sysProp == null || sysProp.isBlank()) ? true : Boolean.parseBoolean(sysProp.trim());
+    }
 
     /**
      * Default constructor. Declared private to prevent external instantiation.
@@ -131,6 +159,27 @@ public final class RegExUtils
         }
 
         return pattern;
+    }
+
+    /**
+     * Indicates whether the {@link FastRegex} regular expression engine is enabled for request merge rules.
+     *
+     * @return {@code true} if {@link FastRegex} is enabled for merge rules (default), {@code false} if standard {@link Pattern} is used
+     */
+    public static boolean isFastRegexEnabled()
+    {
+        return fastRegexEnabled;
+    }
+
+    /**
+     * Enables or disables the {@link FastRegex} regular expression engine for request merge rules.
+     *
+     * @param enabled
+     *            {@code true} to enable {@link FastRegex}, {@code false} to fall back to {@link Pattern}
+     */
+    public static void setFastRegexEnabled(final boolean enabled)
+    {
+        fastRegexEnabled = enabled;
     }
 
     /**
