@@ -533,16 +533,13 @@ public class ChunkIngestionCollector
         }
         allThreadBuilders.clear();
         threadLocalBuilders = null;
+        java.util.Arrays.fill(recycledBuilders, null);
 
-        // 3. Seal and compress all remaining builders in parallel
-        final List<Chunk> sealedChunks = remainingBuilders.parallelStream()
-            .map(ChunkBuilder::seal)
-            .toList();
-
-        // 4. Register sealed chunks into catalog (spooling to disk if spooler is active)
+        // 3. Seal, compress, and immediately spool (or register) all remaining builders in parallel
+        // so that sealed chunks are evicted to disk immediately without accumulating in heap memory.
         final ChunkSpooler activeSpooler = this.spooler;
-        for (final Chunk chunk : sealedChunks)
-        {
+        remainingBuilders.parallelStream().forEach(builder -> {
+            final Chunk chunk = builder.seal();
             if (activeSpooler != null)
             {
                 try
@@ -550,7 +547,7 @@ public class ChunkIngestionCollector
                     final ChunkTypeHandler h = registry.getHandler(chunk.getTypeCode());
                     final DiskChunk diskChunk = activeSpooler.spoolChunk(chunk, h);
                     catalog.addChunk(diskChunk);
-                    continue;
+                    return;
                 }
                 catch (final IOException e)
                 {
@@ -558,10 +555,10 @@ public class ChunkIngestionCollector
                 }
             }
             catalog.addChunk(chunk);
-        }
+        });
+        remainingBuilders.clear();
 
-        // 5. Release all recycled builder pools and compact dictionary reverse maps before Phase 2 scan
-        java.util.Arrays.fill(recycledBuilders, null);
+        // 4. Compact dictionary reverse maps and staging buffers before Phase 2 scan
         dictionaries.compactForReadOnly();
 
         // 6. Finalize spooled storage files and attach open file channel for lazy loading

@@ -986,9 +986,9 @@ public class BytePipelineBenchmark
                     final CsvByteColumns columns = new CsvByteColumns(50);
                     final DataRecordFactory factory = createFactory();
                     long recs = 0;
-                    PostProcessedDataContainer reqContainer = new PostProcessedDataContainer(1000, 1);
+                    PostProcessedDataContainer reqContainer = new PostProcessedDataContainer(1000);
                     reqContainer.typeCode = 'R';
-                    PostProcessedDataContainer nonReqContainer = new PostProcessedDataContainer(1000, 1);
+                    PostProcessedDataContainer nonReqContainer = new PostProcessedDataContainer(1000);
 
                     for (final File file : subList)
                     {
@@ -1014,7 +1014,7 @@ public class BytePipelineBenchmark
                                     if (reqContainer.size() == 1000)
                                     {
                                         consumer.accept(reqContainer);
-                                        reqContainer = new PostProcessedDataContainer(1000, 1);
+                                        reqContainer = new PostProcessedDataContainer(1000);
                                         reqContainer.typeCode = 'R';
                                     }
                                 }
@@ -1024,7 +1024,7 @@ public class BytePipelineBenchmark
                                     if (nonReqContainer.size() == 1000)
                                     {
                                         flushNonReq(consumer, nonReqContainer);
-                                        nonReqContainer = new PostProcessedDataContainer(1000, 1);
+                                        nonReqContainer = new PostProcessedDataContainer(1000);
                                     }
                                 }
                                 recs++;

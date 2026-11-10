@@ -374,7 +374,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
 
             if (typeCode == 'W')
             {
-                final WebVitalData w = new WebVitalData();
+                final WebVitalData w = container.getOrCreateWebVitalData(containerIndex++);
                 w.setTime(time);
                 w.setName(name);
                 w.setAgentName(agentName);

@@ -823,7 +823,7 @@ public class DataProcessorMergeTest
         Assert.assertSame(pNull1, pNull2);
 
         // 5. Base processAll delegation and sorted order of getProcessors()
-        final PostProcessedDataContainer nonRequestContainer = new PostProcessedDataContainer(4, 1);
+        final PostProcessedDataContainer nonRequestContainer = new PostProcessedDataContainer(4);
         nonRequestContainer.typeCode = 'A';
         nonRequestContainer.add(createRequest("B_FromContainer", 2000L, 25, false, 200, 100, "http://host/c"));
         requestsProvider.processAll(nonRequestContainer);
@@ -1103,7 +1103,7 @@ public class DataProcessorMergeTest
                 (com.xceptance.xlt.report.storage.chunk.RequestChunkHandler)
                     com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry.getInstance().getHandler('R');
 
-            final PostProcessedDataContainer container = new PostProcessedDataContainer(32, 1);
+            final PostProcessedDataContainer container = new PostProcessedDataContainer(32);
             container.typeCode = 'R';
             handler.scan(dc, com.xceptance.xlt.report.storage.query.ScanPredicate.ALL, container, loaded.getDictionaries());
 
@@ -1136,5 +1136,118 @@ public class DataProcessorMergeTest
             Assert.assertEquals("", r1.responseId);
             Assert.assertEquals("", r1.formData);
         }
+    }
+
+    /**
+     * Verifies that per-timer slowest request tracking in sparse mode preserves exact forensic details
+     * for a secondary timer's slow requests even when another timer dominates the global top-256 heap,
+     * that pooled RequestData instances reset URL/host state when scanning timers without sample URLs,
+     * and that PostProcessedDataContainer.add(Data) sets hasFailedRecords for ErrorsReportProvider.
+     */
+    @Test
+    public void testPerTimerSlowestForensicsAndPooledStateResetAndContainerFailures() throws Exception
+    {
+        final java.io.File spoolDir = java.nio.file.Files.createTempDirectory("xlt-pertimer-slowest-test").toFile();
+        spoolDir.deleteOnExit();
+
+        final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector =
+            new com.xceptance.xlt.report.storage.ChunkIngestionCollector(spoolDir);
+        final long baseTime = 1_700_000_100_000L;
+
+        // 1. Ingest 260 slow requests (5,000..5,259 ms) for "DominantTimer" to fill the global top-256 heap
+        for (int i = 0; i < 260; i++)
+        {
+            final RequestData dom = new RequestData("DominantTimer");
+            dom.setTime(baseTime + i);
+            dom.setRunTime(5_000 + i);
+            dom.setResponseCode(200);
+            dom.setUrl("https://shop.example.com/dominant/" + i);
+            dom.setRequestId("dom-req-" + i);
+            collector.collect(dom);
+        }
+
+        // 2. Ingest 25 slow requests (3,500..3,524 ms) for "SecondaryTimer" (all < 5,000 ms, so none enter global top-256,
+        //    and top-20 of SecondaryTimer should be retained in the per-timer heap while the fastest 5 are evicted)
+        for (int i = 0; i < 25; i++)
+        {
+            final RequestData sec = new RequestData("SecondaryTimer");
+            sec.setTime(baseTime + 500 + i);
+            sec.setRunTime(3_500 + i);
+            sec.setResponseCode(200);
+            sec.setUrl("https://shop.example.com/secondary/exact-" + i);
+            sec.setRequestId("sec-req-" + i);
+            sec.setResponseId("sec-resp-" + i);
+            collector.collect(sec);
+        }
+
+        // 3. Ingest a request with no URL ("NoUrlTimer") to verify pooled RequestData resets URL/host state
+        final RequestData noUrlReq = new RequestData("NoUrlTimer");
+        noUrlReq.setTime(baseTime + 900);
+        noUrlReq.setRunTime(50);
+        noUrlReq.setResponseCode(200);
+        collector.collect(noUrlReq);
+
+        try (final com.xceptance.xlt.report.storage.ChunkStorage storage = collector.finish())
+        {
+            final com.xceptance.xlt.report.storage.chunk.DiskChunk dc =
+                (com.xceptance.xlt.report.storage.chunk.DiskChunk) storage.getCatalog().getChunksForType('R').get(0);
+            final com.xceptance.xlt.report.storage.chunk.RequestChunkHandler handler =
+                (com.xceptance.xlt.report.storage.chunk.RequestChunkHandler)
+                    com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry.getInstance().getHandler('R');
+
+            final PostProcessedDataContainer container = new PostProcessedDataContainer(512);
+            container.typeCode = 'R';
+            handler.scan(dc, com.xceptance.xlt.report.storage.query.ScanPredicate.ALL, container, storage.getDictionaries());
+
+            // Verify the last scanned record ("NoUrlTimer") did not inherit a stale URL or host from previous records
+            final RequestData scannedNoUrl = (RequestData) container.dataList.get(container.size() - 1);
+            Assert.assertEquals("NoUrlTimer", scannedNoUrl.getName());
+            Assert.assertNull(scannedNoUrl.getUrl());
+            Assert.assertEquals(RequestData.UNKNOWN_HOST, scannedNoUrl.getHost());
+
+            final SlowestRequestsReportProvider worker = new SlowestRequestsReportProvider();
+            worker.setConfiguration(config);
+            worker.processAll(container);
+
+            final SlowestRequestsReportProvider master = new SlowestRequestsReportProvider();
+            master.setConfiguration(config);
+            master.merge(worker);
+
+            final SlowestRequestsReport report = (SlowestRequestsReport) master.createReportFragment();
+            // SecondaryTimer's slowest request (i=24, runtime=3,524 ms) must have its exact forensic URL & requestId
+            SlowRequestReport slowestSecondary = null;
+            for (final SlowRequestReport sr : report.slowestRequests)
+            {
+                if ("SecondaryTimer".equals(sr.name) && sr.runtime == 3_524L)
+                {
+                    slowestSecondary = sr;
+                    break;
+                }
+            }
+            Assert.assertNotNull("Expected SecondaryTimer slowest request in report", slowestSecondary);
+            Assert.assertEquals("https://shop.example.com/secondary/exact-24", slowestSecondary.url);
+            Assert.assertEquals("sec-req-24", slowestSecondary.requestId);
+            Assert.assertEquals("sec-resp-24", slowestSecondary.responseId);
+        }
+
+        // 4. Verify PostProcessedDataContainer.add(Data) sets hasFailedRecords for failed/5xx/0 records
+        final PostProcessedDataContainer okContainer = new PostProcessedDataContainer(4);
+        okContainer.typeCode = 'R';
+        okContainer.add(createRequest("OkReq", baseTime, 20, false, 200, 100, "http://host/ok"));
+        Assert.assertFalse(okContainer.hasFailedRecords);
+
+        final PostProcessedDataContainer status500Container = new PostProcessedDataContainer(4);
+        status500Container.typeCode = 'R';
+        status500Container.add(createRequest("Err500Req", baseTime, 20, false, 503, 100, "http://host/503"));
+        Assert.assertTrue(status500Container.hasFailedRecords);
+
+        final PostProcessedDataContainer failedTxnContainer = new PostProcessedDataContainer(4);
+        failedTxnContainer.typeCode = 'T';
+        final TransactionData failedTxn = new TransactionData("FailedTxn");
+        failedTxn.setTime(baseTime);
+        failedTxn.setFailed(true);
+        failedTxn.setFailureStackTrace("java.lang.AssertionError: boom\n\tat Test.run(Test.java:10)");
+        failedTxnContainer.add(failedTxn);
+        Assert.assertTrue(failedTxnContainer.hasFailedRecords);
     }
 }

@@ -309,44 +309,6 @@ public class StatisticsProcessor
                     }
                 }
             }
-
-            // Compensate for sampling loss if lines were dropped during parsing
-            if (dataContainer.droppedLines > 0)
-            {
-                int droppedLines = dataContainer.droppedLines;
-                final int sampleFactor = dataContainer.sampleFactor;
-                for (int p = 0; p < size; p++)
-                {
-                    final Data data = (Data) array[p];
-                    if (!(data instanceof TransactionData))
-                    {
-                        final char tc = data.getTypeCode();
-                        final ReportProvider[] relevantProviders = (tc < 128) ? byTypeCode[tc] : null;
-                        for (int y = 1; y < sampleFactor; y++)
-                        {
-                            if (relevantProviders != null)
-                            {
-                                for (int i = 0; i < relevantProviders.length; i++)
-                                {
-                                    relevantProviders[i].processDataRecord(data);
-                                }
-                            }
-                            else
-                            {
-                                for (int i = 0; i < all.size(); i++)
-                                {
-                                    all.get(i).processDataRecord(data);
-                                }
-                            }
-                        }
-                        droppedLines--;
-                        if (droppedLines == 0)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
         }
 
         // update max and min

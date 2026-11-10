@@ -22,7 +22,9 @@ import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 
 public class PostProcessedDataContainer
@@ -37,10 +39,6 @@ public class PostProcessedDataContainer
      * Backing fast-path array list representation providing direct array access without interface virtual calls.
      */
     public final SimpleArrayList<Data> dataList;
-
-    public int droppedLines;
-
-    public final int sampleFactor;
 
     /**
      * Flag indicating whether this chunk contains any failed records or HTTP errors (5xx/0).
@@ -100,6 +98,11 @@ public class PostProcessedDataContainer
     private CustomValue[] customValuePool;
 
     /**
+     * Pre-allocated pool of WebVitalData instances for zero-allocation chunk processing.
+     */
+    private WebVitalData[] webVitalDataPool;
+
+    /**
      * Optional reference to the source chunk from which the current records were scanned.
      */
     private Object sourceChunk;
@@ -109,12 +112,11 @@ public class PostProcessedDataContainer
      */
     private int[] sourceRowIndices;
 
-    public PostProcessedDataContainer(final int size, final int sampleFactor)
+    public PostProcessedDataContainer(final int size)
     {
         final SimpleArrayList<Data> list = new SimpleArrayList<>(size);
         this.dataList = list;
         this.data = list;
-        this.sampleFactor = sampleFactor;
     }
 
     public List<Data> getData()
@@ -131,6 +133,28 @@ public class PostProcessedDataContainer
 
         minimumTime = Math.min(minimumTime, time);
         maximumTime = Math.max(maximumTime, time);
+
+        if (!hasFailedRecords && isFailedRecord(d))
+        {
+            hasFailedRecords = true;
+        }
+    }
+
+    private static boolean isFailedRecord(final Data d)
+    {
+        if (d instanceof TimerData td)
+        {
+            if (td.hasFailed())
+            {
+                return true;
+            }
+            if (d instanceof RequestData rd)
+            {
+                final int rc = rd.getResponseCode();
+                return rc >= 500 || rc == 0;
+            }
+        }
+        return false;
     }
 
     /**
@@ -306,6 +330,34 @@ public class PostProcessedDataContainer
     }
 
     /**
+     * Obtains a reusable {@link WebVitalData} instance from this container's pre-allocated pool,
+     * avoiding heap allocations during web vital chunk scanning.
+     *
+     * @param index
+     *            the row index within the current chunk
+     * @return the pooled {@link WebVitalData} instance
+     */
+    public WebVitalData getOrCreateWebVitalData(final int index)
+    {
+        if (webVitalDataPool == null)
+        {
+            webVitalDataPool = new WebVitalData[65536];
+        }
+        else if (index >= webVitalDataPool.length)
+        {
+            webVitalDataPool = java.util.Arrays.copyOf(webVitalDataPool, Math.max(webVitalDataPool.length * 2, index + 1));
+        }
+
+        WebVitalData wv = webVitalDataPool[index];
+        if (wv == null)
+        {
+            wv = new WebVitalData();
+            webVitalDataPool[index] = wv;
+        }
+        return wv;
+    }
+
+    /**
      * Returns the maximum time.
      *
      * @return maximum time
@@ -391,7 +443,6 @@ public class PostProcessedDataContainer
         data.clear();
         minimumTime = Long.MAX_VALUE;
         maximumTime = 0;
-        droppedLines = 0;
         hasFailedRecords = false;
         typeCode = 0;
         sourceChunk = null;

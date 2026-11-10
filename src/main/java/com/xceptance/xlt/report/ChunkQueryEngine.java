@@ -68,7 +68,7 @@ public class ChunkQueryEngine
      * so the 65,536-element arrays are eligible for GC before report XML and chart generation begins.
      */
     private ThreadLocal<PostProcessedDataContainer> threadLocalContainer =
-        ThreadLocal.withInitial(() -> new PostProcessedDataContainer(65536, 1));
+        ThreadLocal.withInitial(() -> new PostProcessedDataContainer(65536));
 
     /**
      * Constructs a new {@link ChunkQueryEngine}.

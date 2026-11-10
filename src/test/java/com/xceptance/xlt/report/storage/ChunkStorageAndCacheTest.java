@@ -1251,8 +1251,8 @@ public class ChunkStorageAndCacheTest
 
     private void populateForensicTestRequests(final ChunkIngestionCollector collector, final long baseTime)
     {
-        // Row 0: fast 200 OK
-        final RequestData r0 = new RequestData("FastAction");
+        // Row 0: fast 200 OK on "Action" (outside both global top-256 and "Action" per-timer top-20)
+        final RequestData r0 = new RequestData("Action");
         r0.setRawName("FastAction.1.0");
         r0.setTime(baseTime);
         r0.setRunTime(5);
@@ -1454,7 +1454,7 @@ public class ChunkStorageAndCacheTest
 
             // 1. Scan via PostProcessedDataContainer (hot vector path used by ReportGeneratorMain)
             final com.xceptance.xlt.api.report.PostProcessedDataContainer container =
-                new com.xceptance.xlt.api.report.PostProcessedDataContainer(1200, 1);
+                new com.xceptance.xlt.api.report.PostProcessedDataContainer(1200);
             handler.scan(dc, ScanPredicate.ALL, container, loaded.getDictionaries());
             Assert.assertEquals(1200, container.dataList.size());
 
@@ -1507,7 +1507,7 @@ public class ChunkStorageAndCacheTest
             Assert.assertEquals(1200, legacyConsumerRows.size());
 
             final com.xceptance.xlt.api.report.PostProcessedDataContainer legacyContainer =
-                new com.xceptance.xlt.api.report.PostProcessedDataContainer(1200, 1);
+                new com.xceptance.xlt.api.report.PostProcessedDataContainer(1200);
             handler.scan(legacyChunk, ScanPredicate.ALL, legacyContainer, loaded.getDictionaries());
             Assert.assertEquals(1200, legacyContainer.dataList.size());
         }
@@ -2067,7 +2067,7 @@ public class ChunkStorageAndCacheTest
         collector.collect((List<Data>) null);
         collector.collect((com.xceptance.xlt.api.report.PostProcessedDataContainer) null);
         final com.xceptance.xlt.api.report.PostProcessedDataContainer emptyHom =
-            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4, 1);
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4);
         emptyHom.typeCode = 'Q';
         collector.collect(emptyHom);
         Assert.assertTrue("Empty container must not initialize threadLocalBuilders", allBuilders.isEmpty());
@@ -2077,7 +2077,7 @@ public class ChunkStorageAndCacheTest
         // 3. Homogeneous PostProcessedDataContainer sized exactly to 4 elements (size == internalArr.length)
         // Include a record whose own getTypeCode() is 'X' while container.typeCode is 'Q' to verify homogeneous routing
         final com.xceptance.xlt.api.report.PostProcessedDataContainer homContainer =
-            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4, 1);
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4);
         homContainer.typeCode = 'Q';
         homContainer.dataList.add(createDummyRecord('Q', 1000L));
         homContainer.dataList.add(null);
@@ -2089,7 +2089,7 @@ public class ChunkStorageAndCacheTest
 
         // 4. Heterogeneous PostProcessedDataContainer (typeCode = 0) sized exactly to 4 elements
         final com.xceptance.xlt.api.report.PostProcessedDataContainer hetContainer =
-            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4, 1);
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(4);
         hetContainer.typeCode = 0;
         hetContainer.dataList.add(null);
         hetContainer.dataList.add(createDummyRecord('Q', 1003L)); // triggers isFull() for 'Q' inside collectRecord
@@ -2100,7 +2100,7 @@ public class ChunkStorageAndCacheTest
         // Leave 1 uncommitted row in builders['X'] before collecting secondHomContainer (verifies builder != null reuse)
         collector.collect(createDummyRecord('X', 1006L));
         final com.xceptance.xlt.api.report.PostProcessedDataContainer secondHomContainer =
-            new com.xceptance.xlt.api.report.PostProcessedDataContainer(1, 1);
+            new com.xceptance.xlt.api.report.PostProcessedDataContainer(1);
         secondHomContainer.typeCode = 'X';
         secondHomContainer.dataList.add(createDummyRecord('X', 1007L)); // triggers isFull() for 'X' (2 rows: 1006L, 1007L)
         collector.collect(secondHomContainer);

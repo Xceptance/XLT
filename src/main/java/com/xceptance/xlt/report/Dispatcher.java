@@ -202,13 +202,6 @@ public class Dispatcher
         if (chunkCollector != null)
         {
             chunkCollector.collect(postprocessedData);
-            // When direct-to-disk spooling is active, sealed chunks are immediately written to disk and
-            // evicted from heap. Feed statisticsProcessor simultaneously while the parsed Data records
-            // are still warm in L1/L2 CPU cache so DataProcessor can skip the redundant Phase 2 disk re-scan.
-            if (statisticsProcessor != null && chunkCollector.isDiskSpoolingActive())
-            {
-                statisticsProcessor.process(postprocessedData);
-            }
         }
         else if (statisticsProcessor != null)
         {
@@ -241,8 +234,9 @@ public class Dispatcher
         // wait for the data processor thread to finish data record chunks
         openDataChunkCount.awaitZero();
 
-        // stop progress and release ingestion collector reference
+        // stop progress and release ingestion collector and queue references
         progressBar.close();
+        readDataQueue.clear();
         chunkCollector = null;
     }
 

@@ -54,6 +54,9 @@ public class RequestChunkHandler implements ChunkTypeHandler
     /** Maximum number of slowest requests per chunk retained in the Cold Forensic Tail Block in sparse mode. */
     public static final int MAX_SLOWEST_FORENSIC_ROWS = 256;
 
+    /** Maximum number of slowest requests per timer ID per chunk retained in the Cold Forensic Tail Block in sparse mode. */
+    public static final int MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS = 20;
+
     /**
      * Thread-local {@link Deflater} instance reused across Cold Forensic Tail Block compressions to avoid
      * native zlib {@code z_stream} JNI allocation and deallocation overhead.
@@ -736,6 +739,14 @@ public class RequestChunkHandler implements ChunkTypeHandler
                     : sample.hashCodeOfUrlWithoutFragment();
                 req.setUrlFast(sample.url(), sample.host(), urlHash);
             }
+            else
+            {
+                req.setUrlFast(null, null, urlHashes != null ? urlHashes[i] : 0);
+            }
+            req.setRequestId(null);
+            req.setResponseId(null);
+            req.setFormData(null);
+            req.setRawName(null);
 
             // Register-cached agent/testCase pair lookup
             if (agentId == lastAgentId)
@@ -1239,12 +1250,16 @@ public class RequestChunkHandler implements ChunkTypeHandler
         private final RoaringBitmap failedRows = new RoaringBitmap();
 
         // ---------------------------------------------------------------------
-        // Cold Forensic Tail Block Tracking (Sparse Top-256 + Errors or Full)
+        // Cold Forensic Tail Block Tracking (Sparse Top-256 + Per-Timer Top-20 + Errors or Full)
         // ---------------------------------------------------------------------
-        private final RoaringBitmap failedOrErrorRows = new RoaringBitmap();
+        private final byte[] forensicRefCounts = new byte[DEFAULT_CHUNK_CAPACITY];
         private final int[] slowestHeapRunTimes = new int[MAX_SLOWEST_FORENSIC_ROWS];
         private final int[] slowestHeapRowIndices = new int[MAX_SLOWEST_FORENSIC_ROWS];
         private int slowestHeapSize = 0;
+        private int[][] perTimerHeapRunTimes = new int[256][];
+        private int[][] perTimerHeapRowIndices = new int[256][];
+        private int[] perTimerHeapSizes = new int[256];
+        private int maxTimerIdInHeaps = -1;
         private final Map<Integer, RequestChunk.ForensicDetails> forensicMap = new HashMap<>(512);
 
         // ---------------------------------------------------------------------
@@ -1600,7 +1615,8 @@ public class RequestChunkHandler implements ChunkTypeHandler
             //    have massive cardinality and would bloat the global dictionary if interned for every row.
             //    - In "full" mode (--preserve-all-details), every row's forensic tuple is retained.
             //    - In "sparse" mode (default), we retain 100% of failed/error requests (failed == true, HTTP >= 400,
-            //      or responseCode == 0) PLUS the top-256 slowest requests in the chunk via a primitive min-heap.
+            //      or responseCode == 0) PLUS the global top-256 slowest requests in the chunk PLUS the top-20 slowest
+            //      requests per timer ID in the chunk via reference-counted primitive min-heaps.
             if (fullDetailsMode)
             {
                 forensicMap.put(idx, extractForensicDetails(req));
@@ -1610,42 +1626,126 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 final boolean isErrorRow = failed || respCode >= 400 || respCode == 0;
                 if (isErrorRow)
                 {
-                    // Unconditionally retain all error/failure rows and mark them in failedOrErrorRows so they
-                    // are protected from removal even if they also enter and are later evicted from the slowest heap.
-                    failedOrErrorRows.add(idx);
-                    forensicMap.put(idx, extractForensicDetails(req));
+                    retainForensicRow(idx, req);
                 }
                 if (slowestHeapSize < MAX_SLOWEST_FORENSIC_ROWS)
                 {
-                    // Heap not yet full: insert row into min-heap and store its forensic tuple
-                    if (!isErrorRow)
-                    {
-                        forensicMap.put(idx, extractForensicDetails(req));
-                    }
+                    retainForensicRow(idx, req);
                     heapInsert(rt, idx);
                 }
                 else if (rt > slowestHeapRunTimes[0])
                 {
-                    // Current request is slower than the fastest member of our top-256 slowest set (the min-heap root).
-                    // Evict the displaced root's forensic payload ONLY if that row wasn't also an error/failure row.
                     final int evictedIdx = slowestHeapRowIndices[0];
-                    if (!failedOrErrorRows.contains(evictedIdx))
-                    {
-                        forensicMap.remove(evictedIdx);
-                    }
-                    if (!isErrorRow)
-                    {
-                        forensicMap.put(idx, extractForensicDetails(req));
-                    }
+                    releaseForensicRow(evictedIdx);
+                    retainForensicRow(idx, req);
                     // Replace min-heap root and restore heap invariant in O(log 256) = <= 8 comparisons
                     slowestHeapRunTimes[0] = rt;
                     slowestHeapRowIndices[0] = idx;
                     heapSiftDown(0);
                 }
+
+                if (timerId >= 0)
+                {
+                    updatePerTimerSlowestHeap(timerId, rt, idx, req);
+                }
             }
 
             count++;
             return true;
+        }
+
+        private void retainForensicRow(final int idx, final RequestData req)
+        {
+            if (forensicRefCounts[idx]++ == 0)
+            {
+                forensicMap.put(idx, extractForensicDetails(req));
+            }
+        }
+
+        private void releaseForensicRow(final int evictedIdx)
+        {
+            if (--forensicRefCounts[evictedIdx] == 0)
+            {
+                forensicMap.remove(evictedIdx);
+            }
+        }
+
+        private void updatePerTimerSlowestHeap(final int timerId, final int rt, final int idx, final RequestData req)
+        {
+            if (timerId >= perTimerHeapSizes.length)
+            {
+                final int newCap = Math.max(perTimerHeapSizes.length * 2, timerId + 64);
+                perTimerHeapRunTimes = Arrays.copyOf(perTimerHeapRunTimes, newCap);
+                perTimerHeapRowIndices = Arrays.copyOf(perTimerHeapRowIndices, newCap);
+                perTimerHeapSizes = Arrays.copyOf(perTimerHeapSizes, newCap);
+            }
+            if (timerId > maxTimerIdInHeaps)
+            {
+                maxTimerIdInHeaps = timerId;
+            }
+            int[] tRts = perTimerHeapRunTimes[timerId];
+            int[] tIdxs = perTimerHeapRowIndices[timerId];
+            if (tRts == null)
+            {
+                tRts = new int[MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS];
+                tIdxs = new int[MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS];
+                perTimerHeapRunTimes[timerId] = tRts;
+                perTimerHeapRowIndices[timerId] = tIdxs;
+            }
+
+            final int tSize = perTimerHeapSizes[timerId];
+            if (tSize < MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS)
+            {
+                retainForensicRow(idx, req);
+                int pos = tSize;
+                perTimerHeapSizes[timerId] = tSize + 1;
+                tRts[pos] = rt;
+                tIdxs[pos] = idx;
+                while (pos > 0)
+                {
+                    final int parent = (pos - 1) >>> 1;
+                    if (tRts[pos] >= tRts[parent])
+                    {
+                        break;
+                    }
+                    final int tmpRt = tRts[parent];
+                    final int tmpIdx = tIdxs[parent];
+                    tRts[parent] = tRts[pos];
+                    tIdxs[parent] = tIdxs[pos];
+                    tRts[pos] = tmpRt;
+                    tIdxs[pos] = tmpIdx;
+                    pos = parent;
+                }
+            }
+            else if (rt > tRts[0])
+            {
+                releaseForensicRow(tIdxs[0]);
+                retainForensicRow(idx, req);
+                tRts[0] = rt;
+                tIdxs[0] = idx;
+                int pos = 0;
+                final int half = MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS >>> 1;
+                while (pos < half)
+                {
+                    int child = (pos << 1) + 1;
+                    final int right = child + 1;
+                    if (right < MAX_SLOWEST_PER_TIMER_FORENSIC_ROWS && tRts[right] < tRts[child])
+                    {
+                        child = right;
+                    }
+                    if (tRts[pos] <= tRts[child])
+                    {
+                        break;
+                    }
+                    final int tmpRt = tRts[pos];
+                    final int tmpIdx = tIdxs[pos];
+                    tRts[pos] = tRts[child];
+                    tIdxs[pos] = tIdxs[child];
+                    tRts[child] = tmpRt;
+                    tIdxs[child] = tmpIdx;
+                    pos = child;
+                }
+            }
         }
 
         /**
@@ -1868,6 +1968,15 @@ public class RequestChunkHandler implements ChunkTypeHandler
         @Override
         public void reset()
         {
+            if (count > 0)
+            {
+                Arrays.fill(forensicRefCounts, 0, count, (byte) 0);
+            }
+            if (maxTimerIdInHeaps >= 0)
+            {
+                Arrays.fill(perTimerHeapSizes, 0, maxTimerIdInHeaps + 1, 0);
+                maxTimerIdInHeaps = -1;
+            }
             count = 0;
             minTime = Long.MAX_VALUE;
             maxTime = Long.MIN_VALUE;
@@ -1876,7 +1985,6 @@ public class RequestChunkHandler implements ChunkTypeHandler
             timerIds.clear();
             agentTestCaseIds.clear();
             failedRows.clear();
-            failedOrErrorRows.clear();
             slowestHeapSize = 0;
             forensicMap.clear();
             Arrays.fill(seenTimers, 0L);

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.util.SynchronizingCounter;
 
 /**
  * Holds a chunk of result lines together with meta and processing information. Both types of info is needed by the
@@ -31,6 +32,12 @@ public class DataChunk
      * data.
      */
     private final ConcurrentSkipListMap<Long, String> actionNames;
+
+    /**
+     * Optional counter tracking unparsed regular timer chunks when client performance timer files are waiting
+     * on collected action names.
+     */
+    private final SynchronizingCounter actionNamesCounter;
 
     /**
      * Indicates whether this chunk contains client performance timer data that needs to be renamed according to the
@@ -60,6 +67,13 @@ public class DataChunk
                      final String testCaseName, final String userNumber, final boolean collectActionNames, final boolean adjustTimerNames,
                      final ConcurrentSkipListMap<Long, String> actionNames)
     {
+        this(lines, baseLineNumber, file, agentName, testCaseName, userNumber, collectActionNames, adjustTimerNames, actionNames, null);
+    }
+
+    public DataChunk(final List<byte[]> lines, final int baseLineNumber, final FsResource file, final String agentName,
+                     final String testCaseName, final String userNumber, final boolean collectActionNames, final boolean adjustTimerNames,
+                     final ConcurrentSkipListMap<Long, String> actionNames, final SynchronizingCounter actionNamesCounter)
+    {
         this.lines = lines;
         this.baseLineNumber = baseLineNumber;
         this.file = file;
@@ -69,6 +83,15 @@ public class DataChunk
         this.collectActionNames = collectActionNames;
         this.adjustTimerNames = adjustTimerNames;
         this.actionNames = actionNames;
+        this.actionNamesCounter = actionNamesCounter;
+    }
+
+    public void notifyActionNamesCollected()
+    {
+        if (actionNamesCounter != null)
+        {
+            actionNamesCounter.decrement();
+        }
     }
 
     public ConcurrentSkipListMap<Long, String> getActionNames()

@@ -31,14 +31,9 @@ import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
-import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
-import com.zaxxer.sparsebits.SparseBitSet;
-
-import it.unimi.dsi.util.FastRandom;
 
 /**
  * Parses lines to data records and performs any data record preprocessing that can 
@@ -112,16 +107,6 @@ class DataParserThread implements Runnable
     @Override
     public void run()
     {
-        final double SAMPLELIMIT = 1 / ((double) config.dataSampleFactor);
-        final int SAMPLEFACTOR = config.dataSampleFactor;
-
-        // some fix random sequence that is fast and always the same, this might change in the future
-        final FastRandom random = new FastRandom(98765111L);
-
-        // ensure that we are not killing everything
-        final SparseBitSet allTimeIndex = new SparseBitSet();
-        final SparseBitSet actionTimeIndex = new SparseBitSet();
-
         // reusable CSV byte columns structure
         final CsvByteColumns csvColumns = new CsvByteColumns(50);
 
@@ -133,6 +118,9 @@ class DataParserThread implements Runnable
         // our request processing, this is move away from here to test it better
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
                                                                           config.getRemoveIndexesFromRequestNames());
+
+        final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(dispatcher.chunkSize);
+        PostProcessedDataContainer nonRequestData = null;
 
         while (true)
         {
@@ -153,121 +141,103 @@ class DataParserThread implements Runnable
                 final long _fromTime = fromTime;
                 final long _toTime = toTime;
 
-                int droppedLines = 0;
+                // reset reusable containers for this chunk
+                postProcessedData.reset();
+                if (nonRequestData != null)
+                {
+                    nonRequestData.reset();
+                }
 
-                // parse the chunk of lines and preprocess the results
-                final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(lines.size(), SAMPLEFACTOR);
-                PostProcessedDataContainer nonRequestData = null;
-
-                int lineNumber = chunk.getBaseLineNumber();
-
+                final int baseLineNumber = chunk.getBaseLineNumber();
                 final int size = lines.size();
 
-                for (int i = 0; i < size; i++)
+                try
                 {
-                    Data data = null;
-
-                    try
+                    for (int i = 0; i < size; i++)
                     {
-                        final byte[] line = lines.get(i);
-                        if (line.length == 0)
+                        Data data = null;
+
+                        try
                         {
-                            lineNumber++;
-                            continue;
-                        }
-
-                        // parse, the columns structure is reused
-                        CsvByteLineDecoder.parse(csvColumns, line);
-
-                        // get us the minimal data aka type and time
-                        data = dataRecordFactory.createStatistics(line[0]);
-                        data.setBaseValues(csvColumns);
-
-                        // see if we have to keep it
-                        final long time = data.getTime();
-                        if (time < _fromTime || time > _toTime)
-                        {
-                            // nope
-                            continue;
-                        }
-
-                        // see if we are sampling data values
-                        if (SAMPLEFACTOR > 1)
-                        {
-                            // never drop Transactions
-                            if (!(data instanceof TransactionData))
+                            final byte[] line = lines.get(i);
+                            if (line.length == 0)
                             {
-                                final SparseBitSet timeIndex = data instanceof ActionData ? actionTimeIndex : allTimeIndex;
+                                continue;
+                            }
 
-                                // see if we have data at this second already
-                                final int sec = (int) (data.getTime() * 0.001);
-                                if (timeIndex.get(sec))
-                                {
-                                    // ok, we already have something... see if we want to drop it
-                                    if (random.nextDoubleFast() > SAMPLELIMIT)
-                                    {
-                                        droppedLines++;
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    // mark that this second has a value
-                                    timeIndex.set(sec);
-                                }
+                            // parse, the columns structure is reused
+                            CsvByteLineDecoder.parse(csvColumns, line);
+
+                            // get us the minimal data aka type and time
+                            data = dataRecordFactory.createStatistics(line[0]);
+                            if (data == null)
+                            {
+                                continue;
+                            }
+                            data.setBaseValues(csvColumns);
+
+                            // see if we have to keep it
+                            final long time = data.getTime();
+                            if (time < _fromTime || time > _toTime)
+                            {
+                                // nope
+                                continue;
+                            }
+
+                            // finish parsing
+                            data.setRemainingValues(csvColumns);
+                        }
+                        catch (final Exception ex)
+                        {
+                            final int lineNumber = baseLineNumber + i;
+                            final String lineStr = new String(lines.get(i), java.nio.charset.StandardCharsets.UTF_8);
+                            final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
+                                                             file, ex, lineStr);
+                            LOG.error(msg, ex);
+
+                            continue;
+                        }
+
+                        // set general fields
+                        data.setAgentName(agentName);
+                        data.setTransactionName(testCaseName);
+                        
+                        // let's see if this data requires post processing aka filtering/merging
+                        data = applyDataAdjustments(data, userNumber, collectActionNames, chunk, adjustTimerName);
+
+                        // if this is request, filter it aka apply merge rules
+                        if (data instanceof RequestData)
+                        {
+                            final RequestData reqData = (RequestData) data;
+                            // Snapshot the original unmerged timer name (e.g. "Homepage.1.2") BEFORE MergeRuleProcessor
+                            // mutates reqData.setName(...) in-place, so ChunkDB's Cold Forensic Tail Block can preserve
+                            // both the post-merge group name and the pre-merge raw request name for forensic drill-down.
+                            if (reqData.getRawName() == null)
+                            {
+                                reqData.setRawName(reqData.getName());
+                            }
+                            final RequestData result = requestProcessing.postprocess(reqData);
+                            if (result != null)
+                            {
+                                postProcessedData.add(result);
                             }
                         }
-
-                        // finish parsing
-                        data.setRemainingValues(csvColumns);
-                    }
-                    catch (final Exception ex)
-                    {
-                        final String lineStr = new String(lines.get(i), java.nio.charset.StandardCharsets.UTF_8);
-                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: %s", lineNumber,
-                                                         file, ex, lineStr);
-                        LOG.error(msg, ex);
-
-                        continue;
-                    }
-
-                    // set general fields
-                    data.setAgentName(agentName);
-                    data.setTransactionName(testCaseName);
-                    
-                    // let's see if this data requires post processing aka filtering/merging
-                    data = applyDataAdjustments(data, userNumber, collectActionNames, chunk, adjustTimerName);
-
-                    // if this is request, filter it aka apply merge rules
-                    if (data instanceof RequestData)
-                    {
-                        final RequestData reqData = (RequestData) data;
-                        // Snapshot the original unmerged timer name (e.g. "Homepage.1.2") BEFORE MergeRuleProcessor
-                        // mutates reqData.setName(...) in-place, so ChunkDB's Cold Forensic Tail Block can preserve
-                        // both the post-merge group name and the pre-merge raw request name for forensic drill-down.
-                        if (reqData.getRawName() == null)
+                        else
                         {
-                            reqData.setRawName(reqData.getName());
-                        }
-                        final RequestData result = requestProcessing.postprocess(reqData);
-                        if (result != null)
-                        {
-                            postProcessedData.add(result);
+                            // get us a hashcode for later while the cache is warm
+                            // for RequestData, we did that already
+                            data.getName().hashCode();
+                            if (nonRequestData == null)
+                            {
+                                nonRequestData = new PostProcessedDataContainer(64);
+                            }
+                            nonRequestData.add(data);
                         }
                     }
-                    else
-                    {
-                        // get us a hashcode for later while the cache is warm
-                        // for RequestData, we did that already
-                        data.getName().hashCode();
-                        if (nonRequestData == null)
-                        {
-                            nonRequestData = new PostProcessedDataContainer(4, SAMPLEFACTOR);
-                        }
-                        nonRequestData.add(data);
-                    }
-
-                    lineNumber++;
+                }
+                finally
+                {
+                    chunk.notifyActionNamesCollected();
                 }
 
                 final boolean hasNonReq = nonRequestData != null && nonRequestData.size() > 0;
@@ -299,12 +269,11 @@ class DataParserThread implements Runnable
                 if (hasReq)
                 {
                     postProcessedData.typeCode = 'R';
-                    postProcessedData.droppedLines = droppedLines;
                     dispatcher.addPostprocessedData(postProcessedData, true);
                 }
                 else if (!hasNonReq)
                 {
-                    // Neither requests nor non-requests (e.g. all out of time range / sampled)
+                    // Neither requests nor non-requests (e.g. all out of time range)
                     dispatcher.addPostprocessedData(postProcessedData, true);
                 }
             }

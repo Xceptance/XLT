@@ -223,8 +223,7 @@ public final class CsvByteLineDecoder
 
             if (b == QUOTE_BYTE)
             {
-                final byte nextByte = (pos + 1 < end) ? src[pos + 1] : 0;
-                if (nextByte == QUOTE_BYTE)
+                if (pos + 1 < end && src[pos + 1] == QUOTE_BYTE)
                 {
                     // Escaped quote (""): skip one quote and increase shift offset
                     shiftOffset++;
@@ -233,7 +232,7 @@ public final class CsvByteLineDecoder
                 else
                 {
                     // End of quoted column
-                    if (!(nextByte == 0 || nextByte == COMMA))
+                    if (pos + 1 < end && src[pos + 1] != COMMA)
                     {
                         throw new CsvParserException("Delimiter or end of line expected at pos: " + (pos - lineOffset));
                     }

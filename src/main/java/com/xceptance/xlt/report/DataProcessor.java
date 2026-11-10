@@ -264,7 +264,6 @@ public class DataProcessor
                 // and its builder pools can be reclaimed as soon as collector.finish() completes.
                 final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector = chunkCollector;
                 chunkCollector = null;
-                final boolean aggregatedInPhase1 = collector.isDiskSpoolingActive();
                 final long tCacheStart = TimerUtils.get().getStartTime();
                 try (final com.xceptance.xlt.report.storage.ChunkStorage storage = collector.finish())
                 {
@@ -277,10 +276,10 @@ public class DataProcessor
                     final long cacheDuration = TimerUtils.get().getElapsedTime(tCacheStart);
                     XltLogger.reportLogger.info(String.format("ChunkDB cache persisted - %,d ms", cacheDuration));
 
-                    if (hasReportProviders && !aggregatedInPhase1)
+                    if (hasReportProviders)
                     {
-                        // Phase 2 fallback (only executed if direct-to-disk spooling was inactive during Phase 1):
-                        // Query the sealed in-memory ChunkDB concurrently to aggregate report statistics.
+                        // Strict Phase 2: Query the sealed ChunkDB concurrently to aggregate report statistics
+                        // after all Phase 1 CSV reader/parser buffers and ingestion builders have been released.
                         XltLogger.reportLogger.info("Aggregating report statistics from ChunkDB...");
                         final long scanStart = TimerUtils.get().getStartTime();
 

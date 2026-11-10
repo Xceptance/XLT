@@ -171,14 +171,16 @@ public abstract class Condition
         }
         
         // not found, produce and cache, recycle the matcher
-        // cache only the result, not the matcher itself
+        // cache only the result, not the matcher itself.
+        // Ensure non-String CharSequences are materialized as immutable Strings on cache miss.
+        final CharSequence cacheableText = (text instanceof String) ? text : text.toString();
         if (this.fastMatcher != null)
         {
-            final FastRegex.Matcher fm = this.fastMatcher.reset(text);
+            final FastRegex.Matcher fm = this.fastMatcher.reset(cacheableText);
             if (fm.find())
             {
                 result = fm.snapshot();
-                cache.put(text, result);
+                cache.put(cacheableText, result);
 
                 this.lastFilterState = result;
                 return true;
@@ -186,18 +188,18 @@ public abstract class Condition
             else
             {
                 // remember the miss
-                cache.put(text, NULL);
+                cache.put(cacheableText, NULL);
 
                 this.lastFilterState = null;
                 return false;
             }
         }
 
-        final Matcher m = this.matcher.reset(text);
+        final Matcher m = this.matcher.reset(cacheableText);
         if (m.find())
         {
             result = m.toMatchResult();
-            cache.put(text, result);
+            cache.put(cacheableText, result);
 
             this.lastFilterState = result;
             return true;
@@ -205,7 +207,7 @@ public abstract class Condition
         else
         {
             // remember the miss
-            cache.put(text, NULL);
+            cache.put(cacheableText, NULL);
             
             this.lastFilterState = null;
             return false;                

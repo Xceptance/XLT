@@ -83,36 +83,10 @@ public abstract class AbstractReportProvider implements ReportProvider
     {
         final Object[] array = dataContainer.dataList.getInternalArray();
         final int size = dataContainer.dataList.size();
-        final int sampleFactor = dataContainer.sampleFactor;
-        int droppedLines = dataContainer.droppedLines;
 
         for (int p = 0; p < size; p++)
         {
             processDataRecord((Data) array[p]);
-        }
-
-        // ok, we have to smuggle in additional data to compensate to the sampling loss
-        if (droppedLines > 0)
-        {
-            for (int i = 0; i < size; i++)
-            {
-                final Object obj = array[i];
-
-                if (!(obj instanceof TransactionData))
-                {
-                    final Data d = (Data) obj;
-                    for (int y = 1; y < sampleFactor; y++)
-                    {
-                        processDataRecord(d);
-                    }
-                    droppedLines--;
-
-                    if (droppedLines == 0)
-                    {
-                        break;
-                    }
-                }
-            }
         }
     }
 }

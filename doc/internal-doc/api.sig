@@ -1316,10 +1316,8 @@ supr java.lang.Enum<com.xceptance.xlt.api.report.MovingAverageConfiguration$Movi
 hfds name
 
 CLSS public com.xceptance.xlt.api.report.PostProcessedDataContainer
-cons public init(int,int)
-fld public final int sampleFactor
+cons public init(int)
 fld public final java.util.List<com.xceptance.xlt.api.engine.Data> data
-fld public int droppedLines
 meth public final long getMaximumTime()
 meth public final long getMinimumTime()
 meth public java.util.List<com.xceptance.xlt.api.engine.Data> getData()

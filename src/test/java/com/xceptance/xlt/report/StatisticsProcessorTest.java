@@ -110,7 +110,7 @@ public class StatisticsProcessorTest
 
                     for (int b = 0; b < batchesPerThread; b++)
                     {
-                        final PostProcessedDataContainer container = new PostProcessedDataContainer(recordsPerBatch * 2, 1);
+                        final PostProcessedDataContainer container = new PostProcessedDataContainer(recordsPerBatch * 2);
                         for (int r = 0; r < recordsPerBatch; r++)
                         {
                             final long time = 1000L + (threadId * 10000L) + (b * 100L) + r;
@@ -203,7 +203,7 @@ public class StatisticsProcessorTest
         final List<ReportProvider> unconfiguredList = new ArrayList<>();
         unconfiguredList.add(unconfiguredMaster);
         final StatisticsProcessor procExplicitConfig = new StatisticsProcessor(unconfiguredList, config);
-        final PostProcessedDataContainer cExplicit = new PostProcessedDataContainer(2, 1);
+        final PostProcessedDataContainer cExplicit = new PostProcessedDataContainer(2);
         cExplicit.typeCode = 'R';
         cExplicit.add(createRequest("ExplicitCfgReq", 1100L, 30, false));
         procExplicitConfig.process(cExplicit);
@@ -224,7 +224,7 @@ public class StatisticsProcessorTest
         listWithAbstractFirst.add(reqProvider);
 
         final StatisticsProcessor procFromAbstract = new StatisticsProcessor(listWithAbstractFirst);
-        final PostProcessedDataContainer cAbstract = new PostProcessedDataContainer(2, 1);
+        final PostProcessedDataContainer cAbstract = new PostProcessedDataContainer(2);
         cAbstract.typeCode = 'R';
         cAbstract.add(createRequest("AbstractCfgReq", 1200L, 35, false));
         procFromAbstract.process(cAbstract);
@@ -244,7 +244,7 @@ public class StatisticsProcessorTest
         mixedList.add(reqSecond);
 
         final StatisticsProcessor procMixed = new StatisticsProcessor(mixedList);
-        final PostProcessedDataContainer container = new PostProcessedDataContainer(2, 1);
+        final PostProcessedDataContainer container = new PostProcessedDataContainer(2);
         container.typeCode = 'R';
         container.add(createRequest("R1", 1234L, 40, false));
         procMixed.process(container);
@@ -309,17 +309,17 @@ public class StatisticsProcessorTest
         providers.add(uninstantiableProvider);
 
         final StatisticsProcessor processor = new StatisticsProcessor(providers, config);
-        final PostProcessedDataContainer container = new PostProcessedDataContainer(1, 1);
+        final PostProcessedDataContainer container = new PostProcessedDataContainer(1);
         container.add(createRequest("Fail", 1000L, 10, false));
         processor.process(container);
     }
 
     /**
      * Tests typed and untyped processing, empty containers, ASCII type code boundaries (0, 1, 127, 128),
-     * worker provider exception handling, and dropped-lines sampling compensation.
+     * and worker provider exception handling.
      */
     @Test
-    public void testProcessTypedUntypedExceptionsAndDroppedLines()
+    public void testProcessTypedUntypedAndExceptions()
     {
         final RequestsReportProvider reqProvider = new RequestsReportProvider();
         reqProvider.setConfiguration(config);
@@ -334,61 +334,38 @@ public class StatisticsProcessorTest
         final StatisticsProcessor processor = new StatisticsProcessor(providers, config);
 
         // 1. Empty container is ignored completely
-        final PostProcessedDataContainer emptyContainer = new PostProcessedDataContainer(2, 1);
+        final PostProcessedDataContainer emptyContainer = new PostProcessedDataContainer(2);
         processor.process(emptyContainer, 'R');
         Assert.assertEquals(0L, processor.getMinimumTime());
 
         // 2. Typed container ('R') dispatches via processAll and catches Throwable from ThrowingReportProvider
-        final PostProcessedDataContainer typedContainer = new PostProcessedDataContainer(2, 1);
+        final PostProcessedDataContainer typedContainer = new PostProcessedDataContainer(2);
         typedContainer.typeCode = 'R';
         typedContainer.add(createRequest("TypedReq", 2000L, 30, false));
         processor.process(typedContainer);
         Assert.assertEquals(2000L, processor.getMinimumTime());
 
         // Boundary typeCode = 1 and typeCode = 127 (valid ASCII fast-path where rOnlyCustomProvider does NOT accept 1 or 127)
-        final PostProcessedDataContainer boundary1Container = new PostProcessedDataContainer(2, 1);
+        final PostProcessedDataContainer boundary1Container = new PostProcessedDataContainer(2);
         boundary1Container.add(createTransaction("Boundary1Txn", 2010L, 10, false));
         processor.process(boundary1Container, (char) 1);
         processor.process(boundary1Container, (char) 127);
 
-        // 3. Untyped container (typeCode == 0) with sampleFactor = 2 and droppedLines = 0
-        // (verifies droppedLines > 0 boundary does not trigger when droppedLines == 0 even if sampleFactor > 1),
-        // and exercises catch blocks for both relevantProviders (tc < 128) and all providers (tc >= 128)
-        final PostProcessedDataContainer errorContainer = new PostProcessedDataContainer(4, 2);
-        errorContainer.droppedLines = 0;
+        // 3. Untyped container (typeCode == 0) exercises catch blocks for both relevantProviders (tc < 128) and all providers (tc >= 128)
+        final PostProcessedDataContainer errorContainer = new PostProcessedDataContainer(4);
         errorContainer.add(createRequest("ThrowReq", 2050L, 15, false));
         errorContainer.add(createTransaction("UntypedTxnNotAcceptedByR", 2055L, 15, false));
         errorContainer.add(new NonAsciiData("ThrowNonAscii", 2060L));
         processor.process(errorContainer, (char) 0);
 
         // 4. Container with exact boundary typeCode == 128 falls back to per-record routing.
-        // Include:
-        // - Item 0: TransactionData (skipped during droppedLines compensation)
-        // - Item 1: RequestData ("SampledReq1") -> sampled (droppedLines: 3 -> 2)
-        // - Item 2: RequestData ("SampledReq2") -> sampled (droppedLines: 2 -> 1)
-        // - Item 3: NonAsciiData (tc == 128, >= 128) -> sampled via 'all' (droppedLines: 1 -> 0, triggers break!)
-        // - Item 4: RequestData ("UnreachedInSampling") -> NOT sampled because loop broke at droppedLines == 0
-        final PostProcessedDataContainer fallbackContainer = new PostProcessedDataContainer(8, 3);
-        fallbackContainer.droppedLines = 3;
-        fallbackContainer.add(createTransaction("TxnSkippedInSampling", 2100L, 100, false));
-        fallbackContainer.add(createRequest("SampledReq1", 2200L, 40, false));
-        fallbackContainer.add(createRequest("SampledReq2", 2250L, 45, false));
+        final PostProcessedDataContainer fallbackContainer = new PostProcessedDataContainer(8);
+        fallbackContainer.add(createTransaction("TxnSkipped", 2100L, 100, false));
+        fallbackContainer.add(createRequest("Req1", 2200L, 40, false));
+        fallbackContainer.add(createRequest("Req2", 2250L, 45, false));
         fallbackContainer.add(new NonAsciiData("NonAscii", 2300L));
-        fallbackContainer.add(createRequest("UnreachedInSampling", 2400L, 50, false));
+        fallbackContainer.add(createRequest("Req3", 2400L, 50, false));
         processor.process(fallbackContainer, (char) 128);
-
-        // 5. Also exercise droppedLines when droppedLines exceeds non-transaction count (loop finishes naturally),
-        // including a TransactionData record so relevantProviders for 'T' is exercised without matching rOnlyCustomProvider.
-        final PostProcessedDataContainer fullLoopSampling = new PostProcessedDataContainer(4, 2);
-        fullLoopSampling.droppedLines = 5;
-        fullLoopSampling.add(createRequest("SampledReq3", 2500L, 20, false));
-        fullLoopSampling.add(new com.xceptance.xlt.api.engine.ActionData("ActionNotAcceptedByR")
-        {
-            {
-                setTime(2550L);
-            }
-        });
-        processor.process(fullLoopSampling, (char) 0);
 
         processor.complete();
 
@@ -398,20 +375,18 @@ public class StatisticsProcessorTest
         {
             totalCount += tr.count;
         }
-        // TypedReq (1) + ThrowReq (1) + SampledReq1 (1 + 2) + SampledReq2 (1 + 2) + UnreachedInSampling (1) + SampledReq3 (1 + 1) = 11
-        Assert.assertEquals(11, totalCount);
+        // TypedReq (1) + ThrowReq (1) + Req1 (1) + Req2 (1) + Req3 (1) = 5
+        Assert.assertEquals(5, totalCount);
 
         // Verify rOnlyCustomProvider counts:
         // - processAllCalls: 1 (from typedContainer 'R'; boundary 1 and 127 were not accepted by 'R')
         // - processedCount:
         //   * typedContainer: 1 ('R')
-        //   * errorContainer: 1 (ThrowReq 'R') + 1 (ThrowNonAscii tc=128 via 'all') = 2 (UntypedTxn 'T' was filtered out!)
-        //   * fallbackContainer normal loop: 3 ('R' records) + 1 (NonAscii tc=128 via 'all') = 4
-        //   * fallbackContainer droppedLines loop (sampleFactor=3 -> +2 each): 2*2 ('R' records) + 2 (NonAscii via 'all') = 6
-        //   * fullLoopSampling: 1 + 1 (SampledReq3 'R'; ActionNotAcceptedByR 'A' was filtered out!) = 2
-        //   Total processedCount = 1 + 2 + 4 + 6 + 2 = 15
+        //   * errorContainer: 1 (ThrowReq 'R') + 1 (ThrowNonAscii tc=128 via 'all') = 2
+        //   * fallbackContainer: 3 ('R' records) + 1 (NonAscii tc=128 via 'all') = 4
+        //   Total processedCount = 1 + 2 + 4 = 7
         Assert.assertEquals(1, rOnlyCustomProvider.processAllCalls);
-        Assert.assertEquals(15, rOnlyCustomProvider.processedCount);
+        Assert.assertEquals(7, rOnlyCustomProvider.processedCount);
     }
 
     /**

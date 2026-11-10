@@ -417,7 +417,6 @@ public class ReportGenerator
         }
 
         read(fromTime, toTime, validCacheManager);
-        XltLogger.reportLogger.info(Console.endSection());
     }
 
     private long[] getTimeBoundaries(long fromTime, long toTime, final long duration, final boolean noRampUp, final boolean fromTimeRel,

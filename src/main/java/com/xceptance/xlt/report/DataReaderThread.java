@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.XltBufferedByteLineReader;
 import com.xceptance.common.io.fs.FsResource;
+import com.xceptance.common.util.SynchronizingCounter;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.common.XltConstants;
 
@@ -162,20 +163,22 @@ class DataReaderThread implements Runnable
 
         // check whether we have client performance timer files at all
         boolean haveClientPerformanceTimerFiles = !clientPerformanceTimerFiles.isEmpty();
+        final SynchronizingCounter actionNamesCounter = haveClientPerformanceTimerFiles ? new SynchronizingCounter() : null;
 
         // process regular timer files first (to collect action names)
         for (final FsResource file : regularTimerFiles)
         {
             // collect action names only if we have client performance data
-            readTimerLog(file, haveClientPerformanceTimerFiles, false);
+            readTimerLog(file, haveClientPerformanceTimerFiles, false, actionNamesCounter);
         }
 
-        // process client performance timer files *after* the regular timer files
+        // process client performance timer files *after* the regular timer files have been parsed
         if (haveClientPerformanceTimerFiles)
         {
+            actionNamesCounter.awaitZero();
             for (final FsResource file : clientPerformanceTimerFiles)
             {
-                readTimerLog(file, false, true);
+                readTimerLog(file, false, true, null);
             }
         }
     }
@@ -189,8 +192,11 @@ class DataReaderThread implements Runnable
      *            whether action names should be collected
      * @param adjustTimerName
      *            whether timer names should be adjusted
+     * @param actionNamesCounter
+     *            optional counter tracking unparsed chunks when action names must be collected first
      */
-    private void readTimerLog(final FsResource file, final boolean collectActionNames, final boolean adjustTimerName)
+    private void readTimerLog(final FsResource file, final boolean collectActionNames, final boolean adjustTimerName,
+                              final SynchronizingCounter actionNamesCounter)
     {
         final boolean isCompressed = "gz".equalsIgnoreCase(file.getExtension());
         final int chunkSize = dispatcher.chunkSize;
@@ -214,7 +220,12 @@ class DataReaderThread implements Runnable
                 {
                     // the chunk is full -> deliver it
                     final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
-                                                              collectActionNames, adjustTimerName, actionNames);
+                                                              collectActionNames, adjustTimerName, actionNames, actionNamesCounter);
+
+                    if (actionNamesCounter != null)
+                    {
+                        actionNamesCounter.increment();
+                    }
 
                     // deliver to dispatcher, this might block
                     dispatcher.addReadData(lineChunk);
@@ -233,7 +244,11 @@ class DataReaderThread implements Runnable
             if (linesRead > 0)
             {
                 final DataChunk lineChunk = new DataChunk(lines, baseLineNumber, file, agentName, testCaseName, userNumber,
-                                                          collectActionNames, adjustTimerName, actionNames);
+                                                          collectActionNames, adjustTimerName, actionNames, actionNamesCounter);
+                if (actionNamesCounter != null)
+                {
+                    actionNamesCounter.increment();
+                }
                 dispatcher.addReadData(lineChunk);
                 totalLineCounter.addAndGet(linesRead);
             }
