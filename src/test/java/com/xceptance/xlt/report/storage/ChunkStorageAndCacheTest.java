@@ -2842,6 +2842,151 @@ public class ChunkStorageAndCacheTest
                                fpDefault.mergeRulesHash(), fpCustom.mergeRulesHash());
     }
 
+    /**
+     * C8 regression test: Verifies (1) {@link com.xceptance.xlt.report.DataRecordFactory} handles out-of-range
+     * and unmapped type codes without {@link ArrayIndexOutOfBoundsException} or {@link NullPointerException}
+     * via a branchless 256-slot table, (2) {@link ChunkIngestionCollector#finish()} aborts its {@link ChunkSpooler}
+     * and cleans up {@code chunks.bin.tmp} if a background compression task fails, and (3) {@link CacheFingerprint}
+     * skips multi-segment relative and absolute cache directories inside {@code resultsDir}.
+     */
+    @Test
+    public void testC8DataRecordFactorySpoolerAbortAndCacheDirSkip() throws Exception
+    {
+        // 1. Multi-segment relative cache directory (".cache/chunkdb") inside resultsDir
+        final File resultsDir = new File(tempDir, "c8-results");
+        final File nestedCacheDir = new File(resultsDir, ".cache/chunkdb");
+        nestedCacheDir.mkdirs();
+        Files.writeString(new File(resultsDir, "timers.csv").toPath(), "R,Home,1000,50,false,100,200,200,http://example.com,text/html\n", StandardCharsets.UTF_8);
+        // Place a dummy timers.csv inside the nested cache directory which must be skipped
+        Files.writeString(new File(nestedCacheDir, "timers.csv").toPath(), "R,CachedShouldBeIgnored,1000,50,false,100,200,200,http://example.com,text/html\n", StandardCharsets.UTF_8);
+
+        final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
+        config.setDataCacheEnabled(true);
+        config.setDataCacheDirectoryName(".cache/chunkdb");
+
+        final CacheFingerprint fpRelative = CacheFingerprint.calculate(resultsDir, config);
+        Assert.assertEquals("Multi-segment relative cache directory must be skipped by CacheFingerprint",
+                            1, fpRelative.fileCount());
+
+        // Also test when dataCacheDirectoryName is configured as an absolute path inside resultsDir
+        config.setDataCacheDirectoryName(nestedCacheDir.getAbsolutePath());
+        final CacheFingerprint fpAbsolute = CacheFingerprint.calculate(resultsDir, config);
+        Assert.assertEquals("Absolute cache directory path inside resultsDir must be skipped by CacheFingerprint",
+                            1, fpAbsolute.fileCount());
+
+        // 2. ChunkIngestionCollector.finish() must abort active ChunkSpooler and delete chunks.bin.tmp when async compression fails
+        final File failSpoolDir = new File(tempDir, "c8-fail-spool");
+        final ChunkTypeRegistry sealFailRegistry = new ChunkTypeRegistry();
+        sealFailRegistry.registerHandler(new ChunkTypeHandler()
+        {
+            @Override
+            public char getTypeCode()
+            {
+                return 'Q';
+            }
+
+            @Override
+            public ChunkBuilder newChunkBuilder(final GlobalDictionaries d)
+            {
+                return new ChunkBuilder()
+                {
+                    private int rows;
+
+                    @Override
+                    public char getTypeCode()
+                    {
+                        return 'Q';
+                    }
+
+                    @Override
+                    public boolean append(final Data record)
+                    {
+                        return ++rows >= 1;
+                    }
+
+                    @Override
+                    public boolean isFull()
+                    {
+                        return rows >= 1;
+                    }
+
+                    @Override
+                    public int getRowCount()
+                    {
+                        return rows;
+                    }
+
+                    @Override
+                    public Chunk seal()
+                    {
+                        throw new IllegalStateException("Simulated async compression failure");
+                    }
+
+                    @Override
+                    public void reset()
+                    {
+                        rows = 0;
+                    }
+                };
+            }
+
+            @Override
+            public void writeChunk(final Chunk chunk, final java.io.DataOutput out)
+            {
+            }
+
+            @Override
+            public Chunk readChunk(final java.io.DataInput in, final GlobalDictionaries d)
+            {
+                return null;
+            }
+
+            @Override
+            public void scan(final Chunk chunk, final ScanPredicate pred,
+                             final java.util.function.Consumer<Data> cons, final GlobalDictionaries d)
+            {
+            }
+        });
+
+        final ChunkIngestionCollector collector =
+            new ChunkIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), sealFailRegistry, failSpoolDir);
+        final File tmpSpoolFile = new File(failSpoolDir, ChunkStorage.CHUNKS_FILE_NAME + ".tmp");
+        Assert.assertTrue("chunks.bin.tmp must exist while spooler is active", tmpSpoolFile.exists());
+
+        collector.collect(createDummyRecord('Q', 1000L));
+        try
+        {
+            collector.finish();
+            Assert.fail("Expected RuntimeException from failed async compression task");
+        }
+        catch (final RuntimeException expected)
+        {
+            Assert.assertTrue(expected.getMessage().contains("Asynchronous chunk compression failed"));
+        }
+        Assert.assertFalse("chunks.bin.tmp must be cleaned up when finish() aborts on failure", tmpSpoolFile.exists());
+
+        // 3. DataRecordFactory branchless 256-slot lookup: valid codes return instances; unmapped/out-of-range codes
+        //    must NOT throw ArrayIndexOutOfBoundsException or NullPointerException
+        final com.xceptance.xlt.report.DataRecordFactory factory =
+            new com.xceptance.xlt.report.DataRecordFactory(java.util.Map.of("R", RequestData.class, "A", ActionData.class));
+        Assert.assertTrue(factory.createStatistics((byte) 'R') instanceof RequestData);
+        Assert.assertTrue(factory.createStatistics('A') instanceof ActionData);
+
+        for (final byte invalidByte : new byte[] { (byte) '"', (byte) '0', (byte) 'B', (byte) 'z', (byte) 0, (byte) 0xFF })
+        {
+            try
+            {
+                final Data d = factory.createStatistics(invalidByte);
+                Assert.assertNull("Expected null or exception other than AIOOBE/NPE", d);
+            }
+            catch (final Exception e)
+            {
+                Assert.assertFalse("Must not throw ArrayIndexOutOfBoundsException", e instanceof ArrayIndexOutOfBoundsException);
+                Assert.assertFalse("Must not throw NullPointerException", e instanceof NullPointerException);
+            }
+        }
+    }
+
     public static class VariableColumnRecord extends com.xceptance.xlt.api.engine.AbstractData
     {
         private List<String> serializeColumns;

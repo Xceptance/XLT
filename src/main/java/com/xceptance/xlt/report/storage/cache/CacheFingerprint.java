@@ -136,7 +136,18 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
      */
     public static CacheFingerprint calculate(final File resultsDir, final ReportGeneratorConfiguration config)
     {
-        final FileAccumulator accumulator = new FileAccumulator(config != null ? config.getDataCacheDirectoryName() : "xlt-cache");
+        final String cacheDirName = config != null ? config.getDataCacheDirectoryName() : "xlt-cache";
+        final Path cacheDirPath;
+        if (resultsDir != null)
+        {
+            final File resolvedCacheDir = config != null ? config.getDataCacheDirectory(resultsDir) : new File(resultsDir, "xlt-cache");
+            cacheDirPath = resolvedCacheDir.toPath().toAbsolutePath().normalize();
+        }
+        else
+        {
+            cacheDirPath = null;
+        }
+        final FileAccumulator accumulator = new FileAccumulator(cacheDirName, cacheDirPath);
         scanDirectory(resultsDir, accumulator);
 
         final String rulesHash = calculateRulesHash(config);
@@ -177,11 +188,12 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
             final String name = f.getName();
             if (f.isDirectory())
             {
-                if (isSkippedDirectory(name, acc.cacheDirName))
+                final Path path = f.toPath();
+                if (isSkippedDirectory(path, name, acc))
                 {
                     return;
                 }
-                scanSubtree(f.toPath(), acc);
+                scanSubtree(path, acc);
             }
             else if (f.isFile() && isTimerLogFile(name))
             {
@@ -209,7 +221,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
                     if (!dir.equals(root))
                     {
                         final Path fileName = dir.getFileName();
-                        if (fileName != null && isSkippedDirectory(fileName.toString(), acc.cacheDirName))
+                        if (fileName != null && isSkippedDirectory(dir, fileName.toString(), acc))
                         {
                             return FileVisitResult.SKIP_SUBTREE;
                         }
@@ -258,14 +270,18 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
     }
 
     /**
-     * Checks whether a directory name should be excluded from fingerprint scanning
+     * Checks whether a directory should be excluded from fingerprint scanning
      * (report output directories, the ChunkDB cache directory itself, and git metadata).
      */
-    private static boolean isSkippedDirectory(final String name, final String cacheDirName)
+    private static boolean isSkippedDirectory(final Path dir, final String name, final FileAccumulator acc)
     {
-        return "output".equalsIgnoreCase(name) ||
-               cacheDirName.equalsIgnoreCase(name) ||
-               ".git".equalsIgnoreCase(name);
+        if ("output".equalsIgnoreCase(name) ||
+            acc.cacheDirName.equalsIgnoreCase(name) ||
+            ".git".equalsIgnoreCase(name))
+        {
+            return true;
+        }
+        return acc.cacheDirPath != null && dir.toAbsolutePath().normalize().equals(acc.cacheDirPath);
     }
 
     /**
@@ -476,13 +492,15 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
     private static class FileAccumulator
     {
         final String cacheDirName;
+        final Path cacheDirPath;
         final LongAdder fileCount = new LongAdder();
         final LongAdder totalBytes = new LongAdder();
         final AtomicLong maxLastModified = new AtomicLong(0L);
 
-        FileAccumulator(final String cacheDirName)
+        FileAccumulator(final String cacheDirName, final Path cacheDirPath)
         {
             this.cacheDirName = cacheDirName != null ? cacheDirName : "xlt-cache";
+            this.cacheDirPath = cacheDirPath;
         }
 
         void updateMaxLastModified(final long mtime)

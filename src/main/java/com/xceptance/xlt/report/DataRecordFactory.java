@@ -16,8 +16,11 @@
 package com.xceptance.xlt.report;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.Map;
 
+import com.xceptance.common.util.CsvByteColumns;
+import com.xceptance.xlt.api.engine.AbstractData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.util.XltException;
 
@@ -29,14 +32,33 @@ import com.xceptance.xlt.api.util.XltException;
 public class DataRecordFactory
 {
     /**
-     * The registered default constructors per Data(Record) type.
+     * Direct 256-slot lookup table indexed by {@code typeCode & 0xFF}.
+     * <p>
+     * Sizing the table to 256 eliminates the {@code - offset} subtraction on every record and allows the JIT
+     * compiler to statically prove that {@code typeCode & 0xFF} is always within {@code [0, 255]}, eliding
+     * the array bounds check completely. All unconfigured slots are pre-filled with {@link UnsupportedData}'s
+     * constructor so unmapped bytes never trigger {@link NullPointerException} or {@link ArrayIndexOutOfBoundsException}
+     * while adding zero conditional branches to the hot path.
      */
-    private final Constructor<? extends Data> constructors[];
+    @SuppressWarnings("unchecked")
+    private final Constructor<? extends Data>[] constructors = new Constructor[256];
 
     /**
-     * The offset of the characters in that array aka A-Z, needs offset A
+     * Sentinel data class whose constructor is installed in all unconfigured slots of {@link #constructors}.
      */
-    private final int offset;
+    public static final class UnsupportedData extends AbstractData
+    {
+        public UnsupportedData()
+        {
+            super('?');
+            throw new IllegalArgumentException("Unknown data record type code");
+        }
+
+        @Override
+        public void setRemainingValues(final CsvByteColumns values)
+        {
+        }
+    }
 
     /**
      * Setup this factory based on the config
@@ -44,7 +66,6 @@ public class DataRecordFactory
      * @param dataClasses
      *            the data classes to support
      */
-    @SuppressWarnings("unchecked")
     public DataRecordFactory(final Map<String, Class<? extends Data>> dataClasses)
     {
         // parameter check
@@ -53,31 +74,25 @@ public class DataRecordFactory
             throw new XltException("No Data classes configured");
         }
 
-        // determine the upper and lower limit for a nice efficient array
-        int min = Integer.MAX_VALUE;
-        int max = Integer.MIN_VALUE;
-
-        for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
+        try
         {
-            final char c = entry.getKey().charAt(0);
-
-            min = Math.min(min, c);
-            max = Math.max(max, c);
+            Arrays.fill(constructors, UnsupportedData.class.getConstructor());
+        }
+        catch (final NoSuchMethodException | SecurityException e)
+        {
+            throw new XltException("Could not initialize fallback constructor", e);
         }
 
-        offset = min;
-        constructors = new Constructor[max - offset + 1];
-
-        // partially fill the array with constructor references
+        // fill configured slots with constructor references
         for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
         {
-            final int typeCode = entry.getKey().charAt(0);
+            final int typeCode = entry.getKey().charAt(0) & 0xFF;
             final Class<? extends Data> clazz = entry.getValue();
 
             try
             {
                 final Constructor<? extends Data> constructor = clazz.getConstructor();
-                constructors[typeCode - offset] = constructor;
+                constructors[typeCode] = constructor;
             }
             catch (final NoSuchMethodException | SecurityException e)
             {
@@ -96,8 +111,7 @@ public class DataRecordFactory
      */
     public Data createStatistics(final byte typeCode) throws Exception
     {
-        final Constructor<? extends Data> c = constructors[(typeCode & 0xFF) - offset];
-        return c.newInstance();
+        return constructors[typeCode & 0xFF].newInstance();
     }
 
     /**
@@ -110,7 +124,6 @@ public class DataRecordFactory
      */
     public Data createStatistics(final char typeCode) throws Exception
     {
-        final Constructor<? extends Data> c = constructors[typeCode - offset];
-        return c.newInstance();
+        return constructors[Math.min(typeCode, 255)].newInstance();
     }
 }

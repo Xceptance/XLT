@@ -387,6 +387,36 @@ public class ChunkSpooler
     }
 
     /**
+     * Aborts the spooler, closing open file handles and deleting the temporary working file ({@code chunks.bin.tmp}).
+     */
+    public synchronized void abort()
+    {
+        if (!closed)
+        {
+            closed = true;
+            spoolBuffer.release();
+            try
+            {
+                channel.close();
+            }
+            catch (final IOException ignored)
+            {
+            }
+            try
+            {
+                raf.close();
+            }
+            catch (final IOException ignored)
+            {
+            }
+        }
+        if (tmpFile.exists())
+        {
+            tmpFile.delete();
+        }
+    }
+
+    /**
      * Returns the final target chunks file location.
      *
      * @return target file

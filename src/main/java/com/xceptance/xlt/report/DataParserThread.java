@@ -166,15 +166,11 @@ class DataParserThread implements Runnable
                                     continue;
                                 }
 
-                                // parse, the columns structure is reused
-                                CsvByteLineDecoder.parse(csvColumns, line);
-
                                 // get us the minimal data aka type and time
                                 Data data = dataRecordFactory.createStatistics(line[0]);
-                                if (data == null)
-                                {
-                                    continue;
-                                }
+
+                                // parse, the columns structure is reused
+                                CsvByteLineDecoder.parse(csvColumns, line);
                                 data.setBaseValues(csvColumns);
 
                                 // see if we have to keep it

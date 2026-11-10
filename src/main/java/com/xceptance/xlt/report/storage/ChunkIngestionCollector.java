@@ -509,6 +509,11 @@ public class ChunkIngestionCollector
         }
         catch (final Exception e)
         {
+            if (this.spooler != null)
+            {
+                this.spooler.abort();
+                this.spooler = null;
+            }
             throw new RuntimeException("Asynchronous chunk compression failed", e);
         }
         finally
@@ -538,31 +543,42 @@ public class ChunkIngestionCollector
         // 3. Seal, compress, and immediately spool (or register) all remaining builders in parallel
         // so that sealed chunks are evicted to disk immediately without accumulating in heap memory.
         final ChunkSpooler activeSpooler = this.spooler;
-        remainingBuilders.parallelStream().forEach(builder -> {
-            final Chunk chunk = builder.seal();
+        this.spooler = null;
+        try
+        {
+            remainingBuilders.parallelStream().forEach(builder -> {
+                final Chunk chunk = builder.seal();
+                if (activeSpooler != null)
+                {
+                    try
+                    {
+                        final ChunkTypeHandler h = registry.getHandler(chunk.getTypeCode());
+                        final DiskChunk diskChunk = activeSpooler.spoolChunk(chunk, h);
+                        catalog.addChunk(diskChunk);
+                        return;
+                    }
+                    catch (final IOException e)
+                    {
+                        XltLogger.runTimeLogger.warn("Failed to spool remaining chunk to disk; retaining in-memory chunk: " + e.getMessage());
+                    }
+                }
+                catalog.addChunk(chunk);
+            });
+        }
+        catch (final Throwable t)
+        {
             if (activeSpooler != null)
             {
-                try
-                {
-                    final ChunkTypeHandler h = registry.getHandler(chunk.getTypeCode());
-                    final DiskChunk diskChunk = activeSpooler.spoolChunk(chunk, h);
-                    catalog.addChunk(diskChunk);
-                    return;
-                }
-                catch (final IOException e)
-                {
-                    XltLogger.runTimeLogger.warn("Failed to spool remaining chunk to disk; retaining in-memory chunk: " + e.getMessage());
-                }
+                activeSpooler.abort();
             }
-            catalog.addChunk(chunk);
-        });
+            throw t;
+        }
         remainingBuilders.clear();
 
         // 4. Compact dictionary reverse maps and staging buffers before Phase 2 scan
         dictionaries.compactForReadOnly();
 
         // 6. Finalize spooled storage files and attach open file channel for lazy loading
-        this.spooler = null;
         if (activeSpooler != null)
         {
             try
@@ -574,6 +590,7 @@ public class ChunkIngestionCollector
             }
             catch (final IOException e)
             {
+                activeSpooler.abort();
                 throw new RuntimeException("Failed to finalize spooled chunk storage", e);
             }
         }
