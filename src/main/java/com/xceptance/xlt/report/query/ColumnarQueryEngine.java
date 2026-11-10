@@ -561,8 +561,8 @@ public class ColumnarQueryEngine
     {
         final ChunkCatalog catalog = storage.getCatalog();
         final GlobalDictionaries dicts = storage.getDictionaries();
-        final String[] timerNames = dicts.getTimerNamesArray();
         final int timerCount = dicts.getTimerNameCount();
+        final String[] timerNames = dicts.getTimerNamesArray();
 
         // 1. Count chunks by type and union timer IDs per record type directly from chunk metadata bitmaps
         final Map<String, Integer> chunksByType = new LinkedHashMap<>();
@@ -603,9 +603,10 @@ public class ColumnarQueryEngine
         // 2. Extract distinct agents and scenarios from GlobalDictionaries.agentTestCases
         final Set<String> agentSet = new TreeSet<>();
         final Set<String> scenarioSet = new TreeSet<>();
-        final GlobalDictionaries.AgentTestCase[] pairs = dicts.getAgentTestCasesArray();
         final int pairCount = dicts.getAgentTestCaseCount();
-        for (int i = 0; i < pairCount; i++)
+        final GlobalDictionaries.AgentTestCase[] pairs = dicts.getAgentTestCasesArray();
+        final int pairLimit = Math.min(pairCount, pairs.length);
+        for (int i = 0; i < pairLimit; i++)
         {
             final GlobalDictionaries.AgentTestCase pair = pairs[i];
             if (pair != null)
@@ -700,8 +701,8 @@ public class ColumnarQueryEngine
             });
         }
 
-        final String[] strings = dicts.getStringsArray();
         final int strCount = dicts.getStringCount();
+        final String[] strings = dicts.getStringsArray();
 
         final Set<String> httpMethods = new TreeSet<>();
         for (final int id : methodIds)
@@ -4302,9 +4303,10 @@ public class ColumnarQueryEngine
         }
 
         final RoaringBitmap bm = new RoaringBitmap();
-        final String[] timerNames = dicts.getTimerNamesArray();
         final int count = dicts.getTimerNameCount();
-        for (int i = 0; i < count; i++)
+        final String[] timerNames = dicts.getTimerNamesArray();
+        final int limit = Math.min(count, timerNames.length);
+        for (int i = 0; i < limit; i++)
         {
             final String name = timerNames[i];
             if (name == null)
@@ -4344,9 +4346,10 @@ public class ColumnarQueryEngine
         final Set<String> scenarioSet = hasScenarios ? new HashSet<>(scenarios) : null;
         final RoaringBitmap bm = new RoaringBitmap();
 
-        final GlobalDictionaries.AgentTestCase[] pairs = dicts.getAgentTestCasesArray();
         final int count = dicts.getAgentTestCaseCount();
-        for (int i = 0; i < count; i++)
+        final GlobalDictionaries.AgentTestCase[] pairs = dicts.getAgentTestCasesArray();
+        final int limit = Math.min(count, pairs.length);
+        for (int i = 0; i < limit; i++)
         {
             final GlobalDictionaries.AgentTestCase pair = pairs[i];
             if (pair == null)
@@ -4374,9 +4377,10 @@ public class ColumnarQueryEngine
         }
         final Set<String> targetSet = new HashSet<>(values);
         final RoaringBitmap bm = new RoaringBitmap();
-        final String[] strings = dicts.getStringsArray();
         final int count = dicts.getStringCount();
-        for (int i = 0; i < count; i++)
+        final String[] strings = dicts.getStringsArray();
+        final int limit = Math.min(count, strings.length);
+        for (int i = 0; i < limit; i++)
         {
             if (strings[i] != null && targetSet.contains(strings[i]))
             {
@@ -4388,9 +4392,10 @@ public class ColumnarQueryEngine
 
     private static int findAgentTestCaseId(final GlobalDictionaries dicts, final String agent, final String scenario)
     {
-        final GlobalDictionaries.AgentTestCase[] pairs = dicts.getAgentTestCasesArray();
         final int count = dicts.getAgentTestCaseCount();
-        for (int i = 0; i < count; i++)
+        final GlobalDictionaries.AgentTestCase[] pairs = dicts.getAgentTestCasesArray();
+        final int limit = Math.min(count, pairs.length);
+        for (int i = 0; i < limit; i++)
         {
             final GlobalDictionaries.AgentTestCase p = pairs[i];
             if (p != null && p.agentName().equals(agent) && p.testCaseName().equals(scenario))
@@ -4403,9 +4408,10 @@ public class ColumnarQueryEngine
 
     private static int findStringId(final GlobalDictionaries dicts, final String target)
     {
-        final String[] strings = dicts.getStringsArray();
         final int count = dicts.getStringCount();
-        for (int i = 0; i < count; i++)
+        final String[] strings = dicts.getStringsArray();
+        final int limit = Math.min(count, strings.length);
+        for (int i = 0; i < limit; i++)
         {
             if (target.equals(strings[i]))
             {

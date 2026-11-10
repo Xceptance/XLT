@@ -18,6 +18,8 @@ package com.xceptance.xlt.report.storage.dictionary;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,6 +111,14 @@ public class GlobalDictionaries
     /** Initial capacity for interned dictionary arrays. */
     private static final int INITIAL_CAPACITY = 256;
 
+    /** VarHandles providing acquire/release memory semantics on array slots without locking. */
+    private static final VarHandle STRING_ARRAY_HANDLE = MethodHandles.arrayElementVarHandle(String[].class);
+    private static final VarHandle PAIR_ARRAY_HANDLE = MethodHandles.arrayElementVarHandle(AgentTestCase[].class);
+    private static final VarHandle STRING_2D_HANDLE = MethodHandles.arrayElementVarHandle(String[][].class);
+    private static final VarHandle SAMPLE_URL_2D_HANDLE = MethodHandles.arrayElementVarHandle(CachedSampleUrl[][].class);
+    private static final VarHandle BYTE_ARRAY_HANDLE = MethodHandles.arrayElementVarHandle(byte[].class);
+    private static final VarHandle LONG_ARRAY_HANDLE = MethodHandles.arrayElementVarHandle(long[].class);
+
     // -------------------------------------------------------------------------
     // Timer Names Storage
     // -------------------------------------------------------------------------
@@ -127,7 +137,7 @@ public class GlobalDictionaries
     private volatile String[] timerNames = new String[INITIAL_CAPACITY];
 
     /** Current number of distinct timer names interned. */
-    private int timerNameCount = 0;
+    private volatile int timerNameCount = 0;
 
     // -------------------------------------------------------------------------
     // Agent + TestCase Unified Storage
@@ -147,7 +157,7 @@ public class GlobalDictionaries
     private volatile AgentTestCase[] agentTestCases = new AgentTestCase[INITIAL_CAPACITY];
 
     /** Current number of distinct agent-testCase pairs interned. */
-    private int agentTestCaseCount = 0;
+    private volatile int agentTestCaseCount = 0;
 
     // -------------------------------------------------------------------------
     // General Strings Storage
@@ -155,6 +165,9 @@ public class GlobalDictionaries
 
     /** Lock guarding general string ID allocation and reverse map reconstruction. */
     private final Object stringLock = new Object();
+
+    /** Lock guarding pre-split IP address array computation and compaction. */
+    private final Object splitIpLock = new Object();
 
     /**
      * Concurrent lookup map from general string to interned integer ID.
@@ -167,7 +180,7 @@ public class GlobalDictionaries
     private volatile String[] strings = new String[INITIAL_CAPACITY];
 
     /** Current number of distinct general strings interned. */
-    private int stringCount = 0;
+    private volatile int stringCount = 0;
 
     /** Volatile cached array of pre-split IP address strings indexed by string ID. */
     private volatile String[][] splitIpAddresses = new String[INITIAL_CAPACITY][];
@@ -204,13 +217,36 @@ public class GlobalDictionaries
     private final RoaringBitmap contentTypeIds = new RoaringBitmap();
     private final RoaringBitmap usedIpIds = new RoaringBitmap();
 
+    /** Lock-free bitsets fronting the facet RoaringBitmaps to avoid monitor contention during ingestion. */
+    private volatile long[] httpMethodBits = new long[4];
+    private volatile long[] contentTypeBits = new long[4];
+    private volatile long[] usedIpBits = new long[4];
+
     public void recordHttpMethodId(final int id)
     {
         if (id >= 0)
         {
+            final int wordIdx = id >>> 6;
+            final long mask = 1L << id;
+            final long[] bits = this.httpMethodBits;
+            if (wordIdx < bits.length && (((long) LONG_ARRAY_HANDLE.getAcquire(bits, wordIdx)) & mask) != 0L)
+            {
+                return;
+            }
             synchronized (httpMethodIds)
             {
                 httpMethodIds.add(id);
+                long[] curBits = this.httpMethodBits;
+                if (wordIdx >= curBits.length)
+                {
+                    curBits = Arrays.copyOf(curBits, Math.max(curBits.length * 2, wordIdx + 1));
+                    curBits[wordIdx] |= mask;
+                    this.httpMethodBits = curBits;
+                }
+                else
+                {
+                    LONG_ARRAY_HANDLE.setRelease(curBits, wordIdx, curBits[wordIdx] | mask);
+                }
             }
         }
     }
@@ -219,9 +255,27 @@ public class GlobalDictionaries
     {
         if (id >= 0)
         {
+            final int wordIdx = id >>> 6;
+            final long mask = 1L << id;
+            final long[] bits = this.contentTypeBits;
+            if (wordIdx < bits.length && (((long) LONG_ARRAY_HANDLE.getAcquire(bits, wordIdx)) & mask) != 0L)
+            {
+                return;
+            }
             synchronized (contentTypeIds)
             {
                 contentTypeIds.add(id);
+                long[] curBits = this.contentTypeBits;
+                if (wordIdx >= curBits.length)
+                {
+                    curBits = Arrays.copyOf(curBits, Math.max(curBits.length * 2, wordIdx + 1));
+                    curBits[wordIdx] |= mask;
+                    this.contentTypeBits = curBits;
+                }
+                else
+                {
+                    LONG_ARRAY_HANDLE.setRelease(curBits, wordIdx, curBits[wordIdx] | mask);
+                }
             }
         }
     }
@@ -230,9 +284,27 @@ public class GlobalDictionaries
     {
         if (id >= 0)
         {
+            final int wordIdx = id >>> 6;
+            final long mask = 1L << id;
+            final long[] bits = this.usedIpBits;
+            if (wordIdx < bits.length && (((long) LONG_ARRAY_HANDLE.getAcquire(bits, wordIdx)) & mask) != 0L)
+            {
+                return;
+            }
             synchronized (usedIpIds)
             {
                 usedIpIds.add(id);
+                long[] curBits = this.usedIpBits;
+                if (wordIdx >= curBits.length)
+                {
+                    curBits = Arrays.copyOf(curBits, Math.max(curBits.length * 2, wordIdx + 1));
+                    curBits[wordIdx] |= mask;
+                    this.usedIpBits = curBits;
+                }
+                else
+                {
+                    LONG_ARRAY_HANDLE.setRelease(curBits, wordIdx, curBits[wordIdx] | mask);
+                }
             }
         }
     }
@@ -259,11 +331,10 @@ public class GlobalDictionaries
     /**
      * Thread-local single-entry memoization cache for timer names.
      * In load tests, consecutive requests often share identical timer names. Caching the last
-     * resolved timer name reference avoids converting CharSequence to String and querying ConcurrentHashMap.
+     * resolved immutable {@link String} avoids converting CharSequence to String and querying ConcurrentHashMap.
      */
     private static final class ThreadLocalTimerCache
     {
-        CharSequence lastRef;
         String lastStr;
         int lastId = -1;
     }
@@ -280,8 +351,6 @@ public class GlobalDictionaries
      */
     private static final class ThreadLocalAgentTestCaseCache
     {
-        CharSequence lastAgentRef;
-        CharSequence lastTestCaseRef;
         String lastAgentStr;
         String lastTestCaseStr;
         int lastId = -1;
@@ -295,7 +364,6 @@ public class GlobalDictionaries
      */
     private static final class ThreadLocalStringCache
     {
-        CharSequence lastRef;
         String lastStr;
         int lastId = -1;
     }
@@ -395,9 +463,14 @@ public class GlobalDictionaries
         }
         synchronized (timerLock)
         {
-            map = new ConcurrentHashMap<>();
-            final String[] names = this.timerNames;
+            map = this.timerNameToId;
+            if (map != null)
+            {
+                return map;
+            }
             final int count = this.timerNameCount;
+            final String[] names = this.timerNames;
+            map = new ConcurrentHashMap<>(Math.max(INITIAL_CAPACITY, (int) (count / 0.75f) + 1));
             for (int i = 0; i < count; i++)
             {
                 map.put(names[i], i);
@@ -424,15 +497,18 @@ public class GlobalDictionaries
             return -1;
         }
 
-        // 1. Thread-local fast-path: check if matches last seen timer name on this thread
+        // 1. Thread-local fast-path: only use reference equality against immutable String lastStr
         final ThreadLocalTimerCache cache = localTimerCache.get();
-        if (name == cache.lastRef)
+        if (name == cache.lastStr)
         {
             return cache.lastId;
         }
         if (cache.lastStr != null && charSequenceEquals(name, cache.lastStr))
         {
-            cache.lastRef = name;
+            if (name instanceof String s)
+            {
+                cache.lastStr = s;
+            }
             return cache.lastId;
         }
 
@@ -443,7 +519,6 @@ public class GlobalDictionaries
         final Integer id = map.get(s);
         if (id != null)
         {
-            cache.lastRef = name;
             cache.lastStr = s;
             cache.lastId = id;
             return id;
@@ -452,17 +527,32 @@ public class GlobalDictionaries
         // 3. Synchronize on timerLock only when allocating a newly discovered string
         synchronized (timerLock)
         {
-            final int assignedId = map.computeIfAbsent(s, key -> {
-                final int nextId = timerNameCount++;
-                if (nextId >= timerNames.length)
+            final ConcurrentHashMap<String, Integer> activeMap = getOrInitTimerNameMap();
+            final Integer existing = activeMap.get(s);
+            final int assignedId;
+            if (existing != null)
+            {
+                assignedId = existing;
+            }
+            else
+            {
+                final int nextId = timerNameCount;
+                String[] arr = timerNames;
+                if (nextId >= arr.length)
                 {
-                    // Geometric array doubling: eliminates O(N) array clone churn
-                    timerNames = Arrays.copyOf(timerNames, Math.max(INITIAL_CAPACITY, timerNames.length * 2));
+                    // Geometric array doubling: populate element before publishing volatile array reference
+                    arr = Arrays.copyOf(arr, Math.max(INITIAL_CAPACITY, arr.length * 2));
+                    arr[nextId] = s;
+                    timerNames = arr;
                 }
-                timerNames[nextId] = key;
-                return nextId;
-            });
-            cache.lastRef = name;
+                else
+                {
+                    STRING_ARRAY_HANDLE.setRelease(arr, nextId, s);
+                }
+                timerNameCount = nextId + 1;
+                activeMap.put(s, nextId);
+                assignedId = nextId;
+            }
             cache.lastStr = s;
             cache.lastId = assignedId;
             return assignedId;
@@ -481,7 +571,7 @@ public class GlobalDictionaries
     public String getTimerName(final int id)
     {
         final String[] array = timerNames;
-        return (id >= 0 && id < timerNameCount) ? array[id] : null;
+        return (id >= 0 && id < array.length) ? (String) STRING_ARRAY_HANDLE.getAcquire(array, id) : null;
     }
 
     /**
@@ -525,9 +615,14 @@ public class GlobalDictionaries
         }
         synchronized (pairLock)
         {
-            map = new ConcurrentHashMap<>();
-            final AgentTestCase[] pairs = this.agentTestCases;
+            map = this.pairToId;
+            if (map != null)
+            {
+                return map;
+            }
             final int count = this.agentTestCaseCount;
+            final AgentTestCase[] pairs = this.agentTestCases;
+            map = new ConcurrentHashMap<>(Math.max(INITIAL_CAPACITY, (int) (count / 0.75f) + 1));
             for (int i = 0; i < count; i++)
             {
                 map.put(pairs[i], i);
@@ -552,21 +647,28 @@ public class GlobalDictionaries
      */
     public int getOrCreateAgentTestCaseId(final CharSequence agent, final CharSequence testCase)
     {
-        // 1. Thread-local cache fast-path: eliminates 99.99%+ of allocations
+        // 1. Thread-local cache fast-path: only use reference equality against immutable String fields
         final ThreadLocalAgentTestCaseCache cache = localAgentTestCaseCache.get();
-        if (cache.lastId != -1 && agent == cache.lastAgentRef && testCase == cache.lastTestCaseRef)
+        if (cache.lastId != -1)
         {
-            return cache.lastId;
-        }
-
-        // Fast string/char-sequence match without allocating new Strings or AgentTestCase objects
-        if (cache.lastAgentStr != null &&
-            charSequenceEquals(agent, cache.lastAgentStr) &&
-            charSequenceEquals(testCase, cache.lastTestCaseStr))
-        {
-            cache.lastAgentRef = agent;
-            cache.lastTestCaseRef = testCase;
-            return cache.lastId;
+            if (agent == cache.lastAgentStr && testCase == cache.lastTestCaseStr)
+            {
+                return cache.lastId;
+            }
+            if (cache.lastAgentStr != null &&
+                ((agent == null && cache.lastAgentStr.isEmpty()) || charSequenceEquals(agent, cache.lastAgentStr)) &&
+                ((testCase == null && cache.lastTestCaseStr.isEmpty()) || charSequenceEquals(testCase, cache.lastTestCaseStr)))
+            {
+                if (agent instanceof String aStr)
+                {
+                    cache.lastAgentStr = aStr;
+                }
+                if (testCase instanceof String tcStr)
+                {
+                    cache.lastTestCaseStr = tcStr;
+                }
+                return cache.lastId;
+            }
         }
 
         final String a = agent != null ? agent.toString() : "";
@@ -578,8 +680,6 @@ public class GlobalDictionaries
         final Integer id = map.get(pair);
         if (id != null)
         {
-            cache.lastAgentRef = agent;
-            cache.lastTestCaseRef = testCase;
             cache.lastAgentStr = a;
             cache.lastTestCaseStr = tc;
             cache.lastId = id;
@@ -589,17 +689,31 @@ public class GlobalDictionaries
         // 3. Synchronize only for allocating the next sequential ID
         synchronized (pairLock)
         {
-            final int assignedId = map.computeIfAbsent(pair, key -> {
-                final int nextId = agentTestCaseCount++;
-                if (nextId >= agentTestCases.length)
+            final ConcurrentHashMap<AgentTestCase, Integer> activeMap = getOrInitPairMap();
+            final Integer existing = activeMap.get(pair);
+            final int assignedId;
+            if (existing != null)
+            {
+                assignedId = existing;
+            }
+            else
+            {
+                final int nextId = agentTestCaseCount;
+                AgentTestCase[] arr = agentTestCases;
+                if (nextId >= arr.length)
                 {
-                    agentTestCases = Arrays.copyOf(agentTestCases, Math.max(INITIAL_CAPACITY, agentTestCases.length * 2));
+                    arr = Arrays.copyOf(arr, Math.max(INITIAL_CAPACITY, arr.length * 2));
+                    arr[nextId] = pair;
+                    agentTestCases = arr;
                 }
-                agentTestCases[nextId] = key;
-                return nextId;
-            });
-            cache.lastAgentRef = agent;
-            cache.lastTestCaseRef = testCase;
+                else
+                {
+                    PAIR_ARRAY_HANDLE.setRelease(arr, nextId, pair);
+                }
+                agentTestCaseCount = nextId + 1;
+                activeMap.put(pair, nextId);
+                assignedId = nextId;
+            }
             cache.lastAgentStr = a;
             cache.lastTestCaseStr = tc;
             cache.lastId = assignedId;
@@ -619,7 +733,7 @@ public class GlobalDictionaries
     public AgentTestCase getAgentTestCase(final int id)
     {
         final AgentTestCase[] array = agentTestCases;
-        return (id >= 0 && id < agentTestCaseCount) ? array[id] : null;
+        return (id >= 0 && id < array.length) ? (AgentTestCase) PAIR_ARRAY_HANDLE.getAcquire(array, id) : null;
     }
 
     /**
@@ -699,11 +813,16 @@ public class GlobalDictionaries
 
         final int count = agentTestCaseCount;
         final AgentTestCase[] array = agentTestCases;
+        final int limit = Math.min(count, array.length);
 
         // Iterate through all interned pairs and evaluate regex matchers
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < limit; i++)
         {
-            final AgentTestCase pair = array[i];
+            final AgentTestCase pair = (AgentTestCase) PAIR_ARRAY_HANDLE.getAcquire(array, i);
+            if (pair == null)
+            {
+                continue;
+            }
             final boolean agentOk = agentFilter == null || agentFilter.isAccepted(pair.agentName());
             final boolean testCaseOk = testCaseFilter == null || testCaseFilter.isAccepted(pair.testCaseName());
             if (agentOk && testCaseOk)
@@ -737,9 +856,14 @@ public class GlobalDictionaries
         }
         synchronized (stringLock)
         {
-            map = new ConcurrentHashMap<>();
-            final String[] arr = this.strings;
+            map = this.stringToId;
+            if (map != null)
+            {
+                return map;
+            }
             final int count = this.stringCount;
+            final String[] arr = this.strings;
+            map = new ConcurrentHashMap<>(Math.max(INITIAL_CAPACITY, (int) (count / 0.75f) + 1));
             for (int i = 0; i < count; i++)
             {
                 map.put(arr[i], i);
@@ -768,15 +892,18 @@ public class GlobalDictionaries
             return -1;
         }
 
-        // 1. Thread-local cache fast-path: avoids String conversions and map lookups for repeated strings
+        // 1. Thread-local cache fast-path: only use reference equality against immutable String lastStr
         final ThreadLocalStringCache cache = localStringCache.get();
-        if (text == cache.lastRef)
+        if (text == cache.lastStr)
         {
             return cache.lastId;
         }
         if (cache.lastStr != null && charSequenceEquals(text, cache.lastStr))
         {
-            cache.lastRef = text;
+            if (text instanceof String s)
+            {
+                cache.lastStr = s;
+            }
             return cache.lastId;
         }
 
@@ -787,7 +914,6 @@ public class GlobalDictionaries
         final Integer id = map.get(s);
         if (id != null)
         {
-            cache.lastRef = text;
             cache.lastStr = s;
             cache.lastId = id;
             return id;
@@ -796,16 +922,31 @@ public class GlobalDictionaries
         // 3. Synchronize for allocating next sequential ID
         synchronized (stringLock)
         {
-            final int assignedId = map.computeIfAbsent(s, key -> {
-                final int nextId = stringCount++;
-                if (nextId >= strings.length)
+            final ConcurrentHashMap<String, Integer> activeMap = getOrInitStringMap();
+            final Integer existing = activeMap.get(s);
+            final int assignedId;
+            if (existing != null)
+            {
+                assignedId = existing;
+            }
+            else
+            {
+                final int nextId = stringCount;
+                String[] arr = strings;
+                if (nextId >= arr.length)
                 {
-                    strings = Arrays.copyOf(strings, Math.max(INITIAL_CAPACITY, strings.length * 2));
+                    arr = Arrays.copyOf(arr, Math.max(INITIAL_CAPACITY, arr.length * 2));
+                    arr[nextId] = s;
+                    strings = arr;
                 }
-                strings[nextId] = key;
-                return nextId;
-            });
-            cache.lastRef = text;
+                else
+                {
+                    STRING_ARRAY_HANDLE.setRelease(arr, nextId, s);
+                }
+                stringCount = nextId + 1;
+                activeMap.put(s, nextId);
+                assignedId = nextId;
+            }
             cache.lastStr = s;
             cache.lastId = assignedId;
             return assignedId;
@@ -824,7 +965,7 @@ public class GlobalDictionaries
     public String getString(final int id)
     {
         final String[] array = strings;
-        return (id >= 0 && id < stringCount) ? array[id] : null;
+        return (id >= 0 && id < array.length) ? (String) STRING_ARRAY_HANDLE.getAcquire(array, id) : null;
     }
 
     /**
@@ -866,7 +1007,7 @@ public class GlobalDictionaries
         final String[][] cache = splitIpAddresses;
         if (id >= 0 && id < cache.length)
         {
-            final String[] cached = cache[id];
+            final String[] cached = (String[]) STRING_2D_HANDLE.getAcquire(cache, id);
             if (cached != null)
             {
                 return cached;
@@ -882,20 +1023,37 @@ public class GlobalDictionaries
      *            the interned string ID
      * @return array of IP address strings, or {@code null} if id is invalid or string is null
      */
-    private synchronized String[] computeSplitIpAddresses(final int id)
+    private String[] computeSplitIpAddresses(final int id)
     {
         final String str = getString(id);
         if (str == null)
         {
             return null;
         }
-        final String[] split = org.apache.commons.lang3.StringUtils.split(str, '|');
-        if (id >= splitIpAddresses.length)
+        synchronized (splitIpLock)
         {
-            splitIpAddresses = Arrays.copyOf(splitIpAddresses, Math.max(splitIpAddresses.length * 2, id + 1));
+            String[][] cache = this.splitIpAddresses;
+            if (id < cache.length)
+            {
+                final String[] existing = (String[]) STRING_2D_HANDLE.getAcquire(cache, id);
+                if (existing != null)
+                {
+                    return existing;
+                }
+            }
+            final String[] split = org.apache.commons.lang3.StringUtils.split(str, '|');
+            if (id >= cache.length)
+            {
+                cache = Arrays.copyOf(cache, Math.max(cache.length * 2, id + 1));
+                cache[id] = split;
+                this.splitIpAddresses = cache;
+            }
+            else
+            {
+                STRING_2D_HANDLE.setRelease(cache, id, split);
+            }
+            return split;
         }
-        splitIpAddresses[id] = split;
-        return split;
     }
 
     // -------------------------------------------------------------------------
@@ -918,7 +1076,7 @@ public class GlobalDictionaries
             return true;
         }
         final byte[] counts = this.sampleUrlCounts;
-        return timerId < counts.length && counts[timerId] >= MAX_SAMPLE_URLS_PER_TIMER;
+        return timerId < counts.length && (byte) BYTE_ARRAY_HANDLE.getAcquire(counts, timerId) >= MAX_SAMPLE_URLS_PER_TIMER;
     }
 
     /**
@@ -942,11 +1100,13 @@ public class GlobalDictionaries
 
         synchronized (sampleUrlLock)
         {
-            if (timerId >= sampleUrlCounts.length)
+            byte[] counts = this.sampleUrlCounts;
+            if (timerId >= counts.length)
             {
-                sampleUrlCounts = Arrays.copyOf(sampleUrlCounts, Math.max(sampleUrlCounts.length * 2, timerId + 1));
+                counts = Arrays.copyOf(counts, Math.max(counts.length * 2, timerId + 1));
+                this.sampleUrlCounts = counts;
             }
-            final int count = sampleUrlCounts[timerId];
+            final int count = counts[timerId];
             if (count >= MAX_SAMPLE_URLS_PER_TIMER)
             {
                 return;
@@ -954,7 +1114,7 @@ public class GlobalDictionaries
 
             if (rawSampleUrls == null)
             {
-                rawSampleUrls = new String[sampleUrlCounts.length][];
+                rawSampleUrls = new String[counts.length][];
                 for (int id = 0; id < cachedSampleUrls.length; id++)
                 {
                     final CachedSampleUrl[] existingCached = cachedSampleUrls[id];
@@ -991,11 +1151,12 @@ public class GlobalDictionaries
             }
 
             bucket[count] = urlStr;
-            if (timerId < cachedSampleUrls.length)
+            final CachedSampleUrl[][] cached = this.cachedSampleUrls;
+            if (timerId < cached.length)
             {
-                cachedSampleUrls[timerId] = null;
+                SAMPLE_URL_2D_HANDLE.setRelease(cached, timerId, null);
             }
-            sampleUrlCounts[timerId] = (byte) (count + 1);
+            BYTE_ARRAY_HANDLE.setRelease(counts, timerId, (byte) (count + 1));
         }
     }
 
@@ -1019,14 +1180,14 @@ public class GlobalDictionaries
         final CachedSampleUrl[][] cache = this.cachedSampleUrls;
         if (timerId < cache.length)
         {
-            final CachedSampleUrl[] existing = cache[timerId];
+            final CachedSampleUrl[] existing = (CachedSampleUrl[]) SAMPLE_URL_2D_HANDLE.getAcquire(cache, timerId);
             if (existing != null)
             {
                 return existing;
             }
         }
         final byte[] counts = this.sampleUrlCounts;
-        if (this.rawSampleUrls == null || timerId >= counts.length || counts[timerId] == 0)
+        if (timerId >= counts.length || (byte) BYTE_ARRAY_HANDLE.getAcquire(counts, timerId) == 0)
         {
             return null;
         }
@@ -1044,6 +1205,19 @@ public class GlobalDictionaries
     {
         synchronized (sampleUrlLock)
         {
+            CachedSampleUrl[][] cache = this.cachedSampleUrls;
+            if (timerId < cache.length)
+            {
+                final CachedSampleUrl[] existing = (CachedSampleUrl[]) SAMPLE_URL_2D_HANDLE.getAcquire(cache, timerId);
+                if (existing != null)
+                {
+                    return existing;
+                }
+            }
+            if (rawSampleUrls == null || timerId >= sampleUrlCounts.length || sampleUrlCounts[timerId] == 0)
+            {
+                return null;
+            }
             final int count = sampleUrlCounts[timerId];
             final String[] bucket = rawSampleUrls[timerId];
             final CachedSampleUrl[] arr = new CachedSampleUrl[count];
@@ -1051,11 +1225,16 @@ public class GlobalDictionaries
             {
                 arr[i] = new CachedSampleUrl(bucket[i]);
             }
-            if (timerId >= cachedSampleUrls.length)
+            if (timerId >= cache.length)
             {
-                cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, Math.max(cachedSampleUrls.length * 2, timerId + 1));
+                cache = Arrays.copyOf(cache, Math.max(cache.length * 2, timerId + 1));
+                cache[timerId] = arr;
+                this.cachedSampleUrls = cache;
             }
-            cachedSampleUrls[timerId] = arr;
+            else
+            {
+                SAMPLE_URL_2D_HANDLE.setRelease(cache, timerId, arr);
+            }
             return arr;
         }
     }
@@ -1111,9 +1290,13 @@ public class GlobalDictionaries
             }
         }
 
-        if (splitIpAddresses.length > stringCount)
+        synchronized (splitIpLock)
         {
-            splitIpAddresses = Arrays.copyOf(splitIpAddresses, stringCount);
+            final int sCount = this.stringCount;
+            if (splitIpAddresses.length > sCount)
+            {
+                splitIpAddresses = Arrays.copyOf(splitIpAddresses, sCount);
+            }
         }
 
         synchronized (sampleUrlLock)
@@ -1127,9 +1310,10 @@ public class GlobalDictionaries
                 }
             }
             final int targetSampleLen = Math.max(timerNameCount, maxSampleTimerId + 1);
-            if (cachedSampleUrls.length != targetSampleLen)
+            CachedSampleUrl[][] cached = this.cachedSampleUrls;
+            if (cached.length != targetSampleLen)
             {
-                cachedSampleUrls = Arrays.copyOf(cachedSampleUrls, targetSampleLen);
+                cached = Arrays.copyOf(cached, targetSampleLen);
             }
             if (rawSampleUrls != null)
             {
@@ -1137,17 +1321,22 @@ public class GlobalDictionaries
                 {
                     final String[] bucket = rawSampleUrls[i];
                     final int count = sampleUrlCounts[i];
-                    if (count > 0 && cachedSampleUrls[i] == null)
+                    if (count > 0 && cached[i] == null)
                     {
                         final CachedSampleUrl[] arr = new CachedSampleUrl[count];
                         for (int j = 0; j < count; j++)
                         {
                             arr[j] = new CachedSampleUrl(bucket[j]);
                         }
-                        cachedSampleUrls[i] = arr;
+                        SAMPLE_URL_2D_HANDLE.setRelease(cached, i, arr);
                     }
                 }
+                this.cachedSampleUrls = cached;
                 rawSampleUrls = null;
+            }
+            else if (this.cachedSampleUrls != cached)
+            {
+                this.cachedSampleUrls = cached;
             }
             if (sampleUrlCounts.length != targetSampleLen)
             {
