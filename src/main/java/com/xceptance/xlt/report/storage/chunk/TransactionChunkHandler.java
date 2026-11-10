@@ -205,6 +205,8 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         final int[] userNumbers = FastIntegerCodec.decompress(c.compUserNumbers);
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
+        final org.roaringbitmap.IntIterator failIter = anyFailed ? failedRows.getIntIterator() : null;
+        int nextFailedRow = (failIter != null && failIter.hasNext()) ? failIter.next() : -1;
         final Map<Integer, TransactionChunk.TransactionError> errors = c.getErrorDetails();
         final boolean hasErrorsOrDumps = errors != null && !errors.isEmpty();
 
@@ -216,12 +218,18 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         // 3. Linear row scan and object reconstruction
         for (int i = 0; i < rowCount; i++)
         {
+            while (nextFailedRow != -1 && nextFailedRow < i)
+            {
+                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
+            }
+            final boolean failed = (nextFailedRow == i);
+            final int rt = runTimes[i];
             final long time = baseTime + timeOffsets[i];
             final int timerId = timerIds[i];
             final int agentId = agentIds[i];
 
             // Fine-grained row-level check
-            if (!predicate.testRow(time, timerId, agentId))
+            if (!predicate.testRow(time, timerId, agentId, rt, failed))
             {
                 continue;
             }
@@ -237,11 +245,10 @@ public class TransactionChunkHandler implements ChunkTypeHandler
                 data.setTransactionName(pair.testCaseName());
             }
 
-            data.setRunTime(runTimes[i]);
+            data.setRunTime(rt);
             final int userNumId = userNumbers[i];
             data.setTestUserNumber(userNumId >= 0 && userNumId < strings.length ? strings[userNumId] : null);
 
-            final boolean failed = anyFailed && failedRows.contains(i);
             data.setFailed(failed);
             if (hasErrorsOrDumps)
             {
@@ -319,6 +326,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
 
         long minTime = Long.MAX_VALUE;
         long maxTime = 0;
+        boolean hasMatchedFailure = false;
 
         int lastTimerId = -1;
         String lastTimerName = null;
@@ -334,9 +342,11 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             final long time = baseTime + timeOffsets[i];
             final int timerId = timerIds[i];
             final int agentId = agentIds[i];
+            final int rt = runTimes[i];
+            final boolean failed = failedLookup != null && failedLookup[i];
 
             // Fine-grained row-level check
-            if (!predicate.testRow(time, timerId, agentId))
+            if (!predicate.testRow(time, timerId, agentId, rt, failed))
             {
                 continue;
             }
@@ -395,12 +405,15 @@ public class TransactionChunkHandler implements ChunkTypeHandler
                 }
             }
 
-            data.setRunTime(runTimes[i]);
+            data.setRunTime(rt);
             final int userNumId = userNumbers[i];
             data.setTestUserNumber(userNumId >= 0 && userNumId < strings.length ? strings[userNumId] : null);
 
-            final boolean failed = failedLookup != null && failedLookup[i];
             data.setFailed(failed);
+            if (failed)
+            {
+                hasMatchedFailure = true;
+            }
             final TransactionChunk.TransactionError err = hasErrorsOrDumps ? errors.get(i) : null;
             if (err != null)
             {
@@ -424,7 +437,10 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             container.updateTimeRange(minTime, maxTime);
         }
 
-        container.hasFailedRecords = anyFailed;
+        if (hasMatchedFailure)
+        {
+            container.hasFailedRecords = true;
+        }
     }
 
 

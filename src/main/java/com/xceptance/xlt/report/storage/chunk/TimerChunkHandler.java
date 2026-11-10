@@ -188,6 +188,8 @@ public class TimerChunkHandler implements ChunkTypeHandler
             ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
+        final org.roaringbitmap.IntIterator failIter = anyFailed ? failedRows.getIntIterator() : null;
+        int nextFailedRow = (failIter != null && failIter.hasNext()) ? failIter.next() : -1;
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
@@ -197,12 +199,18 @@ public class TimerChunkHandler implements ChunkTypeHandler
         // 3. Linear row scan and object reconstruction
         for (int i = 0; i < rowCount; i++)
         {
+            while (nextFailedRow != -1 && nextFailedRow < i)
+            {
+                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
+            }
+            final boolean failed = (nextFailedRow == i);
+            final int rt = runTimes[i];
             final long time = baseTime + timeOffsets[i];
             final int timerId = timerIds[i];
             final int agentId = agentIds[i];
 
             // Fine-grained row-level check
-            if (!predicate.testRow(time, timerId, agentId))
+            if (!predicate.testRow(time, timerId, agentId, rt, failed))
             {
                 continue;
             }
@@ -224,8 +232,8 @@ public class TimerChunkHandler implements ChunkTypeHandler
                 data.setTestUserNumber(userNumId >= 0 && userNumId < strings.length ? strings[userNumId] : null);
             }
 
-            data.setRunTime(runTimes[i]);
-            data.setFailed(anyFailed && failedRows.contains(i));
+            data.setRunTime(rt);
+            data.setFailed(failed);
 
             consumer.accept(data);
         }
@@ -291,6 +299,7 @@ public class TimerChunkHandler implements ChunkTypeHandler
 
         long minTime = Long.MAX_VALUE;
         long maxTime = 0;
+        boolean hasMatchedFailure = false;
 
         int lastTimerId = -1;
         String lastTimerName = null;
@@ -307,9 +316,11 @@ public class TimerChunkHandler implements ChunkTypeHandler
             final long time = baseTime + timeOffsets[i];
             final int timerId = timerIds[i];
             final int agentId = agentIds[i];
+            final int rt = runTimes[i];
+            final boolean failed = failedLookup != null && failedLookup[i];
 
             // Fine-grained row-level check
-            if (!predicate.testRow(time, timerId, agentId))
+            if (!predicate.testRow(time, timerId, agentId, rt, failed))
             {
                 continue;
             }
@@ -392,8 +403,12 @@ public class TimerChunkHandler implements ChunkTypeHandler
                 data.setTestUserNumber(null);
             }
 
-            data.setRunTime(runTimes[i]);
-            data.setFailed(failedLookup != null && failedLookup[i]);
+            data.setRunTime(rt);
+            data.setFailed(failed);
+            if (failed)
+            {
+                hasMatchedFailure = true;
+            }
 
             container.addFast(data);
         }
@@ -404,7 +419,10 @@ public class TimerChunkHandler implements ChunkTypeHandler
             container.updateTimeRange(minTime, maxTime);
         }
 
-        container.hasFailedRecords = anyFailed;
+        if (hasMatchedFailure)
+        {
+            container.hasFailedRecords = true;
+        }
     }
 
 

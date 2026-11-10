@@ -400,13 +400,40 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int[] timerIds = FastIntegerCodec.decompressTo(c.compTimerNameIds, scratch.timerIds);
         final int[] agentTestCaseIds = FastIntegerCodec.decompressTo(c.compAgentTestCaseIds, scratch.agentTestCaseIds);
 
+        final RoaringBitmap failedRows = c.getFailedRows();
+        final boolean anyFailed = !failedRows.isEmpty();
+
+        int[] runTimes = null;
+        int[] responseCodes = null;
+
         final boolean allMatch = predicate.matchesAllRows(chunk);
         if (!allMatch)
         {
+            final boolean needRunTime = predicate.getMinRunTime() > 0;
+            final boolean needFailures = predicate.isRequireFailures();
+            if (needRunTime)
+            {
+                runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
+            }
+            if (needFailures)
+            {
+                responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+            }
+
+            final org.roaringbitmap.IntIterator preFailIter = (needFailures && anyFailed) ? failedRows.getIntIterator() : null;
+            int preNextFailedRow = (preFailIter != null && preFailIter.hasNext()) ? preFailIter.next() : -1;
+
             boolean anyMatch = false;
             for (int i = 0; i < rowCount; i++)
             {
-                if (predicate.testRow(baseTime + timeOffsets[i], timerIds[i], agentTestCaseIds[i]))
+                while (preNextFailedRow != -1 && preNextFailedRow < i)
+                {
+                    preNextFailedRow = preFailIter.hasNext() ? preFailIter.next() : -1;
+                }
+                final int rt = runTimes != null ? runTimes[i] : 0;
+                final boolean hasFailureOrError = needFailures
+                    && ((preNextFailedRow == i) || responseCodes[i] >= 400 || responseCodes[i] == 0);
+                if (predicate.testRow(baseTime + timeOffsets[i], timerIds[i], agentTestCaseIds[i], rt, hasFailureOrError))
                 {
                     anyMatch = true;
                     break;
@@ -418,9 +445,15 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
         }
 
-        // 3. Decompress remaining 18 columns only when matching rows exist
-        final int[] runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
-        final int[] responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+        // 3. Decompress remaining columns only when matching rows exist
+        if (runTimes == null)
+        {
+            runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
+        }
+        if (responseCodes == null)
+        {
+            responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+        }
         final int[] bytesSent = FastIntegerCodec.decompressTo(c.compBytesSent, scratch.bytesSent);
         final int[] bytesReceived = FastIntegerCodec.decompressTo(c.compBytesReceived, scratch.bytesReceived);
 
@@ -446,8 +479,6 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int[] urlHashes = hasUrlHashes
             ? FastIntegerCodec.decompressTo(c.compUrlHashes, scratch.urlHashes) : null;
 
-        final RoaringBitmap failedRows = c.getFailedRows();
-        final boolean anyFailed = !failedRows.isEmpty();
         final org.roaringbitmap.IntIterator failIter = anyFailed ? failedRows.getIntIterator() : null;
         int nextFailedRow = (failIter != null && failIter.hasNext()) ? failIter.next() : -1;
 
@@ -462,19 +493,22 @@ public class RequestChunkHandler implements ChunkTypeHandler
         // 4. Linear row scan and reconstitution
         for (int i = 0; i < rowCount; i++)
         {
+            while (nextFailedRow != -1 && nextFailedRow < i)
+            {
+                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
+            }
+            final boolean rowFailed = (nextFailedRow == i);
+            final int rt = runTimes[i];
+            final int code = responseCodes[i];
+
             final long time = baseTime + timeOffsets[i];
             final int timerId = timerIds[i];
             final int agentId = agentTestCaseIds[i];
 
             // Fine-grained row-level check
-            if (!allMatch && !predicate.testRow(time, timerId, agentId))
+            if (!allMatch && !predicate.testRow(time, timerId, agentId, rt, rowFailed || code >= 400 || code == 0))
             {
                 continue;
-            }
-
-            while (nextFailedRow != -1 && nextFailedRow < i)
-            {
-                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
             }
 
             // Reconstruct RequestData instance
@@ -489,9 +523,9 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 req.setTransactionName(pair.testCaseName());
             }
 
-            req.setRunTime(runTimes[i]);
-            req.setFailed(nextFailedRow == i);
-            req.setResponseCode(responseCodes[i]);
+            req.setRunTime(rt);
+            req.setFailed(rowFailed);
+            req.setResponseCode(code);
             req.setBytesSent(bytesSent[i]);
             req.setBytesReceived(bytesReceived[i]);
 
@@ -599,13 +633,40 @@ public class RequestChunkHandler implements ChunkTypeHandler
         final int[] timerIds = FastIntegerCodec.decompressTo(c.compTimerNameIds, scratch.timerIds);
         final int[] agentTestCaseIds = FastIntegerCodec.decompressTo(c.compAgentTestCaseIds, scratch.agentTestCaseIds);
 
+        final RoaringBitmap failedRows = c.getFailedRows();
+        final boolean anyFailed = !failedRows.isEmpty();
+
+        int[] runTimes = null;
+        int[] responseCodes = null;
+
         final boolean allMatch = predicate.matchesAllRows(chunk);
         if (!allMatch)
         {
+            final boolean needRunTime = predicate.getMinRunTime() > 0;
+            final boolean needFailures = predicate.isRequireFailures();
+            if (needRunTime)
+            {
+                runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
+            }
+            if (needFailures)
+            {
+                responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+            }
+
+            final org.roaringbitmap.IntIterator preFailIter = (needFailures && anyFailed) ? failedRows.getIntIterator() : null;
+            int preNextFailedRow = (preFailIter != null && preFailIter.hasNext()) ? preFailIter.next() : -1;
+
             boolean anyMatch = false;
             for (int i = 0; i < rowCount; i++)
             {
-                if (predicate.testRow(baseTime + timeOffsets[i], timerIds[i], agentTestCaseIds[i]))
+                while (preNextFailedRow != -1 && preNextFailedRow < i)
+                {
+                    preNextFailedRow = preFailIter.hasNext() ? preFailIter.next() : -1;
+                }
+                final int rt = runTimes != null ? runTimes[i] : 0;
+                final boolean hasFailureOrError = needFailures
+                    && ((preNextFailedRow == i) || responseCodes[i] >= 400 || responseCodes[i] == 0);
+                if (predicate.testRow(baseTime + timeOffsets[i], timerIds[i], agentTestCaseIds[i], rt, hasFailureOrError))
                 {
                     anyMatch = true;
                     break;
@@ -617,9 +678,15 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
         }
 
-        // 3. Decompress remaining 18 columns into thread-local scratch buffers only when matching rows exist
-        final int[] runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
-        final int[] responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+        // 3. Decompress remaining columns into thread-local scratch buffers only when matching rows exist
+        if (runTimes == null)
+        {
+            runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
+        }
+        if (responseCodes == null)
+        {
+            responseCodes = FastIntegerCodec.decompressTo(c.compResponseCodes, scratch.responseCodes);
+        }
         final int[] bytesSent = FastIntegerCodec.decompressTo(c.compBytesSent, scratch.bytesSent);
         final int[] bytesReceived = FastIntegerCodec.decompressTo(c.compBytesReceived, scratch.bytesReceived);
 
@@ -646,8 +713,6 @@ public class RequestChunkHandler implements ChunkTypeHandler
             ? FastIntegerCodec.decompressTo(c.compUrlHashes, scratch.urlHashes) : null;
 
         // Monotonic cursor over failedRows RoaringBitmap (avoids allocating a 64 KB boolean[] per chunk)
-        final RoaringBitmap failedRows = c.getFailedRows();
-        final boolean anyFailed = !failedRows.isEmpty();
         final org.roaringbitmap.IntIterator failIter = anyFailed ? failedRows.getIntIterator() : null;
         int nextFailedRow = (failIter != null && failIter.hasNext()) ? failIter.next() : -1;
 
@@ -658,7 +723,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
 
         long minTime = Long.MAX_VALUE;
         long maxTime = 0;
-        boolean hasServerError = false;
+        boolean hasMatchedFailure = false;
 
         // Register cache for sequential runs of identical attributes
         int lastTimerId = -1;
@@ -689,19 +754,22 @@ public class RequestChunkHandler implements ChunkTypeHandler
         // 4. Linear row scan and zero-allocation reconstitution
         for (int i = 0; i < rowCount; i++)
         {
+            while (nextFailedRow != -1 && nextFailedRow < i)
+            {
+                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
+            }
+            final boolean rowFailed = (nextFailedRow == i);
+            final int rt = runTimes[i];
+            final int code = responseCodes[i];
+
             final long time = baseTime + timeOffsets[i];
             final int timerId = timerIds[i];
             final int agentId = agentTestCaseIds[i];
 
             // Fine-grained row-level check
-            if (!allMatch && !predicate.testRow(time, timerId, agentId))
+            if (!allMatch && !predicate.testRow(time, timerId, agentId, rt, rowFailed || code >= 400 || code == 0))
             {
                 continue;
-            }
-
-            while (nextFailedRow != -1 && nextFailedRow < i)
-            {
-                nextFailedRow = failIter.hasNext() ? failIter.next() : -1;
             }
 
             if (time < minTime)
@@ -778,14 +846,12 @@ public class RequestChunkHandler implements ChunkTypeHandler
                 }
             }
 
-            req.setRunTime(runTimes[i]);
-            req.setFailed(nextFailedRow == i);
-
-            final int code = responseCodes[i];
+            req.setRunTime(rt);
+            req.setFailed(rowFailed);
             req.setResponseCode(code);
-            if (code == 0 || code >= 500)
+            if (rowFailed || code == 0 || code >= 500)
             {
-                hasServerError = true;
+                hasMatchedFailure = true;
             }
 
             req.setBytesSent(bytesSent[i]);
@@ -890,7 +956,10 @@ public class RequestChunkHandler implements ChunkTypeHandler
             container.updateTimeRange(minTime, maxTime);
         }
 
-        container.hasFailedRecords = anyFailed || hasServerError;
+        if (hasMatchedFailure)
+        {
+            container.hasFailedRecords = true;
+        }
     }
 
 

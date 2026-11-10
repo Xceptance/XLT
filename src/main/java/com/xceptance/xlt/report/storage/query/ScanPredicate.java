@@ -195,7 +195,10 @@ public class ScanPredicate
     }
 
     /**
-     * Tests whether a specific decompressed row matches the filter conditions.
+     * Tests whether a specific decompressed non-timer row matches the filter conditions.
+     * <p>
+     * Delegates to {@link #testRow(long, int, int, int, boolean)} with {@code runTime = 0} and {@code hasFailure = false},
+     * ensuring non-timer records are rejected when {@code minRunTime > 0} or {@code requireFailures} is active.
      *
      * @param time
      *            timestamp of the row in milliseconds
@@ -207,19 +210,51 @@ public class ScanPredicate
      */
     public boolean testRow(final long time, final int timerNameId, final int agentTestCaseId)
     {
+        return testRow(time, timerNameId, agentTestCaseId, 0, false);
+    }
+
+    /**
+     * Tests whether a specific decompressed timer, transaction, or request row matches all filter conditions,
+     * including minimum runtime and failure requirements.
+     *
+     * @param time
+     *            timestamp of the row in milliseconds
+     * @param timerNameId
+     *            interned integer timer name ID
+     * @param agentTestCaseId
+     *            interned integer unified (agent, testCase) pair ID
+     * @param runTime
+     *            row runtime duration in milliseconds
+     * @param hasFailure
+     *            {@code true} if the row failed (or had an HTTP error/0 status code for requests)
+     * @return {@code true} if row satisfies all criteria; {@code false} otherwise
+     */
+    public boolean testRow(final long time, final int timerNameId, final int agentTestCaseId,
+                           final int runTime, final boolean hasFailure)
+    {
         // 1. Primitive timestamp bounds check
         if (time < fromTime || time > toTime)
         {
             return false;
         }
 
-        // 2. Timer name ID membership check
+        // 2. Runtime threshold and failure requirement checks
+        if (minRunTime > 0 && runTime < minRunTime)
+        {
+            return false;
+        }
+        if (requireFailures && !hasFailure)
+        {
+            return false;
+        }
+
+        // 3. Timer name ID membership check
         if (allowedTimerIds != null && !allowedTimerIds.contains(timerNameId))
         {
             return false;
         }
 
-        // 3. Agent + TestCase pair ID membership check
+        // 4. Agent + TestCase pair ID membership check
         if (allowedAgentTestCaseIds != null && !allowedAgentTestCaseIds.contains(agentTestCaseId))
         {
             return false;
