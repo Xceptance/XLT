@@ -175,8 +175,9 @@ public final class ParseNumbers
         long value = digit - DIGITOFFSET;
 
         int decimalPos = 0;
+        final int fastLength = Math.min(length, 19);
 
-        for (int i = 1; i < length; i++)
+        for (int i = 1; i < fastLength; i++)
         {
             final int d = s.charAt(i);
             if (d == '.')
@@ -193,8 +194,24 @@ public final class ParseNumbers
             value += (d - DIGITOFFSET);
         }
 
+        if (length >= 19)
+        {
+            if (decimalPos == 0 || (length > 19 && value == 0))
+            {
+                return Double.parseDouble(s.toString());
+            }
+            for (int i = 19; i < length; i++)
+            {
+                final int d = s.charAt(i);
+                if (d < '0' || d > '9')
+                {
+                    throw new NumberFormatException("Not a double " + s.toString());
+                }
+            }
+        }
+
         // adjust the decimal places
-        return decimalPos > 0 ? value * multipliers[length - decimalPos] : value;
+        return decimalPos > 0 ? value * multipliers[fastLength - decimalPos] : value;
     }
 
     /**
@@ -396,13 +413,16 @@ public final class ParseNumbers
             }
         }
 
+        final int numLen = end - i;
+        final int fastEnd = numLen > 19 ? i + 19 : end;
+
         long value = 0;
         int decimalPos = 0;
 
         // Decision: We intentionally do not check for duplicate decimal points. XLT numeric output
         // is well-formed, and omitting multi-dot validation avoids unnecessary branch checks in this
         // ultra-hot number parsing loop.
-        while (i < end)
+        while (i < fastEnd)
         {
             final byte b = s[i];
             if (b == '.')
@@ -419,8 +439,24 @@ public final class ParseNumbers
             i++;
         }
 
-        final double result = (decimalPos > 0 && (end - decimalPos) < multipliers.length)
-            ? value * multipliers[end - decimalPos]
+        if (numLen >= 19)
+        {
+            if (decimalPos == 0 || (numLen > 19 && value == 0))
+            {
+                return Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8));
+            }
+            while (i < end)
+            {
+                final byte b = s[i++];
+                if (b < '0' || b > '9')
+                {
+                    return Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8));
+                }
+            }
+        }
+
+        final double result = (decimalPos > 0 && (fastEnd - decimalPos) < multipliers.length)
+            ? value * multipliers[fastEnd - decimalPos]
             : (decimalPos > 0 ? Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8)) : value);
 
         return negative ? -result : result;

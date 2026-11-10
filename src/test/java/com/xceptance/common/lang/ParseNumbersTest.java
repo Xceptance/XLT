@@ -489,4 +489,34 @@ public class ParseNumbersTest
         final byte[] b = "+".getBytes(StandardCharsets.UTF_8);
         ParseNumbers.parseDouble(b, 0, b.length);
     }
+
+    /**
+     * C5 regression test: High-precision decimal floats with more than 18 total digits (or more than 17
+     * fractional digits) must not overflow the 64-bit {@code long} accumulator into a negative/garbage value
+     * or throw {@link ArrayIndexOutOfBoundsException} on {@code multipliers}.
+     */
+    @Test
+    public void testParseDoubleHighPrecisionAndLargeValuesDoNotOverflow()
+    {
+        final String[] inputs = {
+            "1234.5678901234567891",     // 20 total digits (4 int + 16 frac) -> previously overflowed long to negative!
+            "0.12345678901234567891",    // 20 fractional digits -> previously threw AIOOBE on CharSequence!
+            "-1234.5678901234567891",    // negative 20 total digits
+            "10000000000000000000.0",    // 20 integer digits before decimal point
+            "0.00000000000000000005"     // sub-1e-18 value with leading zeros
+        };
+
+        for (final String s : inputs)
+        {
+            final double expected = Double.parseDouble(s);
+            final double tol = Math.max(1e-12, Math.abs(expected) * 1e-12);
+
+            final double actualCharSeq = ParseNumbers.parseDouble(s);
+            Assert.assertEquals("CharSequence parseDouble failed for " + s, expected, actualCharSeq, tol);
+
+            final byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+            final double actualBytes = ParseNumbers.parseDouble(bytes, 0, bytes.length);
+            Assert.assertEquals("byte[] parseDouble failed for " + s, expected, actualBytes, tol);
+        }
+    }
 }
