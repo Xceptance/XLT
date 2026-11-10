@@ -106,7 +106,170 @@ public class MergeRule
     private final int continueOnNoMatchAtId;
 
     /**
+     * Whether this rule uses FastRegex (true) or standard JDK Pattern (false).
+     */
+    private final boolean useFastRegex;
+
+    /**
      * Constructor.
+     *
+     * @param id
+     *          the ID of this rule
+     * @param newName
+     *          the new name for requests matching this rule, may contain placeholders
+     * @param requestNamePattern
+     *          the request name pattern to match, may be empty
+     * @param urlPattern
+     *          the URL pattern to match, may be empty
+     * @param contentTypePattern
+     *          the content type pattern to match, may be empty
+     * @param statusCodePattern
+     *          the status code pattern to match, may be empty
+     * @param agentNamePattern
+     *         the agent name pattern to match, may be empty
+     * @param transactionNamePattern
+     *         the transaction name pattern to match, may be empty
+     * @param httpMethodPattern
+     *         the HTTP method pattern to match, may be empty
+     * @param responseTimeRanges
+     *         the response time ranges to match, may be empty
+     * @param stopOnMatch
+     *         whether or not to stop processing further rules if this rule matched
+     * @param requestNameExcludePattern
+     *         the request name exclude pattern to match, may be empty
+     * @param urlExcludePattern
+     *         the URL exclude pattern to match, may be empty
+     * @param contentTypeExcludePattern
+     *         the content type exclude pattern to match, may be empty
+     * @param statusCodeExcludePattern
+     *         the status code exclude pattern to match, may be empty
+     * @param agentNameExcludePattern
+     *         the agent name exclude pattern to match, may be empty
+     * @param transactionNameExcludePattern
+     *         the transaction name exclude pattern to match, may be empty
+     * @param httpMethodExcludePattern
+     *         the HTTP method exclude pattern to match, may be empty
+     * @param continueOnMatchAtId
+     *         the ID of the rule to continue processing at if this rule matched
+     * @param continueOnNoMatchAtId
+     *         the ID of the rule to continue processing at if this rule did not match
+     * @param dropOnMatch
+     *         whether or not to drop requests matching this rule, implies stopping further processing
+     * @param urlText
+     *         the URL text to match, may be empty
+     * @param urlTextExclude
+     *         the URL text exclude to match, may be empty
+     * @param useFastRegex
+     *         whether to use FastRegex (true) or standard JDK Pattern (false)
+     * 
+     * @throws InvalidMergeRuleException
+     */
+    public MergeRule(final int id,
+                     final NewName newName, 
+                     final NamePattern requestNamePattern, 
+                     final UrlPattern urlPattern,
+                     final ContentTypePattern contentTypePattern, 
+                     final StatusCodePattern statusCodePattern, 
+                     final AgentNamePattern agentNamePattern,    
+                     final TransactionNamePattern transactionNamePattern, 
+                     final HttpMethodPattern httpMethodPattern,  
+                     final RunTimeRanges responseTimeRanges,
+                     final StopOnMatch stopOnMatch, 
+                     final NameExcludePattern requestNameExcludePattern, 
+                     final UrlExcludePattern urlExcludePattern,
+                     final ContentTypeExcludePattern contentTypeExcludePattern, 
+                     final StatusCodeExcludePattern statusCodeExcludePattern,
+                     final AgentNameExcludePattern agentNameExcludePattern, 
+                     final TransactionNameExcludePattern transactionNameExcludePattern,
+                     final HttpMethodExcludePattern httpMethodExcludePattern, 
+                     final ContinueOnMatchAtId continueOnMatchAtId, 
+                     final ContinueOnNoMatchAtId continueOnNoMatchAtId,
+                     final DropOnMatch dropOnMatch,
+                     final UrlText urlText,
+                     final UrlTextExclude urlTextExclude,
+                     final UseFastRegex useFastRegex)
+                         throws InvalidMergeRuleException
+    {
+        this.id = id;
+        this.stopOnMatch = stopOnMatch.value;
+        this.dropOnMatch = dropOnMatch.value;
+        this.continueOnMatchAtId = continueOnMatchAtId.value;
+        this.continueOnNoMatchAtId = continueOnNoMatchAtId.value;
+        this.useFastRegex = useFastRegex.value;
+
+        // this aids against programming mistakes, not user errors
+        // the same number means, we are just continue normally. This safes us from
+        // any increment at the end
+        if (this.continueOnMatchAtId < this.id)
+        {
+            throw new InvalidMergeRuleException(
+                                                String.format("Continue on match rule ID (%s) must be greater or same than the rule ID (%s)", 
+                                                              this.continueOnMatchAtId, this.id));
+        }
+        if (this.continueOnNoMatchAtId < this.id)
+        {
+            throw new InvalidMergeRuleException(
+                                                String.format("Continue on no match rule ID (%s) must be greater or same than the rule ID (%s)", 
+                                                              this.continueOnNoMatchAtId, this.id));
+        }
+
+        // parse the placeholder positions now (and only once)
+        final var tempPlaceHolderPositions = parsePlaceholderPositions(newName.value);
+
+        List<Condition> includeConditions = new ArrayList<>();
+        List<Condition> excludeConditions = new ArrayList<>();
+
+        try
+        {  
+            // set all up and complain later and also filter the placeholders out
+            // that we don't need
+            includeConditions.add(RequestNameCondition.build(requestNamePattern.value, this.useFastRegex));
+            excludeConditions.add(RequestNameCondition.build(requestNameExcludePattern.value, this.useFastRegex));
+
+            includeConditions.add(UrlCondition.build(urlPattern.value, urlText.value, this.useFastRegex));
+            excludeConditions.add(UrlCondition.build(urlExcludePattern.value, urlTextExclude.value, this.useFastRegex));
+
+            includeConditions.add(ContentTypeCondition.build(contentTypePattern.value, this.useFastRegex));
+            excludeConditions.add(ContentTypeCondition.build(contentTypeExcludePattern.value, this.useFastRegex));
+
+            includeConditions.add(StatusCodeCondition.build(statusCodePattern.value, this.useFastRegex));
+            excludeConditions.add(StatusCodeCondition.build(statusCodeExcludePattern.value, this.useFastRegex));
+
+            includeConditions.add(AgentNameCondition.build(agentNamePattern.value, this.useFastRegex));
+            excludeConditions.add(AgentNameCondition.build(agentNameExcludePattern.value, this.useFastRegex));
+
+            includeConditions.add(TransactionNameCondition.build(transactionNamePattern.value, this.useFastRegex));
+            excludeConditions.add(TransactionNameCondition.build(transactionNameExcludePattern.value, this.useFastRegex));
+
+            includeConditions.add(HttpMethodCondition.build(httpMethodPattern.value, this.useFastRegex));
+            excludeConditions.add(HttpMethodCondition.build(httpMethodExcludePattern.value, this.useFastRegex));
+
+            includeConditions.add(new ResponseTimeCondition(responseTimeRanges.value));
+        }
+        catch (final PatternSyntaxException pse)
+        {
+            throw new InvalidMergeRuleException("Invalid regular expression: " + pse.getPattern());
+        }
+
+        // remove all filters we don't need
+        includeConditions = cleanUpIncludeConditions(tempPlaceHolderPositions, includeConditions);
+        excludeConditions = cleanUpExcludeConditions(excludeConditions);
+
+        // boil it down to arrays for later speed
+        this.includeConditions = includeConditions.toArray(new Condition[includeConditions.size()]);
+        this.excludeConditions = excludeConditions.toArray(new Condition[excludeConditions.size()]);
+
+        this.newName = adjustNewName(newName.value, tempPlaceHolderPositions);
+        this.newNamePlaceholders = tempPlaceHolderPositions.toArray(new PlaceholderPosition[tempPlaceHolderPositions.size()]);
+
+        resolveRequestFilter(this.newNamePlaceholders);
+
+        // Validate the entire rule set, because we might still have issues
+        validateRule();
+    }
+
+    /**
+     * Backward-compatible 23-argument constructor delegating to the primary constructor with global FastRegex setting.
      *
      * @param id
      *          the ID of this rule
@@ -182,81 +345,11 @@ public class MergeRule
                      final UrlTextExclude urlTextExclude)
                          throws InvalidMergeRuleException
     {
-        this.id = id;
-        this.stopOnMatch = stopOnMatch.value;
-        this.dropOnMatch = dropOnMatch.value;
-        this.continueOnMatchAtId = continueOnMatchAtId.value;
-        this.continueOnNoMatchAtId = continueOnNoMatchAtId.value;
-
-        // this aids against programming mistakes, not user errors
-        // the same number means, we are just continue normally. This safes us from
-        // any increment at the end
-        if (this.continueOnMatchAtId < this.id)
-        {
-            throw new InvalidMergeRuleException(
-                                                String.format("Continue on match rule ID (%s) must be greater or same than the rule ID (%s)", 
-                                                              this.continueOnMatchAtId, this.id));
-        }
-        if (this.continueOnNoMatchAtId < this.id)
-        {
-            throw new InvalidMergeRuleException(
-                                                String.format("Continue on no match rule ID (%s) must be greater or same than the rule ID (%s)", 
-                                                              this.continueOnNoMatchAtId, this.id));
-        }
-
-        // parse the placeholder positions now (and only once)
-        final var tempPlaceHolderPositions = parsePlaceholderPositions(newName.value);
-
-        List<Condition> includeConditions = new ArrayList<>();
-        List<Condition> excludeConditions = new ArrayList<>();
-
-        try
-        {  
-            // set all up and complain later and also filter the placeholders out
-            // that we don't need
-            includeConditions.add(RequestNameCondition.build(requestNamePattern.value));
-            excludeConditions.add(RequestNameCondition.build(requestNameExcludePattern.value));
-
-            includeConditions.add(UrlCondition.build(urlPattern.value, urlText.value));
-            excludeConditions.add(UrlCondition.build(urlExcludePattern.value, urlTextExclude.value));
-
-            includeConditions.add(ContentTypeCondition.build(contentTypePattern.value));
-            excludeConditions.add(ContentTypeCondition.build(contentTypeExcludePattern.value));
-
-            includeConditions.add(StatusCodeCondition.build(statusCodePattern.value));
-            excludeConditions.add(StatusCodeCondition.build(statusCodeExcludePattern.value));
-
-            includeConditions.add(AgentNameCondition.build(agentNamePattern.value));
-            excludeConditions.add(AgentNameCondition.build(agentNameExcludePattern.value));
-
-            includeConditions.add(TransactionNameCondition.build(transactionNamePattern.value));
-            excludeConditions.add(TransactionNameCondition.build(transactionNameExcludePattern.value));
-
-            includeConditions.add(HttpMethodCondition.build(httpMethodPattern.value));
-            excludeConditions.add(HttpMethodCondition.build(httpMethodExcludePattern.value));
-
-            includeConditions.add(new ResponseTimeCondition(responseTimeRanges.value));
-        }
-        catch (final PatternSyntaxException pse)
-        {
-            throw new InvalidMergeRuleException("Invalid regular expression: " + pse.getPattern());
-        }
-
-        // remove all filters we don't need
-        includeConditions = cleanUpIncludeConditions(tempPlaceHolderPositions, includeConditions);
-        excludeConditions = cleanUpExcludeConditions(excludeConditions);
-
-        // boil it down to arrays for later speed
-        this.includeConditions = includeConditions.toArray(new Condition[includeConditions.size()]);
-        this.excludeConditions = excludeConditions.toArray(new Condition[excludeConditions.size()]);
-
-        this.newName = adjustNewName(newName.value, tempPlaceHolderPositions);
-        this.newNamePlaceholders = tempPlaceHolderPositions.toArray(new PlaceholderPosition[tempPlaceHolderPositions.size()]);
-
-        resolveRequestFilter(this.newNamePlaceholders);
-
-        // Validate the entire rule set, because we might still have issues
-        validateRule();
+        this(id, newName, requestNamePattern, urlPattern, contentTypePattern, statusCodePattern, agentNamePattern,
+             transactionNamePattern, httpMethodPattern, responseTimeRanges, stopOnMatch, requestNameExcludePattern,
+             urlExcludePattern, contentTypeExcludePattern, statusCodeExcludePattern, agentNameExcludePattern,
+             transactionNameExcludePattern, httpMethodExcludePattern, continueOnMatchAtId, continueOnNoMatchAtId,
+             dropOnMatch, urlText, urlTextExclude, new UseFastRegex(RegExUtils.isFastRegexEnabled()));
     }
 
     /**
@@ -522,8 +615,19 @@ public class MergeRule
             appendComma = true;
         }
         sb.append("]");
+        sb.append(", fastRegex=").append(useFastRegex);
 
         return sb.toString();
+    }
+
+    /**
+     * Returns whether this rule is configured to use FastRegex.
+     *
+     * @return true if FastRegex is used, false if standard JDK regex is used
+     */
+    public boolean isUsingFastRegex()
+    {
+        return this.useFastRegex;
     }
 
     /**
@@ -621,4 +725,6 @@ public class MergeRule
 
     public static record UrlText(String value) {};
     public static record UrlTextExclude(String value) {};
+
+    public static record UseFastRegex(boolean value) {};
 }

@@ -82,12 +82,6 @@ class DataParserThread implements Runnable
     private final ReportGeneratorConfiguration config;
 
     /**
-     * The request processing rules for this thread. Each parser thread gets its own copy of the rule set. This way,
-     * there is no shared state between threads, hence we can more efficiently cache and process stuff.
-     */
-    private final List<MergeRule> mergeRules;
-
-    /**
      * Constructor.
      *
      * @param dispatcher
@@ -110,10 +104,6 @@ class DataParserThread implements Runnable
         this.toTime = toTime;
         this.dispatcher = dispatcher;
         this.config = config;
-
-        // Get the rules now! 
-        // Reason: If a rule is invalid, an exception is thrown from here, which will terminate the report generator correctly.
-        mergeRules = config.getMergeRules();
     }
 
     /**
@@ -134,6 +124,11 @@ class DataParserThread implements Runnable
 
         // reusable CSV byte columns structure
         final CsvByteColumns csvColumns = new CsvByteColumns(50);
+
+        // Build this thread's own independent set of merge rules on the parser thread itself.
+        // Each parser thread compiles its own regex instances and maintains its own Condition
+        // match result caches, ensuring a strict shared-nothing approach.
+        final List<MergeRule> mergeRules = config.getMergeRules();
 
         // our request processing, this is move away from here to test it better
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,

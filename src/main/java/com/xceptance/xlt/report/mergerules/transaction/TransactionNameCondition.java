@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.mergerules.transaction;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -34,10 +35,23 @@ public class TransactionNameCondition extends Condition
      *
      * @param regex
      *            the regular expression to identify matching requests
+     * @param useFastRegex
+     *            whether to use FastRegex (true) or standard JDK Pattern (false)
+     */
+    public TransactionNameCondition(final String regex, final boolean useFastRegex)
+    {
+        // small cache because transaction names are very limited 
+        super(regex, 100, useFastRegex);
+    }
+
+    /**
+     * Constructor delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     *
+     * @param regex
+     *            the regular expression to identify matching requests
      */
     public TransactionNameCondition(final String regex)
     {
-        // small cache because transaction names are very limited 
         super(regex, 100);
     }
 
@@ -63,18 +77,31 @@ public class TransactionNameCondition extends Condition
      * Returns the right condition
      * 
      * @param regex the regular expression to identify matching requests
+     * @param useFastRegex whether to use FastRegex (true) or standard JDK Pattern (false)
      * 
      * @return the condition
      */
-    public static Condition build(final String regex)
+    public static Condition build(final String regex, final boolean useFastRegex)
     {
         if (!StringUtils.isBlank(regex)) 
         {
-            return new TransactionNameCondition(regex);
+            return new TransactionNameCondition(regex, useFastRegex);
         }
         else
         {
             return new TransactionNameEmptyCondition();
         }
+    }
+
+    /**
+     * Returns the right condition delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     * 
+     * @param regex the regular expression to identify matching requests
+     * 
+     * @return the condition
+     */
+    public static Condition build(final String regex)
+    {
+        return build(regex, RegExUtils.isFastRegexEnabled());
     }
 }

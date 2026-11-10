@@ -18,6 +18,7 @@ package com.xceptance.xlt.report.mergerules.url;
 import java.nio.charset.StandardCharsets;
 
 import com.xceptance.common.util.ByteSlice;
+import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
 
@@ -40,15 +41,30 @@ public class UrlConditionAndText extends Condition
      *            the regular expression to identify matching requests
      * @param text
      *            the text to check first before we executed the expensive regex match
+     * @param useFastRegex
+     *            whether to use FastRegex (true) or standard JDK Pattern (false)
      */
-    public UrlConditionAndText(final String regex, final String text)
+    public UrlConditionAndText(final String regex, final String text, final boolean useFastRegex)
     {
         // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
-        super(regex, 5000);
+        super(regex, 5000, useFastRegex);
 
         this.text = text;
         this.textBytes = text != null ? text.getBytes(StandardCharsets.UTF_8) : new byte[0];
+    }
+
+    /**
+     * Constructor delegating to global {@link RegExUtils#isFastRegexEnabled()}.
+     *
+     * @param regex
+     *            the regular expression to identify matching requests
+     * @param text
+     *            the text to check first before we executed the expensive regex match
+     */
+    public UrlConditionAndText(final String regex, final String text)
+    {
+        this(regex, text, RegExUtils.isFastRegexEnabled());
     }
 
     @Override
