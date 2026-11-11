@@ -44,7 +44,7 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
 /**
  * Central catalog maintaining global test run boundaries, chunk inventory, type partitions,
- * and inverted {@link RoaringBitmap} indexes for rapid query pruning in ChunkDB.
+ * and per-chunk {@link RoaringBitmap} membership indexes for rapid query pruning in ChunkDB.
  * <p>
  * <b>Indexing &amp; Pruning Architecture:</b>
  * <ul>
@@ -54,10 +54,10 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
  *   <li><b>Min/Max Timestamp Bounds:</b> Each chunk records its earliest and latest millisecond
  *       timestamps. Queries with time range filters \([t_{\text{start}}, t_{\text{end}}]\) instantly
  *       reject any chunk where \(t_{\text{chunkMax}} < t_{\text{start}}\) or \(t_{\text{chunkMin}} > t_{\text{end}}\).</li>
- *   <li><b>Inverted Bitmap Indexes:</b> Maps each unique timerNameId and agentTestCaseId to a
- *       {@link RoaringBitmap} containing the indices of chunks containing that ID. This allows
- *       multi-predicate queries to perform bitwise intersections to identify matching chunks
- *       before touching any columnar data.</li>
+ *   <li><b>Per-Chunk RoaringBitmap Membership Filters:</b> Each chunk descriptor stores {@link RoaringBitmap}
+ *       sets of the {@code timerNameId} and {@code agentTestCaseId} values present in that chunk.
+ *       Multi-predicate queries perform bitwise intersections via {@link ScanPredicate#mayMatchChunk(Chunk)}
+ *       to prune non-matching chunks before touching any columnar data.</li>
  * </ul>
  * <p>
  * <b>Thread Safety:</b>
@@ -135,14 +135,13 @@ public class ChunkCatalog
 
     /**
      * Appends a sealed, immutable {@link Chunk} to the catalog, updating global time bounds,
-     * total row count, type partitions, and inverted bitmap indexes.
+     * total row count, and type partitions.
      *
      * @param chunk
      *            the sealed chunk to register
      */
     public synchronized void addChunk(final Chunk chunk)
     {
-        final int chunkIndex = chunks.size();
         chunks.add(chunk);
 
         if (chunk instanceof DiskChunk dc && storage != null)

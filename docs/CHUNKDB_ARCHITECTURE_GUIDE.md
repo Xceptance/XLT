@@ -216,7 +216,7 @@ flowchart TD
         P1["Time Bounds Check: Discard chunks outside 10:15..10:20"]
         P2["Zone Map: maxRunTime < 2000ms ? Discard"]
         P3["Zone Map: hasFailures == false ? Discard"]
-        P4["Inverted RoaringBitmap: Does chunk contain 'Checkout' timerId?"]
+        P4["Per-Chunk RoaringBitmap: Does chunk contain 'Checkout' timerId?"]
     end
     
     subgraph S2["Stage 2: Column Pointer Jump-Index"]
@@ -243,7 +243,7 @@ Before reading a single byte from disk, [`ScanPredicate.mayMatchChunk()`](file:/
 1. **Time Boundaries**: Checks if `[chunk.minTime, chunk.maxTime]` intersects `[fromTime, toTime]`.
 2. **Latency Zone Map (`maxRunTime`)**: Each chunk header records its worst latency. If a query filters for `runTime >= 3000ms`, any chunk where `maxRunTime < 3000` is rejected instantly.
 3. **Failure Zone Map (`hasFailures`)**: Chunks store a boolean flag indicating if any error or 4xx/5xx status occurred. Error-only queries drop 99% of successful chunks immediately.
-4. **Inverted RoaringBitmap Intersection**: The catalog maintains an inverted index mapping `timerNameId -> RoaringBitmap(chunkIndices)`. Filtering by timer performs a bitwise intersection, pruning non-matching chunks in microseconds.
+4. **Per-Chunk RoaringBitmap Intersection**: Each chunk descriptor maintains `RoaringBitmap` sets of the `timerNameId` and `agentTestCaseId` values present in that chunk. Filtering by timer or agent/scenario performs a bitwise intersection (`RoaringBitmap.intersects`), pruning non-matching chunks in microseconds.
 
 ### Stage 2: Column Pointer Jump-Index (`RequestChunkIndex`)
 
@@ -274,7 +274,7 @@ Instead of decompressing entire chunks into the JVM heap, the engine builds a li
 | Component / Class | File Location | Responsibility |
 | :--- | :--- | :--- |
 | **`ChunkStorage`** | [`ChunkStorage.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/ChunkStorage.java) | Top-level storage manager; unifies dictionaries, catalog, and the single `readChannel`. |
-| **`ChunkCatalog`** | [`ChunkCatalog.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java) | Master inventory of all `DiskChunk` descriptors, global bounds, and inverted `RoaringBitmap` indexes. |
+| **`ChunkCatalog`** | [`ChunkCatalog.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java) | Master inventory of all `DiskChunk` descriptors, global bounds, and type-partitioned chunk lists with per-chunk `RoaringBitmap` filters. |
 | **`DiskChunk`** | [`DiskChunk.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/DiskChunk.java) | Lightweight (~80 bytes) in-memory chunk descriptor holding file coordinates, time bounds, and Zone Maps. |
 | **`ChunkSpooler`** | [`ChunkSpooler.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/ChunkSpooler.java) | Appends compressed chunks sequentially to `chunks.bin` and writes the Tail Metadata Index Table. |
 | **`RequestChunkHandler`** | [`RequestChunkHandler.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/RequestChunkHandler.java) | FastPFOR columnar codec for HTTP requests; manages Hot Vectors and the Cold Forensic Tail Block. |

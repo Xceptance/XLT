@@ -20,7 +20,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
@@ -160,12 +159,6 @@ public class RequestChunk implements Chunk
     /** Compressed 32-bit fragment-free URL hash codes for distinct URL counting. */
     final int[] compUrlHashes;
 
-    /** Sample URL strings mapped by timer name ID for report display. */
-    final Map<Integer, List<String>> sampleUrlsByTimer;
-
-    /** Sample list of the slowest requests within this chunk for outlier diagnostics. */
-    final List<RequestData> slowestRequests;
-
     // --- Cold Forensic Tail Block ---
 
     /** Bitmap of row indices (0..rowCount-1) present in the Cold Forensic Tail Block. */
@@ -184,7 +177,7 @@ public class RequestChunk implements Chunk
     private volatile Map<Integer, ForensicDetails> inflatedForensicDetails;
 
     /**
-     * Constructs a sealed {@link RequestChunk} without chunk-local sample URLs or slowest requests.
+     * Constructs a sealed {@link RequestChunk} with core compressed columnar blocks and metadata.
      */
     public RequestChunk(final int rowCount,
                         final long minTime,
@@ -211,45 +204,6 @@ public class RequestChunk implements Chunk
                         final int[] compUsedIps,
                         final int[] compIpAddresses)
     {
-        this(rowCount, minTime, maxTime, timerNameIds, agentTestCaseIds, failedRows,
-             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
-             compResponseCodes, compBytesSent, compBytesReceived,
-             compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
-             compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
-             compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-             Collections.emptyMap(), Collections.emptyList());
-    }
-
-    /**
-     * Constructs a sealed {@link RequestChunk} with compressed columnar blocks and metadata.
-     */
-    public RequestChunk(final int rowCount,
-                        final long minTime,
-                        final long maxTime,
-                        final RoaringBitmap timerNameIds,
-                        final RoaringBitmap agentTestCaseIds,
-                        final RoaringBitmap failedRows,
-                        final int[] compTimeOffsets,
-                        final int[] compTimerNameIds,
-                        final int[] compAgentTestCaseIds,
-                        final int[] compRunTimes,
-                        final int[] compResponseCodes,
-                        final int[] compBytesSent,
-                        final int[] compBytesReceived,
-                        final int[] compDnsTimes,
-                        final int[] compConnectTimes,
-                        final int[] compSendTimes,
-                        final int[] compServerBusyTimes,
-                        final int[] compReceiveTimes,
-                        final int[] compTimeToFirstBytes,
-                        final int[] compTimeToLastBytes,
-                        final int[] compHttpMethods,
-                        final int[] compContentTypes,
-                        final int[] compUsedIps,
-                        final int[] compIpAddresses,
-                        final Map<Integer, List<String>> sampleUrlsByTimer,
-                        final List<RequestData> slowestRequests)
-    {
         this(rowCount, minTime, maxTime, 0, failedRows != null && !failedRows.isEmpty(),
              timerNameIds, agentTestCaseIds, failedRows,
              compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
@@ -258,8 +212,7 @@ public class RequestChunk implements Chunk
              compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
              compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
              new int[0], new int[0], new int[0],
-             new RoaringBitmap(), 0, new byte[0],
-             sampleUrlsByTimer, slowestRequests);
+             new RoaringBitmap(), 0, new byte[0]);
     }
 
     /**
@@ -306,8 +259,7 @@ public class RequestChunk implements Chunk
              compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
              compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
              compUserNumbers, compFormDataEncodings, new int[0],
-             forensicRows, uncompressedForensicLength, compressedForensicTail,
-             Collections.emptyMap(), Collections.emptyList());
+             forensicRows, uncompressedForensicLength, compressedForensicTail);
     }
 
     /**
@@ -347,105 +299,6 @@ public class RequestChunk implements Chunk
                         final int uncompressedForensicLength,
                         final byte[] compressedForensicTail)
     {
-        this(rowCount, minTime, maxTime, maxRunTime, hasFailuresFlag,
-             timerNameIds, agentTestCaseIds, failedRows,
-             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
-             compResponseCodes, compBytesSent, compBytesReceived,
-             compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
-             compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
-             compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-             compUserNumbers, compFormDataEncodings, compUrlHashes,
-             forensicRows, uncompressedForensicLength, compressedForensicTail,
-             Collections.emptyMap(), Collections.emptyList());
-    }
-
-    /**
-     * Full constructor for a sealed V3 {@link RequestChunk} without explicit URL hashes.
-     */
-    public RequestChunk(final int rowCount,
-                        final long minTime,
-                        final long maxTime,
-                        final int maxRunTime,
-                        final boolean hasFailuresFlag,
-                        final RoaringBitmap timerNameIds,
-                        final RoaringBitmap agentTestCaseIds,
-                        final RoaringBitmap failedRows,
-                        final int[] compTimeOffsets,
-                        final int[] compTimerNameIds,
-                        final int[] compAgentTestCaseIds,
-                        final int[] compRunTimes,
-                        final int[] compResponseCodes,
-                        final int[] compBytesSent,
-                        final int[] compBytesReceived,
-                        final int[] compDnsTimes,
-                        final int[] compConnectTimes,
-                        final int[] compSendTimes,
-                        final int[] compServerBusyTimes,
-                        final int[] compReceiveTimes,
-                        final int[] compTimeToFirstBytes,
-                        final int[] compTimeToLastBytes,
-                        final int[] compHttpMethods,
-                        final int[] compContentTypes,
-                        final int[] compUsedIps,
-                        final int[] compIpAddresses,
-                        final int[] compUserNumbers,
-                        final int[] compFormDataEncodings,
-                        final RoaringBitmap forensicRows,
-                        final int uncompressedForensicLength,
-                        final byte[] compressedForensicTail,
-                        final Map<Integer, List<String>> sampleUrlsByTimer,
-                        final List<RequestData> slowestRequests)
-    {
-        this(rowCount, minTime, maxTime, maxRunTime, hasFailuresFlag,
-             timerNameIds, agentTestCaseIds, failedRows,
-             compTimeOffsets, compTimerNameIds, compAgentTestCaseIds, compRunTimes,
-             compResponseCodes, compBytesSent, compBytesReceived,
-             compDnsTimes, compConnectTimes, compSendTimes, compServerBusyTimes,
-             compReceiveTimes, compTimeToFirstBytes, compTimeToLastBytes,
-             compHttpMethods, compContentTypes, compUsedIps, compIpAddresses,
-             compUserNumbers, compFormDataEncodings, new int[0],
-             forensicRows, uncompressedForensicLength, compressedForensicTail,
-             sampleUrlsByTimer, slowestRequests);
-    }
-
-    /**
-     * Full constructor for a sealed V3 {@link RequestChunk}.
-     */
-    public RequestChunk(final int rowCount,
-                        final long minTime,
-                        final long maxTime,
-                        final int maxRunTime,
-                        final boolean hasFailuresFlag,
-                        final RoaringBitmap timerNameIds,
-                        final RoaringBitmap agentTestCaseIds,
-                        final RoaringBitmap failedRows,
-                        final int[] compTimeOffsets,
-                        final int[] compTimerNameIds,
-                        final int[] compAgentTestCaseIds,
-                        final int[] compRunTimes,
-                        final int[] compResponseCodes,
-                        final int[] compBytesSent,
-                        final int[] compBytesReceived,
-                        final int[] compDnsTimes,
-                        final int[] compConnectTimes,
-                        final int[] compSendTimes,
-                        final int[] compServerBusyTimes,
-                        final int[] compReceiveTimes,
-                        final int[] compTimeToFirstBytes,
-                        final int[] compTimeToLastBytes,
-                        final int[] compHttpMethods,
-                        final int[] compContentTypes,
-                        final int[] compUsedIps,
-                        final int[] compIpAddresses,
-                        final int[] compUserNumbers,
-                        final int[] compFormDataEncodings,
-                        final int[] compUrlHashes,
-                        final RoaringBitmap forensicRows,
-                        final int uncompressedForensicLength,
-                        final byte[] compressedForensicTail,
-                        final Map<Integer, List<String>> sampleUrlsByTimer,
-                        final List<RequestData> slowestRequests)
-    {
         this.rowCount = rowCount;
         this.minTime = minTime;
         this.maxTime = maxTime;
@@ -478,8 +331,6 @@ public class RequestChunk implements Chunk
         this.forensicRows = forensicRows != null ? forensicRows : new RoaringBitmap();
         this.uncompressedForensicLength = uncompressedForensicLength;
         this.compressedForensicTail = compressedForensicTail != null ? compressedForensicTail : new byte[0];
-        this.sampleUrlsByTimer = sampleUrlsByTimer != null ? sampleUrlsByTimer : Collections.emptyMap();
-        this.slowestRequests = slowestRequests != null ? slowestRequests : Collections.emptyList();
         this.vectorPayloadLength = computeVectorPayloadLength();
     }
 
@@ -942,25 +793,5 @@ public class RequestChunk implements Chunk
             }
         }
         return Collections.emptyMap();
-    }
-
-    /**
-     * Returns sample URLs retained per timer ID for reporting.
-     *
-     * @return map of timer ID to sample URL list
-     */
-    public Map<Integer, List<String>> getSampleUrlsByTimer()
-    {
-        return sampleUrlsByTimer;
-    }
-
-    /**
-     * Returns the slowest requests observed in this chunk for outlier reporting.
-     *
-     * @return list of slowest request records
-     */
-    public List<RequestData> getSlowestRequests()
-    {
-        return slowestRequests;
     }
 }

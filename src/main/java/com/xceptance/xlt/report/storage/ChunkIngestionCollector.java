@@ -248,10 +248,9 @@ public class ChunkIngestionCollector
     /**
      * Returns whether direct-to-disk chunk spooling is active for this collector.
      * <p>
-     * When disk spooling is active, sealed columnar chunks are written directly to {@code chunks.bin.tmp}
-     * and discarded from the JVM heap, leaving sufficient heap headroom for {@code StatisticsProcessor}
-     * to aggregate report metrics simultaneously during Phase 1 CSV parsing without a redundant Phase 2
-     * disk re-scan.
+     * When disk spooling is active during Phase 1 CSV ingestion, sealed columnar chunks are written
+     * directly to {@code chunks.bin.tmp} and replaced in the catalog by lightweight (~80-byte)
+     * {@link DiskChunk} descriptors so compressed column payloads do not accumulate on the JVM heap.
      *
      * @return {@code true} if chunks are being spooled directly to disk, {@code false} if buffered in memory
      */
