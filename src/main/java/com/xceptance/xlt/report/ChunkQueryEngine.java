@@ -116,12 +116,25 @@ public class ChunkQueryEngine
         final long start = System.currentTimeMillis();
 
         // Step 1: Candidate chunk pruning via metadata min/max timestamps & RoaringBitmaps.
-        // Sort matching chunks by typeCode ('A', 'C', 'E', 'P', 'R', 'T', 'V', 'W') so parallel worker
-        // threads scan contiguous runs of homogeneous chunk types, keeping a single ChunkTypeHandler
-        // and its corresponding StatisticsProcessor.WorkerProviderSet routing slot hot in L1 instruction cache.
+        // Sort matching chunks by typeCode ('A', 'C', 'E', 'P', 'R', 'T', 'V', 'W') first so parallel worker
+        // threads scan contiguous runs of homogeneous chunk types (keeping a single ChunkTypeHandler and its
+        // corresponding StatisticsProcessor.WorkerProviderSet routing slot hot in L1 instruction cache), and
+        // secondarily by on-disk fileOffset so reads against chunks.bin are strictly sequential forward scans.
         final List<Chunk> candidateChunks = storage.getCatalog().getAllChunks().stream()
             .filter(predicate::mayMatchChunk)
-            .sorted((a, b) -> Character.compare(a.getTypeCode(), b.getTypeCode()))
+            .sorted((a, b) -> {
+                final int cmp = Character.compare(a.getTypeCode(), b.getTypeCode());
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+                if (a instanceof com.xceptance.xlt.report.storage.chunk.DiskChunk da
+                    && b instanceof com.xceptance.xlt.report.storage.chunk.DiskChunk db)
+                {
+                    return Long.compare(da.getFileOffset(), db.getFileOffset());
+                }
+                return Long.compare(a.getMinTime(), b.getMinTime());
+            })
             .collect(Collectors.toList());
 
         LOG.info("ChunkDB query matched {} of {} chunks", candidateChunks.size(), storage.getCatalog().getChunkCount());

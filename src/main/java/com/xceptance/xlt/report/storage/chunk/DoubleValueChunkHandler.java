@@ -242,6 +242,16 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         }
     }
 
+    private static final class ScanScratch
+    {
+        int[] timeOffsets = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] timerIds = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] agentIds = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] userNumbers = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+    }
+
+    private static final ThreadLocal<ScanScratch> SCAN_SCRATCH = ThreadLocal.withInitial(ScanScratch::new);
+
     /**
      * High-performance container-based scan for double value chunks ('W' - WebVitalData, 'V' - CustomValue).
      * <p>
@@ -270,12 +280,13 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         final int rowCount = c.getRowCount();
         final long baseTime = c.getMinTime();
 
-        // 2. SIMD columnar decompression
-        final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
-        final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
-        final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
+        // 2. SIMD columnar decompression into thread-local scratch buffers
+        final ScanScratch scratch = SCAN_SCRATCH.get();
+        final int[] timeOffsets = FastIntegerCodec.decompressTo(c.compTimeOffsets, scratch.timeOffsets);
+        final int[] timerIds = FastIntegerCodec.decompressTo(c.compTimerNameIds, scratch.timerIds);
+        final int[] agentIds = FastIntegerCodec.decompressTo(c.compAgentTestCaseIds, scratch.agentIds);
         final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
-            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
+            ? FastIntegerCodec.decompressTo(c.compUserNumbers, scratch.userNumbers) : null;
         final double[] vals = c.getValues();
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups

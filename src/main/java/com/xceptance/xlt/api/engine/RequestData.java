@@ -138,11 +138,15 @@ public class RequestData extends TimerData
      * The value to identify a request.
      */
     private String requestId;
+    private int requestIdOffset;
+    private int requestIdLength = -1;
 
     /**
      * The response ID that was sent back by the server.
      */
     private String responseId;
+    private int responseIdOffset;
+    private int responseIdLength = -1;
 
     /**
      * The request URL.
@@ -155,6 +159,7 @@ public class RequestData extends TimerData
     private byte[] urlBytes;
     private int urlOffset;
     private int urlLength;
+    private int urlSliceHash;
 
     /**
      * We need this for a later efficient search using urlText when reporting
@@ -185,6 +190,8 @@ public class RequestData extends TimerData
      * The form data.
      */
     private String formData;
+    private int formDataOffset;
+    private int formDataLength = -1;
 
     /**
      * The list of IP addresses reported by DNS for the host name used when making the request. If there is more than
@@ -337,6 +344,10 @@ public class RequestData extends TimerData
      */
     public String getRequestId()
     {
+        if (requestId == null && urlBytes != null && requestIdLength >= 0)
+        {
+            requestId = requestIdLength == 0 ? "" : new String(urlBytes, requestIdOffset, requestIdLength, StandardCharsets.UTF_8);
+        }
         return requestId;
     }
 
@@ -347,6 +358,10 @@ public class RequestData extends TimerData
      */
     public String getResponseId()
     {
+        if (responseId == null && urlBytes != null && responseIdLength >= 0)
+        {
+            responseId = responseIdLength == 0 ? "" : new String(urlBytes, responseIdOffset, responseIdLength, StandardCharsets.UTF_8);
+        }
         return responseId;
     }
 
@@ -457,6 +472,10 @@ public class RequestData extends TimerData
      */
     public String getFormData()
     {
+        if (formData == null && urlBytes != null && formDataLength >= 0)
+        {
+            formData = formDataLength == 0 ? "" : new String(urlBytes, formDataOffset, formDataLength, StandardCharsets.UTF_8);
+        }
         return formData;
     }
 
@@ -586,6 +605,7 @@ public class RequestData extends TimerData
     public void setRequestId(final String id)
     {
         this.requestId = id;
+        this.requestIdLength = -1;
     }
 
     /**
@@ -597,6 +617,7 @@ public class RequestData extends TimerData
     public void setResponseId(final String id)
     {
         this.responseId = id;
+        this.responseIdLength = -1;
     }
 
     /**
@@ -722,9 +743,9 @@ public class RequestData extends TimerData
     {
         this.url = url;
         this.originalUrl = url;
-        this.urlBytes = null;
         this.urlOffset = 0;
         this.urlLength = 0;
+        this.urlSliceHash = 0;
         if (url != null)
         {
             this.hashCodeOfUrlWithoutFragment = StringHasher.hashCodeWithLimit(url, '#');
@@ -758,6 +779,27 @@ public class RequestData extends TimerData
         this.originalUrl = null;
         this.hashCodeOfUrlWithoutFragment = 0;
         this.host = null;
+        this.urlSliceHash = 0;
+    }
+
+    /**
+     * Populates the caller-supplied {@link com.xceptance.common.util.ByteSlice} with this request's raw URL
+     * bytes and cached hash code (computed at most once per request across all {@code UrlCondition} rules).
+     *
+     * @param targetSlice
+     *            the per-condition reusable {@link com.xceptance.common.util.ByteSlice}
+     * @return {@code targetSlice}
+     */
+    public com.xceptance.common.util.ByteSlice populateUrlSlice(final com.xceptance.common.util.ByteSlice targetSlice)
+    {
+        int h = this.urlSliceHash;
+        if (h == 0 && this.urlLength > 0)
+        {
+            h = com.xceptance.common.util.ByteSlice.computeHash(this.urlBytes, this.urlOffset, this.urlLength);
+            this.urlSliceHash = h;
+        }
+        targetSlice.set(this.urlBytes, this.urlOffset, this.urlLength, h);
+        return targetSlice;
     }
 
     /**
@@ -765,7 +807,7 @@ public class RequestData extends TimerData
      */
     public boolean hasUrlBytes()
     {
-        return this.urlBytes != null && this.urlLength > 0;
+        return this.url == null && this.urlBytes != null && this.urlLength > 0;
     }
 
     /**
@@ -813,6 +855,7 @@ public class RequestData extends TimerData
         this.urlBytes = null;
         this.urlOffset = 0;
         this.urlLength = 0;
+        this.urlSliceHash = 0;
     }
 
     /**
@@ -857,6 +900,7 @@ public class RequestData extends TimerData
     public void setFormData(final String formData)
     {
         this.formData = formData;
+        this.formDataLength = -1;
     }
 
     /**
@@ -935,16 +979,16 @@ public class RequestData extends TimerData
         fields.add(String.valueOf(receiveTime));
         fields.add(String.valueOf(timeToFirstBytes));
         fields.add(String.valueOf(timeToLastBytes));
-        fields.add(StringUtils.defaultString(requestId));
+        fields.add(StringUtils.defaultString(getRequestId()));
 
         fields.add(StringUtils.defaultString(httpMethod));
         fields.add(StringUtils.defaultString(formDataEncoding));
-        fields.add(StringUtils.defaultString(formData));
+        fields.add(StringUtils.defaultString(getFormData()));
 
         fields.add(String.valueOf(dnsTime));
         fields.add(StringUtils.defaultString(getIpAddressesAsString()));
 
-        fields.add(StringUtils.defaultString(responseId));
+        fields.add(StringUtils.defaultString(getResponseId()));
 
         fields.add(StringUtils.defaultString(usedIpAddress));
 
@@ -965,8 +1009,9 @@ public class RequestData extends TimerData
 
         if (values.size() > 23)
         {
-            setUrl(values.getBuffer(), values.getOffset(8), values.getLength(8));
-            setContentType(values.toString(9));
+            final byte[] buf = values.getBuffer();
+            setUrl(buf, values.getOffset(8), values.getLength(8));
+            setContentType(values.toInternedString(9));
 
             setConnectTime(values.parseInt(10));
             setSendTime(values.parseInt(11));
@@ -975,23 +1020,58 @@ public class RequestData extends TimerData
             setTimeToFirstBytes(values.parseInt(14));
             setTimeToLastBytes(values.parseInt(15));
 
-            setRequestId(values.toString(16));
+            final int reqIdLen = values.getLength(16);
+            if (reqIdLen == 0)
+            {
+                this.requestId = "";
+                this.requestIdLength = -1;
+            }
+            else
+            {
+                this.requestId = null;
+                this.requestIdOffset = values.getOffset(16);
+                this.requestIdLength = reqIdLen;
+            }
 
             // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
-            setHttpMethod(values.toString(17));
-            setFormDataEncoding(values.toString(18));
-            setFormData(values.toString(19));
+            setHttpMethod(values.toHttpMethodString(17));
+            setFormDataEncoding(values.toInternedString(18));
+
+            final int formLen = values.getLength(19);
+            if (formLen == 0)
+            {
+                this.formData = "";
+                this.formDataLength = -1;
+            }
+            else
+            {
+                this.formData = null;
+                this.formDataOffset = values.getOffset(19);
+                this.formDataLength = formLen;
+            }
 
             // XLT 4.7.0
             setDnsTime(values.parseInt(20));
 
             // XLT 4.12.0
-            ipAddresses = values.toString(21);
+            ipAddresses = values.toInternedString(21);
             ipAddressesArray = null;
-            setResponseId(values.toString(22));
+
+            final int respIdLen = values.getLength(22);
+            if (respIdLen == 0)
+            {
+                this.responseId = "";
+                this.responseIdLength = -1;
+            }
+            else
+            {
+                this.responseId = null;
+                this.responseIdOffset = values.getOffset(22);
+                this.responseIdLength = respIdLen;
+            }
 
             // XLT 7.0.0
-            setUsedIpAddress(values.toString(23));
+            setUsedIpAddress(values.toInternedString(23));
         }
         else
         {
@@ -1008,6 +1088,31 @@ public class RequestData extends TimerData
      */
     private void parseLegacyValues(final CsvByteColumns values)
     {
+        // Reset optional fields in case this RequestData instance was pooled and reused
+        this.url = null;
+        this.originalUrl = null;
+        this.urlBytes = null;
+        this.urlOffset = 0;
+        this.urlLength = 0;
+        this.hashCodeOfUrlWithoutFragment = 0;
+        this.host = null;
+        this.contentType = null;
+        this.connectTime = 0;
+        this.sendTime = 0;
+        this.serverBusyTime = 0;
+        this.receiveTime = 0;
+        this.timeToFirstBytes = 0;
+        this.timeToLastBytes = 0;
+        setRequestId(null);
+        this.httpMethod = null;
+        this.formDataEncoding = null;
+        setFormData(null);
+        this.dnsTime = 0;
+        this.ipAddresses = null;
+        this.ipAddressesArray = null;
+        setResponseId(null);
+        this.usedIpAddress = null;
+
         // be defensive so older reports can be re-generated
         final int length = values.size();
         if (length > 8)
@@ -1017,7 +1122,7 @@ public class RequestData extends TimerData
 
         if (length > 9)
         {
-            setContentType(values.toString(9));
+            setContentType(values.toInternedString(9));
         }
 
         if (length > 10)
@@ -1038,8 +1143,8 @@ public class RequestData extends TimerData
         // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
         if (length > 17)
         {
-            setHttpMethod(values.toString(17));
-            setFormDataEncoding(values.toString(18));
+            setHttpMethod(values.toHttpMethodString(17));
+            setFormDataEncoding(values.toInternedString(18));
             setFormData(values.toString(19));
         }
 
@@ -1052,14 +1157,14 @@ public class RequestData extends TimerData
         // XLT 4.12.0
         if (length > 21)
         {
-            ipAddresses = values.toString(21);
+            ipAddresses = values.toInternedString(21);
             setResponseId(values.toString(22));
         }
 
         // XLT 7.0.0
         if (length > 23)
         {
-            setUsedIpAddress(values.toString(23));
+            setUsedIpAddress(values.toInternedString(23));
         }
     }
 }

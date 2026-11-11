@@ -40,7 +40,7 @@ public class Dispatcher
     /**
      * The default maximum number of lines in a chunk delivered from reader threads to parser threads.
      */
-    public static final int DEFAULT_QUEUE_CHUNK_SIZE = 200;
+    public static final int DEFAULT_QUEUE_CHUNK_SIZE = 2000;
 
     /**
      * How many chunks do we deliver until waiting

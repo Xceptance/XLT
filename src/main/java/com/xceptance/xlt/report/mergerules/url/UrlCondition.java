@@ -17,6 +17,7 @@ package com.xceptance.xlt.report.mergerules.url;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.xceptance.common.util.ByteSlice;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
@@ -29,6 +30,8 @@ import com.xceptance.xlt.report.mergerules.Condition;
  */
 public class UrlCondition extends Condition
 {
+    private final ByteSlice urlSlice = new ByteSlice();
+
     /**
      * Constructor.
      *
@@ -41,7 +44,7 @@ public class UrlCondition extends Condition
     {
         // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
-        super(regex, 2500, useFastRegex);
+        super(regex, 5000, useFastRegex);
     }
 
     /**
@@ -52,7 +55,7 @@ public class UrlCondition extends Condition
      */
     public UrlCondition(final String regex)
     {
-        super(regex, 2500);
+        super(regex, 5000);
     }
 
 
@@ -62,6 +65,10 @@ public class UrlCondition extends Condition
     @Override
     protected CharSequence getText(final RequestData requestData)
     {
+        if (requestData.hasUrlBytes())
+        {
+            return requestData.populateUrlSlice(this.urlSlice);
+        }
         return requestData.getUrl();
     }
     

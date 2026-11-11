@@ -122,6 +122,11 @@ class DataParserThread implements Runnable
         final PostProcessedDataContainer postProcessedData = new PostProcessedDataContainer(dispatcher.chunkSize);
         PostProcessedDataContainer nonRequestData = null;
 
+        final boolean poolRequests = dataRecordFactory.isStandardRequestData();
+        final boolean poolActions = dataRecordFactory.isStandardActionData();
+        final boolean poolTransactions = dataRecordFactory.isStandardTransactionData();
+        final boolean poolCustom = dataRecordFactory.isStandardCustomData();
+
         while (true)
         {
             try
@@ -150,6 +155,9 @@ class DataParserThread implements Runnable
                     {
                         nonRequestData.reset();
                     }
+                    int actionPoolIdx = 0;
+                    int txnPoolIdx = 0;
+                    int customPoolIdx = 0;
 
                     final int baseLineNumber = chunk.getBaseLineNumber();
                     final int size = lines.size();
@@ -166,8 +174,43 @@ class DataParserThread implements Runnable
                                     continue;
                                 }
 
-                                // get us the minimal data aka type and time
-                                Data data = dataRecordFactory.createStatistics(line[0]);
+                                // get us the minimal data aka type and time (reusing pooled instances for standard types)
+                                final byte tcByte = line[0];
+                                Data data;
+                                if (tcByte == (byte) 'R' && poolRequests)
+                                {
+                                    final RequestData req = postProcessedData.getOrCreateRequestData(postProcessedData.size());
+                                    req.setRawName(null);
+                                    data = req;
+                                }
+                                else if (tcByte == (byte) 'A' && poolActions)
+                                {
+                                    if (nonRequestData == null)
+                                    {
+                                        nonRequestData = new PostProcessedDataContainer(64);
+                                    }
+                                    data = nonRequestData.getOrCreateActionData(actionPoolIdx++);
+                                }
+                                else if (tcByte == (byte) 'T' && poolTransactions)
+                                {
+                                    if (nonRequestData == null)
+                                    {
+                                        nonRequestData = new PostProcessedDataContainer(64);
+                                    }
+                                    data = nonRequestData.getOrCreateTransactionData(txnPoolIdx++);
+                                }
+                                else if (tcByte == (byte) 'C' && poolCustom)
+                                {
+                                    if (nonRequestData == null)
+                                    {
+                                        nonRequestData = new PostProcessedDataContainer(64);
+                                    }
+                                    data = nonRequestData.getOrCreateCustomData(customPoolIdx++);
+                                }
+                                else
+                                {
+                                    data = dataRecordFactory.createStatistics(tcByte);
+                                }
 
                                 // parse, the columns structure is reused
                                 CsvByteLineDecoder.parse(csvColumns, line);

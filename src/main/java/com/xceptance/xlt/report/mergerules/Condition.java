@@ -172,8 +172,20 @@ public abstract class Condition
         
         // not found, produce and cache, recycle the matcher
         // cache only the result, not the matcher itself.
-        // Ensure non-String CharSequences are materialized as immutable Strings on cache miss.
-        final CharSequence cacheableText = (text instanceof String) ? text : text.toString();
+        // Ensure non-String CharSequences are materialized as detached copies on cache miss.
+        final CharSequence cacheableText;
+        if (text instanceof String)
+        {
+            cacheableText = text;
+        }
+        else if (text instanceof com.xceptance.common.util.ByteSlice slice)
+        {
+            cacheableText = slice.copy();
+        }
+        else
+        {
+            cacheableText = text.toString();
+        }
         if (this.fastMatcher != null)
         {
             final FastRegex.Matcher fm = this.fastMatcher.reset(cacheableText);

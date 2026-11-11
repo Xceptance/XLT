@@ -15,6 +15,9 @@
  */
 package com.xceptance.common.util;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -26,8 +29,11 @@ import java.util.Arrays;
  *
  * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
-public final class ByteSlice implements Comparable<ByteSlice>
+public final class ByteSlice implements CharSequence, Comparable<ByteSlice>
 {
+    private static final VarHandle LONG_VIEW = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.LITTLE_ENDIAN);
+    private static final VarHandle INT_VIEW = MethodHandles.byteArrayViewVarHandle(int[].class, ByteOrder.LITTLE_ENDIAN);
+
     private static final byte[] EMPTY_BUFFER = new byte[0];
 
     public static final ByteSlice EMPTY = new ByteSlice(EMPTY_BUFFER, 0, 0);
@@ -91,6 +97,73 @@ public final class ByteSlice implements Comparable<ByteSlice>
         this.offset = offset;
         this.length = length;
         this.hash = 0;
+    }
+
+    /**
+     * Reconfigures this slice in-place with a pre-computed hash code.
+     *
+     * @param buffer
+     *            the underlying byte buffer
+     * @param offset
+     *            the starting offset
+     * @param length
+     *            the slice length
+     * @param precomputedHash
+     *            the pre-computed hash code (or 0 if not yet computed)
+     */
+    public void set(final byte[] buffer, final int offset, final int length, final int precomputedHash)
+    {
+        this.buffer = buffer != null ? buffer : EMPTY_BUFFER;
+        this.offset = offset;
+        this.length = length;
+        this.hash = precomputedHash;
+    }
+
+    /**
+     * Returns whether all bytes in this slice are pure 7-bit ASCII ({@code >= 0}).
+     */
+    public boolean isAscii()
+    {
+        final byte[] b = this.buffer;
+        final int end = offset + length;
+        for (int i = offset; i < end; i++)
+        {
+            if (b[i] < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int length()
+    {
+        return length;
+    }
+
+    @Override
+    public char charAt(final int index)
+    {
+        if (index < 0 || index >= length)
+        {
+            throw new IndexOutOfBoundsException("Index " + index + " out of bounds for length " + length);
+        }
+        return (char) (buffer[offset + index] & 0xFF);
+    }
+
+    @Override
+    public CharSequence subSequence(final int start, final int end)
+    {
+        if (start < 0 || end < start || end > length)
+        {
+            throw new IndexOutOfBoundsException("start=" + start + ", end=" + end + ", length=" + length);
+        }
+        if (start == 0 && end == length)
+        {
+            return this;
+        }
+        return new ByteSlice(buffer, offset + start, end - start);
     }
 
     /**
@@ -230,43 +303,118 @@ public final class ByteSlice implements Comparable<ByteSlice>
         return new String(buffer, offset, length, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Computes a fast 32-bit hash code over {@code b[offset .. offset + length)} using 64-bit word loads.
+     *
+     * @param b
+     *            the byte array
+     * @param offset
+     *            the start offset
+     * @param length
+     *            the number of bytes
+     * @return the computed hash code (0 if {@code length <= 0})
+     */
+    public static int computeHash(final byte[] b, final int offset, final int length)
+    {
+        if (length <= 0)
+        {
+            return 0;
+        }
+        if (length >= 8)
+        {
+            long h = length * 0x9E3779B97F4A7C15L;
+            final int limit = offset + length - 8;
+            for (int i = offset; i < limit; i += 8)
+            {
+                h = Long.rotateLeft(h ^ (long) LONG_VIEW.get(b, i), 27) * 0x9E3779B97F4A7C15L;
+            }
+            h ^= (long) LONG_VIEW.get(b, limit);
+            h ^= h >>> 33;
+            h *= 0xFF51AFD7ED558CCDL;
+            return (int) (h ^ (h >>> 32));
+        }
+        if (length >= 4)
+        {
+            final int w0 = (int) INT_VIEW.get(b, offset);
+            final int w1 = (int) INT_VIEW.get(b, offset + length - 4);
+            long h = ((w0 & 0xFFFFFFFFL) << 32) | (w1 & 0xFFFFFFFFL);
+            h ^= length * 0x9E3779B97F4A7C15L;
+            h ^= h >>> 33;
+            h *= 0xFF51AFD7ED558CCDL;
+            return (int) (h ^ (h >>> 32));
+        }
+        int h = length;
+        for (int i = 0; i < length; i++)
+        {
+            h = 31 * h + b[offset + i];
+        }
+        return h;
+    }
+
+    /**
+     * Compares two byte array slices of identical length {@code len} using 64-bit word loads.
+     */
+    public static boolean equalsBytes(final byte[] b1, final int o1, final byte[] b2, final int o2, final int len)
+    {
+        if (len >= 8)
+        {
+            if ((long) LONG_VIEW.get(b1, o1 + len - 8) != (long) LONG_VIEW.get(b2, o2 + len - 8))
+            {
+                return false;
+            }
+            final int limit = len - 8;
+            for (int i = 0; i < limit; i += 8)
+            {
+                if ((long) LONG_VIEW.get(b1, o1 + i) != (long) LONG_VIEW.get(b2, o2 + i))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (len >= 4)
+        {
+            return (int) INT_VIEW.get(b1, o1) == (int) INT_VIEW.get(b2, o2)
+                && (int) INT_VIEW.get(b1, o1 + len - 4) == (int) INT_VIEW.get(b2, o2 + len - 4);
+        }
+        for (int i = 0; i < len; i++)
+        {
+            if (b1[o1 + i] != b2[o2 + i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public int hashCode()
     {
-        int h = this.hash;
-        // Decision: We intentionally do not use a sentinel (like 1 or MIN_VALUE) when h == 0.
-        // Legitimate hash collisions with 0 are exceedingly rare, and omitting the extra branch
-        // preserves peak performance in the hot cache lookup path.
-        if (h == 0 && length > 0)
-        {
-            final byte[] b = this.buffer;
-            final int end = offset + length;
-            for (int i = offset; i < end; i++)
-            {
-                h = 31 * h + (b[i] & 0xFF);
-            }
-            this.hash = h;
-        }
+        final int h = this.hash;
+        return (h != 0 || this.length == 0) ? h : computeAndCacheHash();
+    }
+
+    private int computeAndCacheHash()
+    {
+        final int h = computeHash(this.buffer, this.offset, this.length);
+        this.hash = h;
         return h;
     }
 
     @Override
     public boolean equals(final Object obj)
     {
-        if (this == obj)
+        return this == obj || (obj instanceof ByteSlice other && equalsSlice(other));
+    }
+
+    public boolean equalsSlice(final ByteSlice other)
+    {
+        final int len = this.length;
+        if (len != other.length || (this.hash != 0 && other.hash != 0 && this.hash != other.hash))
         {
-            return true;
+            return false;
         }
-        if (obj instanceof final ByteSlice other)
-        {
-            if (this.length != other.length)
-            {
-                return false;
-            }
-            return Arrays.mismatch(this.buffer, this.offset, this.offset + this.length,
-                                   other.buffer, other.offset, other.offset + other.length) == -1;
-        }
-        return false;
+        return equalsBytes(this.buffer, this.offset, other.buffer, other.offset, len);
     }
 
     @Override

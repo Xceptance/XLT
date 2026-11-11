@@ -30,6 +30,10 @@ public final class CsvByteColumns
 
     private static final int INITIAL_CAPACITY = 32;
 
+    private static final int INTERN_CACHE_SIZE = 2048;
+
+    private static final int INTERN_CACHE_MASK = INTERN_CACHE_SIZE - 1;
+
     private byte[] buffer;
 
     private int[] offsets;
@@ -37,6 +41,12 @@ public final class CsvByteColumns
     private int[] lengths;
 
     private int count;
+
+    private String[] internStrings;
+
+    private byte[][] internBytes;
+
+    private int[] internHashes;
 
     public CsvByteColumns()
     {
@@ -184,6 +194,110 @@ public final class CsvByteColumns
             return "";
         }
         return new String(buffer, offsets[col], len, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Decodes the specified column to a canonical UTF-8 String using this instance's per-thread
+     * direct-mapped byte-slice intern table, avoiding repeated heap allocations and UTF-8 decoding
+     * for high-repetition columns (timer names, content types, encodings, IP addresses).
+     *
+     * @param col
+     *            the column index
+     * @return the decoded (and cached, if <= 128 bytes) UTF-8 String
+     */
+    public String toInternedString(final int col)
+    {
+        final int len = lengths[col];
+        if (len == 0)
+        {
+            return "";
+        }
+        final byte[] buf = this.buffer;
+        final int off = offsets[col];
+        if (len > 128)
+        {
+            return new String(buf, off, len, StandardCharsets.UTF_8);
+        }
+        final int h = ByteSlice.computeHash(buf, off, len);
+        String[] strings = this.internStrings;
+        if (strings == null)
+        {
+            strings = new String[INTERN_CACHE_SIZE];
+            this.internStrings = strings;
+            this.internBytes = new byte[INTERN_CACHE_SIZE][];
+            this.internHashes = new int[INTERN_CACHE_SIZE];
+        }
+        final int slot = (h ^ (h >>> 11) ^ (col * 0x9E3779B9)) & INTERN_CACHE_MASK;
+        if (this.internHashes[slot] == h)
+        {
+            final byte[] cachedBytes = this.internBytes[slot];
+            if (cachedBytes != null && cachedBytes.length == len
+                && ByteSlice.equalsBytes(buf, off, cachedBytes, 0, len))
+            {
+                return strings[slot];
+            }
+        }
+        final String s = new String(buf, off, len, StandardCharsets.UTF_8);
+        s.hashCode();
+        this.internHashes[slot] = h;
+        this.internBytes[slot] = Arrays.copyOfRange(buf, off, off + len);
+        strings[slot] = s;
+        return s;
+    }
+
+    /**
+     * Fast-path decoder for HTTP method columns that matches standard methods ({@code GET}, {@code POST},
+     * {@code PUT}, {@code HEAD}, {@code PATCH}, {@code DELETE}, {@code OPTIONS}) directly against raw bytes
+     * without allocating or hashing, falling back to {@link #toInternedString(int)} for custom methods.
+     *
+     * @param col
+     *            the column index
+     * @return the HTTP method string
+     */
+    public String toHttpMethodString(final int col)
+    {
+        final int len = lengths[col];
+        if (len == 0)
+        {
+            return "";
+        }
+        final byte[] buf = this.buffer;
+        final int off = offsets[col];
+        if (len == 3)
+        {
+            if (buf[off] == 'G' && buf[off + 1] == 'E' && buf[off + 2] == 'T')
+            {
+                return "GET";
+            }
+            if (buf[off] == 'P' && buf[off + 1] == 'U' && buf[off + 2] == 'T')
+            {
+                return "PUT";
+            }
+        }
+        else if (len == 4)
+        {
+            if (buf[off] == 'P' && buf[off + 1] == 'O' && buf[off + 2] == 'S' && buf[off + 3] == 'T')
+            {
+                return "POST";
+            }
+            if (buf[off] == 'H' && buf[off + 1] == 'E' && buf[off + 2] == 'A' && buf[off + 3] == 'D')
+            {
+                return "HEAD";
+            }
+        }
+        else if (len == 5 && buf[off] == 'P' && buf[off + 1] == 'A' && buf[off + 2] == 'T' && buf[off + 3] == 'C' && buf[off + 4] == 'H')
+        {
+            return "PATCH";
+        }
+        else if (len == 6 && buf[off] == 'D' && buf[off + 1] == 'E' && buf[off + 2] == 'L' && buf[off + 3] == 'E' && buf[off + 4] == 'T' && buf[off + 5] == 'E')
+        {
+            return "DELETE";
+        }
+        else if (len == 7 && buf[off] == 'O' && buf[off + 1] == 'P' && buf[off + 2] == 'T' && buf[off + 3] == 'I' && buf[off + 4] == 'O' && buf[off + 5] == 'N' && buf[off + 6] == 'S')
+        {
+            return "OPTIONS";
+        }
+        return toInternedString(col);
     }
 
     /**

@@ -111,9 +111,8 @@ public abstract class AbstractData implements Data
         // type code, so omitting the extra length check saves a branch on every processed record.
         if (values.byteAt(0, 0) == (byte) typeCode)
         {
-            // read and check the values
-            name = values.toString(1);
-            name.hashCode(); // create it when it is still hot in the cache
+            // read and check the values (toInternedString also pre-computes hashCode on new strings)
+            name = values.toInternedString(1);
 
             time = values.parseLong(2);
 

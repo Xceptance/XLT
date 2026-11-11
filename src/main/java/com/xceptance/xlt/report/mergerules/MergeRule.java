@@ -111,6 +111,17 @@ public class MergeRule
     private final boolean useFastRegex;
 
     /**
+     * Reusable StringBuilder for assembling renamed request names (MergeRule is per-thread).
+     */
+    private final StringBuilder nameBuilder = new StringBuilder(64);
+
+    /**
+     * Fast-path Flag and per-thread cache when the rule's only placeholder is full request name {@code {n}}.
+     */
+    private final boolean singleFullRequestNamePlaceholder;
+    private final java.util.Map<String, String> singleNameCache;
+
+    /**
      * Constructor.
      *
      * @param id
@@ -263,6 +274,11 @@ public class MergeRule
         this.newNamePlaceholders = tempPlaceHolderPositions.toArray(new PlaceholderPosition[tempPlaceHolderPositions.size()]);
 
         resolveRequestFilter(this.newNamePlaceholders);
+
+        this.singleFullRequestNamePlaceholder = this.newNamePlaceholders.length == 1
+            && this.newNamePlaceholders[0].capturingGroupIndex == -1
+            && "n".equals(this.newNamePlaceholders[0].typeCode);
+        this.singleNameCache = this.singleFullRequestNamePlaceholder ? new java.util.HashMap<>(64) : null;
 
         // Validate the entire rule set, because we might still have issues
         validateRule();
@@ -547,24 +563,46 @@ public class MergeRule
         // anything to do?
         if (newNamePlaceholders.length > 0)
         {
-            // rename the request
-            final StringBuilder result = new StringBuilder(50);
-            result.append(newName);
-
-            // search as long as there are placeholders in the name
-            for (final PlaceholderPosition placeholder : newNamePlaceholders)
+            if (singleFullRequestNamePlaceholder)
             {
-                final Condition requestFilter = placeholder.condition;
-
-                // get replacement
-                final CharSequence replacement = requestFilter.getReplacementText(requestData, placeholder.capturingGroupIndex);
-
-                // replace the placeholder with the real values
-                result.insert(placeholder.start, replacement);
+                final String currentName = requestData.getName();
+                String merged = singleNameCache.get(currentName);
+                if (merged == null)
+                {
+                    nameBuilder.setLength(0);
+                    nameBuilder.append(newName);
+                    nameBuilder.insert(newNamePlaceholders[0].start, currentName);
+                    merged = nameBuilder.toString();
+                    merged.hashCode();
+                    if (singleNameCache.size() < 512)
+                    {
+                        singleNameCache.put(currentName, merged);
+                    }
+                }
+                requestData.setName(merged);
             }
+            else
+            {
+                // rename the request
+                final StringBuilder result = this.nameBuilder;
+                result.setLength(0);
+                result.append(newName);
 
-            // set the final name
-            requestData.setName(result.toString());
+                // search as long as there are placeholders in the name
+                for (final PlaceholderPosition placeholder : newNamePlaceholders)
+                {
+                    final Condition requestFilter = placeholder.condition;
+
+                    // get replacement
+                    final CharSequence replacement = requestFilter.getReplacementText(requestData, placeholder.capturingGroupIndex);
+
+                    // replace the placeholder with the real values
+                    result.insert(placeholder.start, replacement);
+                }
+
+                // set the final name
+                requestData.setName(result.toString());
+            }
         }
         else
         {

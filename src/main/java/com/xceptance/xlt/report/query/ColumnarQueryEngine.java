@@ -402,6 +402,13 @@ public class ColumnarQueryEngine
         }
     }
 
+    private static final class ColumnScratch
+    {
+        final int[][] decompressedCols = new int[REQUEST_COLUMN_COUNT][com.xceptance.xlt.report.storage.chunk.ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+    }
+
+    private static final ThreadLocal<ColumnScratch> COLUMN_SCRATCH = ThreadLocal.withInitial(ColumnScratch::new);
+
     /**
      * Reads and decompresses a single column directly from disk using the chunk's in-memory column pointer.
      * <p>
@@ -424,14 +431,15 @@ public class ColumnarQueryEngine
             buf.flip();
             final int[] comp = new int[intLen];
             buf.asIntBuffer().get(comp);
-            final int[] decompressed = FastIntegerCodec.decompress(comp);
+            final int[] reuseBuf = COLUMN_SCRATCH.get().decompressedCols[colIdx];
+            final int[] decompressed = FastIntegerCodec.decompressTo(comp, reuseBuf);
             if (FastIntegerCodec.isConstant(comp))
             {
                 learnConstantColumnHint(idx, colIdx, FastIntegerCodec.getConstantValue(comp));
             }
             else
             {
-                learnColumnHints(idx, colIdx, decompressed);
+                learnColumnHints(idx, colIdx, decompressed, idx.rowCount);
             }
             return decompressed;
         }
@@ -462,9 +470,10 @@ public class ColumnarQueryEngine
         }
     }
 
-    private static void learnColumnHints(final RequestChunkIndex idx, final int colIdx, final int[] values)
+    private static void learnColumnHints(final RequestChunkIndex idx, final int colIdx, final int[] values, final int rowCount)
     {
-        if (values == null || values.length == 0)
+        final int limit = values != null ? Math.min(values.length, rowCount) : 0;
+        if (limit <= 0)
         {
             return;
         }
@@ -472,8 +481,9 @@ public class ColumnarQueryEngine
         {
             int min = Integer.MAX_VALUE;
             int max = Integer.MIN_VALUE;
-            for (final int v : values)
+            for (int i = 0; i < limit; i++)
             {
+                final int v = values[i];
                 if (v < min) min = v;
                 if (v > max) max = v;
             }
@@ -485,26 +495,26 @@ public class ColumnarQueryEngine
         }
         else if (colIdx == IDX_HTTP_METHODS && idx.singleMethodId == -2)
         {
-            idx.singleMethodId = detectSingleNonNegativeValue(values);
+            idx.singleMethodId = detectSingleNonNegativeValue(values, limit);
         }
         else if (colIdx == IDX_CONTENT_TYPES && idx.singleContentTypeId == -2)
         {
-            idx.singleContentTypeId = detectSingleNonNegativeValue(values);
+            idx.singleContentTypeId = detectSingleNonNegativeValue(values, limit);
         }
         else if (colIdx == IDX_USED_IPS && idx.singleUsedIpId == -2)
         {
-            idx.singleUsedIpId = detectSingleNonNegativeValue(values);
+            idx.singleUsedIpId = detectSingleNonNegativeValue(values, limit);
         }
     }
 
-    private static int detectSingleNonNegativeValue(final int[] values)
+    private static int detectSingleNonNegativeValue(final int[] values, final int limit)
     {
         final int first = values[0];
         if (first < 0)
         {
             return -1;
         }
-        for (int i = 1; i < values.length; i++)
+        for (int i = 1; i < limit; i++)
         {
             if (values[i] != first)
             {
@@ -678,17 +688,21 @@ public class ColumnarQueryEngine
                 final RoaringBitmap localM = new RoaringBitmap();
                 final RoaringBitmap localCt = new RoaringBitmap();
                 final RoaringBitmap localIp = new RoaringBitmap();
+                final int rcRows = chunk.getRowCount();
 
-                for (final int id : m)
+                for (int i = 0, len = Math.min(m.length, rcRows); i < len; i++)
                 {
+                    final int id = m[i];
                     if (id >= 0) localM.add(id);
                 }
-                for (final int id : ct)
+                for (int i = 0, len = Math.min(ct.length, rcRows); i < len; i++)
                 {
+                    final int id = ct[i];
                     if (id >= 0) localCt.add(id);
                 }
-                for (final int id : ip)
+                for (int i = 0, len = Math.min(ip.length, rcRows); i < len; i++)
                 {
+                    final int id = ip[i];
                     if (id >= 0) localIp.add(id);
                 }
 
@@ -3748,18 +3762,74 @@ public class ColumnarQueryEngine
 
         for (final char timerType : new char[]{'A', 'P', 'C'})
         {
-            for (final Chunk chunk : storage.getCatalog().queryChunks(timerType, windowPredicate))
-            {
-                final TimerChunk tmc = (TimerChunk) resolveNonRequestChunk(timerType, chunk, dicts);
-                final int rowCount = tmc.getRowCount();
-                final long baseTime = tmc.getMinTime();
-                final int[] timeOffsets = FastIntegerCodec.decompress(tmc.getCompTimeOffsets());
-                final int[] timerIds = FastIntegerCodec.decompress(tmc.getCompTimerNameIds());
-                final int[] agentIds = FastIntegerCodec.decompress(tmc.getCompAgentTestCaseIds());
-                final int[] runTimes = FastIntegerCodec.decompress(tmc.getCompRunTimes());
-                final int[] userNums = FastIntegerCodec.decompress(tmc.getCompUserNumbers());
-                final RoaringBitmap failedRows = tmc.getFailedRows();
+            final List<SessionNode> matchedNodes = storage.getCatalog().queryChunks(timerType, windowPredicate)
+                .parallelStream()
+                .flatMap(chunk -> {
+                    final TimerChunk tmc = (TimerChunk) resolveNonRequestChunk(timerType, chunk, dicts);
+                    final int rowCount = tmc.getRowCount();
+                    final long baseTime = tmc.getMinTime();
+                    final int[] timeOffsets = FastIntegerCodec.decompress(tmc.getCompTimeOffsets());
+                    final int[] timerIds = FastIntegerCodec.decompress(tmc.getCompTimerNameIds());
+                    final int[] agentIds = FastIntegerCodec.decompress(tmc.getCompAgentTestCaseIds());
+                    final int[] runTimes = FastIntegerCodec.decompress(tmc.getCompRunTimes());
+                    final int[] userNums = FastIntegerCodec.decompress(tmc.getCompUserNumbers());
+                    final RoaringBitmap failedRows = tmc.getFailedRows();
 
+                    List<SessionNode> local = null;
+                    for (int i = 0; i < rowCount; i++)
+                    {
+                        if (agentIds[i] != agentTestCaseId || userNums[i] != userNumId)
+                        {
+                            continue;
+                        }
+                        final long time = baseTime + timeOffsets[i];
+                        if (time < windowStart || time > windowEnd)
+                        {
+                            continue;
+                        }
+                        final int rt = runTimes[i];
+                        final String name = safeLookup(timerNames, timerIds[i]);
+                        final boolean failed = failedRows != null && failedRows.contains(i);
+                        final SessionNode node = new SessionNode(
+                            String.valueOf(timerType), time, rt, time + rt, name, name, failed, 0,
+                            null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                            null, true, null, null, null, null, null, null, null,
+                            new ArrayList<>()
+                        );
+                        if (local == null)
+                        {
+                            local = new ArrayList<>();
+                        }
+                        local.add(node);
+                    }
+                    return local != null ? local.stream() : java.util.stream.Stream.empty();
+                })
+                .toList();
+
+            if (timerType == 'A')
+            {
+                actions.addAll(matchedNodes);
+            }
+            else
+            {
+                childItems.addAll(matchedNodes);
+            }
+        }
+
+        // Scan Events ('E') in parallel
+        final List<SessionNode> eventNodes = storage.getCatalog().queryChunks('E', windowPredicate)
+            .parallelStream()
+            .flatMap(chunk -> {
+                final EventChunk ec = (EventChunk) resolveNonRequestChunk('E', chunk, dicts);
+                final int rowCount = ec.getRowCount();
+                final long baseTime = ec.getMinTime();
+                final int[] timeOffsets = FastIntegerCodec.decompress(ec.getCompTimeOffsets());
+                final int[] timerIds = FastIntegerCodec.decompress(ec.getCompTimerNameIds());
+                final int[] agentIds = FastIntegerCodec.decompress(ec.getCompAgentTestCaseIds());
+                final int[] msgIds = FastIntegerCodec.decompress(ec.getCompMessages());
+                final int[] userNums = FastIntegerCodec.decompress(ec.getCompUserNumbers());
+
+                List<SessionNode> local = null;
                 for (int i = 0; i < rowCount; i++)
                 {
                     if (agentIds[i] != agentTestCaseId || userNums[i] != userNumId)
@@ -3771,60 +3841,23 @@ public class ColumnarQueryEngine
                     {
                         continue;
                     }
-                    final int rt = runTimes[i];
                     final String name = safeLookup(timerNames, timerIds[i]);
-                    final boolean failed = failedRows != null && failedRows.contains(i);
-                    final SessionNode node = new SessionNode(
-                        String.valueOf(timerType), time, rt, time + rt, name, name, failed, 0,
+                    final String msg = safeLookup(strings, msgIds[i]);
+                    if (local == null)
+                    {
+                        local = new ArrayList<>();
+                    }
+                    local.add(new SessionNode(
+                        "E", time, 0, time, name, name, false, 0,
                         null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        null, true, null, null, null, null, null, null, null,
-                        new ArrayList<>()
-                    );
-                    if (timerType == 'A')
-                    {
-                        actions.add(node);
-                    }
-                    else
-                    {
-                        childItems.add(node);
-                    }
+                        null, true, null, null, null, msg, null, null, null,
+                        Collections.emptyList()
+                    ));
                 }
-            }
-        }
-
-        // Scan Events ('E')
-        for (final Chunk chunk : storage.getCatalog().queryChunks('E', windowPredicate))
-        {
-            final EventChunk ec = (EventChunk) resolveNonRequestChunk('E', chunk, dicts);
-            final int rowCount = ec.getRowCount();
-            final long baseTime = ec.getMinTime();
-            final int[] timeOffsets = FastIntegerCodec.decompress(ec.getCompTimeOffsets());
-            final int[] timerIds = FastIntegerCodec.decompress(ec.getCompTimerNameIds());
-            final int[] agentIds = FastIntegerCodec.decompress(ec.getCompAgentTestCaseIds());
-            final int[] msgIds = FastIntegerCodec.decompress(ec.getCompMessages());
-            final int[] userNums = FastIntegerCodec.decompress(ec.getCompUserNumbers());
-
-            for (int i = 0; i < rowCount; i++)
-            {
-                if (agentIds[i] != agentTestCaseId || userNums[i] != userNumId)
-                {
-                    continue;
-                }
-                final long time = baseTime + timeOffsets[i];
-                if (time < windowStart || time > windowEnd)
-                {
-                    continue;
-                }
-                final String name = safeLookup(timerNames, timerIds[i]);
-                final String msg = safeLookup(strings, msgIds[i]);
-                childItems.add(new SessionNode(
-                    "E", time, 0, time, name, name, false, 0,
-                    null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    null, true, null, null, null, msg, null, null, null,
-                    Collections.emptyList()
-                ));
-            }
-        }
+                return local != null ? local.stream() : java.util.stream.Stream.empty();
+            })
+            .toList();
+        childItems.addAll(eventNodes);
 
         // Scan Requests ('R') using column pointer index to read only timeOffsets + userNumbers first
         final int reqMask = RequestChunkHandler.COL_TIME_OFFSETS

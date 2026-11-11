@@ -239,6 +239,17 @@ public class TimerChunkHandler implements ChunkTypeHandler
         }
     }
 
+    private static final class ScanScratch
+    {
+        int[] timeOffsets = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] timerIds = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] agentIds = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] runTimes = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+        int[] userNumbers = new int[ChunkBuilder.DEFAULT_CHUNK_CAPACITY];
+    }
+
+    private static final ThreadLocal<ScanScratch> SCAN_SCRATCH = ThreadLocal.withInitial(ScanScratch::new);
+
     /**
      * High-performance container-based scan for timer chunks ('A' - Actions, 'C' - Custom, 'P' - PageLoad).
      * <p>
@@ -268,29 +279,18 @@ public class TimerChunkHandler implements ChunkTypeHandler
         final int rowCount = c.getRowCount();
         final long baseTime = c.getMinTime();
 
-        // 2. SIMD columnar decompression
-        final int[] timeOffsets = FastIntegerCodec.decompress(c.compTimeOffsets);
-        final int[] timerIds = FastIntegerCodec.decompress(c.compTimerNameIds);
-        final int[] agentIds = FastIntegerCodec.decompress(c.compAgentTestCaseIds);
-        final int[] runTimes = FastIntegerCodec.decompress(c.compRunTimes);
+        // 2. SIMD columnar decompression into thread-local scratch buffers
+        final ScanScratch scratch = SCAN_SCRATCH.get();
+        final int[] timeOffsets = FastIntegerCodec.decompressTo(c.compTimeOffsets, scratch.timeOffsets);
+        final int[] timerIds = FastIntegerCodec.decompressTo(c.compTimerNameIds, scratch.timerIds);
+        final int[] agentIds = FastIntegerCodec.decompressTo(c.compAgentTestCaseIds, scratch.agentIds);
+        final int[] runTimes = FastIntegerCodec.decompressTo(c.compRunTimes, scratch.runTimes);
         final int[] userNumbers = c.compUserNumbers != null && c.compUserNumbers.length > 0
-            ? FastIntegerCodec.decompress(c.compUserNumbers) : null;
+            ? FastIntegerCodec.decompressTo(c.compUserNumbers, scratch.userNumbers) : null;
         final RoaringBitmap failedRows = c.getFailedRows();
         final boolean anyFailed = !failedRows.isEmpty();
-
-        // Convert failed bitmap to fast boolean lookup table if any rows failed
-        boolean[] failedLookup = null;
-        if (anyFailed)
-        {
-            failedLookup = new boolean[rowCount];
-            for (final int r : failedRows)
-            {
-                if (r < rowCount)
-                {
-                    failedLookup[r] = true;
-                }
-            }
-        }
+        final org.roaringbitmap.PeekableIntIterator failedIt = anyFailed ? failedRows.getIntIterator() : null;
+        int nextFailedRow = (failedIt != null && failedIt.hasNext()) ? failedIt.next() : -1;
 
         // Direct read-only dictionary arrays for high-throughput inner loop lookups
         final String[] timerNames = dicts.getTimerNamesArray();
@@ -317,7 +317,16 @@ public class TimerChunkHandler implements ChunkTypeHandler
             final int timerId = timerIds[i];
             final int agentId = agentIds[i];
             final int rt = runTimes[i];
-            final boolean failed = failedLookup != null && failedLookup[i];
+            final boolean failed;
+            if (i == nextFailedRow)
+            {
+                failed = true;
+                nextFailedRow = failedIt.hasNext() ? failedIt.next() : -1;
+            }
+            else
+            {
+                failed = false;
+            }
 
             // Fine-grained row-level check
             if (!predicate.testRow(time, timerId, agentId, rt, failed))
@@ -343,6 +352,10 @@ public class TimerChunkHandler implements ChunkTypeHandler
             else if (tc == 'C')
             {
                 data = container.getOrCreateCustomData(containerIndex++);
+            }
+            else if (tc == 'P')
+            {
+                data = container.getOrCreatePageLoadTimingData(containerIndex++);
             }
             else
             {

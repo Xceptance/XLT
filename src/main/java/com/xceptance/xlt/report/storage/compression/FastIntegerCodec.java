@@ -251,8 +251,8 @@ public final class FastIntegerCodec
             return GENERAL_COMPRESSOR.get().uncompress(compressed);
         }
 
-        // FastPFOR128 assumes 0-bitwidth blocks in the output array are zero-initialized
-        Arrays.fill(reuseBuffer, 0, uncompressedLength, 0);
+        // FastPFOR128's BitPacking.fastunpack0 and VariableByte.headlessUncompress overwrite all
+        // [0, uncompressedLength) output slots directly, so pre-zeroing reuseBuffer is unnecessary.
         final IntWrapper inpos = new IntWrapper(1);
         final IntWrapper outpos = new IntWrapper(0);
         GENERAL_CODEC.get().headlessUncompress(compressed, inpos, compressed.length - 1, reuseBuffer, outpos, uncompressedLength);

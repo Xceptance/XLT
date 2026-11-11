@@ -21,6 +21,7 @@ import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
@@ -101,6 +102,11 @@ public class PostProcessedDataContainer
      * Pre-allocated pool of WebVitalData instances for zero-allocation chunk processing.
      */
     private WebVitalData[] webVitalDataPool;
+
+    /**
+     * Pre-allocated pool of PageLoadTimingData instances for zero-allocation chunk processing.
+     */
+    private PageLoadTimingData[] pageLoadTimingDataPool;
 
     /**
      * Optional reference to the source chunk from which the current records were scanned.
@@ -355,6 +361,34 @@ public class PostProcessedDataContainer
             webVitalDataPool[index] = wv;
         }
         return wv;
+    }
+
+    /**
+     * Obtains a reusable {@link PageLoadTimingData} instance from this container's pre-allocated pool,
+     * avoiding heap allocations during page-load timing chunk scanning.
+     *
+     * @param index
+     *            the row index within the current chunk
+     * @return the pooled {@link PageLoadTimingData} instance
+     */
+    public PageLoadTimingData getOrCreatePageLoadTimingData(final int index)
+    {
+        if (pageLoadTimingDataPool == null)
+        {
+            pageLoadTimingDataPool = new PageLoadTimingData[65536];
+        }
+        else if (index >= pageLoadTimingDataPool.length)
+        {
+            pageLoadTimingDataPool = java.util.Arrays.copyOf(pageLoadTimingDataPool, Math.max(pageLoadTimingDataPool.length * 2, index + 1));
+        }
+
+        PageLoadTimingData p = pageLoadTimingDataPool[index];
+        if (p == null)
+        {
+            p = new PageLoadTimingData();
+            pageLoadTimingDataPool[index] = p;
+        }
+        return p;
     }
 
     /**

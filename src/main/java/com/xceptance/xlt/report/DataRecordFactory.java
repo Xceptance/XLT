@@ -18,10 +18,20 @@ package com.xceptance.xlt.report;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.xceptance.common.util.CsvByteColumns;
+import com.xceptance.xlt.agent.JvmResourceUsageData;
 import com.xceptance.xlt.api.engine.AbstractData;
+import com.xceptance.xlt.api.engine.ActionData;
+import com.xceptance.xlt.api.engine.CustomData;
+import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.EventData;
+import com.xceptance.xlt.api.engine.PageLoadTimingData;
+import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.util.XltException;
 
 /**
@@ -36,15 +46,21 @@ public class DataRecordFactory
      * <p>
      * Sizing the table to 256 eliminates the {@code - offset} subtraction on every record and allows the JIT
      * compiler to statically prove that {@code typeCode & 0xFF} is always within {@code [0, 255]}, eliding
-     * the array bounds check completely. All unconfigured slots are pre-filled with {@link UnsupportedData}'s
-     * constructor so unmapped bytes never trigger {@link NullPointerException} or {@link ArrayIndexOutOfBoundsException}
-     * while adding zero conditional branches to the hot path.
+     * the array bounds check completely. Standard built-in data record classes use direct constructor method
+     * references (zero reflection overhead), while unconfigured slots use {@link UnsupportedData#new} so unmapped
+     * bytes never trigger {@link NullPointerException} or {@link ArrayIndexOutOfBoundsException} while adding zero
+     * conditional branches to the hot path.
      */
     @SuppressWarnings("unchecked")
-    private final Constructor<? extends Data>[] constructors = new Constructor[256];
+    private final Supplier<? extends Data>[] suppliers = new Supplier[256];
+
+    private final boolean standardRequestData;
+    private final boolean standardActionData;
+    private final boolean standardTransactionData;
+    private final boolean standardCustomData;
 
     /**
-     * Sentinel data class whose constructor is installed in all unconfigured slots of {@link #constructors}.
+     * Sentinel data class whose supplier is installed in all unconfigured slots of {@link #suppliers}.
      */
     public static final class UnsupportedData extends AbstractData
     {
@@ -74,31 +90,77 @@ public class DataRecordFactory
             throw new XltException("No Data classes configured");
         }
 
-        try
-        {
-            Arrays.fill(constructors, UnsupportedData.class.getConstructor());
-        }
-        catch (final NoSuchMethodException | SecurityException e)
-        {
-            throw new XltException("Could not initialize fallback constructor", e);
-        }
+        Arrays.fill(suppliers, (Supplier<Data>) UnsupportedData::new);
 
-        // fill configured slots with constructor references
+        // fill configured slots with direct method references or constructor suppliers
         for (final Map.Entry<String, Class<? extends Data>> entry : dataClasses.entrySet())
         {
             final int typeCode = entry.getKey().charAt(0) & 0xFF;
             final Class<? extends Data> clazz = entry.getValue();
 
-            try
-            {
-                final Constructor<? extends Data> constructor = clazz.getConstructor();
-                constructors[typeCode] = constructor;
-            }
-            catch (final NoSuchMethodException | SecurityException e)
-            {
-                throw new XltException("Could not determine default constructor of class " + clazz.getName(), e);
-            }
+            suppliers[typeCode] = createSupplier(clazz);
         }
+
+        this.standardRequestData = dataClasses.get("R") == RequestData.class;
+        this.standardActionData = dataClasses.get("A") == ActionData.class;
+        this.standardTransactionData = dataClasses.get("T") == TransactionData.class;
+        this.standardCustomData = dataClasses.get("C") == CustomData.class;
+    }
+
+    private static Supplier<? extends Data> createSupplier(final Class<? extends Data> clazz)
+    {
+        if (clazz == RequestData.class) return RequestData::new;
+        if (clazz == ActionData.class) return ActionData::new;
+        if (clazz == TransactionData.class) return TransactionData::new;
+        if (clazz == CustomData.class) return CustomData::new;
+        if (clazz == EventData.class) return EventData::new;
+        if (clazz == CustomValue.class) return CustomValue::new;
+        if (clazz == PageLoadTimingData.class) return PageLoadTimingData::new;
+        if (clazz == WebVitalData.class) return WebVitalData::new;
+        if (clazz == JvmResourceUsageData.class) return JvmResourceUsageData::new;
+
+        try
+        {
+            final Constructor<? extends Data> constructor = clazz.getConstructor();
+            return () -> {
+                try
+                {
+                    return constructor.newInstance();
+                }
+                catch (final RuntimeException e)
+                {
+                    throw e;
+                }
+                catch (final Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+        catch (final NoSuchMethodException | SecurityException e)
+        {
+            throw new XltException("Could not determine default constructor of class " + clazz.getName(), e);
+        }
+    }
+
+    public boolean isStandardRequestData()
+    {
+        return standardRequestData;
+    }
+
+    public boolean isStandardActionData()
+    {
+        return standardActionData;
+    }
+
+    public boolean isStandardTransactionData()
+    {
+        return standardTransactionData;
+    }
+
+    public boolean isStandardCustomData()
+    {
+        return standardCustomData;
     }
 
     /**
@@ -111,7 +173,7 @@ public class DataRecordFactory
      */
     public Data createStatistics(final byte typeCode) throws Exception
     {
-        return constructors[typeCode & 0xFF].newInstance();
+        return suppliers[typeCode & 0xFF].get();
     }
 
     /**
@@ -124,6 +186,6 @@ public class DataRecordFactory
      */
     public Data createStatistics(final char typeCode) throws Exception
     {
-        return constructors[Math.min(typeCode, 255)].newInstance();
+        return suppliers[Math.min(typeCode, 255)].get();
     }
 }

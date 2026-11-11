@@ -90,10 +90,11 @@ public class MergeRuleProcessor
             String stripped = strippedNamesCache.get(requestName);
             if (stripped == null)
             {
-                final int firstDotPos = requestName.indexOf(".");
+                final int firstDotPos = requestName.indexOf('.');
                 if (firstDotPos > 0)
                 {
                     stripped = requestName.substring(0, firstDotPos);
+                    stripped.hashCode();
                 }
                 else
                 {

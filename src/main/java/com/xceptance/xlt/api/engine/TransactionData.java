@@ -275,34 +275,44 @@ public class TransactionData extends TimerData
         super.setRemainingValues(values);
 
         // process the stack trace
-        // TODO performance
-        stackTrace = values.toString(5).trim();
-        if (stackTrace.length() == 0)
+        if (values.getLength(5) == 0)
         {
             stackTrace = null;
         }
         else
         {
-            // undo any "quoted" character
-            // TODO performance
-            stackTrace = stackTrace.replace("\\", "\n");
+            stackTrace = values.toString(5).trim();
+            if (stackTrace.length() == 0)
+            {
+                stackTrace = null;
+            }
+            else
+            {
+                // undo any "quoted" character
+                stackTrace = stackTrace.replace("\\", "\n");
+            }
         }
 
         // be defensive so a report can be generated also for older results
         final int length = values.size();
         if (length > 6)
         {
-            setFailedActionName(values.toString(6));
+            setFailedActionName(values.toInternedString(6));
+        }
+        else
+        {
+            setFailedActionName(null);
         }
 
         // test user number and directory name (since XLT 4.13.2)
         if (length > 7)
         {
-            setTestUserNumber(values.toString(7));
+            setTestUserNumber(values.toInternedString(7));
             setDirectoryName(values.toString(8));
         }
         else
         {
+            setDirectoryName(null);
             // fallback for older results: test user number and directory name may be present in the stack trace
             if (stackTrace != null)
             {
