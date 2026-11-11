@@ -16,10 +16,14 @@
 package com.xceptance.xlt.report.server;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -510,15 +514,96 @@ public class ChunkExplorerServerTest
 
         // Server with null resultsDir returns 404 on /dumps/*
         final ColumnarQueryEngine noDumpsEngine = new ColumnarQueryEngine(storage, null);
-        try (final ChunkExplorerServer noDumpsServer = new ChunkExplorerServer(noDumpsEngine, 0))
+        try (final ChunkExplorerServer noDumpsServer = new ChunkExplorerServer(noDumpsEngine, "localhost", 0))
         {
             noDumpsServer.start();
             assertEquals(noDumpsEngine, noDumpsServer.getQueryEngine());
+            assertTrue(noDumpsServer.getBaseUrl().startsWith("http://localhost:"));
             final HttpRequest dumpReq = HttpRequest.newBuilder()
                                                    .uri(URI.create(noDumpsServer.getBaseUrl() + "/dumps/ac001/TCheckout/0/output/1000/index.html"))
                                                    .GET()
                                                    .build();
             assertEquals(404, httpClient.send(dumpReq, HttpResponse.BodyHandlers.ofString()).statusCode());
+        }
+    }
+
+    @Test
+    public void testLoopbackCorsAllowlistAndPayloadCapC7() throws Exception
+    {
+        // 1. Unit assertions on loopback Origin validation
+        assertTrue(ChunkApiServlet.isLoopbackOrigin("http://127.0.0.1:8484"));
+        assertTrue(ChunkApiServlet.isLoopbackOrigin("http://localhost:3000"));
+        assertTrue(ChunkApiServlet.isLoopbackOrigin("https://[::1]:8484"));
+        assertFalse(ChunkApiServlet.isLoopbackOrigin("https://evil.example.com"));
+        assertFalse(ChunkApiServlet.isLoopbackOrigin("http://127.0.0.1.evil.example.com"));
+        assertFalse(ChunkApiServlet.isLoopbackOrigin("null"));
+        assertFalse(ChunkApiServlet.isLoopbackOrigin("file:///tmp/index.html"));
+
+        // 2. Live HTTP requests with Origin header over raw TCP socket (since java.net.http.HttpClient restricts Origin)
+        final String allowedResp = sendRawHttp(
+            "GET /api/v1/metadata HTTP/1.1\r\n"
+            + "Host: 127.0.0.1:" + server.getPort() + "\r\n"
+            + "Origin: http://127.0.0.1:" + server.getPort() + "\r\n"
+            + "Connection: close\r\n\r\n"
+        );
+        assertTrue(allowedResp.startsWith("HTTP/1.1 200"));
+        assertTrue(allowedResp.contains("Access-Control-Allow-Origin: http://127.0.0.1:" + server.getPort()));
+        assertTrue(allowedResp.contains("Vary: Origin"));
+
+        final String evilGetResp = sendRawHttp(
+            "GET /api/v1/metadata HTTP/1.1\r\n"
+            + "Host: 127.0.0.1:" + server.getPort() + "\r\n"
+            + "Origin: https://evil.example.com\r\n"
+            + "Connection: close\r\n\r\n"
+        );
+        assertTrue(evilGetResp.startsWith("HTTP/1.1 403"));
+        assertFalse(evilGetResp.contains("Access-Control-Allow-Origin"));
+
+        final String evilOptionsResp = sendRawHttp(
+            "OPTIONS /api/v1/inspect HTTP/1.1\r\n"
+            + "Host: 127.0.0.1:" + server.getPort() + "\r\n"
+            + "Origin: https://evil.example.com\r\n"
+            + "Connection: close\r\n\r\n"
+        );
+        assertTrue(evilOptionsResp.startsWith("HTTP/1.1 403"));
+        assertFalse(evilOptionsResp.contains("Access-Control-Allow-Origin"));
+
+        final String evilPostResp = sendRawHttp(
+            "POST /api/v1/inspect HTTP/1.1\r\n"
+            + "Host: 127.0.0.1:" + server.getPort() + "\r\n"
+            + "Origin: https://evil.example.com\r\n"
+            + "Content-Type: application/json\r\n"
+            + "Content-Length: 2\r\n"
+            + "Connection: close\r\n\r\n"
+            + "{}"
+        );
+        assertTrue(evilPostResp.startsWith("HTTP/1.1 403"));
+        assertFalse(evilPostResp.contains("Access-Control-Allow-Origin"));
+
+        // 3. Oversized JSON request body (> 1 MiB) must be rejected with 400 Bad Request
+        final byte[] oversizedJson = new byte[ChunkApiServlet.MAX_JSON_BODY_BYTES + 128];
+        java.util.Arrays.fill(oversizedJson, (byte) ' ');
+        oversizedJson[0] = '{';
+        oversizedJson[oversizedJson.length - 1] = '}';
+        final HttpRequest oversizedReq = HttpRequest.newBuilder()
+                                                    .uri(URI.create(server.getBaseUrl() + "/api/v1/timeseries"))
+                                                    .header("Content-Type", "application/json")
+                                                    .POST(HttpRequest.BodyPublishers.ofByteArray(oversizedJson))
+                                                    .build();
+        final HttpResponse<String> oversizedResp = httpClient.send(oversizedReq, HttpResponse.BodyHandlers.ofString());
+        assertEquals(400, oversizedResp.statusCode());
+        assertTrue(oversizedResp.body().contains("exceeds maximum allowed size"));
+    }
+
+    private String sendRawHttp(final String rawRequest) throws Exception
+    {
+        try (final Socket socket = new Socket("127.0.0.1", server.getPort());
+             final OutputStream out = socket.getOutputStream();
+             final InputStream in = socket.getInputStream())
+        {
+            out.write(rawRequest.getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
 }

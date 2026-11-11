@@ -73,7 +73,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
     public GenericDataChunkHandler(final char typeCode, final Class<? extends Data> recordClass)
     {
         this.typeCode = typeCode;
-        this.recordClass = recordClass;
+        setRecordClass(recordClass);
     }
 
     /**
@@ -81,9 +81,15 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
      *
      * @param recordClass
      *            target class
+     * @throws IllegalArgumentException
+     *             if {@code recordClass} is non-null and does not implement {@link Data}
      */
     public void setRecordClass(final Class<? extends Data> recordClass)
     {
+        if (recordClass != null && !Data.class.isAssignableFrom(recordClass))
+        {
+            throw new IllegalArgumentException("recordClass must implement Data: " + recordClass.getName());
+        }
         this.recordClass = recordClass;
     }
 
@@ -176,9 +182,11 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
         {
             try
             {
-                @SuppressWarnings("unchecked")
-                final Class<? extends Data> clazz = (Class<? extends Data>) Class.forName(className);
-                this.recordClass = clazz;
+                final Class<?> rawClass = Class.forName(className, false, GenericDataChunkHandler.class.getClassLoader());
+                if (Data.class.isAssignableFrom(rawClass))
+                {
+                    this.recordClass = rawClass.asSubclass(Data.class);
+                }
             }
             catch (final Exception ignored)
             {
@@ -336,7 +344,7 @@ public class GenericDataChunkHandler implements ChunkTypeHandler
      */
     private Data createRecordInstance()
     {
-        if (recordClass == null)
+        if (recordClass == null || !Data.class.isAssignableFrom(recordClass))
         {
             return null;
         }

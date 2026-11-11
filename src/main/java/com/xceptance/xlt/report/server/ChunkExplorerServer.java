@@ -78,6 +78,9 @@ public class ChunkExplorerServer implements AutoCloseable
     /** Backing columnar query engine. */
     private final ColumnarQueryEngine queryEngine;
 
+    /** Bind host address for URL formatting. */
+    private final String host;
+
     /** Embedded Jetty server instance. */
     private final Server server;
 
@@ -107,7 +110,8 @@ public class ChunkExplorerServer implements AutoCloseable
     public ChunkExplorerServer(final ColumnarQueryEngine queryEngine, final String host, final int port)
     {
         this.queryEngine = Objects.requireNonNull(queryEngine, "queryEngine cannot be null");
-        this.server = new Server(new InetSocketAddress(Objects.requireNonNull(host, "host cannot be null"), port));
+        this.host = Objects.requireNonNull(host, "host cannot be null");
+        this.server = new Server(new InetSocketAddress(this.host, port));
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         context.setContextPath("/");
@@ -181,7 +185,8 @@ public class ChunkExplorerServer implements AutoCloseable
      */
     public String getBaseUrl()
     {
-        return "http://127.0.0.1:" + getPort();
+        final String formattedHost = (host.indexOf(':') >= 0 && !host.startsWith("[")) ? "[" + host + "]" : host;
+        return "http://" + formattedHost + ":" + getPort();
     }
 
     /**

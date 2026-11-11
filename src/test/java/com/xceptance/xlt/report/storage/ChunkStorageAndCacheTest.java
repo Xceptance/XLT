@@ -2987,6 +2987,91 @@ public class ChunkStorageAndCacheTest
         }
     }
 
+    public static boolean nonDataStaticInitializerRan = false;
+
+    public static class NonDataGadgetClass
+    {
+        static
+        {
+            nonDataStaticInitializerRan = true;
+        }
+    }
+
+    /**
+     * Verifies C7 fix: GenericDataChunkHandler must not initialize or instantiate non-Data classes
+     * referenced in a chunk header, and must reject non-Data classes in setRecordClass.
+     */
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testGenericDataChunkHandlerRejectsNonDataClassC7() throws Exception
+    {
+        final com.xceptance.xlt.report.storage.chunk.GenericDataChunkHandler handler =
+            new com.xceptance.xlt.report.storage.chunk.GenericDataChunkHandler('Z');
+
+        // 1. Raw unchecked call to setRecordClass with a non-Data class must throw IllegalArgumentException
+        try
+        {
+            handler.setRecordClass((Class) String.class);
+            Assert.fail("Expected IllegalArgumentException for non-Data class");
+        }
+        catch (final IllegalArgumentException expected)
+        {
+            Assert.assertTrue(expected.getMessage().contains("recordClass must implement Data"));
+        }
+
+        // 2. Write a valid GenericDataChunk, then tamper with the serialized class name to point to NonDataGadgetClass
+        final GlobalDictionaries dicts = new GlobalDictionaries();
+        final com.xceptance.xlt.report.storage.chunk.ChunkBuilder builder = handler.newChunkBuilder(dicts);
+        final CustomLogRecord rec = new CustomLogRecord("Timer1", "val1", "val2");
+        rec.setTime(1000L);
+        rec.setAgentName("Agent1");
+        rec.setTransactionName("Tx1");
+        builder.append(rec);
+        final com.xceptance.xlt.report.storage.chunk.Chunk sealed = builder.seal();
+
+        final ByteArrayOutputStream validBaos = new ByteArrayOutputStream();
+        try (final DataOutputStream out = new DataOutputStream(validBaos))
+        {
+            // Temporarily set a valid class to serialize a standard chunk, or write header manually
+            handler.setRecordClass(CustomLogRecord.class);
+            handler.writeChunk(sealed, out);
+        }
+        final byte[] validBytes = validBaos.toByteArray();
+
+        // Replace the className UTF string in the serialized stream with NonDataGadgetClass
+        final ByteArrayInputStream validIn = new ByteArrayInputStream(validBytes);
+        final DataInputStream dis = new DataInputStream(validIn);
+        final char tc = dis.readChar();
+        StorageIoUtils.readUtfString(dis); // skip original className
+        final byte[] remainder = dis.readAllBytes();
+
+        final ByteArrayOutputStream tamperedBaos = new ByteArrayOutputStream();
+        try (final DataOutputStream out = new DataOutputStream(tamperedBaos))
+        {
+            out.writeChar(tc);
+            StorageIoUtils.writeUtfString(
+                out,
+                "com.xceptance.xlt.report.storage.ChunkStorageAndCacheTest$NonDataGadgetClass"
+            );
+            out.write(remainder);
+        }
+
+        final com.xceptance.xlt.report.storage.chunk.GenericDataChunkHandler untrustedReader =
+            new com.xceptance.xlt.report.storage.chunk.GenericDataChunkHandler('Z');
+        final com.xceptance.xlt.report.storage.chunk.Chunk deserialized;
+        try (final DataInputStream in = new DataInputStream(new ByteArrayInputStream(tamperedBaos.toByteArray())))
+        {
+            deserialized = untrustedReader.readChunk(in, dicts);
+        }
+
+        Assert.assertFalse("Static initializer of non-Data class must NOT be executed during readChunk",
+                           nonDataStaticInitializerRan);
+
+        final List<Data> scanned = new ArrayList<>();
+        untrustedReader.scan(deserialized, new ScanPredicate(0, Long.MAX_VALUE, null, null), scanned::add, dicts);
+        Assert.assertTrue("Non-Data class must not be instantiated during scan", scanned.isEmpty());
+    }
+
     public static class VariableColumnRecord extends com.xceptance.xlt.api.engine.AbstractData
     {
         private List<String> serializeColumns;

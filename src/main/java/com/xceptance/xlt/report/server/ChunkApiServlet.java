@@ -17,7 +17,9 @@ package com.xceptance.xlt.report.server;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,6 +54,9 @@ public class ChunkApiServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
 
+    /** Maximum allowed JSON request payload size (1 MiB) to prevent memory exhaustion on POST endpoints. */
+    public static final int MAX_JSON_BODY_BYTES = 1024 * 1024;
+
     /** Backing columnar query engine. */
     private final transient ColumnarQueryEngine queryEngine;
 
@@ -77,14 +82,26 @@ public class ChunkApiServlet extends HttpServlet
     @Override
     protected void doOptions(final HttpServletRequest req, final HttpServletResponse resp)
     {
-        applyStandardHeaders(resp);
+        if (!applyStandardHeadersAndCheckOrigin(req, resp))
+        {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
         resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException
     {
-        applyStandardHeaders(resp);
+        if (!applyStandardHeadersAndCheckOrigin(req, resp))
+        {
+            writeJson(
+                resp,
+                HttpServletResponse.SC_FORBIDDEN,
+                Map.of("error", "Cross-origin requests from non-loopback origins are forbidden")
+            );
+            return;
+        }
         final String path = normalizePath(req.getPathInfo());
 
         try
@@ -148,7 +165,15 @@ public class ChunkApiServlet extends HttpServlet
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws IOException
     {
-        applyStandardHeaders(resp);
+        if (!applyStandardHeadersAndCheckOrigin(req, resp))
+        {
+            writeJson(
+                resp,
+                HttpServletResponse.SC_FORBIDDEN,
+                Map.of("error", "Cross-origin requests from non-loopback origins are forbidden")
+            );
+            return;
+        }
         final String path = normalizePath(req.getPathInfo());
 
         try
@@ -234,9 +259,18 @@ public class ChunkApiServlet extends HttpServlet
 
     private <T> T readJsonBody(final HttpServletRequest req, final Class<T> clazz) throws IOException
     {
+        final long declaredLength = req.getContentLengthLong();
+        if (declaredLength > MAX_JSON_BODY_BYTES)
+        {
+            throw new IOException("Request body exceeds maximum allowed size of " + MAX_JSON_BODY_BYTES + " bytes");
+        }
         try (final InputStream in = req.getInputStream())
         {
-            final byte[] bytes = in.readAllBytes();
+            final byte[] bytes = in.readNBytes(MAX_JSON_BODY_BYTES + 1);
+            if (bytes.length > MAX_JSON_BODY_BYTES)
+            {
+                throw new IOException("Request body exceeds maximum allowed size of " + MAX_JSON_BODY_BYTES + " bytes");
+            }
             if (bytes.length == 0)
             {
                 return mapper.readValue("{}", clazz);
@@ -254,13 +288,65 @@ public class ChunkApiServlet extends HttpServlet
         resp.getOutputStream().write(jsonBytes);
     }
 
-    private static void applyStandardHeaders(final HttpServletResponse resp)
+    private static boolean applyStandardHeadersAndCheckOrigin(final HttpServletRequest req, final HttpServletResponse resp)
     {
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        resp.setHeader("Access-Control-Allow-Origin", "*");
-        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
         resp.setHeader("Cache-Control", "no-store");
+
+        final String origin = req.getHeader("Origin");
+        if (origin == null || origin.isBlank())
+        {
+            return true;
+        }
+        if (isLoopbackOrigin(origin))
+        {
+            resp.setHeader("Access-Control-Allow-Origin", origin);
+            resp.setHeader("Vary", "Origin");
+            resp.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+            return true;
+        }
+        return false;
+    }
+
+    static boolean isLoopbackOrigin(final String origin)
+    {
+        if (origin == null || origin.isBlank())
+        {
+            return false;
+        }
+        try
+        {
+            final URI uri = URI.create(origin.trim());
+            final String scheme = uri.getScheme();
+            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https")))
+            {
+                return false;
+            }
+            if (uri.getUserInfo() != null || uri.getQuery() != null || uri.getFragment() != null)
+            {
+                return false;
+            }
+            final String path = uri.getPath();
+            if (path != null && !path.isEmpty() && !"/".equals(path))
+            {
+                return false;
+            }
+            final String host = uri.getHost();
+            if (host == null)
+            {
+                return false;
+            }
+            final String lowerHost = host.toLowerCase(Locale.ROOT);
+            return "127.0.0.1".equals(lowerHost)
+                || "localhost".equals(lowerHost)
+                || "::1".equals(lowerHost)
+                || "[::1]".equals(lowerHost);
+        }
+        catch (final IllegalArgumentException e)
+        {
+            return false;
+        }
     }
 
     private static String normalizePath(final String pathInfo)
