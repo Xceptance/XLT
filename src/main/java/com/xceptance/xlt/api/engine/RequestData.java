@@ -135,6 +135,11 @@ public class RequestData extends TimerData
     private int dnsTime;
 
     /**
+     * Raw CSV row byte buffer backing lazily decoded {@code requestId}, {@code responseId}, and {@code formData} slices.
+     */
+    private byte[] rowBytes;
+
+    /**
      * The value to identify a request.
      */
     private String requestId;
@@ -344,9 +349,10 @@ public class RequestData extends TimerData
      */
     public String getRequestId()
     {
-        if (requestId == null && urlBytes != null && requestIdLength >= 0)
+        if (requestId == null && rowBytes != null && requestIdLength >= 0)
         {
-            requestId = requestIdLength == 0 ? "" : new String(urlBytes, requestIdOffset, requestIdLength, StandardCharsets.UTF_8);
+            requestId = requestIdLength == 0 ? "" : new String(rowBytes, requestIdOffset, requestIdLength, StandardCharsets.UTF_8);
+            requestIdLength = -1;
         }
         return requestId;
     }
@@ -358,9 +364,10 @@ public class RequestData extends TimerData
      */
     public String getResponseId()
     {
-        if (responseId == null && urlBytes != null && responseIdLength >= 0)
+        if (responseId == null && rowBytes != null && responseIdLength >= 0)
         {
-            responseId = responseIdLength == 0 ? "" : new String(urlBytes, responseIdOffset, responseIdLength, StandardCharsets.UTF_8);
+            responseId = responseIdLength == 0 ? "" : new String(rowBytes, responseIdOffset, responseIdLength, StandardCharsets.UTF_8);
+            responseIdLength = -1;
         }
         return responseId;
     }
@@ -472,9 +479,10 @@ public class RequestData extends TimerData
      */
     public String getFormData()
     {
-        if (formData == null && urlBytes != null && formDataLength >= 0)
+        if (formData == null && rowBytes != null && formDataLength >= 0)
         {
-            formData = formDataLength == 0 ? "" : new String(urlBytes, formDataOffset, formDataLength, StandardCharsets.UTF_8);
+            formData = formDataLength == 0 ? "" : new String(rowBytes, formDataOffset, formDataLength, StandardCharsets.UTF_8);
+            formDataLength = -1;
         }
         return formData;
     }
@@ -606,6 +614,10 @@ public class RequestData extends TimerData
     {
         this.requestId = id;
         this.requestIdLength = -1;
+        if (this.responseIdLength < 0 && this.formDataLength < 0)
+        {
+            this.rowBytes = null;
+        }
     }
 
     /**
@@ -618,6 +630,10 @@ public class RequestData extends TimerData
     {
         this.responseId = id;
         this.responseIdLength = -1;
+        if (this.requestIdLength < 0 && this.formDataLength < 0)
+        {
+            this.rowBytes = null;
+        }
     }
 
     /**
@@ -743,6 +759,7 @@ public class RequestData extends TimerData
     {
         this.url = url;
         this.originalUrl = url;
+        this.urlBytes = null;
         this.urlOffset = 0;
         this.urlLength = 0;
         this.urlSliceHash = 0;
@@ -800,6 +817,36 @@ public class RequestData extends TimerData
         }
         targetSlice.set(this.urlBytes, this.urlOffset, this.urlLength, h);
         return targetSlice;
+    }
+
+    /**
+     * Returns a {@link CharSequence} view of this request's URL suitable for regex matching and
+     * placeholder substitution. Uses the zero-allocation {@code targetSlice} fast path when the URL
+     * is unmaterialized pure 7-bit ASCII bytes, and falls back to the UTF-8 decoded {@link #getUrl()}
+     * {@link String} whenever multi-byte UTF-8 bytes are present.
+     *
+     * @param targetSlice
+     *            the per-condition reusable {@link com.xceptance.common.util.ByteSlice}
+     * @return an ASCII {@link com.xceptance.common.util.ByteSlice} or UTF-8 {@link String}
+     */
+    public CharSequence getUrlCharSequence(final com.xceptance.common.util.ByteSlice targetSlice)
+    {
+        if (this.url == null && this.urlBytes != null && this.urlLength > 0)
+        {
+            int h = this.urlSliceHash;
+            if (h == 0)
+            {
+                if (!com.xceptance.common.util.ByteSlice.isAscii(this.urlBytes, this.urlOffset, this.urlLength))
+                {
+                    return getUrl();
+                }
+                h = com.xceptance.common.util.ByteSlice.computeHash(this.urlBytes, this.urlOffset, this.urlLength);
+                this.urlSliceHash = h;
+            }
+            targetSlice.set(this.urlBytes, this.urlOffset, this.urlLength, h);
+            return targetSlice;
+        }
+        return getUrl();
     }
 
     /**
@@ -901,6 +948,10 @@ public class RequestData extends TimerData
     {
         this.formData = formData;
         this.formDataLength = -1;
+        if (this.requestIdLength < 0 && this.responseIdLength < 0)
+        {
+            this.rowBytes = null;
+        }
     }
 
     /**
@@ -1003,13 +1054,20 @@ public class RequestData extends TimerData
     {
         super.setRemainingValues(values);
 
+        final int size = values.size();
+        if (size < 8)
+        {
+            throw new IllegalArgumentException("Insufficient columns for RequestData: " + size);
+        }
+
         setBytesSent(values.parseInt(5));
         setBytesReceived(values.parseInt(6));
         setResponseCode(values.parseInt(7));
 
-        if (values.size() > 23)
+        if (size > 23)
         {
             final byte[] buf = values.getBuffer();
+            this.rowBytes = buf;
             setUrl(buf, values.getOffset(8), values.getLength(8));
             setContentType(values.toInternedString(9));
 
@@ -1089,11 +1147,13 @@ public class RequestData extends TimerData
     private void parseLegacyValues(final CsvByteColumns values)
     {
         // Reset optional fields in case this RequestData instance was pooled and reused
+        this.rowBytes = null;
         this.url = null;
         this.originalUrl = null;
         this.urlBytes = null;
         this.urlOffset = 0;
         this.urlLength = 0;
+        this.urlSliceHash = 0;
         this.hashCodeOfUrlWithoutFragment = 0;
         this.host = null;
         this.contentType = null;
@@ -1125,7 +1185,7 @@ public class RequestData extends TimerData
             setContentType(values.toInternedString(9));
         }
 
-        if (length > 10)
+        if (length > 15)
         {
             setConnectTime(values.parseInt(10));
             setSendTime(values.parseInt(11));
@@ -1141,7 +1201,7 @@ public class RequestData extends TimerData
         }
 
         // XLT 4.6.6 (as hidden feature, officially released in XLT 4.7.0)
-        if (length > 17)
+        if (length > 19)
         {
             setHttpMethod(values.toHttpMethodString(17));
             setFormDataEncoding(values.toInternedString(18));
@@ -1158,7 +1218,10 @@ public class RequestData extends TimerData
         if (length > 21)
         {
             ipAddresses = values.toInternedString(21);
-            setResponseId(values.toString(22));
+            if (length > 22)
+            {
+                setResponseId(values.toString(22));
+            }
         }
 
         // XLT 7.0.0

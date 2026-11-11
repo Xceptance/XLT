@@ -586,6 +586,21 @@ public class JvmResourceUsageData extends AbstractData
         }
         else
         {
+            runnableThreadCount = 0;
+            blockedThreadCount = 0;
+            waitingThreadCount = 0;
+            minorGcCount = 0;
+            minorGcTime = 0;
+            minorGcCpuUsage = 0.0;
+            fullGcCount = 0;
+            fullGcTime = 0;
+            fullGcCpuUsage = 0.0;
+            minorGcTimeDiff = 0;
+            fullGcTimeDiff = 0;
+            minorGcCountDiff = 0;
+            fullGcCountDiff = 0;
+            totalCpuUsage = 0.0;
+
             // allow older reports to be regenerated
             if (values.size() >= 12)
             {

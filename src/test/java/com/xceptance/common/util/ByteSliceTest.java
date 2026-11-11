@@ -215,4 +215,31 @@ public class ByteSliceTest
         assertNotEquals(s1, s2);
         assertTrue(s1.compareTo(s2) < 0);
     }
+
+    @Test
+    public void testIsAsciiSwarAndTail()
+    {
+        for (int len = 0; len <= 35; len++)
+        {
+            final byte[] padded = new byte[len + 7];
+            for (int i = 0; i < padded.length; i++)
+            {
+                padded[i] = (byte) ('a' + (i % 26));
+            }
+            // Non-ASCII outside slice bounds must not trigger false negatives
+            padded[0] = (byte) 0xC3;
+            padded[padded.length - 1] = (byte) 0xBC;
+
+            assertTrue(ByteSlice.isAscii(padded, 3, len));
+            assertTrue(new ByteSlice(padded, 3, len).isAscii());
+
+            for (int pos = 0; pos < len; pos++)
+            {
+                padded[3 + pos] = (byte) 0x80;
+                org.junit.Assert.assertFalse(ByteSlice.isAscii(padded, 3, len));
+                org.junit.Assert.assertFalse(new ByteSlice(padded, 3, len).isAscii());
+                padded[3 + pos] = (byte) 'z';
+            }
+        }
+    }
 }

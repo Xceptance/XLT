@@ -124,11 +124,29 @@ public final class ByteSlice implements CharSequence, Comparable<ByteSlice>
      */
     public boolean isAscii()
     {
-        final byte[] b = this.buffer;
+        return isAscii(this.buffer, this.offset, this.length);
+    }
+
+    /**
+     * Returns whether all bytes in {@code b[offset .. offset + length)} are pure 7-bit ASCII ({@code >= 0}),
+     * scanning 8 bytes per step via 64-bit word loads.
+     */
+    public static boolean isAscii(final byte[] b, final int offset, final int length)
+    {
+        int i = offset;
         final int end = offset + length;
-        for (int i = offset; i < end; i++)
+        final int wordLimit = end - 7;
+        while (i < wordLimit)
         {
-            if (b[i] < 0)
+            if (((long) LONG_VIEW.get(b, i) & 0x8080808080808080L) != 0L)
+            {
+                return false;
+            }
+            i += 8;
+        }
+        while (i < end)
+        {
+            if (b[i++] < 0)
             {
                 return false;
             }

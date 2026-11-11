@@ -268,4 +268,21 @@ public class CsvByteColumnsTest
         assertTrue(cols.parseBoolean(3));
         assertFalse(cols.parseBoolean(4));
     }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testOutOfBoundsAfterResetDoesNotReadStaleColumn()
+    {
+        final byte[] wide = "a,b,c,d".getBytes(StandardCharsets.UTF_8);
+        final CsvByteColumns cols = new CsvByteColumns();
+        CsvByteLineDecoder.parse(cols, wide);
+        assertEquals(4, cols.size());
+        assertEquals("d", cols.toString(3));
+
+        final byte[] narrow = "x,y".getBytes(StandardCharsets.UTF_8);
+        CsvByteLineDecoder.parse(cols, narrow);
+        assertEquals(2, cols.size());
+
+        // Must throw IndexOutOfBoundsException rather than reading stale offset/length for column 3
+        cols.toString(2);
+    }
 }

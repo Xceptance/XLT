@@ -207,6 +207,47 @@ public class TransactionDataTest extends TimerDataTest
         Assert.assertEquals(dumpDirectoryPath, instance.getDumpDirectoryPath());
     }
 
+    @Test
+    public void testFromCSV_EightColumnsAndPooledReuse()
+    {
+        final com.xceptance.common.util.CsvByteColumns cols = new com.xceptance.common.util.CsvByteColumns(32);
+
+        // 1. Populate wide 9-column row first
+        final List<String> fullRow = new ArrayList<String>(commonValues);
+        fullRow.add(stackTraceWithoutDirectoryHintEncoded);
+        fullRow.add(failedActionName);
+        fullRow.add(testUserNumber);
+        fullRow.add(directoryName);
+        com.xceptance.common.util.CsvByteLineDecoder.parse(
+            cols, com.xceptance.common.util.CsvUtils.encode(fullRow).toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        instance.setAllValues(cols);
+        Assert.assertEquals(testUserNumber, instance.getTestUserNumber());
+        Assert.assertEquals(directoryName, instance.getDirectoryName());
+
+        // 2. Reuse both CsvByteColumns and pooled TransactionData with an 8-column row (missing directory column)
+        final List<String> eightColRow = new ArrayList<String>(commonValues);
+        eightColRow.add("");
+        eightColRow.add("");
+        eightColRow.add("42");
+        com.xceptance.common.util.CsvByteLineDecoder.parse(
+            cols, com.xceptance.common.util.CsvUtils.encode(eightColRow).toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        instance.setAllValues(cols);
+        Assert.assertNull(instance.getFailureStackTrace());
+        Assert.assertEquals("", instance.getFailedActionName());
+        Assert.assertEquals("42", instance.getTestUserNumber());
+        Assert.assertNull(instance.getDirectoryName());
+
+        // 3. Reuse pooled TransactionData with a legacy 6-column row (no failedAction, userNumber, or directoryName)
+        final List<String> sixColRow = new ArrayList<String>(commonValues);
+        sixColRow.add("");
+        com.xceptance.common.util.CsvByteLineDecoder.parse(
+            cols, com.xceptance.common.util.CsvUtils.encode(sixColRow).toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        instance.setAllValues(cols);
+        Assert.assertNull(instance.getFailedActionName());
+        Assert.assertNull(instance.getTestUserNumber());
+        Assert.assertNull(instance.getDirectoryName());
+    }
+
     /**
      * Tests the implementation of {@link TransactionData#toCSV()}.
      */

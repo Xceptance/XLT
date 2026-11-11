@@ -871,4 +871,44 @@ public class RequestDataTest extends TimerDataTest
         req.setUrl("#onlyfrag");
         Assert.assertEquals(0, req.hashCodeOfUrlWithoutFragment());
     }
+
+    @Test
+    public void testSetUrlClearsUrlBytesAndPreservesLazyRowSlices()
+    {
+        // 1. setUrl((String) null) after setUrl(byte[], ...) must clear urlBytes and return null
+        final RequestData pooled = new RequestData();
+        final byte[] urlBuf = "https://example.org/p".getBytes(StandardCharsets.UTF_8);
+        pooled.setUrl(urlBuf, 0, urlBuf.length);
+        Assert.assertTrue(pooled.hasUrlBytes());
+        pooled.setUrl((String) null);
+        Assert.assertFalse(pooled.hasUrlBytes());
+        Assert.assertNull(pooled.getUrlBytes());
+        Assert.assertNull(pooled.getUrl());
+
+        // 2. Rewriting URL via setUrl(String), setUrlFast(...), or setUrl(byte[], ...) must not corrupt
+        // unmaterialized requestId, responseId, or formData parsed from the 24-column CSV fast path
+        final String full24ColCsv = getXLT4_12_0_CSVLine(true) + "," + usedIpAddresses;
+
+        final RequestData reqStringUrl = fromCsv(full24ColCsv);
+        reqStringUrl.setUrl("https://rewritten.example.org/new");
+        Assert.assertEquals("https://rewritten.example.org/new", reqStringUrl.getUrl());
+        Assert.assertEquals(requestId, reqStringUrl.getRequestId());
+        Assert.assertEquals(responseId, reqStringUrl.getResponseId());
+        Assert.assertEquals(formData, reqStringUrl.getFormData());
+
+        final RequestData reqFastUrl = fromCsv(full24ColCsv);
+        reqFastUrl.setUrlFast("https://fast.example.org/x", "fast.example.org", 12345);
+        Assert.assertEquals("https://fast.example.org/x", reqFastUrl.getUrl());
+        Assert.assertEquals(requestId, reqFastUrl.getRequestId());
+        Assert.assertEquals(responseId, reqFastUrl.getResponseId());
+        Assert.assertEquals(formData, reqFastUrl.getFormData());
+
+        final RequestData reqByteUrl = fromCsv(full24ColCsv);
+        final byte[] otherBuf = "https://other.example.org/z".getBytes(StandardCharsets.UTF_8);
+        reqByteUrl.setUrl(otherBuf, 0, otherBuf.length);
+        Assert.assertEquals("https://other.example.org/z", reqByteUrl.getUrl());
+        Assert.assertEquals(requestId, reqByteUrl.getRequestId());
+        Assert.assertEquals(responseId, reqByteUrl.getResponseId());
+        Assert.assertEquals(formData, reqByteUrl.getFormData());
+    }
 }

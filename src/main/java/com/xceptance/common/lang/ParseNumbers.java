@@ -187,7 +187,7 @@ public final class ParseNumbers
             }
             if (d < '0' || d > '9')
             {
-                throw new NumberFormatException("Not a double " + s.toString());
+                return Double.parseDouble(s.toString());
             }
 
             value = ((value << 3) + (value << 1));
@@ -196,7 +196,7 @@ public final class ParseNumbers
 
         if (length >= 19)
         {
-            if (decimalPos == 0 || (length > 19 && value == 0))
+            if (decimalPos <= 0 || decimalPos >= fastLength - 1 || value < 100_000_000_000_000L)
             {
                 return Double.parseDouble(s.toString());
             }
@@ -205,7 +205,7 @@ public final class ParseNumbers
                 final int d = s.charAt(i);
                 if (d < '0' || d > '9')
                 {
-                    throw new NumberFormatException("Not a double " + s.toString());
+                    return Double.parseDouble(s.toString());
                 }
             }
         }
@@ -417,7 +417,7 @@ public final class ParseNumbers
         final int fastEnd = numLen > 19 ? i + 19 : end;
 
         long value = 0;
-        int decimalPos = 0;
+        int decimalPos = -1;
 
         // Decision: We intentionally do not check for duplicate decimal points. XLT numeric output
         // is well-formed, and omitting multi-dot validation avoids unnecessary branch checks in this
@@ -441,7 +441,7 @@ public final class ParseNumbers
 
         if (numLen >= 19)
         {
-            if (decimalPos == 0 || (numLen > 19 && value == 0))
+            if (decimalPos < 0 || decimalPos >= fastEnd - 1 || value < 100_000_000_000_000L)
             {
                 return Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8));
             }
@@ -455,9 +455,9 @@ public final class ParseNumbers
             }
         }
 
-        final double result = (decimalPos > 0 && (fastEnd - decimalPos) < multipliers.length)
+        final double result = (decimalPos >= 0 && (fastEnd - decimalPos) < multipliers.length)
             ? value * multipliers[fastEnd - decimalPos]
-            : (decimalPos > 0 ? Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8)) : value);
+            : (decimalPos >= 0 ? Double.parseDouble(new String(s, offset, length, StandardCharsets.UTF_8)) : value);
 
         return negative ? -result : result;
     }

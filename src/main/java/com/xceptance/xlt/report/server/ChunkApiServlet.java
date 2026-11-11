@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xceptance.xlt.report.query.ColumnarQueryEngine;
@@ -247,11 +248,27 @@ public class ChunkApiServlet extends HttpServlet
                 );
             }
         }
-        catch (final Exception e)
+        catch (final PayloadTooLargeException e)
+        {
+            writeJson(
+                resp,
+                HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                Map.of("error", e.getMessage())
+            );
+        }
+        catch (final JsonProcessingException | IllegalArgumentException e)
         {
             writeJson(
                 resp,
                 HttpServletResponse.SC_BAD_REQUEST,
+                Map.of("error", Objects.requireNonNullElse(e.getMessage(), e.getClass().getSimpleName()))
+            );
+        }
+        catch (final Exception e)
+        {
+            writeJson(
+                resp,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                 Map.of("error", Objects.requireNonNullElse(e.getMessage(), e.getClass().getSimpleName()))
             );
         }
@@ -262,14 +279,14 @@ public class ChunkApiServlet extends HttpServlet
         final long declaredLength = req.getContentLengthLong();
         if (declaredLength > MAX_JSON_BODY_BYTES)
         {
-            throw new IOException("Request body exceeds maximum allowed size of " + MAX_JSON_BODY_BYTES + " bytes");
+            throw new PayloadTooLargeException("Request body exceeds maximum allowed size of " + MAX_JSON_BODY_BYTES + " bytes");
         }
         try (final InputStream in = req.getInputStream())
         {
             final byte[] bytes = in.readNBytes(MAX_JSON_BODY_BYTES + 1);
             if (bytes.length > MAX_JSON_BODY_BYTES)
             {
-                throw new IOException("Request body exceeds maximum allowed size of " + MAX_JSON_BODY_BYTES + " bytes");
+                throw new PayloadTooLargeException("Request body exceeds maximum allowed size of " + MAX_JSON_BODY_BYTES + " bytes");
             }
             if (bytes.length == 0)
             {
@@ -380,6 +397,16 @@ public class ChunkApiServlet extends HttpServlet
         catch (final NumberFormatException e)
         {
             return fallback;
+        }
+    }
+
+    private static final class PayloadTooLargeException extends IOException
+    {
+        private static final long serialVersionUID = 1L;
+
+        PayloadTooLargeException(final String message)
+        {
+            super(message);
         }
     }
 }

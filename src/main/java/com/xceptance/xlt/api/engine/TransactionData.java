@@ -274,8 +274,11 @@ public class TransactionData extends TimerData
     {
         super.setRemainingValues(values);
 
+        // be defensive so a report can be generated also for older results
+        final int length = values.size();
+
         // process the stack trace
-        if (values.getLength(5) == 0)
+        if (length <= 5 || values.getLength(5) == 0)
         {
             stackTrace = null;
         }
@@ -293,8 +296,6 @@ public class TransactionData extends TimerData
             }
         }
 
-        // be defensive so a report can be generated also for older results
-        final int length = values.size();
         if (length > 6)
         {
             setFailedActionName(values.toInternedString(6));
@@ -308,10 +309,11 @@ public class TransactionData extends TimerData
         if (length > 7)
         {
             setTestUserNumber(values.toInternedString(7));
-            setDirectoryName(values.toString(8));
+            setDirectoryName(length > 8 ? values.toString(8) : null);
         }
         else
         {
+            setTestUserNumber(null);
             setDirectoryName(null);
             // fallback for older results: test user number and directory name may be present in the stack trace
             if (stackTrace != null)

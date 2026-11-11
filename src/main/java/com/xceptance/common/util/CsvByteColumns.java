@@ -17,6 +17,7 @@ package com.xceptance.common.util;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Reusable column container for byte-level CSV parsing.
@@ -140,6 +141,7 @@ public final class CsvByteColumns
      */
     public int getOffset(final int col)
     {
+        Objects.checkIndex(col, count);
         return offsets[col];
     }
 
@@ -148,6 +150,7 @@ public final class CsvByteColumns
      */
     public int getLength(final int col)
     {
+        Objects.checkIndex(col, count);
         return lengths[col];
     }
 
@@ -156,6 +159,7 @@ public final class CsvByteColumns
      */
     public byte byteAt(final int col, final int index)
     {
+        Objects.checkIndex(col, count);
         return buffer[offsets[col] + index];
     }
 
@@ -164,7 +168,8 @@ public final class CsvByteColumns
      */
     public boolean hasByte(final int col, final int index, final byte expected)
     {
-        return lengths[col] > index && buffer[offsets[col] + index] == expected;
+        Objects.checkIndex(col, count);
+        return index >= 0 && lengths[col] > index && buffer[offsets[col] + index] == expected;
     }
 
     /**
@@ -173,6 +178,7 @@ public final class CsvByteColumns
      */
     public byte[] copy(final int col)
     {
+        Objects.checkIndex(col, count);
         final int len = lengths[col];
         if (len == 0)
         {
@@ -188,6 +194,7 @@ public final class CsvByteColumns
      */
     public String toString(final int col)
     {
+        Objects.checkIndex(col, count);
         final int len = lengths[col];
         if (len == 0)
         {
@@ -207,6 +214,7 @@ public final class CsvByteColumns
      */
     public String toInternedString(final int col)
     {
+        Objects.checkIndex(col, count);
         final int len = lengths[col];
         if (len == 0)
         {
@@ -256,6 +264,7 @@ public final class CsvByteColumns
      */
     public String toHttpMethodString(final int col)
     {
+        Objects.checkIndex(col, count);
         final int len = lengths[col];
         if (len == 0)
         {
@@ -316,6 +325,7 @@ public final class CsvByteColumns
      */
     public boolean equals(final int col, final String s)
     {
+        Objects.checkIndex(col, count);
         final int len = lengths[col];
         if (len != s.length())
         {
@@ -337,6 +347,7 @@ public final class CsvByteColumns
      */
     public boolean equals(final int col, final byte[] bytes)
     {
+        Objects.checkIndex(col, count);
         if (bytes == null || lengths[col] != bytes.length)
         {
             return false;
@@ -350,6 +361,7 @@ public final class CsvByteColumns
      */
     public int parseInt(final int col)
     {
+        Objects.checkIndex(col, count);
         return com.xceptance.common.lang.ParseNumbers.parseInt(buffer, offsets[col], lengths[col]);
     }
 
@@ -358,6 +370,7 @@ public final class CsvByteColumns
      */
     public long parseLong(final int col)
     {
+        Objects.checkIndex(col, count);
         return com.xceptance.common.lang.ParseNumbers.parseLong(buffer, offsets[col], lengths[col]);
     }
 
@@ -366,6 +379,7 @@ public final class CsvByteColumns
      */
     public double parseDouble(final int col)
     {
+        Objects.checkIndex(col, count);
         return com.xceptance.common.lang.ParseNumbers.parseDouble(buffer, offsets[col], lengths[col]);
     }
 
@@ -374,6 +388,7 @@ public final class CsvByteColumns
      */
     public boolean parseBoolean(final int col)
     {
+        Objects.checkIndex(col, count);
         return com.xceptance.common.lang.ParseNumbers.parseBoolean(buffer, offsets[col], lengths[col]);
     }
 
@@ -382,6 +397,7 @@ public final class CsvByteColumns
      */
     public boolean isEmpty(final int col)
     {
+        Objects.checkIndex(col, count);
         return lengths[col] == 0;
     }
 
@@ -390,6 +406,7 @@ public final class CsvByteColumns
      */
     public char charAt(final int col, final int index)
     {
+        Objects.checkIndex(col, count);
         return (char) (buffer[offsets[col] + index] & 0xFF);
     }
 }

@@ -911,4 +911,70 @@ public class MergeRule_Url_Test extends MergeRuleTestBase
             assertEquals("originalName", data.getName());
         }
     }
+
+    @Test
+    public void utf8UrlBytesPreservedInRegexAndPlaceholders() throws Exception
+    {
+        final boolean prevFastRegex = com.xceptance.common.util.RegExUtils.isFastRegexEnabled();
+        try
+        {
+            for (final boolean fastRegex : new boolean[]{true, false})
+            {
+                com.xceptance.common.util.RegExUtils.setFastRegexEnabled(fastRegex);
+
+                // 1. Capturing group {u:1} + {u} on multi-byte UTF-8 URL bytes (UrlCondition)
+                final var captureRule = getMergeRule(
+                    1,
+                    new NewName("Category:{u:1}|Full:{u}"),
+                    new UrlPattern("https://example\\.org/shop/([^?]+)\\?q=café"),
+                    new StopOnMatch(false)
+                );
+
+                final byte[] rawCsv = "prefix,https://example.org/shop/bücher?q=café,suffix"
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                final int urlStart = "prefix,".length();
+                final int urlByteLen = "https://example.org/shop/bücher?q=café"
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+
+                final var req1 = new RequestData("originalName");
+                req1.setUrl(rawCsv, urlStart, urlByteLen);
+                assertEquals(1, captureRule.process(req1));
+                assertEquals("Category:bücher|Full:https://example.org/shop/bücher?q=café", req1.getName());
+
+                // 2. UrlText + UrlPattern (UrlConditionAndText) with non-ASCII UTF-8 bytes
+                final var textAndRegexRule = getMergeRule(
+                    2,
+                    new NewName("Search:{u:1}"),
+                    new UrlText("bücher"),
+                    new UrlPattern("https://example\\.org/shop/.{6}\\?q=(.+)"),
+                    new StopOnMatch(false)
+                );
+
+                final var req2 = new RequestData("originalName");
+                req2.setUrl(rawCsv, urlStart, urlByteLen);
+                assertEquals(2, textAndRegexRule.process(req2));
+                assertEquals("Search:café", req2.getName());
+
+                // 3. Pure ASCII URL bytes stay unmaterialized on the zero-allocation ByteSlice fast path
+                final byte[] asciiCsv = "prefix,https://example.org/shop/books?q=coffee,suffix"
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                final int asciiLen = "https://example.org/shop/books?q=coffee".length();
+                final var asciiRule = getMergeRule(
+                    3,
+                    new NewName("Category:{u:1}"),
+                    new UrlPattern("https://example\\.org/shop/([^?]+)\\?q=coffee"),
+                    new StopOnMatch(false)
+                );
+                final var req3 = new RequestData("originalName");
+                req3.setUrl(asciiCsv, urlStart, asciiLen);
+                assertEquals(3, asciiRule.process(req3));
+                assertEquals("Category:books", req3.getName());
+                org.junit.Assert.assertTrue(req3.hasUrlBytes());
+            }
+        }
+        finally
+        {
+            com.xceptance.common.util.RegExUtils.setFastRegexEnabled(prevFastRegex);
+        }
+    }
 }

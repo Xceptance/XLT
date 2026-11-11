@@ -499,24 +499,37 @@ public class ParseNumbersTest
     public void testParseDoubleHighPrecisionAndLargeValuesDoNotOverflow()
     {
         final String[] inputs = {
+            ".5",                        // leading dot at offset 0 vs offset > 0
+            "-.5",                       // signed leading dot
             "1234.5678901234567891",     // 20 total digits (4 int + 16 frac) -> previously overflowed long to negative!
             "0.12345678901234567891",    // 20 fractional digits -> previously threw AIOOBE on CharSequence!
             "-1234.5678901234567891",    // negative 20 total digits
             "10000000000000000000.0",    // 20 integer digits before decimal point
-            "0.00000000000000000005"     // sub-1e-18 value with leading zeros
+            "123456789012345678.9",      // 18 integer digits + decimal point at index 18 + fractional digit
+            "0.00000000000000000005",    // sub-1e-18 value with leading zeros
+            "0.000000000000000012345",   // leading zeros + multiple significant digits past index 19
+            "0.00012345678901234567",    // 3 leading zeros after dot + 17 significant digits
+            "1.5E-4",                    // short scientific notation (< 19 chars)
+            "1.2e8",                     // positive exponent scientific notation (< 19 chars)
+            "1.00000000000000000e5"      // scientific notation with exponent past index 19
         };
 
         for (final String s : inputs)
         {
             final double expected = Double.parseDouble(s);
-            final double tol = Math.max(1e-12, Math.abs(expected) * 1e-12);
+            final double tol = Math.max(1e-25, Math.abs(expected) * 1e-12);
 
             final double actualCharSeq = ParseNumbers.parseDouble(s);
             Assert.assertEquals("CharSequence parseDouble failed for " + s, expected, actualCharSeq, tol);
 
             final byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
             final double actualBytes = ParseNumbers.parseDouble(bytes, 0, bytes.length);
-            Assert.assertEquals("byte[] parseDouble failed for " + s, expected, actualBytes, tol);
+            Assert.assertEquals("byte[] parseDouble (offset=0) failed for " + s, expected, actualBytes, tol);
+
+            final byte[] padded = new byte[bytes.length + 5];
+            System.arraycopy(bytes, 0, padded, 3, bytes.length);
+            final double actualPadded = ParseNumbers.parseDouble(padded, 3, bytes.length);
+            Assert.assertEquals("byte[] parseDouble (offset=3) failed for " + s, expected, actualPadded, tol);
         }
     }
 }

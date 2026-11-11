@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -162,7 +161,6 @@ public class AbstractDataTest
     }
 
     // too little fields
-    @Ignore("At the moment, SimpleArrayList does not make range checks for performance reasons")
     @Test(expected = IndexOutOfBoundsException.class)
     public void complainFieldCount()
     {

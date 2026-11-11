@@ -161,6 +161,9 @@ public class DataProcessor
         final boolean isPlainDirectory = inputDir.toLocalPath().isPresent();
         if (config.isDataCacheEnabled() && isFullRun && isPlainDirectory)
         {
+            com.xceptance.xlt.report.storage.chunk.RequestChunkHandler.setRequestDetailsMode(config.getRequestDetailsMode());
+            com.xceptance.xlt.report.storage.chunk.RequestChunkHandler.configureSlowestForensicRetention(
+                config.getSlowestRequestsPerBucket(), config.getSlowestRequestsMaxRuntime());
             final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
             final java.io.File cacheDir = config.getDataCacheDirectory(resultsDir);
             chunkCollector = new com.xceptance.xlt.report.storage.ChunkIngestionCollector(cacheDir);

@@ -65,11 +65,7 @@ public class UrlCondition extends Condition
     @Override
     protected CharSequence getText(final RequestData requestData)
     {
-        if (requestData.hasUrlBytes())
-        {
-            return requestData.populateUrlSlice(this.urlSlice);
-        }
-        return requestData.getUrl();
+        return requestData.getUrlCharSequence(this.urlSlice);
     }
     
     /**

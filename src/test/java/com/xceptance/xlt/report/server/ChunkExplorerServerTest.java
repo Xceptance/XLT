@@ -580,7 +580,7 @@ public class ChunkExplorerServerTest
         assertTrue(evilPostResp.startsWith("HTTP/1.1 403"));
         assertFalse(evilPostResp.contains("Access-Control-Allow-Origin"));
 
-        // 3. Oversized JSON request body (> 1 MiB) must be rejected with 400 Bad Request
+        // 3. Oversized JSON request body (> 1 MiB) must be rejected with 413 Payload Too Large
         final byte[] oversizedJson = new byte[ChunkApiServlet.MAX_JSON_BODY_BYTES + 128];
         java.util.Arrays.fill(oversizedJson, (byte) ' ');
         oversizedJson[0] = '{';
@@ -591,7 +591,7 @@ public class ChunkExplorerServerTest
                                                     .POST(HttpRequest.BodyPublishers.ofByteArray(oversizedJson))
                                                     .build();
         final HttpResponse<String> oversizedResp = httpClient.send(oversizedReq, HttpResponse.BodyHandlers.ofString());
-        assertEquals(400, oversizedResp.statusCode());
+        assertEquals(413, oversizedResp.statusCode());
         assertTrue(oversizedResp.body().contains("exceeds maximum allowed size"));
     }
 
