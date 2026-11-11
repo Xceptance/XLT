@@ -20,7 +20,7 @@ import org.roaringbitmap.RoaringBitmap;
 import com.xceptance.xlt.report.storage.chunk.Chunk;
 
 /**
- * Two-tier filter predicate used for query acceleration in ChunkDB.
+ * Two-tier filter predicate used for query acceleration in TelemetryStore.
  * <p>
  * <b>Two-Tier Pruning Design:</b>
  * <ol>

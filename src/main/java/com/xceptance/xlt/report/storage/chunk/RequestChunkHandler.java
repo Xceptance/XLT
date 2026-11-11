@@ -124,7 +124,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
      * per timer with {@code runtime <= slowestRequestsMaxRuntime}, sizing per-timer forensic heaps to
      * {@code max(20, perTimerLimit)} and bounding per-timer admission by {@code maxRuntime} guarantees that
      * every winning slow request retains its exact forensic details while keeping the chunk-wide top-256
-     * heap unbounded for interactive ChunkDB Explorer queries.
+     * heap unbounded for interactive Telemetry Explorer queries.
      *
      * @param perTimerLimit
      *            configured {@code slowestRequestsPerBucket}

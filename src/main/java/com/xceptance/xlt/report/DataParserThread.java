@@ -239,7 +239,7 @@ class DataParserThread implements Runnable
                                 {
                                     final RequestData reqData = (RequestData) data;
                                     // Snapshot the original unmerged timer name (e.g. "Homepage.1.2") BEFORE MergeRuleProcessor
-                                    // mutates reqData.setName(...) in-place, so ChunkDB's Cold Forensic Tail Block can preserve
+                                    // mutates reqData.setName(...) in-place, so TelemetryStore's Cold Forensic Tail Block can preserve
                                     // both the post-merge group name and the pre-merge raw request name for forensic drill-down.
                                     if (reqData.getRawName() == null)
                                     {
@@ -360,7 +360,7 @@ class DataParserThread implements Runnable
     {
         // Assign the virtual user instance number (e.g. "0", "1", ...) universally across all Data record types
         // (Transactions, Actions, Requests, Custom Timers, Custom Values, Web Vitals, Events). Storing this column
-        // across all ChunkDB chunk types enables cross-record correlation to reconstruct a single virtual user's
+        // across all TelemetryStore chunk types enables cross-record correlation to reconstruct a single virtual user's
         // complete chronological breadcrumb trail.
         data.setTestUserNumber(userNumber);
 

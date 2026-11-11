@@ -29,7 +29,7 @@ for p in $PACKAGES; do JAVA_OPTIONS="$JAVA_OPTIONS --add-opens=$p=ALL-UNNAMED"; 
 JAVA_OPTIONS="$JAVA_OPTIONS -XX:+IgnoreUnrecognizedVMOptions"
 
 # run Java
-CMD="java $JAVA_OPTIONS com.xceptance.xlt.report.server.ChunkExplorerMain"
+CMD="java $JAVA_OPTIONS com.xceptance.xlt.report.server.TelemetryExplorerMain"
 ARGS=""
 I=1
 while [ $I -le $# ]; do

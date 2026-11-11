@@ -26,4 +26,4 @@ for %%p in (%PACKAGES%) do set JAVA_OPTIONS=!JAVA_OPTIONS! --add-opens=%%p=ALL-U
 set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+IgnoreUnrecognizedVMOptions
 
 :: run Java
-java %JAVA_OPTIONS% com.xceptance.xlt.report.server.ChunkExplorerMain %*
+java %JAVA_OPTIONS% com.xceptance.xlt.report.server.TelemetryExplorerMain %*

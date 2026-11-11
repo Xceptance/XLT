@@ -1,6 +1,6 @@
-# ChunkDB Architecture Guide (`CHUNKDB_ARCHITECTURE_GUIDE.md`)
+# TelemetryStore Architecture Guide (`TELEMETRY_STORE_ARCHITECTURE_GUIDE.md`)
 
-This guide explains the architectural principles, data layout, indexing mechanisms, and query execution engine of **ChunkDB**—the embedded, SIMD-compressed columnar storage engine in XLT.
+This guide explains the architectural principles, data layout, indexing mechanisms, and query execution engine of **TelemetryStore**—the embedded, SIMD-compressed columnar storage engine in XLT.
 
 ---
 
@@ -37,10 +37,10 @@ In large-scale performance tests, reports frequently analyze **50 to 500+ millio
 1. **The Memory Wall**: Materializing millions of records as Java heap objects consumes tens of gigabytes of RAM, triggering severe GC pauses or `OutOfMemoryError`.
 2. **The I/O Wall**: Re-parsing gigabytes of raw CSV logs every time an analyst brushes a chart or applies a filter takes minutes.
 
-**ChunkDB** resolves this by operating as an embedded, SIMD-compressed, columnar OLAP storage engine (conceptually similar to Parquet or DuckDB, but zero-dependency and purpose-built for XLT test telemetry). It achieves:
+**TelemetryStore** resolves this by operating as an embedded, SIMD-compressed, columnar OLAP storage engine (conceptually similar to Parquet or DuckDB, but zero-dependency and purpose-built for XLT test telemetry). It achieves:
 * **~15 bytes/row** on disk (down from 200–500+ bytes in CSV).
 * **< 100 MB JVM heap footprint** during multi-threaded scans over 100M+ rows.
-* **Sub-50ms interactive query latency** in the ChunkDB Explorer UI.
+* **Sub-50ms interactive query latency** in the Telemetry Explorer UI.
 
 ---
 
@@ -48,9 +48,9 @@ In large-scale performance tests, reports frequently analyze **50 to 500+ millio
 
 ### Logical Chunks vs. Physical Files
 
-Data in ChunkDB is divided **logically** into discrete, self-contained units called **chunks** ([`Chunk`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/Chunk.java)), each holding up to **64,000 records** of a specific type (e.g., `'R'` for HTTP Requests, `'T'` for Transactions, `'A'` for Actions).
+Data in TelemetryStore is divided **logically** into discrete, self-contained units called **chunks** ([`Chunk`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/Chunk.java)), each holding up to **64,000 records** of a specific type (e.g., `'R'` for HTTP Requests, `'T'` for Transactions, `'A'` for Actions).
 
-However, physically, all chunks are packed sequentially into **one single container file** ([`chunks.bin`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/ChunkStorage.java#L67)), accompanied by interned string tables in `dictionaries.bin`.
+However, physically, all chunks are packed sequentially into **one single container file** ([`chunks.bin`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/TelemetryStore.java#L67)), accompanied by interned string tables in `dictionaries.bin`.
 
 ### Why One File (`chunks.bin`) Instead of Thousands?
 
@@ -59,7 +59,7 @@ In a test with 100M requests, splitting data into 64K chunks creates **~1,560 ch
 1. **Filesystem Metadata & Inode Exhaustion**:
    Operating systems (ext4, NTFS, APFS) experience high latency when opening, closing, and updating directory tables for thousands of files.
 2. **Thread-Safe, Zero-Lock Concurrent Reads via `FileChannel`**:
-   ChunkDB opens a **single** read-only [`FileChannel`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/ChunkStorage.java#L85) at mount time. Positional reads (`FileChannel.read(ByteBuffer dst, long position)`) map to OS-level `pread` system calls:
+   TelemetryStore opens a **single** read-only [`FileChannel`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/TelemetryStore.java#L85) at mount time. Positional reads (`FileChannel.read(ByteBuffer dst, long position)`) map to OS-level `pread` system calls:
    * They are completely thread-safe and non-locking.
    * 16 to 32 worker threads can read completely different chunks or specific column byte ranges concurrently without seeking, mutex contention, or exhausting OS file descriptors (`ulimit -n`).
 3. **Pure Sequential Write Performance**:
@@ -106,7 +106,7 @@ $$\text{Row} = [\text{Time}, \text{TimerId}, \text{RunTime}, \text{StatusCode}, 
 
 If an analyst brushes a 30-second window to plot response times, a row-oriented database must read and deserialize every single field in every row.
 
-ChunkDB organizes each 64K-record chunk into **21 independent column vectors**:
+TelemetryStore organizes each 64K-record chunk into **21 independent column vectors**:
 * Vector 0: `timeOffsets`
 * Vector 1: `timerIds`
 * Vector 2: `agentIds`
@@ -123,7 +123,7 @@ HTTP requests exhibit a sharp divide in data characteristics:
 * **Metrics**: Numbers and small IDs (timestamps, runtimes, status codes) needed by 99% of chart and summary queries.
 * **Forensic Details**: High-cardinality, variable-length strings (full URLs, request IDs, response IDs, POST bodies, raw unmerged names) only needed when diagnosing a specific outlier or failure.
 
-ChunkDB physically isolates these within each request chunk:
+TelemetryStore physically isolates these within each request chunk:
 1. **Hot Columnar Vectors (Front)**:
    The 21 primitive numeric columns, compressed via FastPFOR.
 2. **Cold Forensic Tail Block (End)**:
@@ -152,7 +152,7 @@ In modern load tests, telemetry arrives out of chronological order:
 * Log files from different virtual users (e.g., `User_1` and `User_48`) cover overlapping time windows (e.g., both run from `10:00:00` to `10:15:00`).
 * Ingestion pipelines process files in parallel.
 
-ChunkDB is explicitly designed to handle this **without performing expensive global sorting**.
+TelemetryStore is explicitly designed to handle this **without performing expensive global sorting**.
 
 ### Ingestion: Bounding Boxes Without Global Sorting
 
@@ -273,12 +273,12 @@ Instead of decompressing entire chunks into the JVM heap, the engine builds a li
 
 | Component / Class | File Location | Responsibility |
 | :--- | :--- | :--- |
-| **`ChunkStorage`** | [`ChunkStorage.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/ChunkStorage.java) | Top-level storage manager; unifies dictionaries, catalog, and the single `readChannel`. |
+| **`TelemetryStore`** | [`TelemetryStore.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/TelemetryStore.java) | Top-level storage manager; unifies dictionaries, catalog, and the single `readChannel`. |
 | **`ChunkCatalog`** | [`ChunkCatalog.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java) | Master inventory of all `DiskChunk` descriptors, global bounds, and type-partitioned chunk lists with per-chunk `RoaringBitmap` filters. |
 | **`DiskChunk`** | [`DiskChunk.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/DiskChunk.java) | Lightweight (~80 bytes) in-memory chunk descriptor holding file coordinates, time bounds, and Zone Maps. |
 | **`ChunkSpooler`** | [`ChunkSpooler.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/ChunkSpooler.java) | Appends compressed chunks sequentially to `chunks.bin` and writes the Tail Metadata Index Table. |
 | **`RequestChunkHandler`** | [`RequestChunkHandler.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/chunk/RequestChunkHandler.java) | FastPFOR columnar codec for HTTP requests; manages Hot Vectors and the Cold Forensic Tail Block. |
 | **`ScanPredicate`** | [`ScanPredicate.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/query/ScanPredicate.java) | Two-tier query filter evaluating $O(1)$ chunk pruning and row-level primitive predicates. |
 | **`ColumnarQueryEngine`** | [`ColumnarQueryEngine.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/query/ColumnarQueryEngine.java) | Vectorized query engine with in-memory column pointer jump-indexing, learned hints, and parallel bucketing. |
-| **`ChunkApiServlet`** | [`ChunkApiServlet.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/server/ChunkApiServlet.java) | Embedded Jetty REST servlet exposing `/api/v1/metadata`, `/timeseries`, `/summary-table`, `/inspect`, and `/session`. |
-| **`ChunkExplorerMain`** | [`ChunkExplorerMain.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/server/ChunkExplorerMain.java) | Dedicated CLI entry point launching the embedded Jetty web server and UI workbench. |
+| **`TelemetryApiServlet`** | [`TelemetryApiServlet.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/server/TelemetryApiServlet.java) | Embedded Jetty REST servlet exposing `/api/v1/metadata`, `/timeseries`, `/summary-table`, `/inspect`, and `/session`. |
+| **`TelemetryExplorerMain`** | [`TelemetryExplorerMain.java`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/server/TelemetryExplorerMain.java) | Dedicated CLI entry point launching the embedded Jetty web server and UI workbench. |

@@ -6,21 +6,21 @@ The XLT Report Generator is designed to process massive load test result dataset
 
 To achieve maximum throughput while preventing memory exhaustion and garbage collection thrashing, the system utilizes a **Two-Pass Architecture**:
 
-1. **Phase 1: CSV Ingestion & ChunkDB Spooling**
+1. **Phase 1: CSV Ingestion & TelemetryStore Spooling**
    - Multi-threaded readers decompress log files and parse raw CSV lines with minimal/zero allocations.
    - Request data objects are passed through the request merge rule pipeline.
-   - Merged records are routed to `ChunkIngestionCollector`, which encodes columns using FastPFOR and dictionary IDs, sealing chunks into disk-backed `ChunkDB` files (`xlt-cache/`).
+   - Merged records are routed to `TelemetryIngestionCollector`, which encodes columns using FastPFOR and dictionary IDs, sealing chunks into disk-backed `TelemetryStore` files (`xlt-cache/`).
    - **Crucial Invariant:** `StatisticsProcessor` is **not active** during Phase 1. Heap consumption remains bounded (< 1.5 GB Old Gen on a 4 GB heap), maintaining zero Full GCs.
 
-2. **Phase 2: Multi-Threaded ChunkDB Aggregation**
-   - Once all logs are ingested and chunk files are sealed, `DataProcessor` initiates a parallel scan via `ChunkQueryEngine`.
+2. **Phase 2: Multi-Threaded TelemetryStore Aggregation**
+   - Once all logs are ingested and chunk files are sealed, `DataProcessor` initiates a parallel scan via `TelemetryQueryEngine`.
    - Worker threads concurrently decompress chunks, reconstitute records, and stream them into `StatisticsProcessor`.
    - In this phase, 100% of the heap is dedicated to the in-memory statistics model (12M+ time series entries, 4.2M+ bitsets).
    - Throughput regularly reaches **3.4M – 3.75M records/second**.
 
 3. **Subsequent Cached Runs**
    - If the input log files and configuration rules have not changed, Phase 1 is completely bypassed.
-   - The report generator streams directly from `ChunkDB`, aggregating 100M+ records in under 35–40 seconds.
+   - The report generator streams directly from `TelemetryStore`, aggregating 100M+ records in under 35–40 seconds.
 
 ---
 
@@ -93,9 +93,9 @@ While `top -H` and `jstat` confirmed that CPU was pegged at 95% and Old Gen was 
 #### Step 5: Component Isolation with `BytePipelineBenchmark`
 Running `BytePipelineBenchmark diag <maxFiles> <numThreads>` isolated individual pipeline stages:
 - **Raw CSV Read + Decode:** 3.1M records/s
-- **ChunkDB Ingestion Spooling:** 2.1M records/s
-- **ChunkDB Scan + Statistics Aggregation:** 3.1M records/s
-- **Result:** The ChunkDB engine itself had minimal overhead (~330 ns/record). The bottleneck existed in merge rule evaluation during CSV parsing.
+- **TelemetryStore Ingestion Spooling:** 2.1M records/s
+- **TelemetryStore Scan + Statistics Aggregation:** 3.1M records/s
+- **Result:** The TelemetryStore engine itself had minimal overhead (~330 ns/record). The bottleneck existed in merge rule evaluation during CSV parsing.
 
 ---
 
@@ -103,7 +103,7 @@ Running `BytePipelineBenchmark diag <maxFiles> <numThreads>` isolated individual
 
 ### Bottleneck 1: Memory Overlap Between Ingestion and Statistics
 - **The Issue:** Attempting to build report statistics in memory while simultaneously reading and spooling chunks caused heap exhaustion. On a 4 GB heap, `StatisticsProcessor` can hold 2.6–3.4 GB of bitsets and time series data. Sharing this space with file readers, buffers, and dictionary builders triggered 40+ Full GCs.
-- **The Fix:** Enforce strict Two-Pass separation in `Dispatcher.java` and `DataProcessor.java`. In Phase 1, records are routed solely to `ChunkIngestionCollector`. In Phase 2, `ChunkQueryEngine.executeScan` aggregates directly into `StatisticsProcessor`.
+- **The Fix:** Enforce strict Two-Pass separation in `Dispatcher.java` and `DataProcessor.java`. In Phase 1, records are routed solely to `TelemetryIngestionCollector`. In Phase 2, `TelemetryQueryEngine.executeScan` aggregates directly into `StatisticsProcessor`.
 - **Result:** Phase 1 heap usage dropped from 3.5 GB (100%) to ~1.2 GB, reducing Full GCs from 40 down to **0**.
 
 ### Bottleneck 2: Byte-Level Caching Overhead in `Condition.java`
@@ -120,7 +120,7 @@ Running `BytePipelineBenchmark diag <maxFiles> <numThreads>` isolated individual
 
 ### Bottleneck 3: ChunkBuilder Lifecycle & Object Pooling
 - **The Issue:** Creating new `ChunkBuilder` objects on every chunk boundary triggered allocation spikes and GC pressure under high thread concurrency.
-- **The Fix:** Implemented `acquireBuilder(typeCode)` object recycling pool in `ChunkIngestionCollector.java`, reusing arrays and buffers across chunk seals.
+- **The Fix:** Implemented `acquireBuilder(typeCode)` object recycling pool in `TelemetryIngestionCollector.java`, reusing arrays and buffers across chunk seals.
 
 ---
 
@@ -133,14 +133,14 @@ Running `BytePipelineBenchmark diag <maxFiles> <numThreads>` isolated individual
 | **Phase 1 Ingestion** | 322,467 ms (337k lines/s) | **193,325 ms (563k lines/s)** | **-40.1% (-129.1s)** |
 | **Full GCs (Phase 1)** | 40 pauses (24.2s freeze) | **0 Full GCs (0.00s)** | **100% eliminated** |
 | **Old Gen Memory** | 3.48 GB (thrashing) | **1.2 GB (stable)** | **-65% peak memory** |
-| **Phase 2 ChunkDB Scan** | N/A | **35,403 ms (3.42M recs/s)** | Fast multi-threaded scan |
+| **Phase 2 TelemetryStore Scan** | N/A | **35,403 ms (3.42M recs/s)** | Fast multi-threaded scan |
 | **Total Cold Report Time** | ~6.5 minutes | **4.5 minutes** | **~30% faster total** |
 
-### Cached Run Performance (Direct ChunkDB Streaming)
+### Cached Run Performance (Direct TelemetryStore Streaming)
 ```text
 Reading Log Files...
-Accelerating report generation using ChunkDB cache from: /tmp/xlt-result-.../xlt-cache
-ChunkDB timing breakdown: handler.scan CPU time = 162,838 ms, statisticsProcessor.process CPU time = 398,591 ms across 16 threads
+Accelerating report generation using TelemetryStore cache from: /tmp/xlt-result-.../xlt-cache
+TelemetryStore timing breakdown: handler.scan CPU time = 162,838 ms, statisticsProcessor.process CPU time = 398,591 ms across 16 threads
 121,078,008 records read from cache - 40,931 ms (load: 1,510 ms, scan: 39,421 ms) - 2,958,100 records/s
 ```
 - Re-running the report skips CSV decoding and merge rules entirely.

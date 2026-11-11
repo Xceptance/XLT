@@ -33,7 +33,7 @@ import java.util.List;
 import org.roaringbitmap.RoaringBitmap;
 
 import com.xceptance.xlt.api.util.XltLogger;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 
@@ -90,8 +90,8 @@ public class ChunkSpooler
             cacheDir.mkdirs();
         }
 
-        this.tmpFile = new File(cacheDir, ChunkStorage.CHUNKS_FILE_NAME + ".tmp");
-        this.targetFile = new File(cacheDir, ChunkStorage.CHUNKS_FILE_NAME);
+        this.tmpFile = new File(cacheDir, TelemetryStore.CHUNKS_FILE_NAME + ".tmp");
+        this.targetFile = new File(cacheDir, TelemetryStore.CHUNKS_FILE_NAME);
 
         if (tmpFile.exists())
         {
@@ -379,7 +379,7 @@ public class ChunkSpooler
 
         // 5. Compact dictionaries for read-only Phase 2 querying and persist dictionaries.bin
         dicts.compactForReadOnly();
-        final File dictFile = new File(cacheDir, ChunkStorage.DICTIONARIES_FILE_NAME);
+        final File dictFile = new File(cacheDir, TelemetryStore.DICTIONARIES_FILE_NAME);
         try (final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(dictFile))))
         {
             dicts.writeTo(out);

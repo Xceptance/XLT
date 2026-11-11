@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.chunk.Chunk;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
@@ -32,7 +32,7 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
 import me.tongfei.progressbar.ProgressBar;
 
 /**
- * Parallel query execution engine for scanning ChunkDB chunks directly into {@link StatisticsProcessor}.
+ * Parallel query execution engine for scanning TelemetryStore chunks directly into {@link StatisticsProcessor}.
  * <p>
  * <b>Query Execution Lifecycle:</b>
  * <ol>
@@ -48,13 +48,13 @@ import me.tongfei.progressbar.ProgressBar;
  *       merges all thread-local statistics into master report providers.</li>
  * </ol>
  */
-public class ChunkQueryEngine
+public class TelemetryQueryEngine
 {
     /** Logger instance for query performance diagnostics. */
-    private static final Logger LOG = LoggerFactory.getLogger(ChunkQueryEngine.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TelemetryQueryEngine.class);
 
-    /** The underlying ChunkDB storage containing chunks and dictionaries. */
-    private final ChunkStorage storage;
+    /** The underlying TelemetryStore containing chunks and dictionaries. */
+    private final TelemetryStore storage;
 
     /** Number of parallel worker threads allocated for chunk scanning. */
     private final int threadCount;
@@ -71,14 +71,14 @@ public class ChunkQueryEngine
         ThreadLocal.withInitial(() -> new PostProcessedDataContainer(65536));
 
     /**
-     * Constructs a new {@link ChunkQueryEngine}.
+     * Constructs a new {@link TelemetryQueryEngine}.
      *
      * @param storage
-     *            the ChunkDB storage containing the chunks to scan
+     *            the TelemetryStore containing the chunks to scan
      * @param threadCount
      *            number of worker threads (if &lt;= 0, defaults to available CPU cores)
      */
-    public ChunkQueryEngine(final ChunkStorage storage, final int threadCount)
+    public TelemetryQueryEngine(final TelemetryStore storage, final int threadCount)
     {
         this.storage = storage;
         this.threadCount = threadCount > 0 ? threadCount : Runtime.getRuntime().availableProcessors();
@@ -137,7 +137,7 @@ public class ChunkQueryEngine
             })
             .collect(Collectors.toList());
 
-        LOG.info("ChunkDB query matched {} of {} chunks", candidateChunks.size(), storage.getCatalog().getChunkCount());
+        LOG.info("TelemetryStore query matched {} of {} chunks", candidateChunks.size(), storage.getCatalog().getChunkCount());
 
         // If no chunks match the filter, finalize processor and exit early
         if (candidateChunks.isEmpty())
@@ -202,7 +202,7 @@ public class ChunkQueryEngine
         {
             LOG.error("Error executing parallel chunk scan", e);
             pool.shutdownNow();
-            throw new RuntimeException("ChunkDB query execution failed", e);
+            throw new RuntimeException("TelemetryStore query execution failed", e);
         }
         finally
         {
@@ -215,10 +215,10 @@ public class ChunkQueryEngine
         statisticsProcessor.complete(progressBar != null ? progressBar::step : null);
 
         final long duration = System.currentTimeMillis() - start;
-        LOG.debug("ChunkDB timing breakdown: handler.scan (decomp+reconstitute) CPU time = {} ms, statisticsProcessor.process CPU time = {} ms across {} threads",
+        LOG.debug("TelemetryStore timing breakdown: handler.scan (decomp+reconstitute) CPU time = {} ms, statisticsProcessor.process CPU time = {} ms across {} threads",
                   totalScanNanos.sum() / 1_000_000L, totalProcessNanos.sum() / 1_000_000L, threadCount);
 
-        LOG.info("ChunkDB query completed in {} ms (processed {} chunks, {} records)",
+        LOG.info("TelemetryStore query completed in {} ms (processed {} chunks, {} records)",
                  duration, candidateChunks.size(), totalRecords.sum());
         return totalRecords.sum();
     }

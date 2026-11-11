@@ -596,7 +596,7 @@ public class DataProcessorMergeTest
         Assert.assertEquals(zeroHashRegRho, procWithoutZero.distinctUrlsHLL[zeroHashRegIdx]);
         Assert.assertEquals(spilledCountWithZero, procWithoutZero.getDistinctUrlCount());
 
-        // 6. Verify ChunkDB scan pattern: consecutive records sharing the same sample URL reference (url == lastUrl)
+        // 6. Verify TelemetryStore scan pattern: consecutive records sharing the same sample URL reference (url == lastUrl)
         //    but carrying distinct per-row URL hashes via setUrlFast(sampleUrl, host, urlHash)
         final RequestDataProcessor chunkSimProc = new RequestDataProcessor("ChunkSim", requestsProvider, true);
         final String sharedSampleUrl = "https://example.com/sample0";
@@ -1043,8 +1043,8 @@ public class DataProcessorMergeTest
     public void testSlowestRequestsLazyForensicResolutionFromDiskAndMemoryChunks() throws Exception
     {
         final File spoolDir = tempFolder.newFolder("slowest-forensic-spool");
-        final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector =
-            new com.xceptance.xlt.report.storage.ChunkIngestionCollector(spoolDir);
+        final com.xceptance.xlt.report.storage.TelemetryIngestionCollector collector =
+            new com.xceptance.xlt.report.storage.TelemetryIngestionCollector(spoolDir);
 
         final long baseTime = 1_700_000_000_000L;
 
@@ -1089,13 +1089,13 @@ public class DataProcessorMergeTest
         slow2.setFormData("");
         collector.collect(slow2);
 
-        try (final com.xceptance.xlt.report.storage.ChunkStorage active = collector.finish())
+        try (final com.xceptance.xlt.report.storage.TelemetryStore active = collector.finish())
         {
             Assert.assertNotNull(active);
         }
 
-        try (final com.xceptance.xlt.report.storage.ChunkStorage loaded =
-                 com.xceptance.xlt.report.storage.ChunkStorage.loadFromDirectory(spoolDir))
+        try (final com.xceptance.xlt.report.storage.TelemetryStore loaded =
+                 com.xceptance.xlt.report.storage.TelemetryStore.loadFromDirectory(spoolDir))
         {
             final com.xceptance.xlt.report.storage.chunk.DiskChunk dc =
                 (com.xceptance.xlt.report.storage.chunk.DiskChunk) loaded.getCatalog().getChunksForType('R').get(0);
@@ -1150,8 +1150,8 @@ public class DataProcessorMergeTest
         final java.io.File spoolDir = java.nio.file.Files.createTempDirectory("xlt-pertimer-slowest-test").toFile();
         spoolDir.deleteOnExit();
 
-        final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector =
-            new com.xceptance.xlt.report.storage.ChunkIngestionCollector(spoolDir);
+        final com.xceptance.xlt.report.storage.TelemetryIngestionCollector collector =
+            new com.xceptance.xlt.report.storage.TelemetryIngestionCollector(spoolDir);
         final long baseTime = 1_700_000_100_000L;
 
         // 1. Ingest 260 slow requests (5,000..5,259 ms) for "DominantTimer" to fill the global top-256 heap
@@ -1187,7 +1187,7 @@ public class DataProcessorMergeTest
         noUrlReq.setResponseCode(200);
         collector.collect(noUrlReq);
 
-        try (final com.xceptance.xlt.report.storage.ChunkStorage storage = collector.finish())
+        try (final com.xceptance.xlt.report.storage.TelemetryStore storage = collector.finish())
         {
             final com.xceptance.xlt.report.storage.chunk.DiskChunk dc =
                 (com.xceptance.xlt.report.storage.chunk.DiskChunk) storage.getCatalog().getChunksForType('R').get(0);

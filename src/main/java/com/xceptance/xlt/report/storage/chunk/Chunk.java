@@ -18,7 +18,7 @@ package com.xceptance.xlt.report.storage.chunk;
 import org.roaringbitmap.RoaringBitmap;
 
 /**
- * Base interface representing an immutable, sealed columnar chunk of load test records in ChunkDB.
+ * Base interface representing an immutable, sealed columnar chunk of load test records in TelemetryStore.
  * <p>
  * <b>Columnar Storage Model:</b>
  * Rather than holding an array of Java object references, each sealed chunk contains contiguous

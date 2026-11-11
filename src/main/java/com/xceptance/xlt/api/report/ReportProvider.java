@@ -144,7 +144,7 @@ public interface ReportProvider extends ReportCreator
     /**
      * Declares whether this report provider processes data records matching the given single-character type code.
      * <p>
-     * Used by ChunkDB and the statistics pipeline to route chunks directly to interested report providers,
+     * Used by TelemetryStore and the statistics pipeline to route chunks directly to interested report providers,
      * bypassing providers that would otherwise perform millions of useless {@code instanceof} checks and loops.
      * <p>
      * Standard type codes:

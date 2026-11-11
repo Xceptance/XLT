@@ -1,16 +1,16 @@
-# XLT Live Reports & ChunkDB Real-Time Query Explorer (`LIVEREPORTS.md`)
+# XLT Live Reports & Telemetry Real-Time Explorer (`LIVEREPORTS.md`)
 
 > **Single Source of Truth & Architectural Reference**
 >
-> This document consolidates the complete architectural analysis, critical review, quantitative space/speed benchmarks (100M requests), data-completeness audit (`ChunkDB` V3), UI integration strategy with the `XLT.report-update` modernized static report prototype, and the full chronological design conversation that shaped the [`chunkdb-live-query-explorer`](../openspec/changes/chunkdb-live-query-explorer/) OpenSpec change.
+> This document consolidates the complete architectural analysis, critical review, quantitative space/speed benchmarks (100M requests), data-completeness audit (`TelemetryStore` V3), UI integration strategy with the `XLT.report-update` modernized static report prototype, and the full chronological design conversation that shaped the [`chunkdb-live-query-explorer`](../openspec/changes/chunkdb-live-query-explorer/) OpenSpec change.
 
 ---
 
 ## Table of Contents
 
 1. [Executive Summary & Key Decisions](#1-executive-summary--key-decisions)
-2. [Critical Review of Current ChunkDB (V2) for Real-Time Querying](#2-critical-review-of-current-chunkdb-v2-for-real-time-querying)
-3. [Complete Data Preservation Audit: Closing Every Gap in ChunkDB V3](#3-complete-data-preservation-audit-closing-every-gap-in-chunkdb-v3)
+2. [Critical Review of Current TelemetryStore (V2) for Real-Time Querying](#2-critical-review-of-current-telemetrystore-v2-for-real-time-querying)
+3. [Complete Data Preservation Audit: Closing Every Gap in TelemetryStore V3](#3-complete-data-preservation-audit-closing-every-gap-in-telemetrystore-v3)
 4. [Quantitative Cost & Speed Analysis (100 Million Requests)](#4-quantitative-cost--speed-analysis-100-million-requests)
 5. [Two-Speed Vectorized Query Engine & Embedded Jetty API](#5-two-speed-vectorized-query-engine--embedded-jetty-api)
 6. [UI Architecture: Zero Toolchain, Static Purity & Modernized Report Alignment](#6-ui-architecture-zero-toolchain-static-purity--modernized-report-alignment)
@@ -20,15 +20,15 @@
 
 ## 1. Executive Summary & Key Decisions
 
-With the introduction of **`ChunkDB`** (`xlt-cache/`) in `src/main/java/com/xceptance/xlt/report/storage/`, XLT already possesses an embedded, SIMD-compressed (`JavaFastPFOR` + `RoaringBitmap`) columnar data store capable of holding 100M+ rows in `< 80 MB` of JVM heap.
+With the introduction of **`TelemetryStore`** (`xlt-cache/`) in `src/main/java/com/xceptance/xlt/report/storage/`, XLT already possesses an embedded, SIMD-compressed (`JavaFastPFOR` + `RoaringBitmap`) columnar data store capable of holding 100M+ rows in `< 80 MB` of JVM heap.
 
-By upgrading `ChunkDB` to **V3 (100% lossless data preservation)** and adding a **vectorized `ColumnarQueryEngine`** served over **Embedded Jetty**, XLT evolves from a purely static post-mortem report generator into an **interactive root-cause diagnostic workbench**—without adding a single new Maven dependency or JavaScript build toolchain.
+By upgrading `TelemetryStore` to **V3 (100% lossless data preservation)** and adding a **vectorized `ColumnarQueryEngine`** served over **Embedded Jetty**, XLT evolves from a purely static post-mortem report generator into an **interactive root-cause diagnostic workbench**—without adding a single new Maven dependency or JavaScript build toolchain.
 
 ### Core Design Decisions Agreed Upon
 1. **Primary Target Persona**:
    - **Human-first interactive Web UI** (`< 100 ms` query latency, fluent and fast without over-engineered 60fps gimmicks).
    - **Agent-ready by design**: Because the Web UI is powered by clean, stateless JSON endpoints (`/api/v1/schema`, `/api/v1/timeseries`, `/api/v1/summary`, `/api/v1/records`, `/api/v1/session`) and pairs with the modernized report's `📋 Copy Table as Markdown` feature, AI agents and MCP tools can consume the exact same endpoints later for free.
-2. **100% Data Completeness (`ChunkDB` V3)**:
+2. **100% Data Completeness (`TelemetryStore` V3)**:
    - **Hybrid Request Forensic Tail Block (`sparse` default + `full` opt-in)**:
      - **Default `sparse` mode (Option C)**: Preserves exact `(url, requestId, responseId, formData, rawName)` for all failed/4xx/5xx requests **plus** the top-256 slowest requests per 64K chunk (`< 2%` disk overhead, `0 MB` global heap, `< 1%` ingestion cost).
      - **Opt-in `full` mode (Option B)**: Activated via `-Dcom.xceptance.xlt.report.storage.requestDetailsMode=full` or CLI `--preserve-all-details`. Preserves exact `(url, requestId, responseId, formData, rawName)` for **every single row** (`0..63,999`) inside a chunk-local Deflate-compressed UTF-8 slab (`0 MB` global dictionary heap, `0 ms` penalty on chart scans because the block sits at the cold tail of the chunk).
@@ -40,15 +40,15 @@ By upgrading `ChunkDB` to **V3 (100% lossless data preservation)** and adding a 
 3. **Frontend & Static Report Separation**:
    - **Zero JS Build Toolchain**: Plain Vanilla ES6+ JavaScript, CSS custom properties, and a single vendored `uPlot` canvas library (`~45 KB`) in `src/main/resources/`. Zero Node.js/npm/Webpack/Parcel steps.
    - **100% Clean Default Static Reports**: Standard `create_report` produces pure static HTML/CSS/JS with **zero** live-bridge scripts or dead buttons so reports can be uploaded to external servers (S3, Jenkins, customer portals).
-   - **Opt-In Live Mode (`--serve` or `--live-bridge`)**: Starts Embedded Jetty mounting the static report (`/`), the standalone `/explorer` app, `/api/v1/*`, and `/dumps/*` (for 1-click Result Browser access), and progressively enhances the modernized report (`reports/modernized-report/`) via a thin `chunkdb-bridge.js` adapter.
+   - **Opt-In Live Mode (`--serve` or `--live-bridge`)**: Starts Embedded Jetty mounting the static report (`/`), the standalone `/explorer` app, `/api/v1/*`, and `/dumps/*` (for 1-click Result Browser access), and progressively enhances the modernized report (`reports/modernized-report/`) via a thin `telemetry-bridge.js` adapter.
 4. **Deferred for Later**:
    - Multi-run comparison (mounting multiple `xlt-cache/` directories simultaneously) is ignored for v1.
 
 ---
 
-## 2. Critical Review of Current ChunkDB (V2) for Real-Time Querying
+## 2. Critical Review of Current TelemetryStore (V2) for Real-Time Querying
 
-Wiring an HTTP endpoint directly to the existing batch `ChunkQueryEngine.executeScan()` would leave **5x–10x of interactive performance on the table**. Five specific architectural bottlenecks were identified and solved in the design:
+Wiring an HTTP endpoint directly to the existing batch `TelemetryQueryEngine.executeScan()` would leave **5x–10x of interactive performance on the table**. Five specific architectural bottlenecks were identified and solved in the design:
 
 ### Critique 1: The "Row Reconstitution Tax" in `ChunkTypeHandler.scan()`
 - **Problem**: In `RequestChunkHandler.scan()`, if even a single row in a 64,000-row chunk matches the time/timer/agent filter, lines `367–383` unconditionally decompress **all 15 remaining columns** (`dnsTimes`, `connectTimes`, `httpMethods`, `contentTypes`, `ipAddresses`, etc.) and materialize full `RequestData` POJOs into `PostProcessedDataContainer`. In an interactive chart query (e.g., plotting `runTime` and `serverBusyTime` for `Checkout`), decompressing 14 unused columns and allocating POJOs wastes ~80% of CPU and memory bandwidth.
@@ -68,15 +68,15 @@ Wiring an HTTP endpoint directly to the existing batch `ChunkQueryEngine.execute
 
 ### Critique 5: Avoiding the SQL Parser / Calcite Trap
 - **Problem**: Embedding Apache Calcite or H2 bloats the distribution, forces SIMD vectors through row-oriented `ResultSet` iterators, and makes time-series bucketing + `KllFloatsSketch` percentile merging awkward.
-- **Solution**: Keep the query contract as a clean, typed JSON filter/aggregation specification mapped 1:1 to `ChunkDB` vectors and `RoaringBitmap` indices.
+- **Solution**: Keep the query contract as a clean, typed JSON filter/aggregation specification mapped 1:1 to `TelemetryStore` vectors and `RoaringBitmap` indices.
 
 ---
 
-## 3. Complete Data Preservation Audit: Closing Every Gap in ChunkDB V3
+## 3. Complete Data Preservation Audit: Closing Every Gap in TelemetryStore V3
 
 Every `Data` subclass (`RequestData`, `TransactionData`, `ActionData`, `PageLoadTimingData`, `CustomData`, `WebVitalData`, `CustomValue`, `EventData`) and every `ChunkTypeHandler` was audited against the raw `timers.csv` columns. Exactly **4 gaps** existed in V2:
 
-| Gap # | Record Type(s) | Dropped Field(s) in V2 | Why It Matters for Live Diagnostics | ChunkDB V3 Solution & Storage Cost |
+| Gap # | Record Type(s) | Dropped Field(s) in V2 | Why It Matters for Live Diagnostics | TelemetryStore V3 Solution & Storage Cost |
 | :--- | :--- | :--- | :--- | :--- |
 | **Gap 1** | `RequestData` (`'R'`) | 1. Exact `url` (col 8)<br>2. `requestId` (col 16)<br>3. `responseId` (col 22)<br>4. `formDataEncoding` (col 18)<br>5. `formData` (col 19) | Needed to correlate slow/failed HTTP calls with backend APM/logs (`requestId`/`responseId`) and inspect exact URL query params or POST bodies (`formData`) that triggered a `500` error. | - `formDataEncoding`: Interned in `GlobalDictionaries` + `compFormDataEncodings` (`FastPFOR`).<br>- `(url, requestId, responseId, formData, rawName)`: Stored in cold **Forensic Tail Block** (`sparse` default: `<30 MB` / 100M rows; `full` opt-in: `+2.5–4.5 GB`). |
 | **Gap 2** | Non-Transaction records (`'R'`, `'A'`, `'C'`, `'P'`, `'W'`, `'V'`, `'E'`) | `userNumber` (from `<agent>/<testCase>/<userNumber>/timers.csv`) | In V2, `userNumber` was only set on `TransactionData`. Without `userNumber` on Actions, Requests, and Events, you cannot reconstruct a single Virtual User's session waterfall around a failure. | Parse integer `userNumber` once per user folder in `DataParserThread` and store `compUserNumbers` (`FastPFOR`) across all chunk types. Because files are read per user directory, consecutive rows share the same ID (**`< 0.3 bytes/row`**, ~25 MB per 100M rows). |
@@ -119,7 +119,7 @@ All dependencies are already present in [`pom.xml`](../pom.xml):
 - `org.roaringbitmap:RoaringBitmap:1.3.0`
 - `org.apache.datasketches:datasketches-java:7.0.1` (`KllFloatsSketch`)
 
-### Serving Architecture (`ChunkDbQueryServer`)
+### Serving Architecture (`TelemetryExplorerServer`)
 ```mermaid
 flowchart LR
     B["Browser (localhost:8484)"]
@@ -127,10 +127,10 @@ flowchart LR
         H1["/explorer/* (Classpath ResourceHandler)\nStandalone Live Explorer UI (HTML/CSS/JS + uPlot)"]
         H2["/api/v1/* (Query Servlets + Jackson)\n/schema, /timeseries, /summary, /records, /session"]
         H3["/dumps/* (FileSystem ResourceHandler)\nMounts raw <results-dir> read-only for Result Browser"]
-        H4["/* (Static Report Handler)\nServes generated HTML report + optional /live/chunkdb-bridge.js"]
+        H4["/* (Static Report Handler)\nServes generated HTML report + optional /live/telemetry-bridge.js"]
     end
     B --> H1 & H2 & H3 & H4
-    H2 --> CDB[("xlt-cache/\n(ChunkStorage V3)")]
+    H2 --> CDB[("xlt-cache/\n(TelemetryStore V3)")]
     H3 --> RB[("results/<agent>/<tx>/<user>/output/<dir>/index.html")]
 ```
 
@@ -174,12 +174,12 @@ Because the modernized static report is still an evolving prototype, our UI arch
      - **Reconstruct**: Bottom Forensic Outlier & Failure Inspector table with exact `url`, `requestId`, `responseId`, `formData`, and 1-click **Virtual User Session Waterfall** modal + `/dumps/*` Result Browser links.
    - **Zero coupling to static report DOM changes**: Works on any `xlt-cache/` directory even if no HTML report was generated (`--query-only`).
 
-2. **Optional Static Report Bridge (`chunkdb-bridge.js`)**:
+2. **Optional Static Report Bridge (`telemetry-bridge.js`)**:
    - **Never** included in normal `create_report` runs so static reports remain 100% pure for uploading to external servers.
    - Included **only** when served via `create_report --serve` or explicitly requested via `--live-bridge`.
    - Progressively enhances the modernized report when `/api/v1/schema` responds:
      - **Global Time-Window & Dimension Slicer**: Recomputes `window.ALL_REQUESTS` for any selected time slice, agent, or backend IP in `< 50 ms`, updating all existing tables, KPI chips, and `📋 Copy Markdown` exports in place.
-     - **Live Tab in `#chart-workbench`**: Adds a `🔬 Live Breakdown (ChunkDB)` tab inside `.chart-tabs` for dynamic resolution zooming and IP/Agent/Status splitting.
+     - **Live Tab in `#chart-workbench`**: Adds a `🔬 Live Breakdown (TelemetryStore)` tab inside `.chart-tabs` for dynamic resolution zooming and IP/Agent/Status splitting.
      - **Forensic Samples in `#drawer-${item.id}`**: Appends a live Forensic Outliers & Errors card with `[👤 Trace User #42]` session replay buttons when a row drawer is expanded.
 
 ---
@@ -193,16 +193,16 @@ Below is the complete record of the architectural Q&A and design iterations from
 ### Turn 1 — Initial Concept, Inspiration & Critical Review
 
 **User:**
-> With our new approach of data presevation (ChunkDB), we suddently have the opportunity to add a real time query, filter, and charting endpoint that allows us to dig deeper into the data.
+> With our new approach of data presevation (TelemetryStore), we suddently have the opportunity to add a real time query, filter, and charting endpoint that allows us to dig deeper into the data.
 >
 > Think about that possibility and how such an query tool might look like. Java prefered so it fits the current flexible tool stack.
 >
 > Propose, suggest, inspire and review the idea critically. Do not implement!
 
 **Assistant:**
-With [`ChunkStorage`](../src/main/java/com/xceptance/xlt/report/storage/ChunkStorage.java) and [`ChunkCatalog`](../src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java), you have already built an embedded, SIMD-compressed columnar OLAP store (`xlt-cache/`). Until now, it has only been used to speed up **batch report generation** via [`ChunkQueryEngine`](../src/main/java/com/xceptance/xlt/report/ChunkQueryEngine.java).
+With [`TelemetryStore`](../src/main/java/com/xceptance/xlt/report/storage/TelemetryStore.java) and [`ChunkCatalog`](../src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java), you have already built an embedded, SIMD-compressed columnar OLAP store (`xlt-cache/`). Until now, it has only been used to speed up **batch report generation** via [`TelemetryQueryEngine`](../src/main/java/com/xceptance/xlt/report/TelemetryQueryEngine.java).
 
-Exposing `ChunkDB` through a real-time query, filter, and charting endpoint turns XLT from a **static post-mortem report generator** into an **interactive root-cause diagnostic engine**.
+Exposing `TelemetryStore` through a real-time query, filter, and charting endpoint turns XLT from a **static post-mortem report generator** into an **interactive root-cause diagnostic engine**.
 
 #### 1. Vision & Inspiration: What Does This Unlock?
 Static HTML reports force you to decide *before* running the report generator what time window, merge rules, and aggregations you care about. When you spot a spike at `14:23:10`, the static report hits a wall:
@@ -224,12 +224,12 @@ Your [`pom.xml`](../pom.xml) **already contains every single building block need
 2. **Critique 2**: Avoid eager full-chunk I/O in `DiskChunk.load()` by storing column/tail offsets.
 3. **Critique 3**: Add Zone Map metadata (`int maxRunTime`, `boolean hasFailures`) to `DiskChunk` so latency and error queries skip 99% of chunks without disk I/O.
 4. **Critique 4**: Solve the "Sampled URL" illusion (`MAX_SAMPLE_URLS_PER_TIMER = 5`) by preserving exact URLs for outlier/failed rows (or via an opt-in flag).
-5. **Critique 5**: Avoid heavy SQL parsers (Calcite/H2) in favor of a native JSON OLAP query contract over `ChunkDB` vectors.
+5. **Critique 5**: Avoid heavy SQL parsers (Calcite/H2) in favor of a native JSON OLAP query contract over `TelemetryStore` vectors.
 
 #### Questions Asked to Shape Direction:
 1. **Primary Persona & Workflow**: Interactive web UI, headless API/CLI for agents, or both?
 2. **Drill-Down Depth**: Should we preserve exact URLs / request IDs for outlier & failed rows during Pass 1 ingestion?
-3. **Multi-Run Comparison**: Mount two or more `ChunkStorage` directories simultaneously?
+3. **Multi-Run Comparison**: Mount two or more `TelemetryStore` directories simultaneously?
 
 ---
 
@@ -280,13 +280,13 @@ Defined the **3-step diagnostic funnel** for the Web UI: **1. Spot (Timeline & H
 Reviewed [`build.xml`](../build.xml), [`ant-scripts/resultbrowser.xml`](../ant-scripts/resultbrowser.xml), and [`resultbrowser/package.json`](../resultbrowser/package.json) and presented:
 1. **Serving Layer**: Embedded Jetty (`jetty-servlet` + `jackson-databind` already in `pom.xml`) mounting:
    - `/` or `/explorer`: Classpath `ResourceHandler` serving the UI assets directly from `xlt.jar`.
-   - `/api/v1/*`: Query servlets backed by `ChunkStorage`.
+   - `/api/v1/*`: Query servlets backed by `TelemetryStore`.
    - `/dumps/*`: Read-only `FileSystem` `ResourceHandler` mounting `<results-dir>` so clicking "Open Result Browser" opens `/dumps/<agent>/<tx>/<user>/output/<dir>/index.html` without `file://` CORS issues.
 2. **Frontend Options Ranked**:
    - **Option 1 (Recommended)**: Zero-Build Vanilla ES Modules + vendored `uPlot` (`~45 KB`) directly in `src/main/resources/` (zero Node.js/npm build step, instant `F5` reload, zero dependency rot).
    - **Option 2**: Preact + TypeScript bundled via Ant/npm (like `resultbrowser`).
    - **Option 3**: Server-side HTML fragments (HTMX).
-3. **Section 5 — Bridging Static Reports and the Live UI**: Using `create_report --serve <results-dir>` to serve both the static HTML report and the live `ChunkDB` explorer so users can jump straight from static summary tables into live high-resolution slicing.
+3. **Section 5 — Bridging Static Reports and the Live UI**: Using `create_report --serve <results-dir>` to serve both the static HTML report and the live `TelemetryStore` explorer so users can jump straight from static summary tables into live high-resolution slicing.
 
 ---
 
@@ -316,10 +316,10 @@ Refined the design around **"Static by Default, Live When Served"** with zero JS
 Inspected the modernized static report prototype in [`reports/modernized-report/`](../reports/modernized-report/) (`index.html`, `requests.html`, `errors.html`, `js/requests-data.js`) and aligned the architecture:
 1. **Strict Separation**:
    - Standard `create_report <results-dir>` generates the pure static report with **zero** bridge scripts or dead buttons so it can be uploaded cleanly to any external server.
-   - Only `create_report --serve <results-dir>` or `--live-bridge` activates `chunkdb-bridge.js`.
+   - Only `create_report --serve <results-dir>` or `--live-bridge` activates `telemetry-bridge.js`.
 2. **Direct Integration with `modernized-report` Concepts**:
    - **Integration 1 ("Time-Slice the Entire Report")**: Recomputes `window.ALL_REQUESTS` on the fly for any brushed time window, agent, or backend IP in `< 50 ms`, feeding directly into the prototype's existing `applyFilters()`, `sortTable()`, `renderAllRows()`, `updateWorkbench()`, and `📋 Copy Table as Markdown`.
-   - **Integration 2 (Live Tab in `#chart-workbench`)**: Adds `🔬 Live Breakdown (ChunkDB)` to `.chart-tabs` inside the sticky workbench.
+   - **Integration 2 (Live Tab in `#chart-workbench`)**: Adds `🔬 Live Breakdown (TelemetryStore)` to `.chart-tabs` inside the sticky workbench.
    - **Integration 3 (Forensic Outliers in `#drawer-${item.id}`)**: Populates exact `url`, `requestId`, `responseId`, `formData`, `usedIpAddress`, and `[👤 Trace User #42]` inside the inline expandable row drawer.
    - **Integration 4 (Virtual User Session Modal & `/dumps/*`)**: Opens the chronological user waterfall modal and links `.btn-dump` directly to `/dumps/*`.
 
@@ -331,4 +331,4 @@ Inspected the modernized static report prototype in [`reports/modernized-report/
 > ok let's do the planning for implementation. our new reports are still half prototypes, some things might still change. hope that is ok, if so, we might want to continue this from here
 
 **Assistant:**
-Created the full OpenSpec planning artifacts in [`openspec/changes/chunkdb-live-query-explorer/`](../openspec/changes/chunkdb-live-query-explorer/) (`proposal.md`, `design.md`, `specs/chunkdb-live-query-explorer/spec.md`, `tasks.md`), structuring Phase 3 so the standalone `/explorer` UI is 100% independent of ongoing HTML changes in the static report prototype, while `chunkdb-bridge.js` acts as a thin, isolated progressive-enhancement adapter.
+Created the full OpenSpec planning artifacts in [`openspec/changes/chunkdb-live-query-explorer/`](../openspec/changes/chunkdb-live-query-explorer/) (`proposal.md`, `design.md`, `specs/chunkdb-live-query-explorer/spec.md`, `tasks.md`), structuring Phase 3 so the standalone `/explorer` UI is 100% independent of ongoing HTML changes in the static report prototype, while `telemetry-bridge.js` acts as a thin, isolated progressive-enhancement adapter.

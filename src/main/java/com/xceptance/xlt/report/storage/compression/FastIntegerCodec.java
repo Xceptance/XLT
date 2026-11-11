@@ -263,7 +263,7 @@ public final class FastIntegerCodec
      * Compresses a non-decreasing (monotonically non-decreasing) array of integers using integrated
      * delta calculation followed by SIMD bit-packing.
      * <p>
-     * Highly effective for strictly sorted integer sequences. Note: In ChunkDB multi-threaded ingestion,
+     * Highly effective for strictly sorted integer sequences. Note: In TelemetryStore multi-threaded ingestion,
      * records arrive concurrently across worker threads and network sockets, meaning per-chunk timestamps
      * are generally not monotonically ascending. Standard {@link #compress(int[])} is therefore used for
      * chunk timestamp columns.

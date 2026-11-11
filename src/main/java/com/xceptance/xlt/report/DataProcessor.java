@@ -166,7 +166,7 @@ public class DataProcessor
                 config.getSlowestRequestsPerBucket(), config.getSlowestRequestsMaxRuntime());
             final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
             final java.io.File cacheDir = config.getDataCacheDirectory(resultsDir);
-            chunkCollector = new com.xceptance.xlt.report.storage.ChunkIngestionCollector(cacheDir);
+            chunkCollector = new com.xceptance.xlt.report.storage.TelemetryIngestionCollector(cacheDir);
         }
         else
         {
@@ -190,10 +190,10 @@ public class DataProcessor
     }
 
     /**
-     * Ingestion collector accumulating records into compressed columnar ChunkDB chunks concurrently
+     * Ingestion collector accumulating records into compressed columnar TelemetryStore chunks concurrently
      * with standard report statistics aggregation during cold-cache runs.
      */
-    private com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
+    private com.xceptance.xlt.report.storage.TelemetryIngestionCollector chunkCollector;
 
     /**
      * Returns the maximum time.
@@ -243,7 +243,7 @@ public class DataProcessor
 
             // Shut down CSV reader and parser thread pools immediately after Phase 1 finishes.
             // Terminating these threads allows their ThreadLocal maps and per-thread parsing buffers
-            // to be garbage-collected before Phase 2 (ChunkDB scan and statistics aggregation) starts.
+            // to be garbage-collected before Phase 2 (TelemetryStore scan and statistics aggregation) starts.
             dataParserExecutor.shutdownNow();
             dataReaderExecutor.shutdownNow();
 
@@ -257,7 +257,7 @@ public class DataProcessor
                               readDuration,
                               linesPerSecond));
 
-            // If transparent caching is active and this was a full cold run, persist the ChunkStorage database
+            // If transparent caching is active and this was a full cold run, persist the TelemetryStore database
             // and write a validation fingerprint so subsequent CLI executions can execute via fast SIMD scan.
             // NOTE: When direct-to-disk streaming is active, chunks were already written to chunks.bin.tmp during
             // parsing; finishing writes the index table and header. We safely close storage after caching.
@@ -265,25 +265,25 @@ public class DataProcessor
             {
                 // Detach chunkCollector from this DataProcessor field before finalizing storage so the collector
                 // and its builder pools can be reclaimed as soon as collector.finish() completes.
-                final com.xceptance.xlt.report.storage.ChunkIngestionCollector collector = chunkCollector;
+                final com.xceptance.xlt.report.storage.TelemetryIngestionCollector collector = chunkCollector;
                 chunkCollector = null;
                 final long tCacheStart = TimerUtils.get().getStartTime();
-                try (final com.xceptance.xlt.report.storage.ChunkStorage storage = collector.finish())
+                try (final com.xceptance.xlt.report.storage.TelemetryStore storage = collector.finish())
                 {
-                    XltLogger.reportLogger.info("Persisting ChunkDB cache to disk...");
+                    XltLogger.reportLogger.info("Persisting TelemetryStore cache to disk...");
                     final java.io.File resultsDir = inputDir.toLocalPath().get().toFile();
                     final com.xceptance.xlt.report.storage.cache.CacheManager cacheManager =
                         new com.xceptance.xlt.report.storage.cache.CacheManager(resultsDir, config);
                     cacheManager.save(storage);
 
                     final long cacheDuration = TimerUtils.get().getElapsedTime(tCacheStart);
-                    XltLogger.reportLogger.info(String.format("ChunkDB cache persisted - %,d ms", cacheDuration));
+                    XltLogger.reportLogger.info(String.format("TelemetryStore cache persisted - %,d ms", cacheDuration));
 
                     if (hasReportProviders)
                     {
-                        // Strict Phase 2: Query the sealed ChunkDB concurrently to aggregate report statistics
+                        // Strict Phase 2: Query the sealed TelemetryStore concurrently to aggregate report statistics
                         // after all Phase 1 CSV reader/parser buffers and ingestion builders have been released.
-                        XltLogger.reportLogger.info("Aggregating report statistics from ChunkDB...");
+                        XltLogger.reportLogger.info("Aggregating report statistics from TelemetryStore...");
                         final long scanStart = TimerUtils.get().getStartTime();
 
                         final org.roaringbitmap.RoaringBitmap matchingAgents =
@@ -292,8 +292,8 @@ public class DataProcessor
                         final com.xceptance.xlt.report.storage.query.ScanPredicate predicate =
                             new com.xceptance.xlt.report.storage.query.ScanPredicate(fromTime, toTime, null, matchingAgents);
 
-                        final com.xceptance.xlt.report.ChunkQueryEngine queryEngine =
-                            new com.xceptance.xlt.report.ChunkQueryEngine(storage, config.parserThreadCount);
+                        final com.xceptance.xlt.report.TelemetryQueryEngine queryEngine =
+                            new com.xceptance.xlt.report.TelemetryQueryEngine(storage, config.parserThreadCount);
                         final long recordsProcessed;
                         try (final ProgressBar scanProgressBar =
                                  new ProgressBarBuilder().setTaskName("Aggregating").setStyle(ProgressBarStyle.ASCII).build())
@@ -303,14 +303,14 @@ public class DataProcessor
 
                         final long scanDuration = TimerUtils.get().getElapsedTime(scanStart);
                         final long scanRate = scanDuration > 0 ? Math.round((recordsProcessed / (double) scanDuration) * 1000L) : 0;
-                        XltLogger.reportLogger.info(String.format("%,d records aggregated from ChunkDB - %,d ms - %,d records/s",
+                        XltLogger.reportLogger.info(String.format("%,d records aggregated from TelemetryStore - %,d ms - %,d records/s",
                                                                   recordsProcessed, scanDuration, scanRate));
                     }
                 }
                 catch (final Exception e)
                 {
-                    XltLogger.reportLogger.error("Failed to persist ChunkDB cache or aggregate report: " + e.getMessage(), e);
-                    throw new RuntimeException("ChunkDB processing failed", e);
+                    XltLogger.reportLogger.error("Failed to persist TelemetryStore cache or aggregate report: " + e.getMessage(), e);
+                    throw new RuntimeException("TelemetryStore processing failed", e);
                 }
             }
 

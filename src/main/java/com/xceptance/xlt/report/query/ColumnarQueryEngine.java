@@ -58,7 +58,7 @@ import com.xceptance.xlt.report.query.QueryModels.SummaryTableQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.SummaryTableResponse;
 import com.xceptance.xlt.report.query.QueryModels.TimeSeriesQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.TimeSeriesResponse;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
 import com.xceptance.xlt.report.storage.chunk.Chunk;
 import com.xceptance.xlt.report.storage.chunk.DiskChunk;
@@ -73,7 +73,7 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
 
 /**
- * Vectorized columnar query engine for interactive exploration and forensic root-cause analysis over ChunkDB.
+ * Vectorized columnar query engine for interactive exploration and forensic root-cause analysis over TelemetryStore.
  * <p>
  * <b>Architectural Design:</b>
  * <ul>
@@ -84,7 +84,7 @@ import com.xceptance.xlt.report.util.RuntimeHistogram;
  *       learned HTTP status code bounds ({@code minStatusCode}, {@code maxStatusCode}).</li>
  *   <li><b>Zero-Allocation Positional Column Streaming:</b> Reads only the required compressed columns directly
  *       from {@code chunks.bin} into a reusable thread-local {@link ByteBuffer} via
- *       {@link ChunkStorage#readChunkBuffer(long, ByteBuffer)}, bulk-copies words via {@code IntBuffer.get(int[])},
+ *       {@link TelemetryStore#readChunkBuffer(long, ByteBuffer)}, bulk-copies words via {@code IntBuffer.get(int[])},
  *       and skips reading constant-value columns entirely.</li>
  *   <li><b>Two-Stage Predicate Pushdown:</b>
  *       <ol>
@@ -163,7 +163,7 @@ public class ColumnarQueryEngine
     }
 
     /** Backing columnar storage container. */
-    private final ChunkStorage storage;
+    private final TelemetryStore storage;
 
     /** Optional root results directory for resolving local Result Browser dump files. */
     private final File resultsDir;
@@ -178,25 +178,25 @@ public class ColumnarQueryEngine
     private volatile MetadataResponse cachedMetadata;
 
     /**
-     * Constructs a {@link ColumnarQueryEngine} over the given {@link ChunkStorage}.
+     * Constructs a {@link ColumnarQueryEngine} over the given {@link TelemetryStore}.
      *
      * @param storage
-     *            the ChunkDB storage instance
+     *            the TelemetryStore storage instance
      */
-    public ColumnarQueryEngine(final ChunkStorage storage)
+    public ColumnarQueryEngine(final TelemetryStore storage)
     {
         this(storage, null, false, false);
     }
 
     /**
-     * Constructs a {@link ColumnarQueryEngine} over the given {@link ChunkStorage} and raw results directory.
+     * Constructs a {@link ColumnarQueryEngine} over the given {@link TelemetryStore} and raw results directory.
      *
      * @param storage
-     *            the ChunkDB storage instance
+     *            the TelemetryStore storage instance
      * @param resultsDir
      *            optional raw load test results directory containing {@code <agent>/<scenario>/<user>/output/<dump>}
      */
-    public ColumnarQueryEngine(final ChunkStorage storage, final File resultsDir)
+    public ColumnarQueryEngine(final TelemetryStore storage, final File resultsDir)
     {
         this(storage, resultsDir, false, false);
     }
@@ -206,7 +206,7 @@ public class ColumnarQueryEngine
      * and chunk hint index.
      *
      * @param storage
-     *            the ChunkDB storage instance
+     *            the TelemetryStore storage instance
      * @param resultsDir
      *            optional raw load test results directory
      * @param eagerIndexWarmup
@@ -214,7 +214,7 @@ public class ColumnarQueryEngine
      * @param warmHints
      *            {@code true} to also warm up facet metadata at startup
      */
-    public ColumnarQueryEngine(final ChunkStorage storage,
+    public ColumnarQueryEngine(final TelemetryStore storage,
                                final File resultsDir,
                                final boolean eagerIndexWarmup,
                                final boolean warmHints)
@@ -251,11 +251,11 @@ public class ColumnarQueryEngine
     }
 
     /**
-     * Returns the backing {@link ChunkStorage} instance.
+     * Returns the backing {@link TelemetryStore} instance.
      *
      * @return backing storage
      */
-    public ChunkStorage getStorage()
+    public TelemetryStore getStorage()
     {
         return storage;
     }

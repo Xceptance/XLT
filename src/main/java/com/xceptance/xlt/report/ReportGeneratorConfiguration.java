@@ -198,10 +198,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RESULTS_ROOT_DIR = PROP_PREFIX + "results";
 
-    /** Configuration property key to enable or disable persistent ChunkDB disk caching. */
+    /** Configuration property key to enable or disable persistent TelemetryStore disk caching. */
     public static final String PROP_DATA_CACHE_ENABLED = PROP_PREFIX + "dataCache.enabled";
 
-    /** Configuration property key specifying the directory name or path for the persistent ChunkDB cache. */
+    /** Configuration property key specifying the directory name or path for the persistent TelemetryStore cache. */
     public static final String PROP_DATA_CACHE_DIR = PROP_PREFIX + "dataCache.dir";
 
     /** Configuration property key specifying the request forensic details retention mode ("sparse" or "full"). */
@@ -939,7 +939,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Indicates whether the persistent ChunkDB binary cache is enabled.
+     * Indicates whether the persistent TelemetryStore binary cache is enabled.
      *
      * @return {@code true} if caching is enabled, {@code false} otherwise
      */
@@ -949,7 +949,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Enables or disables persistent ChunkDB binary caching.
+     * Enables or disables persistent TelemetryStore binary caching.
      *
      * @param dataCacheEnabled
      *            {@code true} to enable caching, {@code false} to disable

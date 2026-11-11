@@ -23,7 +23,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Common I/O serialization utilities for ChunkDB binary storage formats.
+ * Common I/O serialization utilities for TelemetryStore binary storage formats.
  * <p>
  * Standard {@link DataOutput#writeUTF(String)} is limited to 65,535 bytes in UTF-8 representation
  * and throws {@link java.io.UTFDataFormatException} if a string (such as an exception stack trace

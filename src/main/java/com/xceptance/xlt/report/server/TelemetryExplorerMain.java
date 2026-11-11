@@ -38,18 +38,18 @@ import com.xceptance.xlt.report.DataProcessor;
 import com.xceptance.xlt.report.DataRecordFactory;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.query.ColumnarQueryEngine;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.cache.CacheManager;
 import com.xceptance.xlt.report.storage.chunk.RequestChunkHandler;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
- * Dedicated CLI entry point for launching the interactive ChunkDB Explorer UI server.
+ * Dedicated CLI entry point for launching the interactive Telemetry Explorer UI server.
  * <p>
  * Mounts an existing {@code xlt-cache/} directory in sub-second time if valid, or executes Phase 1
  * log ingestion into {@code xlt-cache/} without running Phase 2 XML/HTML/chart generation.
  */
-public final class ChunkExplorerMain
+public final class TelemetryExplorerMain
 {
     public static final int DEFAULT_PORT = 8484;
 
@@ -60,7 +60,7 @@ public final class ChunkExplorerMain
     private static final String OPTION_PROPERTY_DEFINITION = "D";
     private static final String OPTION_HELP = "help";
 
-    private ChunkExplorerMain()
+    private TelemetryExplorerMain()
     {
     }
 
@@ -102,7 +102,7 @@ public final class ChunkExplorerMain
     }
 
     /**
-     * Resolves or builds a {@link ChunkStorage} instance from a results directory or direct {@code xlt-cache} directory.
+     * Resolves or builds a {@link TelemetryStore} instance from a results directory or direct {@code xlt-cache} directory.
      */
     public static LoadedDataset loadOrIngestDataset(final File targetDir, final File overridePropertyFile,
                                                     final Properties cliProps, final boolean preserveAllDetails)
@@ -114,11 +114,11 @@ public final class ChunkExplorerMain
         }
 
         // Case 1: Pointed directly at an xlt-cache directory containing chunks.bin
-        final File directChunksFile = new File(targetDir, ChunkStorage.CHUNKS_FILE_NAME);
+        final File directChunksFile = new File(targetDir, TelemetryStore.CHUNKS_FILE_NAME);
         if (directChunksFile.isFile())
         {
-            XltLogger.reportLogger.info("Mounting ChunkDB directly from cache directory: {}", targetDir.getAbsolutePath());
-            final ChunkStorage storage = ChunkStorage.loadFromDirectory(targetDir);
+            XltLogger.reportLogger.info("Mounting TelemetryStore directly from cache directory: {}", targetDir.getAbsolutePath());
+            final TelemetryStore storage = TelemetryStore.loadFromDirectory(targetDir);
             final File parentDir = Objects.requireNonNullElse(targetDir.getParentFile(), targetDir);
             final String detailMode = preserveAllDetails ? "full" : RequestChunkHandler.getRequestDetailsMode();
             return new LoadedDataset(storage, parentDir, Runtime.getRuntime().availableProcessors(), detailMode);
@@ -157,7 +157,7 @@ public final class ChunkExplorerMain
             {
                 effectiveCliProps.putAll(cliProps);
             }
-            // Ensure ChunkDB cache is enabled
+            // Ensure TelemetryStore cache is enabled
             effectiveCliProps.setProperty("com.xceptance.xlt.reportgenerator.dataCache.enabled", "true");
             if (preserveAllDetails)
             {
@@ -172,24 +172,24 @@ public final class ChunkExplorerMain
             RequestChunkHandler.setRequestDetailsMode(config.getRequestDetailsMode());
 
             final CacheManager cacheManager = new CacheManager(targetDir, config);
-            ChunkStorage storage = null;
+            TelemetryStore storage = null;
             if (cacheManager.isCacheValid())
             {
                 XltLogger.reportLogger.info(Console.horizontalBar());
-                XltLogger.reportLogger.info("Warm ChunkDB cache detected. Mounting without re-parsing CSV logs...");
+                XltLogger.reportLogger.info("Warm TelemetryStore cache detected. Mounting without re-parsing CSV logs...");
                 storage = cacheManager.loadValidated();
             }
 
             if (storage == null)
             {
                 XltLogger.reportLogger.info(Console.horizontalBar());
-                XltLogger.reportLogger.info("No valid ChunkDB cache found. Running Phase 1 log ingestion into {}...",
+                XltLogger.reportLogger.info("No valid TelemetryStore cache found. Running Phase 1 log ingestion into {}...",
                                             cacheManager.getCacheDirectory().getAbsolutePath());
                 final DataRecordFactory dataRecordFactory = new DataRecordFactory(config.getDataRecordClasses());
                 final DataProcessor logReader = new DataProcessor(config, inputDir, dataRecordFactory, 0L, Long.MAX_VALUE,
                                                                   Collections.emptyList(), null, null, null, null);
                 logReader.readDataRecords();
-                storage = ChunkStorage.loadFromDirectory(cacheManager.getCacheDirectory());
+                storage = TelemetryStore.loadFromDirectory(cacheManager.getCacheDirectory());
             }
 
             return new LoadedDataset(storage, targetDir, Runtime.getRuntime().availableProcessors(), config.getRequestDetailsMode());
@@ -197,7 +197,7 @@ public final class ChunkExplorerMain
     }
 
     /**
-     * Parses CLI arguments, loads or ingests the target dataset, and starts the {@link ChunkExplorerServer}.
+     * Parses CLI arguments, loads or ingests the target dataset, and starts the {@link TelemetryExplorerServer}.
      *
      * @param args
      *            command-line arguments
@@ -247,8 +247,8 @@ public final class ChunkExplorerMain
                 new ColumnarQueryEngine(dataset.storage(), dataset.resultsDir(), true, preloadUncompressed || cacheCompressed);
             XltLogger.reportLogger.info("Column pointer index ready in {} ms (mode={}).",
                                         System.currentTimeMillis() - preloadStart, queryEngine.getMemoryMode());
-            final ChunkExplorerServer server =
-                new ChunkExplorerServer(queryEngine, port);
+            final TelemetryExplorerServer server =
+                new TelemetryExplorerServer(queryEngine, port);
 
             final Thread shutdownTask = new Thread(() -> {
                 try
@@ -265,12 +265,12 @@ public final class ChunkExplorerMain
                 catch (final Exception ignored)
                 {
                 }
-            }, "chunkdb-explorer-shutdown");
+            }, "telemetry-explorer-shutdown");
 
             server.start();
             XltLogger.reportLogger.info(Console.horizontalBar());
-            XltLogger.reportLogger.info("ChunkDB Explorer (Direct Workbench): {}", server.getBaseUrl());
-            XltLogger.reportLogger.info("ChunkDB Explorer (Guided Dashboard): {}/guided", server.getBaseUrl());
+            XltLogger.reportLogger.info("Telemetry Explorer (Direct Workbench): {}", server.getBaseUrl());
+            XltLogger.reportLogger.info("Telemetry Explorer (Guided Dashboard): {}/guided", server.getBaseUrl());
             XltLogger.reportLogger.info("Press Ctrl+C to stop the server.");
             XltLogger.reportLogger.info(Console.horizontalBar());
 
@@ -287,7 +287,7 @@ public final class ChunkExplorerMain
         }
         catch (final Exception e)
         {
-            XltLogger.reportLogger.error("Failed to start ChunkDB Explorer: " + e.getMessage(), e);
+            XltLogger.reportLogger.error("Failed to start Telemetry Explorer: " + e.getMessage(), e);
             return 2;
         }
     }
@@ -304,14 +304,14 @@ public final class ChunkExplorerMain
     private static void printUsage(final Options options)
     {
         final HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("chunkdb_explorer.sh [options] <results-or-cache-dir>", options);
+        formatter.printHelp("telemetry_explorer.sh [options] <results-or-cache-dir>", options);
     }
 
     /**
-     * Value holder for a mounted {@link ChunkStorage} and its associated runtime context.
+     * Value holder for a mounted {@link TelemetryStore} and its associated runtime context.
      */
     public record LoadedDataset(
-        ChunkStorage storage,
+        TelemetryStore storage,
         File resultsDir,
         int threadCount,
         String detailMode

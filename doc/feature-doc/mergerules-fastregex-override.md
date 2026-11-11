@@ -29,7 +29,7 @@ Report operators need a targeted safety mechanism to force standard JDK regex ex
 * **Targeted Rule-Level Fallback**: Provide an optional boolean configuration property `com.xceptance.xlt.reportgenerator.requestMergeRules.<id>.fastRegex = true|false` that selectively forces standard regex matching for that rule when set to `false`.
 * **Global Master Switch Precedence**: Ensure that the global flag (`fastRegex.enabled = false`) acts as an absolute master kill-switch: if FastRegex is globally disabled, no individual rule can enable FastRegex.
 * **Universal Rule Coverage**: Apply the setting uniformly to all pattern conditions within the rule (including `urlPattern`, `namePattern`, `contentTypePattern`, `statusCodePattern`, `agentPattern`, `transactionPattern`, `methodPattern`, and their corresponding `.exclude` patterns).
-* **Automatic Cache Fingerprint Invalidation**: Incorporate the effective regex engine state into `MergeRule.toString()` so that `CacheFingerprint` detects engine configuration changes and triggers an automatic cache rebuild in ChunkDB (XLT's intermediate columnar caching layer) without modifying the binary fingerprint format.
+* **Automatic Cache Fingerprint Invalidation**: Incorporate the effective regex engine state into `MergeRule.toString()` so that `CacheFingerprint` detects engine configuration changes and triggers an automatic cache rebuild in TelemetryStore (XLT's intermediate columnar caching layer) without modifying the binary fingerprint format.
 * **Silent Execution**: Operate silently without producing console warnings or log spam on stdout/stderr when rules override to standard regex or when a rule override is suppressed by the global kill-switch.
 
 ## Non-Goals
@@ -56,7 +56,7 @@ Report operators need a targeted safety mechanism to force standard JDK regex ex
 * **Then**: The global switch dominates. Rule 2 uses standard `java.util.regex.Pattern` along with all other rules. FastRegex does not initialize or execute.
 
 ### CUJ 3: Cache Invalidation on Engine Change
-* **Given**: A report was generated with ChunkDB caching enabled, where Rule 3 defaulted to FastRegex.
+* **Given**: A report was generated with TelemetryStore caching enabled, where Rule 3 defaulted to FastRegex.
 * **When**: The operator changes Rule 3 to `com.xceptance.xlt.reportgenerator.requestMergeRules.3.fastRegex = false` and re-runs report generation.
 * **Then**: `CacheFingerprint.calculate()` detects a hash mismatch in `.mergeRulesHash()` because `MergeRule.toString()` changed. The stale cache is invalidated and purged, and raw logs are re-parsed using standard regex for Rule 3.
 
@@ -356,4 +356,4 @@ This section provides the exhaustive, phased implementation plan for execution.
      final CacheFingerprint fp2 = CacheFingerprint.calculate(resultsDir, config2);
      org.junit.Assert.assertNotEquals(fp1.mergeRulesHash(), fp2.mergeRulesHash());
      ```
-4. **Phase 4 Verification Checkpoint**: Run `mvn test -Dtest=FastRegexSwitchTest` and `mvn test -Dtest=ChunkStorageAndCacheTest` to verify complete test suite execution.
+4. **Phase 4 Verification Checkpoint**: Run `mvn test -Dtest=FastRegexSwitchTest` and `mvn test -Dtest=TelemetryStoreAndCacheTest` to verify complete test suite execution.

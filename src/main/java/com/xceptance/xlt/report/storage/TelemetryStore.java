@@ -41,9 +41,9 @@ import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
 /**
- * Top-level container and query engine interface for ChunkDB.
+ * Top-level container and query engine interface for TelemetryStore.
  * <p>
- * {@link ChunkStorage} unifies:
+ * {@link TelemetryStore} unifies:
  * <ul>
  *   <li>{@link GlobalDictionaries}: Centralized 16-bit interning for high-frequency string attributes.</li>
  *   <li>{@link ChunkCatalog}: Master inventory of columnar chunks, min/max time bounds, and inverted bitmap indexes.</li>
@@ -51,14 +51,14 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
  * </ul>
  * <p>
  * <b>On-Disk Binary Layout:</b>
- * When persisted to a cache directory, {@link ChunkStorage} writes two compact binary files:
+ * When persisted to a cache directory, {@link TelemetryStore} writes two compact binary files:
  * <ol>
  *   <li>{@code dictionaries.bin}: UTF string tables and unified (agent, testCase) pair mappings.</li>
  *   <li>{@code chunks.bin}: Global timestamp headers, total record count, and serialized columnar chunks
  *       with FastPFOR-compressed column vectors and RoaringBitmap index maps.</li>
  * </ol>
  */
-public class ChunkStorage implements AutoCloseable
+public class TelemetryStore implements AutoCloseable
 {
     /** Binary filename for the interned dictionary tables. */
     public static final String DICTIONARIES_FILE_NAME = "dictionaries.bin";
@@ -66,7 +66,7 @@ public class ChunkStorage implements AutoCloseable
     /** Binary filename for the global chunk catalog and compressed columnar data blocks. */
     public static final String CHUNKS_FILE_NAME = "chunks.bin";
 
-    /** Global ChunkDB binary storage format version. */
+    /** Global TelemetryStore binary storage format version. */
     public static final int STORAGE_VERSION = ChunkCatalog.VERSION;
 
     /** Interned dictionary tables for strings, timer names, and agent/test case pairs. */
@@ -88,16 +88,16 @@ public class ChunkStorage implements AutoCloseable
     private boolean isPersisted;
 
     /**
-     * Constructs a new empty {@link ChunkStorage} initialized with default dictionaries,
+     * Constructs a new empty {@link TelemetryStore} initialized with default dictionaries,
      * an empty catalog, and the singleton {@link ChunkTypeRegistry}.
      */
-    public ChunkStorage()
+    public TelemetryStore()
     {
         this(new GlobalDictionaries(), new ChunkCatalog(), ChunkTypeRegistry.getInstance(), null, null, false);
     }
 
     /**
-     * Constructs a {@link ChunkStorage} instance with the specified components.
+     * Constructs a {@link TelemetryStore} instance with the specified components.
      *
      * @param dictionaries
      *            interned global dictionaries
@@ -106,13 +106,13 @@ public class ChunkStorage implements AutoCloseable
      * @param registry
      *            chunk type codec registry
      */
-    public ChunkStorage(final GlobalDictionaries dictionaries, final ChunkCatalog catalog, final ChunkTypeRegistry registry)
+    public TelemetryStore(final GlobalDictionaries dictionaries, final ChunkCatalog catalog, final ChunkTypeRegistry registry)
     {
         this(dictionaries, catalog, registry, null, null, false);
     }
 
     /**
-     * Constructs a {@link ChunkStorage} instance with an associated file and channel for lazy chunk reads.
+     * Constructs a {@link TelemetryStore} instance with an associated file and channel for lazy chunk reads.
      *
      * @param dictionaries
      *            interned global dictionaries
@@ -127,8 +127,8 @@ public class ChunkStorage implements AutoCloseable
      * @param isPersisted
      *            true if chunks and dictionaries are already stored on disk
      */
-    public ChunkStorage(final GlobalDictionaries dictionaries, final ChunkCatalog catalog, final ChunkTypeRegistry registry,
-                        final File chunksFile, final FileChannel readChannel, final boolean isPersisted)
+    public TelemetryStore(final GlobalDictionaries dictionaries, final ChunkCatalog catalog, final ChunkTypeRegistry registry,
+                          final File chunksFile, final FileChannel readChannel, final boolean isPersisted)
     {
         this.dictionaries = dictionaries;
         this.catalog = catalog;
@@ -387,17 +387,17 @@ public class ChunkStorage implements AutoCloseable
     }
 
     /**
-     * Loads and deserializes a {@link ChunkStorage} instance from the specified cache directory.
+     * Loads and deserializes a {@link TelemetryStore} instance from the specified cache directory.
      * <p>
      * Opens an active read-only {@link FileChannel} for zero-copy, lazy positional chunk loading.
      *
      * @param dir
      *            the directory containing {@code dictionaries.bin} and {@code chunks.bin}
-     * @return reconstructed and initialized {@link ChunkStorage} instance
+     * @return reconstructed and initialized {@link TelemetryStore} instance
      * @throws IOException
      *             if files are missing or an I/O error occurs during read
      */
-    public static ChunkStorage loadFromDirectory(final File dir) throws IOException
+    public static TelemetryStore loadFromDirectory(final File dir) throws IOException
     {
         final File dictFile = new File(dir, DICTIONARIES_FILE_NAME);
         final File chunksFile = new File(dir, CHUNKS_FILE_NAME);
@@ -421,6 +421,6 @@ public class ChunkStorage implements AutoCloseable
 
         // 3. Open shared read-only FileChannel for non-blocking concurrent reads of chunk payloads
         final FileChannel channel = FileChannel.open(chunksFile.toPath(), StandardOpenOption.READ);
-        return new ChunkStorage(dicts, cat, reg, chunksFile, channel, true);
+        return new TelemetryStore(dicts, cat, reg, chunksFile, channel, true);
     }
 }

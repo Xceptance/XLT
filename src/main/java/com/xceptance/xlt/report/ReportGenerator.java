@@ -383,7 +383,7 @@ public class ReportGenerator
         XltLogger.reportLogger.info(Console.startSection(validCacheManager != null ? "Reading from Cache..." : "Reading Log Files..."));
 
         // If relative time offsets (e.g. fromTimeRel / toTimeRel) are specified on the CLI and
-        // the test start timestamp is not explicitly provided in test properties, query the ChunkDB
+        // the test start timestamp is not explicitly provided in test properties, query the TelemetryStore
         // cache catalog (if available and valid) to determine the exact earliest and latest timestamps
         // without scanning raw CSV log files.
         if ((fromTimeRel || toTimeRel) && testStartTime == 0 && validCacheManager != null)
@@ -492,7 +492,7 @@ public class ReportGenerator
     }
 
     /**
-     * Processing of the log files or ChunkDB cache within a defined time range.
+     * Processing of the log files or TelemetryStore cache within a defined time range.
      *
      * @param fromTime
      *            start time of the period to report
@@ -505,14 +505,14 @@ public class ReportGenerator
     private void read(final long fromTime, final long toTime,
                       final com.xceptance.xlt.report.storage.cache.CacheManager validCacheManager)
     {
-        // Step 1: If a valid persistent ChunkDB disk cache is available, skip reading and parsing
+        // Step 1: If a valid persistent TelemetryStore disk cache is available, skip reading and parsing
         // gigabytes of raw CSV text files across disk threads. Instead, execute a fast columnar SIMD
         // scan over compressed binary chunks while displaying console progress.
         if (validCacheManager != null)
         {
             try
             {
-                XltLogger.reportLogger.info(String.format("Accelerating report generation using ChunkDB cache from: %s",
+                XltLogger.reportLogger.info(String.format("Accelerating report generation using TelemetryStore cache from: %s",
                                                           validCacheManager.getCacheDirectory()));
 
                 // Create fresh statistics aggregation pipeline
@@ -525,7 +525,7 @@ public class ReportGenerator
 
                 try (final ProgressBar progressBar =
                          new ProgressBarBuilder().setTaskName("Reading").setStyle(ProgressBarStyle.ASCII).build();
-                     final com.xceptance.xlt.report.storage.ChunkStorage storage = validCacheManager.loadValidated())
+                     final com.xceptance.xlt.report.storage.TelemetryStore storage = validCacheManager.loadValidated())
                 {
                     if (storage != null)
                     {
@@ -546,8 +546,8 @@ public class ReportGenerator
 
                         // Execute parallel SIMD scan across configured worker thread pool
                         final long scanStart = TimerUtils.get().getStartTime();
-                        final ChunkQueryEngine queryEngine =
-                            new ChunkQueryEngine(storage, config.parserThreadCount);
+                        final TelemetryQueryEngine queryEngine =
+                            new TelemetryQueryEngine(storage, config.parserThreadCount);
                         recordsProcessed = queryEngine.executeScan(predicate, statisticsProcessor, progressBar);
                         scanDuration = TimerUtils.get().getElapsedTime(scanStart);
                     }
@@ -582,7 +582,7 @@ public class ReportGenerator
             }
             catch (final Exception e)
             {
-                XltLogger.reportLogger.warn("Failed to read from ChunkDB cache, falling back to log files: " + e.getMessage(), e);
+                XltLogger.reportLogger.warn("Failed to read from TelemetryStore cache, falling back to log files: " + e.getMessage(), e);
             }
         }
 

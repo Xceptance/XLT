@@ -39,7 +39,7 @@ import com.xceptance.xlt.report.query.QueryModels.SummaryTableQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.TimeSeriesQuerySpec;
 
 /**
- * Embedded Jetty HTTP servlet exposing the ChunkDB Explorer REST API under {@code /api/v1/*}.
+ * Embedded Jetty HTTP servlet exposing the Telemetry Explorer REST API under {@code /api/v1/*}.
  * <p>
  * <b>Supported Endpoints:</b>
  * <ul>
@@ -51,7 +51,7 @@ import com.xceptance.xlt.report.query.QueryModels.TimeSeriesQuerySpec;
  *   <li>{@code GET|POST /api/v1/session}: Single virtual user iteration reconstruction waterfall.</li>
  * </ul>
  */
-public class ChunkApiServlet extends HttpServlet
+public class TelemetryApiServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
 
@@ -68,12 +68,12 @@ public class ChunkApiServlet extends HttpServlet
     private final transient ReentrantLock queryLock = new ReentrantLock(true);
 
     /**
-     * Constructs a {@link ChunkApiServlet} backed by the given {@link ColumnarQueryEngine}.
+     * Constructs a {@link TelemetryApiServlet} backed by the given {@link ColumnarQueryEngine}.
      *
      * @param queryEngine
      *            the columnar query engine
      */
-    public ChunkApiServlet(final ColumnarQueryEngine queryEngine)
+    public TelemetryApiServlet(final ColumnarQueryEngine queryEngine)
     {
         this.queryEngine = Objects.requireNonNull(queryEngine, "queryEngine cannot be null");
         this.mapper = new ObjectMapper()

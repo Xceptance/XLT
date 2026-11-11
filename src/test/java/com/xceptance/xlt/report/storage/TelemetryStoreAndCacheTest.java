@@ -64,7 +64,7 @@ import com.xceptance.xlt.report.storage.chunk.RequestChunkHandler;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
-public class ChunkStorageAndCacheTest
+public class TelemetryStoreAndCacheTest
 {
     private File tempDir;
 
@@ -73,7 +73,7 @@ public class ChunkStorageAndCacheTest
     {
         RequestChunkHandler.setRequestDetailsMode("sparse");
         RequestChunkHandler.resetSlowestForensicRetention();
-        tempDir = Files.createTempDirectory("chunkdb-test").toFile();
+        tempDir = Files.createTempDirectory("telemetrystore-test").toFile();
     }
 
     @After
@@ -90,7 +90,7 @@ public class ChunkStorageAndCacheTest
     @Test
     public void testIngestionSerializationAndScanRoundTrip() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
 
         final long baseTime = 1_700_000_000_000L;
 
@@ -155,7 +155,7 @@ public class ChunkStorageAndCacheTest
         }
 
         // Finish collector
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         Assert.assertNotNull(storage);
         Assert.assertEquals(1270, storage.getCatalog().getTotalRowCount());
         Assert.assertEquals(baseTime, storage.getMinTime());
@@ -164,11 +164,11 @@ public class ChunkStorageAndCacheTest
         storage.saveToDirectory(tempDir);
 
         // Verify storage files exist
-        Assert.assertTrue(new File(tempDir, ChunkStorage.DICTIONARIES_FILE_NAME).exists());
-        Assert.assertTrue(new File(tempDir, ChunkStorage.CHUNKS_FILE_NAME).exists());
+        Assert.assertTrue(new File(tempDir, TelemetryStore.DICTIONARIES_FILE_NAME).exists());
+        Assert.assertTrue(new File(tempDir, TelemetryStore.CHUNKS_FILE_NAME).exists());
 
         // Load back from disk
-        final ChunkStorage loaded = ChunkStorage.loadFromDirectory(tempDir);
+        final TelemetryStore loaded = TelemetryStore.loadFromDirectory(tempDir);
         Assert.assertNotNull(loaded);
         Assert.assertEquals(1270, loaded.getCatalog().getTotalRowCount());
         Assert.assertEquals(storage.getMinTime(), loaded.getMinTime());
@@ -266,8 +266,8 @@ public class ChunkStorageAndCacheTest
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         Assert.assertFalse("Cache should not exist yet", cacheManager.isCacheValid());
 
-        // Create dummy ChunkStorage and save
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        // Create dummy TelemetryStore and save
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -275,7 +275,7 @@ public class ChunkStorageAndCacheTest
         r.setTransactionName("TOrder");
         collector.collect(r);
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         cacheManager.save(storage);
 
         Assert.assertTrue("Cache should now be valid", cacheManager.isCacheValid());
@@ -341,13 +341,13 @@ public class ChunkStorageAndCacheTest
     }
 
     /**
-     * Verifies that ChunkIngestionCollector safely handles concurrent ingestion from multiple
+     * Verifies that TelemetryIngestionCollector safely handles concurrent ingestion from multiple
      * worker threads without lock contention, using thread-local builders and parallel finalization.
      */
     @Test
     public void testParallelCollectorIngestion() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final int threadCount = 8;
         final int recordsPerThread = 20_000;
         final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -390,7 +390,7 @@ public class ChunkStorageAndCacheTest
         executor.shutdown();
         executor.awaitTermination(10, TimeUnit.SECONDS);
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         Assert.assertNotNull(storage);
         Assert.assertEquals((long) threadCount * recordsPerThread, storage.getTotalRowCount());
 
@@ -407,7 +407,7 @@ public class ChunkStorageAndCacheTest
     @Test
     public void testGenericDataChunkWithChunkLocalStrings() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
 
         // Ingest 500 custom log records with arbitrary distinct field strings
         for (int i = 0; i < 500; i++)
@@ -421,7 +421,7 @@ public class ChunkStorageAndCacheTest
             collector.collect(rec);
         }
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         Assert.assertNotNull(storage);
         Assert.assertEquals(500, storage.getTotalRowCount());
 
@@ -432,7 +432,7 @@ public class ChunkStorageAndCacheTest
         final File genericCacheDir = new File(tempDir, "generic-cache");
         storage.saveToDirectory(genericCacheDir);
 
-        final ChunkStorage loaded = ChunkStorage.loadFromDirectory(genericCacheDir);
+        final TelemetryStore loaded = TelemetryStore.loadFromDirectory(genericCacheDir);
         Assert.assertEquals(500, loaded.getTotalRowCount());
 
         final List<Data> scanned = new ArrayList<>();
@@ -453,7 +453,7 @@ public class ChunkStorageAndCacheTest
     @Test
     public void testGenericDataChunkWithLargeRowBufferExpansion() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
 
         // Create a large 6000-byte payload for extra2, which forces rowBuffer expansion in GenericDataChunkHandler
         final String largePayload = "X".repeat(6000);
@@ -466,7 +466,7 @@ public class ChunkStorageAndCacheTest
         rec.setTransactionName("TScenario");
         collector.collect(rec);
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         Assert.assertNotNull(storage);
         Assert.assertEquals(1, storage.getTotalRowCount());
 
@@ -492,7 +492,7 @@ public class ChunkStorageAndCacheTest
         final File spoolDir = new File(tempDir, "spool-test");
         spoolDir.mkdirs();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(spoolDir);
         final long baseTime = 1_700_000_000_000L;
 
         // Ingest 5,000 requests across multiple agents
@@ -515,15 +515,15 @@ public class ChunkStorageAndCacheTest
         }
 
         // Finish spooling - writes metadata index table and 44-byte V2 header
-        try (final ChunkStorage storage = collector.finish())
+        try (final TelemetryStore storage = collector.finish())
         {
             Assert.assertNotNull(storage);
             Assert.assertEquals(5000, storage.getCatalog().getTotalRowCount());
             Assert.assertTrue(storage.isPersisted());
 
             // Chunks file and dictionaries must exist on disk
-            final File chunksFile = new File(spoolDir, ChunkStorage.CHUNKS_FILE_NAME);
-            final File dictFile = new File(spoolDir, ChunkStorage.DICTIONARIES_FILE_NAME);
+            final File chunksFile = new File(spoolDir, TelemetryStore.CHUNKS_FILE_NAME);
+            final File dictFile = new File(spoolDir, TelemetryStore.DICTIONARIES_FILE_NAME);
             Assert.assertTrue(chunksFile.exists());
             Assert.assertTrue(dictFile.exists());
 
@@ -546,7 +546,7 @@ public class ChunkStorageAndCacheTest
         }
 
         // Now verify loading back fresh from directory in V2 format
-        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        try (final TelemetryStore loaded = TelemetryStore.loadFromDirectory(spoolDir))
         {
             Assert.assertNotNull(loaded);
             Assert.assertEquals(5000, loaded.getCatalog().getTotalRowCount());
@@ -594,7 +594,7 @@ public class ChunkStorageAndCacheTest
         spooler.finish(catalog, dicts);
 
         // 4. Reload catalog from disk
-        final ChunkCatalog reloaded = ChunkCatalog.readFrom(new File(spoolDir, ChunkStorage.CHUNKS_FILE_NAME), dicts, registry);
+        final ChunkCatalog reloaded = ChunkCatalog.readFrom(new File(spoolDir, TelemetryStore.CHUNKS_FILE_NAME), dicts, registry);
         Assert.assertNotNull(reloaded);
         Assert.assertTrue("Reloaded catalog should contain chunks", reloaded.getChunkCount() > 0);
     }
@@ -602,7 +602,7 @@ public class ChunkStorageAndCacheTest
     @Test
     public void testLargeStringAndStackTraceHandling() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
 
         // 70,000 characters stack trace (> 65,535 bytes in UTF-8)
         final String largeStackTrace = "E".repeat(70_000);
@@ -624,13 +624,13 @@ public class ChunkStorageAndCacheTest
         custom.setTransactionName("TOrderLarge");
         collector.collect(custom);
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         Assert.assertNotNull(storage);
 
         final File largeDir = new File(tempDir, "large-string-test");
         storage.saveToDirectory(largeDir);
 
-        final ChunkStorage loaded = ChunkStorage.loadFromDirectory(largeDir);
+        final TelemetryStore loaded = TelemetryStore.loadFromDirectory(largeDir);
         Assert.assertNotNull(loaded);
 
         final List<Data> scannedTx = new ArrayList<>();
@@ -650,7 +650,7 @@ public class ChunkStorageAndCacheTest
     @Test
     public void testHighTimerIdSampleUrlCap() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         // Ingest 4500 distinct timer names, each with multiple requests
         for (int i = 0; i < 4500; i++)
         {
@@ -667,7 +667,7 @@ public class ChunkStorageAndCacheTest
             }
         }
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         Assert.assertNotNull(storage);
         final GlobalDictionaries dicts = storage.getDictionaries();
         Assert.assertTrue("Should have interned over 4096 timer IDs", dicts.getTimerNameCount() >= 4500);
@@ -710,7 +710,7 @@ public class ChunkStorageAndCacheTest
         final File spoolDir = new File(tempDir, "concurrent-reads-test");
         spoolDir.mkdirs();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(spoolDir);
         for (int i = 0; i < 5000; i++)
         {
             final RequestData r = new RequestData("Action-" + (i % 10));
@@ -721,7 +721,7 @@ public class ChunkStorageAndCacheTest
             collector.collect(r);
         }
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         final int threadCount = 8;
         final ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         final List<Callable<Void>> tasks = new ArrayList<>();
@@ -749,7 +749,7 @@ public class ChunkStorageAndCacheTest
     @Test
     public void testUnifiedV2CatalogFormat() throws Exception
     {
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         for (int i = 0; i < 100; i++)
         {
             final RequestData r = new RequestData("R" + i);
@@ -759,14 +759,14 @@ public class ChunkStorageAndCacheTest
             r.setTransactionName("T");
             collector.collect(r);
         }
-        final ChunkStorage inMemoryStorage = collector.finish();
+        final TelemetryStore inMemoryStorage = collector.finish();
         Assert.assertFalse(inMemoryStorage.isPersisted());
 
         final File saveDir = new File(tempDir, "v2-unified-test");
         inMemoryStorage.saveToDirectory(saveDir);
 
         // Check that chunks.bin starts with V2 MAGIC
-        final File chunksFile = new File(saveDir, ChunkStorage.CHUNKS_FILE_NAME);
+        final File chunksFile = new File(saveDir, TelemetryStore.CHUNKS_FILE_NAME);
         try (final java.io.DataInputStream in = new java.io.DataInputStream(new java.io.FileInputStream(chunksFile)))
         {
             final int magic = in.readInt();
@@ -775,7 +775,7 @@ public class ChunkStorageAndCacheTest
         }
 
         // Check that dictionaries.bin starts with MAGIC and VERSION
-        final File dictFile = new File(saveDir, ChunkStorage.DICTIONARIES_FILE_NAME);
+        final File dictFile = new File(saveDir, TelemetryStore.DICTIONARIES_FILE_NAME);
         try (final java.io.DataInputStream in = new java.io.DataInputStream(new java.io.FileInputStream(dictFile)))
         {
             final int magic = in.readInt();
@@ -785,7 +785,7 @@ public class ChunkStorageAndCacheTest
         }
 
         // Ensure loadFromDirectory works cleanly
-        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(saveDir))
+        try (final TelemetryStore loaded = TelemetryStore.loadFromDirectory(saveDir))
         {
             Assert.assertNotNull(loaded);
             Assert.assertEquals(100, loaded.getTotalRowCount());
@@ -808,7 +808,7 @@ public class ChunkStorageAndCacheTest
         config.setDataCacheDirectoryName("xlt-cache");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -844,7 +844,7 @@ public class ChunkStorageAndCacheTest
         config.setDataCacheDirectoryName("xlt-cache");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -879,7 +879,7 @@ public class ChunkStorageAndCacheTest
         config.setDataCacheDirectoryName("xlt-cache");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -921,7 +921,7 @@ public class ChunkStorageAndCacheTest
         config.setDataCacheDirectoryName("xlt-cache");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -932,7 +932,7 @@ public class ChunkStorageAndCacheTest
 
         // 1. Corrupt dictionaries.bin version
         final File cacheDir = new File(resultsDir, "xlt-cache");
-        final File dictFile = new File(cacheDir, ChunkStorage.DICTIONARIES_FILE_NAME);
+        final File dictFile = new File(cacheDir, TelemetryStore.DICTIONARIES_FILE_NAME);
         try (final java.io.RandomAccessFile raf = new java.io.RandomAccessFile(dictFile, "rw"))
         {
             raf.seek(4); // Seek to version
@@ -940,7 +940,7 @@ public class ChunkStorageAndCacheTest
         }
 
         // cacheManager.load() should catch the version mismatch, purge the cache, and return null
-        final ChunkStorage loaded = cacheManager.load();
+        final TelemetryStore loaded = cacheManager.load();
         Assert.assertNull("Storage must return null when dictionaries version is incompatible", loaded);
         Assert.assertFalse("Cache directory must be purged on load error", cacheDir.exists());
     }
@@ -961,7 +961,7 @@ public class ChunkStorageAndCacheTest
         config.setDataCacheDirectoryName("xlt-cache");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -972,7 +972,7 @@ public class ChunkStorageAndCacheTest
 
         // Corrupt chunks.bin version at offset 4
         final File cacheDir = new File(resultsDir, "xlt-cache");
-        final File chunksFile = new File(cacheDir, ChunkStorage.CHUNKS_FILE_NAME);
+        final File chunksFile = new File(cacheDir, TelemetryStore.CHUNKS_FILE_NAME);
         try (final java.io.RandomAccessFile raf = new java.io.RandomAccessFile(chunksFile, "rw"))
         {
             raf.seek(4); // Seek to version
@@ -983,7 +983,7 @@ public class ChunkStorageAndCacheTest
         Assert.assertNull("peekTimeRange must return null on chunks.bin version mismatch", cacheManager.peekTimeRange());
 
         // load() should fail cleanly and purge cache
-        final ChunkStorage loaded = cacheManager.load();
+        final TelemetryStore loaded = cacheManager.load();
         Assert.assertNull("Storage must return null when chunks version is incompatible", loaded);
         Assert.assertFalse("Cache directory must be purged on load error", cacheDir.exists());
     }
@@ -994,7 +994,7 @@ public class ChunkStorageAndCacheTest
         final File spoolDir = new File(tempDir, "user-number-all-types");
         spoolDir.mkdirs();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(spoolDir);
         final long baseTime = 1_700_000_000_000L;
 
         // 1. RequestData ('R')
@@ -1070,12 +1070,12 @@ public class ChunkStorageAndCacheTest
         evt.setTestUserNumber("108");
         collector.collect(evt);
 
-        try (final ChunkStorage active = collector.finish())
+        try (final TelemetryStore active = collector.finish())
         {
             Assert.assertNotNull(active);
         }
 
-        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        try (final TelemetryStore loaded = TelemetryStore.loadFromDirectory(spoolDir))
         {
             final char[] types = {'R', 'T', 'A', 'C', 'P', 'W', 'V', 'E'};
             final String[] expectedUserNumbers = {"101", "102", "103", "104", "105", "106", "107", "108"};
@@ -1097,7 +1097,7 @@ public class ChunkStorageAndCacheTest
         final File spoolDir = new File(tempDir, "tx-dir-preserve");
         spoolDir.mkdirs();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(spoolDir);
         final long baseTime = 1_700_000_000_000L;
 
         // Non-failed transaction with a Result Browser dump directory (e.g. output2disk = always)
@@ -1121,7 +1121,7 @@ public class ChunkStorageAndCacheTest
         txSuccessNoDump.setTransactionName("TBrowse");
         collector.collect(txSuccessNoDump);
 
-        try (final ChunkStorage active = collector.finish())
+        try (final TelemetryStore active = collector.finish())
         {
             Assert.assertNotNull(active);
             final Chunk txChunk = active.getCatalog().getChunksForType('T').get(0);
@@ -1129,7 +1129,7 @@ public class ChunkStorageAndCacheTest
                                txChunk.hasFailures());
         }
 
-        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        try (final TelemetryStore loaded = TelemetryStore.loadFromDirectory(spoolDir))
         {
             final List<Data> rows = new ArrayList<>();
             loaded.scan('T', ScanPredicate.ALL, rows::add);
@@ -1155,14 +1155,14 @@ public class ChunkStorageAndCacheTest
         final File sparseDir = new File(tempDir, "forensic-sparse");
         sparseDir.mkdirs();
 
-        final ChunkIngestionCollector sparseCollector = new ChunkIngestionCollector(sparseDir);
+        final TelemetryIngestionCollector sparseCollector = new TelemetryIngestionCollector(sparseDir);
         populateForensicTestRequests(sparseCollector, baseTime);
-        try (final ChunkStorage s = sparseCollector.finish())
+        try (final TelemetryStore s = sparseCollector.finish())
         {
             Assert.assertNotNull(s);
         }
 
-        try (final ChunkStorage loadedSparse = ChunkStorage.loadFromDirectory(sparseDir))
+        try (final TelemetryStore loadedSparse = TelemetryStore.loadFromDirectory(sparseDir))
         {
             final List<Chunk> rChunks = loadedSparse.getCatalog().getChunksForType('R');
             Assert.assertEquals(1, rChunks.size());
@@ -1227,14 +1227,14 @@ public class ChunkStorageAndCacheTest
         final File fullDir = new File(tempDir, "forensic-full");
         fullDir.mkdirs();
 
-        final ChunkIngestionCollector fullCollector = new ChunkIngestionCollector(fullDir);
+        final TelemetryIngestionCollector fullCollector = new TelemetryIngestionCollector(fullDir);
         populateForensicTestRequests(fullCollector, baseTime);
-        try (final ChunkStorage s = fullCollector.finish())
+        try (final TelemetryStore s = fullCollector.finish())
         {
             Assert.assertNotNull(s);
         }
 
-        try (final ChunkStorage loadedFull = ChunkStorage.loadFromDirectory(fullDir))
+        try (final TelemetryStore loadedFull = TelemetryStore.loadFromDirectory(fullDir))
         {
             final DiskChunk dc = (DiskChunk) loadedFull.getCatalog().getChunksForType('R').get(0);
             final ChunkTypeHandler handler = ChunkTypeRegistry.getInstance().getHandler('R');
@@ -1251,7 +1251,7 @@ public class ChunkStorageAndCacheTest
         }
     }
 
-    private void populateForensicTestRequests(final ChunkIngestionCollector collector, final long baseTime)
+    private void populateForensicTestRequests(final TelemetryIngestionCollector collector, final long baseTime)
     {
         // Row 0: fast 200 OK on "Action" (outside both global top-256 and "Action" per-timer top-20)
         final RequestData r0 = new RequestData("Action");
@@ -1344,7 +1344,7 @@ public class ChunkStorageAndCacheTest
 
         spooler.finish(catalog, dicts);
 
-        final ChunkCatalog reloaded = ChunkCatalog.readFrom(new File(spoolDir, ChunkStorage.CHUNKS_FILE_NAME), dicts, registry);
+        final ChunkCatalog reloaded = ChunkCatalog.readFrom(new File(spoolDir, TelemetryStore.CHUNKS_FILE_NAME), dicts, registry);
         final List<Chunk> rChunks = reloaded.getChunksForType('R');
         Assert.assertEquals(2, rChunks.size());
 
@@ -1387,7 +1387,7 @@ public class ChunkStorageAndCacheTest
         config.setRequestDetailsMode("sparse");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final RequestData r = new RequestData("R1");
         r.setTime(1000L);
         r.setRunTime(50);
@@ -1410,7 +1410,7 @@ public class ChunkStorageAndCacheTest
         final File spoolDir = new File(tempDir, "url-hash-roundtrip");
         spoolDir.mkdirs();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(spoolDir);
         final long baseTime = 1_700_000_000_000L;
 
         // Ingest 600 requests for the same timer with 600 distinct URLs (plus consecutive duplicates)
@@ -1418,7 +1418,7 @@ public class ChunkStorageAndCacheTest
         // 1. Zero-allocation byte-slice hashing and String URL hashing
         // 2. Register cache hit for consecutive identical (timerId, urlHash)
         // 3. GlobalDictionaries sample URL cap (10 samples)
-        // 4. Tier 1 -> Tier 2 HLL promotion (> 512 distinct URLs) when scanning from ChunkDB
+        // 4. Tier 1 -> Tier 2 HLL promotion (> 512 distinct URLs) when scanning from TelemetryStore
         for (int i = 0; i < 600; i++)
         {
             final String url = "https://example.com/catalog/product/" + i + "?lang=en#frag" + i;
@@ -1436,12 +1436,12 @@ public class ChunkStorageAndCacheTest
             }
         }
 
-        try (final ChunkStorage active = collector.finish())
+        try (final TelemetryStore active = collector.finish())
         {
             Assert.assertNotNull(active);
         }
 
-        try (final ChunkStorage loaded = ChunkStorage.loadFromDirectory(spoolDir))
+        try (final TelemetryStore loaded = TelemetryStore.loadFromDirectory(spoolDir))
         {
             final int timerId = loaded.getDictionaries().getOrCreateTimerNameId("BrowseProduct");
             Assert.assertEquals("GlobalDictionaries must retain up to 10 sample URLs",
@@ -1516,12 +1516,12 @@ public class ChunkStorageAndCacheTest
     }
 
     /**
-     * Verifies {@link com.xceptance.xlt.report.ChunkQueryEngine} progress bar updates across candidate chunk scanning
+     * Verifies {@link com.xceptance.xlt.report.TelemetryQueryEngine} progress bar updates across candidate chunk scanning
      * and provider merging (including empty candidate chunk sets), nested directory fingerprint calculation,
      * and {@link CacheManager#loadValidated()} / {@link CacheManager#peekTimeRangeValidated()}.
      */
     @Test
-    public void testChunkQueryEngineProgressBarAndNestedFingerprint() throws Exception
+    public void testTelemetryQueryEngineProgressBarAndNestedFingerprint() throws Exception
     {
         final File resultsDir = new File(tempDir, "nested-results");
         final File userDir = new File(resultsDir, "ac001/TBrowse/0");
@@ -1547,7 +1547,7 @@ public class ChunkStorageAndCacheTest
         final CacheFingerprint fp = CacheFingerprint.calculate(resultsDir, config);
         Assert.assertEquals("Only the 3 valid timer files outside skipped directories must be counted", 3, fp.fileCount());
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector();
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
         final long baseTime = 1_700_000_000_000L;
         for (int i = 0; i < 50; i++)
         {
@@ -1560,7 +1560,7 @@ public class ChunkStorageAndCacheTest
             collector.collect(r);
         }
 
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         final CacheManager cm = new CacheManager(resultsDir, config);
         cm.save(storage);
 
@@ -1570,7 +1570,7 @@ public class ChunkStorageAndCacheTest
         Assert.assertEquals(baseTime, range[0]);
         Assert.assertEquals(baseTime + 490L, range[1]);
 
-        try (final ChunkStorage loaded = cm.loadValidated())
+        try (final TelemetryStore loaded = cm.loadValidated())
         {
             Assert.assertNotNull(loaded);
             final com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration dummyConfig =
@@ -1584,8 +1584,8 @@ public class ChunkStorageAndCacheTest
 
             final com.xceptance.xlt.report.StatisticsProcessor statsProcessor =
                 new com.xceptance.xlt.report.StatisticsProcessor(List.of(reqProvider), dummyConfig);
-            final com.xceptance.xlt.report.ChunkQueryEngine engine =
-                new com.xceptance.xlt.report.ChunkQueryEngine(loaded, 2);
+            final com.xceptance.xlt.report.TelemetryQueryEngine engine =
+                new com.xceptance.xlt.report.TelemetryQueryEngine(loaded, 2);
 
             try (final me.tongfei.progressbar.ProgressBar pb =
                      new me.tongfei.progressbar.ProgressBarBuilder()
@@ -1603,8 +1603,8 @@ public class ChunkStorageAndCacheTest
             // Also verify empty candidate chunk scan updates progressBar to 1/1
             final com.xceptance.xlt.report.StatisticsProcessor emptyStatsProcessor =
                 new com.xceptance.xlt.report.StatisticsProcessor(List.of(reqProvider), dummyConfig);
-            final com.xceptance.xlt.report.ChunkQueryEngine emptyEngine =
-                new com.xceptance.xlt.report.ChunkQueryEngine(loaded, 2);
+            final com.xceptance.xlt.report.TelemetryQueryEngine emptyEngine =
+                new com.xceptance.xlt.report.TelemetryQueryEngine(loaded, 2);
             try (final me.tongfei.progressbar.ProgressBar pbEmpty =
                      new me.tongfei.progressbar.ProgressBarBuilder()
                          .setTaskName("Reading")
@@ -2034,11 +2034,11 @@ public class ChunkStorageAndCacheTest
     }
 
     /**
-     * Verifies {@link ChunkIngestionCollector} batch container ingestion, builder rotation and recycling when
+     * Verifies {@link TelemetryIngestionCollector} batch container ingestion, builder rotation and recycling when
      * chunks fill up, and I/O fallback error handling.
      */
     @Test
-    public void testChunkIngestionCollectorLifecycleAndEdgeCases() throws Exception
+    public void testTelemetryIngestionCollectorLifecycleAndEdgeCases() throws Exception
     {
         // 1. Register a small-capacity test handler (full after 2 rows) for 'Q' and 'X' type codes
         final GlobalDictionaries dicts = new GlobalDictionaries();
@@ -2051,16 +2051,16 @@ public class ChunkStorageAndCacheTest
         registry.registerHandler(smallHandlerAscii);
         registry.registerHandler(smallHandlerSecond);
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(dicts, catalog, registry);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(dicts, catalog, registry);
         Assert.assertSame(dicts, collector.getDictionaries());
         Assert.assertSame(catalog, collector.getCatalog());
         Assert.assertSame(registry, collector.getRegistry());
 
-        final java.lang.reflect.Field tlField = ChunkIngestionCollector.class.getDeclaredField("threadLocalBuilders");
+        final java.lang.reflect.Field tlField = TelemetryIngestionCollector.class.getDeclaredField("threadLocalBuilders");
         tlField.setAccessible(true);
         @SuppressWarnings("unchecked")
         final ThreadLocal<ChunkBuilder[]> tlBuilders = (ThreadLocal<ChunkBuilder[]>) tlField.get(collector);
-        final java.lang.reflect.Field allBuildersField = ChunkIngestionCollector.class.getDeclaredField("allThreadBuilders");
+        final java.lang.reflect.Field allBuildersField = TelemetryIngestionCollector.class.getDeclaredField("allThreadBuilders");
         allBuildersField.setAccessible(true);
         final java.util.Collection<?> allBuilders = (java.util.Collection<?>) allBuildersField.get(collector);
 
@@ -2114,13 +2114,13 @@ public class ChunkStorageAndCacheTest
         arrayList.add(createDummyRecord('Q', 1008L));
         collector.collect(arrayList);
 
-        final java.lang.reflect.Field permitsField = ChunkIngestionCollector.class.getDeclaredField("compressionPermits");
+        final java.lang.reflect.Field permitsField = TelemetryIngestionCollector.class.getDeclaredField("compressionPermits");
         permitsField.setAccessible(true);
         final java.util.concurrent.Semaphore permits = (java.util.concurrent.Semaphore) permitsField.get(collector);
-        final java.lang.reflect.Field tasksField = ChunkIngestionCollector.class.getDeclaredField("pendingCompressionTasks");
+        final java.lang.reflect.Field tasksField = TelemetryIngestionCollector.class.getDeclaredField("pendingCompressionTasks");
         tasksField.setAccessible(true);
         final java.util.Collection<?> pendingTasks = (java.util.Collection<?>) tasksField.get(collector);
-        final java.lang.reflect.Field execField = ChunkIngestionCollector.class.getDeclaredField("compressionExecutor");
+        final java.lang.reflect.Field execField = TelemetryIngestionCollector.class.getDeclaredField("compressionExecutor");
         execField.setAccessible(true);
         final java.util.concurrent.ExecutorService exec = (java.util.concurrent.ExecutorService) execField.get(collector);
 
@@ -2135,7 +2135,7 @@ public class ChunkStorageAndCacheTest
         nonDaemonParent.join();
         Assert.assertTrue("ThreadFactory must explicitly mark worker threads as daemon", workerIsDaemon.get());
 
-        try (final ChunkStorage storage = collector.finish())
+        try (final TelemetryStore storage = collector.finish())
         {
             Assert.assertNotNull(storage);
             Assert.assertTrue("Dictionaries must be compacted on finish()", dicts.isCompacted());
@@ -2152,23 +2152,23 @@ public class ChunkStorageAndCacheTest
         }
 
         // Calling finish() a second time when threadLocalBuilders is already null
-        try (final ChunkStorage storageAgain = collector.finish())
+        try (final TelemetryStore storageAgain = collector.finish())
         {
             Assert.assertNotNull(storageAgain);
         }
 
-        // 6. Test spooled ChunkIngestionCollector with builder rotation during collect()
+        // 6. Test spooled TelemetryIngestionCollector with builder rotation during collect()
         final File spoolDir = new File(tempDir, "small-spool");
         final ChunkCatalog spoolCatalog = new ChunkCatalog();
         final ChunkTypeRegistry spoolRegistry = new ChunkTypeRegistry();
         spoolRegistry.registerHandler(createSmallCapacityHandler('E', 2, qWriteCount));
-        final ChunkIngestionCollector spoolCollector =
-            new ChunkIngestionCollector(new GlobalDictionaries(), spoolCatalog, spoolRegistry, spoolDir);
+        final TelemetryIngestionCollector spoolCollector =
+            new TelemetryIngestionCollector(new GlobalDictionaries(), spoolCatalog, spoolRegistry, spoolDir);
         qWriteCount.set(0);
         spoolCollector.collect(createDummyRecord('E', 2000L));
         spoolCollector.collect(createDummyRecord('E', 2001L)); // triggers background spooling in sealAndSpool
         spoolCollector.collect(createDummyRecord('E', 2002L)); // partial builder sealed & spooled in finish()
-        try (final ChunkStorage spooledStorage = spoolCollector.finish())
+        try (final TelemetryStore spooledStorage = spoolCollector.finish())
         {
             Assert.assertNotNull(spooledStorage);
             Assert.assertSame(spoolCatalog, spooledStorage.getCatalog());
@@ -2186,24 +2186,24 @@ public class ChunkStorageAndCacheTest
         // 7. Test ChunkSpooler init failure fallback (when cacheDir is a regular file blocking mkdirs/tmpFile creation)
         final File blockingFile = new File(tempDir, "not-a-dir");
         Files.writeString(blockingFile.toPath(), "block", StandardCharsets.UTF_8);
-        final ChunkIngestionCollector fallbackCollector = new ChunkIngestionCollector(blockingFile);
+        final TelemetryIngestionCollector fallbackCollector = new TelemetryIngestionCollector(blockingFile);
         final EventData fallbackEvent = new EventData("Ev");
         fallbackEvent.setTime(3000L);
         fallbackEvent.setAgentName("Ag");
         fallbackEvent.setTransactionName("Tc");
         fallbackEvent.setMessage("Msg");
         fallbackCollector.collect(fallbackEvent);
-        try (final ChunkStorage fallbackStorage = fallbackCollector.finish())
+        try (final TelemetryStore fallbackStorage = fallbackCollector.finish())
         {
             Assert.assertEquals(1L, fallbackStorage.getTotalRowCount());
         }
 
         // 8. Test recycleBuilder pool cap at 32, builder.reset() on poll, and 0-row builder skipping in finish()
         final ChunkCatalog poolCatalog = new ChunkCatalog();
-        final ChunkIngestionCollector poolCollector = new ChunkIngestionCollector(new GlobalDictionaries(), poolCatalog, registry);
+        final TelemetryIngestionCollector poolCollector = new TelemetryIngestionCollector(new GlobalDictionaries(), poolCatalog, registry);
         @SuppressWarnings("unchecked")
         final ThreadLocal<ChunkBuilder[]> poolTlBuilders = (ThreadLocal<ChunkBuilder[]>) tlField.get(poolCollector);
-        final java.lang.reflect.Field recycledField = ChunkIngestionCollector.class.getDeclaredField("recycledBuilders");
+        final java.lang.reflect.Field recycledField = TelemetryIngestionCollector.class.getDeclaredField("recycledBuilders");
         recycledField.setAccessible(true);
         @SuppressWarnings("unchecked")
         final java.util.concurrent.ConcurrentLinkedQueue<ChunkBuilder>[] pools =
@@ -2236,7 +2236,7 @@ public class ChunkStorageAndCacheTest
 
         // Also test recycleBuilder when pool size is already 32 (must not exceed 32)
         final java.lang.reflect.Method recycleMethod =
-            ChunkIngestionCollector.class.getDeclaredMethod("recycleBuilder", ChunkBuilder.class, char.class);
+            TelemetryIngestionCollector.class.getDeclaredMethod("recycleBuilder", ChunkBuilder.class, char.class);
         recycleMethod.setAccessible(true);
         recycleMethod.invoke(poolCollector, smallHandlerAscii.newChunkBuilder(dicts), 'Q');
         Assert.assertEquals("Pool size must be capped at 32", 32, qPool.size());
@@ -2250,7 +2250,7 @@ public class ChunkStorageAndCacheTest
         // Place a 0-row builder in slot 'X' to verify finish() skips non-null builders with 0 rows
         poolTlBuilders.get()['X'] = smallHandlerSecond.newChunkBuilder(dicts);
 
-        try (final ChunkStorage poolStorage = poolCollector.finish())
+        try (final TelemetryStore poolStorage = poolCollector.finish())
         {
             Assert.assertEquals(3L, poolStorage.getTotalRowCount());
             Assert.assertEquals("0-row builder must not be sealed as an extra chunk", 2, poolCatalog.getAllChunks().size());
@@ -2292,13 +2292,13 @@ public class ChunkStorageAndCacheTest
             }
         });
         final File failSpoolDir = new File(tempDir, "fail-spool");
-        final ChunkIngestionCollector failSpoolCollector =
-            new ChunkIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), failingRegistry, failSpoolDir);
+        final TelemetryIngestionCollector failSpoolCollector =
+            new TelemetryIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), failingRegistry, failSpoolDir);
         failSpoolCollector.collect(createDummyRecord('E', 5000L));
         failSpoolCollector.collect(createDummyRecord('E', 5001L)); // triggers sealAndSpool IOException fallback
         failSpoolCollector.collect(createDummyRecord('E', 5002L)); // triggers finish() spoolChunk IOException fallback
         // Delete chunks.bin.tmp before finish() so activeSpooler.finish() fails when moving tmpFile -> targetFile
-        new File(failSpoolDir, ChunkStorage.CHUNKS_FILE_NAME + ".tmp").delete();
+        new File(failSpoolDir, TelemetryStore.CHUNKS_FILE_NAME + ".tmp").delete();
         try
         {
             failSpoolCollector.finish();
@@ -2381,8 +2381,8 @@ public class ChunkStorageAndCacheTest
             {
             }
         });
-        final ChunkIngestionCollector sealFailCollector =
-            new ChunkIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), sealFailRegistry);
+        final TelemetryIngestionCollector sealFailCollector =
+            new TelemetryIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), sealFailRegistry);
         sealFailCollector.collect(createDummyRecord('Q', 6000L)); // triggers sealAndSpool which throws in background task
         try
         {
@@ -2699,7 +2699,7 @@ public class ChunkStorageAndCacheTest
         final File spoolDir = new File(tempDir, "c6-sparse-forensics");
         spoolDir.mkdirs();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(spoolDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(spoolDir);
         final long baseTime = 1_700_000_000_000L;
         long seq = 0;
 
@@ -2783,7 +2783,7 @@ public class ChunkStorageAndCacheTest
         slowerEqReq.setFormData("eqData=winner");
         collector.collect(slowerEqReq);
 
-        try (final ChunkStorage storage = collector.finish())
+        try (final TelemetryStore storage = collector.finish())
         {
             final DiskChunk dc = (DiskChunk) storage.getCatalog().getChunksForType('R').get(0);
             final RequestChunkHandler handler = (RequestChunkHandler) ChunkTypeRegistry.getInstance().getHandler('R');
@@ -2845,16 +2845,16 @@ public class ChunkStorageAndCacheTest
     /**
      * C8 regression test: Verifies (1) {@link com.xceptance.xlt.report.DataRecordFactory} handles out-of-range
      * and unmapped type codes without {@link ArrayIndexOutOfBoundsException} or {@link NullPointerException}
-     * via a branchless 256-slot table, (2) {@link ChunkIngestionCollector#finish()} aborts its {@link ChunkSpooler}
+     * via a branchless 256-slot table, (2) {@link TelemetryIngestionCollector#finish()} aborts its {@link ChunkSpooler}
      * and cleans up {@code chunks.bin.tmp} if a background compression task fails, and (3) {@link CacheFingerprint}
      * skips multi-segment relative and absolute cache directories inside {@code resultsDir}.
      */
     @Test
     public void testC8DataRecordFactorySpoolerAbortAndCacheDirSkip() throws Exception
     {
-        // 1. Multi-segment relative cache directory (".cache/chunkdb") inside resultsDir
+        // 1. Multi-segment relative cache directory (".cache/telemetrystore") inside resultsDir
         final File resultsDir = new File(tempDir, "c8-results");
-        final File nestedCacheDir = new File(resultsDir, ".cache/chunkdb");
+        final File nestedCacheDir = new File(resultsDir, ".cache/telemetrystore");
         nestedCacheDir.mkdirs();
         Files.writeString(new File(resultsDir, "timers.csv").toPath(), "R,Home,1000,50,false,100,200,200,http://example.com,text/html\n", StandardCharsets.UTF_8);
         // Place a dummy timers.csv inside the nested cache directory which must be skipped
@@ -2862,7 +2862,7 @@ public class ChunkStorageAndCacheTest
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
         config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName(".cache/chunkdb");
+        config.setDataCacheDirectoryName(".cache/telemetrystore");
 
         final CacheFingerprint fpRelative = CacheFingerprint.calculate(resultsDir, config);
         Assert.assertEquals("Multi-segment relative cache directory must be skipped by CacheFingerprint",
@@ -2874,7 +2874,7 @@ public class ChunkStorageAndCacheTest
         Assert.assertEquals("Absolute cache directory path inside resultsDir must be skipped by CacheFingerprint",
                             1, fpAbsolute.fileCount());
 
-        // 2. ChunkIngestionCollector.finish() must abort active ChunkSpooler and delete chunks.bin.tmp when async compression fails
+        // 2. TelemetryIngestionCollector.finish() must abort active ChunkSpooler and delete chunks.bin.tmp when async compression fails
         final File failSpoolDir = new File(tempDir, "c8-fail-spool");
         final ChunkTypeRegistry sealFailRegistry = new ChunkTypeRegistry();
         sealFailRegistry.registerHandler(new ChunkTypeHandler()
@@ -2948,9 +2948,9 @@ public class ChunkStorageAndCacheTest
             }
         });
 
-        final ChunkIngestionCollector collector =
-            new ChunkIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), sealFailRegistry, failSpoolDir);
-        final File tmpSpoolFile = new File(failSpoolDir, ChunkStorage.CHUNKS_FILE_NAME + ".tmp");
+        final TelemetryIngestionCollector collector =
+            new TelemetryIngestionCollector(new GlobalDictionaries(), new ChunkCatalog(), sealFailRegistry, failSpoolDir);
+        final File tmpSpoolFile = new File(failSpoolDir, TelemetryStore.CHUNKS_FILE_NAME + ".tmp");
         Assert.assertTrue("chunks.bin.tmp must exist while spooler is active", tmpSpoolFile.exists());
 
         collector.collect(createDummyRecord('Q', 1000L));
@@ -3051,7 +3051,7 @@ public class ChunkStorageAndCacheTest
             out.writeChar(tc);
             StorageIoUtils.writeUtfString(
                 out,
-                "com.xceptance.xlt.report.storage.ChunkStorageAndCacheTest$NonDataGadgetClass"
+                "com.xceptance.xlt.report.storage.TelemetryStoreAndCacheTest$NonDataGadgetClass"
             );
             out.write(remainder);
         }

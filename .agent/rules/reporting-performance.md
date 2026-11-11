@@ -7,9 +7,9 @@ globs: src/main/java/com/xceptance/xlt/report/**/*.java
 
 ## 1. Two-Pass Ingestion Invariant
 - **Never accumulate report statistics during Phase 1 (CSV ingestion).**
-- `StatisticsProcessor` holds 12M+ `IntTimeSeriesEntry` and 4.2M+ bitsets, using 2.6–3.4 GB of heap on a 4 GB max heap (`-Xmx4g`). Running it concurrently with CSV reading and ChunkDB ingestion causes heap exhaustion and catastrophic Full GC thrashing (40+ pauses).
-- **Phase 1 Ingestion**: In `Dispatcher.java`, stream parsed/merged data strictly to `ChunkIngestionCollector`. Keep Old Gen usage bounded (< 1.5 GB).
-- **Phase 2 Scan**: In `DataProcessor.java`, after chunks are sealed, use `ChunkQueryEngine.executeScan(...)` to scan and aggregate directly into `StatisticsProcessor` in parallel across worker threads at 3.4M+ records/s.
+- `StatisticsProcessor` holds 12M+ `IntTimeSeriesEntry` and 4.2M+ bitsets, using 2.6–3.4 GB of heap on a 4 GB max heap (`-Xmx4g`). Running it concurrently with CSV reading and TelemetryStore ingestion causes heap exhaustion and catastrophic Full GC thrashing (40+ pauses).
+- **Phase 1 Ingestion**: In `Dispatcher.java`, stream parsed/merged data strictly to `TelemetryIngestionCollector`. Keep Old Gen usage bounded (< 1.5 GB).
+- **Phase 2 Scan**: In `DataProcessor.java`, after chunks are sealed, use `TelemetryQueryEngine.executeScan(...)` to scan and aggregate directly into `StatisticsProcessor` in parallel across worker threads at 3.4M+ records/s.
 
 ## 2. Parsing & Merge Rule Optimization
 - Java `Matcher` cannot evaluate on raw byte buffers without creating `String` instances.
@@ -23,4 +23,4 @@ globs: src/main/java/com/xceptance/xlt/report/**/*.java
 - Profile worker thread CPU: `top -b -n 1 -H -p <pid>` (check `DataParserThread` vs. `DataReaderThread`).
 - Profile with JFR: `JAVA_OPTIONS="-XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints -XX:StartFlightRecording=filename=profile.jfr,dumponexit=true,settings=profile -XX:FlightRecorderOptions=stackdepth=1024" ./bin/create_report.sh ...`
 - Inspect allocation/CPU hotspots: `jfr summary profile.jfr` or `jfr print --events jdk.ExecutionSample,jdk.ObjectAllocationSample profile.jfr`.
-- Component isolation: Run `BytePipelineBenchmark diag <resultsDir> <maxFiles> <threads>` to isolate CSV reading vs. ChunkDB ingestion vs. scan aggregation.
+- Component isolation: Run `BytePipelineBenchmark diag <resultsDir> <maxFiles> <threads>` to isolate CSV reading vs. TelemetryStore ingestion vs. scan aggregation.

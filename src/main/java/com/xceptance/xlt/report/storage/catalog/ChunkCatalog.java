@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.roaringbitmap.RoaringBitmap;
 
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.chunk.Chunk;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeHandler;
 import com.xceptance.xlt.report.storage.chunk.ChunkTypeRegistry;
@@ -44,7 +44,7 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
 /**
  * Central catalog maintaining global test run boundaries, chunk inventory, type partitions,
- * and per-chunk {@link RoaringBitmap} membership indexes for rapid query pruning in ChunkDB.
+ * and per-chunk {@link RoaringBitmap} membership indexes for rapid query pruning in TelemetryStore.
  * <p>
  * <b>Indexing &amp; Pruning Architecture:</b>
  * <ul>
@@ -104,8 +104,8 @@ public class ChunkCatalog
     /** Chunks grouped by record type code ('R', 'T', 'A', etc.) for instant type filtering. */
     private final Map<Character, List<Chunk>> chunksByType = new ConcurrentHashMap<>();
 
-    /** Optional reference to the enclosing ChunkStorage instance for shared disk read channels. */
-    private volatile ChunkStorage storage;
+    /** Optional reference to the enclosing TelemetryStore instance for shared disk read channels. */
+    private volatile TelemetryStore storage;
 
     /**
      * Constructs a new, empty {@link ChunkCatalog}.
@@ -115,13 +115,13 @@ public class ChunkCatalog
     }
 
     /**
-     * Attaches an enclosing {@link ChunkStorage} instance to this catalog and connects it to
+     * Attaches an enclosing {@link TelemetryStore} instance to this catalog and connects it to
      * all registered {@link DiskChunk} descriptors.
      *
      * @param storage
      *            the storage instance providing shared file channels
      */
-    public synchronized void attachStorage(final ChunkStorage storage)
+    public synchronized void attachStorage(final TelemetryStore storage)
     {
         this.storage = storage;
         for (final Chunk c : chunks)
@@ -305,7 +305,7 @@ public class ChunkCatalog
      *            the chunk type registry to locate specialized handlers for each chunk type
      * @return fully reconstructed {@link ChunkCatalog} instance
      * @throws IOException
-     *             if an I/O error occurs or the file is not in valid V3 ChunkDB format
+     *             if an I/O error occurs or the file is not in valid V3 TelemetryStore format
      */
     public static ChunkCatalog readFrom(final File chunksFile, final GlobalDictionaries dicts, final ChunkTypeRegistry registry) throws IOException
     {
@@ -313,17 +313,17 @@ public class ChunkCatalog
         {
             if (raf.length() < HEADER_SIZE)
             {
-                throw new IOException("Corrupted ChunkDB file " + chunksFile + ": file size less than header size " + HEADER_SIZE);
+                throw new IOException("Corrupted TelemetryStore file " + chunksFile + ": file size less than header size " + HEADER_SIZE);
             }
             final int magic = raf.readInt();
             if (magic != MAGIC)
             {
-                throw new IOException(String.format("Invalid ChunkDB file format in %s: magic 0x%08X != 0x%08X", chunksFile, magic, MAGIC));
+                throw new IOException(String.format("Invalid TelemetryStore file format in %s: magic 0x%08X != 0x%08X", chunksFile, magic, MAGIC));
             }
             final int version = raf.readInt();
             if (version != VERSION)
             {
-                throw new IOException(String.format("Unsupported ChunkDB file version in %s: version %d != %d", chunksFile, version, VERSION));
+                throw new IOException(String.format("Unsupported TelemetryStore file version in %s: version %d != %d", chunksFile, version, VERSION));
             }
             final ChunkCatalog catalog = new ChunkCatalog();
             catalog.globalMinTime = raf.readLong();

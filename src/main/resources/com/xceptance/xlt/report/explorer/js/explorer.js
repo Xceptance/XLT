@@ -1,5 +1,5 @@
 /**
- * XLT ChunkDB Explorer - Interactive Telemetry & Forensic UI
+ * XLT Telemetry Explorer - Interactive Telemetry & Forensic UI
  */
 (function () {
   "use strict";
@@ -1135,7 +1135,7 @@
       r.avgTtfb, r.avgConnect, r.avgServerBusy, r.distinctUrls
     ]);
     const group = (el.summaryGroupBySelect.value || "timer").toLowerCase();
-    downloadCsv(`chunkdb-summary-${group}-${Date.now()}.csv`, headers, data);
+    downloadCsv(`telemetry-summary-${group}-${Date.now()}.csv`, headers, data);
   }
 
   function exportForensicCsv() {
@@ -1163,7 +1163,7 @@
       r.stackTrace || ""
     ]);
     const mode = (el.inspectModeSelect.value || "forensics").toLowerCase();
-    downloadCsv(`chunkdb-forensic-${mode}-${Date.now()}.csv`, headers, data);
+    downloadCsv(`telemetry-forensic-${mode}-${Date.now()}.csv`, headers, data);
   }
 
   // Render Tab 2: Forensic Outlier & Failure Inspector

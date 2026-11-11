@@ -30,7 +30,7 @@ import com.xceptance.xlt.report.storage.StorageIoUtils;
 
 /**
  * Manages low-overhead, thread-safe dictionary interning and ID mappings for high-frequency
- * string metadata across all columnar chunks in ChunkDB.
+ * string metadata across all columnar chunks in TelemetryStore.
  * <p>
  * <b>Architectural Rationale &amp; Data Model:</b>
  * <ul>
@@ -1251,8 +1251,8 @@ public class GlobalDictionaries
      * <b>Memory &amp; GC Lifecycle Rationale:</b>
      * During Phase 1 cold-run CSV parsing, {@link GlobalDictionaries} maintains {@link ConcurrentHashMap}
      * reverse indexes ({@code String -> ID} and {@code AgentTestCase -> ID}) so parser threads can intern
-     * strings in \(O(1)\) time. Once {@link com.xceptance.xlt.report.storage.ChunkIngestionCollector#finish()}
-     * seals all chunks, Phase 2 ({@link com.xceptance.xlt.report.ChunkQueryEngine}) only resolves integer IDs
+     * strings in \(O(1)\) time. Once {@link com.xceptance.xlt.report.storage.TelemetryIngestionCollector#finish()}
+     * seals all chunks, Phase 2 ({@link com.xceptance.xlt.report.TelemetryQueryEngine}) only resolves integer IDs
      * forward to strings ({@code ID -> String}) via direct array indexing. Releasing the reverse maps and
      * staging buffers before Phase 2 starts frees Old Gen heap occupied by hash table nodes, table spines,
      * thread-local caches, and geometric array slack before {@link com.xceptance.xlt.report.StatisticsProcessor}

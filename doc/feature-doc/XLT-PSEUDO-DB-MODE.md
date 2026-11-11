@@ -1,9 +1,9 @@
-# XLT Pseudo-DB Mode (ChunkDB)
+# XLT Pseudo-DB Mode (TelemetryStore)
 
 ## 1. Overview & Motivation
 
 ### 1.1 What is Pseudo-DB Mode?
-**Pseudo-DB Mode** (called **ChunkDB** in the code) is an embedded columnar storage and query layer in the XLT Report Generator (`com.xceptance.xlt.report.storage`). It splits report generation into two distinct phases: parsing raw CSV logs into compressed binary chunks on disk, and querying those chunks to compute report statistics.
+**Pseudo-DB Mode** (called **TelemetryStore** in the code) is an embedded columnar storage and query layer in the XLT Report Generator (`com.xceptance.xlt.report.storage`). It splits report generation into two distinct phases: parsing raw CSV logs into compressed binary chunks on disk, and querying those chunks to compute report statistics.
 
 When enabled (the default):
 1. **Cold Run (first execution):** The generator parses raw CSV files, applies merge rules, and writes the records into columnar binary chunks in `xlt-cache/`. It then runs the report queries against these chunks.
@@ -29,7 +29,7 @@ flowchart LR
         S3 --> S4[Lock-Free Tree Merge]
     end
 
-    subgraph Stage2 ["Stage 2: ChunkDB"]
+    subgraph Stage2 ["Stage 2: TelemetryStore"]
         direction TB
         C1[CSV Ingestion] --> C2[Thread-Local Columnar Chunks<br/>FastPFOR Compression]
         C2 --> C3[(Chunk Cache<br/>xlt-cache/)]
@@ -42,7 +42,7 @@ flowchart LR
 
 - **Legacy Pipeline:** Each CSV line was parsed into a Java object (`RequestData`, `TransactionData`, etc.) and pushed through blocking queues into synchronized report providers. On runs with 100M+ lines, threads spent substantial time waiting on locks, and the GC struggled with object churn and Old Gen promotion.
 - **Stage 1 (Thread-Local Mergeable Accumulators):** Removed shared locks by giving each worker thread its own accumulators (`IntTimeSeries`, `RuntimeHistogram`, etc.). When parsing finished, thread accumulators were merged together. This roughly doubled throughput, but it eagerly folded all data into final summary statistics.
-- **Stage 2 (Columnar ChunkDB):** Eager aggregation caused a workflow problem: any change in filter criteria (time window, agent selection, or scenario) required re-reading and re-parsing every CSV file from disk. ChunkDB keeps the underlying records in indexed columnar chunks so filters run against the cache instead.
+- **Stage 2 (Columnar TelemetryStore):** Eager aggregation caused a workflow problem: any change in filter criteria (time window, agent selection, or scenario) required re-reading and re-parsing every CSV file from disk. TelemetryStore keeps the underlying records in indexed columnar chunks so filters run against the cache instead.
 
 ---
 
@@ -56,13 +56,13 @@ Load test analysis is rarely a one-shot task. In practice, engineers repeatedly 
 
 In a streaming pipeline without intermediate storage, every one of these filter adjustments meant re-reading and re-parsing tens of thousands of compressed `.csv.gz` files from disk—often taking 5 to 15 minutes each time.
 
-ChunkDB saves the pre-parsed, interned records in a local binary cache. Re-running with different time ranges or agent filters queries the binary cache directly and finishes in seconds.
+TelemetryStore saves the pre-parsed, interned records in a local binary cache. Re-running with different time ranges or agent filters queries the binary cache directly and finishes in seconds.
 
 ---
 
 ## 2. Two-Pass Pipeline Architecture
 
-To process datasets exceeding 100 million records within a 4 GB JVM heap (`-Xmx4g`), ChunkDB separates ingestion and statistical aggregation into non-overlapping phases.
+To process datasets exceeding 100 million records within a 4 GB JVM heap (`-Xmx4g`), TelemetryStore separates ingestion and statistical aggregation into non-overlapping phases.
 
 ```mermaid
 flowchart TD
@@ -71,7 +71,7 @@ flowchart TD
         RAW[Raw Results Directory<br/>timers.csv.gz files] --> DR[DataReaderThread Pool]
         DR --> DP[DataParserThread Pool<br/>CsvByteLineDecoder]
         DP --> MR[MergeRuleProcessor<br/>URL Normalization]
-        MR --> CIC[ChunkIngestionCollector<br/>Thread-Local Chunk Builders]
+        MR --> CIC[TelemetryIngestionCollector<br/>Thread-Local Chunk Builders]
         CIC --> COMP[ChunkCompressionWorkers<br/>FastPFOR Compression]
         COMP --> SPOOL[ChunkSpooler<br/>Direct-to-Disk chunks.bin.tmp]
         SPOOL --> FIN1[Promote to chunks.bin<br/>Append Tail Index & Dictionaries]
@@ -85,7 +85,7 @@ flowchart TD
 
     subgraph Phase2 ["Phase 2: Parallel SIMD Scan & Aggregation"]
         direction TB
-        CS[(Chunk Catalog<br/>xlt-cache/)] --> CQE[ChunkQueryEngine]
+        CS[(Chunk Catalog<br/>xlt-cache/)] --> CQE[TelemetryQueryEngine]
         PRED[ScanPredicate<br/>Two-Tier Pruning] --> CQE
         CQE -->|Tier 1: [minTime, maxTime] & RoaringBitmap Intersection| PRUNE{Prune Chunk?}
         PRUNE -- "Yes (Disjoint)" --> SKIP[Skip Entire Chunk<br/>0 I/O, 0 CPU]
@@ -122,7 +122,7 @@ During a cold run, the goal is to parse raw logs, apply transformation rules, an
 
 ### 2.2 Phase 2: Parallel Scan and Aggregation
 
-Once Phase 1 finishes (or immediately if a valid cache already exists), `ChunkQueryEngine` runs a parallel scan over candidate chunks:
+Once Phase 1 finishes (or immediately if a valid cache already exists), `TelemetryQueryEngine` runs a parallel scan over candidate chunks:
 
 1. **Two-Tier Filtering (`ScanPredicate`):**
    - **Tier 1 (Chunk-Level Metadata):** Before reading or decompressing any chunk payload, the engine checks:
@@ -216,7 +216,7 @@ Instead of passing every record to every provider, `StatisticsProcessor` dispatc
   ```java
   final ReportProvider[][] providersByTypeCode = new ReportProvider[128][];
   ```
-- When a chunk arrives from [`ChunkQueryEngine`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/ChunkQueryEngine.java), [`StatisticsProcessor.process(dataContainer, typeCode)`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/StatisticsProcessor.java#L238-L264) dispatches using `providersByTypeCode[typeCode]`:
+- When a chunk arrives from [`TelemetryQueryEngine`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/TelemetryQueryEngine.java), [`StatisticsProcessor.process(dataContainer, typeCode)`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/StatisticsProcessor.java#L238-L264) dispatches using `providersByTypeCode[typeCode]`:
   - Request chunks (`'R'`) dispatch only to `RequestsReportProvider` and `SummaryReportProvider`.
   - Transaction chunks (`'T'`) dispatch only to `TransactionsReportProvider` and `ErrorsReportProvider`.
   - Web Vital chunks (`'W'`) dispatch only to `WebVitalsDataProcessor`.
@@ -274,7 +274,7 @@ Parallel execution continues into the rendering step in [`ReportGenerator.create
 
 ## 4. Columnar Binary Storage Format & Internals
 
-When persisted, ChunkDB stores files in `<results-dir>/xlt-cache/`:
+When persisted, TelemetryStore stores files in `<results-dir>/xlt-cache/`:
 
 ```
 <results-dir>/xlt-cache/
@@ -344,7 +344,7 @@ Putting the index at the end allows streaming chunks directly to disk during Pha
 
 ### 4.3 Compression Codecs
 
-ChunkDB uses the `JavaFastPFOR` integer compression library and RoaringBitmaps:
+TelemetryStore uses the `JavaFastPFOR` integer compression library and RoaringBitmaps:
 
 1. **FastPFOR128:**
    Organizes integer arrays into 128-element blocks. Finds the minimum bit width needed for the block and packs the values with bit-shifts. Outliers exceeding that bit width are stored in a small exception section.
@@ -361,7 +361,7 @@ ChunkDB uses the `JavaFastPFOR` integer compression library and RoaringBitmaps:
 
 Numbers from a production run with **108,790,200 records**:
 
-| Data Type | Record Count | Bytes / Row (Compressed) | ChunkDB Size | Estimated Java Heap Size |
+| Data Type | Record Count | Bytes / Row (Compressed) | TelemetryStore Size | Estimated Java Heap Size |
 | :--- | :--- | :--- | :--- | :--- |
 | **Requests (`'R'`)** | 98,500,000 | ~22 bytes | **~2.16 GB** | ~24.6 GB |
 | **Actions (`'A'`)** | 8,900,000 | ~16 bytes | **~0.14 GB** | ~1.42 GB |
@@ -370,7 +370,7 @@ Numbers from a production run with **108,790,200 records**:
 | **Dictionaries & Index** | - | - | **~0.08 GB** | - |
 | **Total** | **108,790,200** | **~22.1 bytes** | **~2.40 GB** | **> 26 GB** |
 
-Across all record types, ChunkDB averages ~22 bytes per row on disk, about a 10x reduction compared to in-memory Java objects and roughly 60% to 75% smaller than the original uncompressed CSV files.
+Across all record types, TelemetryStore averages ~22 bytes per row on disk, about a 10x reduction compared to in-memory Java objects and roughly 60% to 75% smaller than the original uncompressed CSV files.
 
 ---
 
@@ -379,7 +379,7 @@ Across all record types, ChunkDB averages ~22 bytes per row on disk, about a 10x
 `fingerprint.bin` acts as the cache integrity descriptor and is written last upon successful serialization. It begins with a binary header:
 - **Magic Number:** `0x584C5446` (`"XLTF"`, 4-byte int)
 - **Fingerprint Format Version:** `1` (4-byte int)
-- **ChunkDB Storage Format Version:** `2` (4-byte int, matches `ChunkCatalog.VERSION`)
+- **TelemetryStore Storage Format Version:** `2` (4-byte int, matches `ChunkCatalog.VERSION`)
 - **Timer Log File Count:** `int`
 - **Total Combined Byte Size:** `long`
 - **Merge & Labeling Rules SHA-256 Hash:** UTF-8 string with 32-bit length prefix
@@ -393,7 +393,7 @@ A cache in `xlt-cache/` is considered valid if and only if all dimensions match:
    - `com.xceptance.xlt.reportgenerator.labelingRules.*`
    - `com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames`
    (Because merge rules rewrite request names at parse time, altering rules invalidates the cache).
-4. **ChunkDB Storage Format Version:** Guards against binary schema adjustments between releases (e.g. adding columns or restructuring chunk headers). Even if XLT is run from an unversioned developer build or IDE (`Implementation-Version: ?.?.?`), format version mismatches are caught immediately.
+4. **TelemetryStore Storage Format Version:** Guards against binary schema adjustments between releases (e.g. adding columns or restructuring chunk headers). Even if XLT is run from an unversioned developer build or IDE (`Implementation-Version: ?.?.?`), format version mismatches are caught immediately.
 5. **XLT Framework Release Version:** Prevents reading cache files written by a different release of XLT (e.g. upgrading from 7.4.0 to 7.5.0).
 
 #### Automatic Purge and Fallback Semantics
@@ -405,7 +405,7 @@ A cache in `xlt-cache/` is considered valid if and only if all dimensions match:
 
 ## 5. Data Feature Coverage
 
-ChunkDB preserves all fields and record types available in standard XLT reports.
+TelemetryStore preserves all fields and record types available in standard XLT reports.
 
 ### 5.1 Coverage by Record Type
 
@@ -479,7 +479,7 @@ If a test run logs custom `Data` subclasses without a dedicated codec:
 
 ### 6.1 Two-Tier Query Engine
 
-When filtering by time (`-from`, `-to`, `-l`, `-noRampUp`), scenario (`-i`, `-e`), or agent (`-ai`, `-ae`), ChunkDB uses a two-tier predicate ([`ScanPredicate`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/query/ScanPredicate.java)):
+When filtering by time (`-from`, `-to`, `-l`, `-noRampUp`), scenario (`-i`, `-e`), or agent (`-ai`, `-ae`), TelemetryStore uses a two-tier predicate ([`ScanPredicate`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/storage/query/ScanPredicate.java)):
 
 ```mermaid
 flowchart TD
@@ -508,7 +508,7 @@ flowchart TD
 ```
 
 #### Tier 1: Chunk Pruning (Metadata Check)
-Before decompressing a chunk payload, `ChunkQueryEngine` evaluates `ScanPredicate.mayMatchChunk(chunk)`:
+Before decompressing a chunk payload, `TelemetryQueryEngine` evaluates `ScanPredicate.mayMatchChunk(chunk)`:
 1. **Time Check:** If `chunk.getMaxTime() < fromTime || chunk.getMinTime() > toTime`, the chunk is skipped.
 2. **Agent and Scenario Check:**
    CLI regexes are matched once against the small `AgentTestCase` dictionary in `GlobalDictionaries` (`filterAgentTestCaseIds`), yielding a `RoaringBitmap allowedAgentTestCaseIds`. `mayMatchChunk` tests `RoaringBitmap.intersects(allowedAgentTestCaseIds, chunk.getAgentTestCaseIds())`. If disjoint, the chunk is skipped.
@@ -596,7 +596,7 @@ The error tables, exception distributions, and ResultBrowser links in the final 
 ### 7.1 Production Benchmark
 Measured on a dataset of **108,790,200 records across 49,358 files** (`bbw-2025-wah-2-281`) running on a 16-core machine with `-Xmx4g`:
 
-| Metric | Legacy Pipeline | ChunkDB Cold Run | ChunkDB Warm Run | Difference |
+| Metric | Legacy Pipeline | TelemetryStore Cold Run | TelemetryStore Warm Run | Difference |
 | :--- | :--- | :--- | :--- | :--- |
 | **Ingestion Time** | 322.5 s (337k lines/s) | **193.3 s (563k lines/s)** | **0.0 s (Bypassed)** | Phase 1 skipped on warm runs |
 | **Full GC Pauses (Phase 1)**| 40 pauses (24.2 s total) | **0 pauses (0.0 s)** | **0 pauses (0.0 s)** | No Full GCs during ingestion |
@@ -630,7 +630,7 @@ Measured on a dataset of **108,790,200 records across 49,358 files** (`bbw-2025-
 3. **Cache Invalidation on Merge Rule Changes:**
    Request merge rules (`requestMergeRules.*`) normalize dynamic URLs into timer names during Phase 1. If a rule changes, the cache cannot be reused. `CacheManager` detects the change and rebuilds the cache.
 4. **Static Results Assumption:**
-   ChunkDB assumes the raw results directory does not change after a test finishes. Adding log files changes the file count and byte sum, which invalidates the cache.
+   TelemetryStore assumes the raw results directory does not change after a test finishes. Adding log files changes the file count and byte sum, which invalidates the cache.
 5. **Read-Only Filesystems:**
    In environments where results directories are mounted read-only, `ChunkSpooler` cannot write `xlt-cache/` there. The cache must be pointed to a writable directory via `com.xceptance.xlt.reportgenerator.dataCache.dir = /tmp/xlt-cache`.
 
@@ -642,9 +642,9 @@ Measured on a dataset of **108,790,200 records across 49,358 files** (`bbw-2025-
 
 Supported switches in [`ReportGeneratorMain`](file:///home/rschwietzke/projects/GIT/xlt-research-reporting/src/main/java/com/xceptance/xlt/report/ReportGeneratorMain.java):
 
-| Option (Short) | Option (Long) | Arguments | Default | Description & ChunkDB Behavior |
+| Option (Short) | Option (Long) | Arguments | Default | Description & TelemetryStore Behavior |
 | :--- | :--- | :--- | :--- | :--- |
-| **`-from`** | - | `<time>` | Earliest data | Start time. Accepts absolute format (`yyyyMMdd-HHmmss`) or relative offset (`+15m`, `-30m`). In ChunkDB mode, out-of-bounds chunks are skipped via catalog headers. |
+| **`-from`** | - | `<time>` | Earliest data | Start time. Accepts absolute format (`yyyyMMdd-HHmmss`) or relative offset (`+15m`, `-30m`). In TelemetryStore mode, out-of-bounds chunks are skipped via catalog headers. |
 | **`-to`** | - | `<time>` | Latest data | End time. Accepts absolute format (`yyyyMMdd-HHmmss`) or relative offset (`+15m`, `-30m`). Out-of-bounds chunks are skipped via catalog headers. |
 | **`-l`** | - | `<duration>` | Full test | Restricts evaluation to a fixed duration (e.g. `15m`, `1h`). Must be paired with `-from` or `-to`. |
 | **`-noRampUp`** | - | *None* | `false` | Automatically trims the ramp-up phase defined in `loadprofile.properties`. Adjusts the query start time without re-reading files. |
@@ -671,7 +671,7 @@ Configured in `config/reportgenerator.properties` or overridden via `-D<key>=<va
 
 ```properties
 ##
-# Enables persistent ChunkDB binary disk caching.
+# Enables persistent TelemetryStore binary disk caching.
 # When true (default), cold runs write chunks to disk and warm runs read from cache.
 #
 # Default: true
@@ -798,13 +798,13 @@ ls -lh /path/to/results/test-run-2026-10-11/xlt-cache/
 When reading from cache, the report generator logs:
 ```text
 Reading Log Files...
-Accelerating report generation using ChunkDB cache from: /path/to/results/test-run-2026-10-11/xlt-cache
-ChunkDB query matched 1,702 of 1,702 chunks
+Accelerating report generation using TelemetryStore cache from: /path/to/results/test-run-2026-10-11/xlt-cache
+TelemetryStore query matched 1,702 of 1,702 chunks
 108,790,200 records read from cache - 39,421 ms (load: 1,510 ms, scan: 37,911 ms) - 2,759,701 records/s
 ```
 
 If the cache was stale or rules changed, it logs why it rebuilt:
 ```text
-ChunkDB cache is stale (inputs or rules changed). Purging cache at: /path/to/results/test-run-2026-10-11/xlt-cache
+TelemetryStore cache is stale (inputs or rules changed). Purging cache at: /path/to/results/test-run-2026-10-11/xlt-cache
 Input directory: /path/to/results/test-run-2026-10-11
 ```

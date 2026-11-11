@@ -50,7 +50,7 @@ import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
  * <b>Cache Invalidation Invariants:</b>
  * A cached dataset is valid if and only if all five components match:
  * <ol>
- *   <li><b>Format Version:</b> The binary ChunkDB storage format version ({@link ChunkCatalog#VERSION}),
+ *   <li><b>Format Version:</b> The binary TelemetryStore storage format version ({@link ChunkCatalog#VERSION}),
  *       protecting against binary schema revisions (e.g., V2 to V3 upgrades).</li>
  *   <li><b>Input File Count:</b> Total number of raw timer CSV files in the input results directory tree.</li>
  *   <li><b>Input Total Bytes:</b> Total combined byte size of all discovered raw timer CSV files. Any modification,
@@ -66,7 +66,7 @@ import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
  * </ol>
  *
  * @param formatVersion
- *            the binary ChunkDB storage format version
+ *            the binary TelemetryStore storage format version
  * @param fileCount
  *            the number of timer CSV files scanned
  * @param totalBytes
@@ -93,7 +93,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
      * Backward-compatible convenience constructor without explicit {@code maxLastModified} timestamp.
      *
      * @param formatVersion
-     *            the binary ChunkDB storage format version
+     *            the binary TelemetryStore storage format version
      * @param fileCount
      *            the number of timer CSV files scanned
      * @param totalBytes
@@ -271,7 +271,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
 
     /**
      * Checks whether a directory should be excluded from fingerprint scanning
-     * (report output directories, the ChunkDB cache directory itself, and git metadata).
+     * (report output directories, the TelemetryStore cache directory itself, and git metadata).
      */
     private static boolean isSkippedDirectory(final Path dir, final String name, final FileAccumulator acc)
     {

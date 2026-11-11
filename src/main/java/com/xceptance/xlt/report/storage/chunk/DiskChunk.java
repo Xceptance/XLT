@@ -26,7 +26,7 @@ import java.util.Objects;
 
 import org.roaringbitmap.RoaringBitmap;
 
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 
 /**
@@ -46,7 +46,7 @@ import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
  * records) to less than 200 kilobytes of JVM memory.
  * <p>
  * <b>Concurrent Zero-Lock Position-Based Disk Reads:</b>
- * During query execution in {@link com.xceptance.xlt.report.ChunkQueryEngine}, candidate chunk pruning operates
+ * During query execution in {@link com.xceptance.xlt.report.TelemetryQueryEngine}, candidate chunk pruning operates
  * entirely against the in-memory metadata bitmaps of {@link DiskChunk} without touching the disk. When a chunk
  * matches the query predicate, worker threads call {@link #load(ChunkTypeHandler, GlobalDictionaries)} to read
  * and decompress the chunk's payload via thread-safe, positional {@link FileChannel#read(ByteBuffer, long)}
@@ -93,7 +93,7 @@ public class DiskChunk implements Chunk
     private final int vectorPayloadLength;
 
     /** Optional reference to the active storage container providing shared, open file channels. */
-    private volatile ChunkStorage storage;
+    private volatile TelemetryStore storage;
 
     /**
      * Constructs a new {@link DiskChunk} descriptor with the specified boundary metadata and file coordinates.
@@ -258,12 +258,12 @@ public class DiskChunk implements Chunk
     }
 
     /**
-     * Attaches an active {@link ChunkStorage} container to allow reading via shared open channels.
+     * Attaches an active {@link TelemetryStore} container to allow reading via shared open channels.
      *
      * @param storage
      *            active storage instance
      */
-    public void setStorage(final ChunkStorage storage)
+    public void setStorage(final TelemetryStore storage)
     {
         this.storage = storage;
     }
@@ -285,7 +285,7 @@ public class DiskChunk implements Chunk
         try
         {
             final byte[] bytes;
-            final ChunkStorage currentStorage = this.storage;
+            final TelemetryStore currentStorage = this.storage;
             if (currentStorage != null)
             {
                 bytes = currentStorage.readChunkBytes(fileOffset, payloadLength);
@@ -352,7 +352,7 @@ public class DiskChunk implements Chunk
     public byte[] readVectorPayload() throws IOException
     {
         final int lenToRead = (vectorPayloadLength > 0 && vectorPayloadLength < payloadLength) ? vectorPayloadLength : payloadLength;
-        final ChunkStorage currentStorage = this.storage;
+        final TelemetryStore currentStorage = this.storage;
         if (currentStorage != null)
         {
             return currentStorage.readChunkBytes(fileOffset, lenToRead);
@@ -377,7 +377,7 @@ public class DiskChunk implements Chunk
         // Seek directly past the Hot Vector Prefix to read only the Cold Forensic Tail Block
         final long tailOffset = fileOffset + vectorPayloadLength;
         final int tailLength = payloadLength - vectorPayloadLength;
-        final ChunkStorage currentStorage = this.storage;
+        final TelemetryStore currentStorage = this.storage;
         if (currentStorage != null)
         {
             return currentStorage.readChunkBytes(tailOffset, tailLength);

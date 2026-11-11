@@ -36,7 +36,7 @@ import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
 import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
 /**
- * Generic fallback handler that enables ChunkDB to store and scan any current or future {@link Data} implementation.
+ * Generic fallback handler that enables TelemetryStore to store and scan any current or future {@link Data} implementation.
  * <p>
  * When a custom data record is encountered whose type code has no specialized handler registered,
  * {@link GenericDataChunkHandler} captures common header attributes (timestamp, name, agent name, test case name)

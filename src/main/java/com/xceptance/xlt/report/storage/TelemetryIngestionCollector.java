@@ -68,7 +68,7 @@ import com.xceptance.xlt.report.storage.dictionary.GlobalDictionaries;
  *       all remaining partial chunks across all thread maps concurrently using parallel streams.</li>
  * </ol>
  */
-public class ChunkIngestionCollector
+public class TelemetryIngestionCollector
 {
     /** Global string, timer, and agent/test case dictionaries. */
     private final GlobalDictionaries dictionaries;
@@ -122,28 +122,28 @@ public class ChunkIngestionCollector
     });
 
     /**
-     * Constructs a new {@link ChunkIngestionCollector} initialized with default dictionaries,
+     * Constructs a new {@link TelemetryIngestionCollector} initialized with default dictionaries,
      * an empty catalog, and the singleton {@link ChunkTypeRegistry}.
      */
-    public ChunkIngestionCollector()
+    public TelemetryIngestionCollector()
     {
         this(new GlobalDictionaries(), new ChunkCatalog(), ChunkTypeRegistry.getInstance(), null);
     }
 
     /**
-     * Constructs a new {@link ChunkIngestionCollector} configured to stream chunks directly to disk
+     * Constructs a new {@link TelemetryIngestionCollector} configured to stream chunks directly to disk
      * in the specified cache directory.
      *
      * @param cacheDir
      *            target cache directory for direct-to-disk chunk spooling (or null for in-memory buffering)
      */
-    public ChunkIngestionCollector(final File cacheDir)
+    public TelemetryIngestionCollector(final File cacheDir)
     {
         this(new GlobalDictionaries(), new ChunkCatalog(), ChunkTypeRegistry.getInstance(), cacheDir);
     }
 
     /**
-     * Constructs a {@link ChunkIngestionCollector} with specific dictionaries, catalog, and registry.
+     * Constructs a {@link TelemetryIngestionCollector} with specific dictionaries, catalog, and registry.
      *
      * @param dictionaries
      *            global dictionaries for interning string metadata
@@ -152,13 +152,13 @@ public class ChunkIngestionCollector
      * @param registry
      *            chunk type codec registry
      */
-    public ChunkIngestionCollector(final GlobalDictionaries dictionaries, final ChunkCatalog catalog, final ChunkTypeRegistry registry)
+    public TelemetryIngestionCollector(final GlobalDictionaries dictionaries, final ChunkCatalog catalog, final ChunkTypeRegistry registry)
     {
         this(dictionaries, catalog, registry, null);
     }
 
     /**
-     * Constructs a {@link ChunkIngestionCollector} with specific dictionaries, catalog, registry, and cache directory.
+     * Constructs a {@link TelemetryIngestionCollector} with specific dictionaries, catalog, registry, and cache directory.
      *
      * @param dictionaries
      *            global dictionaries for interning string metadata
@@ -169,8 +169,8 @@ public class ChunkIngestionCollector
      * @param cacheDir
      *            target cache directory for streaming chunk spooling (or null if purely in-memory)
      */
-    public ChunkIngestionCollector(final GlobalDictionaries dictionaries, final ChunkCatalog catalog,
-                                   final ChunkTypeRegistry registry, final File cacheDir)
+    public TelemetryIngestionCollector(final GlobalDictionaries dictionaries, final ChunkCatalog catalog,
+                                       final ChunkTypeRegistry registry, final File cacheDir)
     {
         this.dictionaries = dictionaries;
         this.catalog = catalog;
@@ -488,15 +488,15 @@ public class ChunkIngestionCollector
     /**
      * Flushes and seals all remaining partially filled chunk builders across all worker threads,
      * registers them in the catalog, compacts ingestion-only dictionary structures, and produces
-     * a fully populated, queryable {@link ChunkStorage} instance.
+     * a fully populated, queryable {@link TelemetryStore} instance.
      * <p>
      * Waits for all background compression tasks to complete before draining partial builders.
      * If direct-to-disk spooling was active, the storage file is finalized and indexed, and an open
      * read-only {@link FileChannel} is attached for lazy query execution.
      *
-     * @return the complete {@link ChunkStorage} ready for querying and disk caching
+     * @return the complete {@link TelemetryStore} ready for querying and disk caching
      */
-    public synchronized ChunkStorage finish()
+    public synchronized TelemetryStore finish()
     {
         // 1. Await completion of all pending background chunk compression tasks
         try
@@ -585,7 +585,7 @@ public class ChunkIngestionCollector
                 activeSpooler.finish(catalog, dictionaries);
                 final File targetFile = activeSpooler.getTargetFile();
                 final FileChannel channel = FileChannel.open(targetFile.toPath(), StandardOpenOption.READ);
-                return new ChunkStorage(dictionaries, catalog, registry, targetFile, channel, true);
+                return new TelemetryStore(dictionaries, catalog, registry, targetFile, channel, true);
             }
             catch (final IOException e)
             {
@@ -594,6 +594,6 @@ public class ChunkIngestionCollector
             }
         }
 
-        return new ChunkStorage(dictionaries, catalog, registry);
+        return new TelemetryStore(dictionaries, catalog, registry);
     }
 }

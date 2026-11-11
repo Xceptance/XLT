@@ -588,7 +588,7 @@
             <artifactId>datasketches-java</artifactId>
             <version>7.0.1</version>
         </dependency>
-        <!-- SIMD-accelerated integer compression for Stage 2 ChunkDB -->
+        <!-- SIMD-accelerated integer compression for Stage 2 TelemetryStore -->
         <dependency>
             <groupId>me.lemire.integercompression</groupId>
             <artifactId>JavaFastPFOR</artifactId>

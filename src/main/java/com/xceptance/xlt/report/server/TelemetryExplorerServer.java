@@ -38,14 +38,14 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.xceptance.xlt.report.query.ColumnarQueryEngine;
 
 /**
- * Lightweight embedded Jetty HTTP server hosting the ChunkDB Explorer UI, REST API ({@code /api/v1/*}),
+ * Lightweight embedded Jetty HTTP server hosting the Telemetry Explorer UI, REST API ({@code /api/v1/*}),
  * and local Result Browser dumps ({@code /dumps/*}).
  * <p>
  * Binds strictly to {@code 127.0.0.1} by default so diagnostic test data is only accessible locally.
  */
-public class ChunkExplorerServer implements AutoCloseable
+public class TelemetryExplorerServer implements AutoCloseable
 {
-    /** Default HTTP port for the ChunkDB Explorer server. */
+    /** Default HTTP port for the Telemetry Explorer server. */
     public static final int DEFAULT_PORT = 8484;
 
     /** Classpath root containing static Explorer UI assets (index.html, css/*, js/*). */
@@ -85,20 +85,20 @@ public class ChunkExplorerServer implements AutoCloseable
     private final Server server;
 
     /**
-     * Constructs a {@link ChunkExplorerServer} bound to {@code 127.0.0.1} on the specified port.
+     * Constructs a {@link TelemetryExplorerServer} bound to {@code 127.0.0.1} on the specified port.
      *
      * @param queryEngine
      *            the backing columnar query engine
      * @param port
      *            TCP port to listen on ({@code 0} selects an ephemeral port)
      */
-    public ChunkExplorerServer(final ColumnarQueryEngine queryEngine, final int port)
+    public TelemetryExplorerServer(final ColumnarQueryEngine queryEngine, final int port)
     {
         this(queryEngine, "127.0.0.1", port);
     }
 
     /**
-     * Constructs a {@link ChunkExplorerServer} bound to the specified host and port.
+     * Constructs a {@link TelemetryExplorerServer} bound to the specified host and port.
      *
      * @param queryEngine
      *            the backing columnar query engine
@@ -107,7 +107,7 @@ public class ChunkExplorerServer implements AutoCloseable
      * @param port
      *            TCP port to listen on ({@code 0} selects an ephemeral port)
      */
-    public ChunkExplorerServer(final ColumnarQueryEngine queryEngine, final String host, final int port)
+    public TelemetryExplorerServer(final ColumnarQueryEngine queryEngine, final String host, final int port)
     {
         this.queryEngine = Objects.requireNonNull(queryEngine, "queryEngine cannot be null");
         this.host = Objects.requireNonNull(host, "host cannot be null");
@@ -117,7 +117,7 @@ public class ChunkExplorerServer implements AutoCloseable
         context.setContextPath("/");
 
         // 1. JSON Query API (/api/v1/*)
-        context.addServlet(new ServletHolder(new ChunkApiServlet(queryEngine)), "/api/v1/*");
+        context.addServlet(new ServletHolder(new TelemetryApiServlet(queryEngine)), "/api/v1/*");
 
         // 2. Local Result Browser Dumps (/dumps/*)
         context.addServlet(new ServletHolder(new DumpResourceServlet(queryEngine.getResultsDir())), "/dumps/*");
@@ -243,7 +243,7 @@ public class ChunkExplorerServer implements AutoCloseable
             }
 
             final String resourcePath = CLASSPATH_UI_ROOT + normStr;
-            try (final InputStream in = ChunkExplorerServer.class.getResourceAsStream(resourcePath))
+            try (final InputStream in = TelemetryExplorerServer.class.getResourceAsStream(resourcePath))
             {
                 if (in == null)
                 {

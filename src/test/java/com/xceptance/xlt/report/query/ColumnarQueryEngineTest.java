@@ -48,8 +48,8 @@ import com.xceptance.xlt.report.query.QueryModels.SummaryTableQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.SummaryTableResponse;
 import com.xceptance.xlt.report.query.QueryModels.TimeSeriesQuerySpec;
 import com.xceptance.xlt.report.query.QueryModels.TimeSeriesResponse;
-import com.xceptance.xlt.report.storage.ChunkIngestionCollector;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryIngestionCollector;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 
 /**
  * Unit and disk-integration tests for {@link ColumnarQueryEngine}.
@@ -62,17 +62,17 @@ public class ColumnarQueryEngineTest
     private static final long BASE_TIME = 1_700_000_000_000L;
 
     /**
-     * Populates a representative multi-type dataset into a disk-backed {@link ChunkStorage}
+     * Populates a representative multi-type dataset into a disk-backed {@link TelemetryStore}
      * and creates a mock Result Browser dump directory on disk.
      */
-    private ChunkStorage buildSampleStorage(final File cacheDir, final File resultsDir) throws Exception
+    private TelemetryStore buildSampleStorage(final File cacheDir, final File resultsDir) throws Exception
     {
         // Create a mock Result Browser dump index.html for user "0" on "agent-1" / "TCheckout"
         final File dumpDir = new File(resultsDir, "agent-1/TCheckout/0/output/1700000005000-PlaceOrder");
         dumpDir.mkdirs();
         Files.writeString(new File(dumpDir, "index.html").toPath(), "<html><body>Dump</body></html>", StandardCharsets.UTF_8);
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(cacheDir);
 
         // Iteration 1 for (agent-1, TCheckout, user 0): [BASE_TIME .. BASE_TIME + 2000] (Success)
         final TransactionData tx1 = new TransactionData("TCheckout");
@@ -181,11 +181,11 @@ public class ColumnarQueryEngineTest
         );
         collector.collect(req4);
 
-        try (final ChunkStorage built = collector.finish())
+        try (final TelemetryStore built = collector.finish())
         {
             built.saveToDirectory(cacheDir);
         }
-        return ChunkStorage.loadFromDirectory(cacheDir);
+        return TelemetryStore.loadFromDirectory(cacheDir);
     }
 
     private static RequestData createRequest(final String name,
@@ -238,7 +238,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-meta");
         final File resultsDir = tempFolder.newFolder("results-meta");
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
             final MetadataResponse meta = engine.getMetadata();
@@ -267,7 +267,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-ts");
         final File resultsDir = tempFolder.newFolder("results-ts");
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -329,7 +329,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-sum");
         final File resultsDir = tempFolder.newFolder("results-sum");
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -383,7 +383,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-insp");
         final File resultsDir = tempFolder.newFolder("results-insp");
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -435,7 +435,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-sess");
         final File resultsDir = tempFolder.newFolder("results-sess");
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -500,7 +500,7 @@ public class ColumnarQueryEngineTest
         final File cacheDir = tempFolder.newFolder("cache-multi");
         final File resultsDir = tempFolder.newFolder("results-multi");
         // Collect from 2 threads so thread-local builders seal 2 separate RequestChunks
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(cacheDir);
 
         final Thread t1 = new Thread(() -> {
             for (int i = 0; i < 10; i++)
@@ -540,12 +540,12 @@ public class ColumnarQueryEngineTest
         t1.join();
         t2.join();
 
-        try (final ChunkStorage built = collector.finish())
+        try (final TelemetryStore built = collector.finish())
         {
             built.saveToDirectory(cacheDir);
         }
 
-        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        try (final TelemetryStore storage = TelemetryStore.loadFromDirectory(cacheDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
             assertNotNull(engine.getStorage());
@@ -609,7 +609,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-ts-net");
         final File resultsDir = tempFolder.newFolder("results-ts-net");
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -641,7 +641,7 @@ public class ColumnarQueryEngineTest
         final File cacheDir = tempFolder.newFolder("cache-4xx");
         final File resultsDir = tempFolder.newFolder("results-4xx");
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(cacheDir);
         // Chunk 1: HTTP 200 OK only
         final RequestData req200 = createRequest(
             "Req200", "Req200.raw", BASE_TIME, 100, 200, false,
@@ -658,12 +658,12 @@ public class ColumnarQueryEngineTest
         );
         collector.collect(req404);
 
-        try (final ChunkStorage built = collector.finish())
+        try (final TelemetryStore built = collector.finish())
         {
             built.saveToDirectory(cacheDir);
         }
 
-        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        try (final TelemetryStore storage = TelemetryStore.loadFromDirectory(cacheDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -687,7 +687,7 @@ public class ColumnarQueryEngineTest
         final File cacheDir = tempFolder.newFolder("cache-slowest-count");
         final File resultsDir = tempFolder.newFolder("results-slowest-count");
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(cacheDir);
 
         // Create 3 chunks by filling small batches
         for (int i = 0; i < 30; i++)
@@ -700,12 +700,12 @@ public class ColumnarQueryEngineTest
             collector.collect(req);
         }
 
-        try (final ChunkStorage built = collector.finish())
+        try (final TelemetryStore built = collector.finish())
         {
             built.saveToDirectory(cacheDir);
         }
 
-        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        try (final TelemetryStore storage = TelemetryStore.loadFromDirectory(cacheDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -727,7 +727,7 @@ public class ColumnarQueryEngineTest
         final File cacheDir = tempFolder.newFolder("cache-slow-tx");
         final File resultsDir = tempFolder.newFolder("results-slow-tx");
 
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
 
@@ -765,7 +765,7 @@ public class ColumnarQueryEngineTest
         final File cacheDir = tempFolder.newFolder("cache-dash");
         final File resultsDir = tempFolder.newFolder("results-dash");
 
-        try (final ChunkStorage storage = buildSampleStorage(cacheDir, resultsDir))
+        try (final TelemetryStore storage = buildSampleStorage(cacheDir, resultsDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
             assertFalse(engine.hasCachedMetadata());
@@ -804,7 +804,7 @@ public class ColumnarQueryEngineTest
     {
         final File cacheDir = tempFolder.newFolder("cache-hll");
         final File resultsDir = tempFolder.newFolder("results-hll");
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(cacheDir);
 
         final int distinctTarget = 1200;
         for (int i = 0; i < distinctTarget; i++)
@@ -818,12 +818,12 @@ public class ColumnarQueryEngineTest
             collector.collect(req);
         }
 
-        try (final ChunkStorage built = collector.finish())
+        try (final TelemetryStore built = collector.finish())
         {
             built.saveToDirectory(cacheDir);
         }
 
-        try (final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir))
+        try (final TelemetryStore storage = TelemetryStore.loadFromDirectory(cacheDir))
         {
             final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
             final SummaryTableResponse sum = engine.querySummaryTable(new SummaryTableQuerySpec(

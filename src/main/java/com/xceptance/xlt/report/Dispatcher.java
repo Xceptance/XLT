@@ -80,10 +80,10 @@ public class Dispatcher
     private final StatisticsProcessor statisticsProcessor;
 
     /**
-     * Optional collector for streaming parsed records into ChunkDB storage during ingestion.
+     * Optional collector for streaming parsed records into TelemetryStore storage during ingestion.
      * Released once Phase 1 data record processing completes so the collector is eligible for GC before Phase 2.
      */
-    private com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector;
+    private com.xceptance.xlt.report.storage.TelemetryIngestionCollector chunkCollector;
 
     /**
      * Creates a new {@link Dispatcher} object with the given configuration and statistics processor.
@@ -99,17 +99,17 @@ public class Dispatcher
     }
 
     /**
-     * Creates a new {@link Dispatcher} object with the given configuration, statistics processor, and ChunkDB collector.
+     * Creates a new {@link Dispatcher} object with the given configuration, statistics processor, and TelemetryStore collector.
      *
      * @param config
      *            the report generator configuration
      * @param statisticsProcessor
      *            the statistics aggregation pipeline
      * @param chunkCollector
-     *            optional {@link com.xceptance.xlt.report.storage.ChunkIngestionCollector} for populating ChunkDB
+     *            optional {@link com.xceptance.xlt.report.storage.TelemetryIngestionCollector} for populating TelemetryStore
      */
     public Dispatcher(final ReportGeneratorConfiguration config, final StatisticsProcessor statisticsProcessor,
-                      final com.xceptance.xlt.report.storage.ChunkIngestionCollector chunkCollector)
+                      final com.xceptance.xlt.report.storage.TelemetryIngestionCollector chunkCollector)
     {
         readDataQueue = new LinkedBlockingQueue<>(config.threadQueueLength);
 
@@ -186,7 +186,7 @@ public class Dispatcher
 
     /**
      * Delivers a parsed chunk of data and puts it through the statistics processors.
-     * Also streams the parsed data records into ChunkDB ingestion collector if active.
+     * Also streams the parsed data records into TelemetryStore ingestion collector if active.
      *
      * @param postprocessedData
      *            the post-processed data records container
@@ -200,7 +200,7 @@ public class Dispatcher
 
     /**
      * Delivers a parsed chunk of data and puts it through the statistics processors.
-     * Also streams the parsed data records into ChunkDB ingestion collector if active.
+     * Also streams the parsed data records into TelemetryStore ingestion collector if active.
      *
      * @param postprocessedData
      *            the post-processed data records container

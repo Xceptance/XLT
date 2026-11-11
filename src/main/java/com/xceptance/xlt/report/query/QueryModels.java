@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Data Transfer Objects (DTOs) and query specifications for the interactive ChunkDB Explorer API.
+ * Data Transfer Objects (DTOs) and query specifications for the interactive Telemetry Explorer API.
  * <p>
  * All records in this class serialize cleanly to and from JSON via Jackson without custom serializers,
- * and represent the contract between {@link ColumnarQueryEngine}, {@code ChunkApiServlet}, and the
- * browser-based ChunkDB Explorer UI.
+ * and represent the contract between {@link ColumnarQueryEngine}, {@code TelemetryApiServlet}, and the
+ * browser-based Telemetry Explorer UI.
  */
 public final class QueryModels
 {
@@ -39,7 +39,7 @@ public final class QueryModels
      * @param maxTime
      *            global latest record timestamp (ms since Unix epoch)
      * @param totalRecords
-     *            total number of records across all chunks in ChunkDB
+     *            total number of records across all chunks in TelemetryStore
      * @param totalChunks
      *            total number of columnar chunks in the catalog
      * @param chunksByType

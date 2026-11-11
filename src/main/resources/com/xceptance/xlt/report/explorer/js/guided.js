@@ -1,5 +1,5 @@
 /**
- * XLT Guided Result Explorer - Diagnostic Storyboard & Synchronized Drill-Down UI
+ * XLT Telemetry Explorer (Guided Dashboard) - Diagnostic Storyboard & Synchronized Drill-Down UI
  */
 (function () {
   "use strict";
@@ -2231,7 +2231,7 @@
       r.mean, r.min, r.p50, r.p90, r.p95, r.p99, r.max,
       r.avgTtfb, r.avgConnect, r.avgServerBusy, r.distinctUrls
     ]);
-    downloadCsv(`chunkdb-guided-summary-${state.summaryGroupBy.toLowerCase()}-${Date.now()}.csv`, headers, data);
+    downloadCsv(`telemetry-guided-summary-${state.summaryGroupBy.toLowerCase()}-${Date.now()}.csv`, headers, data);
   }
 
   function exportForensicCsv() {
@@ -2258,7 +2258,7 @@
       r.failedActionName || "",
       r.stackTrace || ""
     ]);
-    downloadCsv(`chunkdb-guided-forensic-${Date.now()}.csv`, headers, data);
+    downloadCsv(`telemetry-guided-forensic-${Date.now()}.csv`, headers, data);
   }
 
   function switchTab(tabId, autoFetch = false) {

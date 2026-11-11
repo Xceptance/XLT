@@ -42,21 +42,21 @@ import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.report.query.ColumnarQueryEngine;
-import com.xceptance.xlt.report.storage.ChunkIngestionCollector;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryIngestionCollector;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 
 /**
- * Integration tests for {@link ChunkExplorerServer}, {@link ChunkApiServlet}, and {@link ChunkExplorerMain}.
+ * Integration tests for {@link TelemetryExplorerServer}, {@link TelemetryApiServlet}, and {@link TelemetryExplorerMain}.
  */
-public class ChunkExplorerServerTest
+public class TelemetryExplorerServerTest
 {
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private ChunkStorage storage;
+    private TelemetryStore storage;
     private File resultsDir;
     private File cacheDir;
-    private ChunkExplorerServer server;
+    private TelemetryExplorerServer server;
     private HttpClient httpClient;
 
     @Before
@@ -70,7 +70,7 @@ public class ChunkExplorerServerTest
         assertTrue(dumpDir.mkdirs());
         Files.writeString(new File(dumpDir, "index.html").toPath(), "<html><body>Result Browser Dump</body></html>", StandardCharsets.UTF_8);
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(cacheDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(cacheDir);
 
         final TransactionData tx = new TransactionData("TCheckout");
         tx.setTime(1_000_000L);
@@ -128,14 +128,14 @@ public class ChunkExplorerServerTest
         ev.setTestUserNumber("0");
         collector.collect(ev);
 
-        try (final ChunkStorage built = collector.finish())
+        try (final TelemetryStore built = collector.finish())
         {
             built.saveToDirectory(cacheDir);
         }
-        storage = ChunkStorage.loadFromDirectory(cacheDir);
+        storage = TelemetryStore.loadFromDirectory(cacheDir);
 
         final ColumnarQueryEngine engine = new ColumnarQueryEngine(storage, resultsDir);
-        server = new ChunkExplorerServer(engine, 0);
+        server = new TelemetryExplorerServer(engine, 0);
         server.start();
 
         httpClient = HttpClient.newHttpClient();
@@ -292,7 +292,7 @@ public class ChunkExplorerServerTest
                                              .build();
         final HttpResponse<String> uiResp = httpClient.send(uiReq, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, uiResp.statusCode());
-        assertTrue(uiResp.body().contains("ChunkDB Explorer"));
+        assertTrue(uiResp.body().contains("Telemetry Explorer"));
         assertTrue(uiResp.body().contains("SLOWEST_TRANSACTIONS"));
         assertTrue(uiResp.body().contains("SLOWEST_ACTIONS"));
         assertTrue(uiResp.body().contains("FAILED_ACTIONS"));
@@ -326,7 +326,8 @@ public class ChunkExplorerServerTest
                                                  .build();
         final HttpResponse<String> guidedResp = httpClient.send(guidedReq, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, guidedResp.statusCode());
-        assertTrue(guidedResp.body().contains("Guided Result Explorer"));
+        assertTrue(guidedResp.body().contains("Telemetry Explorer"));
+        assertTrue(guidedResp.body().contains("Guided Storyboard"));
         assertTrue(guidedResp.body().contains("closedby=\"any\""));
 
         final HttpRequest guidedJsReq = HttpRequest.newBuilder()
@@ -409,9 +410,9 @@ public class ChunkExplorerServerTest
     @Test
     public void testDirectCacheMountAndColdIngestionInMain() throws Exception
     {
-        assertNotNull(ChunkExplorerMain.createCommandLineOptions());
-        final ChunkExplorerMain.LoadedDataset loaded =
-            ChunkExplorerMain.loadOrIngestDataset(cacheDir, null, null, true);
+        assertNotNull(TelemetryExplorerMain.createCommandLineOptions());
+        final TelemetryExplorerMain.LoadedDataset loaded =
+            TelemetryExplorerMain.loadOrIngestDataset(cacheDir, null, null, true);
         assertNotNull(loaded);
         assertNotNull(loaded.storage());
         assertEquals(resultsDir.getCanonicalFile(), loaded.resultsDir().getCanonicalFile());
@@ -427,25 +428,25 @@ public class ChunkExplorerServerTest
                          + "R,PlaceOrder.1,1000100,350,false,250,1200,200,https://shop.example.com/checkout,application/json,20,5,300,25,325,350,req-1,POST,,,5,10.0.0.1,101,10.0.0.1\n";
         Files.writeString(new File(userDir, "timers.csv").toPath(), csv, StandardCharsets.UTF_8);
 
-        final ChunkExplorerMain.LoadedDataset ingested =
-            ChunkExplorerMain.loadOrIngestDataset(coldResultsDir, null, null, false);
+        final TelemetryExplorerMain.LoadedDataset ingested =
+            TelemetryExplorerMain.loadOrIngestDataset(coldResultsDir, null, null, false);
         assertNotNull(ingested);
         assertNotNull(ingested.storage());
         assertEquals(3L, ingested.storage().getTotalRowCount());
         ingested.storage().close();
 
         // Warm cache mount on the same results directory
-        final ChunkExplorerMain.LoadedDataset warm =
-            ChunkExplorerMain.loadOrIngestDataset(coldResultsDir, null, null, false);
+        final TelemetryExplorerMain.LoadedDataset warm =
+            TelemetryExplorerMain.loadOrIngestDataset(coldResultsDir, null, null, false);
         assertNotNull(warm);
         assertEquals(3L, warm.storage().getTotalRowCount());
         warm.storage().close();
 
         // Test executeCli: --help, missing args, nonexistent dir, and valid ephemeral start/stop
-        assertEquals(0, ChunkExplorerMain.executeCli(new String[]{"--help"}, false));
-        assertEquals(1, ChunkExplorerMain.executeCli(new String[]{}, false));
-        assertEquals(2, ChunkExplorerMain.executeCli(new String[]{"/nonexistent/path/for/chunkdb"}, false));
-        assertEquals(0, ChunkExplorerMain.executeCli(
+        assertEquals(0, TelemetryExplorerMain.executeCli(new String[]{"--help"}, false));
+        assertEquals(1, TelemetryExplorerMain.executeCli(new String[]{}, false));
+        assertEquals(2, TelemetryExplorerMain.executeCli(new String[]{"/nonexistent/path/for/telemetrystore"}, false));
+        assertEquals(0, TelemetryExplorerMain.executeCli(
             new String[]{"--port", "0", "--preserve-all-details", "-Dcom.xceptance.xlt.reportgenerator.threads=2", cacheDir.getAbsolutePath()},
             false
         ));
@@ -454,20 +455,20 @@ public class ChunkExplorerServerTest
     @Test
     public void testApiEdgeCasesAndContentTypes() throws Exception
     {
-        assertEquals("text/html; charset=UTF-8", ChunkExplorerServer.guessContentType("index.html"));
-        assertEquals("application/xhtml+xml; charset=UTF-8", ChunkExplorerServer.guessContentType("page.xhtml"));
-        assertEquals("application/json; charset=UTF-8", ChunkExplorerServer.guessContentType("network.har"));
-        assertEquals("application/xml; charset=UTF-8", ChunkExplorerServer.guessContentType("data.xml"));
-        assertEquals("text/plain; charset=UTF-8", ChunkExplorerServer.guessContentType("notes.txt"));
-        assertEquals("text/plain; charset=UTF-8", ChunkExplorerServer.guessContentType("output.log"));
-        assertEquals("font/woff2", ChunkExplorerServer.guessContentType("inter.woff2"));
-        assertEquals("font/woff", ChunkExplorerServer.guessContentType("inter.woff"));
-        assertEquals("font/ttf", ChunkExplorerServer.guessContentType("inter.ttf"));
-        assertEquals("text/css; charset=UTF-8", ChunkExplorerServer.guessContentType("style.css"));
-        assertEquals("application/javascript; charset=UTF-8", ChunkExplorerServer.guessContentType("app.js"));
-        assertEquals("image/png", ChunkExplorerServer.guessContentType("logo.png"));
-        assertEquals("application/octet-stream", ChunkExplorerServer.guessContentType("archive.bin"));
-        assertEquals("application/octet-stream", ChunkExplorerServer.guessContentType("noext"));
+        assertEquals("text/html; charset=UTF-8", TelemetryExplorerServer.guessContentType("index.html"));
+        assertEquals("application/xhtml+xml; charset=UTF-8", TelemetryExplorerServer.guessContentType("page.xhtml"));
+        assertEquals("application/json; charset=UTF-8", TelemetryExplorerServer.guessContentType("network.har"));
+        assertEquals("application/xml; charset=UTF-8", TelemetryExplorerServer.guessContentType("data.xml"));
+        assertEquals("text/plain; charset=UTF-8", TelemetryExplorerServer.guessContentType("notes.txt"));
+        assertEquals("text/plain; charset=UTF-8", TelemetryExplorerServer.guessContentType("output.log"));
+        assertEquals("font/woff2", TelemetryExplorerServer.guessContentType("inter.woff2"));
+        assertEquals("font/woff", TelemetryExplorerServer.guessContentType("inter.woff"));
+        assertEquals("font/ttf", TelemetryExplorerServer.guessContentType("inter.ttf"));
+        assertEquals("text/css; charset=UTF-8", TelemetryExplorerServer.guessContentType("style.css"));
+        assertEquals("application/javascript; charset=UTF-8", TelemetryExplorerServer.guessContentType("app.js"));
+        assertEquals("image/png", TelemetryExplorerServer.guessContentType("logo.png"));
+        assertEquals("application/octet-stream", TelemetryExplorerServer.guessContentType("archive.bin"));
+        assertEquals("application/octet-stream", TelemetryExplorerServer.guessContentType("noext"));
 
         // Combined single-pass POST /api/v1/dashboard endpoint
         final String dashBody = """
@@ -514,7 +515,7 @@ public class ChunkExplorerServerTest
 
         // Server with null resultsDir returns 404 on /dumps/*
         final ColumnarQueryEngine noDumpsEngine = new ColumnarQueryEngine(storage, null);
-        try (final ChunkExplorerServer noDumpsServer = new ChunkExplorerServer(noDumpsEngine, "localhost", 0))
+        try (final TelemetryExplorerServer noDumpsServer = new TelemetryExplorerServer(noDumpsEngine, "localhost", 0))
         {
             noDumpsServer.start();
             assertEquals(noDumpsEngine, noDumpsServer.getQueryEngine());
@@ -531,13 +532,13 @@ public class ChunkExplorerServerTest
     public void testLoopbackCorsAllowlistAndPayloadCapC7() throws Exception
     {
         // 1. Unit assertions on loopback Origin validation
-        assertTrue(ChunkApiServlet.isLoopbackOrigin("http://127.0.0.1:8484"));
-        assertTrue(ChunkApiServlet.isLoopbackOrigin("http://localhost:3000"));
-        assertTrue(ChunkApiServlet.isLoopbackOrigin("https://[::1]:8484"));
-        assertFalse(ChunkApiServlet.isLoopbackOrigin("https://evil.example.com"));
-        assertFalse(ChunkApiServlet.isLoopbackOrigin("http://127.0.0.1.evil.example.com"));
-        assertFalse(ChunkApiServlet.isLoopbackOrigin("null"));
-        assertFalse(ChunkApiServlet.isLoopbackOrigin("file:///tmp/index.html"));
+        assertTrue(TelemetryApiServlet.isLoopbackOrigin("http://127.0.0.1:8484"));
+        assertTrue(TelemetryApiServlet.isLoopbackOrigin("http://localhost:3000"));
+        assertTrue(TelemetryApiServlet.isLoopbackOrigin("https://[::1]:8484"));
+        assertFalse(TelemetryApiServlet.isLoopbackOrigin("https://evil.example.com"));
+        assertFalse(TelemetryApiServlet.isLoopbackOrigin("http://127.0.0.1.evil.example.com"));
+        assertFalse(TelemetryApiServlet.isLoopbackOrigin("null"));
+        assertFalse(TelemetryApiServlet.isLoopbackOrigin("file:///tmp/index.html"));
 
         // 2. Live HTTP requests with Origin header over raw TCP socket (since java.net.http.HttpClient restricts Origin)
         final String allowedResp = sendRawHttp(
@@ -581,7 +582,7 @@ public class ChunkExplorerServerTest
         assertFalse(evilPostResp.contains("Access-Control-Allow-Origin"));
 
         // 3. Oversized JSON request body (> 1 MiB) must be rejected with 413 Payload Too Large
-        final byte[] oversizedJson = new byte[ChunkApiServlet.MAX_JSON_BODY_BYTES + 128];
+        final byte[] oversizedJson = new byte[TelemetryApiServlet.MAX_JSON_BODY_BYTES + 128];
         java.util.Arrays.fill(oversizedJson, (byte) ' ');
         oversizedJson[0] = '{';
         oversizedJson[oversizedJson.length - 1] = '}';

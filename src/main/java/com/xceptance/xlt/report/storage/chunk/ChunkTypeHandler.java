@@ -27,13 +27,13 @@ import com.xceptance.xlt.report.storage.query.ScanPredicate;
 
 /**
  * Extensible codec interface responsible for encoding, decoding, building, and scanning
- * columnar chunks for a specific {@link Data} record type in ChunkDB.
+ * columnar chunks for a specific {@link Data} record type in TelemetryStore.
  * <p>
  * <b>Extensibility &amp; Codec Polymorphism:</b>
  * Each record type (e.g. 'R' for HTTP Requests, 'T' for Transactions, 'A' for Actions,
  * 'W' for Double Values, 'E' for Events, 'G' for Generic fallback) implements this interface.
  * When new data types are added in future XLT versions, implementing this interface and registering
- * it in {@link ChunkTypeRegistry} seamlessly integrates them into ChunkDB compression, storage, and queries.
+ * it in {@link ChunkTypeRegistry} seamlessly integrates them into TelemetryStore compression, storage, and queries.
  */
 public interface ChunkTypeHandler
 {

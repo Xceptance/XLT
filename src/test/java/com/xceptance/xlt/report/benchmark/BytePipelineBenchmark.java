@@ -42,12 +42,12 @@ import java.util.concurrent.ForkJoinPool;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
-import com.xceptance.xlt.report.ChunkQueryEngine;
+import com.xceptance.xlt.report.TelemetryQueryEngine;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.StatisticsProcessor;
 import com.xceptance.xlt.report.providers.DummyReportGeneratorConfiguration;
-import com.xceptance.xlt.report.storage.ChunkIngestionCollector;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryIngestionCollector;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 import com.xceptance.xlt.report.storage.catalog.ChunkCatalog;
 import com.xceptance.xlt.report.storage.chunk.Chunk;
 import com.xceptance.xlt.report.storage.chunk.ChunkBuilder;
@@ -1089,16 +1089,16 @@ public class BytePipelineBenchmark
         System.out.printf("    Stage 1:  %,d records in %,.1f ms (%,.0f records/s)%n", s1Records, s1DurationNs / 1e6, s1Rate);
 
         // -------------------------------------------------------------
-        // Phase C: Stage 2 Pipeline - Phase 1 (Read + Decode + ChunkIngestionCollector)
+        // Phase C: Stage 2 Pipeline - Phase 1 (Read + Decode + TelemetryIngestionCollector)
         // -------------------------------------------------------------
-        System.out.println("  [Step 3] Stage 2 (New - Phase 1): CSV Read + Decode + ChunkIngestionCollector (Disk Spooling)...");
-        final File tmpDir = Files.createTempDirectory("xlt-chunkdb-diag-").toFile();
+        System.out.println("  [Step 3] Stage 2 (New - Phase 1): CSV Read + Decode + TelemetryIngestionCollector (Disk Spooling)...");
+        final File tmpDir = Files.createTempDirectory("xlt-telemetrystore-diag-").toFile();
         tmpDir.deleteOnExit();
 
-        final ChunkIngestionCollector collector = new ChunkIngestionCollector(tmpDir);
+        final TelemetryIngestionCollector collector = new TelemetryIngestionCollector(tmpDir);
         final long s2Phase1Start = System.nanoTime();
         final long s2Records = runMultiThreadedWorkers(files, numThreads, collector::collect);
-        final ChunkStorage storage = collector.finish();
+        final TelemetryStore storage = collector.finish();
         final long s2Phase1DurationNs = System.nanoTime() - s2Phase1Start;
         final double s2Phase1Rate = (s2Records * 1e9) / s2Phase1DurationNs;
 
@@ -1108,11 +1108,11 @@ public class BytePipelineBenchmark
                           s2Records, s2Phase1DurationNs / 1e6, s2Phase1Rate, spooledBytes / (1024.0 * 1024.0), storage.getCatalog().getChunkCount());
 
         // -------------------------------------------------------------
-        // Phase D: Stage 2 Pipeline - Phase 2 (ChunkDB Query Scan -> StatisticsProcessor)
+        // Phase D: Stage 2 Pipeline - Phase 2 (TelemetryStore Query Scan -> StatisticsProcessor)
         // -------------------------------------------------------------
-        System.out.println("  [Step 4] Stage 2 (New - Phase 2): ChunkDB Scan -> StatisticsProcessor.process()...");
+        System.out.println("  [Step 4] Stage 2 (New - Phase 2): TelemetryStore Scan -> StatisticsProcessor.process()...");
         final StatisticsProcessor stage2Processor = createProductionStatisticsProcessor(config);
-        final ChunkQueryEngine queryEngine = new ChunkQueryEngine(storage, numThreads);
+        final TelemetryQueryEngine queryEngine = new TelemetryQueryEngine(storage, numThreads);
         final long s2Phase2Start = System.nanoTime();
         final long scannedRecords = queryEngine.executeScan(ScanPredicate.ALL, stage2Processor);
         final long s2Phase2DurationNs = System.nanoTime() - s2Phase2Start;
@@ -1124,17 +1124,17 @@ public class BytePipelineBenchmark
         // Phase E: Dual-Feed Single-Pass (Stage 1 Stats + Chunk Ingestion in ONE PASS)
         // -------------------------------------------------------------
         System.out.println("  [Step 5] Dual Mode (Stats + Chunk Ingest in SINGLE PASS)...");
-        final File dualTmpDir = Files.createTempDirectory("chunkdb-dual-bench-").toFile();
+        final File dualTmpDir = Files.createTempDirectory("telemetrystore-dual-bench-").toFile();
         dualTmpDir.deleteOnExit();
         final StatisticsProcessor dualProcessor = createProductionStatisticsProcessor(config);
-        final ChunkIngestionCollector dualCollector = new ChunkIngestionCollector(dualTmpDir);
+        final TelemetryIngestionCollector dualCollector = new TelemetryIngestionCollector(dualTmpDir);
 
         final long dualStart = System.nanoTime();
         final long dualRecords = runMultiThreadedWorkers(files, numThreads, container -> {
             dualProcessor.process(container);
             dualCollector.collect(container);
         });
-        final ChunkStorage dualStorage = dualCollector.finish();
+        final TelemetryStore dualStorage = dualCollector.finish();
         final long dualDurationNs = System.nanoTime() - dualStart;
         final double dualRate = (dualRecords * 1e9) / dualDurationNs;
         final double dualMs = dualDurationNs / 1e6;
@@ -1157,7 +1157,7 @@ public class BytePipelineBenchmark
         System.out.printf("  Stage 1 (Old) Total:                   %,10.1f ms (100.0%%) | %,10.0f records/s%n", s1TotalMs, s1Rate);
         System.out.printf("  Stage 2 (New) Total (Phase 1 + 2):     %,10.1f ms (%+5.1f%%) | %,10.0f records/s%n", s2TotalMs, gapPct, (s2Records * 1e9) / s2TotalDurationNs);
         System.out.printf("    |- Phase 1 (CSV Read + Ingest Spool):%,10.1f ms (%5.1f%% of Stage 1)%n", s2Phase1DurationNs / 1e6, (s2Phase1DurationNs * 100.0) / s1DurationNs);
-        System.out.printf("    |- Phase 2 (ChunkDB Decomp + Stats): %,10.1f ms (%5.1f%% of Stage 1)%n", s2Phase2DurationNs / 1e6, (s2Phase2DurationNs * 100.0) / s1DurationNs);
+        System.out.printf("    |- Phase 2 (TelemetryStore Decomp + Stats): %,10.1f ms (%5.1f%% of Stage 1)%n", s2Phase2DurationNs / 1e6, (s2Phase2DurationNs * 100.0) / s1DurationNs);
         System.out.printf("  Dual Mode (New Single-Pass Cold Run):  %,10.1f ms (%+5.1f%%) | %,10.0f records/s%n", dualMs, dualGapPct, dualRate);
         System.out.printf("  Net Performance Gap (Stage 2 Two-Pass):%,+10.1f ms (%+5.1f%%)%n", gapMs, gapPct);
         System.out.printf("    |- Ingestion Penalty during CSV read:%,+10.1f ms (Stage 2 P1 vs Stage 1 CSV Crunch)%n", (s2Phase1DurationNs - s1DurationNs) / 1e6);
@@ -1178,7 +1178,7 @@ public class BytePipelineBenchmark
     }
 
     // -----------------------------------------------------------------------------------------------------
-    // 9. ChunkIngestionCollector & RequestChunkBuilder Micro-Breakdown
+    // 9. TelemetryIngestionCollector & RequestChunkBuilder Micro-Breakdown
     // -----------------------------------------------------------------------------------------------------
 
     private static void benchmarkChunkIngestionMicroBreakdown(final File dir) throws Exception

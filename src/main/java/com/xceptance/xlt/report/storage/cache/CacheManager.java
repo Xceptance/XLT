@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.report.storage.ChunkStorage;
+import com.xceptance.xlt.report.storage.TelemetryStore;
 
 /**
  * Coordinates transparent, disk-backed caching of preprocessed columnar chunks for the report generator.
@@ -31,7 +31,7 @@ import com.xceptance.xlt.report.storage.ChunkStorage;
  * <b>Transparent CLI Workflow &amp; Operational Contract:</b>
  * <ul>
  *   <li><b>First Run (Cold Cache):</b> Standard CSV log parsing executes across all worker threads.
- *       Concurrently, {@link com.xceptance.xlt.report.storage.ChunkIngestionCollector} packages all parsed,
+ *       Concurrently, {@link com.xceptance.xlt.report.storage.TelemetryIngestionCollector} packages all parsed,
  *       merged, and post-processed records into SIMD-compressed columnar chunks in memory. At the conclusion
  *       of Phase 1, the dataset is persisted to disk along with a cryptographic {@link CacheFingerprint}.
  *       The CLI command, exit status, and report outputs remain 100% identical and backwards-compatible.</li>
@@ -121,7 +121,7 @@ public class CacheManager
             final CacheFingerprint saved = CacheFingerprint.loadFromDirectory(cacheDir);
             if (saved == null)
             {
-                LOG.info("ChunkDB cache missing fingerprint. Purging cache at: {}", cacheDir);
+                LOG.info("TelemetryStore cache missing fingerprint. Purging cache at: {}", cacheDir);
                 purgeCache();
                 return false;
             }
@@ -130,7 +130,7 @@ public class CacheManager
             final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
             if (!current.matches(saved))
             {
-                LOG.info("ChunkDB cache is stale (inputs or rules changed). Purging cache at: {}", cacheDir);
+                LOG.info("TelemetryStore cache is stale (inputs or rules changed). Purging cache at: {}", cacheDir);
                 purgeCache();
                 return false;
             }
@@ -139,21 +139,21 @@ public class CacheManager
         }
         catch (final Throwable e)
         {
-            LOG.warn("Error verifying ChunkDB cache at {}. Purging cache.", cacheDir, e);
+            LOG.warn("Error verifying TelemetryStore cache at {}. Purging cache.", cacheDir, e);
             purgeCache();
             return false;
         }
     }
 
     /**
-     * Attempts to load {@link ChunkStorage} from disk cache after validating its fingerprint.
+     * Attempts to load {@link TelemetryStore} from disk cache after validating its fingerprint.
      * <p>
      * If loading fails due to file corruption or I/O failure, the cache directory is safely purged
      * and {@code null} is returned so the report generator falls back to standard CSV parsing.
      *
-     * @return loaded {@link ChunkStorage} instance, or {@code null} if cache is invalid or cannot be read
+     * @return loaded {@link TelemetryStore} instance, or {@code null} if cache is invalid or cannot be read
      */
-    public ChunkStorage load()
+    public TelemetryStore load()
     {
         if (!isCacheValid())
         {
@@ -164,27 +164,27 @@ public class CacheManager
     }
 
     /**
-     * Loads {@link ChunkStorage} from disk cache when the caller has already verified {@link #isCacheValid()}.
+     * Loads {@link TelemetryStore} from disk cache when the caller has already verified {@link #isCacheValid()}.
      * <p>
      * Avoids a redundant directory-tree fingerprint walk while preserving corruption recovery and safe purging.
      *
-     * @return loaded {@link ChunkStorage} instance, or {@code null} if the cache cannot be read
+     * @return loaded {@link TelemetryStore} instance, or {@code null} if the cache cannot be read
      */
-    public ChunkStorage loadValidated()
+    public TelemetryStore loadValidated()
     {
         try
         {
-            LOG.info("Loading preprocessed test data from ChunkDB cache at: {}", cacheDir);
+            LOG.info("Loading preprocessed test data from TelemetryStore cache at: {}", cacheDir);
             final long start = System.currentTimeMillis();
-            final ChunkStorage storage = ChunkStorage.loadFromDirectory(cacheDir);
+            final TelemetryStore storage = TelemetryStore.loadFromDirectory(cacheDir);
             final long duration = System.currentTimeMillis() - start;
-            LOG.info("Successfully loaded ChunkDB cache ({} records in {} chunks) in {} ms",
+            LOG.info("Successfully loaded TelemetryStore cache ({} records in {} chunks) in {} ms",
                      storage.getTotalRowCount(), storage.getCatalog().getChunkCount(), duration);
             return storage;
         }
         catch (final Throwable e)
         {
-            LOG.warn("Failed to load ChunkDB cache at {}. Purging corrupted cache.", cacheDir, e);
+            LOG.warn("Failed to load TelemetryStore cache at {}. Purging corrupted cache.", cacheDir, e);
             purgeCache();
             return null;
         }
@@ -216,7 +216,7 @@ public class CacheManager
      */
     public long[] peekTimeRangeValidated()
     {
-        final File catalogFile = new File(cacheDir, ChunkStorage.CHUNKS_FILE_NAME);
+        final File catalogFile = new File(cacheDir, TelemetryStore.CHUNKS_FILE_NAME);
         if (!catalogFile.isFile() || catalogFile.length() < 16)
         {
             return null;
@@ -254,14 +254,14 @@ public class CacheManager
     }
 
     /**
-     * Persists {@link ChunkStorage} and saves the calculated {@link CacheFingerprint} to the cache directory.
+     * Persists {@link TelemetryStore} and saves the calculated {@link CacheFingerprint} to the cache directory.
      * <p>
      * If writing fails at any point, the cache directory is purged completely to avoid leaving half-written data.
      *
      * @param storage
-     *            the {@link ChunkStorage} instance to persist
+     *            the {@link TelemetryStore} instance to persist
      */
-    public void save(final ChunkStorage storage)
+    public void save(final TelemetryStore storage)
     {
         if (!isCacheEnabled() || storage == null)
         {
@@ -270,7 +270,7 @@ public class CacheManager
 
         try
         {
-            LOG.info("Saving preprocessed test data to ChunkDB cache at: {}", cacheDir);
+            LOG.info("Saving preprocessed test data to TelemetryStore cache at: {}", cacheDir);
             final long start = System.currentTimeMillis();
 
             if (!cacheDir.exists())
@@ -286,11 +286,11 @@ public class CacheManager
             fingerprint.saveToDirectory(cacheDir);
 
             final long duration = System.currentTimeMillis() - start;
-            LOG.info("Successfully saved ChunkDB cache in {} ms", duration);
+            LOG.info("Successfully saved TelemetryStore cache in {} ms", duration);
         }
         catch (final Throwable e)
         {
-            LOG.warn("Failed to save ChunkDB cache at {}. Dropping cache directory.", cacheDir, e);
+            LOG.warn("Failed to save TelemetryStore cache at {}. Dropping cache directory.", cacheDir, e);
             purgeCache();
         }
     }
