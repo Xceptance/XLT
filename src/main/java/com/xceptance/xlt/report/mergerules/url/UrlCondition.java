@@ -17,7 +17,6 @@ package com.xceptance.xlt.report.mergerules.url;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.xceptance.common.util.ByteSlice;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
@@ -30,8 +29,6 @@ import com.xceptance.xlt.report.mergerules.Condition;
  */
 public class UrlCondition extends Condition
 {
-    private final ByteSlice urlSlice = new ByteSlice();
-
     /**
      * Constructor.
      *
@@ -65,7 +62,7 @@ public class UrlCondition extends Condition
     @Override
     protected CharSequence getText(final RequestData requestData)
     {
-        return requestData.getUrlCharSequence(this.urlSlice);
+        return requestData.getUrl();
     }
     
     /**

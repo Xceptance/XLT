@@ -955,7 +955,7 @@ public class MergeRule_Url_Test extends MergeRuleTestBase
                 assertEquals(2, textAndRegexRule.process(req2));
                 assertEquals("Search:café", req2.getName());
 
-                // 3. Pure ASCII URL bytes stay unmaterialized on the zero-allocation ByteSlice fast path
+                // 3. Pure ASCII URL bytes in UrlCondition materialize the shared String once
                 final byte[] asciiCsv = "prefix,https://example.org/shop/books?q=coffee,suffix"
                     .getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 final int asciiLen = "https://example.org/shop/books?q=coffee".length();
@@ -969,7 +969,7 @@ public class MergeRule_Url_Test extends MergeRuleTestBase
                 req3.setUrl(asciiCsv, urlStart, asciiLen);
                 assertEquals(3, asciiRule.process(req3));
                 assertEquals("Category:books", req3.getName());
-                org.junit.Assert.assertTrue(req3.hasUrlBytes());
+                assertEquals("https://example.org/shop/books?q=coffee", req3.getUrl());
             }
         }
         finally

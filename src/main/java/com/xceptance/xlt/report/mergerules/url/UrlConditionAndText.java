@@ -92,7 +92,7 @@ public class UrlConditionAndText extends Condition
     @Override
     protected CharSequence getText(final RequestData requestData)
     {
-        return requestData.getUrlCharSequence(this.querySlice);
+        return requestData.getUrl();
     }
     
     /**
