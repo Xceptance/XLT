@@ -18,7 +18,6 @@ CLASSPATH="$XLT_HOME"/target/classes:"$XLT_HOME"/lib/*
 # setup other Java options (place caller JAVA_OPTIONS after defaults so user overrides win)
 USER_JAVA_OPTIONS="${JAVA_OPTIONS:-}"
 JAVA_OPTIONS="-Xmx4g"
-JAVA_OPTIONS="$JAVA_OPTIONS -XX:+UseStringDeduplication"
 JAVA_OPTIONS="$JAVA_OPTIONS -Dcom.xceptance.xlt.home=\"$XLT_HOME\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Dlog4j2.configurationFile=\"$XLT_CONFIG_DIR/reportgenerator.properties\""
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true -Duser.timezone=UTC"
