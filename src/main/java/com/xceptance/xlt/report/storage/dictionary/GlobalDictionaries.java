@@ -1098,6 +1098,40 @@ public class GlobalDictionaries
             return;
         }
 
+        final String urlStr = url.toString();
+
+        // Lock-free pre-check: timers with < 10 distinct URLs never reach MAX_SAMPLE_URLS_PER_TIMER,
+        // so hasSufficientSamples(timerId) stays false for the entire run. Because bucket[0..count-1]
+        // slots are write-once before counts[timerId] is release-published, we can safely reject
+        // already-recorded URLs without acquiring sampleUrlLock.
+        final byte[] fastCounts = this.sampleUrlCounts;
+        if (timerId < fastCounts.length)
+        {
+            final int fastCount = (byte) BYTE_ARRAY_HANDLE.getAcquire(fastCounts, timerId);
+            if (fastCount >= MAX_SAMPLE_URLS_PER_TIMER)
+            {
+                return;
+            }
+            if (fastCount > 0)
+            {
+                final String[][] fastUrls = this.rawSampleUrls;
+                if (fastUrls != null && timerId < fastUrls.length)
+                {
+                    final String[] fastBucket = fastUrls[timerId];
+                    if (fastBucket != null)
+                    {
+                        for (int i = 0; i < fastCount; i++)
+                        {
+                            if (urlStr.equals(fastBucket[i]))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         synchronized (sampleUrlLock)
         {
             byte[] counts = this.sampleUrlCounts;
@@ -1114,7 +1148,7 @@ public class GlobalDictionaries
 
             if (rawSampleUrls == null)
             {
-                rawSampleUrls = new String[counts.length][];
+                final String[][] rebuilt = new String[counts.length][];
                 for (int id = 0; id < cachedSampleUrls.length; id++)
                 {
                     final CachedSampleUrl[] existingCached = cachedSampleUrls[id];
@@ -1125,9 +1159,10 @@ public class GlobalDictionaries
                         {
                             bucket[j] = existingCached[j].url();
                         }
-                        rawSampleUrls[id] = bucket;
+                        rebuilt[id] = bucket;
                     }
                 }
+                rawSampleUrls = rebuilt;
             }
             else if (timerId >= rawSampleUrls.length)
             {
@@ -1141,7 +1176,6 @@ public class GlobalDictionaries
                 rawSampleUrls[timerId] = bucket;
             }
 
-            final String urlStr = url.toString();
             for (int i = 0; i < count; i++)
             {
                 if (bucket[i].equals(urlStr))
