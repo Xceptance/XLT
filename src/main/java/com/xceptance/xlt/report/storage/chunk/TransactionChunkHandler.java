@@ -498,6 +498,7 @@ public class TransactionChunkHandler implements ChunkTypeHandler
         // Columnar Primitive Arrays (Pre-allocated to DEFAULT_CHUNK_CAPACITY)
         // ---------------------------------------------------------------------
         private final long[] rawTimes = new long[DEFAULT_CHUNK_CAPACITY];
+        private final int[] timeOffsets = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] runTimes = new int[DEFAULT_CHUNK_CAPACITY];
@@ -697,20 +698,20 @@ public class TransactionChunkHandler implements ChunkTypeHandler
             }
 
             // Convert absolute epoch timestamps into delta offsets relative to minTime
-            final int[] timeOffsets = new int[size];
             for (int i = 0; i < size; i++)
             {
                 timeOffsets[i] = (int) (rawTimes[i] - minTime);
             }
 
             // If chunk was full, borrow arrays directly; otherwise trim to exact row count
+            final int[] finalTimeOffsets = size == DEFAULT_CHUNK_CAPACITY ? timeOffsets : Arrays.copyOf(timeOffsets, size);
             final int[] finalTimerIds = size == DEFAULT_CHUNK_CAPACITY ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == DEFAULT_CHUNK_CAPACITY ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
             final int[] finalRunTimes = size == DEFAULT_CHUNK_CAPACITY ? runTimes : Arrays.copyOf(runTimes, size);
             final int[] finalUserNumbers = size == DEFAULT_CHUNK_CAPACITY ? userNumbers : Arrays.copyOf(userNumbers, size);
 
             // Compress columns via FastPFOR
-            final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
+            final int[] compTimeOffsets = FastIntegerCodec.compress(finalTimeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
             final int[] compRunTimes = FastIntegerCodec.compress(finalRunTimes);

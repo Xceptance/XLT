@@ -21,6 +21,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,11 +65,119 @@ public class RequestChunkHandler implements ChunkTypeHandler
     private static volatile int slowestForensicMaxRuntime = Integer.MAX_VALUE;
 
     /**
-     * Thread-local {@link Deflater} instance reused across Cold Forensic Tail Block compressions to avoid
-     * native zlib {@code z_stream} JNI allocation and deallocation overhead.
+     * Thread-local {@link Deflater} and small fixed-size I/O staging buffers reused across Cold Forensic Tail
+     * Block compressions. Streaming UTF-8 strings directly through these buffers avoids native zlib {@code z_stream}
+     * JNI churn as well as multi-megabyte G1 Humongous {@code byte[]} allocations on error-heavy chunks.
      */
-    private static final ThreadLocal<Deflater> FORENSIC_DEFLATER =
-        ThreadLocal.withInitial(() -> new Deflater(Deflater.BEST_SPEED));
+    private static final class ForensicCompressionScratch
+    {
+        final Deflater deflater = new Deflater(Deflater.BEST_SPEED);
+        final byte[] inBuf = new byte[8192];
+        final byte[] outBuf = new byte[4096];
+    }
+
+    private static final ThreadLocal<ForensicCompressionScratch> FORENSIC_SCRATCH =
+        ThreadLocal.withInitial(ForensicCompressionScratch::new);
+
+    /**
+     * Streaming byte-counting {@link OutputStream} that batches serialized forensic tuples into an 8 KB thread-local
+     * staging buffer and feeds {@link Deflater} incrementally into the compressed target buffer without materializing
+     * the full uncompressed payload on heap.
+     */
+    private static final class ForensicDeflaterOutputStream extends OutputStream
+    {
+        private final ByteArrayOutputStream sink;
+        private final Deflater deflater;
+        private final byte[] inBuf;
+        private final byte[] outBuf;
+        private int inPos;
+        private long uncompressedBytes;
+
+        ForensicDeflaterOutputStream(final ByteArrayOutputStream sink, final ForensicCompressionScratch scratch)
+        {
+            this.sink = sink;
+            this.deflater = scratch.deflater;
+            this.inBuf = scratch.inBuf;
+            this.outBuf = scratch.outBuf;
+        }
+
+        @Override
+        public void write(final int b)
+        {
+            inBuf[inPos++] = (byte) b;
+            uncompressedBytes++;
+            if (inPos == inBuf.length)
+            {
+                flushInputBuffer();
+            }
+        }
+
+        @Override
+        public void write(final byte[] b, final int off, final int len)
+        {
+            if (len <= 0)
+            {
+                return;
+            }
+            uncompressedBytes += len;
+            if (len >= inBuf.length - inPos)
+            {
+                if (inPos > 0)
+                {
+                    flushInputBuffer();
+                }
+                if (len >= inBuf.length)
+                {
+                    deflateSlice(b, off, len);
+                    return;
+                }
+            }
+            System.arraycopy(b, off, inBuf, inPos, len);
+            inPos += len;
+        }
+
+        private void flushInputBuffer()
+        {
+            if (inPos > 0)
+            {
+                deflateSlice(inBuf, 0, inPos);
+                inPos = 0;
+            }
+        }
+
+        private void deflateSlice(final byte[] b, final int off, final int len)
+        {
+            deflater.setInput(b, off, len);
+            while (!deflater.needsInput())
+            {
+                final int n = deflater.deflate(outBuf);
+                if (n > 0)
+                {
+                    sink.write(outBuf, 0, n);
+                }
+            }
+        }
+
+        @Override
+        public void close()
+        {
+            flushInputBuffer();
+            deflater.finish();
+            while (!deflater.finished())
+            {
+                final int n = deflater.deflate(outBuf);
+                if (n > 0)
+                {
+                    sink.write(outBuf, 0, n);
+                }
+            }
+        }
+
+        long getUncompressedBytes()
+        {
+            return uncompressedBytes;
+        }
+    }
 
     /** Process-wide default request details mode ("sparse" or "full"). */
     private static volatile String defaultRequestDetailsMode = "sparse";
@@ -1325,6 +1434,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
         // Columnar Primitive Arrays (Pre-allocated to DEFAULT_CHUNK_CAPACITY)
         // ---------------------------------------------------------------------
         private final long[] rawTimes = new long[DEFAULT_CHUNK_CAPACITY];
+        private final int[] timeOffsets = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] runTimes = new int[DEFAULT_CHUNK_CAPACITY];
@@ -1957,13 +2067,13 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
 
             // Convert absolute epoch timestamps into delta offsets relative to minTime
-            final int[] timeOffsets = new int[size];
             for (int i = 0; i < size; i++)
             {
                 timeOffsets[i] = (int) (rawTimes[i] - minTime);
             }
 
             // If chunk was full, borrow arrays directly; otherwise trim to exact row count
+            final int[] finalTimeOffsets = size == DEFAULT_CHUNK_CAPACITY ? timeOffsets : Arrays.copyOf(timeOffsets, size);
             final int[] finalTimerIds = size == DEFAULT_CHUNK_CAPACITY ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == DEFAULT_CHUNK_CAPACITY ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
             final int[] finalRunTimes = size == DEFAULT_CHUNK_CAPACITY ? runTimes : Arrays.copyOf(runTimes, size);
@@ -1988,7 +2098,7 @@ public class RequestChunkHandler implements ChunkTypeHandler
             final int[] finalUrlHashes = size == DEFAULT_CHUNK_CAPACITY ? urlHashes : Arrays.copyOf(urlHashes, size);
 
             // Compress columnar integer arrays using FastPFOR128
-            final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
+            final int[] compTimeOffsets = FastIntegerCodec.compress(finalTimeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
             final int[] compRunTimes = FastIntegerCodec.compress(finalRunTimes);
@@ -2032,51 +2142,39 @@ public class RequestChunkHandler implements ChunkTypeHandler
             }
             else
             {
-                final ByteArrayOutputStream rawBaos = new ByteArrayOutputStream(Math.max(1024, forensicMap.size() * 96));
-                try (final DataOutputStream dos = new DataOutputStream(rawBaos))
+                // Stream UTF-8 forensic tuples directly through the thread-local Deflater (BEST_SPEED) into the
+                // compressed output stream. URLs and form payloads share high prefix/substring redundancy within a
+                // chunk (~5-12x compression), and streaming avoids allocating multi-megabyte uncompressed G1 Humongous
+                // byte[] buffers while reusing the native zlib z_stream across chunks.
+                final ForensicCompressionScratch scratch = FORENSIC_SCRATCH.get();
+                scratch.deflater.reset();
+                try
                 {
-                    for (final int rIdx : forensicRows)
+                    final ByteArrayOutputStream compBaos =
+                        new ByteArrayOutputStream(Math.min(65_536, Math.max(256, forensicMap.size() * 24)));
+                    final ForensicDeflaterOutputStream deflaterOut = new ForensicDeflaterOutputStream(compBaos, scratch);
+                    try (final DataOutputStream dos = new DataOutputStream(deflaterOut))
                     {
-                        final RequestChunk.ForensicDetails fd = forensicMap.get(rIdx);
-                        StorageIoUtils.writeUtfString(dos, fd != null ? fd.url() : null);
-                        StorageIoUtils.writeUtfString(dos, fd != null ? fd.requestId() : null);
-                        StorageIoUtils.writeUtfString(dos, fd != null ? fd.responseId() : null);
-                        StorageIoUtils.writeUtfString(dos, fd != null ? fd.formData() : null);
-                        StorageIoUtils.writeUtfString(dos, fd != null ? fd.rawName() : null);
+                        for (final int rIdx : forensicRows)
+                        {
+                            final RequestChunk.ForensicDetails fd = forensicMap.get(rIdx);
+                            StorageIoUtils.writeUtfString(dos, fd != null ? fd.url() : null);
+                            StorageIoUtils.writeUtfString(dos, fd != null ? fd.requestId() : null);
+                            StorageIoUtils.writeUtfString(dos, fd != null ? fd.responseId() : null);
+                            StorageIoUtils.writeUtfString(dos, fd != null ? fd.formData() : null);
+                            StorageIoUtils.writeUtfString(dos, fd != null ? fd.rawName() : null);
+                        }
                     }
+                    uncompressedForensicLength = Math.toIntExact(deflaterOut.getUncompressedBytes());
+                    compressedForensicTail = compBaos.toByteArray();
                 }
                 catch (final IOException e)
                 {
                     throw new RuntimeException("Failed to serialize Cold Forensic Tail Block", e);
                 }
-
-                final byte[] rawBytes = rawBaos.toByteArray();
-                uncompressedForensicLength = rawBytes.length;
-
-                // Compress the UTF-8 forensic tuples with a thread-local Deflater (BEST_SPEED): URLs and form
-                // payloads share high prefix/substring redundancy within a chunk, achieving ~5-8x compression
-                // while reusing the native zlib z_stream across chunks without JNI malloc/free churn.
-                final Deflater deflater = FORENSIC_DEFLATER.get();
-                deflater.reset();
-                try
-                {
-                    deflater.setInput(rawBytes);
-                    deflater.finish();
-                    final ByteArrayOutputStream compBaos = new ByteArrayOutputStream(Math.max(256, rawBytes.length / 2));
-                    final byte[] buf = new byte[4096];
-                    while (!deflater.finished())
-                    {
-                        final int n = deflater.deflate(buf);
-                        if (n > 0)
-                        {
-                            compBaos.write(buf, 0, n);
-                        }
-                    }
-                    compressedForensicTail = compBaos.toByteArray();
-                }
                 finally
                 {
-                    deflater.reset();
+                    scratch.deflater.reset();
                 }
             }
 

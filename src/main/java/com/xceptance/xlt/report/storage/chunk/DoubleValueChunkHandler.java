@@ -450,6 +450,7 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
         private long maxTime = Long.MIN_VALUE;
 
         private final long[] rawTimes = new long[DEFAULT_CHUNK_CAPACITY];
+        private final int[] timeOffsets = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] timerIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] agentTestCaseIdArr = new int[DEFAULT_CHUNK_CAPACITY];
         private final int[] userNumbers = new int[DEFAULT_CHUNK_CAPACITY];
@@ -642,18 +643,18 @@ public class DoubleValueChunkHandler implements ChunkTypeHandler
                 maxTime = 0;
             }
 
-            final int[] timeOffsets = new int[size];
             for (int i = 0; i < size; i++)
             {
                 timeOffsets[i] = (int) (rawTimes[i] - minTime);
             }
 
+            final int[] finalTimeOffsets = size == timeOffsets.length ? timeOffsets : Arrays.copyOf(timeOffsets, size);
             final int[] finalTimerIds = size == timerIdArr.length ? timerIdArr : Arrays.copyOf(timerIdArr, size);
             final int[] finalAgentIds = size == agentTestCaseIdArr.length ? agentTestCaseIdArr : Arrays.copyOf(agentTestCaseIdArr, size);
             final int[] finalUserNumbers = size == userNumbers.length ? userNumbers : Arrays.copyOf(userNumbers, size);
             final double[] finalValues = Arrays.copyOf(values, size);
 
-            final int[] compTimeOffsets = FastIntegerCodec.compress(timeOffsets);
+            final int[] compTimeOffsets = FastIntegerCodec.compress(finalTimeOffsets);
             final int[] compTimerNameIds = FastIntegerCodec.compress(finalTimerIds);
             final int[] compAgentTestCaseIds = FastIntegerCodec.compress(finalAgentIds);
             final int[] compUserNumbers = FastIntegerCodec.compress(finalUserNumbers);

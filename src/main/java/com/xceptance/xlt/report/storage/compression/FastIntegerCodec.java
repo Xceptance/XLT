@@ -21,6 +21,7 @@ import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntCompressor;
 import me.lemire.integercompression.IntWrapper;
 import me.lemire.integercompression.SkippableComposition;
+import me.lemire.integercompression.UncompressibleInputException;
 import me.lemire.integercompression.VariableByte;
 import me.lemire.integercompression.differential.IntegratedBinaryPacking;
 import me.lemire.integercompression.differential.IntegratedIntCompressor;
@@ -73,20 +74,37 @@ public final class FastIntegerCodec
     public static final int CONSTANT_MARKER = Integer.MIN_VALUE;
 
     /**
-     * Thread-local headless composition codec used for zero-allocation decompression into caller-supplied
-     * scratch buffers via {@link #decompressTo(int[], int[])}.
+     * Default scratch buffer capacity for 64,000-row columnar chunks ({@code len + len / 100 + 1024}),
+     * matching {@link IntCompressor#compress(int[])}'s worst-case output headroom without reallocating a
+     * 262 KB {@code int[]} on every column seal.
      */
-    private static final ThreadLocal<SkippableComposition> GENERAL_CODEC = ThreadLocal.withInitial(() ->
-        new SkippableComposition(new FastPFOR128(), new VariableByte())
-    );
+    private static final int DEFAULT_SCRATCH_CAPACITY = 64_000 + (64_000 / 100) + 1024;
 
     /**
-     * Thread-local compressor for general integer arrays (response times, bytes sent, response codes, dictionary IDs).
-     * Composes FastPFOR128 for 128-element blocks with VariableByte for tail elements.
+     * Thread-local FastPFOR128 + VariableByte codec state holding reusable {@link IntWrapper} cursors and
+     * output scratch array to eliminate per-column scratch buffer and cursor allocations.
      */
-    private static final ThreadLocal<IntCompressor> GENERAL_COMPRESSOR = ThreadLocal.withInitial(() ->
-        new IntCompressor(GENERAL_CODEC.get())
-    );
+    private static final class GeneralCodecState
+    {
+        final SkippableComposition codec = new SkippableComposition(new FastPFOR128(), new VariableByte());
+        final IntWrapper inpos = new IntWrapper();
+        final IntWrapper outpos = new IntWrapper();
+        int[] scratch = new int[DEFAULT_SCRATCH_CAPACITY];
+
+        int[] ensureCapacity(final int required)
+        {
+            if (scratch.length < required)
+            {
+                scratch = new int[required];
+            }
+            return scratch;
+        }
+    }
+
+    /**
+     * Thread-local codec and scratch state for general integer column compression and decompression.
+     */
+    private static final ThreadLocal<GeneralCodecState> GENERAL_STATE = ThreadLocal.withInitial(GeneralCodecState::new);
 
     /**
      * Thread-local compressor for monotonically increasing integer sequences (e.g., timestamp offsets).
@@ -141,8 +159,26 @@ public final class FastIntegerCodec
             }
         }
 
-        // FastPFOR + VariableByte compression using thread-local recycler
-        return GENERAL_COMPRESSOR.get().compress(data);
+        // FastPFOR128 + VariableByte compression into thread-local scratch buffer.
+        // Both BitPacking.fastpack* and VariableByte.headlessCompress strictly overwrite output words
+        // in [1, outpos) without reading prior values, so zeroing the reusable scratch buffer is unnecessary.
+        final GeneralCodecState state = GENERAL_STATE.get();
+        final int[] scratch = state.ensureCapacity(len + (len / 100) + 1024);
+        scratch[0] = len;
+        final IntWrapper inpos = state.inpos;
+        final IntWrapper outpos = state.outpos;
+        inpos.set(0);
+        outpos.set(1);
+        try
+        {
+            state.codec.headlessCompress(data, inpos, len, scratch, outpos);
+        }
+        catch (final IndexOutOfBoundsException e)
+        {
+            throw new UncompressibleInputException(
+                "Your input is too poorly compressible with the current codec : " + state.codec);
+        }
+        return Arrays.copyOf(scratch, outpos.intValue());
     }
 
     /**
@@ -213,8 +249,16 @@ public final class FastIntegerCodec
             return out;
         }
 
-        // Unpack integer blocks into original sequence
-        return GENERAL_COMPRESSOR.get().uncompress(compressed);
+        // Unpack integer blocks into exact-length output sequence using reusable cursors
+        final int uncompressedLength = compressed[0];
+        final int[] out = new int[uncompressedLength];
+        final GeneralCodecState state = GENERAL_STATE.get();
+        final IntWrapper inpos = state.inpos;
+        final IntWrapper outpos = state.outpos;
+        inpos.set(1);
+        outpos.set(0);
+        state.codec.headlessUncompress(compressed, inpos, compressed.length - 1, out, outpos, uncompressedLength);
+        return out;
     }
 
     /**
@@ -246,17 +290,19 @@ public final class FastIntegerCodec
         }
 
         final int uncompressedLength = compressed[0];
-        if (reuseBuffer == null || reuseBuffer.length < uncompressedLength)
-        {
-            return GENERAL_COMPRESSOR.get().uncompress(compressed);
-        }
+        final int[] target = (reuseBuffer != null && reuseBuffer.length >= uncompressedLength)
+            ? reuseBuffer
+            : new int[uncompressedLength];
 
         // FastPFOR128's BitPacking.fastunpack0 and VariableByte.headlessUncompress overwrite all
         // [0, uncompressedLength) output slots directly, so pre-zeroing reuseBuffer is unnecessary.
-        final IntWrapper inpos = new IntWrapper(1);
-        final IntWrapper outpos = new IntWrapper(0);
-        GENERAL_CODEC.get().headlessUncompress(compressed, inpos, compressed.length - 1, reuseBuffer, outpos, uncompressedLength);
-        return reuseBuffer;
+        final GeneralCodecState state = GENERAL_STATE.get();
+        final IntWrapper inpos = state.inpos;
+        final IntWrapper outpos = state.outpos;
+        inpos.set(1);
+        outpos.set(0);
+        state.codec.headlessUncompress(compressed, inpos, compressed.length - 1, target, outpos, uncompressedLength);
+        return target;
     }
 
     /**
