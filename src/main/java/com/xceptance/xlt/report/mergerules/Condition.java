@@ -227,6 +227,47 @@ public abstract class Condition
     }
 
     /**
+     * Appends the replacement text for the specified capturing group (or the full input when
+     * {@code capturingGroupIndex == -1}) directly into {@code target} without allocating an intermediate
+     * substring on {@link FastRegex.MatchSnapshot} hits.
+     */
+    protected void appendReplacementText(final StringBuilder target, final RequestData requestData, final int capturingGroupIndex)
+    {
+        if (capturingGroupIndex == -1)
+        {
+            target.append(getReplacementText(requestData, -1));
+            return;
+        }
+        try
+        {
+            final MatchResult state = this.getLastFilterState();
+            if (state instanceof FastRegex.MatchSnapshot snap)
+            {
+                final int s = snap.start(capturingGroupIndex);
+                final int e = snap.end(capturingGroupIndex);
+                final CharSequence in = snap.input();
+                if (s >= 0 && e >= s && in != null)
+                {
+                    target.append(in, s, e);
+                }
+                else
+                {
+                    target.append((CharSequence) null);
+                }
+                return;
+            }
+            target.append(getReplacementText(requestData, capturingGroupIndex));
+        }
+        catch (final IndexOutOfBoundsException ioobe)
+        {
+            final String format = "No matching group %d for input string '%s' and pattern '%s'";
+            ThrowableUtils.setMessage(ioobe, String.format(format, capturingGroupIndex, getText(requestData), getPattern()));
+
+            throw ioobe;
+        }
+    }
+
+    /**
      * Returns the right text for the the replacement of a certain group or 
      * if no group given, we return the entire text
      */

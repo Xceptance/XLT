@@ -583,21 +583,26 @@ public class MergeRule
             }
             else
             {
-                // rename the request
+                // Assemble the merged request name forward (newNamePlaceholders is stored in reverse order)
+                // so literal segments and captured slices append directly without substring allocations or char shifts.
                 final StringBuilder result = this.nameBuilder;
                 result.setLength(0);
-                result.append(newName);
+                final String template = this.newName;
+                int templatePos = 0;
 
-                // search as long as there are placeholders in the name
-                for (final PlaceholderPosition placeholder : newNamePlaceholders)
+                for (int i = newNamePlaceholders.length - 1; i >= 0; i--)
                 {
-                    final Condition requestFilter = placeholder.condition;
-
-                    // get replacement
-                    final CharSequence replacement = requestFilter.getReplacementText(requestData, placeholder.capturingGroupIndex);
-
-                    // replace the placeholder with the real values
-                    result.insert(placeholder.start, replacement);
+                    final PlaceholderPosition placeholder = newNamePlaceholders[i];
+                    if (placeholder.start > templatePos)
+                    {
+                        result.append(template, templatePos, placeholder.start);
+                        templatePos = placeholder.start;
+                    }
+                    placeholder.condition.appendReplacementText(result, requestData, placeholder.capturingGroupIndex);
+                }
+                if (templatePos < template.length())
+                {
+                    result.append(template, templatePos, template.length());
                 }
 
                 // set the final name
