@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-page-title="Custom Values">XLT Report - Custom Values</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/chart-lightbox.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+  <script src="js/echarts-6.0.0.min.js"></script>
+  <script src="js/dynamic-chart.js"></script>
+  <script src="js/custom-values-data.js"></script>
+  <script src="js/workbench.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
+          <img class="brand-logo" src="images/xlt-logo.svg" alt="XLT Logo" />
+          <div class="brand-titles">
+            <h1>Performance Test Report <span class="badge-tag" id="meta-project-badge" hidden></span> <span class="badge-tag badge-accent" id="meta-test-badge" hidden></span></h1>
+            <p id="meta-subtitle">Xceptance LoadTest</p>
+          </div>
+        </a>
+      </div>
+
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="index.html" class="nav-btn">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a href="transactions.html" class="nav-btn">Transactions</a>
+          </li>
+          <li class="nav-item">
+            <a href="actions.html" class="nav-btn">Actions</a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="requests.html" class="nav-btn">Requests</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-requests" aria-label="Requests sub-menu">▾</button>
+            </div>
+            <ul id="sub-requests" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="requests.html">All Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+              <li><a class="nav-sublink" href="slowest-requests.html">Slowest Requests <span class="badge-tag cell-warn" data-nav-count="slowestRequests" hidden></span></a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="network.html" class="nav-btn">Network</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-network" aria-label="Network sub-menu">▾</button>
+            </div>
+            <ul id="sub-network" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="network.html#sec-network">Network Overview</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-hosts">Hosts <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-ips">IP Addresses <span class="badge-tag" data-nav-count="ips" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-methods">HTTP Methods</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-status">HTTP Status Codes</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-types">Content Types</a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-errors" aria-label="Errors sub-menu">▾</button>
+            </div>
+            <ul id="sub-errors" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="errors.html#sec-req-errors">Request Errors <span class="badge-tag" data-nav-count="requestErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-act-errors">Action Errors <span class="badge-tag" data-nav-count="actionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-tx-errors">Transaction Errors <span class="badge-tag" data-nav-count="transactionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-incidents">Incident Forensics &amp; Traces</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="agents.html" class="nav-btn">Agents <span class="badge-tag" id="nav-agents-pill" hidden></span></a>
+          </li>
+          <li class="nav-item" id="nav-scorecard-item" hidden>
+            <a href="scorecard.html" class="nav-btn">Scorecard <span class="nav-pill-count" id="nav-scorecard-pill"></span></a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn is-active" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li id="nav-ai-data-item"><a class="nav-sublink" href="ai-data.md" target="_blank" rel="noopener">AI Data (Markdown) ↗</a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html" aria-current="page">Custom Data &amp; Logs <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+              <li><a class="nav-sublink" href="external.html">External Data <span class="badge-tag" data-nav-count="externalCharts" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
+          <span class="theme-icon">🌓</span> Theme
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- KPI Context -->
+    <section class="kpi-grid-4" id="cv-kpi-grid"></section>
+
+    <!-- Custom Data Logs Download Section (Shown when custom_data_logs/ artifacts exist) -->
+    <section class="card" id="cv-logs-section" style="margin-bottom: 12px;" hidden>
+      <div class="card-header">
+        <div>
+          <div class="card-title">📦 Custom Data Logs &amp; Artifacts</div>
+          <p class="card-subtitle">Downloadable diagnostic data files and execution logs generated by test scenarios</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-idx">#</th>
+              <th class="col-text">Archive / File Name</th>
+              <th class="col-num">File Size</th>
+              <th class="col-text">Download Action</th>
+            </tr>
+          </thead>
+          <tbody id="cv-logs-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="cv-empty-section" hidden>
+      <section class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📋 Custom Values Directory</div>
+            <p class="card-subtitle">Sampled scalar measurements recorded via the XLT Session API</p>
+          </div>
+        </div>
+        <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
+          <div style="font-size:18px;margin-bottom:6px;">📈</div>
+          <strong>No custom value series recorded in this test run.</strong>
+        </div>
+      </section>
+    </div>
+
+    <div class="workbench-scope" id="cv-workbench-scope">
+    <!-- Top Sticky Chart Workbench -->
+    <section class="chart-workbench" id="workbench-section">
+      <header class="workbench-header">
+        <div class="workbench-title-area">
+          <span class="wb-badge" id="wb-badge" hidden>VALUE</span>
+          <span class="workbench-name" id="wb-name">Custom Values</span>
+        </div>
+
+        <div class="workbench-pager">
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-prev" aria-label="Previous custom value (Left Arrow)">◀ Prev</button>
+          <span class="pager-badge" id="wb-counter">Value 0 of 0</span>
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-next" aria-label="Next custom value (Right Arrow)">Next ▶</button>
+        </div>
+
+        <div class="workbench-right-col">
+          <div class="wb-kpis" id="wb-kpis"></div>
+          <div class="wb-controls">
+            <button type="button" class="btn-chip" id="wb-link-btn" title="Copy shareable link with current item &amp; chart tab">🔗 Link</button>
+            <button type="button" class="btn-chip" id="wb-pin-btn" title="Toggle sticky top pinning">📌 Pinned</button>
+            <button type="button" class="btn-chip" id="wb-collapse-btn" title="Collapse chart body into compact 48px sticky strip">▲ Hide Chart</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="workbench-body" id="wb-body">
+        <div class="workbench-tabs-bar">
+          <div class="wb-tabs" id="wb-tabs"></div>
+          <div class="wb-tabs-hint">💡 Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+        </div>
+        <div class="workbench-stage chart-canvas-light" id="wb-stage"></div>
+        <footer class="workbench-footnote" id="wb-footnote"></footer>
+      </div>
+    </section>
+
+    <!-- Directory Section -->
+    <section class="card" id="directory-section">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📋 Custom Values Directory</span>
+          <span class="badge-tag" id="dir-visible-count">0 shown</span>
+        </div>
+
+        <div class="view-mode-bar">
+          <div class="btn-group">
+            <button type="button" class="btn-chip active" id="btn-view-workbench">📌 Top Workbench</button>
+            <button type="button" class="btn-chip" id="btn-view-stream">📊 Continuous Stream</button>
+          </div>
+          <button type="button" class="btn-chip" data-copy-table="dir-table">📋 Copy as Markdown</button>
+        </div>
+      </div>
+
+      <!-- Directory Toolbar -->
+      <div class="directory-toolbar">
+        <div class="table-search-wrap">
+          <input type="search" class="input-search" id="dir-filter-input" placeholder="Filter custom values..." aria-label="Filter custom values" />
+        </div>
+        <div class="category-chips" id="dir-category-chips"></div>
+      </div>
+
+      <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
+
+      <!-- High-Density Directory Table -->
+      <div class="table-scroll">
+        <table class="data-table" id="dir-table">
+          <thead></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+    </div>
+
+    <!-- Continuous Chart Stream (Always visible below table for quick visual scanning) -->
+    <section id="stream-section" class="stream-section"></section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script>
+    /**
+     * Custom Values & Logs view controller.
+     * Consumes `window.XLT_CUSTOM_VALUES`: populates downloaded `custom_data_logs/` attachments
+     * when present, renders summary KPI cards, and initializes `XltWorkbench.init` with
+     * unitless sparklines (`sparkUnit: ""`) and higher-precision decimal settings.
+     */
+    (function () {
+      "use strict";
+
+      var data = window.XLT_CUSTOM_VALUES || { items: [], logs: [] };
+      var items = Array.isArray(data) ? data : (data.items || []);
+      var logs = Array.isArray(data.logs) ? data.logs : [];
+      var wb = window.XltWorkbench;
+      var fmtInt = wb.fmtInt;
+      var fmtDec = wb.fmtDec;
+      var esc = wb.escHtml;
+      var fmtBytes = window.XLT_UI.fmtBytes;
+      var pcts = wb.getConfiguredPercentiles(items);
+
+      var logsSec = document.getElementById("cv-logs-section");
+      var logsTbody = document.getElementById("cv-logs-tbody");
+      if (logsSec && logsTbody && logs.length) {
+        logsSec.hidden = false;
+        logsTbody.innerHTML = logs.map(function (lg, idx) {
+          var name = lg.name || lg.fileName || String(lg);
+          var href = lg.href || lg.path || ("custom_data_logs/" + encodeURIComponent(name));
+          var sizeTxt = lg.sizeBytes !== undefined ? fmtBytes(lg.sizeBytes) : (lg.size || "—");
+          return (
+            '<tr>' +
+              '<td class="col-idx">' + (idx + 1) + '</td>' +
+              '<td class="col-text">' + esc(name) + '</td>' +
+              '<td class="col-num">' + esc(sizeTxt) + '</td>' +
+              '<td class="col-text"><a href="' + esc(href) + '" download class="btn-chip" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">⬇ Download <code>' + esc(name) + '</code></a></td>' +
+            '</tr>'
+          );
+        }).join('');
+      }
+
+      var kpiGrid = document.getElementById("cv-kpi-grid");
+      var emptySec = document.getElementById("cv-empty-section");
+      var wbScope = document.getElementById("cv-workbench-scope");
+      var streamSec = document.getElementById("stream-section");
+
+      var totalSamples = items.reduce(function (s, it) { return s + Number(it.count || 0); }, 0);
+      var topSeries = items.reduce(function (best, cur) {
+        return (!best || Number(cur.count || 0) > Number(best.count || 0)) ? cur : best;
+      }, null);
+      var peakSeries = items.reduce(function (best, cur) {
+        return (!best || Number(cur.max || 0) > Number(best.max || 0)) ? cur : best;
+      }, null);
+
+      if (kpiGrid) {
+        kpiGrid.innerHTML =
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Custom Value Series</span>' +
+            '<div class="kpi-val">' + fmtInt(items.length) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">series</span></div>' +
+            '<div class="kpi-sub">Total sampled points: <strong>' + fmtInt(totalSamples) + '</strong></div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Highest-Volume Series</span>' +
+            '<div class="kpi-val">' + (topSeries ? fmtInt(topSeries.count) : "0") + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">samples</span></div>' +
+            '<div class="kpi-sub">' + (topSeries ? ('<code>' + esc(topSeries.name) + '</code> (mean: ' + fmtDec(topSeries.mean, 2) + ')') : 'No value series recorded') + '</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Peak Sampled Value</span>' +
+            '<div class="kpi-val">' + (peakSeries ? fmtDec(peakSeries.max, 1) : "—") + '</div>' +
+            '<div class="kpi-sub">' + (peakSeries ? ('Observed in <code>' + esc(peakSeries.name) + '</code>') : 'No value series recorded') + '</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Custom Data Logs</span>' +
+            '<div class="kpi-val">' + fmtInt(logs.length) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">file' + (logs.length === 1 ? '' : 's') + '</span></div>' +
+            '<div class="kpi-sub">' + (logs.length ? ('<code>' + esc(logs[0].name || logs[0]) + '</code>' + (logs.length > 1 ? (' +' + fmtInt(logs.length - 1) + ' more') : '')) : 'No custom_data_logs archives') + '</div>' +
+          '</article>';
+      }
+
+      if (!items.length) {
+        if (emptySec) emptySec.hidden = false;
+        if (wbScope) wbScope.hidden = true;
+        if (streamSec) streamSec.hidden = true;
+        return;
+      }
+
+      var hasSpark = items.some(function (it) { return it.spark && it.spark.length > 0; });
+      var cvCols = [
+        { key: "name", label: "Value Series Identifier", type: "text" }
+      ];
+      if (hasSpark) {
+        cvCols.push({ key: "spark", label: "Trend", type: "spark", sortable: false });
+      }
+      cvCols.push(
+        { key: "count", label: "Samples", group: "Volume", agg: "sum", render: function (it) { return fmtInt(it.count); } },
+        { key: "rate", label: "1/s", group: "Volume", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },
+        { key: "cph", label: "1/h", group: "Volume", agg: "sum", render: function (it) { return fmtInt(it.cph); } },
+        { key: "mean", label: "Mean Value", group: "Measured Values", altGroup: true, agg: "weightedMean", disableMeanPill: true, render: function (it) { return fmtDec(it.mean, 2); } },
+        { key: "min", label: "Min", group: "Measured Values", altGroup: true, agg: "min", render: function (it) { return fmtDec(it.min, 1); } },
+        { key: "max", label: "Max", group: "Measured Values", altGroup: true, agg: "max", render: function (it) { return fmtDec(it.max, 1); } },
+        { key: "dev", label: "Dev", group: "Measured Values", altGroup: true, render: function (it) { return fmtDec(it.dev, 2); } },
+        { type: "dynamicPercentiles", group: "Percentiles", decimals: 1 }
+      );
+
+      wb.init({
+        entityLabel: "Custom Value",
+        sparkUnit: "",
+        meanDecimals: 2,
+        percentileDecimals: 1,
+        items: items,
+        includeAggregateRowInTable: false,
+        defaultSort: { key: "count", dir: "descending" },
+        tabs: [
+          { key: "overview", label: "Overview", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + ".webp"; } },
+          { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + "_Average.webp"; } },
+          { key: "dynamic", label: "Dynamic Overview (Zoom)", type: "echart", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + ".json"; } }
+        ],
+        columns: cvCols,
+        renderWbKpis: function (item, escFn, fInt, fDec) {
+          var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
+          var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
+          return (
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Samples</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Sampling Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Value</span><span class="wb-kpi-val">' + fDec(item.mean, 2) + '</span></div>' +
+            (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + ' Value</span><span class="wb-kpi-val">' + fDec(pVal, 1) + '</span></div>' : '') +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Max Value</span><span class="wb-kpi-val">' + fDec(item.max, 1) + '</span></div>'
+          );
+        },
+        renderDrawer: function (item, escFn, fInt, fDec) {
+          var medVal = item.median !== undefined ? item.median : wb.getItemPercentile(item, "50");
+          var spreadVal = Math.max(0, Number(item.max || 0) - Number(item.min || 0));
+          var descRow = item.description
+            ? '<tr><td>Description</td><td style="font-family:var(--font-sans);font-weight:500;">' + escFn(item.description) + '</td></tr>'
+            : '';
+          var lblRow = (item.labels && item.labels.length)
+            ? '<tr><td>Labels</td><td>' + item.labels.map(function (l) { return '<span class="label-chip">' + escFn(l) + '</span>'; }).join(' ') + '</td></tr>'
+            : '';
+          return (
+            '<div class="drawer-grid">' +
+              '<div class="drawer-box">' +
+                '<h4>Extrapolated Projections</h4>' +
+                '<table>' +
+                  '<tr><td>Per Minute (1/min)</td><td>' + fDec(item.cpm, 1) + '</td></tr>' +
+                  '<tr><td>Per Day (1/d)</td><td>' + fInt(item.cpd) + '</td></tr>' +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Spread &amp; Metadata</h4>' +
+                '<table>' +
+                  (medVal !== undefined ? '<tr><td>Median</td><td>' + fDec(medVal, 2) + '</td></tr>' : '') +
+                  '<tr><td>Min .. Max Spread</td><td>' + fDec(spreadVal, 2) + '</td></tr>' +
+                  '<tr><td>Std Deviation</td><td>' + fDec(item.dev, 2) + '</td></tr>' +
+                  descRow +
+                  lblRow +
+                '</table>' +
+              '</div>' +
+            '</div>'
+          );
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+

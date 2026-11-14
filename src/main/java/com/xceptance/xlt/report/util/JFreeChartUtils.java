@@ -261,9 +261,29 @@ public final class JFreeChartUtils
     public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_5 = new Color(0xF6A9A9);
 
     /**
-     * The default chart theme.
+     * The default classic chart theme.
      */
-    private static final XltChartTheme DEFAULT_CHART_THEME = new XltChartTheme();
+    private static final XltChartTheme DEFAULT_CHART_THEME = new XltChartTheme(false);
+
+    /**
+     * The modern clean chart theme.
+     */
+    private static final XltChartTheme MODERN_CHART_THEME = new XltChartTheme(true);
+
+    /**
+     * The pill background color used for modern XLT chart branding (Medium Slate {@code #64748B}).
+     */
+    private static final Color MODERN_BRAND_PILL_COLOR = new Color(0x64748B);
+
+    /**
+     * The short brand label inside the modern XLT pill.
+     */
+    private static final String MODERN_BRAND_TEXT = "XLT";
+
+    /**
+     * Whether charts should be styled using the modern theme ({@code false} keeps the classic theme).
+     */
+    private static volatile boolean modernChartStyle = false;
 
     /**
      * The default title of time axes.
@@ -1122,9 +1142,9 @@ public final class JFreeChartUtils
         // create the image with the correct dimensions
         final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
-        // set white background
+        // set background matching active chart theme
         final Graphics2D graphics = bufferedImage.createGraphics();
-        graphics.setBackground((Color) DEFAULT_CHART_THEME.getChartBackgroundPaint());
+        graphics.setBackground((Color) getActiveChartTheme().getChartBackgroundPaint());
         graphics.clearRect(0, 0, width, height);
 
         // draw some info text
@@ -1317,28 +1337,105 @@ public final class JFreeChartUtils
      */
     public static void saveChart(final JFreeChart chart, final File outputFile, final int chartWidth, final int chartHeight)
     {
-        // first of all apply the XLT chart theme to the chart
-        DEFAULT_CHART_THEME.apply(chart);
-
-        // brand chart
-        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
-        final Graphics2D g2d = bufferedImage.createGraphics();
-
-        // prepare watermark settings
-        g2d.setFont(DEFAULT_CHART_THEME.getSmallFont());
-        g2d.setColor(WATERMARK_COLOR);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        // insert watermark
-        final FontMetrics fontMetrics = g2d.getFontMetrics();
-        final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
-        final int x = chartWidth - (1 + 8 + textWidth);
-        final int y = 1 + 8 + fontMetrics.getAscent();
-        g2d.drawString(WATERMARK_TEXT, x, y);
-        g2d.dispose();
+        final BufferedImage bufferedImage = renderChart(chart, chartWidth, chartHeight);
 
         // finally save the image
         saveImage(bufferedImage, outputFile);
+    }
+
+    /**
+     * Applies the active chart theme (classic or modern), renders the chart to a buffered image, and stamps the
+     * corresponding XLT branding overlay.
+     *
+     * @param chart
+     *            the chart
+     * @param chartWidth
+     *            the chart width
+     * @param chartHeight
+     *            the chart height
+     * @return the rendered chart image
+     */
+    static BufferedImage renderChart(final JFreeChart chart, final int chartWidth, final int chartHeight)
+    {
+        final boolean modern = modernChartStyle;
+        final XltChartTheme theme = getActiveChartTheme();
+
+        // first of all apply the active XLT chart theme to the chart
+        theme.apply(chart);
+
+        // render and brand chart
+        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
+        final Graphics2D g2d = bufferedImage.createGraphics();
+        try
+        {
+            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            if (modern)
+            {
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                final int pillWidth = 34;
+                final int pillHeight = 18;
+                final int pillX = chartWidth - 12 - pillWidth;
+                final int pillY = 8;
+
+                g2d.setColor(MODERN_BRAND_PILL_COLOR);
+                g2d.fillRoundRect(pillX, pillY, pillWidth, pillHeight, pillHeight, pillHeight);
+
+                g2d.setFont(theme.getExtraLargeFont().deriveFont(10f));
+                g2d.setColor(Color.WHITE);
+                final FontMetrics fontMetrics = g2d.getFontMetrics();
+                final int textWidth = fontMetrics.stringWidth(MODERN_BRAND_TEXT);
+                final int textX = pillX + (pillWidth - textWidth) / 2;
+                final int textY = pillY + ((pillHeight - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+                g2d.drawString(MODERN_BRAND_TEXT, textX, textY);
+            }
+            else
+            {
+                // prepare classic watermark settings
+                g2d.setFont(theme.getSmallFont());
+                g2d.setColor(WATERMARK_COLOR);
+
+                // insert classic watermark
+                final FontMetrics fontMetrics = g2d.getFontMetrics();
+                final int textWidth = (int) fontMetrics.getStringBounds(WATERMARK_TEXT, g2d).getWidth();
+                final int x = chartWidth - (1 + 8 + textWidth);
+                final int y = 1 + 8 + fontMetrics.getAscent();
+                g2d.drawString(WATERMARK_TEXT, x, y);
+            }
+        }
+        finally
+        {
+            g2d.dispose();
+        }
+
+        return bufferedImage;
+    }
+
+    private static XltChartTheme getActiveChartTheme()
+    {
+        return modernChartStyle ? MODERN_CHART_THEME : DEFAULT_CHART_THEME;
+    }
+
+    /**
+     * Enables or disables the modern chart theme for subsequent chart rendering calls.
+     *
+     * @param modern
+     *            {@code true} to render charts with the modern theme, {@code false} for the classic theme
+     */
+    public static void setModernChartStyle(final boolean modern)
+    {
+        modernChartStyle = modern;
+    }
+
+    /**
+     * Returns whether the modern chart theme is currently active.
+     *
+     * @return {@code true} if the modern chart theme is active, {@code false} for classic
+     */
+    public static boolean isModernChartStyle()
+    {
+        return modernChartStyle;
     }
 
     /**

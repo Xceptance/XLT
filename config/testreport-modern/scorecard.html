@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-page-title="Scorecard">XLT Report - Scorecard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
+          <img class="brand-logo" src="images/xlt-logo.svg" alt="XLT Logo" />
+          <div class="brand-titles">
+            <h1>Performance Test Report <span class="badge-tag" id="meta-project-badge" hidden></span> <span class="badge-tag badge-accent" id="meta-test-badge" hidden></span></h1>
+            <p id="meta-subtitle">Xceptance LoadTest</p>
+          </div>
+        </a>
+      </div>
+
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="index.html" class="nav-btn">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a href="transactions.html" class="nav-btn">Transactions</a>
+          </li>
+          <li class="nav-item">
+            <a href="actions.html" class="nav-btn">Actions</a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="requests.html" class="nav-btn">Requests</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-requests" aria-label="Requests sub-menu">▾</button>
+            </div>
+            <ul id="sub-requests" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="requests.html">All Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+              <li><a class="nav-sublink" href="slowest-requests.html">Slowest Requests <span class="badge-tag cell-warn" data-nav-count="slowestRequests" hidden></span></a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="network.html" class="nav-btn">Network</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-network" aria-label="Network sub-menu">▾</button>
+            </div>
+            <ul id="sub-network" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="network.html#sec-network">Network Overview</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-hosts">Hosts <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-ips">IP Addresses <span class="badge-tag" data-nav-count="ips" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-methods">HTTP Methods</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-status">HTTP Status Codes</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-types">Content Types</a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-errors" aria-label="Errors sub-menu">▾</button>
+            </div>
+            <ul id="sub-errors" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="errors.html#sec-req-errors">Request Errors <span class="badge-tag" data-nav-count="requestErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-act-errors">Action Errors <span class="badge-tag" data-nav-count="actionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-tx-errors">Transaction Errors <span class="badge-tag" data-nav-count="transactionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-incidents">Incident Forensics &amp; Traces</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="agents.html" class="nav-btn">Agents <span class="badge-tag" id="nav-agents-pill" hidden></span></a>
+          </li>
+          <li class="nav-item" id="nav-scorecard-item" hidden>
+            <a href="scorecard.html" class="nav-btn" aria-current="page">Scorecard <span class="nav-pill-count" id="nav-scorecard-pill"></span></a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li id="nav-ai-data-item"><a class="nav-sublink" href="ai-data.md" target="_blank" rel="noopener">AI Data (Markdown) ↗</a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html">Custom Data &amp; Logs <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+              <li><a class="nav-sublink" href="external.html">External Data <span class="badge-tag" data-nav-count="externalCharts" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
+          <span class="theme-icon">🌓</span> Theme
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- KPI Summary Grid -->
+    <section class="kpi-grid-4" id="sc-kpi-grid"></section>
+
+    <!-- Evaluation Error / Missing Scorecard Banner -->
+    <section class="card" id="sc-error-banner" hidden style="margin-bottom: 12px;"></section>
+
+    <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
+
+    <!-- Breached Rules Warning Banner -->
+    <section class="card" id="sc-breached-section" hidden style="border-inline-start: 4px solid var(--status-fail-text); margin-bottom: 12px; background: var(--bg-surface);">
+      <div class="card-header" style="background: transparent;">
+        <div>
+          <div class="card-title" id="sc-breached-title" style="color:var(--status-fail-text); display:flex; align-items:center; gap:8px;">
+            <span>⚠️</span> Rule Checks Requiring Attention
+          </div>
+          <p class="card-subtitle">Rules that failed automated threshold checks during evaluation.</p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="sc-breached-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-idx">#</th>
+              <th class="col-text">Group</th>
+              <th class="col-text">Breached Rule</th>
+              <th class="col-text">Target Threshold</th>
+              <th class="col-num">Actual Achieved</th>
+              <th class="col-num">Points Awarded</th>
+              <th class="col-text">Message / Context</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Rule Evaluation Groups Matrix -->
+    <section class="card" style="margin-bottom: 12px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="sc-groups-title">Scorecard Evaluation Groups</div>
+          <p class="card-subtitle">Aggregated evaluation status and points breakdown across configured test groups</p>
+        </div>
+        <button type="button" class="btn-chip" data-copy-table="groups-table">📋 Copy as Markdown</button>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table js-static-sortable" id="groups-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-idx">#</th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Evaluation Group</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Description</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Status</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Rules</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Max Points</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Attained Points</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Group Ratio</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text">Evaluation Note</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- Full Rules & Checks Directory Section -->
+    <section class="card" style="margin-bottom: 12px;">
+      <div class="directory-toolbar">
+        <div class="table-search-wrap">
+          <input type="search" id="sc-filter" class="input-search" placeholder="Search rules by name, group, threshold or message..." />
+        </div>
+        <div class="category-chips" id="sc-chips"></div>
+        <button type="button" class="btn-chip" id="sc-toggle-xpath">🔍 Show XPath Selectors</button>
+        <div style="display:flex;align-items:center;gap:8px;margin-inline-start:auto;">
+          <span class="badge-tag" id="sc-visible-count">0 / 0 rules</span>
+          <button type="button" class="btn-chip" data-copy-table="scorecard-rules-table">📋 Copy as Markdown</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="scorecard-rules-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-idx">#</th>
+              <th class="col-text" style="width:90px;">Result</th>
+              <th class="col-text">Group</th>
+              <th class="col-text">Rule Name &amp; Description</th>
+              <th class="col-text">Condition / Threshold</th>
+              <th class="col-num">Actual Value</th>
+              <th class="col-num">Points</th>
+              <th class="col-text">Message / Diagnostic</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Scorecard Rating Scale Reference -->
+    <section class="card" id="sc-ratings-section" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Scorecard Grading Scale &amp; Thresholds</div>
+          <p class="card-subtitle">Evaluation rating bands configured in <code>scorecard.xml</code></p>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="sc-ratings-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-idx">#</th>
+              <th class="col-text">Tier Name</th>
+              <th class="col-text">Description</th>
+              <th class="col-num">Score Upper Limit</th>
+              <th class="col-text">Fails Entire Test</th>
+              <th class="col-text">Current Test Match</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script src="js/scorecard-data.js"></script>
+  <script src="js/scorecard-page.js"></script>
+</body>
+</html>

@@ -15,9 +15,13 @@
  */
 package com.xceptance.xlt.report.util;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
+import org.jfree.chart.LegendItem;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CrosshairState;
 import org.jfree.chart.plot.PlotOrientation;
@@ -113,6 +117,35 @@ public class DotsRenderer extends XYDotRenderer
                 }
             }
         }
+    }
+
+    /**
+     * Returns the legend item for the given series, ensuring translucent scatter dot colors render as opaque circular
+     * swatches in the chart legend.
+     *
+     * @param datasetIndex
+     *            the dataset index (zero-based).
+     * @param series
+     *            the series index (zero-based).
+     * @return the legend item (possibly {@code null}).
+     */
+    @Override
+    public LegendItem getLegendItem(final int datasetIndex, final int series)
+    {
+        final LegendItem item = super.getLegendItem(datasetIndex, series);
+        if (item != null)
+        {
+            final Paint fillPaint = item.getFillPaint();
+            if (fillPaint instanceof Color color && color.getAlpha() < 255)
+            {
+                final Color opaqueColor = new Color(color.getRed(), color.getGreen(), color.getBlue());
+                item.setFillPaint(opaqueColor);
+                item.setOutlinePaint(opaqueColor);
+                item.setShape(new Ellipse2D.Double(-2.5, -2.5, 5.0, 5.0));
+            }
+        }
+
+        return item;
     }
 
     /**

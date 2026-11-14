@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -45,6 +46,7 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.report.external.ExternalReportGenerator;
+import com.xceptance.xlt.report.modern.ModernReportGenerator;
 import com.xceptance.xlt.report.scorecard.Evaluator;
 import com.xceptance.xlt.report.scorecard.Scorecard;
 import com.xceptance.xlt.report.pdf.PdfReportGenerator;
@@ -195,8 +197,9 @@ public class ReportGenerator
         // configure the thread pool to be cpu count for now
         TaskManager.getInstance().setMaximumThreadCount(Runtime.getRuntime().availableProcessors());
 
-        // configure the Webp encoder
+        // configure the Webp encoder and chart style (classic vs modern)
         JFreeChartUtils.setWebpCompressionFactor(config.getChartCompressionFactor());
+        JFreeChartUtils.setModernChartStyle(config.isModernUi());
 
         // setup the report providers
         reportProviders = new ArrayList<ReportProvider>();
@@ -677,6 +680,67 @@ public class ReportGenerator
         // we did this before already... mmn....
         FileUtils.forceMkdir(outputDir);
 
+        if (config.isModernUi())
+        {
+            final long start = TimerUtils.get().getStartTime();
+            try
+            {
+                XltLogger.reportLogger.info("XML data file: {}", inputXmlFile);
+
+                final ModernReportGenerator modernGenerator = new ModernReportGenerator();
+                final File modernResourcesDir = new File(config.getConfigDirectory(), XltConstants.MODERN_REPORT_RESOURCES_PATH);
+                modernGenerator.copyTemplateResources(modernResourcesDir, outputDir, scorecardPresent);
+
+                // Preserve non-HTML auxiliary transformations (such as ai-data.md) in modern UI mode
+                final List<File> auxOutputFiles = new ArrayList<File>();
+                final List<File> auxStyleSheetFiles = new ArrayList<File>();
+                final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
+                final List<String> outputFileNames = config.getOutputFileNames();
+
+                for (int i = 0; i < styleSheetFileNames.size(); i++)
+                {
+                    final String outName = outputFileNames.get(i);
+                    if (!outName.toLowerCase(Locale.ROOT).endsWith(".html"))
+                    {
+                        auxOutputFiles.add(new File(outputDir, outName));
+                        auxStyleSheetFiles.add(new File(new File(config.getConfigDirectory(), XltConstants.LOAD_REPORT_XSL_PATH),
+                                                        styleSheetFileNames.get(i)));
+                    }
+                }
+
+                if (!auxOutputFiles.isEmpty())
+                {
+                    final HashMap<String, Object> parameters = new HashMap<String, Object>();
+                    parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+                    parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+                    parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+                    parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
+
+                    final ReportTransformer auxTransformer = new ReportTransformer(auxOutputFiles, auxStyleSheetFiles, parameters);
+                    TaskManager.getInstance().setMaximumThreadCount(1);
+                    TaskManager.getInstance().startProgress("Creating");
+                    try
+                    {
+                        auxTransformer.run(inputXmlFile, outputDir);
+                    }
+                    finally
+                    {
+                        TaskManager.getInstance().waitForAllTasksToComplete();
+                        TaskManager.getInstance().stopProgress();
+                    }
+                }
+
+                final File scorecardXmlFile = scorecardPresent ? new File(outputDir, XltConstants.SCORECARD_REPORT_XML_FILENAME) : null;
+                modernGenerator.generateReportBundles(inputXmlFile, outputDir, scorecardXmlFile);
+            }
+            finally
+            {
+                XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
+                XltLogger.reportLogger.info(Console.endSection());
+            }
+            return;
+        }
+
         // copy the report's static resources
         final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
         FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), false);
@@ -934,6 +998,22 @@ public class ReportGenerator
     {
         XltLogger.reportLogger.info(Console.horizontalBar());
         XltLogger.reportLogger.info(Console.startSection("Creating Scorecard..."));
+
+        if (config.isModernUi())
+        {
+            final long start = TimerUtils.get().getStartTime();
+            try
+            {
+                final File modernResourcesDir = new File(config.getConfigDirectory(), XltConstants.MODERN_REPORT_RESOURCES_PATH);
+                new ModernReportGenerator().updateScorecardBundles(inputXmlFile, outputDir, modernResourcesDir);
+            }
+            finally
+            {
+                XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
+                XltLogger.reportLogger.info(Console.endSection());
+            }
+            return;
+        }
 
         final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_XSL_PATH),
                                              XltConstants.SCORECARD_REPORT_XSL_FILENAME);

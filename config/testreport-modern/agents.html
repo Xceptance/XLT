@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-page-title="Agents">XLT Report - Agents</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/chart-lightbox.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+  <script src="js/agents-data.js"></script>
+  <script src="js/workbench.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
+          <img class="brand-logo" src="images/xlt-logo.svg" alt="XLT Logo" />
+          <div class="brand-titles">
+            <h1>Performance Test Report <span class="badge-tag" id="meta-project-badge" hidden></span> <span class="badge-tag badge-accent" id="meta-test-badge" hidden></span></h1>
+            <p id="meta-subtitle">Xceptance LoadTest</p>
+          </div>
+        </a>
+      </div>
+
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="index.html" class="nav-btn">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a href="transactions.html" class="nav-btn">Transactions</a>
+          </li>
+          <li class="nav-item">
+            <a href="actions.html" class="nav-btn">Actions</a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="requests.html" class="nav-btn">Requests</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-requests" aria-label="Requests sub-menu">▾</button>
+            </div>
+            <ul id="sub-requests" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="requests.html">All Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+              <li><a class="nav-sublink" href="slowest-requests.html">Slowest Requests <span class="badge-tag cell-warn" data-nav-count="slowestRequests" hidden></span></a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="network.html" class="nav-btn">Network</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-network" aria-label="Network sub-menu">▾</button>
+            </div>
+            <ul id="sub-network" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="network.html#sec-network">Network Overview</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-hosts">Hosts <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-ips">IP Addresses <span class="badge-tag" data-nav-count="ips" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-methods">HTTP Methods</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-status">HTTP Status Codes</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-types">Content Types</a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-errors" aria-label="Errors sub-menu">▾</button>
+            </div>
+            <ul id="sub-errors" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="errors.html#sec-req-errors">Request Errors <span class="badge-tag" data-nav-count="requestErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-act-errors">Action Errors <span class="badge-tag" data-nav-count="actionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-tx-errors">Transaction Errors <span class="badge-tag" data-nav-count="transactionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-incidents">Incident Forensics &amp; Traces</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="agents.html" class="nav-btn" aria-current="page">Agents <span class="badge-tag" id="nav-agents-pill" hidden></span></a>
+          </li>
+          <li class="nav-item" id="nav-scorecard-item" hidden>
+            <a href="scorecard.html" class="nav-btn">Scorecard <span class="nav-pill-count" id="nav-scorecard-pill"></span></a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li id="nav-ai-data-item"><a class="nav-sublink" href="ai-data.md" target="_blank" rel="noopener">AI Data (Markdown) ↗</a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html">Custom Data &amp; Logs <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+              <li><a class="nav-sublink" href="external.html">External Data <span class="badge-tag" data-nav-count="externalCharts" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
+          <span class="theme-icon">🌓</span> Theme
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- KPI Context -->
+    <section class="kpi-grid-4" id="ag-kpi-grid"></section>
+
+    <div id="ag-empty-section" hidden>
+      <section class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">📋 Agent JVM Fleet Performance Directory</div>
+        </div>
+        <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
+          <strong>No agent JVM telemetry recorded for this test run.</strong>
+        </div>
+      </section>
+    </div>
+
+    <div class="workbench-scope" id="ag-workbench-scope">
+    <!-- Top Sticky Chart Workbench -->
+    <section class="chart-workbench" id="workbench-section">
+      <header class="workbench-header">
+        <div class="workbench-title-area">
+          <span class="wb-badge" id="wb-badge" hidden>FLEET</span>
+          <span class="workbench-name" id="wb-name">All Agents</span>
+        </div>
+
+        <div class="workbench-pager">
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-prev" aria-label="Previous agent (Left Arrow)">◀ Prev</button>
+          <span class="pager-badge" id="wb-counter">Agent 0 of 0</span>
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-next" aria-label="Next agent (Right Arrow)">Next ▶</button>
+        </div>
+
+        <div class="workbench-right-col">
+          <div class="wb-kpis" id="wb-kpis"></div>
+          <div class="wb-controls">
+            <button type="button" class="btn-chip" id="wb-link-btn" title="Copy shareable link with current item &amp; chart tab">🔗 Link</button>
+            <button type="button" class="btn-chip" id="wb-pin-btn" title="Toggle sticky top pinning">📌 Pinned</button>
+            <button type="button" class="btn-chip" id="wb-collapse-btn" title="Collapse chart body into compact 48px sticky strip">▲ Hide Chart</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="workbench-body" id="wb-body">
+        <div class="workbench-tabs-bar">
+          <div class="wb-tabs" id="wb-tabs"></div>
+          <div class="wb-tabs-hint">💡 Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+        </div>
+        <div class="workbench-stage chart-canvas-light" id="wb-stage"></div>
+        <footer class="workbench-footnote" id="wb-footnote"></footer>
+      </div>
+    </section>
+
+    <!-- Directory Section -->
+    <section class="card" id="directory-section">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📋 Agent JVM Fleet Performance Directory</span>
+          <span class="badge-tag" id="dir-visible-count">0 shown</span>
+        </div>
+
+        <div class="view-mode-bar">
+          <div class="btn-group">
+            <button type="button" class="btn-chip active" id="btn-view-workbench">📌 Top Workbench</button>
+            <button type="button" class="btn-chip" id="btn-view-stream">📊 Continuous Stream</button>
+          </div>
+          <button type="button" class="btn-chip" data-copy-table="dir-table">📋 Copy as Markdown</button>
+        </div>
+      </div>
+
+      <div class="directory-toolbar">
+        <div class="table-search-wrap">
+          <input type="search" class="input-search" id="dir-filter-input" placeholder="Filter agents..." aria-label="Filter agents" />
+        </div>
+        <div class="category-chips" id="dir-category-chips"></div>
+      </div>
+
+      <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
+
+      <div class="table-scroll">
+        <table class="data-table" id="dir-table">
+          <thead></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+    </div>
+
+    <!-- Continuous Chart Stream (Always visible below table for quick visual scanning) -->
+    <section id="stream-section" class="stream-section"></section>
+
+  </main>
+
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script>
+    /**
+     * Agents telemetry view controller.
+     * Consumes `window.XLT_AGENTS`, injects the `All Agents` aggregate item from `data.totals`
+     * when missing, renders host resource KPIs, and configures `XltWorkbench.init` with
+     * CPU, Memory, and Threads charts (`charts/agents/`) plus custom footnote/drawer renderers.
+     */
+    (function () {
+      "use strict";
+
+      var data = window.XLT_AGENTS || { items: [] };
+      var rawItems = Array.isArray(data) ? data : (data.items || []);
+      var allItems = rawItems.slice();
+      if (data.totals && !allItems.some(function (it) { return it.isAggregate; })) {
+        allItems.unshift(data.totals);
+      }
+      var nonAgg = allItems.filter(function (it) { return !it.isAggregate; });
+      var wb = window.XltWorkbench;
+      var fmtInt = wb.fmtInt;
+      var fmtDec = wb.fmtDec;
+      var esc = wb.escHtml;
+
+      var kpiGrid = document.getElementById("ag-kpi-grid");
+      var emptySec = document.getElementById("ag-empty-section");
+      var wbScope = document.getElementById("ag-workbench-scope");
+      var streamSec = document.getElementById("stream-section");
+
+      if (!nonAgg.length) {
+        if (emptySec) emptySec.hidden = false;
+        if (wbScope) wbScope.hidden = true;
+        if (streamSec) streamSec.hidden = true;
+        if (kpiGrid) {
+          kpiGrid.innerHTML =
+            '<article class="kpi-card"><span class="kpi-label">Agent Load Fleet</span><div class="kpi-val" style="color:var(--text-muted);">0 <span style="font-size:14px;font-weight:600;">nodes</span></div><div class="kpi-sub">No agent resource usage data</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Fleet Mean CPU</span><div class="kpi-val" style="color:var(--text-muted);">—</div><div class="kpi-sub">No CPU telemetry</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Minor GC Overhead</span><div class="kpi-val" style="color:var(--text-muted);">—</div><div class="kpi-sub">No GC telemetry</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Full GC Pauses</span><div class="kpi-val" style="color:var(--text-muted);">0</div><div class="kpi-sub">No agent nodes</div></article>';
+        }
+        return;
+      }
+
+      var totals = data.totals || allItems.find(function (it) { return it.isAggregate; }) || nonAgg[0] || {};
+      if (kpiGrid) {
+        var totalTxSum = totals.totalTx !== undefined ? totals.totalTx : nonAgg.reduce(function (s, it) { return s + Number(it.totalTx || 0); }, 0);
+        var maxNodeCpu = nonAgg.reduce(function (m, it) { return Math.max(m, Number(it.totalCpuMax || 0)); }, 0);
+        var maxMinorNode = nonAgg.reduce(function (best, cur) {
+          return (!best || Number(cur.minorGcCount || 0) > Number(best.minorGcCount || 0)) ? cur : best;
+        }, null);
+        var fullGcTotal = totals.fullGcCount !== undefined ? Number(totals.fullGcCount || 0) : nonAgg.reduce(function (s, it) { return s + Number(it.fullGcCount || 0); }, 0);
+
+        kpiGrid.innerHTML =
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Agent Load Fleet</span>' +
+            '<div class="kpi-val">' + fmtInt(nonAgg.length) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">node' + (nonAgg.length === 1 ? '' : 's') + '</span></div>' +
+            '<div class="kpi-sub">Completed workload: <strong>' + fmtInt(totalTxSum) + ' tx</strong></div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Fleet Mean CPU</span>' +
+            '<div class="kpi-val">' + fmtDec(totals.totalCpuMean || 0, 1) + '%</div>' +
+            '<div class="kpi-sub">Agent Process: <strong>' + fmtDec(totals.agentCpuMean || 0, 1) + '%</strong> • Peak Node: <strong>' + fmtDec(maxNodeCpu, 1) + '%</strong></div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Minor GC Overhead</span>' +
+            '<div class="kpi-val">' + fmtDec(totals.minorGcCpu || 0, 2) + '% <span style="font-size:14px;font-weight:600;color:var(--text-muted);">CPU</span></div>' +
+            '<div class="kpi-sub">' + (maxMinorNode ? ('Max node: <strong>' + fmtInt(maxMinorNode.minorGcCount) + ' collections</strong> (' + fmtDec((maxMinorNode.minorGcTime || 0) / 1000, 1) + ' s)') : 'Minor GC summary') + '</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Full GC Pauses</span>' +
+            '<div class="kpi-val" style="color:' + (fullGcTotal > 0 ? 'var(--status-fail-text)' : 'var(--status-pass-text)') + ';">' + fmtInt(fullGcTotal) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">pause' + (fullGcTotal === 1 ? '' : 's') + '</span></div>' +
+            '<div class="kpi-sub">' + (fullGcTotal === 0 ? ('Zero Stop-the-World pauses across all ' + fmtInt(nonAgg.length) + ' agent' + (nonAgg.length === 1 ? '' : 's')) : ('Total Full GC pause time: ' + fmtInt(totals.fullGcTime || 0) + ' ms')) + '</div>' +
+          '</article>';
+      }
+
+      wb.init({
+        entityLabel: "Agent",
+        items: allItems,
+        includeAggregateRowInTable: Boolean(allItems[0] && allItems[0].isAggregate),
+        defaultSort: { key: "totalTx", dir: "descending" },
+        totalsRow: totals,
+        tabs: [
+          { key: "cpu", label: "CPU Utilization", url: function (it, enc) { return "charts/agents/" + enc(it.chartBase) + "/CpuUsage.webp"; } },
+          { key: "memory", label: "Memory & Heap", url: function (it, enc) { return "charts/agents/" + enc(it.chartBase) + "/MemoryUsage.webp"; } },
+          { key: "threads", label: "Threads", url: function (it, enc) { return "charts/agents/" + enc(it.chartBase) + "/Threads.webp"; } }
+        ],
+        columns: [
+          { key: "name", label: "Agent Node Identifier", type: "text" },
+          { key: "totalTx", label: "Completed Tx", group: "Workload", agg: "sum", render: function (it) { return fmtInt(it.totalTx); } },
+          { key: "errors", label: "Errors", group: "Workload", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
+          { key: "errPct", label: "Err %", group: "Workload", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
+          { key: "totalCpuMean", label: "Total Mean %", group: "CPU Load [%]", altGroup: true, agg: "avg", render: function (it) { return fmtDec(it.totalCpuMean, 2) + "%"; } },
+          { key: "totalCpuMax", label: "Total Max %", group: "CPU Load [%]", altGroup: true, agg: "max", render: function (it) { return fmtDec(it.totalCpuMax, 2) + "%"; } },
+          { key: "agentCpuMean", label: "Agent Mean %", group: "CPU Load [%]", altGroup: true, agg: "avg", render: function (it) { return fmtDec(it.agentCpuMean, 2) + "%"; } },
+          { key: "agentCpuMax", label: "Agent Max %", group: "CPU Load [%]", altGroup: true, agg: "max", render: function (it) { return fmtDec(it.agentCpuMax, 2) + "%"; } },
+          { key: "minorGcCount", label: "Count", group: "Minor GC", agg: "sum", render: function (it) { return fmtInt(it.minorGcCount); } },
+          { key: "minorGcTime", label: "Time [ms]", group: "Minor GC", agg: "sum", render: function (it) { return fmtInt(it.minorGcTime); } },
+          { key: "minorGcCpu", label: "CPU %", group: "Minor GC", agg: "avg", render: function (it) { return fmtDec(it.minorGcCpu, 2) + "%"; } },
+          { key: "fullGcCount", label: "Count", group: "Full GC (STW)", agg: "sum", cellClass: function (it) { return it.fullGcCount > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.fullGcCount); } },
+          { key: "fullGcTime", label: "Time [ms]", group: "Full GC (STW)", agg: "sum", render: function (it) { return fmtInt(it.fullGcTime); } },
+          { key: "fullGcCpu", label: "CPU %", group: "Full GC (STW)", agg: "avg", render: function (it) { return fmtDec(it.fullGcCpu, 2) + "%"; } }
+        ],
+        renderWbKpis: function (item, escFn, fInt, fDec) {
+          return (
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Completed Workload</span><span class="wb-kpi-val">' + fInt(item.totalTx) + ' tx</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Total CPU (Mean / Max)</span><span class="wb-kpi-val">' + fDec(item.totalCpuMean, 1) + '% / ' + fDec(item.totalCpuMax, 1) + '%</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Minor GC CPU</span><span class="wb-kpi-val">' + fDec(item.minorGcCpu, 2) + '%</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Full GC Pauses</span><span class="wb-kpi-val" style="' + (item.fullGcCount > 0 ? 'color:var(--status-fail-text);font-weight:800;' : 'color:var(--status-pass-text);') + '">' + fInt(item.fullGcCount) + '</span></div>'
+          );
+        },
+        renderWbFootnote: function (item, escFn, fInt, fDec) {
+          return (
+            '<div class="fn-group"><span class="fn-label">Agent Process CPU</span><span class="fn-val">Mean <strong>' + fDec(item.agentCpuMean, 2) + '%</strong> • Max <strong>' + fDec(item.agentCpuMax, 2) + '%</strong></span></div>' +
+            '<div class="fn-group"><span class="fn-label">Minor GC</span><span class="fn-val"><strong>' + fInt(item.minorGcCount) + ' collections</strong> (' + fInt(item.minorGcTime) + ' ms total pause)</span></div>' +
+            '<div class="fn-group"><span class="fn-label">Full GC (Stop-the-World)</span><span class="fn-val"><strong>' + fInt(item.fullGcCount) + ' pauses</strong> (' + fInt(item.fullGcTime) + ' ms)</span></div>'
+          );
+        },
+        renderDrawer: function (item, escFn, fInt, fDec) {
+          return (
+            '<div class="drawer-grid">' +
+              '<div class="drawer-box">' +
+                '<h4>JVM Host CPU Profile</h4>' +
+                '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
+                  '<tr><td>Total Host CPU (Mean):</td><td><strong>' + fDec(item.totalCpuMean, 2) + '%</strong></td></tr>' +
+                  '<tr><td>Total Host CPU (Peak):</td><td><strong>' + fDec(item.totalCpuMax, 2) + '%</strong></td></tr>' +
+                  '<tr><td>XLT Agent Process CPU (Mean):</td><td><strong>' + fDec(item.agentCpuMean, 2) + '%</strong></td></tr>' +
+                  '<tr><td>XLT Agent Process CPU (Peak):</td><td><strong>' + fDec(item.agentCpuMax, 2) + '%</strong></td></tr>' +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Garbage Collection Telemetry</h4>' +
+                '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
+                  '<tr><td>Minor Collections:</td><td><strong>' + fInt(item.minorGcCount) + '</strong></td></tr>' +
+                  '<tr><td>Minor GC Total Time:</td><td>' + fInt(item.minorGcTime) + ' ms (' + (Number(item.minorGcTime || 0) / 1000).toFixed(1) + ' s)</td></tr>' +
+                  '<tr><td>Minor GC CPU Overhead:</td><td><strong>' + fDec(item.minorGcCpu, 2) + '%</strong></td></tr>' +
+                  '<tr><td>Full GC (Stop-The-World):</td><td style="' + (item.fullGcCount > 0 ? 'color:var(--status-fail-text);font-weight:800;' : 'color:var(--status-pass-text);') + '"><strong>' + fInt(item.fullGcCount) + '</strong></td></tr>' +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Workload Allocation</h4>' +
+                '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
+                  '<tr><td>Agent Identifier:</td><td><code>' + escFn(item.name) + '</code></td></tr>' +
+                  '<tr><td>Completed Transactions:</td><td><strong>' + fInt(item.totalTx) + '</strong></td></tr>' +
+                  '<tr><td>Errors Logged:</td><td style="' + (item.errors > 0 ? 'color:var(--status-fail-text);font-weight:800;' : '') + '">' + fInt(item.errors) + ' (' + fDec(item.errPct, 2) + '%)</td></tr>' +
+                '</table>' +
+              '</div>' +
+            '</div>'
+          );
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-page-title="Requests">XLT Report - Requests</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/chart-lightbox.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+  <script src="js/echarts-6.0.0.min.js"></script>
+  <script src="js/dynamic-chart.js"></script>
+  <script src="js/requests-data.js"></script>
+  <script src="js/workbench.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
+          <img class="brand-logo" src="images/xlt-logo.svg" alt="XLT Logo" />
+          <div class="brand-titles">
+            <h1>Performance Test Report <span class="badge-tag" id="meta-project-badge" hidden></span> <span class="badge-tag badge-accent" id="meta-test-badge" hidden></span></h1>
+            <p id="meta-subtitle">Xceptance LoadTest</p>
+          </div>
+        </a>
+      </div>
+
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="index.html" class="nav-btn">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a href="transactions.html" class="nav-btn">Transactions</a>
+          </li>
+          <li class="nav-item">
+            <a href="actions.html" class="nav-btn">Actions</a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="requests.html" class="nav-btn" aria-current="page">Requests</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-requests" aria-label="Requests sub-menu">▾</button>
+            </div>
+            <ul id="sub-requests" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="requests.html" aria-current="page">All Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+              <li><a class="nav-sublink" href="slowest-requests.html">Slowest Requests <span class="badge-tag cell-warn" data-nav-count="slowestRequests" hidden></span></a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="network.html" class="nav-btn">Network</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-network" aria-label="Network sub-menu">▾</button>
+            </div>
+            <ul id="sub-network" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="network.html#sec-network">Network Overview</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-hosts">Hosts <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-ips">IP Addresses <span class="badge-tag" data-nav-count="ips" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-methods">HTTP Methods</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-status">HTTP Status Codes</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-types">Content Types</a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-errors" aria-label="Errors sub-menu">▾</button>
+            </div>
+            <ul id="sub-errors" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="errors.html#sec-req-errors">Request Errors <span class="badge-tag" data-nav-count="requestErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-act-errors">Action Errors <span class="badge-tag" data-nav-count="actionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-tx-errors">Transaction Errors <span class="badge-tag" data-nav-count="transactionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-incidents">Incident Forensics &amp; Traces</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="agents.html" class="nav-btn">Agents <span class="badge-tag" id="nav-agents-pill" hidden></span></a>
+          </li>
+          <li class="nav-item" id="nav-scorecard-item" hidden>
+            <a href="scorecard.html" class="nav-btn">Scorecard <span class="nav-pill-count" id="nav-scorecard-pill"></span></a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li id="nav-ai-data-item"><a class="nav-sublink" href="ai-data.md" target="_blank" rel="noopener">AI Data (Markdown) ↗</a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html">Custom Data &amp; Logs <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+              <li><a class="nav-sublink" href="external.html">External Data <span class="badge-tag" data-nav-count="externalCharts" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
+          <span class="theme-icon">🌓</span> Theme
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Hero Context Strip -->
+    <section class="kpi-grid-4" id="req-kpi-grid"></section>
+
+    <div id="req-empty-section" hidden>
+      <section class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">📋 Requests Directory</div>
+        </div>
+        <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
+          <strong>No HTTP request records available for this test run.</strong>
+        </div>
+      </section>
+    </div>
+
+    <div class="workbench-scope" id="req-workbench-scope">
+    <!-- Top Sticky Chart Workbench -->
+    <section class="chart-workbench" id="workbench-section">
+      <header class="workbench-header">
+        <div class="workbench-title-area">
+          <span class="wb-badge" id="wb-badge" hidden>ALL</span>
+          <span class="workbench-name" id="wb-name">All Requests</span>
+        </div>
+
+        <div class="workbench-pager">
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-prev" aria-label="Previous request (Left Arrow)">◀ Prev</button>
+          <span class="pager-badge" id="wb-counter">Request 0 of 0</span>
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-next" aria-label="Next request (Right Arrow)">Next ▶</button>
+        </div>
+
+        <div class="workbench-right-col">
+          <div class="wb-kpis" id="wb-kpis"></div>
+          <div class="wb-controls">
+            <button type="button" class="btn-chip" id="wb-link-btn" title="Copy shareable link with current item &amp; chart tab">🔗 Link</button>
+            <button type="button" class="btn-chip" id="wb-pin-btn" title="Toggle sticky top pinning">📌 Pinned</button>
+            <button type="button" class="btn-chip" id="wb-collapse-btn" title="Collapse chart body into compact 48px sticky strip">▲ Hide Chart</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="workbench-body" id="wb-body">
+        <div class="workbench-tabs-bar">
+          <div class="wb-tabs" id="wb-tabs"></div>
+          <div class="wb-tabs-hint">💡 Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+        </div>
+        <div class="workbench-stage chart-canvas-light" id="wb-stage"></div>
+        <footer class="workbench-footnote" id="wb-footnote"></footer>
+      </div>
+    </section>
+
+    <!-- Directory Section -->
+    <section class="card" id="directory-section">
+      <div class="card-header">
+        <div class="card-title">
+          <span id="req-dir-title">📋 Requests Directory</span>
+          <span class="badge-tag" id="dir-visible-count">0 shown</span>
+        </div>
+
+        <div class="view-mode-bar">
+          <div class="btn-group">
+            <button type="button" class="btn-chip active" id="btn-view-workbench">📌 Top Workbench</button>
+            <button type="button" class="btn-chip" id="btn-view-stream">📊 Continuous Stream</button>
+          </div>
+          <a href="slowest-requests.html" class="btn-chip cell-warn" id="req-slowest-link">⚡ Slowest Outliers →</a>
+          <button type="button" class="btn-chip" data-copy-table="dir-table">📋 Copy as Markdown</button>
+        </div>
+      </div>
+
+      <div class="directory-toolbar">
+        <div class="table-search-wrap">
+          <input type="search" class="input-search" id="dir-filter-input" placeholder="Filter requests (e.g. cart -static | checkout)..." aria-label="Filter requests" />
+        </div>
+        <div class="wb-tabs" id="dir-table-tabs" role="tablist" aria-label="Requests table view" hidden></div>
+        <div class="category-chips" id="dir-category-chips"></div>
+      </div>
+
+      <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
+
+      <div class="table-scroll">
+        <table class="data-table" id="dir-table">
+          <thead></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+    </div>
+
+    <!-- Continuous Chart Stream (Always visible below table for quick visual scanning) -->
+    <section id="stream-section" class="stream-section"></section>
+
+  </main>
+
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script>
+    /**
+     * Requests view controller.
+     * Consumes `window.XLT_REQUESTS` and configures `XltWorkbench.init` with 3 Directory table
+     * views (Overview & Percentiles, Network Timing Breakdown, Payload & Bandwidth), optional
+     * `requestTableColorization` SLA highlighting, TTFB/Recv waterfalls, and full Example URLs.
+     */
+    (function () {
+      "use strict";
+
+      var data = window.XLT_REQUESTS || { items: [] };
+      var items = Array.isArray(data) ? data : (data.items || []);
+      var nonAgg = items.filter(function (it) { return !it.isAggregate; });
+      var wb = window.XltWorkbench;
+      var fmtInt = wb.fmtInt;
+      var fmtDec = wb.fmtDec;
+      var esc = wb.escHtml;
+      var fmtBytes = window.XLT_UI.fmtBytes;
+      var pcts = wb.getConfiguredPercentiles(items);
+      var intervals = wb.getConfiguredIntervals(items);
+
+      var dirTitle = document.getElementById("req-dir-title");
+      if (dirTitle && nonAgg.length) {
+        dirTitle.textContent = "📋 Requests Directory (" + fmtInt(nonAgg.length) + " Endpoint" + (nonAgg.length === 1 ? "" : "s") + ")";
+      }
+      var slowestLink = document.getElementById("req-slowest-link");
+      if (slowestLink && window.XLT_META && window.XLT_META.counts && window.XLT_META.counts.slowestRequests !== undefined) {
+        var srCount = Number(window.XLT_META.counts.slowestRequests || 0);
+        if (srCount > 0) slowestLink.textContent = "⚡ Slowest Outliers (" + fmtInt(srCount) + ") →";
+        else slowestLink.hidden = true;
+      }
+
+      var kpiGrid = document.getElementById("req-kpi-grid");
+      var emptySec = document.getElementById("req-empty-section");
+      var wbScope = document.getElementById("req-workbench-scope");
+      var streamSec = document.getElementById("stream-section");
+
+      if (!items.length) {
+        if (emptySec) emptySec.hidden = false;
+        if (wbScope) wbScope.hidden = true;
+        if (streamSec) streamSec.hidden = true;
+        if (kpiGrid) {
+          kpiGrid.innerHTML =
+            '<article class="kpi-card"><span class="kpi-label">Total HTTP Requests</span><div class="kpi-val">0</div><div class="kpi-sub">No requests recorded</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Mean Wire Latency</span><div class="kpi-val">—</div><div class="kpi-sub">No runtime samples</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Tail Latency</span><div class="kpi-val">—</div><div class="kpi-sub">No percentile samples</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Network Volume &amp; Errors</span><div class="kpi-val">0 B</div><div class="kpi-sub">0 Errors</div></article>';
+        }
+        return;
+      }
+
+      var totals = data.totals || items[0] || {};
+      if (kpiGrid) {
+        var pFirst = pcts.length ? pcts[0] : null;
+        var pFirstVal = pFirst ? wb.getItemPercentile(totals, pFirst) : totals.median;
+        var tailKeys = pcts.length >= 3 ? [pcts[1], pcts[2]] : (pcts.length >= 2 ? [pcts[0], pcts[1]] : (pcts.length === 1 ? [pcts[0]] : []));
+        var tailHeader = tailKeys.length ? ("Tail Latency (" + tailKeys.map(function (k) { return "P" + k; }).join(" / ") + ")") : "Latency Range";
+        var tailMain = tailKeys.length
+          ? tailKeys.map(function (k) {
+              var v = wb.getItemPercentile(totals, k);
+              return v !== undefined ? (fmtInt(v) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span>') : "—";
+            }).join(" / ")
+          : (fmtInt(totals.min) + " – " + fmtInt(totals.max) + " ms");
+        var lastPctKey = pcts.length > tailKeys.length ? pcts[pcts.length - 1] : null;
+        var lastPctVal = lastPctKey ? wb.getItemPercentile(totals, lastPctKey) : undefined;
+        var sentBytes = Number(totals.sentTotal || 0);
+        var recvBytes = Number(totals.recvTotal || 0);
+        var totalBytes = sentBytes + recvBytes;
+        var errCount = Number(totals.errors || 0);
+
+        kpiGrid.innerHTML =
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Total HTTP Requests</span>' +
+            '<div class="kpi-val">' + fmtInt(totals.count || 0) + '</div>' +
+            '<div class="kpi-sub"><strong>' + fmtDec(totals.rate || 0, 2) + ' /s</strong> • ' + fmtInt(totals.cph || 0) + ' /h (' + fmtInt(nonAgg.length) + ' endpoint' + (nonAgg.length === 1 ? '' : 's') + ')</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Mean Wire Latency</span>' +
+            '<div class="kpi-val">' + fmtDec(totals.mean || 0, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
+            '<div class="kpi-sub">' + (pFirst && pFirstVal !== undefined ? ('P' + esc(pFirst) + ': <strong>' + fmtInt(pFirstVal) + ' ms</strong> • ') : '') + 'Min: ' + fmtInt(totals.min) + ' ms • Max: ' + fmtInt(totals.max) + ' ms</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">' + esc(tailHeader) + '</span>' +
+            '<div class="kpi-val">' + tailMain + '</div>' +
+            '<div class="kpi-sub">' + (lastPctKey && lastPctVal !== undefined ? ('P' + esc(lastPctKey) + ': <strong>' + fmtInt(lastPctVal) + ' ms</strong> • ') : '') + 'Std Dev: ' + fmtDec(totals.dev || 0, 1) + ' ms</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Network Volume &amp; Errors</span>' +
+            '<div class="kpi-val">' + esc(fmtBytes(totalBytes)) + '</div>' +
+            '<div class="kpi-sub">Sent: ' + esc(fmtBytes(sentBytes)) + ' • Recv: ' + esc(fmtBytes(recvBytes)) + ' • <strong style="color:' + (errCount > 0 ? 'var(--status-fail-text)' : 'var(--status-pass-text)') + ';">' + fmtInt(errCount) + ' Error' + (errCount === 1 ? '' : 's') + '</strong></div>' +
+          '</article>';
+      }
+
+      function renderStatDec1(key) {
+        return function (it) { return it[key] !== undefined && it[key] !== null ? fmtDec(it[key], 1) : "—"; };
+      }
+      function renderStatInt(key) {
+        return function (it) { return it[key] !== undefined && it[key] !== null ? fmtInt(it[key]) : "—"; };
+      }
+
+      var reqColumns = [
+        { key: "name", label: "Request Rule / Endpoint", type: "text" },
+        { key: "spark", label: "Trend", type: "spark", sortable: false },
+        { key: "count", label: "Count", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.count); } },
+        { key: "rate", label: "1/s", group: "Counts", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },
+        { key: "cph", label: "1/h", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.cph); } },
+        { key: "errors", label: "Errors", group: "Errors", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
+        { key: "errPct", label: "Err %", group: "Errors", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
+        { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", colorizeType: "mean", render: function (it) { return fmtDec(it.mean, 1); } },
+        { key: "min", label: "Min [ms]", group: "Runtime [ms]", altGroup: true, agg: "min", colorizeType: "min", render: function (it) { return fmtInt(it.min); } },
+        { key: "max", label: "Max [ms]", group: "Runtime [ms]", altGroup: true, agg: "max", colorizeType: "max", render: function (it) { return fmtInt(it.max); } },
+        { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtDec(it.dev, 1); } },
+        { type: "dynamicPercentiles", group: "Percentiles [ms]", decimals: 0 },
+        { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true }
+      ];
+
+      var reqNetworkColumns = [
+        { key: "name", label: "Request Rule / Endpoint", type: "text" },
+        { key: "dns", label: "Mean", group: "DNS Time [ms]", agg: "weightedMean", render: renderStatDec1("dns") },
+        { key: "dnsMin", label: "Min", group: "DNS Time [ms]", agg: "min", render: renderStatInt("dnsMin") },
+        { key: "dnsMax", label: "Max", group: "DNS Time [ms]", agg: "max", render: renderStatInt("dnsMax") },
+        { key: "conn", label: "Mean", group: "Connect Time [ms]", altGroup: true, agg: "weightedMean", render: renderStatDec1("conn") },
+        { key: "connMin", label: "Min", group: "Connect Time [ms]", altGroup: true, agg: "min", render: renderStatInt("connMin") },
+        { key: "connMax", label: "Max", group: "Connect Time [ms]", altGroup: true, agg: "max", render: renderStatInt("connMax") },
+        { key: "send", label: "Mean", group: "Send Time [ms]", agg: "weightedMean", render: renderStatDec1("send") },
+        { key: "sendMin", label: "Min", group: "Send Time [ms]", agg: "min", render: renderStatInt("sendMin") },
+        { key: "sendMax", label: "Max", group: "Send Time [ms]", agg: "max", render: renderStatInt("sendMax") },
+        { key: "busy", label: "Mean", group: "Server Busy Time [ms]", altGroup: true, agg: "weightedMean", render: renderStatDec1("busy") },
+        { key: "busyMin", label: "Min", group: "Server Busy Time [ms]", altGroup: true, agg: "min", render: renderStatInt("busyMin") },
+        { key: "busyMax", label: "Max", group: "Server Busy Time [ms]", altGroup: true, agg: "max", render: renderStatInt("busyMax") },
+        { key: "recv", label: "Mean", group: "Receive Time [ms]", agg: "weightedMean", render: renderStatDec1("recv") },
+        { key: "recvTimeMin", label: "Min", group: "Receive Time [ms]", agg: "min", render: renderStatInt("recvTimeMin") },
+        { key: "recvTimeMax", label: "Max", group: "Receive Time [ms]", agg: "max", render: renderStatInt("recvTimeMax") },
+        { key: "ttfb", label: "Mean", group: "Time to First [ms]", altGroup: true, agg: "weightedMean", disableTtfbWaterfall: true, render: renderStatDec1("ttfb") },
+        { key: "ttfbMin", label: "Min", group: "Time to First [ms]", altGroup: true, agg: "min", render: renderStatInt("ttfbMin") },
+        { key: "ttfbMax", label: "Max", group: "Time to First [ms]", altGroup: true, agg: "max", render: renderStatInt("ttfbMax") },
+        { key: "ttlb", label: "Mean", group: "Time to Last [ms]", agg: "weightedMean", render: renderStatDec1("ttlb") },
+        { key: "ttlbMin", label: "Min", group: "Time to Last [ms]", agg: "min", render: renderStatInt("ttlbMin") },
+        { key: "ttlbMax", label: "Max", group: "Time to Last [ms]", agg: "max", render: renderStatInt("ttlbMax") }
+      ];
+
+      var reqBandwidthColumns = [
+        { key: "name", label: "Request Rule / Endpoint", type: "text" },
+        { key: "sentTotal", label: "Total", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentTotal") },
+        { key: "sentRate", label: "1/s", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentRate") },
+        { key: "sentCpm", label: "1/min", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentCpm") },
+        { key: "sentCph", label: "1/h", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentCph") },
+        { key: "sentCpd", label: "1/d", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentCpd") },
+        { key: "sentMean", label: "Mean", group: "Bytes Sent", agg: "weightedMean", render: renderStatInt("sentMean") },
+        { key: "sentMin", label: "Min", group: "Bytes Sent", agg: "min", render: renderStatInt("sentMin") },
+        { key: "sentMax", label: "Max", group: "Bytes Sent", agg: "max", render: renderStatInt("sentMax") },
+        { key: "recvTotal", label: "Total", group: "Bytes Received", altGroup: true, agg: "sum", render: renderStatInt("recvTotal") },
+        { key: "recvRate", label: "1/s", group: "Bytes Received", altGroup: true, agg: "sum", render: renderStatInt("recvRate") },
+        { key: "recvCpm", label: "1/min", group: "Bytes Received", altGroup: true, agg: "sum", render: renderStatInt("recvCpm") },
+        { key: "recvCph", label: "1/h", group: "Bytes Received", altGroup: true, agg: "sum", render: renderStatInt("recvCph") },
+        { key: "recvCpd", label: "1/d", group: "Bytes Received", altGroup: true, agg: "sum", render: renderStatInt("recvCpd") },
+        { key: "recvMean", label: "Mean", group: "Bytes Received", altGroup: true, agg: "weightedMean", render: renderStatInt("recvMean") },
+        { key: "recvMin", label: "Min", group: "Bytes Received", altGroup: true, agg: "min", render: renderStatInt("recvMin") },
+        { key: "recvMax", label: "Max", group: "Bytes Received", altGroup: true, agg: "max", render: renderStatInt("recvMax") }
+      ];
+
+      wb.init({
+        entityLabel: "Request",
+        colorizeRequests: true,
+        items: items,
+        includeAggregateRowInTable: Boolean(items[0] && items[0].isAggregate),
+        defaultSort: { key: "cph", dir: "descending" },
+        totalsRow: totals,
+        tabs: [
+          { key: "overview", label: "Overview", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + ".webp"; } },
+          { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_Average.webp"; } },
+          { key: "count", label: "Count/s", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_CountPerSecond.webp"; } },
+          { key: "size", label: "Response Size", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_ResponseSize.webp"; } },
+          { key: "dynamic", label: "Dynamic Overview (Zoom)", type: "echart", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + ".json"; } }
+        ],
+        columns: reqColumns,
+        tableViews: [
+          { key: "runtimes", label: "Runtimes", columns: reqColumns, defaultSort: { key: "cph", dir: "descending" } },
+          { key: "network", label: "Network Timing", columns: reqNetworkColumns, defaultSort: { key: "ttfb", dir: "descending" } },
+          { key: "bandwidth", label: "Bandwidth", columns: reqBandwidthColumns, defaultSort: { key: "recvTotal", dir: "descending" } }
+        ],
+        renderWbKpis: function (item, escFn, fInt, fDec) {
+          var distinctStr = item.distinctUrls ? (' • Distinct: ' + fInt(item.distinctUrls) + ' URLs') : '';
+          var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
+          var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
+          return (
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Hits</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h' + distinctStr + '</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Latency</span><span class="wb-kpi-val">' + fDec(item.mean, 1) + ' ms</span></div>' +
+            (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + '</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
+            (item.ttfb !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">TTFB / Recv</span><span class="wb-kpi-val">' + fDec(item.ttfb || 0, 1) + ' / ' + fDec(item.recv || 0, 2) + ' ms</span></div>' : '')
+          );
+        },
+        renderDrawer: function (item, escFn, fInt, fDec) {
+          var sampleUrlsHtml = "";
+          if (item.sampleUrls && item.sampleUrls.length) {
+            sampleUrlsHtml =
+              '<div class="drawer-box" style="grid-column: 1 / -1;">' +
+                '<h4>Example URLs (' + (item.distinctUrls ? (fInt(item.distinctUrls) + ' distinct') : fInt(item.sampleUrls.length)) + ')</h4>' +
+                '<ul class="url-sample-list">' +
+                  item.sampleUrls.map(function (u, idx) {
+                    var str = String(u || "");
+                    return '<li class="url-sample-item">' +
+                      '<span class="url-sample-idx">' + (idx + 1) + '</span>' +
+                      '<a class="url-sample-link" href="' + escFn(str) + '" target="_blank" rel="noopener" title="' + escFn(str) + '">' + escFn(str) + '</a>' +
+                    '</li>';
+                  }).join('') +
+                '</ul>' +
+              '</div>';
+          }
+
+          var segRows = intervals.length
+            ? intervals.map(function (iv, idx) {
+                var seg = wb.getItemSegmentation(item, idx) || { count: 0, pct: 0 };
+                var rng = wb.formatIntervalRange(iv);
+                var isLast = idx === intervals.length - 1;
+                return '<tr><td>' + escFn(rng) + ':</td><td style="' + (isLast && seg.count > 0 ? 'color:var(--status-fail-text);font-weight:700;' : '') + '">' + fInt(seg.count) + ' (' + fDec(seg.pct, 2) + '%)</td></tr>';
+              }).join('')
+            : '<tr><td colspan="2" class="cell-muted">No runtime segmentation intervals configured.</td></tr>';
+
+          return (
+            '<div class="drawer-grid">' +
+              '<div class="drawer-box">' +
+                '<h4>SLA Runtime Segmentation Buckets</h4>' +
+                '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
+                  segRows +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Socket &amp; Network Timing Breakdown [ms]</h4>' +
+                '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
+                  '<tr><td>DNS Lookup:</td><td>' + fDec(item.dns, 2) + ' ms (max: ' + fInt(item.dnsMax) + ')</td></tr>' +
+                  '<tr><td>Connect Time:</td><td>' + fDec(item.conn, 2) + ' ms (max: ' + fInt(item.connMax) + ')</td></tr>' +
+                  '<tr><td>Send Time:</td><td>' + fDec(item.send, 2) + ' ms (max: ' + fInt(item.sendMax) + ')</td></tr>' +
+                  '<tr><td>Server Busy (TTFB):</td><td>' + fDec(item.busy !== undefined ? item.busy : item.ttfb, 2) + ' ms (max: ' + fInt(item.busyMax !== undefined ? item.busyMax : item.ttfbMax) + ')</td></tr>' +
+                  '<tr><td>Receive Time:</td><td>' + fDec(item.recv, 2) + ' ms (max: ' + fInt(item.recvTimeMax) + ')</td></tr>' +
+                  '<tr><td>Time to Last Byte:</td><td>' + fDec(item.ttlb, 2) + ' ms</td></tr>' +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Bandwidth &amp; Payload Transferred</h4>' +
+                '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
+                  '<tr><td>Bytes Sent Mean:</td><td>' + fInt(item.sentMean) + ' B (Rate: ' + fDec(item.sentRate, 1) + ' B/s)</td></tr>' +
+                  '<tr><td>Bytes Sent Total:</td><td>' + fInt(item.sentTotal) + ' B</td></tr>' +
+                  '<tr><td>Bytes Recv Mean:</td><td>' + fInt(item.recvMean) + ' B (Rate: ' + fDec(item.recvRate, 1) + ' B/s)</td></tr>' +
+                  '<tr><td>Bytes Recv Total:</td><td>' + fInt(item.recvTotal) + ' B</td></tr>' +
+                  (item.colorizationGroup ? '<tr><td>Colorization Group:</td><td><span class="badge-tag">' + escFn(item.colorizationGroup) + '</span></td></tr>' : '') +
+                  '<tr><td>Errors:</td><td style="' + (item.errors > 0 ? 'color:var(--status-fail-text);font-weight:800;' : '') + '">' + fInt(item.errors) + '</td></tr>' +
+                '</table>' +
+              '</div>' +
+              sampleUrlsHtml +
+            '</div>'
+          );
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+

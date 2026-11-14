@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-page-title="Transactions">XLT Report - Transactions</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/chart-lightbox.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+  <script src="js/echarts-6.0.0.min.js"></script>
+  <script src="js/dynamic-chart.js"></script>
+  <script src="js/transactions-data.js"></script>
+  <script src="js/workbench.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
+          <img class="brand-logo" src="images/xlt-logo.svg" alt="XLT Logo" />
+          <div class="brand-titles">
+            <h1>Performance Test Report <span class="badge-tag" id="meta-project-badge" hidden></span> <span class="badge-tag badge-accent" id="meta-test-badge" hidden></span></h1>
+            <p id="meta-subtitle">Xceptance LoadTest</p>
+          </div>
+        </a>
+      </div>
+
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="index.html" class="nav-btn">Overview</a>
+          </li>
+          <li class="nav-item">
+            <a href="transactions.html" class="nav-btn" aria-current="page">Transactions</a>
+          </li>
+          <li class="nav-item">
+            <a href="actions.html" class="nav-btn">Actions</a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="requests.html" class="nav-btn">Requests</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-requests" aria-label="Requests sub-menu">▾</button>
+            </div>
+            <ul id="sub-requests" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="requests.html">All Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+              <li><a class="nav-sublink" href="slowest-requests.html">Slowest Requests <span class="badge-tag cell-warn" data-nav-count="slowestRequests" hidden></span></a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="network.html" class="nav-btn">Network</a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-network" aria-label="Network sub-menu">▾</button>
+            </div>
+            <ul id="sub-network" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="network.html#sec-network">Network Overview</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-hosts">Hosts <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-ips">IP Addresses <span class="badge-tag" data-nav-count="ips" hidden></span></a></li>
+              <li><a class="nav-sublink" href="network.html#sec-methods">HTTP Methods</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-status">HTTP Status Codes</a></li>
+              <li><a class="nav-sublink" href="network.html#sec-types">Content Types</a></li>
+            </ul>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <div class="nav-link-group">
+              <a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a>
+              <button type="button" class="nav-split-caret" aria-expanded="false" aria-controls="sub-errors" aria-label="Errors sub-menu">▾</button>
+            </div>
+            <ul id="sub-errors" class="nav-submenu" hidden>
+              <li><a class="nav-sublink" href="errors.html#sec-req-errors">Request Errors <span class="badge-tag" data-nav-count="requestErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-act-errors">Action Errors <span class="badge-tag" data-nav-count="actionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-tx-errors">Transaction Errors <span class="badge-tag" data-nav-count="transactionErrors" hidden></span></a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-incidents">Incident Forensics &amp; Traces</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="agents.html" class="nav-btn">Agents <span class="badge-tag" id="nav-agents-pill" hidden></span></a>
+          </li>
+          <li class="nav-item" id="nav-scorecard-item" hidden>
+            <a href="scorecard.html" class="nav-btn">Scorecard <span class="nav-pill-count" id="nav-scorecard-pill"></span></a>
+          </li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li id="nav-ai-data-item"><a class="nav-sublink" href="ai-data.md" target="_blank" rel="noopener">AI Data (Markdown) ↗</a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html">Custom Data &amp; Logs <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+              <li><a class="nav-sublink" href="external.html">External Data <span class="badge-tag" data-nav-count="externalCharts" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
+          <span class="theme-icon">🌓</span> Theme
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Hero Context Strip -->
+    <section class="kpi-grid-4" id="tx-kpi-grid"></section>
+
+    <div id="tx-empty-section" hidden>
+      <section class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">📋 Transactions Directory</div>
+        </div>
+        <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
+          <strong>No transaction records available for this test run.</strong>
+        </div>
+      </section>
+    </div>
+
+    <div class="workbench-scope" id="tx-workbench-scope">
+    <!-- Top Sticky Chart Workbench -->
+    <section class="chart-workbench" id="workbench-section">
+      <header class="workbench-header">
+        <!-- Col 1: Title Area -->
+        <div class="workbench-title-area">
+          <span class="wb-badge" id="wb-badge" hidden>ALL</span>
+          <span class="workbench-name" id="wb-name">All Transactions</span>
+        </div>
+
+        <!-- Col 2: Stationary Pager (Zero-Jitter 340px) -->
+        <div class="workbench-pager">
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-prev" aria-label="Previous transaction (Left Arrow)">◀ Prev</button>
+          <span class="pager-badge" id="wb-counter">Transaction 0 of 0</span>
+          <button type="button" class="btn-pager btn-pager-nav" id="wb-next" aria-label="Next transaction (Right Arrow)">Next ▶</button>
+        </div>
+
+        <!-- Col 3: Live KPIs + Controls -->
+        <div class="workbench-right-col">
+          <div class="wb-kpis" id="wb-kpis"></div>
+          <div class="wb-controls">
+            <button type="button" class="btn-chip" id="wb-link-btn" title="Copy shareable link with current item &amp; chart tab">🔗 Link</button>
+            <button type="button" class="btn-chip" id="wb-pin-btn" title="Toggle sticky top pinning">📌 Pinned</button>
+            <button type="button" class="btn-chip" id="wb-collapse-btn" title="Collapse chart body into compact 48px sticky strip">▲ Hide Chart</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Workbench Body -->
+      <div class="workbench-body" id="wb-body">
+        <div class="workbench-tabs-bar">
+          <div class="wb-tabs" id="wb-tabs"></div>
+          <div class="wb-tabs-hint">💡 Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+        </div>
+        <div class="workbench-stage chart-canvas-light" id="wb-stage"></div>
+        <footer class="workbench-footnote" id="wb-footnote"></footer>
+      </div>
+    </section>
+
+    <!-- Directory Section -->
+    <section class="card" id="directory-section">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📋 Transactions Directory</span>
+          <span class="badge-tag" id="dir-visible-count">0 shown</span>
+        </div>
+
+        <div class="view-mode-bar">
+          <div class="btn-group">
+            <button type="button" class="btn-chip active" id="btn-view-workbench">📌 Top Workbench</button>
+            <button type="button" class="btn-chip" id="btn-view-stream">📊 Continuous Stream</button>
+          </div>
+          <button type="button" class="btn-chip" data-copy-table="dir-table">📋 Copy as Markdown</button>
+        </div>
+      </div>
+
+      <!-- Directory Toolbar -->
+      <div class="directory-toolbar">
+        <div class="table-search-wrap">
+          <input type="search" class="input-search" id="dir-filter-input" placeholder="Filter transactions (e.g. Checkout -Guest | Order)..." aria-label="Filter transactions" />
+        </div>
+        <div class="category-chips" id="dir-category-chips"></div>
+      </div>
+
+      <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
+
+      <!-- High-Density Directory Table -->
+      <div class="table-scroll">
+        <table class="data-table" id="dir-table">
+          <thead></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+    </div>
+
+    <!-- Continuous Chart Stream (Always visible below table for quick visual scanning) -->
+    <section id="stream-section" class="stream-section"></section>
+
+  </main>
+
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script>
+    /**
+     * Transactions view controller.
+     * Consumes `window.XLT_TRANSACTIONS`, populates the top summary KPI strip (`#tx-kpi-grid`),
+     * and configures `XltWorkbench.init` with 6 chart tabs (Runtime, Hits, Errors, Concurrent Users,
+     * Events, Median) and the sortable directory table + inline expandable percentile/range drawer.
+     */
+    (function () {
+      "use strict";
+
+      var data = window.XLT_TRANSACTIONS || { items: [] };
+      var items = Array.isArray(data) ? data : (data.items || []);
+      var nonAgg = items.filter(function (it) { return !it.isAggregate; });
+      var wb = window.XltWorkbench;
+      var fmtInt = wb.fmtInt;
+      var fmtDec = wb.fmtDec;
+      var esc = wb.escHtml;
+      var pcts = wb.getConfiguredPercentiles(items);
+
+      var kpiGrid = document.getElementById("tx-kpi-grid");
+      var emptySec = document.getElementById("tx-empty-section");
+      var wbScope = document.getElementById("tx-workbench-scope");
+      var streamSec = document.getElementById("stream-section");
+
+      if (!items.length) {
+        if (emptySec) emptySec.hidden = false;
+        if (wbScope) wbScope.hidden = true;
+        if (streamSec) streamSec.hidden = true;
+        if (kpiGrid) {
+          kpiGrid.innerHTML =
+            '<article class="kpi-card"><span class="kpi-label">Total Transactions</span><div class="kpi-val">0</div><div class="kpi-sub">No transactions recorded</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Aggregate Mean Runtime</span><div class="kpi-val">—</div><div class="kpi-sub">No runtime samples</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Tail Latency</span><div class="kpi-val">—</div><div class="kpi-sub">No percentile samples</div></article>' +
+            '<article class="kpi-card"><span class="kpi-label">Failures &amp; Telemetry</span><div class="kpi-val">0</div><div class="kpi-sub">0 Events</div></article>';
+        }
+        return;
+      }
+
+      var totals = data.totals || items[0] || {};
+      if (kpiGrid) {
+        var meanMs = Number(totals.mean || 0);
+        var pFirst = pcts.length ? pcts[0] : null;
+        var pFirstVal = pFirst ? wb.getItemPercentile(totals, pFirst) : totals.median;
+        var tailKeys = pcts.length >= 3 ? [pcts[1], pcts[2]] : (pcts.length >= 2 ? [pcts[0], pcts[1]] : (pcts.length === 1 ? [pcts[0]] : []));
+        var tailHeader = tailKeys.length ? ("Tail Latency (" + tailKeys.map(function (k) { return "P" + k; }).join(" / ") + ")") : "Latency Range";
+        var tailMain = tailKeys.length
+          ? tailKeys.map(function (k) {
+              var v = wb.getItemPercentile(totals, k);
+              return v !== undefined ? (fmtDec(v / 1000, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">s</span>') : "—";
+            }).join(" / ")
+          : (fmtInt(totals.min) + " – " + fmtInt(totals.max) + " ms");
+        var lastPctKey = pcts.length > tailKeys.length ? pcts[pcts.length - 1] : null;
+        var lastPctVal = lastPctKey ? wb.getItemPercentile(totals, lastPctKey) : undefined;
+        var errCount = Number(totals.errors || 0);
+        var evtCount = Number(totals.events || 0);
+        var evtScenarios = nonAgg.filter(function (it) { return Number(it.events || 0) > 0; }).length;
+
+        kpiGrid.innerHTML =
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Total Transactions</span>' +
+            '<div class="kpi-val">' + fmtInt(totals.count || 0) + '</div>' +
+            '<div class="kpi-sub"><strong>' + fmtDec(totals.rate || 0, 2) + ' /s</strong> • ' + fmtInt(totals.cph || 0) + ' /h (' + fmtInt(nonAgg.length) + ' scenario' + (nonAgg.length === 1 ? '' : 's') + ')</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Aggregate Mean Runtime</span>' +
+            '<div class="kpi-val">' + fmtDec(meanMs / 1000, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">s</span> <span style="font-size:12px;font-weight:600;color:var(--text-muted);">(' + fmtInt(meanMs) + ' ms)</span></div>' +
+            '<div class="kpi-sub">' + (pFirst && pFirstVal !== undefined ? ('P' + esc(pFirst) + ': <strong>' + fmtDec(pFirstVal / 1000, 1) + ' s</strong> (' + fmtInt(pFirstVal) + ' ms)') : ('Min: <strong>' + fmtInt(totals.min) + ' ms</strong> • Max: <strong>' + fmtInt(totals.max) + ' ms</strong>')) + '</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">' + esc(tailHeader) + '</span>' +
+            '<div class="kpi-val">' + tailMain + '</div>' +
+            '<div class="kpi-sub">' + (lastPctKey && lastPctVal !== undefined ? ('P' + esc(lastPctKey) + ': <strong>' + fmtDec(lastPctVal / 1000, 1) + ' s</strong> (' + fmtInt(lastPctVal) + ' ms)') : ('Std Dev: <strong>' + fmtDec(totals.dev || 0, 1) + ' ms</strong>')) + '</div>' +
+          '</article>' +
+          '<article class="kpi-card">' +
+            '<span class="kpi-label">Failures &amp; Telemetry</span>' +
+            '<div class="kpi-val" style="color:' + (errCount > 0 ? 'var(--status-fail-text)' : 'var(--status-pass-text)') + ';">' + fmtInt(errCount) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">Errors</span> <span style="font-size:12px;font-weight:600;color:var(--text-muted);">(' + fmtDec(totals.errPct || 0, 3) + '%)</span></div>' +
+            '<div class="kpi-sub"><strong>' + fmtInt(evtCount) + ' Events</strong> recorded' + (evtCount > 0 ? (' across ' + fmtInt(evtScenarios) + ' scenario' + (evtScenarios === 1 ? '' : 's')) : '') + '</div>' +
+          '</article>';
+      }
+
+      wb.init({
+        entityLabel: "Transaction",
+        items: items,
+        includeAggregateRowInTable: Boolean(items[0] && items[0].isAggregate),
+        defaultSort: { key: "cph", dir: "descending" },
+        totalsRow: totals,
+        tabs: [
+          { key: "overview", label: "Overview", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + ".webp"; } },
+          { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + "_Average.webp"; } },
+          { key: "count", label: "Count/s", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + "_CountPerSecond.webp"; } },
+          { key: "users", label: "Concurrent Users", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + "_ConcurrentUsers.webp"; } },
+          { key: "arrival", label: "Arrival Rate", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + "_ArrivalRate.webp"; } },
+          { key: "dynamic", label: "Dynamic Overview (Zoom)", type: "echart", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + ".json"; } }
+        ],
+        columns: [
+          { key: "name", label: "Transaction Scenario", type: "text" },
+          { key: "spark", label: "Trend", type: "spark", sortable: false },
+          { key: "count", label: "Count", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.count); } },
+          { key: "rate", label: "1/s", group: "Counts", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },
+          { key: "cph", label: "1/h", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.cph); } },
+          { key: "errors", label: "Errors", group: "Errors / Events", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
+          { key: "errPct", label: "Err %", group: "Errors / Events", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
+          { key: "events", label: "Events", group: "Errors / Events", agg: "sum", cellClass: function (it) { return it.events > 0 ? "cell-warn" : ""; }, render: function (it) { return fmtInt(it.events); } },
+          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtDec(it.mean, 1); } },
+          { key: "min", label: "Min [ms]", group: "Runtime [ms]", altGroup: true, agg: "min", render: function (it) { return fmtInt(it.min); } },
+          { key: "max", label: "Max [ms]", group: "Runtime [ms]", altGroup: true, agg: "max", render: function (it) { return fmtInt(it.max); } },
+          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtDec(it.dev, 1); } },
+          { type: "dynamicPercentiles", group: "Percentiles [ms]", decimals: 0 },
+          { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true, onlyIfData: true }
+        ],
+        renderWbKpis: function (item, escFn, fInt, fDec) {
+          var durSec = (Number(item.mean || 0) / 1000).toFixed(1) + " s";
+          var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
+          var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
+          return (
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Output</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Duration</span><span class="wb-kpi-val">' + fDec(item.mean, 1) + ' ms <span style="font-size:10.5px;font-weight:600;color:var(--text-muted);">(' + durSec + ')</span></span></div>' +
+            (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + '</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Errors / Events</span><span class="wb-kpi-val"><span style="' + (item.errors > 0 ? 'color:var(--status-fail-text);font-weight:800;' : '') + '">' + fInt(item.errors) + '</span> / <span style="' + (item.events > 0 ? 'color:var(--warning);font-weight:800;' : '') + '">' + fInt(item.events) + '</span></span></div>'
+          );
+        },
+        renderDrawer: function (item, escFn, fInt, fDec) {
+          var meanSec = (Number(item.mean || 0) / 1000).toFixed(2);
+          var medMs = item.median !== undefined ? item.median : wb.getItemPercentile(item, "50");
+          var medSec = medMs !== undefined ? (Number(medMs) / 1000).toFixed(2) : null;
+          var minSec = (Number(item.min || 0) / 1000).toFixed(2);
+          var maxSec = (Number(item.max || 0) / 1000).toFixed(2);
+          var devSec = (Number(item.dev || 0) / 1000).toFixed(2);
+          var lblTxt = (item.labels && item.labels.length)
+            ? item.labels.map(function (l) { return '<span class="label-chip">' + escFn(l) + '</span>'; }).join(' ')
+            : '<span class="cell-muted">None</span>';
+          return (
+            '<div class="drawer-grid">' +
+              '<div class="drawer-box">' +
+                '<h4>Extrapolated Projections</h4>' +
+                '<table>' +
+                  '<tr><td>Per Minute (1/min)</td><td>' + fDec(item.cpm, 1) + '</td></tr>' +
+                  '<tr><td>Per Day (1/d)</td><td>' + fInt(item.cpd) + '</td></tr>' +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Duration In Seconds</h4>' +
+                '<table>' +
+                  '<tr><td>Mean</td><td>' + meanSec + ' s</td></tr>' +
+                  (medSec !== null ? '<tr><td>Median</td><td>' + medSec + ' s</td></tr>' : '') +
+                  '<tr><td>Min .. Max</td><td>' + minSec + ' .. ' + maxSec + ' s</td></tr>' +
+                  '<tr><td>Std Dev</td><td>' + devSec + ' s</td></tr>' +
+                '</table>' +
+              '</div>' +
+              '<div class="drawer-box">' +
+                '<h4>Telemetry &amp; Metadata</h4>' +
+                '<table>' +
+                  '<tr><td>Error Rate</td><td style="' + (item.errors > 0 ? 'color:var(--status-fail-text);font-weight:700;' : '') + '">' + fInt(item.errors) + ' (' + fDec(item.errPct, 3) + '%)</td></tr>' +
+                  '<tr><td>Non-fatal Events</td><td style="' + (item.events > 0 ? 'color:var(--warning);' : '') + '">' + fInt(item.events) + '</td></tr>' +
+                  '<tr><td>Labels</td><td>' + lblTxt + '</td></tr>' +
+                '</table>' +
+              '</div>' +
+            '</div>'
+          );
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+

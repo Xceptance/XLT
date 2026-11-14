@@ -98,6 +98,18 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
+     * The supported UI rendering modes for single-run load test reports.
+     */
+    public enum UiMode
+    {
+        /** Dynamic modern JS/HTML report UI (default). */
+        MODERN,
+
+        /** Classic XSLT 1.0 HTML report UI. */
+        CLASSIC
+    }
+
+    /**
      * The settings describing how a chart is to be capped.
      */
     public static class ChartCappingInfo
@@ -246,6 +258,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_PDF_REPORT_ENABLED = PROP_PREFIX + "pdf.enabled";
 
+    public static final String PROP_UI_MODE = PROP_PREFIX + "ui";
     static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" +
                                                       PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
 
@@ -412,6 +425,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private boolean pdfReportEnabled;
 
     /**
+     * The selected UI rendering mode for load test reports.
+     */
+    private final UiMode uiMode;
+
+    /**
      * Creates a new ReportGeneratorConfiguration object.
      *
      * @throws IOException
@@ -572,6 +590,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         dynamicChartsEnabled = getBooleanProperty(PROP_DYNAMIC_CHARTS_ENABLED, true);
         pdfReportEnabled = getBooleanProperty(PROP_PDF_REPORT_ENABLED, false);
+        uiMode = getEnumProperty(UiMode.class, PROP_UI_MODE, UiMode.MODERN);
 
         readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
         parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
@@ -2039,5 +2058,25 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // Throw an exception if we failed to parse the percentage or time value
             throw new XltException(String.format(ERROR_INVALID_PROPERTY_VALUE_FORMAT, valueKey), e);
         }
+    }
+
+    /**
+     * Returns the configured UI rendering mode ({@link UiMode#MODERN} by default).
+     *
+     * @return the configured UI mode
+     */
+    public UiMode getUiMode()
+    {
+        return uiMode;
+    }
+
+    /**
+     * Returns whether the modern report UI is enabled.
+     *
+     * @return {@code true} if {@link UiMode#MODERN} is configured, {@code false} for {@link UiMode#CLASSIC}
+     */
+    public boolean isModernUi()
+    {
+        return uiMode == UiMode.MODERN;
     }
 }

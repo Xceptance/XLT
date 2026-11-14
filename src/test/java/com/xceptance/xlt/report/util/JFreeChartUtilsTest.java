@@ -15,17 +15,34 @@
  */
 package com.xceptance.xlt.report.util;
 
+import java.awt.Color;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.util.Date;
 
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.block.LineBorder;
+import org.jfree.chart.plot.CombinedDomainXYPlot;
+import org.jfree.chart.plot.CombinedRangeXYPlot;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.ui.HorizontalAlignment;
+import org.jfree.data.Range;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYIntervalSeries;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.xceptance.xlt.api.report.MovingAverageConfiguration;
+import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.ReportGeneratorMain;
 
 import junitparams.JUnitParamsRunner;
@@ -422,6 +439,169 @@ public class JFreeChartUtilsTest
         final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(new TimeSeries("Test"), config);
         Assert.assertEquals("Test Average (" + config.getName() + ")", result.getKey());
         Assert.assertEquals(0, result.getItemCount());
+    }
+
+    @After
+    public void resetChartStyle()
+    {
+        JFreeChartUtils.setModernChartStyle(false);
+    }
+
+    /**
+     * Verifies that classic chart styling remains unchanged when modern chart styling is disabled.
+     */
+    @Test
+    public void testClassicChartStylePreserved()
+    {
+        JFreeChartUtils.setModernChartStyle(false);
+
+        final CombinedChartFixture fixture = createSampleCombinedChart();
+        final BufferedImage image = JFreeChartUtils.renderChart(fixture.chart, 700, 400);
+
+        Assert.assertEquals(new Color(0xFAFAFA), fixture.chart.getBackgroundPaint());
+        Assert.assertEquals(HorizontalAlignment.CENTER, fixture.chart.getTitle().getHorizontalAlignment());
+        Assert.assertEquals(new Color(0x333333), fixture.chart.getTitle().getPaint());
+        Assert.assertTrue(fixture.chart.getLegend().getFrame() instanceof LineBorder);
+
+        Assert.assertTrue(fixture.runtimePlot.isOutlineVisible());
+        Assert.assertEquals(JFreeChartUtils.COLOR_MOVING_AVERAGE, fixture.runtimePlot.getRenderer(0).getSeriesPaint(0));
+        Assert.assertEquals(JFreeChartUtils.COLOR_LINE, fixture.runtimePlot.getRenderer(1).getSeriesPaint(0));
+        Assert.assertEquals(JFreeChartUtils.COLOR_HISTOGRAM, fixture.histogramPlot.getRenderer(0).getSeriesPaint(0));
+        Assert.assertEquals(new Color(0xFAFAFA).getRGB(), image.getRGB(2, 2));
+    }
+
+    /**
+     * Verifies that modern chart styling applies the clean surface, left-aligned title, borderless legend, open dashed
+     * gridlines, Slate-Blue histogram bars, translucent scatter dots with opaque legend swatch, and Medium Slate XLT
+     * pill.
+     */
+    @Test
+    public void testModernChartStyle()
+    {
+        JFreeChartUtils.setModernChartStyle(true);
+
+        final CombinedChartFixture fixture = createSampleCombinedChart();
+        final BufferedImage image = JFreeChartUtils.renderChart(fixture.chart, 700, 400);
+
+        Assert.assertEquals(Color.WHITE, fixture.chart.getBackgroundPaint());
+        Assert.assertEquals(HorizontalAlignment.LEFT, fixture.chart.getTitle().getHorizontalAlignment());
+        Assert.assertEquals(new Color(0x0F172A), fixture.chart.getTitle().getPaint());
+        Assert.assertEquals(BlockBorder.NONE, fixture.chart.getLegend().getFrame());
+
+        Assert.assertFalse(fixture.runtimePlot.isOutlineVisible());
+        Assert.assertFalse(fixture.runtimePlot.isDomainGridlinesVisible());
+        Assert.assertTrue(fixture.runtimePlot.isRangeGridlinesVisible());
+        Assert.assertEquals(new Color(0xE2E8F0), fixture.runtimePlot.getRangeGridlinePaint());
+        Assert.assertTrue(fixture.runtimePlot.isRangeZeroBaselineVisible());
+        Assert.assertEquals(new Color(0xCBD5E1), fixture.runtimePlot.getRangeZeroBaselinePaint());
+
+        Assert.assertEquals(new Color(0x1D4ED8), fixture.runtimePlot.getRenderer(0).getSeriesPaint(0));
+
+        final DotsRenderer dotsRenderer = (DotsRenderer) fixture.runtimePlot.getRenderer(1);
+        final Color dotColor = (Color) dotsRenderer.getSeriesPaint(0);
+        Assert.assertEquals(new Color(168, 168, 168, 190), dotColor);
+        Assert.assertTrue("Scatter dot color should be translucent in modern mode", dotColor.getAlpha() < 255);
+        final LegendItem dotLegendItem = dotsRenderer.getLegendItem(1, 0);
+        Assert.assertNotNull(dotLegendItem);
+        Assert.assertEquals(255, ((Color) dotLegendItem.getFillPaint()).getAlpha());
+        Assert.assertTrue(dotLegendItem.getShape() instanceof Ellipse2D);
+
+        Assert.assertFalse(fixture.histogramPlot.isOutlineVisible());
+        Assert.assertTrue(fixture.histogramPlot.isDomainZeroBaselineVisible());
+        final XYBarRenderer histRenderer = (XYBarRenderer) fixture.histogramPlot.getRenderer(0);
+        Assert.assertEquals(new Color(59, 130, 246, 85), histRenderer.getSeriesPaint(0));
+        Assert.assertEquals(new Color(0x3B82F6), histRenderer.getSeriesOutlinePaint(0));
+        Assert.assertTrue(histRenderer.isDrawBarOutline());
+
+        Assert.assertEquals(new Color(0xDC2626), fixture.errorPlot.getRenderer(0).getSeriesPaint(0));
+        Assert.assertEquals(Color.WHITE.getRGB(), image.getRGB(2, 2));
+        // Inside the top-right Medium Slate (#64748B) pill at (chartWidth - 12 - 34 = 654..688, y = 8..26)
+        Assert.assertEquals(new Color(0x64748B).getRGB(), image.getRGB(658, 10));
+    }
+
+    /**
+     * Verifies switching back and forth between classic and modern styles produces independent results without state
+     * leakage.
+     */
+    @Test
+    public void testClassicAndModernSideBySide()
+    {
+        JFreeChartUtils.setModernChartStyle(false);
+        final CombinedChartFixture classicFirst = createSampleCombinedChart();
+        JFreeChartUtils.renderChart(classicFirst.chart, 600, 360);
+        Assert.assertEquals(new Color(0xFAFAFA), classicFirst.chart.getBackgroundPaint());
+        Assert.assertTrue(classicFirst.runtimePlot.isOutlineVisible());
+
+        JFreeChartUtils.setModernChartStyle(true);
+        final CombinedChartFixture modern = createSampleCombinedChart();
+        JFreeChartUtils.renderChart(modern.chart, 600, 360);
+        Assert.assertEquals(Color.WHITE, modern.chart.getBackgroundPaint());
+        Assert.assertFalse(modern.runtimePlot.isOutlineVisible());
+
+        JFreeChartUtils.setModernChartStyle(false);
+        final CombinedChartFixture classicSecond = createSampleCombinedChart();
+        JFreeChartUtils.renderChart(classicSecond.chart, 600, 360);
+        Assert.assertEquals(new Color(0xFAFAFA), classicSecond.chart.getBackgroundPaint());
+        Assert.assertTrue(classicSecond.runtimePlot.isOutlineVisible());
+        Assert.assertEquals(JFreeChartUtils.COLOR_HISTOGRAM, classicSecond.histogramPlot.getRenderer(0).getSeriesPaint(0));
+    }
+
+    private CombinedChartFixture createSampleCombinedChart()
+    {
+        final IntMinMaxValueSet runtimeSet = new IntMinMaxValueSet(1);
+        runtimeSet.addOrUpdateValue(10_000L, 120);
+        runtimeSet.addOrUpdateValue(11_000L, 240);
+        runtimeSet.addOrUpdateValue(12_000L, 180);
+        final TimeSeries runtimeSeries = JFreeChartUtils.toMinMaxTimeSeries(runtimeSet, "Runtime");
+        final TimeSeries avgSeries = JFreeChartUtils.createMovingAverageTimeSeries(runtimeSeries,
+                                                                                   MovingAverageConfiguration.createPercentageConfig(5));
+
+        final IntMinMaxValueSet errorSet = new IntMinMaxValueSet(1);
+        errorSet.addOrUpdateValue(10_000L, 0);
+        errorSet.addOrUpdateValue(11_000L, 2);
+        final TimeSeries errorSeries = JFreeChartUtils.toStandardTimeSeries(errorSet, "Errors/s");
+
+        final XYIntervalSeries histogramSeries = new XYIntervalSeries("Distribution");
+        histogramSeries.add(5.0, 0.0, 10.0, 150.0, 100.0, 200.0);
+
+        final CombinedRangeXYPlot outerPlot = new CombinedRangeXYPlot();
+        outerPlot.getRangeAxis().setVisible(false);
+
+        final CombinedDomainXYPlot leftPlot = JFreeChartUtils.createCombinedPlot(10_000L, 12_000L);
+        final XYPlot runtimePlot = JFreeChartUtils.createLinePlot(runtimeSeries, avgSeries, null, "Runtime [ms]", true, ChartScale.LINEAR,
+                                                                  -1);
+        final XYPlot errorPlot = JFreeChartUtils.createBarPlot(new TimeSeriesCollection(errorSeries), null, "Errors",
+                                                               JFreeChartUtils.COLOR_ERROR);
+        leftPlot.add(runtimePlot, 3);
+        leftPlot.add(errorPlot, 1);
+        outerPlot.add(leftPlot, 15);
+
+        final CombinedDomainXYPlot rightPlot = new CombinedDomainXYPlot();
+        rightPlot.getDomainAxis().setVisible(false);
+        final XYPlot histogramPlot = JFreeChartUtils.createHistogramPlot(histogramSeries, new Range(0.0, 300.0), ChartScale.LINEAR, -1);
+        rightPlot.add(histogramPlot, 3);
+        rightPlot.add(JFreeChartUtils.createSpacerPlot(), 1);
+        outerPlot.add(rightPlot, 1);
+
+        final JFreeChart chart = JFreeChartUtils.createChart("All Transactions", outerPlot);
+        return new CombinedChartFixture(chart, runtimePlot, errorPlot, histogramPlot);
+    }
+
+    private static final class CombinedChartFixture
+    {
+        private final JFreeChart chart;
+        private final XYPlot runtimePlot;
+        private final XYPlot errorPlot;
+        private final XYPlot histogramPlot;
+
+        private CombinedChartFixture(final JFreeChart chart, final XYPlot runtimePlot, final XYPlot errorPlot,
+                                     final XYPlot histogramPlot)
+        {
+            this.chart = chart;
+            this.runtimePlot = runtimePlot;
+            this.errorPlot = errorPlot;
+            this.histogramPlot = histogramPlot;
+        }
     }
 
     /**

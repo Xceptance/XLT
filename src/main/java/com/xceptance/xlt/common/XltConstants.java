@@ -281,6 +281,11 @@ public final class XltConstants
     public static final String REPORT_RESOURCES_PATH = "testreport";
 
     /**
+     * The directory name of the modern report resources (HTML templates, CSS, JS, Images).
+     */
+    public static final String MODERN_REPORT_RESOURCES_PATH = "testreport-modern";
+
+    /**
      * The date format used when parsing dates from test reports.
      */
     public static final String REPORT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";
