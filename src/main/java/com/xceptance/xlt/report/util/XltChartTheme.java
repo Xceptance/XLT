@@ -29,7 +29,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.StandardChartTheme;
-import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -105,13 +104,13 @@ public class XltChartTheme extends StandardChartTheme
 
     private static final Color MODERN_TITLE_PAINT = new Color(0x0F172A);
 
-    private static final Color MODERN_AXIS_LABEL_PAINT = new Color(0x475569);
+    private static final Color MODERN_AXIS_LABEL_PAINT = new Color(0x1E293B);
 
-    private static final Color MODERN_TICK_LABEL_PAINT = new Color(0x64748B);
+    private static final Color MODERN_TICK_LABEL_PAINT = new Color(0x334155);
 
-    private static final Color MODERN_GRID_LINE_PAINT = new Color(0xE2E8F0);
+    private static final Color MODERN_GRID_LINE_PAINT = new Color(0xCBD5E1);
 
-    private static final Color MODERN_BASELINE_PAINT = new Color(0xCBD5E1);
+    private static final Color MODERN_BASELINE_PAINT = new Color(0x94A3B8);
 
     private static final Stroke MODERN_GRID_LINE_STROKE = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f,
                                                                          new float[]
@@ -589,16 +588,9 @@ public class XltChartTheme extends StandardChartTheme
         if (modern)
         {
             axis.setTickMarkPaint(MODERN_BASELINE_PAINT);
-            if (axis instanceof DateAxis)
-            {
-                axis.setAxisLineVisible(true);
-                axis.setAxisLinePaint(MODERN_BASELINE_PAINT);
-                axis.setAxisLineStroke(MODERN_BASELINE_STROKE);
-            }
-            else
-            {
-                axis.setAxisLineVisible(false);
-            }
+            axis.setAxisLineVisible(true);
+            axis.setAxisLinePaint(MODERN_BASELINE_PAINT);
+            axis.setAxisLineStroke(MODERN_BASELINE_STROKE);
         }
         else
         {

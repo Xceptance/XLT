@@ -491,9 +491,12 @@ public class JFreeChartUtilsTest
         Assert.assertFalse(fixture.runtimePlot.isOutlineVisible());
         Assert.assertFalse(fixture.runtimePlot.isDomainGridlinesVisible());
         Assert.assertTrue(fixture.runtimePlot.isRangeGridlinesVisible());
-        Assert.assertEquals(new Color(0xE2E8F0), fixture.runtimePlot.getRangeGridlinePaint());
+        Assert.assertEquals(new Color(0xCBD5E1), fixture.runtimePlot.getRangeGridlinePaint());
         Assert.assertTrue(fixture.runtimePlot.isRangeZeroBaselineVisible());
-        Assert.assertEquals(new Color(0xCBD5E1), fixture.runtimePlot.getRangeZeroBaselinePaint());
+        Assert.assertEquals(new Color(0x94A3B8), fixture.runtimePlot.getRangeZeroBaselinePaint());
+        Assert.assertEquals(new Color(0x1E293B), fixture.runtimePlot.getRangeAxis().getLabelPaint());
+        Assert.assertEquals(new Color(0x334155), fixture.runtimePlot.getRangeAxis().getTickLabelPaint());
+        Assert.assertTrue(fixture.runtimePlot.getRangeAxis().isAxisLineVisible());
 
         Assert.assertEquals(new Color(0x1D4ED8), fixture.runtimePlot.getRenderer(0).getSeriesPaint(0));
 

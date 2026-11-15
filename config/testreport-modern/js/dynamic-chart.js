@@ -157,16 +157,20 @@
         ],
         xAxis: {
           type: "time",
-          axisLabel: { fontSize: 10.5, color: "#475569" },
-          splitLine: { show: true, lineStyle: { color: "#f1f5f9" } }
+          axisLine: { lineStyle: { color: "#94a3b8" } },
+          axisTick: { lineStyle: { color: "#94a3b8" } },
+          axisLabel: { fontSize: 10.5, color: "#334155" },
+          splitLine: { show: true, lineStyle: { color: "#e2e8f0", type: "dashed" } }
         },
         yAxis: [
           {
             type: "value",
             name: "Runtime [ms]",
-            nameTextStyle: { fontSize: 10.5, color: "#475569" },
-            axisLabel: { fontSize: 10.5, color: "#475569" },
-            splitLine: { lineStyle: { color: "#e2e8f0" } }
+            nameTextStyle: { fontSize: 10.5, color: "#1e293b" },
+            axisLine: { show: true, lineStyle: { color: "#94a3b8" } },
+            axisTick: { show: true, lineStyle: { color: "#94a3b8" } },
+            axisLabel: { fontSize: 10.5, color: "#334155" },
+            splitLine: { lineStyle: { color: "#cbd5e1", type: "dashed" } }
           },
           {
             type: "value",

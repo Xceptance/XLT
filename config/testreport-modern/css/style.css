@@ -262,6 +262,8 @@ a:hover {
 
 [id^="sec-"],
 [id^="err-chart-"],
+[id^="err-req-chart-"],
+[id^="err-row-"],
 [id^="rule-"] {
   scroll-margin-top: 72px;
   transition: box-shadow 0.25s ease, outline-color 0.25s ease;
@@ -2647,14 +2649,20 @@ img.zoomable-chart {
 }
 
 /* 4. Progression Charts Grid (2x2 Display) */
-.charts-grid {
+.charts-grid,
+.charts-2x2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+}
+.charts-grid {
   margin-bottom: 24px;
 }
 @media (max-width: 1024px) {
-  .charts-grid { grid-template-columns: 1fr; }
+  .charts-grid,
+  .charts-2x2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chart-panel {
@@ -2703,6 +2711,240 @@ img.zoomable-chart {
   object-fit: contain;
   border-radius: 4px;
   cursor: zoom-in;
+}
+
+.error-charts-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.error-tx-charts-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+  border-block-start: 1px solid var(--border-subtle);
+}
+
+.error-strip-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error-strip-subheader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.error-strip-subheader span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.error-strip-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error-strip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.error-strip-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-xs);
+}
+
+.error-strip-item img {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 900px;
+  block-size: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: zoom-in;
+}
+
+.error-strip-backlink {
+  align-self: flex-end;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.error-strip-backlink:hover {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.08);
+  text-decoration: underline;
+}
+
+.incident-details-table tbody td {
+  vertical-align: top;
+  padding: 8px 10px;
+}
+
+.incident-details-table td.incident-count-cell {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.incident-details-table td.incident-testcase-cell {
+  white-space: nowrap;
+}
+
+.incident-details-table td.incident-action-cell {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-inline-size: 140px;
+  max-inline-size: 220px;
+}
+
+.incident-req-sub {
+  margin-block-start: 4px;
+}
+
+.incident-details-table td.incident-dirs-cell {
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.incident-dir-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.incident-dir-item code {
+  font-size: 11px;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.incident-details-table td.incident-info-cell {
+  white-space: normal;
+  min-inline-size: 380px;
+  inline-size: 48%;
+}
+
+.incident-trace-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.incident-trace-toggle {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 2px 0;
+  margin: 0;
+  font: inherit;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.incident-trace-toggle:hover .incident-trace-summary {
+  color: var(--brand-blue);
+  text-decoration: underline;
+}
+
+.incident-trace-caret {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+
+.incident-copy-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.incident-trace-wrap {
+  margin-block-start: 6px;
+  max-inline-size: 100%;
+}
+
+.incident-trace-pre {
+  margin: 0;
+  inline-size: 100%;
+  max-inline-size: max(360px, 46cqi);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-x: auto;
+  max-block-size: 320px;
+  white-space: pre;
+}
+
+.incident-detail-chart {
+  margin-block-start: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  display: inline-block;
+  max-inline-size: 100%;
+}
+
+.incident-detail-chart img {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 560px;
+  block-size: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: zoom-in;
+}
+
+.incident-chart-links {
+  margin-block-start: 3px;
+}
+
+.incident-overview-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-blue);
+  text-decoration: none;
+}
+
+.incident-overview-link:hover {
+  text-decoration: underline;
 }
 
 /* 5. Hotspots Grid */
@@ -3067,6 +3309,20 @@ html.dark-theme .markdown {
 
 html.dark-theme .chart-panel-body {
   background: #0f172a;
+}
+html.dark-theme .error-tx-charts-body {
+  border-block-start-color: #243049;
+}
+html.dark-theme .error-strip-item {
+  background: #ffffff;
+  border-color: #334155;
+}
+html.dark-theme .error-strip-item:hover {
+  border-color: #475569;
+}
+html.dark-theme .incident-detail-chart {
+  background: #ffffff;
+  border-color: #334155;
 }
 html.dark-theme .hotspot-table th {
   background: #192237;
