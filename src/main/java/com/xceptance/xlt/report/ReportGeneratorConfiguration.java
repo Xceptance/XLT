@@ -198,11 +198,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_RESULTS_ROOT_DIR = PROP_PREFIX + "results";
 
-    /** Configuration property key to enable or disable persistent TelemetryStore disk caching. */
-    public static final String PROP_DATA_CACHE_ENABLED = PROP_PREFIX + "dataCache.enabled";
+    /** Default directory name for persistent TelemetryStore files inside a test results directory. */
+    public static final String DEFAULT_TELEMETRY_STORE_DIR = "telemetry-store";
 
-    /** Configuration property key specifying the directory name or path for the persistent TelemetryStore cache. */
-    public static final String PROP_DATA_CACHE_DIR = PROP_PREFIX + "dataCache.dir";
+    /** Configuration property key to enable or disable persistent TelemetryStore disk storage. */
+    public static final String PROP_TELEMETRY_STORE_ENABLED = PROP_PREFIX + "telemetryStore.enabled";
+
+    /** Configuration property key specifying the directory name or path for persistent TelemetryStore storage. */
+    public static final String PROP_TELEMETRY_STORE_DIR = PROP_PREFIX + "telemetryStore.dir";
 
     /** Configuration property key specifying the request forensic details retention mode ("sparse" or "full"). */
     public static final String PROP_REQUEST_DETAILS_MODE = "com.xceptance.xlt.report.storage.requestDetailsMode";
@@ -389,9 +392,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final int maxFramesPerTrace;
 
-    private boolean dataCacheEnabled;
+    private boolean telemetryStoreEnabled;
 
-    private String dataCacheDirectoryName;
+    private String telemetryStoreDirectoryName;
 
     private String requestDetailsMode;
 
@@ -544,9 +547,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         }
         testResultsRootDirectory = testResultsRootDir;
 
-        // data cache settings
-        dataCacheEnabled = getBooleanProperty(PROP_DATA_CACHE_ENABLED, true);
-        dataCacheDirectoryName = getStringProperty(PROP_DATA_CACHE_DIR, "xlt-cache");
+        // TelemetryStore settings
+        telemetryStoreEnabled = getBooleanProperty(PROP_TELEMETRY_STORE_ENABLED, true);
+        telemetryStoreDirectoryName = getStringProperty(PROP_TELEMETRY_STORE_DIR, DEFAULT_TELEMETRY_STORE_DIR);
         setRequestDetailsMode(getStringProperty(PROP_REQUEST_DETAILS_MODE, "sparse"));
 
         // regex engine setting for request merge rules (enabled by default; honors JVM system property if not overridden in config/CLI)
@@ -939,64 +942,64 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Indicates whether the persistent TelemetryStore binary cache is enabled.
+     * Indicates whether the persistent TelemetryStore binary storage is enabled.
      *
-     * @return {@code true} if caching is enabled, {@code false} otherwise
+     * @return {@code true} if enabled, {@code false} otherwise
      */
-    public boolean isDataCacheEnabled()
+    public boolean isTelemetryStoreEnabled()
     {
-        return dataCacheEnabled;
+        return telemetryStoreEnabled;
     }
 
     /**
-     * Enables or disables persistent TelemetryStore binary caching.
+     * Enables or disables persistent TelemetryStore binary storage.
      *
-     * @param dataCacheEnabled
-     *            {@code true} to enable caching, {@code false} to disable
+     * @param telemetryStoreEnabled
+     *            {@code true} to enable, {@code false} to disable
      */
-    public void setDataCacheEnabled(final boolean dataCacheEnabled)
+    public void setTelemetryStoreEnabled(final boolean telemetryStoreEnabled)
     {
-        this.dataCacheEnabled = dataCacheEnabled;
+        this.telemetryStoreEnabled = telemetryStoreEnabled;
     }
 
     /**
-     * Returns the configured name or relative/absolute path of the persistent data cache directory.
+     * Returns the configured name or relative/absolute path of the persistent TelemetryStore directory.
      *
-     * @return the cache directory name or path
+     * @return the TelemetryStore directory name or path
      */
-    public String getDataCacheDirectoryName()
+    public String getTelemetryStoreDirectoryName()
     {
-        return dataCacheDirectoryName;
+        return telemetryStoreDirectoryName;
     }
 
     /**
-     * Sets the name or path for the persistent data cache directory.
+     * Sets the name or path for the persistent TelemetryStore directory.
      *
-     * @param dataCacheDirectoryName
+     * @param telemetryStoreDirectoryName
      *            the directory name or path
      */
-    public void setDataCacheDirectoryName(final String dataCacheDirectoryName)
+    public void setTelemetryStoreDirectoryName(final String telemetryStoreDirectoryName)
     {
-        this.dataCacheDirectoryName = dataCacheDirectoryName;
+        this.telemetryStoreDirectoryName = telemetryStoreDirectoryName;
     }
 
     /**
-     * Resolves the persistent cache directory for a given test results directory.
+     * Resolves the persistent TelemetryStore directory for a given test results directory.
      * If the configured directory name is an absolute path, it is returned directly;
      * otherwise, it is resolved as a child directory within the test results root.
      *
      * @param testResultDir
      *            the root directory containing test results
-     * @return the resolved cache directory {@link File}
+     * @return the resolved TelemetryStore directory {@link File}
      */
-    public File getDataCacheDirectory(final File testResultDir)
+    public File getTelemetryStoreDirectory(final File testResultDir)
     {
-        final File dir = new File(dataCacheDirectoryName);
+        final File dir = new File(telemetryStoreDirectoryName);
         if (dir.isAbsolute())
         {
             return dir;
         }
-        return new File(testResultDir, dataCacheDirectoryName);
+        return new File(testResultDir, telemetryStoreDirectoryName);
     }
 
     /**

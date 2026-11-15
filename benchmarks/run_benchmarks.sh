@@ -40,7 +40,7 @@ if [ "$MODE" = "e2e" ] || [ "$MODE" = "all" ]; then
             rm -rf "${OUT}" "${CACHE}" "${LOG}"
             ./bin/create_report.sh -noCharts \
                 -Dcom.xceptance.xlt.reportgenerator.fastRegex.enabled=${mode} \
-                -Dcom.xceptance.xlt.reportgenerator.dataCache.dir="${CACHE}" \
+                -Dcom.xceptance.xlt.reportgenerator.telemetryStore.dir="${CACHE}" \
                 -o "${OUT}" "${DIR}" > "${LOG}" 2>&1
             PHASE1=$(grep -F "records read -" "${LOG}" | tail -n 1 || true)
             echo "  fastRegex=${mode}: ${PHASE1}"

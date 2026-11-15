@@ -84,7 +84,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         FsResource results = reportConfig.getResultsDirectory();
         baseDir = results.getName();
         targetDir = Paths.get(reportConfig.getReportDirectory() + File.separator + CUSTOM_DATA);
-        cacheDirName = reportConfig.getDataCacheDirectoryName();
+        cacheDirName = reportConfig.getTelemetryStoreDirectoryName();
         
         // get property value whether or not to aggregate all recorded custom data logs into one data file per scope
         // (or else to keep the original directory structure for recorded custom data)
@@ -203,7 +203,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     private void findLogsLocal(final Path rootDir, final boolean aggregated) throws IOException
     {
         final ReportGeneratorConfiguration reportConfig = (ReportGeneratorConfiguration) getConfiguration();
-        final Path cacheDirPath = reportConfig.getDataCacheDirectory(rootDir.toFile()).toPath().toAbsolutePath().normalize();
+        final Path cacheDirPath = reportConfig.getTelemetryStoreDirectory(rootDir.toFile()).toPath().toAbsolutePath().normalize();
 
         Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>()
         {

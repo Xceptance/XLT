@@ -260,8 +260,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         Assert.assertFalse("Cache should not exist yet", cacheManager.isCacheValid());
@@ -804,8 +804,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
@@ -818,7 +818,7 @@ public class TelemetryStoreAndCacheTest
         Assert.assertTrue(cacheManager.isCacheValid());
 
         // Overwrite fingerprint.bin with formatVersion = 999
-        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File cacheDir = new File(resultsDir, "telemetry-store");
         final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
         final CacheFingerprint futureFormat = new CacheFingerprint(999, current.fileCount(), current.totalBytes(), current.mergeRulesHash(), current.xltVersion());
         futureFormat.saveToDirectory(cacheDir);
@@ -840,8 +840,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
@@ -854,7 +854,7 @@ public class TelemetryStoreAndCacheTest
         Assert.assertTrue(cacheManager.isCacheValid());
 
         // Overwrite fingerprint with a different XLT release version
-        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File cacheDir = new File(resultsDir, "telemetry-store");
         final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
         final CacheFingerprint otherXltRelease = new CacheFingerprint(current.formatVersion(), current.fileCount(), current.totalBytes(), current.mergeRulesHash(), "99.9.9");
         otherXltRelease.saveToDirectory(cacheDir);
@@ -875,8 +875,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
@@ -889,7 +889,7 @@ public class TelemetryStoreAndCacheTest
         Assert.assertTrue(cacheManager.isCacheValid());
 
         // Write legacy unversioned fingerprint.bin (int fileCount, long totalBytes, String hash, String xltVersion)
-        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File cacheDir = new File(resultsDir, "telemetry-store");
         final File fpFile = new File(cacheDir, "fingerprint.bin");
         final CacheFingerprint current = CacheFingerprint.calculate(resultsDir, config);
         try (final java.io.DataOutputStream out = new java.io.DataOutputStream(new FileOutputStream(fpFile)))
@@ -917,8 +917,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
@@ -931,7 +931,7 @@ public class TelemetryStoreAndCacheTest
         Assert.assertTrue(cacheManager.isCacheValid());
 
         // 1. Corrupt dictionaries.bin version
-        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File cacheDir = new File(resultsDir, "telemetry-store");
         final File dictFile = new File(cacheDir, TelemetryStore.DICTIONARIES_FILE_NAME);
         try (final java.io.RandomAccessFile raf = new java.io.RandomAccessFile(dictFile, "rw"))
         {
@@ -957,8 +957,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
         final TelemetryIngestionCollector collector = new TelemetryIngestionCollector();
@@ -971,7 +971,7 @@ public class TelemetryStoreAndCacheTest
         Assert.assertTrue(cacheManager.isCacheValid());
 
         // Corrupt chunks.bin version at offset 4
-        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File cacheDir = new File(resultsDir, "telemetry-store");
         final File chunksFile = new File(cacheDir, TelemetryStore.CHUNKS_FILE_NAME);
         try (final java.io.RandomAccessFile raf = new java.io.RandomAccessFile(chunksFile, "rw"))
         {
@@ -1382,8 +1382,8 @@ public class TelemetryStoreAndCacheTest
         }
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
         config.setRequestDetailsMode("sparse");
 
         final CacheManager cacheManager = new CacheManager(resultsDir, config);
@@ -1541,8 +1541,8 @@ public class TelemetryStoreAndCacheTest
         Files.writeString(new File(skippedGitDir, "timers.csv").toPath(), "ignored-in-git", StandardCharsets.UTF_8);
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final CacheFingerprint fp = CacheFingerprint.calculate(resultsDir, config);
         Assert.assertEquals("Only the 3 valid timer files outside skipped directories must be counted", 3, fp.fileCount());
@@ -2597,13 +2597,13 @@ public class TelemetryStoreAndCacheTest
     public void testCacheFingerprintDetectsInPlaceModificationTimestampChange() throws Exception
     {
         final File resultsDir = new File(tempDir, "fp-mtime-results");
-        final File cacheDir = new File(resultsDir, "xlt-cache");
+        final File cacheDir = new File(resultsDir, "telemetry-store");
         resultsDir.mkdirs();
         cacheDir.mkdirs();
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName("xlt-cache");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName("telemetry-store");
 
         final File log = new File(resultsDir, "timers.csv");
         Files.writeString(log.toPath(), "R,1,100,false,200\n", StandardCharsets.UTF_8);
@@ -2861,15 +2861,15 @@ public class TelemetryStoreAndCacheTest
         Files.writeString(new File(nestedCacheDir, "timers.csv").toPath(), "R,CachedShouldBeIgnored,1000,50,false,100,200,200,http://example.com,text/html\n", StandardCharsets.UTF_8);
 
         final ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
-        config.setDataCacheEnabled(true);
-        config.setDataCacheDirectoryName(".cache/telemetrystore");
+        config.setTelemetryStoreEnabled(true);
+        config.setTelemetryStoreDirectoryName(".cache/telemetrystore");
 
         final CacheFingerprint fpRelative = CacheFingerprint.calculate(resultsDir, config);
         Assert.assertEquals("Multi-segment relative cache directory must be skipped by CacheFingerprint",
                             1, fpRelative.fileCount());
 
-        // Also test when dataCacheDirectoryName is configured as an absolute path inside resultsDir
-        config.setDataCacheDirectoryName(nestedCacheDir.getAbsolutePath());
+        // Also test when telemetryStoreDirectoryName is configured as an absolute path inside resultsDir
+        config.setTelemetryStoreDirectoryName(nestedCacheDir.getAbsolutePath());
         final CacheFingerprint fpAbsolute = CacheFingerprint.calculate(resultsDir, config);
         Assert.assertEquals("Absolute cache directory path inside resultsDir must be skipped by CacheFingerprint",
                             1, fpAbsolute.fileCount());

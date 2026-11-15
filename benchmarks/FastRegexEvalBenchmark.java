@@ -123,7 +123,7 @@ public class FastRegexEvalBenchmark
             for (final Path agentDir : agentDirs.toList())
             {
                 final String dirName = agentDir.getFileName().toString();
-                if (!Files.isDirectory(agentDir) || "config".equals(dirName) || "xlt-cache".equals(dirName))
+                if (!Files.isDirectory(agentDir) || "config".equals(dirName) || "telemetry-store".equals(dirName))
                 {
                     continue;
                 }

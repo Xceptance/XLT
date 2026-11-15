@@ -1,12 +1,15 @@
-# XLT Pseudo-DB Mode (TelemetryStore)
+# XLT TelemetryStore (Batch Report Cache & Operational Reference)
+
+> [!NOTE]
+> For a clear, conceptual walkthrough of how TelemetryStore works—including physical chunk layout, columnar compression, hot metrics vs. cold forensics, unordered time bucketing, and interactive query pruning—start with [**`docs/TELEMETRY_STORE_ARCHITECTURE_GUIDE.md`**](../../docs/TELEMETRY_STORE_ARCHITECTURE_GUIDE.md). This document serves as the operational and batch-reporting reference.
 
 ## 1. Overview & Motivation
 
-### 1.1 What is Pseudo-DB Mode?
-**Pseudo-DB Mode** (called **TelemetryStore** in the code) is an embedded columnar storage and query layer in the XLT Report Generator (`com.xceptance.xlt.report.storage`). It splits report generation into two distinct phases: parsing raw CSV logs into compressed binary chunks on disk, and querying those chunks to compute report statistics.
+### 1.1 What is TelemetryStore?
+**TelemetryStore** (`com.xceptance.xlt.report.storage`) is an embedded columnar storage and query layer in XLT. It splits report generation and interactive exploration into two distinct phases: parsing raw CSV logs once into compressed binary chunks on disk, and querying those chunks to compute report statistics or serve interactive **Telemetry Explorer** queries.
 
 When enabled (the default):
-1. **Cold Run (first execution):** The generator parses raw CSV files, applies merge rules, and writes the records into columnar binary chunks in `xlt-cache/`. It then runs the report queries against these chunks.
+1. **Cold Run (first execution):** The generator parses raw CSV files, applies merge rules, and writes the records into columnar binary chunks in `telemetry-store/`. It then runs the report queries against these chunks.
 2. **Warm Run (subsequent executions):** The generator skips reading the raw CSV files entirely. It queries the binary cache directly, scanning ~3.5 million records per second.
 
 ---
@@ -32,7 +35,7 @@ flowchart LR
     subgraph Stage2 ["Stage 2: TelemetryStore"]
         direction TB
         C1[CSV Ingestion] --> C2[Thread-Local Columnar Chunks<br/>FastPFOR Compression]
-        C2 --> C3[(Chunk Cache<br/>xlt-cache/)]
+        C2 --> C3[(Chunk Cache<br/>telemetry-store/)]
         C3 --> C4[Parallel Query Engine<br/>Bounding-Box Pruning]
         C4 --> C5[Statistics Accumulators]
     end
@@ -85,7 +88,7 @@ flowchart TD
 
     subgraph Phase2 ["Phase 2: Parallel SIMD Scan & Aggregation"]
         direction TB
-        CS[(Chunk Catalog<br/>xlt-cache/)] --> CQE[TelemetryQueryEngine]
+        CS[(Chunk Catalog<br/>telemetry-store/)] --> CQE[TelemetryQueryEngine]
         PRED[ScanPredicate<br/>Two-Tier Pruning] --> CQE
         CQE -->|Tier 1: [minTime, maxTime] & RoaringBitmap Intersection| PRUNE{Prune Chunk?}
         PRUNE -- "Yes (Disjoint)" --> SKIP[Skip Entire Chunk<br/>0 I/O, 0 CPU]
@@ -274,13 +277,13 @@ Parallel execution continues into the rendering step in [`ReportGenerator.create
 
 ## 4. Columnar Binary Storage Format & Internals
 
-When persisted, TelemetryStore stores files in `<results-dir>/xlt-cache/`:
+When persisted, TelemetryStore stores files in `<results-dir>/telemetry-store/`:
 
 ```
-<results-dir>/xlt-cache/
-├── fingerprint.bin    # File counts, byte totals, rule hashes, version
+<results-dir>/telemetry-store/
+├── fingerprint.bin    # File counts, byte totals, max mtime, rule/detail hashes, version
 ├── dictionaries.bin   # Interned string tables and sample URLs
-└── chunks.bin         # V2 chunk data with tail index
+└── chunks.bin         # V3 chunk data (hot vectors + cold forensic tail) with tail index
 ```
 
 ---
@@ -301,7 +304,7 @@ Deduplicating strings into 16-bit IDs avoids repeating text across millions of r
 
 ---
 
-### 4.2 Binary Layout (`chunks.bin` - V2 Format)
+### 4.2 Binary Layout (`chunks.bin` - V3 Format)
 
 `chunks.bin` consists of a 44-byte header, sequential compressed chunk payloads, and an index table at the end:
 
@@ -310,16 +313,16 @@ chunks.bin Layout:
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Global Header (44 Bytes)                                               │
 │  - Magic Number: 0x584C5443 ("XLTC")                                   │
-│  - Format Version: 2                                                   │
+│  - Format Version: 3                                                   │
 │  - Earliest Timestamp (long, ms since epoch)                           │
 │  - Latest Timestamp (long, ms since epoch)                             │
 │  - Total Row Count (long)                                              │
 │  - Total Chunk Count (int)                                             │
 │  - Tail Metadata Index Offset (long)                                   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ Chunk Payloads (Sequential FastPFOR Column Blocks)                     │
-│  - Chunk 0 (e.g. 64,000 Requests)                                      │
-│  - Chunk 1 (e.g. 64,000 Requests)                                      │
+│ Chunk Payloads (Sequential FastPFOR Column Blocks + Forensic Tail)     │
+│  - Chunk 0 (e.g. 64,000 Requests: Hot Vectors + Cold Forensic Tail)    │
+│  - Chunk 1 (e.g. 64,000 Requests: Hot Vectors + Cold Forensic Tail)    │
 │  ...                                                                   │
 │  - Chunk N                                                             │
 ├────────────────────────────────────────────────────────────────────────┤
@@ -327,13 +330,12 @@ chunks.bin Layout:
 │  - Total Chunk Count (int)                                             │
 │  - For each Chunk [0..N]:                                              │
 │      * File Offset (long)                                              │
-│      * Payload Byte Length (int)                                       │
+│      * Payload Byte Length & Hot Vector Byte Length (int, int)         │
 │      * Record Type Code (char: 'R', 'T', 'A', etc.)                    │
 │      * Row Count (int)                                                 │
-│      * Min Timestamp (long)                                            │
-│      * Max Timestamp (long)                                            │
-│      * Timer RoaringBitmap (serialized)                                │
-│      * Agent RoaringBitmap (serialized)                                │
+│      * Min & Max Timestamps (long, long)                               │
+│      * Zone Maps: Max Runtime (int) & Has Failures (boolean)           │
+│      * Timer & Agent/Scenario RoaringBitmaps (serialized)              │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -379,25 +381,27 @@ Across all record types, TelemetryStore averages ~22 bytes per row on disk, abou
 `fingerprint.bin` acts as the cache integrity descriptor and is written last upon successful serialization. It begins with a binary header:
 - **Magic Number:** `0x584C5446` (`"XLTF"`, 4-byte int)
 - **Fingerprint Format Version:** `1` (4-byte int)
-- **TelemetryStore Storage Format Version:** `2` (4-byte int, matches `ChunkCatalog.VERSION`)
+- **TelemetryStore Storage Format Version:** `3` (4-byte int, matches `ChunkCatalog.VERSION`)
 - **Timer Log File Count:** `int`
 - **Total Combined Byte Size:** `long`
-- **Merge & Labeling Rules SHA-256 Hash:** UTF-8 string with 32-bit length prefix
+- **Max Last-Modified Timestamp (`mtime`):** `long`
+- **Merge, Labeling & Forensic Retention Hash:** UTF-8 string with 32-bit length prefix
 - **XLT Framework Release Version:** UTF-8 string with 32-bit length prefix
 
-A cache in `xlt-cache/` is considered valid if and only if all dimensions match:
+A cache in `telemetry-store/` is considered valid if and only if all dimensions match:
 1. **Raw Log File Count:** Number of timer CSV files across all agent directories.
-2. **Total File Size:** Combined byte size of all timer files. Adding, appending, or removing lines changes this value.
-3. **Merge and Labeling Rules Hash:** SHA-256 digest of:
+2. **Total File Size & Latest Modification Timestamp:** Combined byte size and latest `mtime` across all timer files. Adding, appending, editing, or removing lines changes these values.
+3. **Merge, Labeling & Forensic Retention Hash:** SHA-256 digest of:
    - `com.xceptance.xlt.reportgenerator.requestMergeRules.*`
    - `com.xceptance.xlt.reportgenerator.labelingRules.*`
    - `com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames`
-   (Because merge rules rewrite request names at parse time, altering rules invalidates the cache).
+   - `com.xceptance.xlt.report.storage.requestDetailsMode` (`sparse` vs. `full` / `--preserve-all-details`)
+   (Because merge rules rewrite request names and forensic tail blocks are constructed at parse time, altering these settings invalidates the cache).
 4. **TelemetryStore Storage Format Version:** Guards against binary schema adjustments between releases (e.g. adding columns or restructuring chunk headers). Even if XLT is run from an unversioned developer build or IDE (`Implementation-Version: ?.?.?`), format version mismatches are caught immediately.
 5. **XLT Framework Release Version:** Prevents reading cache files written by a different release of XLT (e.g. upgrading from 7.4.0 to 7.5.0).
 
 #### Automatic Purge and Fallback Semantics
-- **Format / Version Mismatch:** If any dimension differs, `CacheManager.isCacheValid()` returns `false`, deletes the `xlt-cache/` directory, and proceeds with a fresh CSV parse.
+- **Format / Version Mismatch:** If any dimension differs, `CacheManager.isCacheValid()` returns `false`, deletes the `telemetry-store/` directory, and proceeds with a fresh CSV parse.
 - **Corrupted or Incompatible Headers:** If any file (`chunks.bin`, `dictionaries.bin`, or `fingerprint.bin`) contains an unrecognized magic number or unsupported version number, loading throws an `IOException`. `CacheManager.load()` catches the exception, logs a warning, purges the invalid cache directory, and cleanly falls back to cold CSV processing without crashing the report generator.
 - **Time Range Peeking:** Pre-report date range validation (`CacheManager.peekTimeRange()`) also verifies the `XLTC` magic and catalog format version before inspecting min/max timestamps, safely returning `null` if the version is incompatible.
 
@@ -624,7 +628,7 @@ Measured on a dataset of **108,790,200 records across 49,358 files** (`bbw-2025-
 ## 8. Trade-offs and Limitations
 
 1. **Disk Space Usage:**
-   Caching requires local disk storage: roughly **20 to 25 MB per 1,000,000 records** (~2.4 GB for a 100M record run). Caching can be disabled (`-Dcom.xceptance.xlt.reportgenerator.dataCache.enabled=false`) or redirected to a different mount (`dataCache.dir`).
+   Caching requires local disk storage: roughly **20 to 25 MB per 1,000,000 records** (~2.4 GB for a 100M record run). Caching can be disabled (`-Dcom.xceptance.xlt.reportgenerator.telemetryStore.enabled=false`) or redirected to a different mount (`telemetryStore.dir`).
 2. **Cold Run Compression Cost:**
    Compressing and writing chunks to disk on the first run takes CPU time. However, because compression runs in background threads and GC pressure is lower, the cold run is still ~30% faster than the legacy pipeline.
 3. **Cache Invalidation on Merge Rule Changes:**
@@ -632,7 +636,7 @@ Measured on a dataset of **108,790,200 records across 49,358 files** (`bbw-2025-
 4. **Static Results Assumption:**
    TelemetryStore assumes the raw results directory does not change after a test finishes. Adding log files changes the file count and byte sum, which invalidates the cache.
 5. **Read-Only Filesystems:**
-   In environments where results directories are mounted read-only, `ChunkSpooler` cannot write `xlt-cache/` there. The cache must be pointed to a writable directory via `com.xceptance.xlt.reportgenerator.dataCache.dir = /tmp/xlt-cache`.
+   In environments where results directories are mounted read-only, `ChunkSpooler` cannot write `telemetry-store/` there. The cache must be pointed to a writable directory via `com.xceptance.xlt.reportgenerator.telemetryStore.dir = /tmp/telemetry-store`.
 
 ---
 
@@ -661,7 +665,7 @@ Supported switches in [`ReportGeneratorMain`](file:///home/rschwietzke/projects/
 | **`-rating-score`** | `--rating-score` | `<score>` | Auto | Overrides the overall test scorecard grade (`A+`, `A`, `B`, `C`, `D`, `F`). |
 | **`-rating-summary`**| `--rating-summary`| `<text>` | Auto | Overrides the scorecard summary text. |
 | **`-pf`** | - | `<file>` | None | Loads an external properties file to override settings. |
-| **`-D`** | - | `<key>=<value>`| None | Sets a configuration property directly (e.g. `-Dcom.xceptance.xlt.reportgenerator.dataCache.enabled=false`). |
+| **`-D`** | - | `<key>=<value>`| None | Sets a configuration property directly (e.g. `-Dcom.xceptance.xlt.reportgenerator.telemetryStore.enabled=false`). |
 
 ---
 
@@ -675,15 +679,15 @@ Configured in `config/reportgenerator.properties` or overridden via `-D<key>=<va
 # When true (default), cold runs write chunks to disk and warm runs read from cache.
 #
 # Default: true
-com.xceptance.xlt.reportgenerator.dataCache.enabled = true
+com.xceptance.xlt.reportgenerator.telemetryStore.enabled = true
 
 ##
 # Directory name or path for the cache.
 # Relative paths are created inside the test results folder.
 # Absolute paths point to a specific directory.
 #
-# Default: xlt-cache
-com.xceptance.xlt.reportgenerator.dataCache.dir = xlt-cache
+# Default: telemetry-store
+com.xceptance.xlt.reportgenerator.telemetryStore.dir = telemetry-store
 
 ##
 # Worker threads used for Phase 1 CSV parsing and Phase 2 query scanning.
@@ -723,7 +727,7 @@ com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames = true
 
 #### 1. Cold Run (Initial Report and Cache Creation)
 ```bash
-# Parses CSV logs, builds xlt-cache/, renders charts, and creates HTML report
+# Parses CSV logs, builds telemetry-store/, renders charts, and creates HTML report
 ./bin/create_report.sh /path/to/results/test-run-2026-10-11
 ```
 
@@ -766,13 +770,13 @@ com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames = true
 #### 6. Redirecting Cache to Scratch Storage
 ```bash
 # Points binary cache to local fast scratch storage (e.g. when results are on read-only mount)
-./bin/create_report.sh -Dcom.xceptance.xlt.reportgenerator.dataCache.dir=/mnt/nvme/scratch/cache-20261011 /path/to/results/test-run-2026-10-11
+./bin/create_report.sh -Dcom.xceptance.xlt.reportgenerator.telemetryStore.dir=/mnt/nvme/scratch/cache-20261011 /path/to/results/test-run-2026-10-11
 ```
 
 #### 7. Disabling Cache
 ```bash
 # Bypasses disk cache completely
-./bin/create_report.sh -Dcom.xceptance.xlt.reportgenerator.dataCache.enabled=false /path/to/results/test-run-2026-10-11
+./bin/create_report.sh -Dcom.xceptance.xlt.reportgenerator.telemetryStore.enabled=false /path/to/results/test-run-2026-10-11
 ```
 
 ---
@@ -782,13 +786,13 @@ com.xceptance.xlt.reportgenerator.removeIndexesFromRequestNames = true
 #### Invalidation
 To force a complete re-read of raw CSV files:
 ```bash
-# Remove the xlt-cache directory inside the results folder
-rm -rf /path/to/results/test-run-2026-10-11/xlt-cache
+# Remove the telemetry-store directory inside the results folder
+rm -rf /path/to/results/test-run-2026-10-11/telemetry-store
 ```
 
 #### Inspecting Cache Files
 ```bash
-ls -lh /path/to/results/test-run-2026-10-11/xlt-cache/
+ls -lh /path/to/results/test-run-2026-10-11/telemetry-store/
 # -rw-r--r-- 1 user group  2.4G Oct 11 14:05 chunks.bin
 # -rw-r--r-- 1 user group   48M Oct 11 14:05 dictionaries.bin
 # -rw-r--r-- 1 user group   128 Oct 11 14:05 fingerprint.bin
@@ -798,13 +802,13 @@ ls -lh /path/to/results/test-run-2026-10-11/xlt-cache/
 When reading from cache, the report generator logs:
 ```text
 Reading Log Files...
-Accelerating report generation using TelemetryStore cache from: /path/to/results/test-run-2026-10-11/xlt-cache
+Accelerating report generation using TelemetryStore cache from: /path/to/results/test-run-2026-10-11/telemetry-store
 TelemetryStore query matched 1,702 of 1,702 chunks
 108,790,200 records read from cache - 39,421 ms (load: 1,510 ms, scan: 37,911 ms) - 2,759,701 records/s
 ```
 
 If the cache was stale or rules changed, it logs why it rebuilt:
 ```text
-TelemetryStore cache is stale (inputs or rules changed). Purging cache at: /path/to/results/test-run-2026-10-11/xlt-cache
+TelemetryStore cache is stale (inputs or rules changed). Purging cache at: /path/to/results/test-run-2026-10-11/telemetry-store
 Input directory: /path/to/results/test-run-2026-10-11
 ```

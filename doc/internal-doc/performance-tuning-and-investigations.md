@@ -9,7 +9,7 @@ To achieve maximum throughput while preventing memory exhaustion and garbage col
 1. **Phase 1: CSV Ingestion & TelemetryStore Spooling**
    - Multi-threaded readers decompress log files and parse raw CSV lines with minimal/zero allocations.
    - Request data objects are passed through the request merge rule pipeline.
-   - Merged records are routed to `TelemetryIngestionCollector`, which encodes columns using FastPFOR and dictionary IDs, sealing chunks into disk-backed `TelemetryStore` files (`xlt-cache/`).
+   - Merged records are routed to `TelemetryIngestionCollector`, which encodes columns using FastPFOR and dictionary IDs, sealing chunks into disk-backed `TelemetryStore` files (`telemetry-store/`).
    - **Crucial Invariant:** `StatisticsProcessor` is **not active** during Phase 1. Heap consumption remains bounded (< 1.5 GB Old Gen on a 4 GB heap), maintaining zero Full GCs.
 
 2. **Phase 2: Multi-Threaded TelemetryStore Aggregation**
@@ -139,7 +139,7 @@ Running `BytePipelineBenchmark diag <maxFiles> <numThreads>` isolated individual
 ### Cached Run Performance (Direct TelemetryStore Streaming)
 ```text
 Reading Log Files...
-Accelerating report generation using TelemetryStore cache from: /tmp/xlt-result-.../xlt-cache
+Accelerating report generation using TelemetryStore cache from: /tmp/xlt-result-.../telemetry-store
 TelemetryStore timing breakdown: handler.scan CPU time = 162,838 ms, statisticsProcessor.process CPU time = 398,591 ms across 16 threads
 121,078,008 records read from cache - 40,931 ms (load: 1,510 ms, scan: 39,421 ms) - 2,958,100 records/s
 ```

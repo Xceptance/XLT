@@ -136,11 +136,11 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
      */
     public static CacheFingerprint calculate(final File resultsDir, final ReportGeneratorConfiguration config)
     {
-        final String cacheDirName = config != null ? config.getDataCacheDirectoryName() : "xlt-cache";
+        final String cacheDirName = config != null ? config.getTelemetryStoreDirectoryName() : ReportGeneratorConfiguration.DEFAULT_TELEMETRY_STORE_DIR;
         final Path cacheDirPath;
         if (resultsDir != null)
         {
-            final File resolvedCacheDir = config != null ? config.getDataCacheDirectory(resultsDir) : new File(resultsDir, "xlt-cache");
+            final File resolvedCacheDir = config != null ? config.getTelemetryStoreDirectory(resultsDir) : new File(resultsDir, ReportGeneratorConfiguration.DEFAULT_TELEMETRY_STORE_DIR);
             cacheDirPath = resolvedCacheDir.toPath().toAbsolutePath().normalize();
         }
         else
@@ -499,7 +499,7 @@ public record CacheFingerprint(int formatVersion, int fileCount, long totalBytes
 
         FileAccumulator(final String cacheDirName, final Path cacheDirPath)
         {
-            this.cacheDirName = cacheDirName != null ? cacheDirName : "xlt-cache";
+            this.cacheDirName = cacheDirName != null ? cacheDirName : ReportGeneratorConfiguration.DEFAULT_TELEMETRY_STORE_DIR;
             this.cacheDirPath = cacheDirPath;
         }
 

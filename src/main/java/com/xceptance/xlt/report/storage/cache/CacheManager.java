@@ -70,7 +70,7 @@ public class CacheManager
     {
         this.resultsDir = resultsDir;
         this.config = config;
-        this.cacheDir = config != null ? config.getDataCacheDirectory(resultsDir) : new File(resultsDir, "xlt-cache");
+        this.cacheDir = config != null ? config.getTelemetryStoreDirectory(resultsDir) : new File(resultsDir, ReportGeneratorConfiguration.DEFAULT_TELEMETRY_STORE_DIR);
     }
 
     /**
@@ -84,13 +84,13 @@ public class CacheManager
     }
 
     /**
-     * Checks if data caching is enabled in the configuration.
+     * Checks if TelemetryStore persistence is enabled in the configuration.
      *
-     * @return true if caching is enabled
+     * @return true if TelemetryStore is enabled
      */
     public boolean isCacheEnabled()
     {
-        return config != null && config.isDataCacheEnabled();
+        return config != null && config.isTelemetryStoreEnabled();
     }
 
     /**

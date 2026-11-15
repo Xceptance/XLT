@@ -20,7 +20,7 @@
 
 ## 1. Executive Summary & Key Decisions
 
-With the introduction of **`TelemetryStore`** (`xlt-cache/`) in `src/main/java/com/xceptance/xlt/report/storage/`, XLT already possesses an embedded, SIMD-compressed (`JavaFastPFOR` + `RoaringBitmap`) columnar data store capable of holding 100M+ rows in `< 80 MB` of JVM heap.
+With the introduction of **`TelemetryStore`** (`telemetry-store/`) in `src/main/java/com/xceptance/xlt/report/storage/`, XLT already possesses an embedded, SIMD-compressed (`JavaFastPFOR` + `RoaringBitmap`) columnar data store capable of holding 100M+ rows in `< 80 MB` of JVM heap.
 
 By upgrading `TelemetryStore` to **V3 (100% lossless data preservation)** and adding a **vectorized `ColumnarQueryEngine`** served over **Embedded Jetty**, XLT evolves from a purely static post-mortem report generator into an **interactive root-cause diagnostic workbench**—without adding a single new Maven dependency or JavaScript build toolchain.
 
@@ -42,7 +42,7 @@ By upgrading `TelemetryStore` to **V3 (100% lossless data preservation)** and ad
    - **100% Clean Default Static Reports**: Standard `create_report` produces pure static HTML/CSS/JS with **zero** live-bridge scripts or dead buttons so reports can be uploaded to external servers (S3, Jenkins, customer portals).
    - **Opt-In Live Mode (`--serve` or `--live-bridge`)**: Starts Embedded Jetty mounting the static report (`/`), the standalone `/explorer` app, `/api/v1/*`, and `/dumps/*` (for 1-click Result Browser access), and progressively enhances the modernized report (`reports/modernized-report/`) via a thin `telemetry-bridge.js` adapter.
 4. **Deferred for Later**:
-   - Multi-run comparison (mounting multiple `xlt-cache/` directories simultaneously) is ignored for v1.
+   - Multi-run comparison (mounting multiple `telemetry-store/` directories simultaneously) is ignored for v1.
 
 ---
 
@@ -130,7 +130,7 @@ flowchart LR
         H4["/* (Static Report Handler)\nServes generated HTML report + optional /live/telemetry-bridge.js"]
     end
     B --> H1 & H2 & H3 & H4
-    H2 --> CDB[("xlt-cache/\n(TelemetryStore V3)")]
+    H2 --> CDB[("telemetry-store/\n(TelemetryStore V3)")]
     H3 --> RB[("results/<agent>/<tx>/<user>/output/<dir>/index.html")]
 ```
 
@@ -172,7 +172,7 @@ Because the modernized static report is still an evolving prototype, our UI arch
      - **Spot**: Global timeline brush & zoom (`uPlot`) with automatic resolution sharpening (`60s` $\rightarrow$ `5s` $\rightarrow$ `1s` $\rightarrow$ `100ms`), percentile bands, and stacked network timings.
      - **Isolate**: Live `Group By` dimension switcher (`None`, `Timer Name`, `Used IP`, `Agent`, `Scenario`, `HTTP Status`, `Content-Type`).
      - **Reconstruct**: Bottom Forensic Outlier & Failure Inspector table with exact `url`, `requestId`, `responseId`, `formData`, and 1-click **Virtual User Session Waterfall** modal + `/dumps/*` Result Browser links.
-   - **Zero coupling to static report DOM changes**: Works on any `xlt-cache/` directory even if no HTML report was generated (`--query-only`).
+   - **Zero coupling to static report DOM changes**: Works on any `telemetry-store/` directory even if no HTML report was generated (`--query-only`).
 
 2. **Optional Static Report Bridge (`telemetry-bridge.js`)**:
    - **Never** included in normal `create_report` runs so static reports remain 100% pure for uploading to external servers.
@@ -200,7 +200,7 @@ Below is the complete record of the architectural Q&A and design iterations from
 > Propose, suggest, inspire and review the idea critically. Do not implement!
 
 **Assistant:**
-With [`TelemetryStore`](../src/main/java/com/xceptance/xlt/report/storage/TelemetryStore.java) and [`ChunkCatalog`](../src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java), you have already built an embedded, SIMD-compressed columnar OLAP store (`xlt-cache/`). Until now, it has only been used to speed up **batch report generation** via [`TelemetryQueryEngine`](../src/main/java/com/xceptance/xlt/report/TelemetryQueryEngine.java).
+With [`TelemetryStore`](../src/main/java/com/xceptance/xlt/report/storage/TelemetryStore.java) and [`ChunkCatalog`](../src/main/java/com/xceptance/xlt/report/storage/catalog/ChunkCatalog.java), you have already built an embedded, SIMD-compressed columnar OLAP store (`telemetry-store/`). Until now, it has only been used to speed up **batch report generation** via [`TelemetryQueryEngine`](../src/main/java/com/xceptance/xlt/report/TelemetryQueryEngine.java).
 
 Exposing `TelemetryStore` through a real-time query, filter, and charting endpoint turns XLT from a **static post-mortem report generator** into an **interactive root-cause diagnostic engine**.
 

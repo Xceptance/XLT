@@ -63,7 +63,7 @@ public class TelemetryExplorerServerTest
     public void setUp() throws Exception
     {
         resultsDir = tempFolder.newFolder("results");
-        cacheDir = new File(resultsDir, "xlt-cache");
+        cacheDir = new File(resultsDir, "telemetry-store");
 
         // Create a dummy dump file inside resultsDir/ac001/TCheckout/0/output/1000/index.html
         final File dumpDir = new File(resultsDir, "ac001/TCheckout/0/output/1000");

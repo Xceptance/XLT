@@ -358,7 +358,7 @@ public class ReportGenerator
         long elapsedTime = config.getLongProperty(XltConstants.LOAD_TEST_ELAPSED_TIME, 0);
 
         com.xceptance.xlt.report.storage.cache.CacheManager validCacheManager = null;
-        if (config.isDataCacheEnabled() && inputDir.toLocalPath().isPresent())
+        if (config.isTelemetryStoreEnabled() && inputDir.toLocalPath().isPresent())
         {
             try
             {

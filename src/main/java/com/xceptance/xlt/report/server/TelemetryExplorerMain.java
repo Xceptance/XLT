@@ -46,8 +46,8 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
 /**
  * Dedicated CLI entry point for launching the interactive Telemetry Explorer UI server.
  * <p>
- * Mounts an existing {@code xlt-cache/} directory in sub-second time if valid, or executes Phase 1
- * log ingestion into {@code xlt-cache/} without running Phase 2 XML/HTML/chart generation.
+ * Mounts an existing {@code telemetry-store/} directory in sub-second time if valid, or executes Phase 1
+ * log ingestion into {@code telemetry-store/} without running Phase 2 XML/HTML/chart generation.
  */
 public final class TelemetryExplorerMain
 {
@@ -102,7 +102,7 @@ public final class TelemetryExplorerMain
     }
 
     /**
-     * Resolves or builds a {@link TelemetryStore} instance from a results directory or direct {@code xlt-cache} directory.
+     * Resolves or builds a {@link TelemetryStore} instance from a results directory or direct {@code telemetry-store} directory.
      */
     public static LoadedDataset loadOrIngestDataset(final File targetDir, final File overridePropertyFile,
                                                     final Properties cliProps, final boolean preserveAllDetails)
@@ -113,11 +113,11 @@ public final class TelemetryExplorerMain
             throw new IllegalArgumentException("Input directory does not exist or is not a directory: " + targetDir);
         }
 
-        // Case 1: Pointed directly at an xlt-cache directory containing chunks.bin
+        // Case 1: Pointed directly at a telemetry-store directory containing chunks.bin
         final File directChunksFile = new File(targetDir, TelemetryStore.CHUNKS_FILE_NAME);
         if (directChunksFile.isFile())
         {
-            XltLogger.reportLogger.info("Mounting TelemetryStore directly from cache directory: {}", targetDir.getAbsolutePath());
+            XltLogger.reportLogger.info("Mounting TelemetryStore directly from store directory: {}", targetDir.getAbsolutePath());
             final TelemetryStore storage = TelemetryStore.loadFromDirectory(targetDir);
             final File parentDir = Objects.requireNonNullElse(targetDir.getParentFile(), targetDir);
             final String detailMode = preserveAllDetails ? "full" : RequestChunkHandler.getRequestDetailsMode();
@@ -157,8 +157,8 @@ public final class TelemetryExplorerMain
             {
                 effectiveCliProps.putAll(cliProps);
             }
-            // Ensure TelemetryStore cache is enabled
-            effectiveCliProps.setProperty("com.xceptance.xlt.reportgenerator.dataCache.enabled", "true");
+            // Ensure TelemetryStore is enabled
+            effectiveCliProps.setProperty(ReportGeneratorConfiguration.PROP_TELEMETRY_STORE_ENABLED, "true");
             if (preserveAllDetails)
             {
                 effectiveCliProps.setProperty(ReportGeneratorConfiguration.PROP_REQUEST_DETAILS_MODE, "full");
@@ -304,7 +304,7 @@ public final class TelemetryExplorerMain
     private static void printUsage(final Options options)
     {
         final HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("telemetry_explorer.sh [options] <results-or-cache-dir>", options);
+        formatter.printHelp("telemetry_explorer.sh [options] <results-or-store-dir>", options);
     }
 
     /**
