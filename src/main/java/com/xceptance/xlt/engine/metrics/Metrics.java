@@ -52,6 +52,10 @@ public class Metrics
 
     private static final String PROP_REP_PREFIX_OTEL = PROP_REP_PREFIX + "otel.";
 
+    private static final String PROP_REP_OTEL_LOG_ERRORS = PROP_REP_PREFIX_OTEL + "logErrors";
+
+    private static final String PROP_REP_OTEL_LOG_EVENTS = PROP_REP_PREFIX_OTEL + "logEvents";
+
     private static final Logger log = LoggerFactory.getLogger(Metrics.class);
 
     private static class LazySingletonHolder
@@ -90,6 +94,8 @@ public class Metrics
         final int graphitePort = props.getProperty(PROP_REP_GRAPHITE_PORT, 2003);
 
         final boolean otelEnabled = props.getProperty(PROP_REP_PREFIX_OTEL + "enabled", false);
+        final boolean otelLogErrors = props.getProperty(PROP_REP_OTEL_LOG_ERRORS, true);
+        final boolean otelLogEvents = props.getProperty(PROP_REP_OTEL_LOG_EVENTS, false);
 
         // start reporting if so configured and we are load testing
         final List<MetricsReporter> reporters = new ArrayList<>();
@@ -104,7 +110,8 @@ public class Metrics
             {
                 create("otel",
                        () -> new OtelMetricsReporter(OpenTelemetryFactory.create(props,
-                                                                                 (otelProps) -> Metrics.defaultOtelProps(otelProps)))).ifPresent(reporters::add);
+                                                                                 (otelProps) -> Metrics.defaultOtelProps(otelProps)),
+                                                     otelLogErrors, otelLogEvents)).ifPresent(reporters::add);
             }
         }
         else

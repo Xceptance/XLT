@@ -90,11 +90,17 @@ public class OtelMetricsReporter implements MetricsReporter
 
     private final OpenTelemetry _otel;
 
+    private final boolean logErrors;
+
+    private final boolean logEvents;
+
     private final Map<String, Object> instruments = new ConcurrentHashMap<>();
 
-    public OtelMetricsReporter(final OpenTelemetry otel)
+    public OtelMetricsReporter(final OpenTelemetry otel, final boolean logErrors, final boolean logEvents)
     {
         this._otel = otel;
+        this.logErrors = logErrors;
+        this.logEvents = logEvents;
     }
 
     @Override
@@ -148,16 +154,19 @@ public class OtelMetricsReporter implements MetricsReporter
 
     private void reportEvent(final EventData eventData)
     {
-        logRecord((record) -> {
-            record.setObservedTimestamp(Instant.now());
-            record.setTimestamp(Instant.ofEpochMilli(eventData.getTime()));
-            record.setSeverity(Severity.WARN);
-            record.setBody(eventData.getMessage());
-            record.setAttribute(LogRecordAttributes.LOG_TYPE, LOG_TYPE_EVENT);
-            record.setAttribute(LogRecordAttributes.EVENT_NAME, eventData.getName());
-            record.setAttribute(LogRecordAttributes.EVENT_SCENARIO, eventData.getTestCaseName());
-            record.setAttribute(LogRecordAttributes.EVENT_USER, Long.valueOf(Session.getCurrent().getUserNumber()));
-        });
+        if (this.logEvents)
+        {
+            logRecord((record) -> {
+                record.setObservedTimestamp(Instant.now());
+                record.setTimestamp(Instant.ofEpochMilli(eventData.getTime()));
+                record.setSeverity(Severity.WARN);
+                record.setBody(eventData.getMessage());
+                record.setAttribute(LogRecordAttributes.LOG_TYPE, LOG_TYPE_EVENT);
+                record.setAttribute(LogRecordAttributes.EVENT_NAME, eventData.getName());
+                record.setAttribute(LogRecordAttributes.EVENT_SCENARIO, eventData.getTestCaseName());
+                record.setAttribute(LogRecordAttributes.EVENT_USER, Long.valueOf(Session.getCurrent().getUserNumber()));
+            });
+        }
 
         getOrCreateInstrument("events_total.count",
                               (name) -> getMeter().counterBuilder(name).setUnit(sanitizeInstrumentUnit("{event}")).build()).add(1L);
@@ -166,7 +175,7 @@ public class OtelMetricsReporter implements MetricsReporter
     private void reportTransaction(final TransactionData txnData)
     {
         // Log failed transactions only
-        if (txnData.hasFailed())
+        if (this.logErrors && txnData.hasFailed())
         {
             logRecord((record) -> {
                 record.setObservedTimestamp(Instant.now());
