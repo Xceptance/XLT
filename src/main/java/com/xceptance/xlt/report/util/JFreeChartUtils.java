@@ -321,10 +321,15 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest
-     * compression (default: 0.0).
+     * Pixel scale factor applied when rendering charts in modern mode (2x HiDPI).
      */
-    private static float webpCompressionFactor = 0.0f;
+    private static final int MODERN_CHART_SCALE = 2;
+
+    /**
+     * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest
+     * compression (default: 0.5).
+     */
+    private static float webpCompressionFactor = 0.5f;
 
     /**
      * The replacement value for negative/0 values when making a series fit for logarithmic axes.
@@ -1363,8 +1368,11 @@ public final class JFreeChartUtils
         // first of all apply the active XLT chart theme to the chart
         theme.apply(chart);
 
-        // render and brand chart
-        final BufferedImage bufferedImage = chart.createBufferedImage(chartWidth, chartHeight);
+        // render and brand chart (2x HiDPI over logical chart dimensions when modern theme is active)
+        final int scale = modern ? MODERN_CHART_SCALE : 1;
+        final BufferedImage bufferedImage = modern
+            ? chart.createBufferedImage(chartWidth * scale, chartHeight * scale, chartWidth, chartHeight, null)
+            : chart.createBufferedImage(chartWidth, chartHeight);
         final Graphics2D g2d = bufferedImage.createGraphics();
         try
         {
@@ -1372,6 +1380,7 @@ public final class JFreeChartUtils
 
             if (modern)
             {
+                g2d.scale(scale, scale);
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                 final int pillWidth = 34;

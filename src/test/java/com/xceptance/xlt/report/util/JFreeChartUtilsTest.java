@@ -458,6 +458,9 @@ public class JFreeChartUtilsTest
         final CombinedChartFixture fixture = createSampleCombinedChart();
         final BufferedImage image = JFreeChartUtils.renderChart(fixture.chart, 700, 400);
 
+        Assert.assertEquals(700, image.getWidth());
+        Assert.assertEquals(400, image.getHeight());
+
         Assert.assertEquals(new Color(0xFAFAFA), fixture.chart.getBackgroundPaint());
         Assert.assertEquals(HorizontalAlignment.CENTER, fixture.chart.getTitle().getHorizontalAlignment());
         Assert.assertEquals(new Color(0x333333), fixture.chart.getTitle().getPaint());
@@ -482,6 +485,9 @@ public class JFreeChartUtilsTest
 
         final CombinedChartFixture fixture = createSampleCombinedChart();
         final BufferedImage image = JFreeChartUtils.renderChart(fixture.chart, 700, 400);
+
+        Assert.assertEquals(1400, image.getWidth());
+        Assert.assertEquals(800, image.getHeight());
 
         Assert.assertEquals(Color.WHITE, fixture.chart.getBackgroundPaint());
         Assert.assertEquals(HorizontalAlignment.LEFT, fixture.chart.getTitle().getHorizontalAlignment());
@@ -518,8 +524,8 @@ public class JFreeChartUtilsTest
 
         Assert.assertEquals(new Color(0xDC2626), fixture.errorPlot.getRenderer(0).getSeriesPaint(0));
         Assert.assertEquals(Color.WHITE.getRGB(), image.getRGB(2, 2));
-        // Inside the top-right Medium Slate (#64748B) pill at (chartWidth - 12 - 34 = 654..688, y = 8..26)
-        Assert.assertEquals(new Color(0x64748B).getRGB(), image.getRGB(658, 10));
+        // Inside the 2x HiDPI top-right Medium Slate (#64748B) pill at ((654..688)*2, (8..26)*2)
+        Assert.assertEquals(new Color(0x64748B).getRGB(), image.getRGB(1316, 20));
     }
 
     /**

@@ -85,6 +85,101 @@
     return msg ? "Error" : "—";
   }
 
+  /**
+   * Computes the report display timezone offset (in ms) relative to UTC from
+   * `XLT_META.startTime` (`YYYY-MM-DD HH:MM:SS ...`) and `XLT_META.startTimeMs`,
+   * so dump directory epoch timestamps match report chart axes.
+   *
+   * @param {Object} meta Report metadata object.
+   * @returns {number|null} Offset in milliseconds, or `null` if unavailable.
+   */
+  function computeReportTzOffsetMs(meta) {
+    if (!meta || !meta.startTime || meta.startTimeMs === undefined) return null;
+    var startMs = Number(meta.startTimeMs);
+    if (!Number.isFinite(startMs) || startMs <= 0) return null;
+    var m = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/.exec(String(meta.startTime).trim());
+    if (!m) return null;
+    var utcFromWallClock = Date.UTC(
+      Number(m[1]),
+      Number(m[2]) - 1,
+      Number(m[3]),
+      Number(m[4]),
+      Number(m[5]),
+      Number(m[6])
+    );
+    return utcFromWallClock - startMs;
+  }
+
+  function pad2(n) {
+    return n < 10 ? "0" + n : String(n);
+  }
+
+  /**
+   * Parses a Result Browser dump directory string (e.g.
+   * `ac0010_us-west1_00/TRegisteredOrder/802/output/1770070129968`) into a
+   * compact time-grounded chip label and full raw path.
+   *
+   * @param {string} dirRaw Raw directory string.
+   * @param {number|null} tzOffsetMs Report timezone offset in ms from UTC.
+   * @returns {{ label: string, timeStr: string, agent: string, raw: string }} Parsed dump metadata.
+   */
+  function parseDumpHint(dirRaw, tzOffsetMs) {
+    var clean = String(dirRaw || "").trim();
+    if (!clean || clean === "...") {
+      return { label: clean || "…", timeStr: "", agent: "", raw: clean };
+    }
+    var parts = clean.split("/");
+    var agentSeg = parts[0] || "";
+    var runSeg = parts.length >= 3 ? parts[2] : "";
+    var lastSeg = parts[parts.length - 1] || "";
+    var shortAgent = agentSeg ? (agentSeg.split("_")[0] || agentSeg.slice(0, 12)) : "";
+    var timeStr = "";
+
+    if (/^\d{12,14}$/.test(lastSeg) && tzOffsetMs !== null) {
+      var d = new Date(Number(lastSeg) + tzOffsetMs);
+      if (!Number.isNaN(d.getTime())) {
+        timeStr = pad2(d.getUTCHours()) + ":" + pad2(d.getUTCMinutes()) + ":" + pad2(d.getUTCSeconds());
+      }
+    }
+
+    var label;
+    if (timeStr) {
+      label = shortAgent ? (timeStr + " · " + shortAgent) : timeStr;
+    } else if (shortAgent) {
+      label = runSeg ? (shortAgent + "/" + runSeg) : shortAgent;
+    } else {
+      label = clean.length > 18 ? clean.slice(-18) : clean;
+    }
+
+    return {
+      label: label,
+      timeStr: timeStr,
+      agent: shortAgent,
+      raw: clean
+    };
+  }
+
+  var FRAMEWORK_FRAME_RE = /^\s+at\s+(org\.junit\.|java\.|javax\.|jdk\.|sun\.|com\.sun\.|org\.htmlunit\.|com\.xceptance\.xlt\.api\.actions\.Abstract|com\.xceptance\.xlt\.engine\.)/;
+  var STACK_FRAME_RE = /^\s+at\s+/;
+
+  /**
+   * Escapes a Java stack trace and highlights application/test stack frames
+   * while leaving JDK, JUnit, and HtmlUnit frames visually secondary.
+   *
+   * @param {string} traceStr Raw trace string.
+   * @returns {string} HTML string safe for insertion inside `<pre>`.
+   */
+  function formatStackTraceHtml(traceStr) {
+    var lines = String(traceStr || "").replace(/\r\n/g, "\n").split("\n");
+    return lines.map(function (line) {
+      var escaped = esc(line);
+      if (STACK_FRAME_RE.test(line) && !FRAMEWORK_FRAME_RE.test(line)) {
+        return '<span class="trace-frame-focus">' + escaped + "</span>";
+      }
+      return escaped;
+    }).join("\n");
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     var raw = window.XLT_ERRORS || {};
     var meta = window.XLT_META || {};
@@ -315,16 +410,26 @@
       }
     }
 
-    // 5. Incident Forensics & Result Browser Dumps Table (traces collapsed by default, searchable via hidden="until-found")
+    // 5. Incident Forensics & Result Browser Dumps Table
     var incTable = document.getElementById("err-incidents-table");
     var incTbody = incTable && incTable.querySelector("tbody");
     var incTfoot = incTable && incTable.querySelector("tfoot");
     var countBadge = document.getElementById("err-visible-count");
     var filterInput = document.getElementById("err-details-filter");
     var toggleAllBtn = document.getElementById("err-toggle-all-traces");
+    var tzOffsetMs = computeReportTzOffsetMs(meta);
     var cards = [];
 
     function setTraceExpanded(wrap, btn, open) {
+      if (!wrap) return;
+      wrap.classList.toggle("is-expanded", open);
+      if (btn) {
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.textContent = open ? "▲ Compact Trace" : "▼ Full Trace";
+      }
+    }
+
+    function setPathsExpanded(wrap, btn, open) {
       if (!wrap) return;
       if (open) {
         wrap.removeAttribute("hidden");
@@ -333,8 +438,7 @@
       }
       if (btn) {
         btn.setAttribute("aria-expanded", open ? "true" : "false");
-        var caret = btn.querySelector(".incident-trace-caret");
-        if (caret) caret.textContent = open ? "\u25BC" : "\u25B6";
+        btn.textContent = open ? "▾ Hide Paths" : "📁 Raw Paths";
       }
     }
 
@@ -343,16 +447,16 @@
       var visibleCards = cards.filter(function (c) { return !c.el.hidden; });
       var targetCards = visibleCards.length ? visibleCards : cards;
       var allOpen = visibleCards.length > 0 && targetCards.every(function (c) {
-        return !c.traceWrap || !c.traceWrap.hasAttribute("hidden");
+        return c.traceWrap && c.traceWrap.classList.contains("is-expanded");
       });
       toggleAllBtn.setAttribute("aria-expanded", allOpen ? "true" : "false");
-      toggleAllBtn.textContent = allOpen ? "▲ Collapse All Traces" : "▼ Expand All Traces";
+      toggleAllBtn.textContent = allOpen ? "▲ Collapse All Full Traces" : "▼ Expand All Full Traces";
     }
 
     if (incTbody) {
       if (!incidents.length) {
         incTbody.innerHTML =
-          '<tr><td colspan="6" class="col-text" style="text-align:center;padding:28px;color:var(--status-pass-text);font-weight:700;">' +
+          '<tr><td colspan="5" class="col-text" style="text-align:center;padding:28px;color:var(--status-pass-text);font-weight:700;">' +
             "✓ No error incidents or stack traces recorded during this test run." +
           "</td></tr>";
         if (incTfoot) incTfoot.innerHTML = "";
@@ -360,26 +464,45 @@
         if (countBadge) countBadge.textContent = "0 incident groups";
       } else {
         var frag = document.createDocumentFragment();
-        var totalDetailCount = 0;
+        var totalDetailCount = incidents.reduce(function (s, i) { return s + (Number(i.count) || 0); }, 0);
 
         incidents.forEach(function (inc, idx) {
           var n = idx + 1;
           var tr = document.createElement("tr");
           var cnt = Number(inc.count) || 0;
-          totalDetailCount += cnt;
+          var sharePct = totalDetailCount > 0 ? (cnt * 100) / totalDetailCount : 0;
           var exClass = inc.exceptionClass || extractExceptionClass(inc.trace, inc.message);
           var summaryLabel = inc.message || exClass || "Error";
           var dirs = Array.isArray(inc.directories) ? inc.directories : [];
-          var dirsHtml = '<span style="color:var(--text-muted);">—</span>';
+          var dumpHints = [];
+          var dumpsHtml = "";
 
           if (dirs.length) {
-            dirsHtml = '<div class="incident-dir-list">' + dirs.map(function (d) {
+            var parsedDirs = dirs.map(function (d, dIdx) {
+              var info = parseDumpHint(d, tzOffsetMs);
+              dumpHints.push(info.raw + " " + info.timeStr + " " + info.agent);
               var href = linkResultBrowsers ? resolveResultBrowserHref(resultsPrefix, d) : null;
-              var item = href
-                ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(d) + " ↗</a>"
-                : "<code>" + esc(d) + "</code>";
-              return '<div class="incident-dir-item">' + item + "</div>";
-            }).join("") + "</div>";
+              var chipInner = "<strong>#" + (dIdx + 1) + "</strong> <span>" + esc(info.label) + "</span>";
+              var chipHtml = href
+                ? '<a class="incident-dump-chip" href="' + esc(href) + '" target="_blank" rel="noopener" title="' + esc(info.raw) + '">' + chipInner + " &#8599;</a>"
+                : '<span class="incident-dump-chip is-static" title="' + esc(info.raw) + '">' + chipInner + "</span>";
+              var rawRow = href
+                ? '<div class="incident-path-item"><span class="incident-path-idx">#' + (dIdx + 1) + '</span><a href="' + esc(href) + '" target="_blank" rel="noopener"><code>' + esc(info.raw) + "</code> &#8599;</a></div>"
+                : '<div class="incident-path-item"><span class="incident-path-idx">#' + (dIdx + 1) + "</span><code>" + esc(info.raw) + "</code></div>";
+              return { chip: chipHtml, rawRow: rawRow };
+            });
+
+            dumpsHtml =
+              '<div class="incident-dumps-bar">' +
+                '<span class="incident-dumps-label">🌐 Result Browsers (' + dirs.length + "):</span>" +
+                parsedDirs.map(function (item) { return item.chip; }).join("") +
+                '<button type="button" class="incident-paths-toggle" data-toggle-paths="paths-wrap-' + n + '" aria-expanded="false" aria-controls="paths-wrap-' + n + '">📁 Raw Paths</button>' +
+              "</div>" +
+              '<div id="paths-wrap-' + n + '" class="incident-paths-drawer" data-paths-wrap hidden="until-found">' +
+                '<div class="incident-paths-list">' +
+                  parsedDirs.map(function (item) { return item.rawRow; }).join("") +
+                "</div>" +
+              "</div>";
           }
 
           var detailChartId = inc.detailChartId !== undefined ? inc.detailChartId : inc.detailChartID;
@@ -393,8 +516,8 @@
           }
 
           var overviewChartId = inc.overviewChartId !== undefined ? inc.overviewChartId : inc.overviewChartID;
-          var overviewLinkHtml = (chartsGenerated && overviewChartId && String(overviewChartId) !== "0")
-            ? '<div class="incident-chart-links"><a class="incident-overview-link" href="#err-chart-' + esc(overviewChartId) + '">&#8593; Error overview chart</a></div>'
+          var overviewChipHtml = (chartsGenerated && overviewChartId && String(overviewChartId) !== "0")
+            ? '<a class="btn-chip incident-overview-chip" href="#err-chart-' + esc(overviewChartId) + '">📈 Overview Chart</a>'
             : "";
 
           var txHtml = inc.testCaseName
@@ -409,26 +532,36 @@
           var actCopy = inc.requestName
             ? ((inc.actionName || "") + (inc.actionName ? " " : "") + inc.requestName)
             : (inc.actionName || "—");
+          var exBadgeHtml = (exClass && exClass !== "—" && exClass !== summaryLabel)
+            ? ' <code class="incident-ex-badge">' + esc(exClass) + "</code>"
+            : "";
+          var traceText = inc.trace || inc.message || "";
 
           tr.innerHTML =
             '<td class="col-idx">' + n + "</td>" +
-            '<td class="col-num cell-err incident-count-cell" data-val="' + cnt + '">' + fmtInt(cnt) + "</td>" +
+            '<td class="col-num cell-err incident-count-cell" data-val="' + cnt + '">' +
+              '<div class="incident-count-val">' + fmtInt(cnt) + "</div>" +
+              '<div class="incident-count-share">' + fmtDec(sharePct, 1) + "%</div>" +
+            "</td>" +
             '<td class="col-text incident-testcase-cell" data-val="' + esc(inc.testCaseName || "") + '">' + txHtml + "</td>" +
             '<td class="col-text incident-action-cell" data-val="' + esc(inc.actionName || "") + '" data-copy="' + esc(actCopy) + '">' + actMainHtml + reqSubHtml + "</td>" +
-            '<td class="col-text incident-dirs-cell" data-copy="' + esc(dirs.join(", ")) + '">' + dirsHtml + "</td>" +
             '<td class="col-text incident-info-cell" data-val="' + esc(summaryLabel) + '" data-copy="' + esc(summaryLabel) + '">' +
               '<div class="incident-trace-header">' +
-                '<button type="button" class="incident-trace-toggle" data-toggle-trace="trace-wrap-' + n + '" aria-expanded="false" aria-controls="trace-wrap-' + n + '">' +
-                  '<span class="incident-trace-caret" aria-hidden="true">&#9654;</span>' +
-                  '<span class="incident-trace-summary">' + esc(summaryLabel) + "</span>" +
-                "</button>" +
-                '<button type="button" class="btn-chip incident-copy-btn" data-copy-trace="trace-pre-' + n + '" data-orig-label="📋 Copy Trace">📋 Copy Trace</button>' +
-              "</div>" +
-              '<div id="trace-wrap-' + n + '" class="incident-trace-wrap" data-trace-wrap hidden="until-found">' +
-                '<pre id="trace-pre-' + n + '" class="incident-trace-pre">' + esc(inc.trace || inc.message || "") + "</pre>" +
+                '<div class="incident-error-headline">' +
+                  '<span class="incident-error-msg">' + esc(summaryLabel) + "</span>" +
+                  exBadgeHtml +
+                "</div>" +
+                '<div class="incident-trace-actions">' +
+                  overviewChipHtml +
+                  '<button type="button" class="btn-chip incident-copy-btn" data-copy-trace="trace-pre-' + n + '" data-orig-label="📋 Copy Trace">📋 Copy Trace</button>' +
+                  '<button type="button" class="btn-chip incident-expand-btn" data-toggle-trace="trace-wrap-' + n + '" aria-expanded="false" aria-controls="trace-wrap-' + n + '">▼ Full Trace</button>' +
+                "</div>" +
               "</div>" +
               detailChartHtml +
-              overviewLinkHtml +
+              '<div id="trace-wrap-' + n + '" class="incident-trace-wrap" data-trace-wrap>' +
+                '<pre id="trace-pre-' + n + '" class="incident-trace-pre">' + formatStackTraceHtml(traceText) + "</pre>" +
+              "</div>" +
+              dumpsHtml +
             "</td>";
 
           frag.appendChild(tr);
@@ -436,7 +569,7 @@
             el: tr,
             traceWrap: tr.querySelector("[data-trace-wrap]"),
             toggleBtn: tr.querySelector("[data-toggle-trace]"),
-            blob: ((inc.testCaseName || "") + " " + (inc.actionName || "") + " " + (inc.requestName || "") + " " + dirs.join(" ") + " " + (inc.message || "") + " " + (inc.trace || "")).toLowerCase()
+            blob: ((inc.testCaseName || "") + " " + (inc.actionName || "") + " " + (inc.requestName || "") + " " + dumpHints.join(" ") + " " + (inc.message || "") + " " + traceText).toLowerCase()
           });
         });
 
@@ -447,10 +580,9 @@
             "<tr>" +
               '<td class="col-idx">Σ</td>' +
               '<td class="col-num cell-err">' + fmtInt(totalDetailCount) + "</td>" +
+              '<td class="col-text"></td>' +
+              '<td class="col-text"></td>' +
               '<td class="col-text">Total Incident Occurrences (' + fmtInt(incidents.length) + " groups)</td>" +
-              '<td class="col-text"></td>' +
-              '<td class="col-text"></td>' +
-              '<td class="col-text"></td>' +
             "</tr>";
         }
         if (countBadge) {
@@ -486,33 +618,31 @@
 
     if (toggleAllBtn && cards.length) {
       toggleAllBtn.addEventListener("click", function () {
-        var anyClosed = cards.some(function (c) {
-          return !c.el.hidden && c.traceWrap && c.traceWrap.hasAttribute("hidden");
+        var anyCollapsed = cards.some(function (c) {
+          return !c.el.hidden && c.traceWrap && !c.traceWrap.classList.contains("is-expanded");
         });
         var hasVisible = cards.some(function (c) { return !c.el.hidden; });
         cards.forEach(function (c) {
           if (hasVisible && c.el.hidden) return;
-          setTraceExpanded(c.traceWrap, c.toggleBtn, anyClosed);
+          setTraceExpanded(c.traceWrap, c.toggleBtn, anyCollapsed);
         });
         syncToggleAllBtn();
       });
     }
 
-    // Keep toggle button UI synchronized when browser Ctrl+F reveals hidden="until-found" traces
+    // Reveal raw path drawers automatically when browser Ctrl+F matches inside hidden="until-found"
     document.addEventListener("beforematch", function (e) {
-      var wrapper = e.target.closest("[data-trace-wrap]");
-      if (!wrapper) return;
-      var btn = document.querySelector('[data-toggle-trace="' + wrapper.id + '"]');
-      setTraceExpanded(wrapper, btn, true);
-      syncToggleAllBtn();
+      var pathsWrap = e.target.closest("[data-paths-wrap]");
+      if (!pathsWrap) return;
+      var btn = document.querySelector('[data-toggle-paths="' + pathsWrap.id + '"]');
+      setPathsExpanded(pathsWrap, btn, true);
     });
 
     if (!("onbeforematch" in HTMLElement.prototype)) {
-      Array.prototype.forEach.call(document.querySelectorAll('[hidden="until-found"]'), function (el) {
-        var btn = document.querySelector('[data-toggle-trace="' + el.id + '"]');
-        setTraceExpanded(el, btn, true);
+      Array.prototype.forEach.call(document.querySelectorAll('[data-paths-wrap][hidden="until-found"]'), function (el) {
+        var btn = document.querySelector('[data-toggle-paths="' + el.id + '"]');
+        setPathsExpanded(el, btn, true);
       });
-      syncToggleAllBtn();
     }
 
     document.addEventListener("click", function (e) {
@@ -521,8 +651,18 @@
         var targetId = toggleBtn.getAttribute("data-toggle-trace");
         var wrap = document.getElementById(targetId);
         if (wrap) {
-          setTraceExpanded(wrap, toggleBtn, wrap.hasAttribute("hidden"));
+          setTraceExpanded(wrap, toggleBtn, !wrap.classList.contains("is-expanded"));
           syncToggleAllBtn();
+        }
+        return;
+      }
+
+      var pathsBtn = e.target.closest("[data-toggle-paths]");
+      if (pathsBtn) {
+        var pathsId = pathsBtn.getAttribute("data-toggle-paths");
+        var pathsWrap = document.getElementById(pathsId);
+        if (pathsWrap) {
+          setPathsExpanded(pathsWrap, pathsBtn, pathsWrap.hasAttribute("hidden"));
         }
         return;
       }

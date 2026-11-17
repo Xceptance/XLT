@@ -199,9 +199,9 @@
       </div>
       <div class="directory-toolbar">
         <div class="table-search-wrap">
-          <input type="search" class="input-search" id="err-details-filter" placeholder="Filter incidents by test case, action or error..." aria-label="Filter error incidents" />
+          <input type="search" class="input-search" id="err-details-filter" placeholder="Filter incidents by test case, action, agent or error..." aria-label="Filter error incidents" />
         </div>
-        <button type="button" class="btn-chip" id="err-toggle-all-traces" aria-expanded="false">▼ Expand All Traces</button>
+        <button type="button" class="btn-chip" id="err-toggle-all-traces" aria-expanded="false">▼ Expand All Full Traces</button>
       </div>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Incident Forensics Table">
         <table class="data-table js-static-sortable incident-details-table" id="err-incidents-table">
@@ -211,8 +211,7 @@
               <th scope="col" class="col-num" data-type="number" aria-sort="descending"><button type="button" class="th-sort-btn"><span>Count</span><span class="sort-icon" aria-hidden="true"></span></button></th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Test Case</span><span class="sort-icon" aria-hidden="true"></span></button></th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Action</span><span class="sort-icon" aria-hidden="true"></span></button></th>
-              <th scope="col" class="col-text">Directory</th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Error Information</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Error Forensics, Timeline &amp; Result Browsers</span><span class="sort-icon" aria-hidden="true"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>
