@@ -288,13 +288,13 @@
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">Mean Wire Latency</span>' +
-            '<div class="kpi-val">' + fmtDec(totals.mean || 0, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
+            '<div class="kpi-val">' + fmtInt(totals.mean || 0) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
             '<div class="kpi-sub">' + (pFirst && pFirstVal !== undefined ? ('P' + esc(pFirst) + ': <strong>' + fmtInt(pFirstVal) + ' ms</strong> • ') : '') + 'Min: ' + fmtInt(totals.min) + ' ms • Max: ' + fmtInt(totals.max) + ' ms</div>' +
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">' + esc(tailHeader) + '</span>' +
             '<div class="kpi-val">' + tailMain + '</div>' +
-            '<div class="kpi-sub">' + (lastPctKey && lastPctVal !== undefined ? ('P' + esc(lastPctKey) + ': <strong>' + fmtInt(lastPctVal) + ' ms</strong> • ') : '') + 'Std Dev: ' + fmtDec(totals.dev || 0, 1) + ' ms</div>' +
+            '<div class="kpi-sub">' + (lastPctKey && lastPctVal !== undefined ? ('P' + esc(lastPctKey) + ': <strong>' + fmtInt(lastPctVal) + ' ms</strong> • ') : '') + 'Std Dev: ' + fmtInt(totals.dev || 0) + ' ms</div>' +
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">Network Volume &amp; Errors</span>' +
@@ -318,35 +318,35 @@
         { key: "cph", label: "1/h", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.cph); } },
         { key: "errors", label: "Errors", group: "Errors", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
         { key: "errPct", label: "Err %", group: "Errors", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
-        { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", colorizeType: "mean", render: function (it) { return fmtDec(it.mean, 1); } },
+        { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", colorizeType: "mean", render: function (it) { return fmtInt(it.mean); } },
         { key: "min", label: "Min [ms]", group: "Runtime [ms]", altGroup: true, agg: "min", colorizeType: "min", render: function (it) { return fmtInt(it.min); } },
         { key: "max", label: "Max [ms]", group: "Runtime [ms]", altGroup: true, agg: "max", colorizeType: "max", render: function (it) { return fmtInt(it.max); } },
-        { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtDec(it.dev, 1); } },
+        { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtInt(it.dev); } },
         { type: "dynamicPercentiles", group: "Percentiles [ms]", decimals: 0 },
         { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true }
       ];
 
       var reqNetworkColumns = [
         { key: "name", label: "Request Rule / Endpoint", type: "text" },
-        { key: "dns", label: "Mean", group: "DNS Time [ms]", agg: "weightedMean", render: renderStatDec1("dns") },
+        { key: "dns", label: "Mean", group: "DNS Time [ms]", agg: "weightedMean", render: renderStatInt("dns") },
         { key: "dnsMin", label: "Min", group: "DNS Time [ms]", agg: "min", render: renderStatInt("dnsMin") },
         { key: "dnsMax", label: "Max", group: "DNS Time [ms]", agg: "max", render: renderStatInt("dnsMax") },
-        { key: "conn", label: "Mean", group: "Connect Time [ms]", altGroup: true, agg: "weightedMean", render: renderStatDec1("conn") },
+        { key: "conn", label: "Mean", group: "Connect Time [ms]", altGroup: true, agg: "weightedMean", render: renderStatInt("conn") },
         { key: "connMin", label: "Min", group: "Connect Time [ms]", altGroup: true, agg: "min", render: renderStatInt("connMin") },
         { key: "connMax", label: "Max", group: "Connect Time [ms]", altGroup: true, agg: "max", render: renderStatInt("connMax") },
-        { key: "send", label: "Mean", group: "Send Time [ms]", agg: "weightedMean", render: renderStatDec1("send") },
+        { key: "send", label: "Mean", group: "Send Time [ms]", agg: "weightedMean", render: renderStatInt("send") },
         { key: "sendMin", label: "Min", group: "Send Time [ms]", agg: "min", render: renderStatInt("sendMin") },
         { key: "sendMax", label: "Max", group: "Send Time [ms]", agg: "max", render: renderStatInt("sendMax") },
-        { key: "busy", label: "Mean", group: "Server Busy Time [ms]", altGroup: true, agg: "weightedMean", render: renderStatDec1("busy") },
+        { key: "busy", label: "Mean", group: "Server Busy Time [ms]", altGroup: true, agg: "weightedMean", render: renderStatInt("busy") },
         { key: "busyMin", label: "Min", group: "Server Busy Time [ms]", altGroup: true, agg: "min", render: renderStatInt("busyMin") },
         { key: "busyMax", label: "Max", group: "Server Busy Time [ms]", altGroup: true, agg: "max", render: renderStatInt("busyMax") },
-        { key: "recv", label: "Mean", group: "Receive Time [ms]", agg: "weightedMean", render: renderStatDec1("recv") },
+        { key: "recv", label: "Mean", group: "Receive Time [ms]", agg: "weightedMean", render: renderStatInt("recv") },
         { key: "recvTimeMin", label: "Min", group: "Receive Time [ms]", agg: "min", render: renderStatInt("recvTimeMin") },
         { key: "recvTimeMax", label: "Max", group: "Receive Time [ms]", agg: "max", render: renderStatInt("recvTimeMax") },
-        { key: "ttfb", label: "Mean", group: "Time to First [ms]", altGroup: true, agg: "weightedMean", disableTtfbWaterfall: true, render: renderStatDec1("ttfb") },
+        { key: "ttfb", label: "Mean", group: "Time to First [ms]", altGroup: true, agg: "weightedMean", disableTtfbWaterfall: true, render: renderStatInt("ttfb") },
         { key: "ttfbMin", label: "Min", group: "Time to First [ms]", altGroup: true, agg: "min", render: renderStatInt("ttfbMin") },
         { key: "ttfbMax", label: "Max", group: "Time to First [ms]", altGroup: true, agg: "max", render: renderStatInt("ttfbMax") },
-        { key: "ttlb", label: "Mean", group: "Time to Last [ms]", agg: "weightedMean", render: renderStatDec1("ttlb") },
+        { key: "ttlb", label: "Mean", group: "Time to Last [ms]", agg: "weightedMean", render: renderStatInt("ttlb") },
         { key: "ttlbMin", label: "Min", group: "Time to Last [ms]", agg: "min", render: renderStatInt("ttlbMin") },
         { key: "ttlbMax", label: "Max", group: "Time to Last [ms]", agg: "max", render: renderStatInt("ttlbMax") }
       ];
@@ -398,9 +398,9 @@
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Hits</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h' + distinctStr + '</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
-            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Latency</span><span class="wb-kpi-val">' + fDec(item.mean, 1) + ' ms</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Latency</span><span class="wb-kpi-val">' + fInt(item.mean) + ' ms</span></div>' +
             (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + '</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
-            (item.ttfb !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">TTFB / Recv</span><span class="wb-kpi-val">' + fDec(item.ttfb || 0, 1) + ' / ' + fDec(item.recv || 0, 2) + ' ms</span></div>' : '')
+            (item.ttfb !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">TTFB / Recv</span><span class="wb-kpi-val">' + fInt(item.ttfb || 0) + ' / ' + fInt(item.recv || 0) + ' ms</span></div>' : '')
           );
         },
         renderDrawer: function (item, escFn, fInt, fDec) {
@@ -441,12 +441,12 @@
               '<div class="drawer-box">' +
                 '<h4>Socket &amp; Network Timing Breakdown [ms]</h4>' +
                 '<table style="width:100%;font-size:11.5px;font-variant-numeric:tabular-nums;">' +
-                  '<tr><td>DNS Lookup:</td><td>' + fDec(item.dns, 2) + ' ms (max: ' + fInt(item.dnsMax) + ')</td></tr>' +
-                  '<tr><td>Connect Time:</td><td>' + fDec(item.conn, 2) + ' ms (max: ' + fInt(item.connMax) + ')</td></tr>' +
-                  '<tr><td>Send Time:</td><td>' + fDec(item.send, 2) + ' ms (max: ' + fInt(item.sendMax) + ')</td></tr>' +
-                  '<tr><td>Server Busy (TTFB):</td><td>' + fDec(item.busy !== undefined ? item.busy : item.ttfb, 2) + ' ms (max: ' + fInt(item.busyMax !== undefined ? item.busyMax : item.ttfbMax) + ')</td></tr>' +
-                  '<tr><td>Receive Time:</td><td>' + fDec(item.recv, 2) + ' ms (max: ' + fInt(item.recvTimeMax) + ')</td></tr>' +
-                  '<tr><td>Time to Last Byte:</td><td>' + fDec(item.ttlb, 2) + ' ms</td></tr>' +
+                  '<tr><td>DNS Lookup:</td><td>' + fInt(item.dns) + ' ms (max: ' + fInt(item.dnsMax) + ')</td></tr>' +
+                  '<tr><td>Connect Time:</td><td>' + fInt(item.conn) + ' ms (max: ' + fInt(item.connMax) + ')</td></tr>' +
+                  '<tr><td>Send Time:</td><td>' + fInt(item.send) + ' ms (max: ' + fInt(item.sendMax) + ')</td></tr>' +
+                  '<tr><td>Server Busy (TTFB):</td><td>' + fInt(item.busy !== undefined ? item.busy : item.ttfb) + ' ms (max: ' + fInt(item.busyMax !== undefined ? item.busyMax : item.ttfbMax) + ')</td></tr>' +
+                  '<tr><td>Receive Time:</td><td>' + fInt(item.recv) + ' ms (max: ' + fInt(item.recvTimeMax) + ')</td></tr>' +
+                  '<tr><td>Time to Last Byte:</td><td>' + fInt(item.ttlb) + ' ms</td></tr>' +
                 '</table>' +
               '</div>' +
               '<div class="drawer-box">' +

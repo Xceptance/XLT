@@ -262,38 +262,220 @@
     return ["50", "95", "99", "99.9"];
   }
 
+  var KNOWN_METRIC_FIELD_OP_RE = /(^|\s)(-?(?:count|cnt|n|hits|runs|errors?|err|failures?|fail|err%|errpct|error%|fail%|events?|evt|mean|avg|runtime|time|duration|min|max|dev|stddev|median|med|rate|rps|1\/s|cps|cph|1\/h|cpm|1\/min|cpd|1\/d|apdex|ttfb|conn|connect|recv|receive|send|dns|status|code|p\d+(?:\.\d+)?))\s+(<=|>=|!=|==|=|<|>)/g;
+  var OP_VALUE_SPACE_RE = /(<=|>=|!=|==|=|<|>)\s*(-?\d[\d,._]*)\s*(ms|s|%|k|m)?(?=\s|$)/g;
+  var PREDICATE_TOKEN_RE = /^([a-z0-9_.%/]+)?(<=|>=|!=|==|=|<|>)(-?\d[\d,._]*)(ms|s|%|k|m)?$/;
+
   /**
-   * Evaluates a search string using the classic XLT table filter DSL:
+   * Normalizes boolean error/event phrases and whitespace around numeric
+   * comparison operators within a single `|` OR branch before whitespace splitting.
+   *
+   * @param {string} branchStr Lowercased branch substring.
+   * @returns {string} Normalized branch string.
+   */
+  function normalizeFilterBranch(branchStr) {
+    return String(branchStr || "")
+      .replace(/\bhas\s*:\s*errors?\b/g, "has:errors")
+      .replace(/\bhas\s+errors?\b/g, "has:errors")
+      .replace(/\b(?:no|without)\s+errors?\b/g, "-has:errors")
+      .replace(/\bhas\s*:\s*events?\b/g, "has:events")
+      .replace(/\bhas\s+events?\b/g, "has:events")
+      .replace(/\b(?:no|without)\s+events?\b/g, "-has:events")
+      .replace(KNOWN_METRIC_FIELD_OP_RE, "$1$2$3")
+      .replace(OP_VALUE_SPACE_RE, "$1$2$3");
+  }
+
+  function hasItemErrors(item) {
+    if (!item) return false;
+    if (item.errors !== undefined) return (Number(item.errors) || 0) > 0;
+    if (item.status !== undefined && item.count === undefined) {
+      var st = Number(item.status);
+      return st >= 400 || st === 0;
+    }
+    if (item.trace !== undefined || item.exceptionClass !== undefined ||
+        item.detailChartId !== undefined || item.detailChartID !== undefined ||
+        item.overviewChartId !== undefined || item.overviewChartID !== undefined) {
+      return (Number(item.count) || 0) > 0;
+    }
+    return false;
+  }
+
+  function hasItemEvents(item) {
+    if (!item) return false;
+    var evVal = item.events !== undefined ? item.events : item.totalCount;
+    return (Number(evVal) || 0) > 0;
+  }
+
+  function resolveItemMetric(item, rawField) {
+    var f = String(rawField || "").toLowerCase();
+    if (!f) {
+      if (item.mean !== undefined) return { val: item.mean, isDurationMs: true };
+      if (item.runtime !== undefined) return { val: item.runtime, isDurationMs: true };
+      if (item.value !== undefined) return { val: item.value, isDurationMs: false };
+      return { val: item.count, isDurationMs: false };
+    }
+    switch (f) {
+      case "count":
+      case "cnt":
+      case "n":
+      case "hits":
+      case "runs":
+        return { val: item.count !== undefined ? item.count : item.totalCount, isDurationMs: false };
+      case "errors":
+      case "error":
+      case "err":
+      case "failures":
+      case "fail":
+        if (item.errors !== undefined) return { val: item.errors, isDurationMs: false };
+        if (item.trace !== undefined || item.exceptionClass !== undefined ||
+            item.detailChartId !== undefined || item.detailChartID !== undefined) {
+          return { val: item.count, isDurationMs: false };
+        }
+        return { val: undefined, isDurationMs: false };
+      case "err%":
+      case "errpct":
+      case "error%":
+      case "fail%":
+        return { val: item.errPct, isDurationMs: false };
+      case "events":
+      case "event":
+      case "evt":
+        return { val: item.events !== undefined ? item.events : item.totalCount, isDurationMs: false };
+      case "mean":
+      case "avg":
+      case "runtime":
+      case "time":
+      case "duration":
+        return { val: item.mean !== undefined ? item.mean : item.runtime, isDurationMs: true };
+      case "min":
+        return { val: item.min, isDurationMs: true };
+      case "max":
+        return { val: item.max, isDurationMs: true };
+      case "dev":
+      case "stddev":
+        return { val: item.dev, isDurationMs: true };
+      case "median":
+      case "med":
+        return { val: item.median !== undefined ? item.median : getPercentile(item, "50"), isDurationMs: true };
+      case "rate":
+      case "rps":
+      case "1/s":
+      case "cps":
+        return { val: item.rate, isDurationMs: false };
+      case "cph":
+      case "1/h":
+        return { val: item.cph, isDurationMs: false };
+      case "cpm":
+      case "1/min":
+        return { val: item.cpm, isDurationMs: false };
+      case "cpd":
+      case "1/d":
+        return { val: item.cpd, isDurationMs: false };
+      case "apdex":
+        return { val: (item.apdex && typeof item.apdex === "object") ? item.apdex.value : item.apdex, isDurationMs: false };
+      case "ttfb":
+        return { val: item.ttfb, isDurationMs: true };
+      case "conn":
+      case "connect":
+        return { val: item.conn !== undefined ? item.conn : item.connect, isDurationMs: true };
+      case "recv":
+      case "receive":
+        return { val: item.recv, isDurationMs: true };
+      case "send":
+        return { val: item.send, isDurationMs: true };
+      case "dns":
+        return { val: item.dns, isDurationMs: true };
+      case "status":
+      case "code":
+        return { val: item.status, isDurationMs: false };
+      default:
+        var pMatch = /^p(\d+(?:\.\d+)?)$/.exec(f);
+        if (pMatch) {
+          return { val: getPercentile(item, pMatch[1]), isDurationMs: true };
+        }
+        if (Object.prototype.hasOwnProperty.call(item, f)) {
+          return { val: item[f], isDurationMs: false };
+        }
+        return { val: undefined, isDurationMs: false, unknownField: true };
+    }
+  }
+
+  function compareNumeric(lhs, op, rhs) {
+    switch (op) {
+      case "<": return lhs < rhs;
+      case "<=": return lhs <= rhs;
+      case ">": return lhs > rhs;
+      case ">=": return lhs >= rhs;
+      case "=":
+      case "==": return lhs === rhs;
+      case "!=": return lhs !== rhs;
+      default: return false;
+    }
+  }
+
+  function evalSingleToken(tok, text, item) {
+    if (item && typeof item === "object") {
+      if (tok === "has:errors" || tok === "has:error" || tok === "is:error" || tok === "is:failed") {
+        return hasItemErrors(item);
+      }
+      if (tok === "has:events" || tok === "has:event") {
+        return hasItemEvents(item);
+      }
+      var m = PREDICATE_TOKEN_RE.exec(tok);
+      if (m) {
+        var field = m[1] || "";
+        var op = m[2];
+        var rhs = Number(m[3].replace(/[,_]/g, ""));
+        var unit = m[4] || "";
+        if (!Number.isNaN(rhs)) {
+          var res = resolveItemMetric(item, field);
+          if (!res.unknownField) {
+            if (unit === "k") rhs *= 1000;
+            else if (unit === "m") rhs *= 1000000;
+            else if (unit === "s" && res.isDurationMs) rhs *= 1000;
+            if (res.val === undefined || res.val === null || res.val === "" || Number.isNaN(Number(res.val))) {
+              return false;
+            }
+            return compareNumeric(Number(res.val), op, rhs);
+          }
+        }
+      }
+    }
+    return text.indexOf(tok) !== -1;
+  }
+
+  /**
+   * Evaluates a search string using the XLT table filter DSL:
    * - `|` separates OR branches (a match in any branch returns `true`).
    * - Whitespace separates AND tokens within each branch.
-   * - Leading `-` negates a token (substring must NOT appear).
-   * - Matching is case-insensitive substring comparison.
+   * - Leading `-` negates any text token or predicate (e.g. `-bot`, `-has:errors`).
+   * - When `item` is provided, also evaluates boolean predicates (`has errors`, `no errors`,
+   *   `has events`) and numeric metric comparisons (`< 500 ms`, `count > 100`, `p95 > 10,000`).
+   * - Unrecognized tokens fall back to case-insensitive substring comparison on `haystack`.
    *
    * @param {string} haystack Concatenated searchable text for a row or card.
    * @param {string} query User filter input string.
-   * @returns {boolean} `true` if `haystack` satisfies the filter query.
+   * @param {Object|null} [item] Optional metric record for predicate evaluation.
+   * @returns {boolean} `true` if `haystack`/`item` satisfies the filter query.
    */
-  function matchesFilter(haystack, query) {
+  function matchesFilter(haystack, query, item) {
     var q = String(query == null ? "" : query).trim().toLowerCase();
     if (!q) return true;
     var text = String(haystack == null ? "" : haystack).toLowerCase();
     var branches = q.split("|");
     for (var b = 0; b < branches.length; b++) {
-      var tokens = branches[b].trim().split(/\s+/);
+      var normalized = normalizeFilterBranch(branches[b].trim());
+      var tokens = normalized.trim().split(/\s+/);
       var ok = true;
       for (var t = 0; t < tokens.length; t++) {
         var tok = tokens[t];
         if (!tok) continue;
-        if (tok.charAt(0) === "-" && tok.length > 1) {
-          if (text.indexOf(tok.slice(1)) !== -1) {
-            ok = false;
-            break;
-          }
-        } else {
-          if (text.indexOf(tok) === -1) {
-            ok = false;
-            break;
-          }
+        var negated = tok.charAt(0) === "-" && tok.length > 1;
+        var core = negated ? tok.slice(1) : tok;
+        var matched = evalSingleToken(core, text, item);
+        if (negated ? matched : !matched) {
+          ok = false;
+          break;
         }
       }
       if (ok) return true;

@@ -224,7 +224,6 @@
      * and re-appends paired `[tr, drawerTr]` nodes in one fragment pass.
      */
     function applyFilterAndSort() {
-      var tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
       var visibleCount = 0;
 
       records.forEach(function (rec) {
@@ -240,13 +239,7 @@
           chipOk = r.conn >= 1000;
         }
 
-        var textOk = true;
-        for (var i = 0; i < tokens.length; i++) {
-          if (rec.blob.indexOf(tokens[i]) === -1) {
-            textOk = false;
-            break;
-          }
-        }
+        var textOk = UI.matchesFilter(rec.blob, query, r);
 
         var show = chipOk && textOk;
         rec.tr.hidden = !show;

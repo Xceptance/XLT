@@ -262,7 +262,7 @@
         var tailMain = tailKeys.length
           ? tailKeys.map(function (k) {
               var v = wb.getItemPercentile(totals, k);
-              return v !== undefined ? (fmtDec(v / 1000, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">s</span>') : "—";
+              return v !== undefined ? (fmtInt(v) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span>') : "—";
             }).join(" / ")
           : (fmtInt(totals.min) + " – " + fmtInt(totals.max) + " ms");
         var lastPctKey = pcts.length > tailKeys.length ? pcts[pcts.length - 1] : null;
@@ -279,13 +279,13 @@
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">Aggregate Mean Runtime</span>' +
-            '<div class="kpi-val">' + fmtDec(meanMs / 1000, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">s</span> <span style="font-size:12px;font-weight:600;color:var(--text-muted);">(' + fmtInt(meanMs) + ' ms)</span></div>' +
-            '<div class="kpi-sub">' + (pFirst && pFirstVal !== undefined ? ('P' + esc(pFirst) + ': <strong>' + fmtDec(pFirstVal / 1000, 1) + ' s</strong> (' + fmtInt(pFirstVal) + ' ms)') : ('Min: <strong>' + fmtInt(totals.min) + ' ms</strong> • Max: <strong>' + fmtInt(totals.max) + ' ms</strong>')) + '</div>' +
+            '<div class="kpi-val">' + fmtInt(meanMs) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
+            '<div class="kpi-sub">' + (pFirst && pFirstVal !== undefined ? ('P' + esc(pFirst) + ': <strong>' + fmtInt(pFirstVal) + ' ms</strong>') : ('Min: <strong>' + fmtInt(totals.min) + ' ms</strong> • Max: <strong>' + fmtInt(totals.max) + ' ms</strong>')) + '</div>' +
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">' + esc(tailHeader) + '</span>' +
             '<div class="kpi-val">' + tailMain + '</div>' +
-            '<div class="kpi-sub">' + (lastPctKey && lastPctVal !== undefined ? ('P' + esc(lastPctKey) + ': <strong>' + fmtDec(lastPctVal / 1000, 1) + ' s</strong> (' + fmtInt(lastPctVal) + ' ms)') : ('Std Dev: <strong>' + fmtDec(totals.dev || 0, 1) + ' ms</strong>')) + '</div>' +
+            '<div class="kpi-sub">' + (lastPctKey && lastPctVal !== undefined ? ('P' + esc(lastPctKey) + ': <strong>' + fmtInt(lastPctVal) + ' ms</strong>') : ('Std Dev: <strong>' + fmtInt(totals.dev || 0) + ' ms</strong>')) + '</div>' +
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">Failures &amp; Telemetry</span>' +
@@ -317,32 +317,26 @@
           { key: "errors", label: "Errors", group: "Errors / Events", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
           { key: "errPct", label: "Err %", group: "Errors / Events", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
           { key: "events", label: "Events", group: "Errors / Events", agg: "sum", cellClass: function (it) { return it.events > 0 ? "cell-warn" : ""; }, render: function (it) { return fmtInt(it.events); } },
-          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtDec(it.mean, 1); } },
+          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtInt(it.mean); } },
           { key: "min", label: "Min [ms]", group: "Runtime [ms]", altGroup: true, agg: "min", render: function (it) { return fmtInt(it.min); } },
           { key: "max", label: "Max [ms]", group: "Runtime [ms]", altGroup: true, agg: "max", render: function (it) { return fmtInt(it.max); } },
-          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtDec(it.dev, 1); } },
+          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtInt(it.dev); } },
           { type: "dynamicPercentiles", group: "Percentiles [ms]", decimals: 0 },
           { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true, onlyIfData: true }
         ],
         renderWbKpis: function (item, escFn, fInt, fDec) {
-          var durSec = (Number(item.mean || 0) / 1000).toFixed(1) + " s";
           var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
           var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Output</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
-            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Duration</span><span class="wb-kpi-val">' + fDec(item.mean, 1) + ' ms <span style="font-size:10.5px;font-weight:600;color:var(--text-muted);">(' + durSec + ')</span></span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Duration</span><span class="wb-kpi-val">' + fInt(item.mean) + ' ms</span></div>' +
             (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + '</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Errors / Events</span><span class="wb-kpi-val"><span style="' + (item.errors > 0 ? 'color:var(--status-fail-text);font-weight:800;' : '') + '">' + fInt(item.errors) + '</span> / <span style="' + (item.events > 0 ? 'color:var(--warning);font-weight:800;' : '') + '">' + fInt(item.events) + '</span></span></div>'
           );
         },
         renderDrawer: function (item, escFn, fInt, fDec) {
-          var meanSec = (Number(item.mean || 0) / 1000).toFixed(2);
           var medMs = item.median !== undefined ? item.median : wb.getItemPercentile(item, "50");
-          var medSec = medMs !== undefined ? (Number(medMs) / 1000).toFixed(2) : null;
-          var minSec = (Number(item.min || 0) / 1000).toFixed(2);
-          var maxSec = (Number(item.max || 0) / 1000).toFixed(2);
-          var devSec = (Number(item.dev || 0) / 1000).toFixed(2);
           var lblTxt = (item.labels && item.labels.length)
             ? item.labels.map(function (l) { return '<span class="label-chip">' + escFn(l) + '</span>'; }).join(' ')
             : '<span class="cell-muted">None</span>';
@@ -356,12 +350,12 @@
                 '</table>' +
               '</div>' +
               '<div class="drawer-box">' +
-                '<h4>Duration In Seconds</h4>' +
+                '<h4>Duration In Milliseconds</h4>' +
                 '<table>' +
-                  '<tr><td>Mean</td><td>' + meanSec + ' s</td></tr>' +
-                  (medSec !== null ? '<tr><td>Median</td><td>' + medSec + ' s</td></tr>' : '') +
-                  '<tr><td>Min .. Max</td><td>' + minSec + ' .. ' + maxSec + ' s</td></tr>' +
-                  '<tr><td>Std Dev</td><td>' + devSec + ' s</td></tr>' +
+                  '<tr><td>Mean</td><td>' + fInt(item.mean) + ' ms</td></tr>' +
+                  (medMs !== undefined ? '<tr><td>Median</td><td>' + fInt(medMs) + ' ms</td></tr>' : '') +
+                  '<tr><td>Min .. Max</td><td>' + fInt(item.min) + ' .. ' + fInt(item.max) + ' ms</td></tr>' +
+                  '<tr><td>Std Dev</td><td>' + fInt(item.dev) + ' ms</td></tr>' +
                 '</table>' +
               '</div>' +
               '<div class="drawer-box">' +

@@ -124,7 +124,7 @@
       if (n >= 800) cls = "lat-bad";
       else if (n >= 250) cls = "lat-warn";
     }
-    return '<span class="lat-pill ' + cls + '">' + fmtDec(n, 1) + '</span>';
+    return '<span class="lat-pill ' + cls + '">' + fmtInt(n) + '</span>';
   }
 
   function renderTtfbWaterfall(item) {
@@ -136,12 +136,12 @@
     var ttfbPct = Math.min(85, Math.max(8, Math.round((ttfb / Math.max(total, scaleMax)) * 100)));
     var recvPct = Math.min(100 - ttfbPct, Math.max(4, Math.round((recv / Math.max(total, scaleMax)) * 100)));
     return (
-      '<div class="wf-cell" title="TTFB: ' + fmtDec(ttfb, 1) + ' ms • Receive: ' + fmtDec(recv, 2) + ' ms">' +
+      '<div class="wf-cell" title="TTFB: ' + fmtInt(ttfb) + ' ms • Receive: ' + fmtInt(recv) + ' ms">' +
         '<span class="wf-bar-track">' +
           '<span class="wf-bar-ttfb" style="width:' + ttfbPct + '%"></span>' +
           '<span class="wf-bar-recv" style="width:' + recvPct + '%"></span>' +
         '</span>' +
-        '<span>' + fmtDec(ttfb, 1) + '</span>' +
+        '<span>' + fmtInt(ttfb) + '</span>' +
       '</div>'
     );
   }
@@ -899,13 +899,13 @@
           td.setAttribute("data-copy", "");
           td.innerHTML = renderRealSparkline(item.spark, cfg.sparkUnit);
         } else if (col.key === "ttfb" && item.ttfb !== undefined && !col.disableTtfbWaterfall) {
-          td.setAttribute("data-copy", fmtDec(item.ttfb, 1));
+          td.setAttribute("data-copy", fmtInt(item.ttfb));
           td.innerHTML = renderTtfbWaterfall(item);
         } else {
           if (col.getCopyText) {
             td.setAttribute("data-copy", col.getCopyText(item));
           } else if (col.key === "mean" && item.mean !== undefined) {
-            td.setAttribute("data-copy", fmtDec(item.mean, cfg.meanDecimals !== undefined ? cfg.meanDecimals : 1));
+            td.setAttribute("data-copy", (cfg.meanDecimals && cfg.meanDecimals > 0) ? fmtDec(item.mean, cfg.meanDecimals) : fmtInt(item.mean));
           }
           td.innerHTML = col.render ? col.render(item) : escHtml(item[col.key]);
         }
@@ -1108,7 +1108,7 @@
           .concat(item.labels || [])
           .concat(item.searchBlob ? [item.searchBlob] : [])
           .join(" ");
-        var textMatch = matchesXltFilter(searchHaystack, state.query);
+        var textMatch = matchesXltFilter(searchHaystack, state.query, item);
         var show = labelMatch && textMatch;
         var tr = rowMap.get(item.key);
         var dTr = drawerMap.get(item.key);
@@ -1213,13 +1213,13 @@
         col2 =
           '<div class="fn-group">' +
             '<span class="fn-label">Network Waterfall &amp; Spread</span>' +
-            '<span class="fn-val">TTFB: <strong>' + fmtDec(item.ttfb, 1) + ' ms</strong> • Recv: <strong>' + fmtDec(item.recv, 2) + ' ms</strong> • Range: <strong>' + fmtInt(item.min) + '–' + fmtInt(item.max) + ' ms</strong></span>' +
+            '<span class="fn-val">TTFB: <strong>' + fmtInt(item.ttfb) + ' ms</strong> • Recv: <strong>' + fmtInt(item.recv) + ' ms</strong> • Range: <strong>' + fmtInt(item.min) + '–' + fmtInt(item.max) + ' ms</strong></span>' +
           '</div>';
       } else {
         col2 =
           '<div class="fn-group">' +
             '<span class="fn-label">Latency Range &amp; Spread</span>' +
-            '<span class="fn-val">Min: <strong>' + (pctDec > 0 ? fmtDec(item.min, pctDec) : fmtInt(item.min)) + unit + '</strong> • Max: <strong>' + (pctDec > 0 ? fmtDec(item.max, pctDec) : fmtInt(item.max)) + unit + '</strong> • Std Dev: <strong>' + fmtDec(item.dev, pctDec > 0 ? 2 : 1) + unit + '</strong></span>' +
+            '<span class="fn-val">Min: <strong>' + (pctDec > 0 ? fmtDec(item.min, pctDec) : fmtInt(item.min)) + unit + '</strong> • Max: <strong>' + (pctDec > 0 ? fmtDec(item.max, pctDec) : fmtInt(item.max)) + unit + '</strong> • Std Dev: <strong>' + (pctDec > 0 ? fmtDec(item.dev, 2) : fmtInt(item.dev)) + unit + '</strong></span>' +
           '</div>';
       }
       var col3 = "";
@@ -1386,9 +1386,9 @@
         var pctVal = pctKey ? getItemPercentile(it, pctKey) : undefined;
         if (it.cph !== undefined) stats.push('<span class="stream-stat-item">1/h: <strong style="color:var(--brand-blue);">' + fmtInt(it.cph) + '</strong></span>');
         if (it.rate !== undefined) stats.push('<span class="stream-stat-item">1/s: <strong>' + fmtDec(it.rate, 2) + '</strong></span>');
-        if (it.mean !== undefined) stats.push('<span class="stream-stat-item">Mean: <strong>' + fmtDec(it.mean, cfg.meanDecimals !== undefined ? cfg.meanDecimals : 1) + unit + '</strong></span>');
+        if (it.mean !== undefined) stats.push('<span class="stream-stat-item">Mean: <strong>' + ((cfg.meanDecimals && cfg.meanDecimals > 0) ? fmtDec(it.mean, cfg.meanDecimals) : fmtInt(it.mean)) + unit + '</strong></span>');
         if (pctVal !== undefined) stats.push('<span class="stream-stat-item">P' + escHtml(pctKey) + ': <strong>' + (cfg.percentileDecimals > 0 ? fmtDec(pctVal, cfg.percentileDecimals) : fmtInt(pctVal)) + unit + '</strong></span>');
-        if (it.ttfb !== undefined) stats.push('<span class="stream-stat-item">TTFB: <strong>' + fmtDec(it.ttfb, 1) + ' ms</strong></span>');
+        if (it.ttfb !== undefined) stats.push('<span class="stream-stat-item">TTFB: <strong>' + fmtInt(it.ttfb) + ' ms</strong></span>');
         if (it.errors !== undefined) {
           stats.push('<span class="stream-stat-item">Errors: <strong style="color:' + (it.errors > 0 ? 'var(--status-fail-text)' : 'var(--status-pass-text)') + ';">' + fmtInt(it.errors) + '</strong></span>');
         }
@@ -1664,6 +1664,10 @@
     if (btnViewStream) btnViewStream.addEventListener("click", function () { setView("stream", "smooth"); });
 
     if (filterInput) {
+      filterInput.title = "Filter by text, or expressions like: has errors, count > 100, < 500 ms, p95 > 10,000 (space = AND, | = OR, - = exclude)";
+      if (filterInput.placeholder && filterInput.placeholder.indexOf("has errors") === -1) {
+        filterInput.placeholder = filterInput.placeholder.replace(/\.\.\.\s*$/, "") + " (e.g. has errors, < 500 ms, p95 > 10,000)...";
+      }
       filterInput.value = state.query;
       filterInput.addEventListener("input", function () {
         state.query = filterInput.value;

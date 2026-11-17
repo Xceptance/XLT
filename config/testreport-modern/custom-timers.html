@@ -267,7 +267,7 @@
           '</article>' +
           '<article class="kpi-card">' +
             '<span class="kpi-label">Fleet Mean Duration</span>' +
-            '<div class="kpi-val">' + fmtDec(totals.mean || 0, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
+            '<div class="kpi-val">' + fmtInt(totals.mean || 0) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
             '<div class="kpi-sub">' + pctSub + '</div>' +
           '</article>' +
           '<article class="kpi-card">' +
@@ -302,10 +302,10 @@
           { key: "cph", label: "1/h", group: "Execution Volume", agg: "sum", render: function (it) { return fmtInt(it.cph); } },
           { key: "errors", label: "Errors", group: "Quality", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
           { key: "errPct", label: "Err %", group: "Quality", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
-          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtDec(it.mean, 1); } },
+          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtInt(it.mean); } },
           { key: "min", label: "Min [ms]", group: "Runtime [ms]", altGroup: true, agg: "min", render: function (it) { return fmtInt(it.min); } },
           { key: "max", label: "Max [ms]", group: "Runtime [ms]", altGroup: true, agg: "max", render: function (it) { return fmtInt(it.max); } },
-          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtDec(it.dev, 1); } },
+          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtInt(it.dev); } },
           { type: "dynamicPercentiles", group: "Percentiles [ms]", decimals: 0 },
           { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true, onlyIfData: true }
         ],
@@ -315,7 +315,7 @@
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Executions</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Execution Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
-            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Runtime</span><span class="wb-kpi-val">' + fDec(item.mean, 1) + ' ms</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Runtime</span><span class="wb-kpi-val">' + fInt(item.mean) + ' ms</span></div>' +
             (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + ' Latency</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Max Latency</span><span class="wb-kpi-val">' + fInt(item.max) + ' ms</span></div>'
           );
@@ -338,9 +338,9 @@
               '<div class="drawer-box">' +
                 '<h4>Spread &amp; Metadata</h4>' +
                 '<table>' +
-                  (medMs !== undefined ? '<tr><td>Median</td><td>' + fDec(medMs, 1) + ' ms</td></tr>' : '') +
+                  (medMs !== undefined ? '<tr><td>Median</td><td>' + fInt(medMs) + ' ms</td></tr>' : '') +
                   '<tr><td>Min .. Max Spread</td><td>' + fInt(spreadMs) + ' ms</td></tr>' +
-                  '<tr><td>Std Deviation</td><td>' + fDec(item.dev, 1) + ' ms</td></tr>' +
+                  '<tr><td>Std Deviation</td><td>' + fInt(item.dev) + ' ms</td></tr>' +
                   lblRow +
                 '</table>' +
               '</div>' +

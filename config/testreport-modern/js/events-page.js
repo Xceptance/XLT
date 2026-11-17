@@ -267,18 +267,11 @@
     container.appendChild(frag);
 
     function applyFilter() {
-      var tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
       var vis = 0;
       var visOccurrences = 0;
       cards.forEach(function (c) {
         var nameOk = activeEventName === "all" || c.ev.name === activeEventName;
-        var textOk = true;
-        for (var i = 0; i < tokens.length; i++) {
-          if (c.blob.indexOf(tokens[i]) === -1) {
-            textOk = false;
-            break;
-          }
-        }
+        var textOk = UI.matchesFilter(c.blob, query, { count: c.ev.totalCount, events: c.ev.totalCount });
         var show = nameOk && textOk;
         c.el.hidden = !show;
         if (show) {

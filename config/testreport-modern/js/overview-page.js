@@ -114,7 +114,7 @@
         " points</strong> (<strong>" + fmtDec(sc.pointsPercentage, 1) + "%</strong>)" +
         (sc.ratingName ? " — Rating: <strong>" + esc(sc.ratingName) + "</strong>" : "") + ". " +
         "Throughput reached <strong>" + fmtInt(tx.count || 0) + " transactions</strong> with request latency at " +
-        "<strong>Mean: " + fmtDec(req.mean || 0, 1) + " ms</strong>" +
+        "<strong>Mean: " + fmtInt(req.mean || 0) + " ms</strong>" +
         (p95 !== null ? ", <strong>P95: " + fmtInt(p95) + " ms</strong>" : "") + ".";
 
     sec.innerHTML =
@@ -202,10 +202,10 @@
       "</div>" +
       '<div class="kpi-card">' +
         '<span class="kpi-label">Request Wire Latency</span>' +
-        '<div class="kpi-val">' + fmtDec(req.mean || 0, 1) + " ms</div>" +
-        '<div class="kpi-sub">Mean: ' + fmtDec(req.mean || 0, 1) + " ms" +
+        '<div class="kpi-val">' + fmtInt(req.mean || 0) + " ms</div>" +
+        '<div class="kpi-sub">Mean: ' + fmtInt(req.mean || 0) + " ms" +
           (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") +
-          (tx.mean ? " (Tx mean: " + fmtDec(tx.mean / 1000, 1) + " s)" : "") +
+          (tx.mean ? " (Tx mean: " + fmtInt(tx.mean) + " ms)" : "") +
         "</div>" +
       "</div>" +
       '<div class="kpi-card">' +
@@ -264,7 +264,7 @@
       '<div class="chart-panel">' +
         '<div class="chart-panel-header">' +
           '<div class="chart-panel-title"><span>⏱️</span> Request Runtime</div>' +
-          '<span class="chart-header-badge" style="font-size:11px;font-weight:700;color:#6366f1;">Mean: ' + fmtDec(req.mean || 0, 1) + " ms" + (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") + "</span>" +
+          '<span class="chart-header-badge" style="font-size:11px;font-weight:700;color:#6366f1;">Mean: ' + fmtInt(req.mean || 0) + " ms" + (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") + "</span>" +
         "</div>" +
         '<div class="chart-panel-body">' +
           '<img class="zoomable-chart" src="charts/RequestRuntime.webp" alt="Request Runtime Progression" data-chart-title="Request Runtime Progression" loading="lazy" decoding="async" />' +
@@ -494,7 +494,7 @@
         var evs = Number(s.events) || 0;
         var pctCells = pctList.map(function (p) {
           var v = getPct(s, p);
-          return '<td class="col-num">' + (v !== null && v !== undefined ? fmtDec(v, 1) : "—") + "</td>";
+          return '<td class="col-num">' + (v !== null && v !== undefined ? fmtInt(v) : "—") + "</td>";
         }).join("");
         return (
           "<tr>" +
@@ -505,10 +505,10 @@
             '<td class="col-num">' + fmtInt(s.cph || 0) + "</td>" +
             '<td class="col-num">' + (errs > 0 ? '<a href="' + t.errHref + '" class="matrix-alert-pill pill-err">' + fmtInt(errs) + "</a>" : '<span class="cell-zero">0</span>') + "</td>" +
             '<td class="col-num">' + (evs > 0 ? '<a href="events.html" class="matrix-alert-pill pill-warn">' + fmtInt(evs) + "</a>" : '<span class="cell-zero">0</span>') + "</td>" +
-            '<td class="col-num cg-alt cell-primary-num">' + fmtDec(s.mean || 0, 1) + "</td>" +
+            '<td class="col-num cg-alt cell-primary-num">' + fmtInt(s.mean || 0) + "</td>" +
             '<td class="col-num cg-alt">' + fmtInt(s.min || 0) + "</td>" +
             '<td class="col-num cg-alt">' + fmtInt(s.max || 0) + "</td>" +
-            '<td class="col-num cg-alt">' + fmtDec(s.dev || 0, 1) + "</td>" +
+            '<td class="col-num cg-alt">' + fmtInt(s.dev || 0) + "</td>" +
             pctCells +
           "</tr>"
         );

@@ -301,7 +301,7 @@ xlt.clientperformance.recording = true</pre>
       if (kpiGrid) {
         kpiGrid.innerHTML =
           '<article class="kpi-card"><span class="kpi-label">Page Load Samples</span><div class="kpi-val">' + fmtInt(totals.count || 0) + '</div><div class="kpi-sub">Across <strong>' + fmtInt(nonAgg.length) + ' browser timing timer(s)</strong></div></article>' +
-          '<article class="kpi-card"><span class="kpi-label">Mean Page Load</span><div class="kpi-val">' + fmtDec(totals.mean || 0, 1) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div><div class="kpi-sub">' + (pKey && p95Val !== undefined ? "P" + esc(pKey) + ": <strong>" + fmtInt(p95Val) + " ms</strong>" : "Browser milestone duration") + '</div></article>' +
+          '<article class="kpi-card"><span class="kpi-label">Mean Page Load</span><div class="kpi-val">' + fmtInt(totals.mean || 0) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div><div class="kpi-sub">' + (pKey && p95Val !== undefined ? "P" + esc(pKey) + ": <strong>" + fmtInt(p95Val) + " ms</strong>" : "Browser milestone duration") + '</div></article>' +
           '<article class="kpi-card"><span class="kpi-label">Error Rate</span><div class="kpi-val" style="color:' + ((totals.errors || 0) > 0 ? "var(--status-fail-text)" : "var(--status-pass-text)") + ';">' + fmtDec(totals.errPct || 0, 2) + '%</div><div class="kpi-sub">' + fmtInt(totals.errors || 0) + ' timing error(s)</div></article>' +
           '<article class="kpi-card"><span class="kpi-label">Max Observed</span><div class="kpi-val">' + fmtInt(totals.max || 0) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div><div class="kpi-sub">Peak page load milestone</div></article>';
       }
@@ -326,10 +326,10 @@ xlt.clientperformance.recording = true</pre>
           { key: "cph", label: "1/h", group: "Execution Volume", agg: "sum", render: function (it) { return fmtInt(it.cph); } },
           { key: "errors", label: "Errors", group: "Quality", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
           { key: "errPct", label: "Err %", group: "Quality", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },
-          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtDec(it.mean, 1); } },
+          { key: "mean", label: "Mean [ms]", group: "Runtime [ms]", altGroup: true, agg: "weightedMean", render: function (it) { return fmtInt(it.mean); } },
           { key: "min", label: "Min [ms]", group: "Runtime [ms]", altGroup: true, agg: "min", render: function (it) { return fmtInt(it.min); } },
           { key: "max", label: "Max [ms]", group: "Runtime [ms]", altGroup: true, agg: "max", render: function (it) { return fmtInt(it.max); } },
-          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtDec(it.dev, 1); } },
+          { key: "dev", label: "Dev [ms]", group: "Runtime [ms]", altGroup: true, render: function (it) { return fmtInt(it.dev); } },
           { type: "dynamicPercentiles", group: "Percentiles [ms]", decimals: 0 },
           { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true, onlyIfData: true }
         ],
@@ -338,7 +338,7 @@ xlt.clientperformance.recording = true</pre>
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Samples</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
-            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Duration</span><span class="wb-kpi-val">' + fDec(item.mean, 1) + ' ms</span></div>' +
+            '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Duration</span><span class="wb-kpi-val">' + fInt(item.mean) + ' ms</span></div>' +
             (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + esc(pKey) + '</span><span class="wb-kpi-val">' + fInt(pv) + ' ms</span></div>' : '') +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Max Duration</span><span class="wb-kpi-val">' + fInt(item.max) + ' ms</span></div>'
           );
@@ -361,9 +361,9 @@ xlt.clientperformance.recording = true</pre>
               '<div class="drawer-box">' +
                 '<h4>Spread &amp; Metadata</h4>' +
                 '<table>' +
-                  (medMs !== undefined ? '<tr><td>Median</td><td>' + fDec(medMs, 1) + ' ms</td></tr>' : '') +
+                  (medMs !== undefined ? '<tr><td>Median</td><td>' + fInt(medMs) + ' ms</td></tr>' : '') +
                   '<tr><td>Min .. Max Spread</td><td>' + fInt(spreadMs) + ' ms</td></tr>' +
-                  '<tr><td>Std Deviation</td><td>' + fDec(item.dev, 1) + ' ms</td></tr>' +
+                  '<tr><td>Std Deviation</td><td>' + fInt(item.dev) + ' ms</td></tr>' +
                   lblRow +
                 '</table>' +
               '</div>' +

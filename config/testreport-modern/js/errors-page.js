@@ -567,6 +567,7 @@
           frag.appendChild(tr);
           cards.push({
             el: tr,
+            item: inc,
             traceWrap: tr.querySelector("[data-trace-wrap]"),
             toggleBtn: tr.querySelector("[data-toggle-trace]"),
             blob: ((inc.testCaseName || "") + " " + (inc.actionName || "") + " " + (inc.requestName || "") + " " + dumpHints.join(" ") + " " + (inc.message || "") + " " + traceText).toLowerCase()
@@ -594,10 +595,10 @@
 
     if (filterInput && cards.length) {
       filterInput.addEventListener("input", function () {
-        var q = filterInput.value.toLowerCase().trim();
+        var q = filterInput.value;
         var vis = 0;
         cards.forEach(function (c) {
-          var ok = !q || c.blob.indexOf(q) !== -1;
+          var ok = UI.matchesFilter(c.blob, q, c.item);
           c.el.hidden = !ok;
           if (ok) vis++;
         });
