@@ -29,6 +29,9 @@ JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true"
 
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 
+# workaround for Java4Shell issue (GH#730)
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:-UseBASE64Intrinsics"
+
 # append options to suppress illegal access warnings for Java 9+
 PACKAGES="java.base/java.lang.reflect java.base/java.text java.base/java.util java.desktop/java.awt.font"
 for p in $PACKAGES; do JAVA_OPTIONS="$JAVA_OPTIONS --add-opens=$p=ALL-UNNAMED"; done

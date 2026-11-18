@@ -20,5 +20,8 @@ set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlogback.configurationFile="%XLT_CONFIG_DIR%\ch
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"
 
+:: workaround for Java4Shell issue (GH#730)
+set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:-UseBASE64Intrinsics
+
 :: run Java
 java %JAVA_OPTIONS% com.xceptance.xlt.report.criteria.CheckCriteriaMain %*

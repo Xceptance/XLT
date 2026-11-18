@@ -24,6 +24,9 @@ JAVA_OPTIONS="$JAVA_OPTIONS -Djava.awt.headless=true"
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 
+# workaround for Java4Shell issue (GH#730)
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:-UseBASE64Intrinsics"
+
 # run Java
 CMD="java $JAVA_OPTIONS com.xceptance.xlt.report.diffreport.DiffReportGeneratorMain"
 ARGS=""

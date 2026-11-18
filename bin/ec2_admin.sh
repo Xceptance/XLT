@@ -22,6 +22,9 @@ JAVA_OPTIONS="$JAVA_OPTIONS -Dlogback.configurationFile=\"$XLT_CONFIG_DIR/ec2_ad
 #JAVA_OPTIONS="$JAVA_OPTIONS -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n"
 JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 
+# workaround for Java4Shell issue (GH#730)
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:-UseBASE64Intrinsics"
+
 # append options to suppress illegal access warnings for Java 9+
 PACKAGES="java.xml/com.sun.org.apache.xpath.internal"
 for p in $PACKAGES; do JAVA_OPTIONS="$JAVA_OPTIONS --add-opens=$p=ALL-UNNAMED"; done
