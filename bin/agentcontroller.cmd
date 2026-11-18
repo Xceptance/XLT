@@ -19,6 +19,9 @@ set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlogback.configurationFile="%XLT_CONFIG_DIR%\ag
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% -agentlib:jdwp=transport=dt_socket,address=localhost:6666,server=y,suspend=n
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"
 
+:: workaround for Java4Shell issue (GH#730)
+set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:-UseBASE64Intrinsics
+
 :: append options to suppress illegal access warnings for Java 9+
 set PACKAGES=java.base/java.lang
 for %%p in (%PACKAGES%) do set JAVA_OPTIONS=!JAVA_OPTIONS! --add-opens=%%p=ALL-UNNAMED

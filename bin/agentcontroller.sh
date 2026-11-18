@@ -25,6 +25,9 @@ JAVA_OPTIONS="$JAVA_OPTIONS -cp \"$CLASSPATH\""
 # fix #35
 JAVA_OPTIONS="$JAVA_OPTIONS -Djava.security.egd=file:/dev/./urandom"
 
+# workaround for Java4Shell issue (GH#730)
+JAVA_OPTIONS="$JAVA_OPTIONS -XX:-UseBASE64Intrinsics"
+
 # append options to suppress illegal access warnings for Java 9+
 PACKAGES="java.base/java.lang"
 for p in $PACKAGES; do JAVA_OPTIONS="$JAVA_OPTIONS --add-opens=$p=ALL-UNNAMED"; done

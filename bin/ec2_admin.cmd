@@ -25,5 +25,8 @@ for %%p in (%PACKAGES%) do set JAVA_OPTIONS=!JAVA_OPTIONS! --add-opens=%%p=ALL-U
 set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+IgnoreUnrecognizedVMOptions
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% --illegal-access=debug
 
+:: workaround for Java4Shell issue (GH#730)
+set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:-UseBASE64Intrinsics
+
 :: run Java
 java %JAVA_OPTIONS% com.xceptance.xlt.ec2.Main %*
