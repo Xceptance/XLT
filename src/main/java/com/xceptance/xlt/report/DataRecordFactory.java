@@ -18,7 +18,16 @@ package com.xceptance.xlt.report;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 
+import com.xceptance.xlt.agent.JvmResourceUsageData;
+import com.xceptance.xlt.api.engine.ActionData;
+import com.xceptance.xlt.api.engine.CustomData;
+import com.xceptance.xlt.api.engine.CustomValue;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.EventData;
+import com.xceptance.xlt.api.engine.PageLoadTimingData;
+import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.TransactionData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltException;
 
@@ -98,11 +107,34 @@ public class DataRecordFactory
      */
     public Data createStatistics(final XltCharBuffer src) throws Exception
     {
-        // TODO: The following may throw NullPointerException or ArrayIndexOutOfBoundsException in case of unknown type
-        // codes.
-        final Constructor<? extends Data> c = constructors[src.charAt(0) - offset];
-        final Data data = c.newInstance();
+        //        com.xceptance.xlt.reportgenerator.dataRecords.T = com.xceptance.xlt.api.engine.TransactionData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.A = com.xceptance.xlt.api.engine.ActionData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.R = com.xceptance.xlt.api.engine.RequestData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.C = com.xceptance.xlt.api.engine.CustomData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.E = com.xceptance.xlt.api.engine.EventData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.J = com.xceptance.xlt.agent.JvmResourceUsageData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.V = com.xceptance.xlt.api.engine.CustomValue
+        //        com.xceptance.xlt.reportgenerator.dataRecords.P = com.xceptance.xlt.api.engine.PageLoadTimingData
+        //        com.xceptance.xlt.reportgenerator.dataRecords.W = com.xceptance.xlt.api.engine.WebVitalData
 
-        return data;
+        return switch (src.charAt(0))
+        {
+            case 'A' -> new ActionData();
+            case 'T' -> new TransactionData();
+            case 'R' -> new RequestData();
+            case 'C' -> new CustomData();
+            case 'E' -> new EventData();
+            case 'J' -> new JvmResourceUsageData();
+            case 'V' -> new CustomValue();
+            case 'P' -> new PageLoadTimingData();
+            case 'W' -> new WebVitalData();
+
+            default -> 
+            {
+                // use reflection to create the instance
+                final Constructor<? extends Data> c = constructors[src.charAt(0) - offset];
+                yield c.newInstance();
+            }
+        };
     }
 }

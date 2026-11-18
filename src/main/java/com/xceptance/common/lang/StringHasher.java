@@ -15,6 +15,8 @@
  */
 package com.xceptance.common.lang;
 
+import com.xceptance.xlt.api.util.XltCharBuffer;
+
 /**
  * A class the supports special ways to hash a string to improve the overall performance and
  * reduce cache misses.
@@ -54,5 +56,27 @@ public class StringHasher
         }
 
         return hash;
+    }
+
+    /**
+     * Hashes a string up to a terminal character excluding it     
+     * This implementation uses the String hashcode after finding the limiting character.
+     * because String::indexOf became very fast in JDK 21 (native code).
+     * 
+     * @param s the sequence of characters to hash up to the limiter
+     * @return the hashcode
+     */
+    public static int hashCodeWithLimit(final XltCharBuffer s, final char limitingChar)
+    {
+        String _s = s.toString();
+        final int pos = _s.indexOf(limitingChar);
+        if (pos > 0)
+        {
+            return _s.substring(0, pos).hashCode();
+        }
+        else
+        {
+            return _s.hashCode();
+        }
     }
 }
