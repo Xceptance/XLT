@@ -71,7 +71,7 @@ import com.xceptance.xlt.common.XltConstants;
 public class ModernReportGenerator
 {
     /** Default number of time-slice buckets used for duration-agnostic sparklines. */
-    public static final int SPARKLINE_BUCKETS = 20;
+    public static final int SPARKLINE_BUCKETS = 24;
 
     private static final Logger LOG = LoggerFactory.getLogger(ModernReportGenerator.class);
 
@@ -648,25 +648,31 @@ public class ModernReportGenerator
             }
         }
 
+        // Compute the 5% moving average matching JFreeChartUtils.createMovingAverageTimeSeriesPercentage
+        // so the sparkline reflects the smooth average curve without collapsing warm-ups or inflating end spikes
+        final int samples = Math.max(1, (count * 5) / 100);
+        final double[] maValues = new double[count];
+        double maSum = 0.0;
+        for (int i = 0; i < count; i++)
+        {
+            maSum += means[i];
+            if (i < samples)
+            {
+                maValues[i] = maSum / (i + 1);
+            }
+            else
+            {
+                maSum -= means[i - samples];
+                maValues[i] = maSum / samples;
+            }
+        }
+
         final int buckets = Math.min(maxBuckets, count);
         final double[] bucketSums = new double[buckets];
         final int[] bucketCounts = new int[buckets];
 
-        long winStart = minTs;
-        long winEnd = maxTs;
-        if (reportStartMs > 0 && reportEndMs > reportStartMs && minTs >= reportStartMs && maxTs <= reportEndMs
-            && count >= maxBuckets)
-        {
-            // Only anchor to overall report window when series spans a substantial fraction, otherwise use series bounds
-            // so short-lived scenarios still show 20 clean buckets across their active window
-            if ((maxTs - minTs) * 2L >= (reportEndMs - reportStartMs))
-            {
-                winStart = reportStartMs;
-                winEnd = reportEndMs;
-            }
-        }
-
-        final long span = winEnd - winStart;
+        // Anchor to [minTs, maxTs] so delayed-start items do not get flat-line padding before their first sample
+        final long span = maxTs - minTs;
         for (int i = 0; i < count; i++)
         {
             final int b;
@@ -676,32 +682,50 @@ public class ModernReportGenerator
             }
             else
             {
-                final long offset = Math.max(0L, timestamps[i] - winStart);
+                final long offset = Math.max(0L, timestamps[i] - minTs);
                 b = (int) Math.min(buckets - 1L, (offset * buckets) / (span + 1L));
             }
-            bucketSums[b] += means[i];
+            bucketSums[b] += maValues[i];
             bucketCounts[b]++;
         }
 
         final double[] bucketAvgs = new double[buckets];
-        int lastNonEmpty = -1;
         for (int b = 0; b < buckets; b++)
         {
             if (bucketCounts[b] > 0)
             {
                 bucketAvgs[b] = bucketSums[b] / bucketCounts[b];
-                if (lastNonEmpty == -1 && b > 0)
-                {
-                    for (int k = 0; k < b; k++)
-                    {
-                        bucketAvgs[k] = bucketAvgs[b];
-                    }
-                }
-                lastNonEmpty = b;
             }
-            else if (lastNonEmpty >= 0)
+        }
+
+        // Linearly interpolate any empty interior buckets across quiet intervals (fall back to nearest edge)
+        for (int b = 0; b < buckets; b++)
+        {
+            if (bucketCounts[b] == 0)
             {
-                bucketAvgs[b] = bucketAvgs[lastNonEmpty];
+                int leftIdx = b - 1;
+                while (leftIdx >= 0 && bucketCounts[leftIdx] == 0)
+                {
+                    leftIdx--;
+                }
+                int rightIdx = b + 1;
+                while (rightIdx < buckets && bucketCounts[rightIdx] == 0)
+                {
+                    rightIdx++;
+                }
+                if (leftIdx >= 0 && rightIdx < buckets)
+                {
+                    final double t = (double) (b - leftIdx) / (rightIdx - leftIdx);
+                    bucketAvgs[b] = bucketAvgs[leftIdx] + t * (bucketAvgs[rightIdx] - bucketAvgs[leftIdx]);
+                }
+                else if (leftIdx >= 0)
+                {
+                    bucketAvgs[b] = bucketAvgs[leftIdx];
+                }
+                else if (rightIdx < buckets)
+                {
+                    bucketAvgs[b] = bucketAvgs[rightIdx];
+                }
             }
         }
 

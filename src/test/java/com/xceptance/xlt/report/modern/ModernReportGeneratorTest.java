@@ -292,7 +292,7 @@ public class ModernReportGeneratorTest
         assertEquals("mean", defaultRules.get(0).get("id"));
         assertEquals("p99.9", defaultRules.get(1).get("id"));
 
-        // 2. Validate transactions-data.js: labels & 20-bucket sparkline downsampling
+        // 2. Validate transactions-data.js: labels & 24-bucket moving-average sparkline downsampling
         final Map<String, Object> txBundle = readJsBundle(new File(reportDir, "js/transactions-data.js"), "XLT_TRANSACTIONS");
         @SuppressWarnings("unchecked")
         final List<Map<String, Object>> txItems = (List<Map<String, Object>>) txBundle.get("items");
@@ -303,9 +303,10 @@ public class ModernReportGeneratorTest
 
         @SuppressWarnings("unchecked")
         final List<Number> spark = (List<Number>) tOrder.get("spark");
-        assertEquals(20, spark.size());
+        assertEquals(ModernReportGenerator.SPARKLINE_BUCKETS, spark.size());
         assertEquals(100.0, spark.get(0).doubleValue(), 0.01);
-        assertEquals(290.0, spark.get(19).doubleValue(), 0.01);
+        assertTrue("Expected final trailing moving-average bucket between 280 and 290, got " + spark.get(spark.size() - 1),
+                   spark.get(spark.size() - 1).doubleValue() > 280.0 && spark.get(spark.size() - 1).doubleValue() <= 290.0);
 
         // 3. Validate actions-data.js: empty labels + apdex
         final Map<String, Object> actBundle = readJsBundle(new File(reportDir, "js/actions-data.js"), "XLT_ACTIONS");
@@ -377,6 +378,23 @@ public class ModernReportGeneratorTest
         final File badFile = tempFolder.newFile("bad.json");
         Files.writeString(badFile.toPath(), "{not-an-array", StandardCharsets.UTF_8);
         assertEquals(List.of(), generator.downsampleChartJson(badFile));
+
+        // 400-point series with initial warm-up drop, flat 200ms body, and single final outlier
+        final StringBuilder seriesSb = new StringBuilder("[");
+        seriesSb.append("[0,1200,1200,1200,2]");
+        for (int i = 1; i < 399; i++)
+        {
+            seriesSb.append(",[").append(i * 1000L).append(",200,180,220,10]");
+        }
+        seriesSb.append(",[399000,3700,3650,3750,2]]");
+        final File maFile = tempFolder.newFile("moving-avg.json");
+        Files.writeString(maFile.toPath(), seriesSb.toString(), StandardCharsets.UTF_8);
+
+        final List<Double> res = generator.downsampleChartJson(maFile);
+        assertEquals(ModernReportGenerator.SPARKLINE_BUCKETS, res.size());
+        assertTrue("Expected initial warm-up drop > 350.0, got " + res.get(0), res.get(0).doubleValue() > 350.0);
+        assertTrue("Expected final bucket close to 200ms after MA smoothing, got " + res.get(res.size() - 1),
+                   Math.abs(res.get(res.size() - 1).doubleValue() - 200.0) < 25.0);
     }
 
     @Test

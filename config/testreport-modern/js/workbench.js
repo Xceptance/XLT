@@ -216,31 +216,71 @@
     );
   }
 
-  // Real SVG sparkline from 16-24 real time-series buckets
+  // Real SVG sparkline from moving-average time-series buckets (0-anchored for non-negative values)
   function renderRealSparkline(spark, unitSuffix) {
     if (!spark || !spark.length) {
       return '<span class="cell-muted">—</span>';
     }
     var w = 72, h = 14, pad = 2;
-    var minV = Infinity, maxV = -Infinity;
+    var minV = Infinity, maxV = -Infinity, sumV = 0;
     for (var i = 0; i < spark.length; i++) {
-      if (spark[i] < minV) minV = spark[i];
-      if (spark[i] > maxV) maxV = spark[i];
+      var val = Number(spark[i]);
+      if (val < minV) minV = val;
+      if (val > maxV) maxV = val;
+      sumV += val;
     }
-    var span = maxV - minV;
+    var meanV = sumV / spark.length;
+    var unit = unitSuffix === undefined ? " ms" : unitSuffix;
+    var nonNegative = minV >= 0;
+    var yMin = 0, yMax = 0, span = 0;
+    if (nonNegative) {
+      yMin = 0;
+      yMax = Math.max(maxV * 1.15, meanV * 1.75);
+      span = yMax - yMin;
+    } else {
+      span = maxV - minV;
+      var yPad = span < 0.0001 ? 0 : span * 0.15;
+      yMin = minV - yPad;
+      yMax = maxV + yPad;
+      span = yMax - yMin;
+    }
+
     var pts = [];
     for (var j = 0; j < spark.length; j++) {
-      var x = spark.length === 1 ? w / 2 : pad + (j / (spark.length - 1)) * (w - pad * 2);
-      var y = span < 0.0001 ? h / 2 : (h - pad) - ((spark[j] - minV) / span) * (h - pad * 2);
-      pts.push(x.toFixed(1) + "," + y.toFixed(1));
+      var v = Number(spark[j]);
+      var x = spark.length === 1 ? pad : pad + (j / (spark.length - 1)) * (w - pad * 2);
+      var y;
+      if (span <= 0.0001) {
+        y = nonNegative && yMax <= 0 ? (h - pad) : (h / 2);
+      } else {
+        y = (h - pad) - ((v - yMin) / span) * (h - pad * 2);
+      }
+      pts.push({ x: x, y: y });
     }
-    var stroke = (maxV > minV * 2.2 && maxV > 500) ? "#d97706" : "#2563eb";
-    var unit = unitSuffix === undefined ? " ms" : unitSuffix;
-    var title = "Trend range: " + fmtDec(minV, 0) + " – " + fmtDec(maxV, 0) + unit;
+    if (pts.length === 1) {
+      pts.push({ x: w - pad, y: pts[0].y });
+    }
+
+    var polyPts = pts.map(function (p) { return p.x.toFixed(1) + "," + p.y.toFixed(1); }).join(" ");
+    var baseY = (h - pad).toFixed(1);
+    var areaHtml = "";
+    var baseLineHtml = "";
+    if (nonNegative && yMax > 0) {
+      var firstX = pts[0].x.toFixed(1);
+      var lastX = pts[pts.length - 1].x.toFixed(1);
+      var areaPts = firstX + "," + baseY + " " + polyPts + " " + lastX + "," + baseY;
+      baseLineHtml = '<line x1="2" y1="12" x2="70" y2="12" stroke="var(--border-subtle)" stroke-width="0.75"/>';
+      areaHtml = '<polygon fill="var(--brand-blue)" fill-opacity="0.10" points="' + areaPts + '"/>';
+    }
+
+    var dec = (Math.max(Math.abs(minV), Math.abs(maxV)) < 10 && unit === "") ? 2 : 0;
+    var title = "Moving avg (5%): " + fmtDec(minV, dec) + " – " + fmtDec(maxV, dec) + unit;
     return (
-      '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="display:block;margin-inline:auto;" aria-label="' + title + '" role="img">' +
-      '<title>' + title + '</title>' +
-      '<polyline fill="none" stroke="' + stroke + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="' + pts.join(" ") + '"/>' +
+      '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="display:block;margin-inline:auto;" aria-label="' + escHtml(title) + '" role="img">' +
+      '<title>' + escHtml(title) + '</title>' +
+      baseLineHtml +
+      areaHtml +
+      '<polyline fill="none" stroke="var(--brand-blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="' + polyPts + '"/>' +
       '</svg>'
     );
   }
