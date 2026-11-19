@@ -138,23 +138,101 @@
     return lines.join("\n");
   }
 
+  var ICON_CHECK =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<polyline points="20 6 9 17 4 12"/></svg>';
+
+  var origMarkupMap = new WeakMap();
+  var origTitleMap = new WeakMap();
+  var copyTimerMap = new WeakMap();
+  var liveRegion = null;
+  var lastAnnouncement = "";
+
+  function announce(msg) {
+    if (!liveRegion) {
+      liveRegion = document.createElement("span");
+      liveRegion.className = "sr-only";
+      liveRegion.setAttribute("role", "status");
+      liveRegion.setAttribute("aria-live", "polite");
+      document.body.appendChild(liveRegion);
+    }
+    var out = msg;
+    if (out && out === lastAnnouncement) out += "\u00A0";
+    if (out) lastAnnouncement = out;
+    liveRegion.textContent = "";
+    requestAnimationFrame(function () {
+      if (liveRegion) liveRegion.textContent = out;
+    });
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement("textarea");
+    field.value = text;
+    field.setAttribute("readonly", "");
+    field.style.cssText = "position:fixed;inset-block-start:0;opacity:0;pointer-events:none;";
+    document.body.appendChild(field);
+    field.select();
+    try {
+      return document.execCommand("copy");
+    } catch (_) {
+      return false;
+    } finally {
+      field.remove();
+    }
+  }
+
+  function reportCopyResult(btn, ok) {
+    var msg = ok ? "Copied table as Markdown" : "Copy failed";
+    if (btn) {
+      if (!origMarkupMap.has(btn)) origMarkupMap.set(btn, btn.innerHTML);
+      if (!origTitleMap.has(btn)) origTitleMap.set(btn, btn.getAttribute("title") || "");
+      clearTimeout(copyTimerMap.get(btn));
+      btn.removeAttribute("data-copied");
+      btn.removeAttribute("data-failed");
+      btn.classList.remove("copied");
+      void btn.offsetWidth;
+      if (ok) {
+        btn.innerHTML = ICON_CHECK;
+        btn.setAttribute("data-copied", "");
+        btn.classList.add("copied");
+        btn.title = "Copied Markdown";
+      } else {
+        btn.innerHTML = origMarkupMap.get(btn);
+        btn.setAttribute("data-failed", "");
+        btn.title = "Copy failed";
+      }
+      copyTimerMap.set(btn, setTimeout(function () {
+        btn.innerHTML = origMarkupMap.get(btn);
+        btn.title = origTitleMap.get(btn);
+        btn.removeAttribute("data-copied");
+        btn.removeAttribute("data-failed");
+        btn.classList.remove("copied");
+        announce("");
+      }, 1600));
+    }
+    announce(msg);
+  }
+
   /**
-   * Exports a table as GFM Markdown to `navigator.clipboard` and shows transient button feedback.
+   * Exports a table as GFM Markdown to `navigator.clipboard` (with `execCommand` fallback)
+   * and shows transient icon + live-region feedback.
    *
    * @param {HTMLTableElement|string} tableOrId Table element or its DOM `id`.
-   * @param {HTMLButtonElement|null} [btn] Trigger button whose label briefly shows `"✓ Copied MD"`.
+   * @param {HTMLButtonElement|null} [btn] Trigger button whose SVG icon briefly switches to a checkmark.
    */
   function copyTableAsMarkdown(tableOrId, btn) {
     var table = typeof tableOrId === "string" ? document.getElementById(tableOrId) : tableOrId;
     if (!table) return;
     var md = tableToMarkdown(table);
-    var orig = btn ? btn.innerHTML : "";
-    navigator.clipboard.writeText(md).then(function () {
-      if (btn) {
-        btn.innerHTML = "✓ Copied MD";
-        setTimeout(function () { btn.innerHTML = orig; }, 1600);
-      }
-    });
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(md).then(
+        function () { reportCopyResult(btn, true); },
+        function () { reportCopyResult(btn, legacyCopy(md)); }
+      );
+    } else {
+      reportCopyResult(btn, legacyCopy(md));
+    }
   }
 
   window.copyTableAsMarkdown = copyTableAsMarkdown;

@@ -142,7 +142,6 @@
       if (container) {
         container.innerHTML =
           '<section class="card"><div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">' +
-            '<div style="font-size:20px;margin-bottom:6px;">✅</div>' +
             "<strong>No custom events were logged during this test run.</strong>" +
           "</div></section>";
       }

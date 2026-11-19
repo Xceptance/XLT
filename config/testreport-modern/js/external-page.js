@@ -133,7 +133,7 @@
           '<div style="margin-bottom:14px;">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
               '<h3 style="font-size:13px;font-weight:800;margin:0;">' + esc(tbl.title || "Metrics") + "</h3>" +
-              '<button type="button" class="btn-chip" data-copy-table="' + tableId + '">📋 Copy as Markdown</button>' +
+              '<button type="button" class="btn-chip btn-icon" data-copy-table="' + tableId + '" aria-label="Copy ' + esc(tbl.title || "Metrics") + ' table as Markdown" title="Copy ' + esc(tbl.title || "Metrics") + ' table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>' +
             "</div>" +
             '<div class="table-scroll"><table class="data-table js-static-sortable" id="' + tableId + '">' + theadHtml + tbodyHtml + "</table></div>" +
           "</div>"

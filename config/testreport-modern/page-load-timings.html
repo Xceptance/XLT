@@ -22,12 +22,9 @@
   <header class="top-header">
     <div class="header-container">
       <div class="brand-section">
-        <a href="index.html" style="display:flex;align-items:center;gap:9px;text-decoration:none;">
-          <img class="brand-logo" src="images/xlt-logo.svg" alt="XLT Logo" />
-          <div class="brand-titles">
-            <h1>Performance Test Report <span class="badge-tag" id="meta-project-badge" hidden></span> <span class="badge-tag badge-accent" id="meta-test-badge" hidden></span></h1>
-            <p id="meta-subtitle">Xceptance LoadTest</p>
-          </div>
+        <a href="index.html" class="brand-link" aria-label="XLT Report Overview">
+          <img class="brand-logo brand-logo-light" src="images/xlt-logo.svg" alt="XLT" />
+          <img class="brand-logo brand-logo-dark" src="images/xlt-logo-dark.svg" alt="" aria-hidden="true" />
         </a>
       </div>
 
@@ -75,7 +72,7 @@
               <li><a class="nav-sublink" href="errors.html#sec-req-errors">Request Errors <span class="badge-tag" data-nav-count="requestErrors" hidden></span></a></li>
               <li><a class="nav-sublink" href="errors.html#sec-act-errors">Action Errors <span class="badge-tag" data-nav-count="actionErrors" hidden></span></a></li>
               <li><a class="nav-sublink" href="errors.html#sec-tx-errors">Transaction Errors <span class="badge-tag" data-nav-count="transactionErrors" hidden></span></a></li>
-              <li><a class="nav-sublink" href="errors.html#sec-incidents">Incident Forensics &amp; Traces</a></li>
+              <li><a class="nav-sublink" href="errors.html#sec-incidents">Transaction Error Details</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -103,12 +100,22 @@
       </nav>
 
       <div class="header-actions">
-        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">
-          <span class="theme-icon">🌓</span> Theme
-        </button>
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">Theme</button>
       </div>
     </div>
   </header>
+
+  <div class="report-context-bar">
+    <div class="report-context-inner">
+      <div class="report-context-title">
+        <span class="context-project" id="meta-project-badge" hidden></span>
+        <span class="context-sep" id="meta-project-sep" aria-hidden="true" hidden>—</span>
+        <h1 class="context-heading">Performance Test Report</h1>
+        <span class="context-test-name" id="meta-test-badge" hidden></span>
+      </div>
+      <div class="report-context-meta" id="meta-subtitle">Xceptance LoadTest</div>
+    </div>
+  </div>
 
   <!-- Main Content -->
   <main class="main-content">
@@ -126,17 +133,17 @@
           </div>
 
           <div class="workbench-pager">
-            <button type="button" class="btn-pager btn-pager-nav" id="wb-prev" aria-label="Previous page load timing (Left Arrow)">◀ Prev</button>
+            <button type="button" class="btn-pager btn-pager-nav" id="wb-prev" aria-label="Previous page load timing (Left Arrow)" title="Previous page load timing (←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"/></svg></button>
             <span class="pager-badge" id="wb-counter">Timing 0 of 0</span>
-            <button type="button" class="btn-pager btn-pager-nav" id="wb-next" aria-label="Next page load timing (Right Arrow)">Next ▶</button>
+            <button type="button" class="btn-pager btn-pager-nav" id="wb-next" aria-label="Next page load timing (Right Arrow)" title="Next page load timing (→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 18 15 12 9 6"/></svg></button>
           </div>
 
           <div class="workbench-right-col">
             <div class="wb-kpis" id="wb-kpis"></div>
             <div class="wb-controls">
-              <button type="button" class="btn-chip" id="wb-link-btn" title="Copy shareable link with current item &amp; chart tab">🔗 Link</button>
-              <button type="button" class="btn-chip" id="wb-pin-btn" title="Toggle sticky top pinning">📌 Pinned</button>
-              <button type="button" class="btn-chip" id="wb-collapse-btn" title="Collapse chart body into compact 48px sticky strip">▲ Hide Chart</button>
+              <button type="button" class="btn-chip btn-icon" id="wb-link-btn" aria-label="Copy shareable link" title="Copy shareable link with current item &amp; chart tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+              <button type="button" class="btn-chip btn-icon active" id="wb-pin-btn" aria-pressed="true" aria-label="Pin chart workbench to top" title="Pinned to top — click to unpin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+              <button type="button" class="btn-chip btn-icon" id="wb-collapse-btn" aria-controls="wb-body" aria-expanded="true" aria-label="Toggle chart panel" title="Hide chart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg></button>
             </div>
           </div>
         </header>
@@ -144,7 +151,7 @@
         <div class="workbench-body" id="wb-body">
           <div class="workbench-tabs-bar">
             <div class="wb-tabs" id="wb-tabs"></div>
-            <div class="wb-tabs-hint">💡 Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+            <div class="wb-tabs-hint">Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
           </div>
           <div class="workbench-stage chart-canvas-light" id="wb-stage"></div>
           <footer class="workbench-footnote" id="wb-footnote"></footer>
@@ -154,16 +161,16 @@
       <section class="card" id="directory-section">
         <div class="card-header">
           <div class="card-title">
-            <span>📋 Page Load Timings Directory</span>
+            <span>Page Load Timings Directory</span>
             <span class="badge-tag" id="dir-visible-count">0 shown</span>
           </div>
 
           <div class="view-mode-bar">
             <div class="btn-group">
-              <button type="button" class="btn-chip active" id="btn-view-workbench">📌 Top Workbench</button>
-              <button type="button" class="btn-chip" id="btn-view-stream">📊 Continuous Stream</button>
+              <button type="button" class="btn-chip active" id="btn-view-workbench">Top Workbench</button>
+              <button type="button" class="btn-chip" id="btn-view-stream">Continuous Stream</button>
             </div>
-            <button type="button" class="btn-chip" data-copy-table="dir-table">📋 Copy as Markdown</button>
+            <button type="button" class="btn-chip btn-icon" data-copy-table="dir-table" aria-label="Copy Page Load Timings table as Markdown" title="Copy Page Load Timings table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
           </div>
         </div>
 
@@ -194,7 +201,7 @@
       <section class="card" style="margin-bottom: 16px;">
         <div class="card-header">
           <div>
-            <div class="card-title">ℹ️ About Page Load Timings in XLT</div>
+            <div class="card-title">About Page Load Timings in XLT</div>
             <p class="card-subtitle">Real-user and real-browser frontend performance metrics</p>
           </div>
         </div>
@@ -236,7 +243,6 @@ xlt.clientperformance.recording = true</pre>
             <tbody>
               <tr>
                 <td colspan="6" class="col-text" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
-                  <div style="font-size:18px;margin-bottom:6px;">📊</div>
                   <strong>No Page Load Timing records available for this test run.</strong><br>
                   <span style="font-size:12px;">Client-side W3C navigation timings require real-browser execution (e.g. <code>XltChromeDriver</code> / <code>XltFirefoxDriver</code>).</span>
                 </td>

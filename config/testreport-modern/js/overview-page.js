@@ -47,6 +47,13 @@
   var fmtDurationHms = UI.fmtDurationHms;
   var fmtThinkTime = UI.fmtThinkTime;
 
+  var COPY_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
+    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+    "</svg>";
+
   /**
    * Formats overview dashboard decimals with 1 fractional digit by default
    * (preserving overview KPI, latency, and summary matrix precision).
@@ -85,7 +92,7 @@
         : "color:var(--status-warn-text);border-color:var(--status-warn-border);background:var(--status-warn-bg);";
       return (
         '<a href="scorecard.html#rule-' + esc(r.id) + '" class="miss-chip" style="' + pillStyle + '">' +
-          (r.failsTest ? "✕ " : "⚠ ") + esc(r.name || r.id) +
+          (r.failsTest ? "✕ " : "! ") + esc(r.name || r.id) +
           (r.value !== undefined && r.value !== "" ? ": <strong>" + esc(r.value) + "</strong>" : "") +
           (r.condition ? " (" + esc(r.condition) + ")" : "") +
         "</a>"
@@ -144,43 +151,34 @@
   function renderComment(ov, meta) {
     var sec = document.getElementById("sec-comment");
     if (!sec) return;
-    var gen = ov.general || {};
     var rawComments = ov.comments || (meta && meta.comments) || [];
     var commentItems = Array.isArray(rawComments)
       ? rawComments.map(function (c) { return String(c == null ? "" : c).trim(); }).filter(Boolean)
       : [];
-    var startTime = gen.startTime || (meta && meta.startTime) || "—";
-    var endTime = gen.endTime || (meta && meta.endTime) || "—";
-    var durationDisplay = (meta && meta.durationDisplay) || fmtDurationHms(gen.durationSec || 0);
-    var hasCommentContent = commentItems.length > 0;
 
-    var bodyHtml = hasCommentContent
-      ? '<div class="comment-body">' +
-        commentItems.map(function (c) {
-          return '<div class="paragraph">' + c + "</div>";
-        }).join("") +
-        "</div>"
-      : "";
+    if (!commentItems.length) {
+      sec.hidden = true;
+      sec.innerHTML = "";
+      return;
+    }
 
+    sec.hidden = false;
     sec.innerHTML =
       '<div class="comment-card">' +
         '<div class="comment-header">' +
           '<div class="comment-title-group">' +
-            '<span class="comment-badge">💬 Test Execution Window' + (hasCommentContent ? " &amp; Comment" : "") + "</span>" +
-          "</div>" +
-          '<div class="comment-timing-group">' +
-            '<div class="timing-item"><span class="timing-label">From</span><span class="timing-val">' + esc(startTime) + "</span></div>" +
-            '<span class="timing-sep">•</span>' +
-            '<div class="timing-item"><span class="timing-label">To</span><span class="timing-val">' + esc(endTime) + "</span></div>" +
-            '<span class="timing-sep">•</span>' +
-            '<div class="timing-item"><span class="timing-label">Duration</span><span class="timing-val duration-highlight">' + esc(durationDisplay) + "</span></div>" +
+            '<span class="comment-badge">Test Comment</span>' +
           "</div>" +
         "</div>" +
-        bodyHtml +
+        '<div class="comment-body">' +
+          commentItems.map(function (c) {
+            return '<div class="paragraph">' + c + "</div>";
+          }).join("") +
+        "</div>" +
       "</div>";
   }
 
-  /** Renders the 4 top-level KPI summary cards (#sec-kpis). */
+  /** Renders the 4 top-level KPI summary cells (#sec-kpis). */
   function renderKpis(ov) {
     var sec = document.getElementById("sec-kpis");
     if (!sec) return;
@@ -188,6 +186,7 @@
     var tx = (ov.summary && ov.summary.transactions) || {};
     var req = (ov.summary && ov.summary.requests) || {};
     var p95 = getPct(req, "95");
+    var errCount = Number(tx.errors) || 0;
     var errPct = Number(tx.errPct || 0);
     var okPct = Math.max(0, 100 - errPct);
     var totalBytes = (Number(gen.bytesSent) || 0) + (Number(gen.bytesReceived) || 0);
@@ -197,11 +196,11 @@
     sec.innerHTML =
       '<div class="kpi-card">' +
         '<span class="kpi-label">Completed Transactions</span>' +
-        '<div class="kpi-val" style="color:var(--brand-blue);">' + fmtInt(tx.count || 0) + " tx</div>" +
+        '<div class="kpi-val">' + fmtInt(tx.count || 0) + " tx</div>" +
         '<div class="kpi-sub">' + fmtInt(tx.cph || 0) + " /h • " + fmtDec(tx.rate || 0, 2) + " tx/s throughput</div>" +
       "</div>" +
       '<div class="kpi-card">' +
-        '<span class="kpi-label">Request Wire Latency</span>' +
+        '<span class="kpi-label">Request Runtime</span>' +
         '<div class="kpi-val">' + fmtInt(req.mean || 0) + " ms</div>" +
         '<div class="kpi-sub">Mean: ' + fmtInt(req.mean || 0) + " ms" +
           (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") +
@@ -209,14 +208,14 @@
         "</div>" +
       "</div>" +
       '<div class="kpi-card">' +
-        '<span class="kpi-label">Reliability &amp; Errors</span>' +
-        '<div class="kpi-val" style="color:' + ((tx.errors || 0) > 0 ? "var(--status-warn-text)" : "var(--success-text)") + ';">' +
-          fmtDec(okPct, 3) + "% OK" +
+        '<span class="kpi-label">Errors</span>' +
+        '<div class="kpi-val"' + (errCount > 0 ? ' style="color:var(--status-fail-text);"' : "") + ">" +
+          fmtInt(errCount) +
         "</div>" +
-        '<div class="kpi-sub">' + fmtInt(tx.errors || 0) + " errors across " + fmtInt(tx.count || 0) + " visits (" + fmtDec(errPct, 3) + "%)</div>" +
+        '<div class="kpi-sub">' + fmtDec(errPct, 3) + "% error rate • " + fmtDec(okPct, 3) + "% OK across " + fmtInt(tx.count || 0) + " tx</div>" +
       "</div>" +
       '<div class="kpi-card">' +
-        '<span class="kpi-label">Total Data Transferred</span>' +
+        '<span class="kpi-label">Data Transferred</span>' +
         '<div class="kpi-val">' + fmtBytes(totalBytes) + "</div>" +
         '<div class="kpi-sub">' + fmtBytes(bwPerSec) + "/s bandwidth • " + fmtInt(gen.hits || req.count || 0) + " requests</div>" +
       "</div>";
@@ -243,8 +242,8 @@
     sec.innerHTML =
       '<div class="chart-panel">' +
         '<div class="chart-panel-header">' +
-          '<div class="chart-panel-title"><span>👥</span> Concurrent Users</div>' +
-          '<span class="chart-header-badge" style="font-size:11px;font-weight:700;color:var(--text-muted);">' +
+          '<div class="chart-panel-title">Concurrent Users</div>' +
+          '<span class="chart-header-badge">' +
             (lpTotals.usersDisplay ? "Target: " + esc(lpTotals.usersDisplay) + " Users" : "Active User Pool") +
           "</span>" +
         "</div>" +
@@ -254,8 +253,8 @@
       "</div>" +
       '<div class="chart-panel">' +
         '<div class="chart-panel-header">' +
-          '<div class="chart-panel-title"><span>⚡</span> Requests per Second</div>' +
-          '<span class="chart-header-badge" style="font-size:11px;font-weight:700;color:var(--brand-blue);">Avg: ' + fmtDec(req.rate || 0, 1) + " req/s</span>" +
+          '<div class="chart-panel-title">Requests per Second</div>' +
+          '<span class="chart-header-badge">Avg: ' + fmtDec(req.rate || 0, 1) + " req/s</span>" +
         "</div>" +
         '<div class="chart-panel-body">' +
           '<img class="zoomable-chart" src="charts/RequestsPerSecond.webp" alt="Requests per Second Progression" data-chart-title="Requests per Second Progression" loading="lazy" decoding="async" />' +
@@ -263,8 +262,8 @@
       "</div>" +
       '<div class="chart-panel">' +
         '<div class="chart-panel-header">' +
-          '<div class="chart-panel-title"><span>⏱️</span> Request Runtime</div>' +
-          '<span class="chart-header-badge" style="font-size:11px;font-weight:700;color:#6366f1;">Mean: ' + fmtInt(req.mean || 0) + " ms" + (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") + "</span>" +
+          '<div class="chart-panel-title">Request Runtime</div>' +
+          '<span class="chart-header-badge">Mean: ' + fmtInt(req.mean || 0) + " ms" + (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") + "</span>" +
         "</div>" +
         '<div class="chart-panel-body">' +
           '<img class="zoomable-chart" src="charts/RequestRuntime.webp" alt="Request Runtime Progression" data-chart-title="Request Runtime Progression" loading="lazy" decoding="async" />' +
@@ -272,9 +271,9 @@
       "</div>" +
       '<div class="chart-panel">' +
         '<div class="chart-panel-header">' +
-          '<div class="chart-panel-title"><span>📉</span> Transaction Errors</div>' +
-          '<span class="chart-header-badge" style="font-size:11px;font-weight:700;color:' + ((tx.errors || 0) > 0 ? "var(--status-fail-text)" : "var(--success-text)") + ';">' +
-            fmtInt(tx.errors || 0) + " Total Errors (" + fmtDec(tx.errPct || 0, 3) + "%)" +
+          '<div class="chart-panel-title">Transaction Errors</div>' +
+          '<span class="chart-header-badge"' + ((tx.errors || 0) > 0 ? ' style="color:var(--status-fail-text);"' : "") + ">" +
+            fmtInt(tx.errors || 0) + " Errors (" + fmtDec(tx.errPct || 0, 3) + "%)" +
           "</span>" +
         "</div>" +
         '<div class="chart-panel-body">' +
@@ -321,7 +320,7 @@
 
     var agentCount = ag.count !== undefined ? ag.count : (counts.agents || 0);
     var agentRows = agentCount > 0
-      ? '<tr><td class="hotspot-item-name">Cluster Mean CPU</td><td class="cell-num" style="color:#0369a1;">' + fmtDec(ag.totalCpuMean || 0, 2) + "%</td></tr>" +
+      ? '<tr><td class="hotspot-item-name">Cluster Mean CPU</td><td class="cell-num">' + fmtDec(ag.totalCpuMean || 0, 2) + "%</td></tr>" +
         '<tr><td class="hotspot-item-name">Max Agent Peak CPU</td><td class="cell-num">' + fmtDec(ag.totalCpuMax || 0, 2) + "%</td></tr>" +
         '<tr><td class="hotspot-item-name">Minor GC CPU Overhead</td><td class="cell-num">' + fmtDec(ag.minorGcCpu || 0, 2) + "%</td></tr>" +
         '<tr><td class="hotspot-item-name">Full GC Pauses</td><td class="cell-num" style="color:' + ((ag.fullGcCount || 0) > 0 ? "var(--status-fail-text)" : "var(--success-text)") + ';">' +
@@ -332,27 +331,27 @@
     sec.innerHTML =
       '<div class="hotspot-card">' +
         '<div class="hotspot-header">' +
-          '<div class="hotspot-title">⚡ Top Transactions by Volume</div>' +
-          '<button type="button" class="btn-copy-markdown" onclick="copyTableAsMarkdown(this.closest(\'.hotspot-card\').querySelector(\'table\'), this)" title="Copy table as Markdown"><span>📋</span> Copy</button>' +
+          '<div class="hotspot-title">Top Transactions</div>' +
+          '<button type="button" class="btn-copy-markdown btn-icon" onclick="copyTableAsMarkdown(this.closest(\'.hotspot-card\').querySelector(\'table\'), this)" aria-label="Copy Top Transactions table as Markdown" title="Copy Top Transactions table as Markdown">' + COPY_ICON + "</button>" +
         "</div>" +
-        '<table class="hotspot-table"><thead><tr><th>Transaction Scenario</th><th class="cell-num">Throughput</th></tr></thead><tbody>' + txRows + "</tbody></table>" +
-        '<div class="hotspot-footer-btn"><a href="transactions.html">Explore All ' + fmtInt(counts.transactions || topTx.length) + " Transactions in Workbench →</a></div>" +
+        '<table class="hotspot-table"><thead><tr><th>Transaction</th><th class="cell-num">Throughput</th></tr></thead><tbody>' + txRows + "</tbody></table>" +
+        '<div class="hotspot-footer-btn"><a href="transactions.html">All ' + fmtInt(counts.transactions || topTx.length) + " Transactions →</a></div>" +
       "</div>" +
       '<div class="hotspot-card">' +
         '<div class="hotspot-header">' +
-          '<div class="hotspot-title">🔍 Root Cause Diagnostics</div>' +
-          '<button type="button" class="btn-copy-markdown" onclick="copyTableAsMarkdown(this.closest(\'.hotspot-card\').querySelector(\'table\'), this)" title="Copy table as Markdown"><span>📋</span> Copy</button>' +
+          '<div class="hotspot-title">Top Errors</div>' +
+          '<button type="button" class="btn-copy-markdown btn-icon" onclick="copyTableAsMarkdown(this.closest(\'.hotspot-card\').querySelector(\'table\'), this)" aria-label="Copy Top Errors table as Markdown" title="Copy Top Errors table as Markdown">' + COPY_ICON + "</button>" +
         "</div>" +
-        '<table class="hotspot-table"><thead><tr><th>Diagnostic Category</th><th class="cell-num">Incidents / Share</th></tr></thead><tbody>' + diagRows + "</tbody></table>" +
-        '<div class="hotspot-footer-btn"><a href="errors.html">View Stack Traces &amp; Dumps →</a></div>' +
+        '<table class="hotspot-table"><thead><tr><th>Error Message</th><th class="cell-num">Count</th></tr></thead><tbody>' + diagRows + "</tbody></table>" +
+        '<div class="hotspot-footer-btn"><a href="errors.html">View Error Details →</a></div>' +
       "</div>" +
       '<div class="hotspot-card">' +
         '<div class="hotspot-header">' +
-          '<div class="hotspot-title">🖥️ Agent Cluster Health</div>' +
-          '<button type="button" class="btn-copy-markdown" onclick="copyTableAsMarkdown(this.closest(\'.hotspot-card\').querySelector(\'table\'), this)" title="Copy table as Markdown"><span>📋</span> Copy</button>' +
+          '<div class="hotspot-title">Agents</div>' +
+          '<button type="button" class="btn-copy-markdown btn-icon" onclick="copyTableAsMarkdown(this.closest(\'.hotspot-card\').querySelector(\'table\'), this)" aria-label="Copy Agents table as Markdown" title="Copy Agents table as Markdown">' + COPY_ICON + "</button>" +
         "</div>" +
-        '<table class="hotspot-table"><thead><tr><th>Cluster Telemetry Metric</th><th class="cell-num">Reading / Status</th></tr></thead><tbody>' + agentRows + "</tbody></table>" +
-        '<div class="hotspot-footer-btn"><a href="agents.html">Inspect Agent Health →</a></div>' +
+        '<table class="hotspot-table"><thead><tr><th>Metric</th><th class="cell-num">Value</th></tr></thead><tbody>' + agentRows + "</tbody></table>" +
+        '<div class="hotspot-footer-btn"><a href="agents.html">Inspect Agents →</a></div>' +
       "</div>";
   }
 

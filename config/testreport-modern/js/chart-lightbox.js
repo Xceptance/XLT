@@ -129,8 +129,8 @@
           '<span id="xlt-lightbox-counter" class="badge-tag"></span>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
-          '<button type="button" class="btn-chip" id="xlt-lb-prev" aria-label="Previous chart">◀ Prev</button>' +
-          '<button type="button" class="btn-chip" id="xlt-lb-next" aria-label="Next chart">Next ▶</button>' +
+          '<button type="button" class="btn-chip btn-icon" id="xlt-lb-prev" aria-label="Previous chart" title="Previous chart (←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"/></svg></button>' +
+          '<button type="button" class="btn-chip btn-icon" id="xlt-lb-next" aria-label="Next chart" title="Next chart (→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="9 18 15 12 9 6"/></svg></button>' +
           '<form method="dialog" style="margin:0;">' +
             '<button type="submit" class="btn-chip" autofocus aria-label="Close chart preview">✕ Close</button>' +
           '</form>' +

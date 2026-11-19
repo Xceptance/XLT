@@ -54,6 +54,19 @@
     return document.querySelectorAll("#theme-toggle, #theme-toggle-btn, #btn-theme-toggle, .btn-theme-toggle");
   }
 
+  var SUN_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="4"/>' +
+    '<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>' +
+    "</svg>";
+
+  var MOON_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>' +
+    "</svg>";
+
   /**
    * Toggles the `dark-theme` class on `<html>` and synchronizes toggle button labels and `aria-pressed`.
    * @param {"light"|"dark"} theme Target theme mode.
@@ -70,8 +83,8 @@
     Array.prototype.forEach.call(btns, function (btn) {
       btn.setAttribute("aria-pressed", String(isDark));
       btn.innerHTML = isDark
-        ? '<span class="theme-icon">☀️</span> Light'
-        : '<span class="theme-icon">🌙</span> Dark';
+        ? '<span class="theme-icon">' + SUN_ICON + "</span> Light"
+        : '<span class="theme-icon">' + MOON_ICON + "</span> Dark";
       btn.title = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
     });
   }

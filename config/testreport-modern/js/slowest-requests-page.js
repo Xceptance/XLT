@@ -60,31 +60,31 @@
 
     if (titleEl) {
       titleEl.textContent = rowsData.length
-        ? "⚡ Top " + fmtInt(rowsData.length) + " Slowest Individual Requests"
-        : "⚡ Slowest Individual Requests";
+        ? "Top " + fmtInt(rowsData.length) + " Slowest Individual Requests"
+        : "Slowest Individual Requests";
     }
 
     if (kpiGrid) {
       kpiGrid.innerHTML =
         '<article class="kpi-card">' +
-          '<span class="kpi-label">Captured Outliers</span>' +
+          '<span class="kpi-label">Slowest Requests</span>' +
           '<div class="kpi-val">' + fmtInt(rowsData.length) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">requests</span></div>' +
           '<div class="kpi-sub">Individual slowest HTTP request executions</div>' +
         "</article>" +
         '<article class="kpi-card">' +
-          '<span class="kpi-label">Max Outlier Runtime</span>' +
+          '<span class="kpi-label">Max Request Runtime</span>' +
           '<div class="kpi-val ' + (topItem ? "cell-warn" : "") + '">' + (topItem ? fmtInt(topItem.runtime) : "0") + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
           '<div class="kpi-sub">' + (topItem ? "Top rank: <code>" + esc(topItem.name || "") + "</code>" : "No slow requests exceeded threshold") + "</div>" +
         "</article>" +
         '<article class="kpi-card">' +
-          '<span class="kpi-label">Median Outlier Runtime</span>' +
+          '<span class="kpi-label">Median Request Runtime</span>' +
           '<div class="kpi-val">' + (medianItem ? fmtInt(medianItem.runtime) : "0") + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span></div>' +
-          '<div class="kpi-sub">50th percentile across captured outliers</div>' +
+          '<div class="kpi-sub">50th percentile across slowest requests</div>' +
         "</article>" +
         '<article class="kpi-card">' +
-          '<span class="kpi-label">HTTP Error Outliers</span>' +
+          '<span class="kpi-label">HTTP Error Requests</span>' +
           '<div class="kpi-val ' + (errStatusCount > 0 ? "cell-err" : "") + '">' + fmtInt(errStatusCount) + "</div>" +
-          '<div class="kpi-sub">4xx / 5xx / status-0 responses among slowest hits</div>' +
+          '<div class="kpi-sub">4xx / 5xx / status-0 responses among slowest requests</div>' +
         "</article>";
     }
 

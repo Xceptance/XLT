@@ -172,7 +172,7 @@
       } else {
         breachedSec.hidden = false;
         if (breachedTitle) {
-          breachedTitle.innerHTML = "<span>⚠️</span> Rule Checks Requiring Attention (" + fmtInt(failedRules.length) + (failedRules.length === 1 ? " Rule)" : " Rules)");
+          breachedTitle.textContent = "Rule Checks Requiring Attention (" + fmtInt(failedRules.length) + (failedRules.length === 1 ? " Rule)" : " Rules)");
         }
         breachedTbody.innerHTML = failedRules.map(function (r, idx) {
           var pillCls = r.testFailed || r.failsTest ? "fail" : "warn";
@@ -243,7 +243,7 @@
     if (chipWrap) {
       chipWrap.innerHTML =
         '<button type="button" class="btn-chip active" data-sc-chip="all">All Rules (' + fmtInt(rules.length) + ")</button>" +
-        '<button type="button" class="btn-chip" data-sc-chip="failed" style="color:var(--status-fail-text);">⚠️ Failed (' + fmtInt(failedCount) + ")</button>" +
+        '<button type="button" class="btn-chip" data-sc-chip="failed" style="color:var(--status-fail-text);">Failed (' + fmtInt(failedCount) + ")</button>" +
         '<button type="button" class="btn-chip" data-sc-chip="passed">✓ Passed (' + fmtInt(passedCount) + ")</button>";
     }
 
@@ -371,7 +371,7 @@
       toggleXpathBtn.addEventListener("click", function () {
         showXpath = !showXpath;
         toggleXpathBtn.classList.toggle("active", showXpath);
-        toggleXpathBtn.textContent = showXpath ? "🔍 Hide XPath Selectors" : "🔍 Show XPath Selectors";
+        toggleXpathBtn.textContent = showXpath ? "Hide XPath Selectors" : "Show XPath Selectors";
         Array.prototype.forEach.call(document.querySelectorAll(".sc-xpath-line"), function (el) {
           el.hidden = !showXpath;
         });

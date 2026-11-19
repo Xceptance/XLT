@@ -72,7 +72,7 @@
         chart.resize();
       });
     }
-    chart.showLoading({ text: "Loading interactive time series…", color: "#2563eb" });
+    chart.showLoading({ text: "Loading interactive time series…", color: "#244b73" });
 
     fetchSeries(jsonUrl).then(function (rows) {
       chart.hideLoading();
@@ -105,13 +105,13 @@
           text: title + " — Interactive Dynamic Overview (Drag to Box-Zoom)",
           left: 10,
           top: 4,
-          textStyle: { fontSize: 12, fontWeight: 700, color: "#0f172a" }
+          textStyle: { fontSize: 12, fontWeight: 700, color: "#18181b" }
         },
         legend: {
           top: 4,
           right: 90,
           data: ["Mean [ms]", "Min–Max Band", "Count/s"],
-          textStyle: { fontSize: 11, color: "#334155" }
+          textStyle: { fontSize: 11, color: "#3f3f46" }
         },
         toolbox: {
           show: true,
@@ -126,8 +126,8 @@
           trigger: "axis",
           axisPointer: { type: "cross", animation: false },
           backgroundColor: "rgba(255,255,255,0.96)",
-          borderColor: "#cbd5e1",
-          textStyle: { color: "#0f172a", fontSize: 11.5 },
+          borderColor: "#d4d4d8",
+          textStyle: { color: "#18181b", fontSize: 11.5 },
           formatter: function (params) {
             if (!params || !params.length) return "";
             var ts = params[0].value[0];
@@ -157,20 +157,20 @@
         ],
         xAxis: {
           type: "time",
-          axisLine: { lineStyle: { color: "#94a3b8" } },
-          axisTick: { lineStyle: { color: "#94a3b8" } },
-          axisLabel: { fontSize: 10.5, color: "#334155" },
-          splitLine: { show: true, lineStyle: { color: "#e2e8f0", type: "dashed" } }
+          axisLine: { lineStyle: { color: "#a1a1aa" } },
+          axisTick: { lineStyle: { color: "#a1a1aa" } },
+          axisLabel: { fontSize: 10.5, color: "#3f3f46" },
+          splitLine: { show: true, lineStyle: { color: "#e4e4e7", type: "dashed" } }
         },
         yAxis: [
           {
             type: "value",
             name: "Runtime [ms]",
-            nameTextStyle: { fontSize: 10.5, color: "#1e293b" },
-            axisLine: { show: true, lineStyle: { color: "#94a3b8" } },
-            axisTick: { show: true, lineStyle: { color: "#94a3b8" } },
-            axisLabel: { fontSize: 10.5, color: "#334155" },
-            splitLine: { lineStyle: { color: "#cbd5e1", type: "dashed" } }
+            nameTextStyle: { fontSize: 10.5, color: "#18181b" },
+            axisLine: { show: true, lineStyle: { color: "#a1a1aa" } },
+            axisTick: { show: true, lineStyle: { color: "#a1a1aa" } },
+            axisLabel: { fontSize: 10.5, color: "#3f3f46" },
+            splitLine: { lineStyle: { color: "#d4d4d8", type: "dashed" } }
           },
           {
             type: "value",
@@ -196,7 +196,7 @@
             stack: "band",
             symbol: "none",
             lineStyle: { opacity: 0 },
-            areaStyle: { color: "rgba(37, 99, 235, 0.16)" },
+            areaStyle: { color: "rgba(36, 75, 115, 0.14)" },
             tooltip: { show: false }
           },
           {
@@ -204,8 +204,8 @@
             type: "line",
             data: meanSeries,
             showSymbol: false,
-            lineStyle: { width: 1.6, color: "#1d4ed8" },
-            itemStyle: { color: "#1d4ed8" }
+            lineStyle: { width: 1.6, color: "#244b73" },
+            itemStyle: { color: "#244b73" }
           },
           {
             name: "Count/s",
@@ -228,7 +228,7 @@
     }).catch(function (err) {
       chart.hideLoading();
       container.innerHTML =
-        '<div style="padding:28px;text-align:center;color:#64748b;font-size:12px;">' +
+        '<div style="padding:28px;text-align:center;color:#71717a;font-size:12px;">' +
           'Interactive Dynamic Overview requires serving the report via HTTP (e.g. <code>http://localhost:8080/</code>) so browser CORS permits loading <code>' +
           jsonUrl + '</code>.<br/><span style="font-size:11px;opacity:0.8;">(' + String(err.message || err) + ')</span>' +
         '</div>';

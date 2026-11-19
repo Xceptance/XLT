@@ -438,7 +438,7 @@
       }
       if (btn) {
         btn.setAttribute("aria-expanded", open ? "true" : "false");
-        btn.textContent = open ? "▾ Hide Paths" : "📁 Raw Paths";
+        btn.textContent = open ? "▾ Hide Paths" : "Raw Paths";
       }
     }
 
@@ -494,9 +494,9 @@
 
             dumpsHtml =
               '<div class="incident-dumps-bar">' +
-                '<span class="incident-dumps-label">🌐 Result Browsers (' + dirs.length + "):</span>" +
+                '<span class="incident-dumps-label">Result Browsers (' + dirs.length + "):</span>" +
                 parsedDirs.map(function (item) { return item.chip; }).join("") +
-                '<button type="button" class="incident-paths-toggle" data-toggle-paths="paths-wrap-' + n + '" aria-expanded="false" aria-controls="paths-wrap-' + n + '">📁 Raw Paths</button>' +
+                '<button type="button" class="incident-paths-toggle" data-toggle-paths="paths-wrap-' + n + '" aria-expanded="false" aria-controls="paths-wrap-' + n + '">Raw Paths</button>' +
               "</div>" +
               '<div id="paths-wrap-' + n + '" class="incident-paths-drawer" data-paths-wrap hidden="until-found">' +
                 '<div class="incident-paths-list">' +
@@ -517,7 +517,7 @@
 
           var overviewChartId = inc.overviewChartId !== undefined ? inc.overviewChartId : inc.overviewChartID;
           var overviewChipHtml = (chartsGenerated && overviewChartId && String(overviewChartId) !== "0")
-            ? '<a class="btn-chip incident-overview-chip" href="#err-chart-' + esc(overviewChartId) + '">📈 Overview Chart</a>'
+            ? '<a class="btn-chip incident-overview-chip" href="#err-chart-' + esc(overviewChartId) + '">Overview Chart</a>'
             : "";
 
           var txHtml = inc.testCaseName
@@ -553,7 +553,7 @@
                 "</div>" +
                 '<div class="incident-trace-actions">' +
                   overviewChipHtml +
-                  '<button type="button" class="btn-chip incident-copy-btn" data-copy-trace="trace-pre-' + n + '" data-orig-label="📋 Copy Trace">📋 Copy Trace</button>' +
+                  '<button type="button" class="btn-chip incident-copy-btn" data-copy-trace="trace-pre-' + n + '" data-orig-label="Copy Trace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Trace</button>' +
                   '<button type="button" class="btn-chip incident-expand-btn" data-toggle-trace="trace-wrap-' + n + '" aria-expanded="false" aria-controls="trace-wrap-' + n + '">▼ Full Trace</button>' +
                 "</div>" +
               "</div>" +
@@ -673,10 +673,10 @@
         var preId = copyBtn.getAttribute("data-copy-trace");
         var preEl = document.getElementById(preId);
         if (preEl && navigator.clipboard) {
-          var orig = copyBtn.getAttribute("data-orig-label") || copyBtn.textContent;
+          var origHtml = copyBtn.innerHTML;
           navigator.clipboard.writeText(preEl.textContent).then(function () {
             copyBtn.textContent = "✓ Copied Trace";
-            setTimeout(function () { copyBtn.textContent = orig; }, 1500);
+            setTimeout(function () { copyBtn.innerHTML = origHtml; }, 1500);
           });
         }
       }

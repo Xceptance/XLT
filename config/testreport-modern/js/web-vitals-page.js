@@ -178,7 +178,6 @@
       tbody.innerHTML =
         "<tr>" +
           '<td colspan="8" class="col-text" style="text-align:center;padding:40px 16px;color:var(--text-muted);">' +
-            '<div style="font-size:18px;margin-bottom:6px;">📈</div>' +
             "<strong>No Web Vitals records available for this test run.</strong><br>" +
             '<span style="font-size:12px;">Web Vitals telemetry requires real-browser execution (e.g. <code>XltChromeDriver</code>).</span>' +
           "</td>" +

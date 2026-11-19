@@ -97,7 +97,7 @@
           "</div>" +
         "</article>" +
         '<article class="kpi-card">' +
-          '<span class="kpi-label">Agent Cluster Fleet</span>' +
+          '<span class="kpi-label">Agents</span>' +
           '<div class="kpi-val">' + fmtInt(agentsCnt) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">JVM node(s)</span></div>' +
           '<div class="kpi-sub">' + fmtInt(jvmArgs.length) + " custom JVM argument(s) configured</div>" +
         "</article>" +
@@ -296,7 +296,7 @@
         },
         {
           label: "Slowest Requests Tracking",
-          val: rgCfg.slowestRequestsTotal !== undefined ? ("Top " + fmtInt(rgCfg.slowestRequestsTotal) + " outliers (max " + fmtInt(rgCfg.slowestRequestsPerBucket || 0) + " / bucket)") : "Configured in reportgenerator.properties",
+          val: rgCfg.slowestRequestsTotal !== undefined ? ("Top " + fmtInt(rgCfg.slowestRequestsTotal) + " slowest requests (max " + fmtInt(rgCfg.slowestRequestsPerBucket || 0) + " / bucket)") : "Configured in reportgenerator.properties",
           note: rgCfg.slowestRequestsMinRuntime !== undefined ? ("Threshold range: " + fmtInt(rgCfg.slowestRequestsMinRuntime) + " ms – " + fmtInt(rgCfg.slowestRequestsMaxRuntime || 0) + " ms") : ""
         },
         {

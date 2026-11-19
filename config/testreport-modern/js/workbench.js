@@ -43,6 +43,76 @@
   var fmtInt = UI.fmtIntOrDash;
   var fmtDec = UI.fmtDecOrDash;
 
+  var ICON_PIN =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<path d="M12 17v5"/>' +
+    '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
+    "</svg>";
+
+  var ICON_PIN_OFF =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<line x1="2" y1="2" x2="22" y2="22"/>' +
+    '<path d="M12 17v5"/>' +
+    '<path d="M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11"/>' +
+    '<path d="M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89"/>' +
+    "</svg>";
+
+  var ICON_LINK =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+    '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' +
+    "</svg>";
+
+  var ICON_CHECK =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<polyline points="20 6 9 17 4 12"/>' +
+    "</svg>";
+
+  var lastWbStatus = "";
+  var wbStatusRegion = null;
+
+  function announceWbStatus(msg) {
+    if (!wbStatusRegion) {
+      wbStatusRegion = document.createElement("span");
+      wbStatusRegion.className = "sr-only";
+      wbStatusRegion.setAttribute("role", "status");
+      wbStatusRegion.setAttribute("aria-live", "polite");
+      document.body.appendChild(wbStatusRegion);
+    }
+    var out = msg;
+    if (out && out === lastWbStatus) out += "\u00A0";
+    if (out) lastWbStatus = out;
+    wbStatusRegion.textContent = "";
+    requestAnimationFrame(function () {
+      if (wbStatusRegion) wbStatusRegion.textContent = out;
+    });
+  }
+
+  function legacyCopyText(text) {
+    var field = document.createElement("textarea");
+    field.value = text;
+    field.setAttribute("readonly", "");
+    field.style.cssText = "position:fixed;inset-block-start:0;opacity:0;pointer-events:none;";
+    document.body.appendChild(field);
+    field.select();
+    try {
+      return document.execCommand("copy");
+    } catch (_) {
+      return false;
+    } finally {
+      field.remove();
+    }
+  }
+
+  function writeClipboardText(text) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      return navigator.clipboard.writeText(text).catch(function () {
+        if (!legacyCopyText(text)) throw new Error("Copy failed");
+      });
+    }
+    return legacyCopyText(text) ? Promise.resolve() : Promise.reject(new Error("Copy failed"));
+  }
+
   function encodePathSegment(seg) {
     return encodeURIComponent(seg).replace(/%24/gi, "$");
   }
@@ -1425,13 +1495,13 @@
         '<div class="card">' +
           '<div class="card-header stream-sticky-header">' +
             '<div class="card-title">' +
-              '<span>📜 Continuous ' + escHtml(cfg.entityLabel || "Chart") + ' Stream</span>' +
+              '<span>Continuous ' + escHtml(cfg.entityLabel || "Chart") + ' Stream</span>' +
               '<span class="badge-tag">' + escHtml(countText) + '</span>' +
             '</div>' +
             '<div class="stream-toolbar-controls">' +
               '<span class="stream-glance-label">Glance Metric:</span>' +
               '<div class="wb-tabs">' + tabsHtml + '</div>' +
-              '<button type="button" class="btn-chip" id="btn-stream-to-top" title="Scroll back up to Directory Table">⬆ Table</button>' +
+              '<button type="button" class="btn-chip" id="btn-stream-to-top" title="Scroll back up to Directory Table">↑ Table</button>' +
             '</div>' +
           '</div>' +
           '<div class="card-body">' +
@@ -1527,7 +1597,7 @@
                 '</div>' +
                 '<div class="stream-card-actions">' +
                   (imgTabs.length > 1 ? '<div class="stream-card-tabs">' + perCardTabs + '</div>' : '') +
-                  '<button type="button" class="btn-chip" data-table-key="' + escHtml(it.key) + '" title="Jump to this row in Directory Table">⬆ Table</button>' +
+                  '<button type="button" class="btn-chip" data-table-key="' + escHtml(it.key) + '" title="Jump to this row in Directory Table">↑ Table</button>' +
                   '<button type="button" class="btn-chip" data-inspect-key="' + escHtml(it.key) + '" title="Load in Top Workbench">Inspect ↗</button>' +
                 '</div>' +
               '</div>' +
@@ -1616,32 +1686,75 @@
     if (wbPrev) wbPrev.addEventListener("click", function () { stepWorkbench(-1, false); });
     if (wbNext) wbNext.addEventListener("click", function () { stepWorkbench(1, false); });
 
+    function syncCollapseBtn() {
+      if (!btnCollapse || !wbBody) return;
+      wbBody.hidden = state.collapsed;
+      btnCollapse.setAttribute("aria-expanded", state.collapsed ? "false" : "true");
+      btnCollapse.title = state.collapsed ? "Show chart" : "Hide chart";
+    }
+
     if (btnCollapse && wbBody) {
+      syncCollapseBtn();
       btnCollapse.addEventListener("click", function () {
         state.collapsed = !state.collapsed;
-        wbBody.hidden = state.collapsed;
-        btnCollapse.textContent = state.collapsed ? "▼ Show Chart" : "▲ Hide Chart";
+        syncCollapseBtn();
         if (!state.collapsed) renderWorkbench();
       });
     }
 
+    function syncPinBtn() {
+      if (!btnPin || !wbRoot) return;
+      wbRoot.classList.toggle("unpinned", !state.pinned);
+      btnPin.classList.toggle("active", state.pinned);
+      btnPin.setAttribute("aria-pressed", state.pinned ? "true" : "false");
+      btnPin.title = state.pinned ? "Pinned to top — click to unpin" : "Unpinned — click to pin to top";
+      btnPin.innerHTML = state.pinned ? ICON_PIN : ICON_PIN_OFF;
+    }
+
     if (btnPin && wbRoot) {
+      syncPinBtn();
       btnPin.addEventListener("click", function () {
         state.pinned = !state.pinned;
-        wbRoot.classList.toggle("unpinned", !state.pinned);
-        btnPin.classList.toggle("active", state.pinned);
-        btnPin.textContent = state.pinned ? "📌 Pinned" : "📌 Unpinned";
+        syncPinBtn();
       });
     }
 
+    var linkTimer = null;
     if (btnCopyLink) {
+      var origLinkTitle = btnCopyLink.getAttribute("title") || "Copy shareable link with current item & chart tab";
       btnCopyLink.addEventListener("click", function () {
         syncUrl();
-        navigator.clipboard.writeText(window.location.href).then(function () {
-          var orig = btnCopyLink.textContent;
-          btnCopyLink.textContent = "✓ Link Copied";
-          setTimeout(function () { btnCopyLink.textContent = orig; }, 1400);
-        });
+        function reportLinkResult(ok) {
+          clearTimeout(linkTimer);
+          btnCopyLink.removeAttribute("data-copied");
+          btnCopyLink.removeAttribute("data-failed");
+          btnCopyLink.classList.remove("copied");
+          void btnCopyLink.offsetWidth;
+          if (ok) {
+            btnCopyLink.innerHTML = ICON_CHECK;
+            btnCopyLink.setAttribute("data-copied", "");
+            btnCopyLink.classList.add("copied");
+            btnCopyLink.title = "Link copied";
+            announceWbStatus("Shareable link copied");
+          } else {
+            btnCopyLink.innerHTML = ICON_LINK;
+            btnCopyLink.setAttribute("data-failed", "");
+            btnCopyLink.title = "Copy failed";
+            announceWbStatus("Copy failed");
+          }
+          linkTimer = setTimeout(function () {
+            btnCopyLink.innerHTML = ICON_LINK;
+            btnCopyLink.removeAttribute("data-copied");
+            btnCopyLink.removeAttribute("data-failed");
+            btnCopyLink.classList.remove("copied");
+            btnCopyLink.title = origLinkTitle;
+            announceWbStatus("");
+          }, 1400);
+        }
+        writeClipboardText(window.location.href).then(
+          function () { reportLinkResult(true); },
+          function () { reportLinkResult(false); }
+        );
       });
     }
 

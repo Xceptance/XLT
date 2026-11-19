@@ -78,15 +78,18 @@
     }
     document.title = (proj ? proj + " | " : "") + "XLT Report - " + pageTitle;
 
-    // 2. Brand header badges and execution time window subtitle
+    // 2. Report context strip (project, test name, execution window, duration, XLT version)
+    var projectSep = document.getElementById("meta-project-sep");
     var projectBadge = document.getElementById("meta-project-badge");
     if (projectBadge) {
       if (meta.projectName) {
         projectBadge.textContent = meta.projectName;
         projectBadge.hidden = false;
+        if (projectSep) projectSep.hidden = false;
       } else {
         projectBadge.textContent = "";
         projectBadge.hidden = true;
+        if (projectSep) projectSep.hidden = true;
       }
     }
 
@@ -103,18 +106,41 @@
 
     var subtitleEl = document.getElementById("meta-subtitle");
     if (subtitleEl) {
-      var prodName = meta.productName || "Xceptance LoadTest";
-      var prodStr = meta.productVersion ? prodName + " (" + meta.productVersion + ")" : prodName;
       var timeWindow = "";
       if (meta.startTime && meta.endTime) {
         timeWindow = meta.startTime + " – " + meta.endTime;
       } else if (meta.startTime) {
         timeWindow = meta.startTime;
       }
-      if (meta.durationDisplay) {
-        timeWindow += (timeWindow ? " " : "") + "(" + meta.durationDisplay + ")";
+      var prodName = meta.productName || "Xceptance LoadTest";
+      var prodShort = prodName === "Xceptance LoadTest" ? "XLT" : prodName;
+      var prodStr = meta.productVersion ? prodShort + " " + meta.productVersion : prodShort;
+
+      subtitleEl.textContent = "";
+      var appendSep = function () {
+        var sep = document.createElement("span");
+        sep.className = "ctx-meta-sep";
+        sep.textContent = "·";
+        subtitleEl.appendChild(sep);
+      };
+      if (timeWindow) {
+        var winEl = document.createElement("span");
+        winEl.textContent = timeWindow;
+        subtitleEl.appendChild(winEl);
       }
-      subtitleEl.textContent = prodStr + (timeWindow ? " • " + timeWindow : "");
+      if (meta.durationDisplay) {
+        if (subtitleEl.childNodes.length) appendSep();
+        var durEl = document.createElement("span");
+        durEl.className = "ctx-meta-duration";
+        durEl.textContent = meta.durationDisplay;
+        subtitleEl.appendChild(durEl);
+      }
+      if (prodStr) {
+        if (subtitleEl.childNodes.length) appendSep();
+        var prodEl = document.createElement("span");
+        prodEl.textContent = prodStr;
+        subtitleEl.appendChild(prodEl);
+      }
     }
 
     // 3. Top-level nav pills (Errors, Agents, Scorecard, AI Markdown link)
