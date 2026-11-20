@@ -1313,7 +1313,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         try
         {
-            final double[] values = readDoubleValueList(PROP_RUNTIME_PERCENTILES, "50, 95, 99, 99.9");
+            final double[] values = readDoubleValueList(PROP_RUNTIME_PERCENTILES, "50, 95, 99");
 
             // check values
             for (final double value : values)

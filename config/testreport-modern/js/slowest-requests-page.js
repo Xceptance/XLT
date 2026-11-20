@@ -52,6 +52,31 @@
     var chipWrap = document.getElementById("slowest-chips");
     var statusLive = document.getElementById("table-sort-status");
 
+    var metaHasPctConfig = Boolean(
+      window.XLT_META && window.XLT_META.testReportConfig && Array.isArray(window.XLT_META.testReportConfig.runtimePercentiles)
+    );
+    var sampleForPcts = rowsData.map(function (r) {
+      if (r && r.basePercentiles) return { percentiles: r.basePercentiles };
+      if (!metaHasPctConfig && r && r.baseP95 != null) return { percentiles: { p95: r.baseP95 } };
+      return null;
+    }).filter(Boolean);
+    var configuredPcts = UI.getConfiguredPercentiles(sampleForPcts);
+    var basePctKey = UI.pickRepresentativePercentile(configuredPcts);
+    var hasBasePct = Boolean(basePctKey);
+    var colCount = hasBasePct ? 19 : 18;
+
+    var baseColgroup = document.getElementById("slowest-base-colgroup");
+    var basePctTh = document.getElementById("slowest-base-pct-th");
+    if (basePctTh) {
+      if (hasBasePct) {
+        var basePctSpan = basePctTh.querySelector(".th-sort-btn > span");
+        if (basePctSpan) basePctSpan.textContent = "P" + basePctKey;
+      } else {
+        if (baseColgroup) baseColgroup.colSpan = 1;
+        if (basePctTh.parentNode) basePctTh.parentNode.removeChild(basePctTh);
+      }
+    }
+
     // 1. Compute outlier summary KPIs (status === 0 denotes socket/timeout failure without HTTP code)
     var sortedByRt = rowsData.slice().sort(function (a, b) { return (Number(b.runtime) || 0) - (Number(a.runtime) || 0); });
     var topItem = sortedByRt[0] || null;
@@ -94,7 +119,7 @@
       if (chipWrap) chipWrap.innerHTML = "";
       if (countBadge) countBadge.textContent = "0 requests";
       tbody.innerHTML =
-        '<tr><td colspan="19" class="col-text" style="text-align:center;padding:36px 16px;color:var(--text-muted);">' +
+        '<tr><td colspan="' + colCount + '" class="col-text" style="text-align:center;padding:36px 16px;color:var(--text-muted);">' +
           "<strong>No individual requests exceeded the configured slowest-request threshold during this test run.</strong>" +
         "</td></tr>";
       return;
@@ -133,8 +158,15 @@
         var urlStr = String(r.url || "");
         var shortUrl = urlStr.length > 58 ? urlStr.slice(0, 58) + "…" : urlStr;
         var reqHref = "requests.html?item=" + encodeURIComponent(r.name || "");
-        var bMean = r.baseMean != null ? Number(r.baseMean).toFixed(1) : "—";
-        var bP95 = r.baseP95 != null ? fmtInt(r.baseP95) : "—";
+        var bMean = r.baseMean != null ? fmtInt(r.baseMean) : "—";
+        var basePctVal = hasBasePct
+          ? (r.basePercentiles
+              ? UI.getPercentile({ percentiles: r.basePercentiles }, basePctKey)
+              : (basePctKey === "95" && r.baseP95 != null ? Number(r.baseP95) : undefined))
+          : undefined;
+        var bPctCell = hasBasePct
+          ? ('<td class="col-num cg-alt">' + (basePctVal !== undefined ? fmtInt(basePctVal) : "—") + "</td>")
+          : "";
         var dnsCount = r.ips ? r.ips.length : 0;
 
         var mCls = "method-" + String(r.method || "get").toLowerCase();
@@ -142,7 +174,7 @@
           '<td class="col-num">' + fmtInt(r.rank) + "</td>" +
           '<td class="col-num cell-warn">' + fmtInt(r.runtime) + "</td>" +
           '<td class="col-num cg-alt">' + bMean + "</td>" +
-          '<td class="col-num cg-alt">' + bP95 + "</td>" +
+          bPctCell +
           '<td class="col-text">' + esc(String(r.time || "").replace(" UTC", "")) + "</td>" +
           '<td class="col-text"><div class="name-cell-wrap">' +
             '<button type="button" class="drawer-btn" aria-expanded="false" title="Toggle full URL &amp; socket details">▸</button>' +
@@ -166,7 +198,7 @@
         drawerTr.className = "drawer-row";
         drawerTr.hidden = true;
         var drawerTd = document.createElement("td");
-        drawerTd.colSpan = 19;
+        drawerTd.colSpan = colCount;
         drawerTd.innerHTML =
           '<div class="drawer-grid">' +
             '<div class="drawer-box" style="grid-column: span 2;">' +
@@ -210,6 +242,7 @@
         frag.appendChild(drawerTr);
         records.push({
           item: r,
+          basePct: basePctVal,
           tr: tr,
           drawerTr: drawerTr,
           blob: ((r.name || "") + " " + (r.method || "") + " " + (r.status || "") + " " + (r.usedIp || "") + " " + urlStr + " " + (r.requestId || "")).toLowerCase()
@@ -251,8 +284,8 @@
       var factor = sortDir === "ascending" ? 1 : -1;
       var isText = sortKey === "name" || sortKey === "method" || sortKey === "usedIp" || sortKey === "time" || sortKey === "url";
       records.sort(function (a, b) {
-        var va = a.item[sortKey];
-        var vb = b.item[sortKey];
+        var va = sortKey === "basePct" ? a.basePct : a.item[sortKey];
+        var vb = sortKey === "basePct" ? b.basePct : b.item[sortKey];
         if (isText) {
           return factor * collator.compare(String(va || ""), String(vb || ""));
         }

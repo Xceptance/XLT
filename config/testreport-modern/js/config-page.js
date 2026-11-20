@@ -302,7 +302,9 @@
         {
           label: "Configured Percentiles",
           val: (meta.testReportConfig && Array.isArray(meta.testReportConfig.runtimePercentiles))
-            ? meta.testReportConfig.runtimePercentiles.map(function (p) { return "P" + p; }).join(", ")
+            ? (meta.testReportConfig.runtimePercentiles.length
+                ? meta.testReportConfig.runtimePercentiles.map(function (p) { return "P" + p; }).join(", ")
+                : "None (disabled)")
             : "Default",
           note: "Runtime quantile columns rendered across timer tables"
         }

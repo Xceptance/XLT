@@ -270,17 +270,19 @@
 
       var totals = data.totals || items[0] || {};
       if (kpiGrid) {
-        var pFirst = pcts.length ? pcts[0] : null;
-        var pFirstVal = pFirst ? wb.getItemPercentile(totals, pFirst) : totals.median;
-        var tailKeys = pcts.length >= 3 ? [pcts[1], pcts[2]] : (pcts.length >= 2 ? [pcts[0], pcts[1]] : (pcts.length === 1 ? [pcts[0]] : []));
-        var tailHeader = tailKeys.length ? ("Tail Latency (" + tailKeys.map(function (k) { return "P" + k; }).join(" / ") + ")") : "Latency Range";
+        var kpiPcts = wb.partitionPercentilesForKpis(pcts);
+        var pFirst = kpiPcts.headKey;
+        var pFirstVal = pFirst ? wb.getItemPercentile(totals, pFirst) : undefined;
+        var tailKeys = kpiPcts.tailKeys;
+        var hasMedianFallback = !tailKeys.length && totals.median !== undefined;
+        var tailHeader = tailKeys.length ? ("Tail Latency (" + tailKeys.map(function (k) { return "P" + k; }).join(" / ") + ")") : (hasMedianFallback ? "Median Latency" : "Latency Range");
         var tailMain = tailKeys.length
           ? tailKeys.map(function (k) {
               var v = wb.getItemPercentile(totals, k);
               return v !== undefined ? (fmtInt(v) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span>') : "—";
             }).join(" / ")
-          : (fmtInt(totals.min) + " – " + fmtInt(totals.max) + " ms");
-        var lastPctKey = pcts.length > tailKeys.length ? pcts[pcts.length - 1] : null;
+          : (hasMedianFallback ? (fmtInt(totals.median) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">ms</span>') : (fmtInt(totals.min) + " – " + fmtInt(totals.max) + " ms"));
+        var lastPctKey = kpiPcts.subKey;
         var lastPctVal = lastPctKey ? wb.getItemPercentile(totals, lastPctKey) : undefined;
         var sentBytes = Number(totals.sentTotal || 0);
         var recvBytes = Number(totals.recvTotal || 0);
@@ -387,10 +389,11 @@
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + ".webp"; } },
+          { key: "dynamic", label: "Dynamic Overview", type: "echart", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + ".json"; } },
           { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_Average.webp"; } },
           { key: "count", label: "Count/s", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_CountPerSecond.webp"; } },
-          { key: "size", label: "Response Size", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_ResponseSize.webp"; } },
-          { key: "dynamic", label: "Dynamic Overview (Zoom)", type: "echart", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + ".json"; } }
+          { key: "distribution", label: "Distribution", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_Histogram.webp"; } },
+          { key: "size", label: "Response Size", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + "_ResponseSize.webp"; } }
         ],
         columns: reqColumns,
         tableViews: [
@@ -400,13 +403,13 @@
         ],
         renderWbKpis: function (item, escFn, fInt, fDec) {
           var distinctStr = item.distinctUrls ? (' • Distinct: ' + fInt(item.distinctUrls) + ' URLs') : '';
-          var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
+          var pKey = wb.pickRepresentativePercentile(pcts);
           var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Hits</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h' + distinctStr + '</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Latency</span><span class="wb-kpi-val">' + fInt(item.mean) + ' ms</span></div>' +
-            (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + '</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
+            (pKey && pVal !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + '</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
             (item.ttfb !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">TTFB / Recv</span><span class="wb-kpi-val">' + fInt(item.ttfb || 0) + ' / ' + fInt(item.recv || 0) + ' ms</span></div>' : '')
           );
         },

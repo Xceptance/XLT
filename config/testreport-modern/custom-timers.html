@@ -296,9 +296,9 @@
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + ".webp"; } },
+          { key: "dynamic", label: "Dynamic Overview", type: "echart", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + ".json"; } },
           { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + "_Average.webp"; } },
-          { key: "count", label: "Count/s", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + "_CountPerSecond.webp"; } },
-          { key: "dynamic", label: "Dynamic Overview (Zoom)", type: "echart", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + ".json"; } }
+          { key: "count", label: "Count/s", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + "_CountPerSecond.webp"; } }
         ],
         columns: [
           { key: "name", label: "Timer Identifier", type: "text" },
@@ -316,13 +316,13 @@
           { type: "dynamicSegmentation", group: "Runtime Segmentation [ms]", altGroup: true, onlyIfData: true }
         ],
         renderWbKpis: function (item, escFn, fInt, fDec) {
-          var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
+          var pKey = wb.pickRepresentativePercentile(pcts);
           var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Executions</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Execution Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Runtime</span><span class="wb-kpi-val">' + fInt(item.mean) + ' ms</span></div>' +
-            (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + ' Latency</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
+            (pKey && pVal !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + ' Latency</span><span class="wb-kpi-val">' + fInt(pVal) + ' ms</span></div>' : '') +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Max Latency</span><span class="wb-kpi-val">' + fInt(item.max) + ' ms</span></div>'
           );
         },

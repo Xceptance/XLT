@@ -234,7 +234,7 @@
   }
 
   /**
-   * Resolves the ordered list of configured percentile labels (e.g. `["50", "95", "99", "99.9"]`),
+   * Resolves the ordered list of configured percentile labels (e.g. `["50", "95", "99"]`),
    * preferring `window.XLT_META.testReportConfig.runtimePercentiles`, falling back to keys
    * inspected on sample items, and finally defaulting to XLT's standard percentile set.
    *
@@ -259,7 +259,48 @@
         }
       }
     }
-    return ["50", "95", "99", "99.9"];
+    return [];
+  }
+
+  /**
+   * Selects a single representative percentile key from a configured list.
+   * Prefers standard tail/summary percentiles when present, otherwise falls back
+   * to a configured entry, or returns null when no percentiles are configured.
+   */
+  function pickRepresentativePercentile(pcts, preferred) {
+    if (!Array.isArray(pcts) || !pcts.length) return null;
+    var norm = pcts.map(function (p) { return String(p == null ? "" : p).trim(); }).filter(Boolean);
+    if (!norm.length) return null;
+    var prefs = Array.isArray(preferred) && preferred.length ? preferred : ["95", "90", "99", "50"];
+    for (var i = 0; i < prefs.length; i++) {
+      var cand = String(prefs[i]);
+      if (norm.indexOf(cand) !== -1) return cand;
+    }
+    return norm[Math.min(1, norm.length - 1)];
+  }
+
+  /**
+   * Partitions configured percentiles across headline KPI cards without duplicating keys:
+   * - 0 pcts -> { headKey: null, tailKeys: [], subKey: null }
+   * - 1 pct  -> { headKey: null, tailKeys: [p0], subKey: null }
+   * - 2 pcts -> { headKey: p0, tailKeys: [p1], subKey: null }
+   * - 3 pcts -> { headKey: p0, tailKeys: [p1, p2], subKey: null }
+   * - 4+ pcts -> { headKey: p0, tailKeys: [p(n-3), p(n-2)], subKey: p(n-1) }
+   */
+  function partitionPercentilesForKpis(pcts) {
+    var list = [];
+    if (Array.isArray(pcts)) {
+      pcts.forEach(function (p) {
+        var s = String(p == null ? "" : p).trim();
+        if (s && list.indexOf(s) === -1) list.push(s);
+      });
+    }
+    var n = list.length;
+    if (n === 0) return { headKey: null, tailKeys: [], subKey: null };
+    if (n === 1) return { headKey: null, tailKeys: [list[0]], subKey: null };
+    if (n === 2) return { headKey: list[0], tailKeys: [list[1]], subKey: null };
+    if (n === 3) return { headKey: list[0], tailKeys: [list[1], list[2]], subKey: null };
+    return { headKey: list[0], tailKeys: [list[n - 3], list[n - 2]], subKey: list[n - 1] };
   }
 
   var KNOWN_METRIC_FIELD_OP_RE = /(^|\s)(-?(?:count|cnt|n|hits|runs|errors?|err|failures?|fail|err%|errpct|error%|fail%|events?|evt|mean|avg|runtime|time|duration|min|max|dev|stddev|median|med|rate|rps|1\/s|cps|cph|1\/h|cpm|1\/min|cpd|1\/d|apdex|ttfb|conn|connect|recv|receive|send|dns|status|code|p\d+(?:\.\d+)?))\s+(<=|>=|!=|==|=|<|>)/g;
@@ -497,6 +538,8 @@
     fmtThinkTime: fmtThinkTime,
     getPercentile: getPercentile,
     getConfiguredPercentiles: getConfiguredPercentiles,
+    pickRepresentativePercentile: pickRepresentativePercentile,
+    partitionPercentilesForKpis: partitionPercentilesForKpis,
     matchesFilter: matchesFilter
   };
 })();

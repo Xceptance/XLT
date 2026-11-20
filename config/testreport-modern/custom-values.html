@@ -355,18 +355,18 @@
         defaultSort: { key: "count", dir: "descending" },
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + ".webp"; } },
-          { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + "_Average.webp"; } },
-          { key: "dynamic", label: "Dynamic Overview (Zoom)", type: "echart", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + ".json"; } }
+          { key: "dynamic", label: "Dynamic Overview", type: "echart", available: function (it) { return Array.isArray(it.spark) && it.spark.length > 0; }, url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + ".json"; } },
+          { key: "average", label: "Moving Averages", url: function (it, enc) { return "charts/customvalues/" + enc(it.chartBase) + "_Average.webp"; } }
         ],
         columns: cvCols,
         renderWbKpis: function (item, escFn, fInt, fDec) {
-          var pKey = pcts.indexOf("95") !== -1 ? "95" : (pcts.length ? pcts[Math.min(1, pcts.length - 1)] : null);
+          var pKey = wb.pickRepresentativePercentile(pcts);
           var pVal = pKey ? wb.getItemPercentile(item, pKey) : undefined;
           return (
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Hourly Samples</span><span class="wb-kpi-val">' + fInt(item.cph) + ' /h</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Sampling Rate</span><span class="wb-kpi-val">' + fDec(item.rate, 2) + ' /s</span></div>' +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Mean Value</span><span class="wb-kpi-val">' + fDec(item.mean, 2) + '</span></div>' +
-            (pKey ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + ' Value</span><span class="wb-kpi-val">' + fDec(pVal, 1) + '</span></div>' : '') +
+            (pKey && pVal !== undefined ? '<div class="wb-kpi-item"><span class="wb-kpi-label">P' + escFn(pKey) + ' Value</span><span class="wb-kpi-val">' + fDec(pVal, 1) + '</span></div>' : '') +
             '<div class="wb-kpi-item"><span class="wb-kpi-label">Max Value</span><span class="wb-kpi-val">' + fDec(item.max, 1) + '</span></div>'
           );
         },

@@ -120,7 +120,7 @@
 
   --status-warn-bg: #fff7ed;
   --status-warn-border: #fdba74;
-  --status-warn-text: #c2410c;
+  --status-warn-text: #e07000;
 
   --status-fail-bg: #fef2f2;
   --status-fail-border: #fca5a5;
@@ -136,10 +136,10 @@
   --danger-border: #fecaca;
   --danger-text: #991b1b;
 
-  --warning: #c2410c;
+  --warning: #e07000;
   --warning-bg: #fff7ed;
   --warning-border: #fed7aa;
-  --warning-text: #c2410c;
+  --warning-text: #e07000;
 
   --shadow-xs: none;
   --shadow-sm: none;
@@ -196,7 +196,7 @@ html.dark-theme {
 
   --status-warn-bg: rgba(245, 158, 11, 0.14);
   --status-warn-border: rgba(251, 191, 36, 0.4);
-  --status-warn-text: #fb923c;
+  --status-warn-text: #ff9500;
 
   --status-fail-bg: rgba(239, 68, 68, 0.15);
   --status-fail-border: rgba(248, 113, 113, 0.45);
@@ -212,10 +212,10 @@ html.dark-theme {
   --danger-border: rgba(248, 113, 113, 0.45);
   --danger-text: #fca5a5;
 
-  --warning: #fb923c;
+  --warning: #ff9500;
   --warning-bg: rgba(245, 158, 11, 0.14);
   --warning-border: rgba(251, 191, 36, 0.4);
-  --warning-text: #fb923c;
+  --warning-text: #ff9500;
 
   --shadow-xs: none;
   --shadow-sm: none;
@@ -223,6 +223,14 @@ html.dark-theme {
 
   --scrollbar-track: #181a1f;
   --scrollbar-thumb: #525866;
+}
+
+@media (prefers-contrast: more) {
+  :root:not(.dark-theme) {
+    --status-warn-text: #b45309;
+    --warning: #b45309;
+    --warning-text: #b45309;
+  }
 }
 
 @supports not (scrollbar-color: auto) {
@@ -1387,13 +1395,22 @@ html.dark-theme .wb-kpi-val.highlight-cph {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  max-inline-size: 100%;
+  scrollbar-width: none;
   background: var(--bg-subtle);
   padding: 3px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
 }
+.wb-tabs::-webkit-scrollbar {
+  display: none;
+}
 .wb-tab-btn {
+  flex: none;
+  white-space: nowrap;
+  position: relative;
   background: transparent;
   border: 1px solid transparent;
   padding: 5px 11px;
@@ -1407,10 +1424,18 @@ html.dark-theme .wb-kpi-val.highlight-cph {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
-.wb-tab-btn.active {
+.wb-tab-btn.active,
+.wb-tab-btn[aria-selected="true"] {
   background: var(--brand-blue);
   color: var(--brand-ink-on-accent);
   box-shadow: none;
+}
+.wb-tab-btn[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 8px;
+  inset-block-end: 0;
+  border-block-end: 2px solid var(--brand-ink-on-accent);
 }
 
 .wb-tabs-hint {
@@ -1453,7 +1478,7 @@ html.dark-theme .wb-kpi-val.highlight-cph {
 .wb-echart-box {
   inline-size: 100%;
   max-inline-size: 1120px;
-  block-size: 340px;
+  block-size: 360px;
 }
 
 .workbench-footnote,
@@ -1907,11 +1932,15 @@ th:not([aria-sort]) .sort-icon::before {
   block-size: 100%;
 }
 
-.cell-err {
+.cell-err,
+.data-table tbody td.cell-err,
+.data-table tfoot td.cell-err {
   color: var(--status-fail-text) !important;
   font-weight: 700;
 }
-.cell-warn {
+.cell-warn,
+.data-table tbody td.cell-warn,
+.data-table tfoot td.cell-warn {
   color: var(--warning) !important;
   font-weight: 700;
 }
@@ -2272,13 +2301,23 @@ html.dark-theme .stream-sticky-header {
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  max-inline-size: 100%;
+  scrollbar-width: none;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
   padding: 2px;
 }
+.stream-card-tabs::-webkit-scrollbar {
+  display: none;
+}
 .stream-card-tab {
   appearance: none;
+  flex: none;
+  white-space: nowrap;
+  position: relative;
   background: transparent;
   border: none;
   padding: 2px 7px;
@@ -2291,9 +2330,17 @@ html.dark-theme .stream-sticky-header {
 .stream-card-tab:hover {
   color: var(--text-primary);
 }
-.stream-card-tab.active {
+.stream-card-tab.active,
+.stream-card-tab[aria-selected="true"] {
   background: var(--brand-blue-subtle);
   color: var(--brand-blue);
+}
+.stream-card-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 5px;
+  inset-block-end: 0;
+  border-block-end: 2px solid currentColor;
 }
 .stream-card-stats {
   display: flex;
@@ -2321,6 +2368,13 @@ html.dark-theme .stream-sticky-header {
   block-size: auto;
   display: block;
   border-radius: 4px;
+}
+.stream-card-body .wb-echart-box {
+  flex: 1 1 100%;
+  min-inline-size: 0;
+  inline-size: 100%;
+  max-inline-size: 960px;
+  block-size: 340px;
 }
 .stream-load-bar {
   display: flex;

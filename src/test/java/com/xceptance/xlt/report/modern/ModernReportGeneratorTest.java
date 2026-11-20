@@ -519,6 +519,134 @@ public class ModernReportGeneratorTest
         assertEquals("25% of 840k user sessions/h + 32k bot sessions/h", meta.get("loadTestName"));
     }
 
+    @Test
+    public void testDynamicPercentilesWithoutP95AndEmpty() throws Exception
+    {
+        // Case A: custom runtimePercentiles (50, 90) without P95 or P99.9
+        final File customPctDir = tempFolder.newFolder("custom-pct-report");
+        final String customXml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <testreport>
+              <configuration>
+                <projectName>DynamicPct</projectName>
+              </configuration>
+              <testReportConfig>
+                <runtimePercentiles>
+                  <string>50</string>
+                  <string>90</string>
+                </runtimePercentiles>
+              </testReportConfig>
+              <general>
+                <startTime>2026-08-31 12:00:00 UTC</startTime>
+                <endTime>2026-08-31 12:10:00 UTC</endTime>
+                <duration>600</duration>
+              </general>
+              <summary/>
+              <transactions/>
+              <actions/>
+              <requests>
+                <request>
+                  <name>Home</name>
+                  <count>100</count>
+                  <mean>150.0</mean>
+                  <percentiles>
+                    <p50>120.0</p50>
+                    <p90>340.0</p90>
+                  </percentiles>
+                </request>
+              </requests>
+              <slowestRequests>
+                <request>
+                  <name>Home</name>
+                  <runtime>2500</runtime>
+                  <time>2026-08-31 12:05:00 UTC</time>
+                  <httpMethod>GET</httpMethod>
+                  <responseCode>200</responseCode>
+                </request>
+              </slowestRequests>
+              <errors/>
+              <events/>
+              <agents/>
+            </testreport>
+            """;
+        Files.writeString(new File(customPctDir, "testreport.xml").toPath(), customXml, StandardCharsets.UTF_8);
+
+        final ModernReportGenerator generator = new ModernReportGenerator();
+        generator.generateReportBundles(customPctDir);
+
+        final Map<String, Object> customMeta = readJsBundle(new File(customPctDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> customTrCfg = (Map<String, Object>) customMeta.get("testReportConfig");
+        assertEquals(List.of("50", "90"), customTrCfg.get("runtimePercentiles"));
+
+        final Map<String, Object> customSlowest = readJsBundle(new File(customPctDir, "js/slowest-requests-data.js"), "XLT_SLOWEST_REQUESTS");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> customSlowItems = (List<Map<String, Object>>) customSlowest.get("items");
+        assertEquals(1, customSlowItems.size());
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> basePercentiles = (Map<String, Object>) customSlowItems.get(0).get("basePercentiles");
+        assertNotNull(basePercentiles);
+        assertEquals(120.0, ((Number) basePercentiles.get("p50")).doubleValue(), 0.001);
+        assertEquals(340.0, ((Number) basePercentiles.get("p90")).doubleValue(), 0.001);
+        assertNull(customSlowItems.get(0).get("baseP95"));
+
+        // Case B: empty runtimePercentiles (<runtimePercentiles/>) and no percentile tags
+        final File emptyPctDir = tempFolder.newFolder("empty-pct-report");
+        final String emptyXml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <testreport>
+              <configuration>
+                <projectName>EmptyPct</projectName>
+              </configuration>
+              <testReportConfig>
+                <runtimePercentiles/>
+              </testReportConfig>
+              <general>
+                <startTime>2026-08-31 12:00:00 UTC</startTime>
+                <endTime>2026-08-31 12:10:00 UTC</endTime>
+                <duration>600</duration>
+              </general>
+              <summary/>
+              <transactions/>
+              <actions/>
+              <requests>
+                <request>
+                  <name>Home</name>
+                  <count>100</count>
+                  <mean>150.0</mean>
+                </request>
+              </requests>
+              <slowestRequests>
+                <request>
+                  <name>Home</name>
+                  <runtime>2500</runtime>
+                  <time>2026-08-31 12:05:00 UTC</time>
+                  <httpMethod>GET</httpMethod>
+                  <responseCode>200</responseCode>
+                </request>
+              </slowestRequests>
+              <errors/>
+              <events/>
+              <agents/>
+            </testreport>
+            """;
+        Files.writeString(new File(emptyPctDir, "testreport.xml").toPath(), emptyXml, StandardCharsets.UTF_8);
+
+        generator.generateReportBundles(emptyPctDir);
+
+        final Map<String, Object> emptyMeta = readJsBundle(new File(emptyPctDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> emptyTrCfg = (Map<String, Object>) emptyMeta.get("testReportConfig");
+        assertEquals(List.of(), emptyTrCfg.get("runtimePercentiles"));
+
+        final Map<String, Object> emptySlowest = readJsBundle(new File(emptyPctDir, "js/slowest-requests-data.js"), "XLT_SLOWEST_REQUESTS");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> emptySlowItems = (List<Map<String, Object>>) emptySlowest.get("items");
+        assertEquals(1, emptySlowItems.size());
+        assertNull(emptySlowItems.get(0).get("basePercentiles"));
+        assertNull(emptySlowItems.get(0).get("baseP95"));
+    }
+
     private Map<String, Object> readJsBundle(final File jsFile, final String globalVarName) throws Exception
     {
         assertTrue("Expected JS bundle file to exist: " + jsFile, jsFile.isFile());

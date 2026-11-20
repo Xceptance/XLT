@@ -715,6 +715,9 @@ public class ReportGenerator
                     parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
                     parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
                     parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
+                    parameters.put("pdfReportPresent", Boolean.valueOf(config.isPdfReportEnabled()));
+                    parameters.put("maxExportedTraces", Integer.valueOf(config.getAiDataMaxExportedTraces()));
+                    parameters.put("maxFramesPerTrace", Integer.valueOf(config.getAiDataMaxFramesPerTrace()));
 
                     final ReportTransformer auxTransformer = new ReportTransformer(auxOutputFiles, auxStyleSheetFiles, parameters);
                     TaskManager.getInstance().setMaximumThreadCount(1);

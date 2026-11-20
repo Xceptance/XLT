@@ -109,7 +109,7 @@
       kpiGrid.innerHTML =
         '<article class="kpi-card">' +
           '<span class="kpi-label">Logged Test Events</span>' +
-          '<div class="kpi-val">' + fmtInt(totalEvents) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">events</span></div>' +
+          '<div class="kpi-val' + (totalEvents > 0 ? ' cell-warn' : '') + '">' + fmtInt(totalEvents) + ' <span style="font-size:14px;font-weight:600;color:var(--text-muted);">events</span></div>' +
           '<div class="kpi-sub">Across <strong>' + fmtInt(uniqueScenarioCount) + " scenario(s)</strong> • <strong>" + fmtInt(eventsData.length) + " group(s)</strong></div>" +
         "</article>" +
         '<article class="kpi-card">' +
@@ -126,7 +126,7 @@
         "</article>" +
         '<article class="kpi-card">' +
           '<span class="kpi-label">Dropped Messages</span>' +
-          '<div class="kpi-val">' + fmtInt(totalDropped) + "</div>" +
+          '<div class="kpi-val' + (totalDropped > 0 ? ' cell-warn' : '') + '">' + fmtInt(totalDropped) + "</div>" +
           '<div class="kpi-sub">' + (totalDropped > 0 ? "Rate-limited detail strings beyond buffer cap" : "Zero event detail messages dropped") + "</div>" +
         "</article>";
     }
@@ -169,10 +169,10 @@
           '<tr class="table-totals">' +
             '<td class="col-idx">Σ</td>' +
             '<td class="col-text">Total Logged Events (' + fmtInt(byNameList.length) + " types)</td>" +
-            '<td class="col-num">' + fmtInt(totalEvents) + "</td>" +
+            '<td class="col-num' + (totalEvents > 0 ? ' cell-warn' : '') + '">' + fmtInt(totalEvents) + "</td>" +
             '<td class="col-num">100.00%</td>' +
             '<td class="col-num">' + fmtInt(uniqueScenarioCount) + "</td>" +
-            '<td class="col-num">' + fmtInt(totalDropped) + "</td>" +
+            '<td class="col-num' + (totalDropped > 0 ? ' cell-warn' : '') + '">' + fmtInt(totalDropped) + "</td>" +
           "</tr>";
       }
     }

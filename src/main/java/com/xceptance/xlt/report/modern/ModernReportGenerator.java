@@ -1070,9 +1070,13 @@ public class ModernReportGenerator
                     row.put("baseMean", baseReq.get("mean"));
                     @SuppressWarnings("unchecked")
                     final Map<String, Double> pcts = (Map<String, Double>) baseReq.get("percentiles");
-                    if (pcts != null && pcts.get("p95") != null)
+                    if (pcts != null && !pcts.isEmpty())
                     {
-                        row.put("baseP95", pcts.get("p95"));
+                        row.put("basePercentiles", pcts);
+                        if (pcts.get("p95") != null)
+                        {
+                            row.put("baseP95", pcts.get("p95"));
+                        }
                     }
                 }
 

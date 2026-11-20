@@ -148,7 +148,7 @@
             <tr class="group-header-row">
               <th scope="col" rowspan="2" class="col-num" data-key="rank" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>#</span><span class="sort-icon"></span></button></th>
               <th scope="col" rowspan="2" class="col-num" data-key="runtime"><button type="button" class="th-sort-btn"><span>Runtime [ms]</span><span class="sort-icon"></span></button></th>
-              <th colspan="2" scope="colgroup" class="cg-alt">Base Aggregate</th>
+              <th id="slowest-base-colgroup" colspan="2" scope="colgroup" class="cg-alt">Base Aggregate</th>
               <th scope="col" rowspan="2" class="col-text" data-key="time"><button type="button" class="th-sort-btn"><span>Timestamp (UTC)</span><span class="sort-icon"></span></button></th>
               <th scope="col" rowspan="2" class="col-text" data-key="name"><button type="button" class="th-sort-btn"><span>Request Name</span><span class="sort-icon"></span></button></th>
               <th scope="col" rowspan="2" class="col-text" data-key="method"><button type="button" class="th-sort-btn"><span>Method</span><span class="sort-icon"></span></button></th>
@@ -160,7 +160,7 @@
             </tr>
             <tr>
               <th scope="col" class="col-num cg-alt" data-key="baseMean"><button type="button" class="th-sort-btn"><span>Mean</span><span class="sort-icon"></span></button></th>
-              <th scope="col" class="col-num cg-alt" data-key="baseP95"><button type="button" class="th-sort-btn"><span>P95</span><span class="sort-icon"></span></button></th>
+              <th id="slowest-base-pct-th" scope="col" class="col-num cg-alt" data-key="basePct"><button type="button" class="th-sort-btn"><span>P95</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-num" data-key="dns"><button type="button" class="th-sort-btn"><span>DNS</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-num" data-key="conn"><button type="button" class="th-sort-btn"><span>Connect</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-num" data-key="send"><button type="button" class="th-sort-btn"><span>Send</span><span class="sort-icon"></span></button></th>

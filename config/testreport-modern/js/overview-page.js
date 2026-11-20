@@ -114,7 +114,8 @@
 
     var tx = (ov.summary && ov.summary.transactions) || {};
     var req = (ov.summary && ov.summary.requests) || {};
-    var p95 = getPct(req, "95");
+    var repPctKey = UI.pickRepresentativePercentile(UI.getConfiguredPercentiles([req]));
+    var repPctVal = repPctKey ? getPct(req, repPctKey) : null;
     var descHtml = sc.errorMessage
       ? esc(sc.errorMessage)
       : "Automated evaluation scored <strong>" + fmtInt(sc.points) + " out of " + fmtInt(sc.maxPoints) +
@@ -122,7 +123,7 @@
         (sc.ratingName ? " — Rating: <strong>" + esc(sc.ratingName) + "</strong>" : "") + ". " +
         "Throughput reached <strong>" + fmtInt(tx.count || 0) + " transactions</strong> with request latency at " +
         "<strong>Mean: " + fmtInt(req.mean || 0) + " ms</strong>" +
-        (p95 !== null ? ", <strong>P95: " + fmtInt(p95) + " ms</strong>" : "") + ".";
+        (repPctVal !== null ? ", <strong>P" + esc(repPctKey) + ": " + fmtInt(repPctVal) + " ms</strong>" : "") + ".";
 
     sec.innerHTML =
       '<div class="sc-left">' +
@@ -185,7 +186,8 @@
     var gen = ov.general || {};
     var tx = (ov.summary && ov.summary.transactions) || {};
     var req = (ov.summary && ov.summary.requests) || {};
-    var p95 = getPct(req, "95");
+    var repPctKey = UI.pickRepresentativePercentile(UI.getConfiguredPercentiles([req]));
+    var repPctVal = repPctKey ? getPct(req, repPctKey) : null;
     var errCount = Number(tx.errors) || 0;
     var errPct = Number(tx.errPct || 0);
     var okPct = Math.max(0, 100 - errPct);
@@ -203,7 +205,7 @@
         '<span class="kpi-label">Request Runtime</span>' +
         '<div class="kpi-val">' + fmtInt(req.mean || 0) + " ms</div>" +
         '<div class="kpi-sub">Mean: ' + fmtInt(req.mean || 0) + " ms" +
-          (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") +
+          (repPctVal !== null ? " • P" + esc(repPctKey) + ": " + fmtInt(repPctVal) + " ms" : "") +
           (tx.mean ? " (Tx mean: " + fmtInt(tx.mean) + " ms)" : "") +
         "</div>" +
       "</div>" +
@@ -236,7 +238,8 @@
     }
     var tx = (ov.summary && ov.summary.transactions) || {};
     var req = (ov.summary && ov.summary.requests) || {};
-    var p95 = getPct(req, "95");
+    var repPctKey = UI.pickRepresentativePercentile(UI.getConfiguredPercentiles([req]));
+    var repPctVal = repPctKey ? getPct(req, repPctKey) : null;
     var lpTotals = ov.loadProfileTotals || {};
 
     sec.innerHTML =
@@ -263,7 +266,7 @@
       '<div class="chart-panel">' +
         '<div class="chart-panel-header">' +
           '<div class="chart-panel-title">Request Runtime</div>' +
-          '<span class="chart-header-badge">Mean: ' + fmtInt(req.mean || 0) + " ms" + (p95 !== null ? " • P95: " + fmtInt(p95) + " ms" : "") + "</span>" +
+          '<span class="chart-header-badge">Mean: ' + fmtInt(req.mean || 0) + " ms" + (repPctVal !== null ? " • P" + esc(repPctKey) + ": " + fmtInt(repPctVal) + " ms" : "") + "</span>" +
         "</div>" +
         '<div class="chart-panel-body">' +
           '<img class="zoomable-chart" src="charts/RequestRuntime.webp" alt="Request Runtime Progression" data-chart-title="Request Runtime Progression" loading="lazy" decoding="async" />' +
@@ -447,7 +450,7 @@
   function renderSummaryMatrix(ov, meta) {
     var table = document.getElementById("perf-summary-table");
     if (!table) return;
-    var pctList = UI.getConfiguredPercentiles();
+    var pctList = UI.getConfiguredPercentiles(ov && ov.summary ? [ov.summary.transactions, ov.summary.actions, ov.summary.requests, ov.summary.pageLoadTimings, ov.summary.customTimers] : undefined);
 
     var theadHtml =
       "<thead>" +
@@ -457,7 +460,7 @@
           '<th colspan="3" scope="colgroup">Counts &amp; Rates</th>' +
           '<th colspan="2" scope="colgroup">Failures</th>' +
           '<th colspan="4" scope="colgroup" class="cg-alt">Runtime Statistics [ms]</th>' +
-          '<th colspan="' + pctList.length + '" scope="colgroup">Percentiles [ms]</th>' +
+          (pctList.length ? '<th colspan="' + pctList.length + '" scope="colgroup">Percentiles [ms]</th>' : "") +
         "</tr>" +
         "<tr>" +
           '<th class="col-num">Total Count</th>' +

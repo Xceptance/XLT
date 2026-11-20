@@ -17,9 +17,12 @@ set JAVA_OPTIONS=
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx4g
 set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+UseStringDeduplication
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Dcom.xceptance.xlt.home="%XLT_HOME%"
-set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlog4j2.configurationFile="%XLT_CONFIG_DIR%\reportgenerator.properties"
+set JAVA_OPTIONS=%JAVA_OPTIONS% -Dlogback.configurationFile="%XLT_CONFIG_DIR%\reportgenerator-logback.xml"
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Djava.awt.headless=true
 set JAVA_OPTIONS=%JAVA_OPTIONS% -cp "%CLASSPATH%"
+
+:: workaround for Java4Shell issue (GH#730)
+set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:-UseBASE64Intrinsics
 
 :: append options to suppress illegal access warnings for Java 9+
 set PACKAGES=java.base/java.lang.reflect java.base/java.text java.base/java.util java.desktop/java.awt.font

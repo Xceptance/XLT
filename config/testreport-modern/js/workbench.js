@@ -295,6 +295,25 @@
   }
 
   /**
+   * Selects a single representative percentile key from a configured list.
+   * @param {string[]} pcts
+   * @param {string[]=} preferred
+   * @returns {string|null}
+   */
+  function pickRepresentativePercentile(pcts, preferred) {
+    return UI.pickRepresentativePercentile(pcts, preferred);
+  }
+
+  /**
+   * Partitions configured percentiles across headline KPI cards without duplicating keys.
+   * @param {string[]} pcts
+   * @returns {{headKey: (string|null), tailKeys: string[], subKey: (string|null)}}
+   */
+  function partitionPercentilesForKpis(pcts) {
+    return UI.partitionPercentilesForKpis(pcts);
+  }
+
+  /**
    * Extracts a numeric percentile value from an item's `percentiles` map or flat `p<N>` fields.
    * @param {Object} item
    * @param {string|number} pctStr
@@ -586,6 +605,17 @@
     var configuredIntervals = getConfiguredIntervals(allItems);
     var hasPageSegData = allItems.some(function (it) { return getItemSegmentation(it, 0) !== undefined; });
     var chartsAvailable = !(window.XLT_META && window.XLT_META.chartsGenerated === false);
+    var dynamicChartsAvailable = chartsAvailable && !(
+      window.XLT_META &&
+      window.XLT_META.reportGeneratorConfig &&
+      window.XLT_META.reportGeneratorConfig.dynamicChartsEnabled === false
+    );
+    function isTabAvailable(t, item) {
+      if (!t) return false;
+      if (t.type === "echart" && !dynamicChartsAvailable) return false;
+      if (t.available && item && !t.available(item)) return false;
+      return true;
+    }
     var colorMap = cfg.colorizeRequests ? buildColorizationMap(cfg.colorizationConfig) : null;
 
     function expandPercentileColumns(colDef) {
@@ -1044,7 +1074,7 @@
         else if (col.type === "apdex") td.className = "col-apdex";
         if (col.altGroup) td.classList.add("cg-alt");
         if (EXTRA_STAT_KEYS[col.key] || col.isExtraStat) td.classList.add("col-extra");
-        if (!isFiltered && totObj && col.cellClass) {
+        if (totObj && col.cellClass) {
           var totExtra = col.cellClass(totObj);
           if (totExtra) td.classList.add(totExtra);
         }
@@ -1204,12 +1234,17 @@
         });
       }
 
+      var aggItems = allItems.filter(function (x) { return x.isAggregate; });
+      var isFiltered = !!(state.query.trim() || (hasPageLabels && state.label !== "ALL"));
       var visibleTableItems = [];
       var sortFrag = document.createDocumentFragment();
       if (cfg.includeAggregateRowInTable) {
-        allItems.filter(function (x) { return x.isAggregate; }).forEach(function (agg) {
+        aggItems.forEach(function (agg) {
           var aggTr = rowMap.get(agg.key);
-          if (aggTr) sortFrag.appendChild(aggTr);
+          if (aggTr) {
+            aggTr.hidden = isFiltered;
+            sortFrag.appendChild(aggTr);
+          }
         });
       }
       sortedTableItems.forEach(function (item) {
@@ -1239,10 +1274,12 @@
       tbody.appendChild(sortFrag);
 
       // Update active navigable list (Aggregate first when unfiltered, plus visible items)
-      var aggItems = allItems.filter(function (x) { return x.isAggregate; });
-      var isFiltered = !!(state.query.trim() || (hasPageLabels && state.label !== "ALL"));
+      var prevCur = state.activeList && state.activeList[state.activeIdx];
+      var prevKey = prevCur ? prevCur.key : null;
+      var filterJustCleared = Boolean(state.wasFiltered && !isFiltered);
+      state.wasFiltered = isFiltered;
       state.activeList = (!isFiltered ? aggItems.concat(visibleTableItems) : visibleTableItems.slice());
-      if (!state.activeList.length && aggItems.length) state.activeList = aggItems.slice();
+      if (!isFiltered && !state.activeList.length && aggItems.length) state.activeList = aggItems.slice();
 
       // Update Filtered Totals row
       if (tfoot && tfoot.rows.length >= 2) {
@@ -1265,13 +1302,17 @@
         statusEl.textContent = "Sorted by " + sortCol.label + ", " + state.sortDir + ", " + visibleTableItems.length + " rows";
       }
 
-      // Preserve current item selection if still in activeList
+      // Preserve current item selection across sorting/refiltering; reset to index 0 (Aggregate) when filter clears
       if (initialLoad && params.get("item")) {
         var idx = state.activeList.findIndex(function (it) { return it.key === params.get("item"); });
         state.activeIdx = idx >= 0 ? idx : 0;
+      } else if (filterJustCleared) {
+        state.activeIdx = 0;
+      } else if (prevKey) {
+        var prevIdx = state.activeList.findIndex(function (it) { return it.key === prevKey; });
+        state.activeIdx = prevIdx >= 0 ? prevIdx : 0;
       } else {
-        var cur = state.activeList[state.activeIdx];
-        if (!cur) state.activeIdx = 0;
+        state.activeIdx = 0;
       }
 
       renderWorkbench();
@@ -1377,6 +1418,13 @@
         if (wbCounter) wbCounter.textContent = "0 of 0";
         if (wbPrev) wbPrev.disabled = true;
         if (wbNext) wbNext.disabled = true;
+        var emptyLabelsEl = document.getElementById("wb-labels");
+        if (emptyLabelsEl) emptyLabelsEl.innerHTML = "";
+        var emptySubEl = document.getElementById("wb-sub");
+        if (emptySubEl) emptySubEl.innerHTML = "";
+        if (wbKpis) wbKpis.innerHTML = "";
+        if (wbTabs) wbTabs.innerHTML = "";
+        if (wbFootnote) wbFootnote.innerHTML = "";
         if (wbStage) wbStage.innerHTML = '<div class="cell-muted" style="padding:24px;">No items match the current filter.</div>';
         return;
       }
@@ -1439,17 +1487,22 @@
       }
 
       // Tabs available for this item
-      var availTabs = tabs.filter(function (t) { return !t.available || t.available(item); });
+      var availTabs = tabs.filter(function (t) { return isTabAvailable(t, item); });
       if (!availTabs.some(function (t) { return t.key === state.activeTab; }) && availTabs.length) {
         state.activeTab = availTabs[0].key;
       }
 
       if (wbTabs) {
+        wbTabs.setAttribute("role", "tablist");
+        wbTabs.setAttribute("aria-label", "Chart views");
         wbTabs.innerHTML = "";
         availTabs.forEach(function (t) {
+          var isSelected = t.key === state.activeTab;
           var b = document.createElement("button");
           b.type = "button";
-          b.className = "wb-tab-btn" + (t.key === state.activeTab ? " active" : "");
+          b.setAttribute("role", "tab");
+          b.setAttribute("aria-selected", isSelected ? "true" : "false");
+          b.className = "wb-tab-btn" + (isSelected ? " active" : "");
           b.textContent = t.label;
           b.addEventListener("click", function () {
             state.activeTab = t.key;
@@ -1457,11 +1510,18 @@
             syncUrl();
           });
           wbTabs.appendChild(b);
+          if (isSelected && b.scrollIntoView) {
+            try { b.scrollIntoView({ block: "nearest", inline: "nearest" }); } catch (_) {}
+          }
         });
       }
 
       var activeTabObj = availTabs.find(function (t) { return t.key === state.activeTab; }) || availTabs[0];
       if (wbStage && activeTabObj && !state.collapsed) {
+        var prevEchart = wbStage.querySelector ? wbStage.querySelector(".wb-echart-box") : null;
+        if (prevEchart && window.XltDynamicChart && window.XltDynamicChart.dispose) {
+          window.XltDynamicChart.dispose(prevEchart);
+        }
         if (!chartsAvailable) {
           wbStage.innerHTML = '<div class="cell-muted" style="padding:28px;text-align:center;">Charts were not generated for this report (<code>-noCharts</code>).</div>';
         } else if (activeTabObj.type === "echart") {
@@ -1492,7 +1552,7 @@
         stats.push('<span class="stream-stat-item">Full GC: <strong>' + fmtInt(it.fullGcCount) + '</strong></span>');
       } else {
         var unit = cfg.sparkUnit !== undefined ? cfg.sparkUnit : (cfg.entityLabel === "Custom Value" ? "" : " ms");
-        var pctKey = configuredPcts.indexOf("95") !== -1 ? "95" : (configuredPcts.length ? configuredPcts[Math.min(1, configuredPcts.length - 1)] : null);
+        var pctKey = pickRepresentativePercentile(configuredPcts);
         var pctVal = pctKey ? getItemPercentile(it, pctKey) : undefined;
         if (it.cph !== undefined) stats.push('<span class="stream-stat-item">1/h: <strong style="color:var(--brand-blue);">' + fmtInt(it.cph) + '</strong></span>');
         if (it.rate !== undefined) stats.push('<span class="stream-stat-item">1/s: <strong>' + fmtDec(it.rate, 2) + '</strong></span>');
@@ -1508,9 +1568,18 @@
 
     // Always-visible Continuous Chart Stream below the directory table with lazy IntersectionObserver batching
     var streamObserver = null;
+    var streamEchartObserver = null;
+    function disposeStreamEcharts() {
+      if (!streamRoot || !window.XltDynamicChart || !window.XltDynamicChart.dispose || !streamRoot.querySelectorAll) return;
+      Array.prototype.forEach.call(streamRoot.querySelectorAll(".wb-echart-box"), function (box) {
+        window.XltDynamicChart.dispose(box);
+      });
+    }
     function renderStream() {
       if (!streamRoot) return;
       if (streamObserver) { streamObserver.disconnect(); streamObserver = null; }
+      if (streamEchartObserver) { streamEchartObserver.disconnect(); streamEchartObserver = null; }
+      disposeStreamEcharts();
       if (!chartsAvailable) {
         streamRoot.hidden = true;
         streamRoot.innerHTML = "";
@@ -1518,14 +1587,19 @@
       }
       streamRoot.hidden = false;
 
-      var imgTabs = tabs.filter(function (t) { return t.type !== "echart"; });
-      if (!imgTabs.some(function (t) { return t.key === state.streamTab; }) && imgTabs.length) {
-        state.streamTab = imgTabs[0].key;
+      var streamTabs = tabs.filter(function (t) {
+        if (t.type === "echart" && !dynamicChartsAvailable) return false;
+        if (t.available) return state.activeList.some(function (it) { return t.available(it); });
+        return true;
+      });
+      if (!streamTabs.some(function (t) { return t.key === state.streamTab; }) && streamTabs.length) {
+        state.streamTab = streamTabs[0].key;
       }
-      var tabObj = imgTabs.find(function (t) { return t.key === state.streamTab; }) || imgTabs[0];
+      var tabObj = streamTabs.find(function (t) { return t.key === state.streamTab; }) || streamTabs[0];
 
-      var tabsHtml = imgTabs.map(function (t) {
-        return '<button type="button" class="wb-tab-btn' + (t.key === state.streamTab ? ' active' : '') + '" data-stream-tab="' + escHtml(t.key) + '">' + escHtml(t.label) + '</button>';
+      var tabsHtml = streamTabs.map(function (t) {
+        var isSel = t.key === state.streamTab;
+        return '<button type="button" role="tab" aria-selected="' + (isSel ? "true" : "false") + '" class="wb-tab-btn' + (isSel ? " active" : "") + '" data-stream-tab="' + escHtml(t.key) + '">' + escHtml(t.label) + '</button>';
       }).join("");
 
       var isFiltered = !!(state.query.trim() || (hasPageLabels && state.label !== "ALL"));
@@ -1540,7 +1614,7 @@
             '</div>' +
             '<div class="stream-toolbar-controls">' +
               '<span class="stream-glance-label">Glance Metric:</span>' +
-              '<div class="wb-tabs">' + tabsHtml + '</div>' +
+              '<div class="wb-tabs" role="tablist" aria-label="Stream chart views">' + tabsHtml + '</div>' +
               '<button type="button" class="btn-chip" id="btn-stream-to-top" title="Scroll back up to Directory Table">↑ Table</button>' +
             '</div>' +
           '</div>' +
@@ -1581,6 +1655,49 @@
       var itemByKey = new Map();
       state.activeList.forEach(function (it) { itemByKey.set(it.key, it); });
 
+      if ("IntersectionObserver" in window) {
+        streamEchartObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            var box = en.target;
+            if (streamEchartObserver) streamEchartObserver.unobserve(box);
+            if (window.XltDynamicChart && box._xltUrl) {
+              window.XltDynamicChart.render(box, box._xltUrl, box._xltName);
+            }
+          });
+        }, { rootMargin: "400px" });
+      }
+
+      function mountStreamCardStage(bodyEl, it, tObj, immediateEchart) {
+        if (!bodyEl || !tObj) return;
+        var prevBox = bodyEl.querySelector ? bodyEl.querySelector(".wb-echart-box") : null;
+        if (prevBox) {
+          if (streamEchartObserver) streamEchartObserver.unobserve(prevBox);
+          if (window.XltDynamicChart && window.XltDynamicChart.dispose) {
+            window.XltDynamicChart.dispose(prevBox);
+          }
+        }
+        var url = buildChartUrl(it, tObj);
+        if (tObj.type === "echart") {
+          bodyEl.classList.remove("chart-canvas-light");
+          bodyEl.innerHTML = '<div class="wb-echart-box stream-echart-box"></div>';
+          var box = bodyEl.querySelector(".wb-echart-box");
+          if (box && window.XltDynamicChart) {
+            if (immediateEchart || !streamEchartObserver) {
+              window.XltDynamicChart.render(box, url, it.name);
+            } else {
+              box._xltUrl = url;
+              box._xltName = it.name;
+              streamEchartObserver.observe(box);
+            }
+          }
+        } else {
+          bodyEl.classList.add("chart-canvas-light");
+          var title = it.name + " — " + tObj.label;
+          bodyEl.innerHTML = '<img class="zoomable-chart" loading="lazy" decoding="async" src="' + escHtml(url) + '" alt="' + escHtml(title) + '" data-chart-title="' + escHtml(title) + '"/>';
+        }
+      }
+
       var cursor = 0;
       var BATCH = 24;
 
@@ -1609,19 +1726,21 @@
         var frag = document.createDocumentFragment();
         for (var i = cursor; i < end; i++) {
           var it = state.activeList[i];
+          var cardTabs = streamTabs.filter(function (t) { return isTabAvailable(t, it); });
+          var cardTabObj = (tabObj && isTabAvailable(tabObj, it)) ? tabObj : cardTabs[0];
+          if (!cardTabObj) continue;
           var card = document.createElement("article");
           card.className = "stream-card";
           card.setAttribute("data-stream-key", it.key);
           var cardLabelsHtml = (hasPageLabels && it.labels && it.labels.length)
             ? renderLabelPills(it.labels)
             : "";
-          var src = buildChartUrl(it, tabObj);
-          var title = it.name + " — " + tabObj.label;
           var subHtml = (!it.isAggregate && it.urlPattern)
             ? '<span class="stream-card-sub" title="' + escHtml(it.urlPattern) + '">' + escHtml(it.urlPattern) + '</span>'
             : '';
-          var perCardTabs = imgTabs.map(function (t) {
-            return '<button type="button" class="stream-card-tab' + (t.key === tabObj.key ? ' active' : '') + '" data-card-tab="' + escHtml(t.key) + '">' + escHtml(t.label) + '</button>';
+          var perCardTabs = cardTabs.map(function (t) {
+            var isCardSel = t.key === cardTabObj.key;
+            return '<button type="button" role="tab" aria-selected="' + (isCardSel ? "true" : "false") + '" class="stream-card-tab' + (isCardSel ? " active" : "") + '" data-card-tab="' + escHtml(t.key) + '">' + escHtml(t.label) + '</button>';
           }).join("");
 
           card.innerHTML =
@@ -1636,16 +1755,15 @@
                   '</div>' +
                 '</div>' +
                 '<div class="stream-card-actions">' +
-                  (imgTabs.length > 1 ? '<div class="stream-card-tabs">' + perCardTabs + '</div>' : '') +
+                  (cardTabs.length > 1 ? '<div class="stream-card-tabs" role="tablist" aria-label="Card chart views">' + perCardTabs + '</div>' : '') +
                   '<button type="button" class="btn-chip" data-table-key="' + escHtml(it.key) + '" title="Jump to this row in Directory Table">↑ Table</button>' +
                   '<button type="button" class="btn-chip" data-inspect-key="' + escHtml(it.key) + '" title="Load in Top Workbench">Inspect ↗</button>' +
                 '</div>' +
               '</div>' +
               '<div class="stream-card-stats">' + buildStreamStatsHtml(it) + '</div>' +
             '</header>' +
-            '<div class="stream-card-body chart-canvas-light">' +
-              '<img class="zoomable-chart" loading="lazy" decoding="async" src="' + escHtml(src) + '" alt="' + escHtml(title) + '" data-chart-title="' + escHtml(title) + '"/>' +
-            '</div>';
+            '<div class="stream-card-body"></div>';
+          mountStreamCardStage(card.querySelector(".stream-card-body"), it, cardTabObj, false);
           frag.appendChild(card);
         }
         grid.appendChild(frag);
@@ -1663,19 +1781,17 @@
           var key = card ? card.getAttribute("data-stream-key") : "";
           var it = itemByKey.get(key);
           var tKey = cardTabBtn.getAttribute("data-card-tab");
-          var targetTab = imgTabs.find(function (t) { return t.key === tKey; });
-          if (card && it && targetTab) {
+          var targetTab = streamTabs.find(function (t) { return t.key === tKey; });
+          if (card && it && targetTab && isTabAvailable(targetTab, it)) {
             Array.prototype.forEach.call(card.querySelectorAll("[data-card-tab]"), function (b) {
-              b.classList.toggle("active", b === cardTabBtn);
+              var sel = b === cardTabBtn;
+              b.classList.toggle("active", sel);
+              b.setAttribute("aria-selected", sel ? "true" : "false");
             });
-            var img = card.querySelector("img.zoomable-chart");
-            if (img) {
-              var nextSrc = buildChartUrl(it, targetTab);
-              var nextTitle = it.name + " — " + targetTab.label;
-              img.src = nextSrc;
-              img.alt = nextTitle;
-              img.setAttribute("data-chart-title", nextTitle);
+            if (cardTabBtn.scrollIntoView) {
+              try { cardTabBtn.scrollIntoView({ block: "nearest", inline: "nearest" }); } catch (_) {}
             }
+            mountStreamCardStage(card.querySelector(".stream-card-body"), it, targetTab, true);
           }
           return;
         }
@@ -1817,14 +1933,15 @@
     if (btnViewStream) btnViewStream.addEventListener("click", function () { setView("stream", "smooth"); });
 
     if (filterInput) {
-      filterInput.title = "Filter by text, or expressions like: has errors, count > 100, < 500 ms, p95 > 10,000 (space = AND, | = OR, - = exclude)";
+      var hintPctKey = pickRepresentativePercentile(configuredPcts);
+      var hintPctExample = hintPctKey ? (", p" + hintPctKey + " > 10,000") : "";
+      filterInput.title = "Filter by text, or expressions like: has errors, count > 100, < 500 ms" + hintPctExample + " (space = AND, | = OR, - = exclude)";
       if (filterInput.placeholder && filterInput.placeholder.indexOf("has errors") === -1) {
-        filterInput.placeholder = filterInput.placeholder.replace(/\.\.\.\s*$/, "") + " (e.g. has errors, < 500 ms, p95 > 10,000)...";
+        filterInput.placeholder = filterInput.placeholder.replace(/\.\.\.\s*$/, "") + " (e.g. has errors, < 500 ms" + hintPctExample + ")...";
       }
       filterInput.value = state.query;
       filterInput.addEventListener("input", function () {
         state.query = filterInput.value;
-        state.activeIdx = 0;
         applySortAndFilter(false);
         syncUrl();
       });
@@ -1972,6 +2089,8 @@
     fmtDec: fmtDec,
     escHtml: escHtml,
     getConfiguredPercentiles: getConfiguredPercentiles,
+    pickRepresentativePercentile: pickRepresentativePercentile,
+    partitionPercentilesForKpis: partitionPercentilesForKpis,
     getItemPercentile: getItemPercentile,
     getConfiguredIntervals: getConfiguredIntervals,
     getItemSegmentation: getItemSegmentation,
