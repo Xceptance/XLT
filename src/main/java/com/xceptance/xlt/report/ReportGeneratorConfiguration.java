@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.common.util.ParseUtils;
@@ -78,6 +80,7 @@ import com.xceptance.xlt.report.mergerules.MergeRule.UrlText;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlTextExclude;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
+import com.xceptance.xlt.report.util.ReportUtils;
 
 /**
  * The ReportGeneratorConfiguration is the central place where all configuration information for the report generator
@@ -85,6 +88,8 @@ import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationR
  */
 public class ReportGeneratorConfiguration extends AbstractConfiguration implements ReportProviderConfiguration
 {
+    private static final Logger LOG = LoggerFactory.getLogger(ReportGeneratorConfiguration.class);
+
     /**
      * The supported scales of the y-axis in run time charts.
      */
@@ -159,9 +164,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_PREFIX = XltConstants.XLT_PACKAGE_PATH + ".reportgenerator.";
 
-    private static final String PROP_RUNTIME_PERCENTILES = PROP_PREFIX + "runtimePercentiles";
+    static final String PROP_RUNTIME_PERCENTILES = PROP_PREFIX + "runtimePercentiles";
 
-    private static final String PROP_RUNTIME_INTERVAL_BOUNDARIES = PROP_PREFIX + "runtimeIntervalBoundaries";
+    static final String PROP_RUNTIME_INTERVAL_BOUNDARIES = PROP_PREFIX + "runtimeIntervalBoundaries";
 
     static final String PROP_REQUESTS_TABLE_COLORIZE = PROP_PREFIX + "requests.table.colorization";
 
@@ -179,11 +184,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_SUFFIX_MAX = "max";
 
-    private static final String PROP_SUFFIX_PERCENTILE = "percentile";
+    static final String PROP_SUFFIX_PERCENTILE = "percentile";
 
-    private static final String PROP_SUFFIX_SEGMENTATION = "segmentation";
+    static final String PROP_SUFFIX_SEGMENTATION = "segmentation";
 
-    private static final String PROP_SUFFIX_ID = "id";
+    static final String PROP_SUFFIX_ID = "id";
 
     static final String PROP_SUFFIX_TYPE = "type";
 
@@ -1426,6 +1431,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         List<RequestTableColorization.ColorizationRule> segmentationRules = new ArrayList<>();
 
         final String segmentationProperty = propertyGroup + "." + PROP_SUFFIX_SEGMENTATION;
+        final List<String> segmentationStrings = getSegmentationsAsStringList(segmentationIntervals);
 
         final Set<String> segmentationGroups = getPropertyKeyFragment(segmentationProperty + ".");
         for (final String eachSegmentationGroup : segmentationGroups)
@@ -1433,22 +1439,41 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String propertyID = segmentationProperty + "." + eachSegmentationGroup + "." + PROP_SUFFIX_ID;
 
             final String segmentationValue = getStringProperty(propertyID);
-            final List<String> segmentationStrings = getSegmentationsAsStringList(segmentationIntervals);
-            if (!segmentationStrings.contains(segmentationValue) && !">".equals(segmentationValue))
+            final String normalizedSegmentation;
+            if (">".equals(segmentationValue))
             {
-                throw new XltException(propertyID + " = " + segmentationValue + " value should be one of " + segmentationStrings +
-                                       " as specified at the \"runtimeIntervalBoundaries\" property or \">\" for the last column.");
+                if (segmentationIntervals.length == 0)
+                {
+                    LOG.info("Ignoring request table colorization rule '{}' (id = {}) because '{}' is empty.",
+                             segmentationProperty + "." + eachSegmentationGroup, segmentationValue, PROP_RUNTIME_INTERVAL_BOUNDARIES);
+                    continue;
+                }
+                normalizedSegmentation = ">";
+            }
+            else
+            {
+                final int parsedBoundary = parseInt(propertyID, segmentationValue);
+                if (parsedBoundary < 1)
+                {
+                    throw new XltException(propertyID + " = " + segmentationValue +
+                                           " value must be greater than or equal to 1 or \">\".");
+                }
+
+                normalizedSegmentation = Integer.toString(parsedBoundary);
+                if (!segmentationStrings.contains(normalizedSegmentation))
+                {
+                    LOG.info("Ignoring request table colorization rule '{}' (id = {}) because interval boundary '{}' is not configured in '{}'.",
+                             segmentationProperty + "." + eachSegmentationGroup, segmentationValue, normalizedSegmentation,
+                             PROP_RUNTIME_INTERVAL_BOUNDARIES);
+                    continue;
+                }
             }
 
+            final boolean isGreaterThanRule = ">".equals(normalizedSegmentation);
             ColorizationRule rule = readColorizationRule(segmentationProperty, eachSegmentationGroup, PROP_SUFFIX_SEGMENTATION,
-                                                         !">".equals(segmentationValue));
-            rule.id = segmentationValue;
-
+                                                         !isGreaterThanRule);
             // check for last column rule and replace id according to the testreport.xml segmentation "to" value
-            if (">".equals(rule.id))
-            {
-                rule.id = "";
-            }
+            rule.id = isGreaterThanRule ? "" : normalizedSegmentation;
 
             segmentationRules.add(rule);
         }
@@ -1471,6 +1496,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         List<RequestTableColorization.ColorizationRule> percentileRules = new ArrayList<>();
 
         final String percentileProperty = propertyGroup + "." + PROP_SUFFIX_PERCENTILE;
+        final List<String> percentileStrings = getPercentilesAsStringList(percentileIntervals);
 
         final Set<String> percentileGroups = getPropertyKeyFragment(percentileProperty + ".");
         for (final String eachPercentileGroup : percentileGroups)
@@ -1478,13 +1504,21 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String propertyID = percentileProperty + "." + eachPercentileGroup + "." + PROP_SUFFIX_ID;
 
             final String percentileValue = getStringProperty(propertyID);
-            final List<String> percentileStrings = getPercentilesAsStringList(percentileIntervals);
-            if (!percentileStrings.contains(percentileValue))
+            final double parsedPercentile = parseDouble(propertyID, percentileValue);
+            if (Double.isNaN(parsedPercentile) || parsedPercentile <= 0.0 || parsedPercentile > 100.0)
             {
-                throw new XltException(propertyID + " = " + percentileValue + " value should be one of " + percentileStrings +
-                                       " as specified at the \"runtimePercentiles\" property.");
+                throw new XltException(propertyID + " = " + percentileValue + " value must be in range (0, 100].");
             }
-            final String percentileID = "p" + percentileValue;
+
+            final String normalizedPercentile = ReportUtils.formatValue(parsedPercentile);
+            if (!percentileStrings.contains(normalizedPercentile))
+            {
+                LOG.info("Ignoring request table colorization rule '{}' (id = {}) because percentile '{}' is not configured in '{}'.",
+                         percentileProperty + "." + eachPercentileGroup, percentileValue, normalizedPercentile,
+                         PROP_RUNTIME_PERCENTILES);
+                continue;
+            }
+            final String percentileID = "p" + normalizedPercentile;
 
             ColorizationRule rule = readColorizationRule(percentileProperty, eachPercentileGroup, PROP_SUFFIX_PERCENTILE, false);
             rule.id = percentileID;
@@ -1499,14 +1533,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         List<String> list = new ArrayList<>(percentileIntervals.length);
         for (double eachEntry : percentileIntervals)
         {
-            if (eachEntry == (long) eachEntry)
-            {
-                list.add(Long.toString((long) eachEntry));
-            }
-            else
-            {
-                list.add(Double.toString(eachEntry));
-            }
+            list.add(ReportUtils.formatValue(eachEntry));
         }
         return list;
     }

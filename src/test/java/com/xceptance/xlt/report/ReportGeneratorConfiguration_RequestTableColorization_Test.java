@@ -21,6 +21,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -151,6 +155,158 @@ public class ReportGeneratorConfiguration_RequestTableColorization_Test extends 
         final XltException ex = assertThrows(XltException.class, this::readReportGeneratorProperties);
         assertTrue(ex.getMessage().startsWith("Failed to parse request table colorization: The value '" + invalidPattern +
                                               "' of property '" + propertyName + "' is not a valid regular expression:"));
+    }
+
+    @Test
+    public void readRequestTableColorization_ignoreUnconfiguredPercentileRules()
+    {
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p50", "50.0", "250 500 1000");
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p75", "75", "300 600 1200");
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p95", "95", "500 1000 2000");
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p99", "99", "1000 2000 4000");
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p99_9", "99.9", "2500 5000 10000");
+
+        final List<RequestTableColorization> groups = readReportGeneratorProperties().getRequestTableColorizations();
+        assertEquals(1, groups.size());
+        assertEquals(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, groups.get(0).getGroupName());
+
+        final Map<String, RequestTableColorization.ColorizationRule> rulesById = nonNullRulesById(groups.get(0).getColorizationRules());
+        assertEquals(3, rulesById.size());
+        assertRule(rulesById.get("p50"), "p50", ReportGeneratorConfiguration.PROP_SUFFIX_PERCENTILE, 250, 500, 1000);
+        assertRule(rulesById.get("p95"), "p95", ReportGeneratorConfiguration.PROP_SUFFIX_PERCENTILE, 500, 1000, 2000);
+        assertRule(rulesById.get("p99"), "p99", ReportGeneratorConfiguration.PROP_SUFFIX_PERCENTILE, 1000, 2000, 4000);
+    }
+
+    @Test
+    public void readRequestTableColorization_ignoreAllPercentileRulesWhenRuntimePercentilesEmpty()
+    {
+        appendPropertyToFile(ReportGeneratorConfiguration.PROP_RUNTIME_PERCENTILES, "");
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p50", "50", "250 500 1000");
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p99_9", "99.9", "2500 5000 10000");
+
+        final List<RequestTableColorization> groups = readReportGeneratorProperties().getRequestTableColorizations();
+        assertEquals(1, groups.size());
+        validateNoRules(groups.get(0).getColorizationRules());
+    }
+
+    @Test
+    @Parameters(method = "provideInvalidPercentileIdTestParameters")
+    public void readRequestTableColorization_error_invalidPercentileId(final String invalidPercentileId)
+    {
+        appendPercentileRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "p_bad", invalidPercentileId,
+                             "250 500 1000");
+
+        final XltException ex = assertThrows(XltException.class, this::readReportGeneratorProperties);
+        assertTrue(ex.getMessage().startsWith("Failed to parse request table colorization: "));
+    }
+
+    @Test
+    public void readRequestTableColorization_ignoreUnconfiguredSegmentationRules()
+    {
+        appendPropertyToFile(ReportGeneratorConfiguration.PROP_RUNTIME_INTERVAL_BOUNDARIES, "1000, 5000");
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "<1000", "1000", "100 95 80");
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "<3000", "3000", "100 97 90");
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "<5000", "5000", "100 99 95");
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, ">5000", ">", "0 1 5");
+
+        final List<RequestTableColorization> groups = readReportGeneratorProperties().getRequestTableColorizations();
+        assertEquals(1, groups.size());
+
+        final Map<String, RequestTableColorization.ColorizationRule> rulesById = nonNullRulesById(groups.get(0).getColorizationRules());
+        assertEquals(3, rulesById.size());
+        assertRule(rulesById.get("1000"), "1000", ReportGeneratorConfiguration.PROP_SUFFIX_SEGMENTATION, 80, 95, 100);
+        assertRule(rulesById.get("5000"), "5000", ReportGeneratorConfiguration.PROP_SUFFIX_SEGMENTATION, 95, 99, 100);
+        assertRule(rulesById.get(""), "", ReportGeneratorConfiguration.PROP_SUFFIX_SEGMENTATION, 0, 1, 5);
+    }
+
+    @Test
+    public void readRequestTableColorization_ignoreSegmentationRulesWhenBoundariesEmpty()
+    {
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "<1000", "1000", "100 95 80");
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, ">5000", ">", "0 1 5");
+
+        final List<RequestTableColorization> groups = readReportGeneratorProperties().getRequestTableColorizations();
+        assertEquals(1, groups.size());
+        validateNoRules(groups.get(0).getColorizationRules());
+    }
+
+    @Test
+    @Parameters(method = "provideInvalidSegmentationIdTestParameters")
+    public void readRequestTableColorization_error_invalidSegmentationId(final String invalidSegmentationId)
+    {
+        appendSegmentationRule(ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE_DEFAULT, "<bad", invalidSegmentationId,
+                               "100 95 80");
+
+        final XltException ex = assertThrows(XltException.class, this::readReportGeneratorProperties);
+        assertTrue(ex.getMessage().startsWith("Failed to parse request table colorization: "));
+    }
+
+    /**
+     * Helper method for appending a percentile colorization rule and its ID property.
+     */
+    private void appendPercentileRule(final String groupName, final String ruleName, final String id, final String range)
+    {
+        final String baseKey = ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE + "." + groupName + "." +
+                               ReportGeneratorConfiguration.PROP_SUFFIX_PERCENTILE + "." + ruleName;
+        appendPropertyLinesToFile(List.of(baseKey + "." + ReportGeneratorConfiguration.PROP_SUFFIX_ID + " = " + id,
+                                          baseKey + " = " + range));
+    }
+
+    /**
+     * Helper method for appending a segmentation colorization rule and its ID property.
+     */
+    private void appendSegmentationRule(final String groupName, final String ruleName, final String id, final String range)
+    {
+        final String baseKey = ReportGeneratorConfiguration.PROP_REQUESTS_TABLE_COLORIZE + "." + groupName + "." +
+                               ReportGeneratorConfiguration.PROP_SUFFIX_SEGMENTATION + "." + ruleName;
+        appendPropertyLinesToFile(List.of(baseKey + "." + ReportGeneratorConfiguration.PROP_SUFFIX_ID + " = " + id,
+                                          baseKey + " = " + range));
+    }
+
+    /**
+     * Collects all non-null colorization rules keyed by their rule ID.
+     */
+    private Map<String, RequestTableColorization.ColorizationRule> nonNullRulesById(final List<RequestTableColorization.ColorizationRule> rules)
+    {
+        return rules.stream().filter(Objects::nonNull).collect(Collectors.toMap(rule -> rule.id, Function.identity()));
+    }
+
+    /**
+     * Asserts that the given colorization rule exists and has the expected attributes.
+     */
+    private void assertRule(final RequestTableColorization.ColorizationRule rule, final String expectedId, final String expectedType,
+                            final int expectedFrom, final int expectedTarget, final int expectedTo)
+    {
+        assertTrue("Expected colorization rule for id '" + expectedId + "'", rule != null);
+        assertEquals(expectedId, rule.id);
+        assertEquals(expectedType, rule.type);
+        assertEquals(expectedFrom, rule.from);
+        assertEquals(expectedTarget, rule.target);
+        assertEquals(expectedTo, rule.to);
+    }
+
+    @SuppressWarnings("unused")
+    private Object[] provideInvalidPercentileIdTestParameters()
+    {
+        return new Object[]
+            {
+                JUnitParamsUtils.wrapParams("abc"),
+                JUnitParamsUtils.wrapParams("0"),
+                JUnitParamsUtils.wrapParams("-5"),
+                JUnitParamsUtils.wrapParams("100.1"),
+                JUnitParamsUtils.wrapParams("NaN")
+            };
+    }
+
+    @SuppressWarnings("unused")
+    private Object[] provideInvalidSegmentationIdTestParameters()
+    {
+        return new Object[]
+            {
+                JUnitParamsUtils.wrapParams("abc"),
+                JUnitParamsUtils.wrapParams("0"),
+                JUnitParamsUtils.wrapParams("-100")
+            };
     }
 
     /**
