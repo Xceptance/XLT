@@ -1931,6 +1931,11 @@ th:not([aria-sort]) .sort-icon::before {
   background: #10b981;
   block-size: 100%;
 }
+.wf-val {
+  min-inline-size: 4.5ch;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
 
 .cell-err,
 .data-table tbody td.cell-err,
@@ -1955,6 +1960,11 @@ th:not([aria-sort]) .sort-icon::before {
   color: var(--text-secondary);
 }
 .cell-zero {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  font-size: 11.5px;
+  line-height: 1.25;
   color: var(--text-muted);
   opacity: 0.6;
 }
@@ -3579,8 +3589,10 @@ html.dark-theme .pct-bar.bar-purple {
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-secondary);
-  min-width: 48px;
-  text-align: right;
+  min-inline-size: 48px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
 }
 
 /* Table Copy to Markdown Button */
@@ -3843,19 +3855,34 @@ html.dark-theme .data-table tbody tr.wb-row.is-selected td.colorized.colorized-n
 .apdex-pill {
   display: inline-flex;
   align-items: baseline;
+  justify-content: flex-end;
   gap: 4px;
+  min-inline-size: 4.5ch;
   padding: 1px 7px;
   border-radius: 5px;
   font-family: var(--font-table);
   font-weight: inherit;
   font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
   border: 1px solid transparent;
   white-space: nowrap;
+}
+.apdex-pill:has(.apdex-thresh) {
+  display: inline-grid;
+  grid-template-columns: repeat(2, max-content);
+  justify-items: end;
+}
+.apdex-pill .apdex-score {
+  min-inline-size: 4.5ch;
+  justify-self: start;
+  text-align: start;
 }
 .apdex-pill .apdex-thresh {
   font-size: 10px;
   font-weight: inherit;
   opacity: 0.82;
+  min-inline-size: 3.6ch;
+  text-align: end;
 }
 .apdex-pill.apdex-excellent {
   background: #dcfce7;

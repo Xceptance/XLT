@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-page-title="Configuration">XLT Comparison Report - Configuration</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/comparison.css" />
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/comparison-nav.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+  <script src="js/config-data.js"></script>
+  <script src="js/comparison-pages.js"></script>
+</head>
+<body>
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" class="brand-link" aria-label="XLT Comparison Overview">
+          <img class="brand-logo brand-logo-light" src="images/xlt-logo.svg" alt="XLT" />
+          <img class="brand-logo brand-logo-dark" src="images/xlt-logo-dark.svg" alt="" aria-hidden="true" />
+        </a>
+      </div>
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item"><a href="index.html" class="nav-btn">Overview</a></li>
+          <li class="nav-item"><a href="transactions.html" class="nav-btn">Transactions <span class="badge-tag" data-nav-count="transactions" hidden></span></a></li>
+          <li class="nav-item"><a href="actions.html" class="nav-btn">Actions <span class="badge-tag" data-nav-count="actions" hidden></span></a></li>
+          <li class="nav-item"><a href="requests.html" class="nav-btn">Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+          <li class="nav-item"><a href="network.html" class="nav-btn">Network <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+          <li class="nav-item"><a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a></li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html" aria-current="page">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html">Custom Values <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="report-context-bar">
+    <div class="cmp-context-inner">
+      <div class="report-context-title">
+        <span class="context-project" id="meta-project-badge" hidden></span>
+        <span class="context-sep" id="meta-project-sep" aria-hidden="true" hidden>—</span>
+        <h1 class="context-heading" id="meta-kind-heading">Configuration &amp; Load Profile Diff</h1>
+        <span class="context-test-name" id="meta-runs-badge" hidden></span>
+      </div>
+      <div class="cmp-selector-bar" id="cmp-selector-bar" hidden></div>
+    </div>
+  </div>
+
+  <main class="main-content">
+    <div id="cfg-empty" hidden></div>
+
+    <div id="cfg-content">
+      <div class="sr-only" role="status" aria-live="polite" id="table-sort-status"></div>
+
+      <section class="card" style="margin-bottom:var(--space-4)">
+        <div class="card-header">
+          <div class="card-title"><span>Load Profile Comparison</span></div>
+          <div class="view-mode-bar">
+            <button type="button" class="btn-chip btn-icon" data-copy-table="cfg-lp-table" aria-label="Copy Load Profile comparison table as Markdown" title="Copy table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Load profile comparison table">
+          <table class="data-table js-static-sortable" id="cfg-lp-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-text" data-type="text"><button type="button" class="th-sort-btn"><span>Scenario</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-num">Users</th>
+                <th scope="col" class="col-num">Arrival Rate</th>
+                <th scope="col" class="col-num">Ramp-Up</th>
+                <th scope="col" class="col-num">Measurement</th>
+                <th scope="col" class="col-num">Think Time</th>
+                <th scope="col" class="col-cat col-text" data-type="text"><button type="button" class="th-sort-btn"><span>Status</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>Test Properties Comparison</span>
+            <span class="badge-tag" id="cfg-prop-count">0 shown</span>
+          </div>
+          <div class="view-mode-bar">
+            <button type="button" class="btn-chip btn-icon" data-copy-table="cfg-props-table" aria-label="Copy Test Properties comparison table as Markdown" title="Copy table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+        </div>
+        <div class="directory-toolbar">
+          <div class="table-search-wrap">
+            <input type="search" class="input-search" id="dir-filter-input" placeholder="Filter property names or values..." aria-label="Filter test properties" />
+          </div>
+          <div class="cmp-toolbar" role="toolbar" focusgroup="toolbar wrap" aria-label="Properties filter controls">
+            <button type="button" class="cmp-toggle-btn" id="cfg-diff-only-btn" aria-pressed="true">Differences Only</button>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Test properties comparison table">
+          <table class="data-table js-static-sortable" id="cfg-props-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-text" data-type="text"><button type="button" class="th-sort-btn"><span>Property</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-text" data-type="text"><button type="button" class="th-sort-btn"><span>Baseline (A)</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-text" data-type="text"><button type="button" class="th-sort-btn"><span>Target (B)</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-cat col-text" data-type="text"><button type="button" class="th-sort-btn"><span>Status</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script>window.XltComparisonPages.init("configuration");</script>
+</body>
+</html>

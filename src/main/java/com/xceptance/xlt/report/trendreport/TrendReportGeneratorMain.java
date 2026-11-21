@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +69,7 @@ import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportTransformer;
+import com.xceptance.xlt.report.modern.ModernComparisonReportGenerator;
 import com.xceptance.xlt.report.util.CategoryItemRenderer;
 import com.xceptance.xlt.report.util.ElementSpecification;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
@@ -556,9 +558,11 @@ public class TrendReportGeneratorMain
                                        final Map<String, Map<String, Set<TrendValue>>> trendValuesByTimerNameByTagName)
         throws IOException, ParserConfigurationException, InterruptedException
     {
+        final boolean generateClassicCharts = !noCharts && !config.isModernUi();
+
         // create a placeholder image
         final File chartsDir = new File(outputDir, XltConstants.TREND_REPORT_CHART_DIR);
-        if (!noCharts)
+        if (generateClassicCharts)
         {
             FileUtils.forceMkdir(chartsDir);
             JFreeChartUtils.createPlaceholderChart(chartsDir, config.getChartWidth(), config.getChartHeight());
@@ -579,45 +583,75 @@ public class TrendReportGeneratorMain
         // transaction
         Map<String, Set<TrendValue>> trendValuesByTimerName = trendValuesByTimerNameByTagName.get("transaction");
         createTrendElements(trendValuesByTimerName, "transaction", transactionsElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "transactions"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "transactions"));
+        }
         // action
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("action");
         createTrendElements(trendValuesByTimerName, "action", actionsElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "actions"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "actions"));
+        }
         // request
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("request");
         createTrendElements(trendValuesByTimerName, "request", requestsElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "requests"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "requests"));
+        }
         // page load timing
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("pageLoadTiming");
         createTrendElements(trendValuesByTimerName, "pageLoadTiming", pageLoadTimingsElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "pageLoadTimings"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "pageLoadTimings"));
+        }
         // custom timer
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("customTimer");
         createTrendElements(trendValuesByTimerName, "customTimer", customTimersElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "custom"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "custom"));
+        }
 
         // summary
         // transactions
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("transactions");
         createTrendElements(trendValuesByTimerName, "transactions", summaryElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        }
         // actions
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("actions");
         createTrendElements(trendValuesByTimerName, "actions", summaryElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        }
         // requests
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("requests");
         createTrendElements(trendValuesByTimerName, "requests", summaryElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        }
         // page load timing
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("pageLoadTimings");
         createTrendElements(trendValuesByTimerName, "pageLoadTimings", summaryElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        }
         // custom timers
         trendValuesByTimerName = trendValuesByTimerNameByTagName.get("customTimers");
         createTrendElements(trendValuesByTimerName, "customTimers", summaryElement);
-        createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        if (generateClassicCharts)
+        {
+            createTrendCharts(trendValuesByTimerName, new File(chartsDir, "summary"));
+        }
 
         return trendReport;
     }
@@ -703,8 +737,8 @@ public class TrendReportGeneratorMain
         if (reportNames.contains(key))
         {
             key = computeNewKey(reportNames, key);
-            reportNames.add(key);
         }
+        reportNames.add(key);
         final Document testReport = readTestReport(reportDir);
         if (testReport == null)
         {
@@ -865,8 +899,9 @@ public class TrendReportGeneratorMain
             final HashSet<String> reportDirs = new HashSet<String>();
             // remember test report names
             final HashSet<String> reportNames = new HashSet<String>();
-            // remember the parsed documents
+            // remember the parsed documents and run inputs keyed by reportName
             final LinkedList<Document> documents = new LinkedList<>();
+            final Map<String, ModernComparisonReportGenerator.RunInput> runInputByName = new LinkedHashMap<>();
             // get each report one by one and add the data to the trendValuesByTimerNameByTagName map
             for (String remainingArg : remainingArgs)
             {
@@ -877,6 +912,10 @@ public class TrendReportGeneratorMain
                     // get the test report data
                     readDataFromTestReport(trendValuesByTimerNameByTagName, testReportByName);
                     documents.add(testReportByName.getTestReport());
+                    runInputByName.put(testReportByName.getReportName(),
+                                       new ModernComparisonReportGenerator.RunInput(testReportByName.getReportName(),
+                                                                                    new File(remainingArg),
+                                                                                    testReportByName.getTestReport()));
                 }
             }
 
@@ -891,37 +930,56 @@ public class TrendReportGeneratorMain
             // create the trend report HTML file
             System.out.println("Rendering the HTML trend report ...");
 
-            final HashMap<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put("productName", ProductInformation.getProductInformation().getProductName());
-            parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
-            parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
-            parameters.put("projectName", ReportUtils.obtainProjectName(documents));
+            final String projectName = ReportUtils.obtainProjectName(documents);
 
-            // get the configured output and style sheet file names
-            final List<File> outputFiles = new ArrayList<File>();
-            final List<File> styleSheetFiles = new ArrayList<File>();
-
-            // create the files from the file names
-            final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
-            final List<String> outputFileNames = config.getOutputFileNames();
-
-            for (int i = 0; i < styleSheetFileNames.size(); i++)
+            if (config.isModernUi())
             {
-                final File outputFile = new File(outputDir, outputFileNames.get(i));
-                outputFiles.add(outputFile);
-
-                final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.TREND_REPORT_XSL_PATH),
-                                                     styleSheetFileNames.get(i));
-                styleSheetFiles.add(styleSheetFile);
+                final List<ModernComparisonReportGenerator.RunInput> orderedInputs = new ArrayList<>(initialTrendValues.size());
+                for (final TrendValue tv : initialTrendValues)
+                {
+                    final ModernComparisonReportGenerator.RunInput ri = runInputByName.get(tv.reportName);
+                    if (ri != null)
+                    {
+                        orderedInputs.add(ri);
+                    }
+                }
+                new ModernComparisonReportGenerator().generateFromTestReports(
+                    "trend", projectName, orderedInputs, config.getConfigDirectory(), outputDir);
             }
+            else
+            {
+                final HashMap<String, Object> parameters = new HashMap<String, Object>();
+                parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+                parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+                parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+                parameters.put("projectName", projectName);
 
-            // transform the report
-            final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
-            reportTransformer.run(xmlFile, outputDir);
+                // get the configured output and style sheet file names
+                final List<File> outputFiles = new ArrayList<File>();
+                final List<File> styleSheetFiles = new ArrayList<File>();
 
-            // copy the report's static resources
-            final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
-            FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
+                // create the files from the file names
+                final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
+                final List<String> outputFileNames = config.getOutputFileNames();
+
+                for (int i = 0; i < styleSheetFileNames.size(); i++)
+                {
+                    final File outputFile = new File(outputDir, outputFileNames.get(i));
+                    outputFiles.add(outputFile);
+
+                    final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.TREND_REPORT_XSL_PATH),
+                                                         styleSheetFileNames.get(i));
+                    styleSheetFiles.add(styleSheetFile);
+                }
+
+                // transform the report
+                final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+                reportTransformer.run(xmlFile, outputDir);
+
+                // copy the report's static resources
+                final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
+                FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
+            }
 
             // output the path to the report either as file path (Win) or as clickable file URL
             final File reportFile = new File(outputDir, "index.html");

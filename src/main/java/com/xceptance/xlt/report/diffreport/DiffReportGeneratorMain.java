@@ -39,6 +39,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -52,6 +53,7 @@ import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.xml.DomUtils;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportTransformer;
+import com.xceptance.xlt.report.modern.ModernComparisonReportGenerator;
 import com.xceptance.xlt.report.util.ElementSpecification;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
@@ -127,37 +129,56 @@ public class DiffReportGeneratorMain
             // create the difference report HTML file
             System.out.println("Rendering the HTML difference report ...");
 
-            final HashMap<String, Object> parameters = new HashMap<String, Object>();
-            parameters.put("productName", ProductInformation.getProductInformation().getProductName());
-            parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
-            parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
-            parameters.put("projectName", ReportUtils.obtainProjectName(Arrays.asList(oldTestReport, newTestReport)));
+            final String projectName = ReportUtils.obtainProjectName(Arrays.asList(oldTestReport, newTestReport));
 
-            // get the configured output and style sheet file names
-            final List<File> outputFiles = new ArrayList<File>();
-            final List<File> styleSheetFiles = new ArrayList<File>();
-
-            // create the files from the file names
-            final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
-            final List<String> outputFileNames = config.getOutputFileNames();
-
-            for (int i = 0; i < styleSheetFileNames.size(); i++)
+            if (config.isModernUi())
             {
-                final File outputFile = new File(outputDir, outputFileNames.get(i));
-                outputFiles.add(outputFile);
-
-                final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.DIFF_REPORT_XSL_PATH),
-                                                     styleSheetFileNames.get(i));
-                styleSheetFiles.add(styleSheetFile);
+                final String oldName = oldReportDir.getName();
+                String newName = newReportDir.getName();
+                if (oldName.equals(newName))
+                {
+                    newName = newName + "(2)";
+                }
+                final List<ModernComparisonReportGenerator.RunInput> runInputs = List.of(
+                    new ModernComparisonReportGenerator.RunInput(oldName, oldReportDir, oldTestReport),
+                    new ModernComparisonReportGenerator.RunInput(newName, newReportDir, newTestReport));
+                new ModernComparisonReportGenerator().generateFromTestReports(
+                    "diff", projectName, runInputs, config.getConfigDirectory(), outputDir);
             }
+            else
+            {
+                final HashMap<String, Object> parameters = new HashMap<String, Object>();
+                parameters.put("productName", ProductInformation.getProductInformation().getProductName());
+                parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
+                parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+                parameters.put("projectName", projectName);
 
-            // transform the report
-            final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
-            reportTransformer.run(xmlFile, outputDir);
+                // get the configured output and style sheet file names
+                final List<File> outputFiles = new ArrayList<File>();
+                final List<File> styleSheetFiles = new ArrayList<File>();
 
-            // copy the report's static resources
-            final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
-            FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
+                // create the files from the file names
+                final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
+                final List<String> outputFileNames = config.getOutputFileNames();
+
+                for (int i = 0; i < styleSheetFileNames.size(); i++)
+                {
+                    final File outputFile = new File(outputDir, outputFileNames.get(i));
+                    outputFiles.add(outputFile);
+
+                    final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.DIFF_REPORT_XSL_PATH),
+                                                         styleSheetFileNames.get(i));
+                    styleSheetFiles.add(styleSheetFile);
+                }
+
+                // transform the report
+                final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+                reportTransformer.run(xmlFile, outputDir);
+
+                // copy the report's static resources
+                final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
+                FileUtils.copyDirectory(resourcesDir, outputDir, FileFilterUtils.makeSVNAware(null), true);
+            }
 
             // output the path to the report either as file path (Win) or as clickable file URL
             final File reportFile = new File(outputDir, "index.html");
@@ -254,7 +275,8 @@ public class DiffReportGeneratorMain
         }
         catch (final NumberFormatException e)
         {
-            if (oldElement == null)
+            if (oldElement == null
+                || (StringUtils.isBlank(oldElement.getTextContent()) && newElement != null && StringUtils.isNotBlank(newElement.getTextContent())))
             {
                 element = createElement(newElement.getTagName(), newElement.getTextContent(), document);
             }

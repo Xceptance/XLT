@@ -286,6 +286,16 @@ public final class XltConstants
     public static final String MODERN_REPORT_RESOURCES_PATH = "testreport-modern";
 
     /**
+     * The directory name of the modern comparison & trend report resources (HTML templates, CSS).
+     */
+    public static final String MODERN_COMPARISON_RESOURCES_PATH = "comparison-modern";
+
+    /**
+     * Lossless gzipped snapshot storing parsed multi-run data in comparison/trend output directories.
+     */
+    public static final String COMPARISON_SNAPSHOT_FILENAME = "comparison-runs.json.gz";
+
+    /**
      * The date format used when parsing dates from test reports.
      */
     public static final String REPORT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";

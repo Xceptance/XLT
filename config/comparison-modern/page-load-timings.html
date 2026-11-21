@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-page-title="Page Load Timings">XLT Comparison Report - Page Load Timings</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/comparison.css" />
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <script src="js/theme.js"></script>
+  <script src="js/report-meta.js"></script>
+  <script src="js/report-utils.js"></script>
+  <script src="js/comparison-nav.js"></script>
+  <script src="js/table-copy-markdown.js"></script>
+  <script src="js/echarts-6.0.0.min.js"></script>
+  <script src="js/page-load-timings-data.js"></script>
+  <script src="js/comparison-workbench.js"></script>
+</head>
+<body>
+  <header class="top-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="index.html" class="brand-link" aria-label="XLT Comparison Overview">
+          <img class="brand-logo brand-logo-light" src="images/xlt-logo.svg" alt="XLT" />
+          <img class="brand-logo brand-logo-dark" src="images/xlt-logo-dark.svg" alt="" aria-hidden="true" />
+        </a>
+      </div>
+      <nav class="site-nav" aria-label="Report navigation">
+        <ul class="nav-list">
+          <li class="nav-item"><a href="index.html" class="nav-btn">Overview</a></li>
+          <li class="nav-item"><a href="transactions.html" class="nav-btn">Transactions <span class="badge-tag" data-nav-count="transactions" hidden></span></a></li>
+          <li class="nav-item"><a href="actions.html" class="nav-btn">Actions <span class="badge-tag" data-nav-count="actions" hidden></span></a></li>
+          <li class="nav-item"><a href="requests.html" class="nav-btn">Requests <span class="badge-tag" data-nav-count="requests" hidden></span></a></li>
+          <li class="nav-item"><a href="network.html" class="nav-btn">Network <span class="badge-tag" data-nav-count="hosts" hidden></span></a></li>
+          <li class="nav-item"><a href="errors.html" class="nav-btn">Errors <span class="nav-pill-count" id="nav-errors-pill" hidden></span></a></li>
+          <li class="nav-item" data-has-menu>
+            <button type="button" class="nav-btn" aria-expanded="false" aria-controls="sub-more">More ▾</button>
+            <ul id="sub-more" class="nav-submenu align-end" hidden>
+              <li><a class="nav-sublink" href="events.html">Events <span class="nav-pill-count warn" data-nav-count="events" hidden></span></a></li>
+              <li><a class="nav-sublink" href="configuration.html">Configuration <span class="badge-tag" data-nav-count="properties" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="custom-timers.html">Custom Timers <span class="badge-tag" data-nav-count="customTimers" hidden></span></a></li>
+              <li><a class="nav-sublink" href="custom-values.html">Custom Values <span class="badge-tag" data-nav-count="customValues" hidden></span></a></li>
+              <li class="nav-sub-divider"></li>
+              <li><a class="nav-sublink" href="page-load-timings.html" aria-current="page">Page Load Timings <span class="badge-tag" data-nav-count="pageLoadTimings" hidden></span></a></li>
+              <li><a class="nav-sublink" href="web-vitals.html">Web Vitals <span class="badge-tag" data-nav-count="webVitals" hidden></span></a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="btn-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="report-context-bar">
+    <div class="cmp-context-inner">
+      <div class="report-context-title">
+        <span class="context-project" id="meta-project-badge" hidden></span>
+        <span class="context-sep" id="meta-project-sep" aria-hidden="true" hidden>—</span>
+        <h1 class="context-heading" id="meta-kind-heading">Page Load Timings Comparison</h1>
+        <span class="context-test-name" id="meta-runs-badge" hidden></span>
+      </div>
+      <div class="cmp-selector-bar" id="cmp-selector-bar" hidden></div>
+    </div>
+  </div>
+
+  <main class="main-content">
+    <section class="card" id="empty-section" hidden>
+      <div class="cmp-empty-panel">
+        <strong>No Page Load Timings recorded</strong>
+        <p>None of the compared reports contain page load timing measurements.</p>
+      </div>
+    </section>
+
+    <div class="workbench-scope" id="wb-scope">
+      <section class="chart-workbench" id="workbench-section">
+        <header class="workbench-header">
+          <div class="wb-title-area">
+            <span class="wb-badge" id="wb-badge" hidden></span>
+            <div class="wb-labels-wrap" id="wb-labels" hidden></div>
+            <div class="wb-title-stack">
+              <div class="wb-name" id="wb-name">—</div>
+              <div class="wb-sub" id="wb-sub"></div>
+            </div>
+          </div>
+          <div class="workbench-pager wb-pager">
+            <button type="button" class="btn-pager" id="wb-prev" aria-label="Previous item (Left Arrow)" title="Previous (←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span class="pager-counter" id="wb-counter">Item 0 of 0</span>
+            <button type="button" class="btn-pager" id="wb-next" aria-label="Next item (Right Arrow)" title="Next (→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+          <div class="workbench-right-col wb-right">
+            <div class="wb-kpis" id="wb-kpis"></div>
+            <div class="wb-controls">
+              <button type="button" class="btn-chip btn-icon" id="wb-link-btn" aria-label="Copy shareable link" title="Copy shareable link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+              <button type="button" class="btn-chip btn-icon active" id="wb-pin-btn" aria-pressed="true" aria-label="Pin chart workbench" title="Pinned to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+              <button type="button" class="btn-chip btn-icon" id="wb-collapse-btn" aria-controls="wb-body" aria-expanded="true" aria-label="Toggle chart panel" title="Hide chart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg></button>
+            </div>
+          </div>
+        </header>
+        <div class="workbench-body" id="wb-body">
+          <div class="workbench-tabs-bar">
+            <div class="wb-tabs" id="wb-tabs"></div>
+            <div class="wb-tabs-hint">Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+          </div>
+          <div class="workbench-stage chart-canvas-light" id="wb-stage" style="height:310px"></div>
+          <footer class="workbench-footnote" id="wb-footnote"></footer>
+        </div>
+      </section>
+
+      <section class="card" id="directory-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span>Page Load Timings Comparison</span>
+            <span class="badge-tag" id="dir-visible-count">0 shown</span>
+          </div>
+          <div class="view-mode-bar">
+            <button type="button" class="btn-chip btn-icon" data-copy-table="dir-table" aria-label="Copy Page Load Timings comparison table as Markdown" title="Copy table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+        </div>
+        <div class="directory-toolbar">
+          <div class="table-search-wrap">
+            <input type="search" class="input-search" id="dir-filter-input" placeholder="Filter page load timings..." aria-label="Filter page load timings" />
+          </div>
+          <div class="cmp-toolbar" id="cmp-table-controls" role="toolbar" focusgroup="toolbar wrap" aria-label="Comparison display controls"></div>
+          <div class="category-chips" id="dir-category-chips"></div>
+        </div>
+        <div class="sr-only" role="status" aria-live="polite" id="table-sort-status"></div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Page Load Timings comparison table">
+          <table class="data-table" id="dir-table">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="report-footer" id="report-footer">
+    <div>Generated by <strong>Xceptance LoadTest</strong></div>
+    <div></div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var data = window.XLT_PAGE_LOAD_TIMINGS || { items: [] };
+      window.XltComparisonWorkbench.init({
+        items: data.items || [],
+        nameLabel: "Page Load Timing",
+        badgeLabel: "PLT",
+        showErrors: true,
+        valueUnit: "ms"
+      });
+    });
+  </script>
+</body>
+</html>

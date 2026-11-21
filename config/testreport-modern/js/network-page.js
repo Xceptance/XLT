@@ -154,7 +154,7 @@
           hostsTfoot.innerHTML =
             '<tr><td class="col-idx">Σ</td><td class="col-text">Totals (' + fmtInt(hosts.length) + " hosts)</td>" +
             '<td class="col-num">' + fmtInt(hostsTotal) + "</td>" +
-            '<td class="col-num">100.0%</td></tr>';
+            '<td class="col-num">100.00%</td></tr>';
         }
       }
     }
@@ -188,7 +188,7 @@
             '<tr><td class="col-idx">Σ</td><td class="col-text">Totals (' + fmtInt(ips.length) + " entries)</td>" +
             '<td class="col-text">—</td>' +
             '<td class="col-num">' + fmtInt(ipsTotal) + "</td>" +
-            '<td class="col-num">100.0%</td></tr>';
+            '<td class="col-num">100.00%</td></tr>';
         }
       }
     }
@@ -218,7 +218,7 @@
           methodsTfoot.innerHTML =
             '<tr><td class="col-idx">Σ</td><td class="col-text">Totals (' + fmtInt(methods.length) + " methods)</td>" +
             '<td class="col-num">' + fmtInt(mTotal) + "</td>" +
-            '<td class="col-num">100.0%</td></tr>';
+            '<td class="col-num">100.00%</td></tr>';
         }
       }
     }
@@ -252,7 +252,7 @@
           codesTfoot.innerHTML =
             '<tr><td class="col-idx">Σ</td><td class="col-text">Totals (' + fmtInt(codes.length) + " response codes)</td>" +
             '<td class="col-num">' + fmtInt(cTotal) + "</td>" +
-            '<td class="col-num">100.0%</td></tr>';
+            '<td class="col-num">100.00%</td></tr>';
         }
       }
     }
@@ -283,7 +283,7 @@
           typesTfoot.innerHTML =
             '<tr><td class="col-idx">Σ</td><td class="col-text">Totals (' + fmtInt(types.length) + " content types)</td>" +
             '<td class="col-num">' + fmtInt(tTotal) + "</td>" +
-            '<td class="col-num">100.0%</td></tr>';
+            '<td class="col-num">100.00%</td></tr>';
         }
       }
     }

@@ -197,29 +197,9 @@ public class ModernReportGenerator
         Map<String, Object> scorecardSummary = createAbsentScorecardSummary();
         if (hasScorecard)
         {
-            try
-            {
-                final ScorecardParsed parsedSc = parseScorecardXml(effectiveScorecardXml);
-                fullScorecard = parsedSc.fullBundle;
-                scorecardSummary = parsedSc.summary;
-            }
-            catch (final Exception ex)
-            {
-                LOG.warn("Failed to parse scorecard XML '{}'", effectiveScorecardXml, ex);
-                scorecardSummary = new LinkedHashMap<>();
-                scorecardSummary.put("present", Boolean.TRUE);
-                scorecardSummary.put("result", "ERROR");
-                scorecardSummary.put("points", Integer.valueOf(0));
-                scorecardSummary.put("maxPoints", Integer.valueOf(0));
-                scorecardSummary.put("pointsPercentage", Double.valueOf(0.0));
-                scorecardSummary.put("errorMessage", String.valueOf(ex.getMessage()));
-                scorecardSummary.put("failedRules", Collections.emptyList());
-
-                fullScorecard = new LinkedHashMap<>(scorecardSummary);
-                fullScorecard.put("groups", Collections.emptyList());
-                fullScorecard.put("rules", Collections.emptyList());
-                fullScorecard.put("ratings", Collections.emptyList());
-            }
+            final ScorecardParsed parsedSc = parseScorecardXmlSafe(effectiveScorecardXml);
+            fullScorecard = parsedSc.fullBundle;
+            scorecardSummary = parsedSc.summary;
         }
 
         // 1. General & Configuration metadata
@@ -1655,6 +1635,11 @@ public class ModernReportGenerator
         return out;
     }
 
+    List<Map<String, Object>> parseLoadProfileItems(final Element lpEl)
+    {
+        return parseLoadProfile(lpEl).items;
+    }
+
     private LoadProfileParsed parseLoadProfile(final Element lpEl)
     {
         final List<Map<String, Object>> items = new ArrayList<>();
@@ -1941,12 +1926,47 @@ public class ModernReportGenerator
     // Scorecard XML Parser
     // =========================================================================
 
-    private Map<String, Object> createAbsentScorecardSummary()
+    static Map<String, Object> createAbsentScorecardSummary()
     {
         final Map<String, Object> sc = new LinkedHashMap<>(2);
         sc.put("present", Boolean.FALSE);
         sc.put("failedRules", Collections.emptyList());
         return sc;
+    }
+
+    Map<String, Object> parseScorecardSummary(final File scorecardXmlFile)
+    {
+        if (scorecardXmlFile == null || !scorecardXmlFile.isFile())
+        {
+            return createAbsentScorecardSummary();
+        }
+        return parseScorecardXmlSafe(scorecardXmlFile).summary;
+    }
+
+    private ScorecardParsed parseScorecardXmlSafe(final File scorecardXmlFile)
+    {
+        try
+        {
+            return parseScorecardXml(scorecardXmlFile);
+        }
+        catch (final Exception ex)
+        {
+            LOG.warn("Failed to parse scorecard XML '{}'", scorecardXmlFile, ex);
+            final Map<String, Object> summary = new LinkedHashMap<>();
+            summary.put("present", Boolean.TRUE);
+            summary.put("result", "ERROR");
+            summary.put("points", Integer.valueOf(0));
+            summary.put("maxPoints", Integer.valueOf(0));
+            summary.put("pointsPercentage", Double.valueOf(0.0));
+            summary.put("errorMessage", String.valueOf(ex.getMessage()));
+            summary.put("failedRules", Collections.emptyList());
+
+            final Map<String, Object> fullBundle = new LinkedHashMap<>(summary);
+            fullBundle.put("groups", Collections.emptyList());
+            fullBundle.put("rules", Collections.emptyList());
+            fullBundle.put("ratings", Collections.emptyList());
+            return new ScorecardParsed(summary, fullBundle);
+        }
     }
 
     private ScorecardParsed parseScorecardXml(final File scorecardXmlFile) throws Exception
@@ -2202,11 +2222,16 @@ public class ModernReportGenerator
     // Serialization & XML / Formatting Helpers
     // =========================================================================
 
-    private void writeJsGlobal(final File targetFile, final String globalVarName, final Object payload) throws IOException
+    void writeJsGlobal(final File targetFile, final String globalVarName, final Object payload) throws IOException
     {
         final String json = objectMapper.writeValueAsString(payload);
         final String content = "window." + globalVarName + " = " + json + ";\n";
         Files.writeString(targetFile.toPath(), content, StandardCharsets.UTF_8);
+    }
+
+    ObjectMapper getObjectMapper()
+    {
+        return objectMapper;
     }
 
     private void patchScorecardFieldInJsBundle(
@@ -2227,7 +2252,7 @@ public class ModernReportGenerator
         writeJsGlobal(jsFile, globalVarName, obj);
     }
 
-    private static Document parseXmlDocument(final File xmlFile) throws ParserConfigurationException, Exception
+    static Document parseXmlDocument(final File xmlFile) throws ParserConfigurationException, Exception
     {
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -2261,7 +2286,7 @@ public class ModernReportGenerator
         }
     }
 
-    private static Map<String, Double> parsePercentilesMap(final Element pctsEl)
+    static Map<String, Double> parsePercentilesMap(final Element pctsEl)
     {
         final Map<String, Double> map = new LinkedHashMap<>();
         if (pctsEl != null)
@@ -2279,7 +2304,7 @@ public class ModernReportGenerator
         return map;
     }
 
-    private static List<String> splitLabels(final String rawLabels)
+    static List<String> splitLabels(final String rawLabels)
     {
         if (StringUtils.isBlank(rawLabels))
         {
@@ -2288,7 +2313,7 @@ public class ModernReportGenerator
         return Arrays.asList(StringUtils.split(rawLabels.trim()));
     }
 
-    private static String extractCommentHeadline(final List<String> comments)
+    static String extractCommentHeadline(final List<String> comments)
     {
         if (comments == null || comments.isEmpty())
         {
@@ -2322,7 +2347,7 @@ public class ModernReportGenerator
         return "";
     }
 
-    private static String extractExceptionClass(final String trace, final String message)
+    static String extractExceptionClass(final String trace, final String message)
     {
         if (StringUtils.isNotBlank(trace))
         {
@@ -2340,7 +2365,7 @@ public class ModernReportGenerator
         return StringUtils.isNotBlank(message) ? "Error" : "—";
     }
 
-    private static long parseTimestampMs(final String tsStr)
+    static long parseTimestampMs(final String tsStr)
     {
         if (StringUtils.isBlank(tsStr))
         {
@@ -2356,7 +2381,7 @@ public class ModernReportGenerator
         }
     }
 
-    private static String formatDurationHms(final long durationSec)
+    static String formatDurationHms(final long durationSec)
     {
         final long s = Math.max(0L, durationSec);
         final long h = s / 3600L;
@@ -2480,7 +2505,7 @@ public class ModernReportGenerator
         return (int) sum;
     }
 
-    private static Element firstChildElement(final Element parent, final String tagName)
+    static Element firstChildElement(final Element parent, final String tagName)
     {
         if (parent == null)
         {
@@ -2496,7 +2521,7 @@ public class ModernReportGenerator
         return null;
     }
 
-    private static List<Element> childElements(final Element parent)
+    static List<Element> childElements(final Element parent)
     {
         if (parent == null)
         {
@@ -2513,7 +2538,7 @@ public class ModernReportGenerator
         return list;
     }
 
-    private static List<Element> childElements(final Element parent, final String tagName)
+    static List<Element> childElements(final Element parent, final String tagName)
     {
         if (parent == null)
         {
@@ -2532,7 +2557,7 @@ public class ModernReportGenerator
         return list;
     }
 
-    private static List<String> readStringList(final Element parent, final String itemTag)
+    static List<String> readStringList(final Element parent, final String itemTag)
     {
         if (parent == null)
         {
@@ -2550,7 +2575,7 @@ public class ModernReportGenerator
         return out;
     }
 
-    private static String childText(final Element parent, final String tagName, final String defaultVal)
+    static String childText(final Element parent, final String tagName, final String defaultVal)
     {
         final Element el = firstChildElement(parent, tagName);
         if (el == null)
@@ -2561,19 +2586,19 @@ public class ModernReportGenerator
         return txt != null ? txt : defaultVal;
     }
 
-    private static long childLong(final Element parent, final String tagName, final long defaultVal)
+    static long childLong(final Element parent, final String tagName, final long defaultVal)
     {
         final String s = childText(parent, tagName, null);
         return parseLongSafe(s, defaultVal);
     }
 
-    private static double childDouble(final Element parent, final String tagName, final double defaultVal)
+    static double childDouble(final Element parent, final String tagName, final double defaultVal)
     {
         final String s = childText(parent, tagName, null);
         return parseDoubleSafe(s, defaultVal);
     }
 
-    private static long parseLongSafe(final String s, final long defaultVal)
+    static long parseLongSafe(final String s, final long defaultVal)
     {
         if (StringUtils.isBlank(s))
         {
@@ -2596,7 +2621,7 @@ public class ModernReportGenerator
         }
     }
 
-    private static double parseDoubleSafe(final String s, final double defaultVal)
+    static double parseDoubleSafe(final String s, final double defaultVal)
     {
         if (StringUtils.isBlank(s))
         {
@@ -2613,7 +2638,7 @@ public class ModernReportGenerator
         }
     }
 
-    private static String nonBlankOrDefault(final String candidate, final String fallback)
+    static String nonBlankOrDefault(final String candidate, final String fallback)
     {
         return StringUtils.isNotBlank(candidate) ? candidate : (fallback != null ? fallback : "");
     }

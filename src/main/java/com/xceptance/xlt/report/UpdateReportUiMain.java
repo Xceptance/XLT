@@ -37,15 +37,16 @@ import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
+import com.xceptance.xlt.report.modern.ModernComparisonReportGenerator;
 import com.xceptance.xlt.report.modern.ModernReportGenerator;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.util.Timer;
 
 /**
- * Standalone command-line utility ({@code bin/update_report_ui.sh} / {@code .cmd}) that copies the modern HTML/CSS/JS
- * templates from {@code config/testreport-modern/} into an existing load report directory and regenerates
- * {@code js/report-meta.js} and all per-page {@code js/*-data.js} bundles directly from {@code testreport.xml},
- * optional {@code scorecard.xml}, and optional {@code charts/*&#47;*.json} without re-reading raw timer logs.
+ * Standalone command-line utility ({@code bin/update_report_ui.sh} / {@code .cmd}) that updates modern HTML/CSS/JS
+ * templates and regenerates {@code js/report-meta.js} and all per-page {@code js/*-data.js} bundles directly from
+ * {@code testreport.xml} (single-run load reports), or from {@code comparison-runs.json.gz} / {@code diffreport.xml} /
+ * {@code trendreport.xml} (diff and trend reports), without re-reading raw timer logs.
  */
 public final class UpdateReportUiMain
 {
@@ -147,10 +148,15 @@ public final class UpdateReportUiMain
         }
 
         final File testReportXml = new File(reportDir, XltConstants.LOAD_REPORT_XML_FILENAME);
-        if (!testReportXml.isFile())
+        final File comparisonSnapshot = new File(reportDir, XltConstants.COMPARISON_SNAPSHOT_FILENAME);
+        final File diffReportXml = new File(reportDir, XltConstants.DIFF_REPORT_XML_FILENAME);
+        final File trendReportXml = new File(reportDir, XltConstants.TREND_REPORT_XML_FILENAME);
+        if (!testReportXml.isFile() && !comparisonSnapshot.isFile() && !diffReportXml.isFile() && !trendReportXml.isFile())
         {
             throw new FileNotFoundException(
-                "Could not find '" + XltConstants.LOAD_REPORT_XML_FILENAME + "' in directory '" + reportDir.getAbsolutePath() + "'");
+                "Could not find '" + XltConstants.LOAD_REPORT_XML_FILENAME + "', '" + XltConstants.DIFF_REPORT_XML_FILENAME + "', '"
+                    + XltConstants.TREND_REPORT_XML_FILENAME + "', or '" + XltConstants.COMPARISON_SNAPSHOT_FILENAME
+                    + "' in directory '" + reportDir.getAbsolutePath() + "'");
         }
 
         XltLogger.reportLogger.info(timer.stop().get("...finished"));
@@ -169,13 +175,21 @@ public final class UpdateReportUiMain
         {
             configDir = new File(XltExecutionContext.getCurrent().getXltHomeDir(), XltConstants.CONFIG_DIR_NAME);
         }
-        final File templateDir = new File(configDir, XltConstants.MODERN_REPORT_RESOURCES_PATH);
 
-        final boolean scorecardPresent = new File(reportDir, XltConstants.SCORECARD_REPORT_XML_FILENAME).isFile();
+        final File testReportXml = new File(reportDir, XltConstants.LOAD_REPORT_XML_FILENAME);
+        if (testReportXml.isFile())
+        {
+            final File templateDir = new File(configDir, XltConstants.MODERN_REPORT_RESOURCES_PATH);
+            final boolean scorecardPresent = new File(reportDir, XltConstants.SCORECARD_REPORT_XML_FILENAME).isFile();
 
-        final ModernReportGenerator generator = new ModernReportGenerator();
-        generator.copyTemplateResources(templateDir, reportDir, scorecardPresent);
-        generator.generateReportBundles(reportDir);
+            final ModernReportGenerator generator = new ModernReportGenerator();
+            generator.copyTemplateResources(templateDir, reportDir, scorecardPresent);
+            generator.generateReportBundles(reportDir);
+        }
+        else
+        {
+            new ModernComparisonReportGenerator().updateExistingReportDir(configDir, reportDir);
+        }
 
         XltLogger.reportLogger.info(timer.stop().get("...finished"));
         XltLogger.reportLogger.info(Console.endSection());
@@ -192,7 +206,7 @@ public final class UpdateReportUiMain
 
         System.out.println();
         helpFormatter.printHelp("update_report_ui (<options>) <reportdir>",
-                                "Regenerates the modern HTML/JS UI of an existing load test report directory\n\nOptions:\n",
+                                "Regenerates the modern HTML/JS UI of an existing load, diff, or trend report directory\n\nOptions:\n",
                                 options, null);
         System.out.println();
     }

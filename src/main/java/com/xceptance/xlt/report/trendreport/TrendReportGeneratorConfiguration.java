@@ -19,11 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
+import com.xceptance.xlt.report.ReportGeneratorConfiguration.UiMode;
 
 /**
  * The trend report generator's configuration.
@@ -41,6 +43,8 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
     private static final String PROP_CHARTS_AUTO_RANGE_INCLUDES_ZERO = PROP_CHARTS_PREFIX + "autoRangeIncludesZero";
 
     private static final String PROP_REPORTS_ROOT_DIR = PROP_PREFIX + "reports";
+
+    public static final String PROP_UI_MODE = PROP_PREFIX + "ui";
 
     private static final String PROP_THREAD_COUNT = PROP_PREFIX + "threads";
 
@@ -68,12 +72,45 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
 
     private final int threadCount;
 
+    private final UiMode uiMode;
+
     public TrendReportGeneratorConfiguration() throws IOException
     {
-        homeDirectory = XltExecutionContext.getCurrent().getXltHomeDir();
-        configDirectory = XltExecutionContext.getCurrent().getXltConfigDir();
+        this(XltExecutionContext.getCurrent().getXltHomeDir(), XltExecutionContext.getCurrent().getXltConfigDir(), null);
+    }
+
+    /**
+     * Creates a new trend report generator configuration for an explicit XLT home/config directory and optional override
+     * properties.
+     *
+     * @param homeDir
+     *            the XLT home directory
+     * @param configDir
+     *            the XLT configuration directory
+     * @param overrideProperties
+     *            optional properties overriding values loaded from {@code trendreportgenerator.properties}
+     * @throws IOException
+     *             if reading the configuration properties fails
+     */
+    public TrendReportGeneratorConfiguration(final File homeDir, final File configDir, final Properties overrideProperties)
+        throws IOException
+    {
+        homeDirectory = homeDir;
+        configDirectory = configDir;
 
         loadProperties(new File(configDirectory, XltConstants.TREND_REPORT_PROPERTY_FILENAME));
+
+        final String sysUi = System.getProperty(PROP_UI_MODE);
+        if (sysUi != null)
+        {
+            final Properties p = new Properties();
+            p.setProperty(PROP_UI_MODE, sysUi);
+            addProperties(p);
+        }
+        if (overrideProperties != null)
+        {
+            addProperties(overrideProperties);
+        }
 
         File reportsRootDir = getFileProperty(PROP_REPORTS_ROOT_DIR, new File(homeDirectory, XltConstants.REPORT_ROOT_DIR));
         if (!reportsRootDir.isAbsolute())
@@ -88,6 +125,8 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
         chartsAutoRangeIncludesZero = getBooleanProperty(PROP_CHARTS_AUTO_RANGE_INCLUDES_ZERO, false);
 
         threadCount = getIntProperty(PROP_THREAD_COUNT, -1);
+
+        uiMode = getEnumProperty(UiMode.class, PROP_UI_MODE, UiMode.MODERN);
 
         // load the transformation configuration
         outputFileNames = new ArrayList<String>();
@@ -184,6 +223,26 @@ public class TrendReportGeneratorConfiguration extends AbstractConfiguration
     public int getThreadCount()
     {
         return threadCount;
+    }
+
+    /**
+     * Returns the configured UI rendering mode ({@link UiMode#MODERN} by default).
+     *
+     * @return the configured UI mode
+     */
+    public UiMode getUiMode()
+    {
+        return uiMode;
+    }
+
+    /**
+     * Returns whether the modern trend report UI is enabled.
+     *
+     * @return {@code true} if {@link UiMode#MODERN} is configured, {@code false} for {@link UiMode#CLASSIC}
+     */
+    public boolean isModernUi()
+    {
+        return uiMode == UiMode.MODERN;
     }
 
     /**

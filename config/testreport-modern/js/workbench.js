@@ -211,7 +211,7 @@
           '<span class="wf-bar-ttfb" style="width:' + ttfbPct + '%"></span>' +
           '<span class="wf-bar-recv" style="width:' + recvPct + '%"></span>' +
         '</span>' +
-        '<span>' + fmtInt(ttfb) + '</span>' +
+        '<span class="wf-val">' + fmtInt(ttfb) + '</span>' +
       '</div>'
     );
   }
@@ -469,7 +469,7 @@
     var threshHtml = info.threshold ? ' <span class="apdex-thresh">[' + escHtml(info.threshold) + ']</span>' : "";
     return (
       '<span class="apdex-pill ' + info.cls + '" title="' + escHtml(info.tooltip) + '">' +
-        '<span>' + escHtml(info.scoreStr) + '</span>' +
+        '<span class="apdex-score">' + escHtml(info.scoreStr) + '</span>' +
         threshHtml +
       '</span>'
     );
