@@ -80,6 +80,7 @@ import com.xceptance.xlt.report.mergerules.MergeRule.UrlText;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlTextExclude;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
+import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 
 /**
@@ -206,6 +207,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_CHARTS_WIDTH = PROP_CHARTS_PREFIX + "width";
 
+    static final String PROP_CHARTS_SCALE_FACTOR = PROP_CHARTS_PREFIX + "scaleFactor";
+
     private static final String PROP_DATA_RECORD_CLASSES_PREFIX = PROP_PREFIX + "dataRecords.";
 
     private static final String PROP_REPORT_PROVIDER_CLASSES_PREFIX = PROP_PREFIX + "providers.";
@@ -286,6 +289,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int chartsHeight;
 
     private final int chartsWidth;
+
+    private final double chartsScaleFactor;
 
     private final MovingAverageConfiguration commonMovingAverage;
 
@@ -590,6 +595,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.5f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
+        chartsScaleFactor = readChartScaleFactor();
         commonMovingAverage = readCommonMovingAverageConfiguration(MovingAverageConfiguration.createPercentageConfig(5));
         additionalMovingAverages = readAdditionalMovingAverageConfigurations(new ArrayList<>());
 
@@ -754,6 +760,38 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public float getChartCompressionFactor()
     {
         return chartsCompressionFactor;
+    }
+
+    /**
+     * Reads and validates the HiDPI scale factor for modern report charts.
+     *
+     * @return the chart scale factor (>= 1.0)
+     */
+    private double readChartScaleFactor()
+    {
+        try
+        {
+            final double factor = getDoubleProperty(PROP_CHARTS_SCALE_FACTOR, JFreeChartUtils.DEFAULT_MODERN_CHART_SCALE_FACTOR);
+            if (!Double.isFinite(factor) || factor < 1.0)
+            {
+                throw new IllegalArgumentException(String.format("Value '%s' must be a finite number >= 1.0", factor));
+            }
+            return factor;
+        }
+        catch (final Exception e)
+        {
+            throw new XltException("Failed to parse chart scale factor: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Returns the HiDPI pixel scale factor applied when rendering chart images in modern reporting mode.
+     *
+     * @return the chart scale factor (>= 1.0, default: 2.0)
+     */
+    public double getChartScaleFactor()
+    {
+        return chartsScaleFactor;
     }
 
     /**

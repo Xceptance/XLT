@@ -197,9 +197,10 @@ public class ReportGenerator
         // configure the thread pool to be cpu count for now
         TaskManager.getInstance().setMaximumThreadCount(Runtime.getRuntime().availableProcessors());
 
-        // configure the Webp encoder and chart style (classic vs modern)
+        // configure the Webp encoder, chart style (classic vs modern), and HiDPI scale factor
         JFreeChartUtils.setWebpCompressionFactor(config.getChartCompressionFactor());
         JFreeChartUtils.setModernChartStyle(config.isModernUi());
+        JFreeChartUtils.setModernChartScaleFactor(config.getChartScaleFactor());
 
         // setup the report providers
         reportProviders = new ArrayList<ReportProvider>();

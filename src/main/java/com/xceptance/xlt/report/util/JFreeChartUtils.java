@@ -321,9 +321,14 @@ public final class JFreeChartUtils
     private static final String WATERMARK_TEXT = "Xceptance LoadTest";
 
     /**
-     * Pixel scale factor applied when rendering charts in modern mode (2x HiDPI).
+     * Default pixel scale factor applied when rendering charts in modern mode (2x HiDPI).
      */
-    private static final int MODERN_CHART_SCALE = 2;
+    public static final double DEFAULT_MODERN_CHART_SCALE_FACTOR = 2.0;
+
+    /**
+     * Pixel scale factor applied when rendering charts in modern mode (default: 2.0, must be >= 1.0).
+     */
+    private static volatile double modernChartScaleFactor = DEFAULT_MODERN_CHART_SCALE_FACTOR;
 
     /**
      * The compression factor, to use when creating WebP images, where 0 is fastest compression and 1 is highest
@@ -1368,11 +1373,13 @@ public final class JFreeChartUtils
         // first of all apply the active XLT chart theme to the chart
         theme.apply(chart);
 
-        // render and brand chart (2x HiDPI over logical chart dimensions when modern theme is active)
-        final int scale = modern ? MODERN_CHART_SCALE : 1;
-        final BufferedImage bufferedImage = modern
-            ? chart.createBufferedImage(chartWidth * scale, chartHeight * scale, chartWidth, chartHeight, null)
-            : chart.createBufferedImage(chartWidth, chartHeight);
+        // render and brand chart (HiDPI over logical chart dimensions when modern theme is active)
+        final double scale = modern ? modernChartScaleFactor : 1.0;
+        final int scaledWidth = (scale == 1.0) ? chartWidth : (int) Math.round(chartWidth * scale);
+        final int scaledHeight = (scale == 1.0) ? chartHeight : (int) Math.round(chartHeight * scale);
+        final BufferedImage bufferedImage = (scale == 1.0)
+            ? chart.createBufferedImage(chartWidth, chartHeight)
+            : chart.createBufferedImage(scaledWidth, scaledHeight, chartWidth, chartHeight, null);
         final Graphics2D g2d = bufferedImage.createGraphics();
         try
         {
@@ -1380,7 +1387,10 @@ public final class JFreeChartUtils
 
             if (modern)
             {
-                g2d.scale(scale, scale);
+                if (scale != 1.0)
+                {
+                    g2d.scale((double) scaledWidth / chartWidth, (double) scaledHeight / chartHeight);
+                }
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                 final int pillWidth = 34;
@@ -1445,6 +1455,34 @@ public final class JFreeChartUtils
     public static boolean isModernChartStyle()
     {
         return modernChartStyle;
+    }
+
+    /**
+     * Sets the HiDPI pixel scale factor to apply when rendering charts in modern mode.
+     *
+     * @param factor
+     *            the scale factor (must be a finite number >= 1.0; default: 2.0)
+     */
+    public static void setModernChartScaleFactor(final double factor)
+    {
+        if (java.lang.Double.isFinite(factor) && factor >= 1.0)
+        {
+            modernChartScaleFactor = factor;
+        }
+        else
+        {
+            throw new IllegalArgumentException("The modern chart scale factor must be a finite number >= 1.0, but was: " + factor);
+        }
+    }
+
+    /**
+     * Returns the HiDPI pixel scale factor applied when rendering charts in modern mode.
+     *
+     * @return the modern chart scale factor (>= 1.0)
+     */
+    public static double getModernChartScaleFactor()
+    {
+        return modernChartScaleFactor;
     }
 
     /**

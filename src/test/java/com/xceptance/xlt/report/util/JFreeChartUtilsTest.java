@@ -445,6 +445,7 @@ public class JFreeChartUtilsTest
     public void resetChartStyle()
     {
         JFreeChartUtils.setModernChartStyle(false);
+        JFreeChartUtils.setModernChartScaleFactor(JFreeChartUtils.DEFAULT_MODERN_CHART_SCALE_FACTOR);
     }
 
     /**
@@ -553,6 +554,67 @@ public class JFreeChartUtilsTest
         Assert.assertEquals(new Color(0xFAFAFA), classicSecond.chart.getBackgroundPaint());
         Assert.assertTrue(classicSecond.runtimePlot.isOutlineVisible());
         Assert.assertEquals(JFreeChartUtils.COLOR_HISTOGRAM, classicSecond.histogramPlot.getRenderer(0).getSeriesPaint(0));
+    }
+
+    /**
+     * Verifies that custom modern chart scale factors (1x, fractional 1.5x, and 3x) scale both image dimensions and
+     * the modern branding overlay proportionally.
+     */
+    @Test
+    public void testModernChartScaleFactorCustom()
+    {
+        JFreeChartUtils.setModernChartStyle(true);
+
+        JFreeChartUtils.setModernChartScaleFactor(1.0);
+        final BufferedImage img1x = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
+        Assert.assertEquals(700, img1x.getWidth());
+        Assert.assertEquals(400, img1x.getHeight());
+        Assert.assertEquals(new Color(0x64748B).getRGB(), img1x.getRGB(658, 10));
+
+        JFreeChartUtils.setModernChartScaleFactor(1.5);
+        final BufferedImage img15x = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
+        Assert.assertEquals(1050, img15x.getWidth());
+        Assert.assertEquals(600, img15x.getHeight());
+        Assert.assertEquals(new Color(0x64748B).getRGB(), img15x.getRGB(987, 15));
+
+        JFreeChartUtils.setModernChartScaleFactor(3.0);
+        final BufferedImage img3x = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
+        Assert.assertEquals(2100, img3x.getWidth());
+        Assert.assertEquals(1200, img3x.getHeight());
+        Assert.assertEquals(new Color(0x64748B).getRGB(), img3x.getRGB(1974, 30));
+    }
+
+    /**
+     * Verifies that classic charts continue to render at 1x regardless of the modern chart scale factor.
+     */
+    @Test
+    public void testClassicChartIgnoresModernScaleFactor()
+    {
+        JFreeChartUtils.setModernChartScaleFactor(3.0);
+        JFreeChartUtils.setModernChartStyle(false);
+
+        final BufferedImage image = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
+        Assert.assertEquals(700, image.getWidth());
+        Assert.assertEquals(400, image.getHeight());
+    }
+
+    /**
+     * Verifies that invalid modern chart scale factors are rejected while preserving the previous valid value.
+     */
+    @Test
+    public void testSetModernChartScaleFactorInvalid()
+    {
+        JFreeChartUtils.setModernChartScaleFactor(3.0);
+
+        final double[] invalidFactors =
+            {
+                0.0, 0.5, -1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY
+            };
+        for (final double invalidFactor : invalidFactors)
+        {
+            Assert.assertThrows(IllegalArgumentException.class, () -> JFreeChartUtils.setModernChartScaleFactor(invalidFactor));
+            Assert.assertEquals(3.0, JFreeChartUtils.getModernChartScaleFactor(), 0.0);
+        }
     }
 
     private CombinedChartFixture createSampleCombinedChart()
