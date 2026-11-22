@@ -12,6 +12,7 @@
   <script src="js/report-utils.js"></script>
   <script src="js/comparison-nav.js"></script>
   <script src="js/table-copy-markdown.js"></script>
+  <script src="js/echarts-6.0.0.min.js"></script>
   <script src="js/network-data.js"></script>
   <script src="js/comparison-pages.js"></script>
 </head>
@@ -66,7 +67,7 @@
   </div>
 
   <main class="main-content">
-    <section class="card" style="margin-bottom:var(--space-4)">
+    <section class="card">
       <div class="card-header">
         <div class="card-title"><span>Network Traffic Comparison</span></div>
         <div class="cmp-toolbar" id="cmp-table-controls" role="toolbar" focusgroup="toolbar wrap" aria-label="Comparison display controls">
@@ -78,7 +79,55 @@
       </div>
     </section>
 
-    <div class="kpi-grid-4" id="net-kpis" style="margin-bottom:var(--space-4)"></div>
+    <div class="kpi-grid-4" id="net-kpis"></div>
+
+    <section class="card" id="net-traffic-card" hidden>
+      <div class="card-header">
+        <div class="card-title">
+          <span>Network Traffic &amp; Bandwidth Trajectory</span>
+          <span class="card-subtitle" id="net-traffic-subtitle">Throughput, download &amp; upload across runs</span>
+        </div>
+        <div class="wb-tabs" id="net-traffic-mode-tabs" role="tablist" focusgroup="tablist nomemory" aria-label="Network traffic metric view">
+          <button type="button" class="wb-tab-btn" role="tab" aria-selected="true" focusgroupstart data-net-mode="rate">Bandwidth &amp; Hits/s</button>
+          <button type="button" class="wb-tab-btn" role="tab" aria-selected="false" data-net-mode="total">Total Volume</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="cmp-series-bar" id="net-traffic-series-bar" role="toolbar" focusgroup="toolbar wrap" aria-label="Network traffic series" aria-controls="chart-net-traffic" hidden></div>
+        <span class="sr-only" id="net-traffic-series-status" role="status" aria-live="polite"></span>
+        <div class="cmp-chart-box is-tall" id="chart-net-traffic" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <section class="charts-grid-2" id="net-breakdown-charts" hidden>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>HTTP Response Codes</span></div>
+          <div class="wb-tabs" id="net-codes-mode-tabs" role="tablist" focusgroup="tablist nomemory" aria-label="Response codes chart view">
+            <button type="button" class="wb-tab-btn" role="tab" aria-selected="true" focusgroupstart data-codes-mode="all">All Codes</button>
+            <button type="button" class="wb-tab-btn" role="tab" aria-selected="false" data-codes-mode="errors">4xx / 5xx</button>
+            <button type="button" class="wb-tab-btn" role="tab" aria-selected="false" data-codes-mode="ab">A vs B</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cmp-chart-box" id="chart-net-codes"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>HTTP Mix Across Runs</span></div>
+          <div class="wb-tabs" id="net-mix-mode-tabs" role="tablist" focusgroup="tablist nomemory" aria-label="HTTP mix breakdown dimension">
+            <button type="button" class="wb-tab-btn" role="tab" aria-selected="true" focusgroupstart data-mix-mode="contentTypes">Content Types</button>
+            <button type="button" class="wb-tab-btn" role="tab" aria-selected="false" data-mix-mode="methods">Methods</button>
+            <button type="button" class="wb-tab-btn" role="tab" aria-selected="false" data-mix-mode="hosts">Hosts</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cmp-chart-box" id="chart-net-mix"></div>
+        </div>
+      </div>
+    </section>
 
     <div id="net-empty" hidden></div>
     <div class="sr-only" role="status" aria-live="polite" id="table-sort-status"></div>

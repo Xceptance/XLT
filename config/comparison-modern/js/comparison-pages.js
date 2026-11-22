@@ -362,13 +362,764 @@
   }
 
   // =========================================================================
-  // 4. Network Comparison
+  // 4. Network Comparison & Multi-Run Traffic Charts
   // =========================================================================
 
   function initNetwork() {
     var net = window.XLT_NETWORK || { available: false };
     var toolbar = document.getElementById("cmp-table-controls");
     wireViewToggleGroup(toolbar);
+
+    var runs = CMP.getRuns ? CMP.getRuns() : [];
+    var hasDuration = runs.some(function (r) { return r && Number(r.durationSec) > 0; });
+    var hasTrafficData = runs.some(function (r) {
+      return r && (r.bytesReceived != null || r.bytesSent != null || r.hits != null);
+    });
+    var responseCodes = Array.isArray(net.responseCodes) ? net.responseCodes : [];
+    var errorCodeRows = responseCodes.filter(function (rc) {
+      var code = Number(rc.code);
+      return code === 0 || code >= 400;
+    });
+    var hasHttpErrorRows = Boolean(net.available) && errorCodeRows.some(function (rc) {
+      return Array.isArray(rc.runs) && rc.runs.some(function (v) { return Number(v) > 0; });
+    });
+
+    var trafficMode = hasDuration ? "rate" : "total";
+    var codesMode = "all";
+    var mixMode = "contentTypes";
+    var trafficSeriesState = {
+      recv: true,
+      sent: true,
+      hits: true,
+      httpErr: hasHttpErrorRows
+    };
+
+    var trafficChart = null;
+    var codesChart = null;
+    var mixChart = null;
+    var resizeObservers = [];
+
+    function netThemePalette() {
+      var dark = document.documentElement.classList.contains("dark-theme");
+      return {
+        dark: dark,
+        text: dark ? "#e4e4e7" : "#18181b",
+        muted: dark ? "#a1a1aa" : "#666e7a",
+        split: dark ? "#2e2e36" : "#e5e7eb",
+        axis: dark ? "#3f3f46" : "#cbd5e1",
+        tipBg: dark ? "rgba(28, 28, 31, 0.96)" : "rgba(255, 255, 255, 0.97)",
+        tipBorder: dark ? "#3f3f46" : "#c9d0d8",
+        baseColor: dark ? "#60a5fa" : "#244b73",
+        targetColor: dark ? "#fb923c" : "#e07000",
+        recv: dark ? "#34d399" : "#059669",
+        sent: dark ? "#fb923c" : "#e07000",
+        hitsBar: dark ? "rgba(96, 165, 250, 0.28)" : "rgba(36, 75, 115, 0.22)",
+        hitsSwatch: dark ? "#60a5fa" : "#244b73",
+        err: dark ? "#f87171" : "#dc2626",
+        mixPalette: dark
+          ? ["#60a5fa", "#34d399", "#fb923c", "#c084fc", "#38bdf8", "#fbbf24", "#f472b6", "#94a3b8"]
+          : ["#244b73", "#059669", "#e07000", "#7c3aed", "#0284c7", "#d97706", "#db2777", "#64748b"]
+      };
+    }
+
+    function ensureNetChart(domId, existing) {
+      var dom = document.getElementById(domId);
+      if (!dom || typeof window.echarts === "undefined") return null;
+      if (existing && !existing.isDisposed()) return existing;
+      var chart = window.echarts.init(dom, null, { renderer: "canvas" });
+      if (typeof window.ResizeObserver !== "undefined") {
+        var ro = new window.ResizeObserver(function () {
+          if (!chart.isDisposed()) chart.resize();
+        });
+        ro.observe(dom);
+        resizeObservers.push(ro);
+      }
+      return chart;
+    }
+
+    function pickByteScale(maxBytes) {
+      var v = Math.max(0, Number(maxBytes) || 0);
+      if (v >= 1099511627776) return { div: 1099511627776, unit: "TB" };
+      if (v >= 1073741824) return { div: 1073741824, unit: "GB" };
+      if (v >= 1048576) return { div: 1048576, unit: "MB" };
+      if (v >= 1024) return { div: 1024, unit: "KB" };
+      return { div: 1, unit: "B" };
+    }
+
+    function fmtCompactCount(n) {
+      var v = Number(n);
+      if (!Number.isFinite(v)) return "0";
+      if (Math.abs(v) >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+      if (Math.abs(v) >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+      return fmtInt(v);
+    }
+
+    function sumHttpErrorsForRun(runIdx) {
+      if (!net.available || !errorCodeRows.length) return null;
+      var sum = 0;
+      errorCodeRows.forEach(function (rc) {
+        sum += Number((rc.runs && rc.runs[runIdx]) || 0);
+      });
+      return sum;
+    }
+
+    function buildRunLabels(st) {
+      return runs.map(function (r, idx) {
+        var tag = idx === st.baseIdx ? " [A]" : (idx === st.targetIdx ? " [B]" : "");
+        return "#" + (idx + 1) + " " + (r.commentHeadline || r.name || ("Run " + (idx + 1))) + tag;
+      });
+    }
+
+    function buildCompactRunLabels(st) {
+      if (runs.length <= 6) return buildRunLabels(st);
+      return runs.map(function (_, idx) {
+        var tag = idx === st.baseIdx ? " [A]" : (idx === st.targetIdx ? " [B]" : "");
+        return "#" + (idx + 1) + tag;
+      });
+    }
+
+    function statusCodeColor(code, idx, dark) {
+      var c = Number(code);
+      var greens = dark ? ["#34d399", "#2dd4bf", "#6ee7b7"] : ["#059669", "#0d9488", "#10b981"];
+      var blues = dark ? ["#60a5fa", "#38bdf8", "#818cf8"] : ["#2563eb", "#0284c7", "#4f46e5"];
+      var ambers = dark ? ["#fbbf24", "#fb923c", "#f59e0b"] : ["#d97706", "#ea580c", "#ca8a04"];
+      var reds = dark ? ["#f87171", "#fb7185", "#c084fc"] : ["#dc2626", "#e11d48", "#9333ea"];
+      if (c >= 200 && c < 300) return greens[idx % greens.length];
+      if (c >= 300 && c < 400) return blues[idx % blues.length];
+      if (c >= 400 && c < 500) return ambers[idx % ambers.length];
+      return reds[idx % reds.length];
+    }
+
+    function syncTabRovingState(box) {
+      if (!box) return;
+      var btns = Array.prototype.slice.call(box.querySelectorAll('[role="tab"]'));
+      var hasNativeFg = typeof HTMLElement !== "undefined" && "focusGroup" in HTMLElement.prototype;
+      btns.forEach(function (b) {
+        var active = b.getAttribute("aria-selected") === "true" && !b.hidden;
+        if (active) b.setAttribute("focusgroupstart", "");
+        else b.removeAttribute("focusgroupstart");
+        if (!hasNativeFg) b.tabIndex = active ? 0 : -1;
+      });
+    }
+
+    function wireTablist(containerId, attrName, onSelect) {
+      var box = document.getElementById(containerId);
+      if (!box) return;
+      var btns = Array.prototype.slice.call(box.querySelectorAll('[role="tab"]'));
+      function activate(btn, shouldFocus) {
+        if (!btn || btn.hidden) return;
+        btns.forEach(function (b) { b.setAttribute("aria-selected", b === btn ? "true" : "false"); });
+        syncTabRovingState(box);
+        if (shouldFocus) btn.focus();
+        onSelect(btn.getAttribute(attrName));
+      }
+      box.addEventListener("click", function (e) {
+        var btn = e.target.closest('[role="tab"]');
+        if (!btn) return;
+        activate(btn, false);
+      });
+      if (typeof HTMLElement === "undefined" || !("focusGroup" in HTMLElement.prototype)) {
+        box.addEventListener("keydown", function (e) {
+          var visible = btns.filter(function (b) { return !b.hidden; });
+          var idx = visible.indexOf(e.target.closest('[role="tab"]'));
+          if (idx < 0 || visible.length < 2) return;
+          var rtl = getComputedStyle(box).direction === "rtl";
+          var nextIdx = -1;
+          if (e.key === "ArrowRight") nextIdx = (idx + (rtl ? -1 : 1) + visible.length) % visible.length;
+          else if (e.key === "ArrowLeft") nextIdx = (idx + (rtl ? 1 : -1) + visible.length) % visible.length;
+          else if (e.key === "Home") nextIdx = 0;
+          else if (e.key === "End") nextIdx = visible.length - 1;
+          else return;
+          e.preventDefault();
+          activate(visible[nextIdx], true);
+        });
+      }
+      syncTabRovingState(box);
+    }
+
+    function initTabVisibility() {
+      var trafficTabs = document.getElementById("net-traffic-mode-tabs");
+      if (trafficTabs && !hasDuration) {
+        var rateBtn = trafficTabs.querySelector('[data-net-mode="rate"]');
+        var totalBtn = trafficTabs.querySelector('[data-net-mode="total"]');
+        if (rateBtn) {
+          rateBtn.hidden = true;
+          rateBtn.setAttribute("aria-selected", "false");
+        }
+        if (totalBtn) totalBtn.setAttribute("aria-selected", "true");
+        syncTabRovingState(trafficTabs);
+      }
+      var codesTabs = document.getElementById("net-codes-mode-tabs");
+      if (codesTabs && !hasHttpErrorRows) {
+        var errBtn = codesTabs.querySelector('[data-codes-mode="errors"]');
+        if (errBtn) errBtn.hidden = true;
+        syncTabRovingState(codesTabs);
+      }
+    }
+
+    function renderTrafficSeriesBar(seriesDefs) {
+      var bar = document.getElementById("net-traffic-series-bar");
+      var statusEl = document.getElementById("net-traffic-series-status");
+      if (!bar) return;
+      if (!seriesDefs.length) {
+        bar.hidden = true;
+        return;
+      }
+      bar.hidden = false;
+
+      var sig = seriesDefs.map(function (d) { return d.key + ":" + d.label; }).join("|");
+      if (bar.getAttribute("data-net-sig") === sig) {
+        seriesDefs.forEach(function (d) {
+          var btn = bar.querySelector('button[data-net-series="' + d.key + '"]');
+          if (!btn) return;
+          btn.setAttribute("aria-pressed", d.active ? "true" : "false");
+          btn.style.setProperty("--swatch-color", d.color);
+        });
+      } else {
+        var bwDefs = seriesDefs.filter(function (d) { return d.group === "bw"; });
+        var volDefs = seriesDefs.filter(function (d) { return d.group === "vol"; });
+        var mkBtn = function (d) {
+          return (
+            '<button type="button" class="cmp-series-btn" data-net-series="' + esc(d.key) +
+            '" aria-pressed="' + (d.active ? "true" : "false") +
+            '" style="--swatch-color:' + esc(d.color) + '">' +
+              '<span class="cmp-series-swatch is-' + esc(d.swatch) + '" aria-hidden="true"></span>' +
+              "<span>" + esc(d.label) + "</span>" +
+            "</button>"
+          );
+        };
+        var html = '<span class="cmp-series-label" aria-hidden="true">Series</span>';
+        if (bwDefs.length) {
+          html += '<div role="group" class="cmp-series-group" aria-label="Bandwidth series">' + bwDefs.map(mkBtn).join("") + "</div>";
+        }
+        if (bwDefs.length && volDefs.length) {
+          html += '<span class="cmp-toolbar-sep" role="separator" aria-orientation="vertical"></span>';
+        }
+        if (volDefs.length) {
+          html += '<div role="group" class="cmp-series-group" aria-label="Hits and error series">' + volDefs.map(mkBtn).join("") + "</div>";
+        }
+        html +=
+          '<span class="cmp-toolbar-sep" role="separator" aria-orientation="vertical"></span>' +
+          '<div role="group" class="cmp-series-group" aria-label="Series presets">' +
+            '<button type="button" class="cmp-series-action" data-net-action="all" title="Show all network series">All</button>' +
+            '<button type="button" class="cmp-series-action" data-net-action="reset" title="Restore default series">Reset</button>' +
+          "</div>";
+        bar.innerHTML = html;
+        bar.setAttribute("data-net-sig", sig);
+        if (CMP.installToolbarFocusgroupFallback) CMP.installToolbarFocusgroupFallback(bar);
+      }
+
+      if (!bar.hasAttribute("data-net-bound")) {
+        bar.setAttribute("data-net-bound", "1");
+        bar.addEventListener("click", function (e) {
+          var btn = e.target.closest("button[data-net-series], button[data-net-action]");
+          if (!btn) return;
+          var key = btn.getAttribute("data-net-series");
+          var action = btn.getAttribute("data-net-action");
+          if (key) {
+            trafficSeriesState[key] = btn.getAttribute("aria-pressed") !== "true";
+          } else if (action === "all") {
+            trafficSeriesState.recv = true;
+            trafficSeriesState.sent = true;
+            trafficSeriesState.hits = true;
+            trafficSeriesState.httpErr = true;
+            if (statusEl) statusEl.textContent = "All network traffic series shown";
+          } else if (action === "reset") {
+            trafficSeriesState.recv = true;
+            trafficSeriesState.sent = true;
+            trafficSeriesState.hits = true;
+            trafficSeriesState.httpErr = hasHttpErrorRows;
+            if (statusEl) statusEl.textContent = "Network traffic series reset to default";
+          }
+          renderTrafficChart(CMP.getState());
+        });
+      }
+    }
+
+    function renderTrafficChart(st) {
+      var card = document.getElementById("net-traffic-card");
+      if (!card) return;
+      if (!hasTrafficData || !runs.length) {
+        card.hidden = true;
+        return;
+      }
+      card.hidden = false;
+      trafficChart = ensureNetChart("chart-net-traffic", trafficChart);
+      if (!trafficChart) return;
+
+      var pal = netThemePalette();
+      var isRate = trafficMode === "rate" && hasDuration;
+      var labels = buildRunLabels(st);
+
+      var rawRecv = runs.map(function (r) {
+        if (!r || r.bytesReceived == null) return null;
+        var b = Number(r.bytesReceived);
+        if (!isRate) return b;
+        var d = Number(r.durationSec);
+        return d > 0 ? b / d : null;
+      });
+      var rawSent = runs.map(function (r) {
+        if (!r || r.bytesSent == null) return null;
+        var b = Number(r.bytesSent);
+        if (!isRate) return b;
+        var d = Number(r.durationSec);
+        return d > 0 ? b / d : null;
+      });
+      var rawHits = runs.map(function (r) {
+        if (!r || r.hits == null) return null;
+        var h = Number(r.hits);
+        if (!isRate) return h;
+        var d = Number(r.durationSec);
+        return d > 0 ? h / d : null;
+      });
+      var rawErr = hasHttpErrorRows ? runs.map(function (_, i) { return sumHttpErrorsForRun(i); }) : [];
+
+      var hasRecv = rawRecv.some(function (v) { return v !== null; });
+      var hasSent = rawSent.some(function (v) { return v !== null; });
+      var hasHits = rawHits.some(function (v) { return v !== null; });
+
+      var seriesDefs = [];
+      if (hasRecv) seriesDefs.push({ key: "recv", label: isRate ? "Recv/s" : "Received", group: "bw", color: pal.recv, swatch: "line", active: Boolean(trafficSeriesState.recv) });
+      if (hasSent) seriesDefs.push({ key: "sent", label: isRate ? "Sent/s" : "Sent", group: "bw", color: pal.sent, swatch: "line", active: Boolean(trafficSeriesState.sent) });
+      if (hasHits) seriesDefs.push({ key: "hits", label: isRate ? "Hits/s" : "Hits", group: "vol", color: pal.hitsSwatch, swatch: "bar", active: Boolean(trafficSeriesState.hits) });
+      if (hasHttpErrorRows) seriesDefs.push({ key: "httpErr", label: "4xx / 5xx", group: "vol", color: pal.err, swatch: "dashed", active: Boolean(trafficSeriesState.httpErr) });
+      renderTrafficSeriesBar(seriesDefs);
+
+      var activeRecv = hasRecv && trafficSeriesState.recv;
+      var activeSent = hasSent && trafficSeriesState.sent;
+      var activeBw = activeRecv || activeSent;
+      var activeHits = hasHits && trafficSeriesState.hits;
+      var activeErr = hasHttpErrorRows && trafficSeriesState.httpErr;
+
+      var maxBw = 0;
+      if (activeRecv) rawRecv.forEach(function (v) { if (v !== null && v > maxBw) maxBw = v; });
+      if (activeSent) rawSent.forEach(function (v) { if (v !== null && v > maxBw) maxBw = v; });
+      var scale = pickByteScale(maxBw);
+      var bwUnitLabel = isRate ? (scale.unit + "/s") : scale.unit;
+
+      var series = [];
+      if (activeHits) {
+        series.push({
+          name: isRate ? "Hits/s" : "Total Hits",
+          type: "bar",
+          yAxisIndex: 1,
+          barMaxWidth: 32,
+          data: rawHits,
+          itemStyle: { color: pal.hitsBar, borderColor: pal.hitsSwatch, borderWidth: 0.5, borderRadius: [3, 3, 0, 0] }
+        });
+      }
+      if (activeRecv) {
+        series.push({
+          name: isRate ? "Download (Recv/s)" : "Bytes Received",
+          type: "line",
+          yAxisIndex: 0,
+          smooth: 0.12,
+          symbolSize: 6,
+          data: rawRecv.map(function (v) { return v !== null ? Number((v / scale.div).toFixed(3)) : null; }),
+          lineStyle: { width: 2.5, color: pal.recv },
+          itemStyle: { color: pal.recv },
+          z: 5
+        });
+      }
+      if (activeSent) {
+        series.push({
+          name: isRate ? "Upload (Sent/s)" : "Bytes Sent",
+          type: "line",
+          yAxisIndex: 0,
+          smooth: 0.12,
+          symbolSize: 6,
+          data: rawSent.map(function (v) { return v !== null ? Number((v / scale.div).toFixed(3)) : null; }),
+          lineStyle: { width: 2, color: pal.sent },
+          itemStyle: { color: pal.sent },
+          z: 4
+        });
+      }
+      if (activeErr) {
+        series.push({
+          name: "HTTP Errors (4xx/5xx)",
+          type: "line",
+          yAxisIndex: 2,
+          smooth: 0.12,
+          symbol: "circle",
+          symbolSize: 6,
+          data: rawErr,
+          lineStyle: { width: 2, type: "dashed", color: pal.err },
+          itemStyle: { color: pal.err },
+          z: 6
+        });
+      }
+
+      var gridLeft = activeBw ? 66 : 24;
+      var gridRight = (activeHits && activeErr) ? 116 : ((activeHits || activeErr) ? 66 : 24);
+      var splitBw = activeBw;
+      var splitHits = !activeBw && activeHits;
+      var splitErr = !activeBw && !activeHits && activeErr;
+
+      trafficChart.setOption({
+        animationDuration: 180,
+        tooltip: {
+          trigger: "axis",
+          backgroundColor: pal.tipBg,
+          borderColor: pal.tipBorder,
+          borderWidth: 1,
+          textStyle: { color: pal.text, fontSize: 12 },
+          formatter: function (params) {
+            if (!params || !params.length) return "";
+            var idx = params[0].dataIndex;
+            var html = '<div style="font-weight:700;margin-bottom:4px">' + esc(labels[idx] || "") + "</div>";
+            params.forEach(function (p) {
+              var valStr = "—";
+              if (p.seriesName.indexOf("Download") === 0 || p.seriesName === "Bytes Received") {
+                if (rawRecv[idx] !== null) valStr = fmtBytes(rawRecv[idx]) + (isRate ? "/s" : "");
+              } else if (p.seriesName.indexOf("Upload") === 0 || p.seriesName === "Bytes Sent") {
+                if (rawSent[idx] !== null) valStr = fmtBytes(rawSent[idx]) + (isRate ? "/s" : "");
+              } else if (p.seriesName.indexOf("Hits") !== -1) {
+                if (rawHits[idx] !== null) valStr = isRate ? (fmtDec(rawHits[idx], 1) + " /s") : fmtInt(rawHits[idx]);
+              } else if (p.value !== null && p.value !== undefined) {
+                valStr = fmtInt(p.value);
+              }
+              html +=
+                '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums">' +
+                  "<span>" + p.marker + " " + esc(p.seriesName) + "</span>" +
+                  "<strong>" + esc(valStr) + "</strong>" +
+                "</div>";
+            });
+            return html;
+          }
+        },
+        legend: { show: false },
+        grid: { left: gridLeft, right: gridRight, top: 26, bottom: 32 },
+        xAxis: {
+          type: "category",
+          data: labels,
+          axisLine: { lineStyle: { color: pal.axis } },
+          axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 130 }
+        },
+        yAxis: [
+          {
+            type: "value",
+            position: "left",
+            show: activeBw,
+            name: (isRate ? "Bandwidth" : "Volume") + " [" + bwUnitLabel + "]",
+            nameTextStyle: { color: pal.muted, fontSize: 10 },
+            axisLabel: { color: pal.muted, fontSize: 11 },
+            splitLine: { show: splitBw, lineStyle: { color: pal.split } }
+          },
+          {
+            type: "value",
+            position: "right",
+            offset: 0,
+            show: activeHits,
+            name: isRate ? "Hits/s" : "Hits",
+            nameTextStyle: { color: pal.hitsSwatch, fontSize: 10 },
+            axisLabel: { color: pal.hitsSwatch, fontSize: 11, formatter: function (v) { return isRate ? fmtDec(v, 0) : fmtCompactCount(v); } },
+            splitLine: { show: splitHits, lineStyle: { color: pal.split } }
+          },
+          {
+            type: "value",
+            position: "right",
+            offset: activeHits ? 58 : 0,
+            show: activeErr,
+            minInterval: 1,
+            name: "4xx/5xx",
+            nameTextStyle: { color: pal.err, fontSize: 10 },
+            axisLabel: { color: pal.err, fontSize: 11 },
+            splitLine: { show: splitErr, lineStyle: { color: pal.split } }
+          }
+        ],
+        series: series,
+        graphic: series.length ? [] : [{
+          type: "text",
+          left: "center",
+          top: "middle",
+          style: { text: "Select one or more series above to plot", fill: pal.muted, fontSize: 12, fontFamily: "Roboto, sans-serif" }
+        }]
+      }, true);
+    }
+
+    function renderResponseCodesChart(st) {
+      codesChart = ensureNetChart("chart-net-codes", codesChart);
+      if (!codesChart || !net.available) return;
+      var pal = netThemePalette();
+      var labels = buildRunLabels(st);
+      var axisLabels = buildCompactRunLabels(st);
+
+      if (codesMode === "ab") {
+        var activeRows = responseCodes.filter(function (rc) {
+          return Number((rc.runs && rc.runs[st.baseIdx]) || 0) > 0 || Number((rc.runs && rc.runs[st.targetIdx]) || 0) > 0;
+        }).slice().sort(function (a, b) {
+          var va = Math.max(Number((a.runs && a.runs[st.baseIdx]) || 0), Number((a.runs && a.runs[st.targetIdx]) || 0));
+          var vb = Math.max(Number((b.runs && b.runs[st.baseIdx]) || 0), Number((b.runs && b.runs[st.targetIdx]) || 0));
+          return va - vb;
+        });
+        var cats = activeRows.map(function (rc) { return "HTTP " + rc.code + (rc.statusText ? " " + rc.statusText : ""); });
+        var valsA = activeRows.map(function (rc) { return Number((rc.runs && rc.runs[st.baseIdx]) || 0); });
+        var valsB = activeRows.map(function (rc) { return Number((rc.runs && rc.runs[st.targetIdx]) || 0); });
+
+        codesChart.setOption({
+          animationDuration: 180,
+          tooltip: {
+            trigger: "axis",
+            axisPointer: { type: "shadow" },
+            backgroundColor: pal.tipBg,
+            borderColor: pal.tipBorder,
+            borderWidth: 1,
+            textStyle: { color: pal.text, fontSize: 12 },
+            formatter: function (params) {
+              if (!params || !params.length) return "";
+              var idx = params[0].dataIndex;
+              var d = CMP.calcDelta(valsA[idx], valsB[idx]);
+              return (
+                '<div style="font-weight:700;margin-bottom:4px">' + esc(cats[idx]) + "</div>" +
+                params.map(function (p) {
+                  var rawVal = p.seriesIndex === 0 ? valsA[idx] : valsB[idx];
+                  return '<div style="display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums"><span>' + p.marker + " " + esc(p.seriesName) + "</span><strong>" + fmtInt(rawVal) + "</strong></div>";
+                }).join("") +
+                '<div style="margin-top:4px;padding-top:4px;border-top:1px solid ' + pal.split + ';font-variant-numeric:tabular-nums">Δ: <strong>' + esc(CMP.formatAbsDelta(d, fmtInt, "")) + " (" + esc(CMP.formatPct(d)) + ")</strong></div>"
+              );
+            }
+          },
+          legend: { bottom: 4, textStyle: { color: pal.muted, fontSize: 11 } },
+          grid: { left: 155, right: 24, top: 14, bottom: 42 },
+          xAxis: {
+            type: "value",
+            axisLabel: { color: pal.muted, fontSize: 11, formatter: fmtCompactCount },
+            splitLine: { lineStyle: { color: pal.split } }
+          },
+          yAxis: {
+            type: "category",
+            data: cats,
+            axisLine: { lineStyle: { color: pal.axis } },
+            axisLabel: { color: pal.muted, fontSize: 11, width: 142, overflow: "truncate" }
+          },
+          series: [
+            { name: "Baseline (A)", type: "bar", barMaxWidth: 14, barMinHeight: 2, data: valsA.map(function (v) { return v > 0 ? v : null; }), itemStyle: { color: pal.baseColor, borderRadius: [0, 3, 3, 0] } },
+            { name: "Target (B)", type: "bar", barMaxWidth: 14, barMinHeight: 2, data: valsB.map(function (v) { return v > 0 ? v : null; }), itemStyle: { color: pal.targetColor, borderRadius: [0, 3, 3, 0] } }
+          ]
+        }, true);
+        return;
+      }
+
+      if (codesMode === "errors" && hasHttpErrorRows) {
+        var errSeries = errorCodeRows.filter(function (rc) {
+          return Array.isArray(rc.runs) && rc.runs.some(function (v) { return Number(v) > 0; });
+        }).map(function (rc, idx) {
+          var clr = statusCodeColor(rc.code, idx, pal.dark);
+          return {
+            name: "HTTP " + rc.code + (rc.statusText ? " " + rc.statusText : ""),
+            type: "line",
+            smooth: 0.12,
+            symbolSize: 6,
+            data: runs.map(function (_, i) { return Number((rc.runs && rc.runs[i]) || 0); }),
+            lineStyle: { width: 2, color: clr },
+            itemStyle: { color: clr }
+          };
+        });
+        codesChart.setOption({
+          animationDuration: 180,
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: pal.tipBg,
+            borderColor: pal.tipBorder,
+            borderWidth: 1,
+            textStyle: { color: pal.text, fontSize: 12 },
+            formatter: function (params) {
+              if (!params || !params.length) return "";
+              var idx = params[0].dataIndex;
+              var html = '<div style="font-weight:700;margin-bottom:4px">' + esc(labels[idx] || "") + "</div>";
+              params.forEach(function (p) {
+                html +=
+                  '<div style="display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums">' +
+                    "<span>" + p.marker + " " + esc(p.seriesName) + "</span>" +
+                    "<strong>" + fmtInt(p.value) + "</strong>" +
+                  "</div>";
+              });
+              return html;
+            }
+          },
+          legend: { bottom: 4, type: "scroll", textStyle: { color: pal.muted, fontSize: 11 } },
+          grid: { left: 56, right: 20, top: 20, bottom: 48 },
+          xAxis: {
+            type: "category",
+            data: axisLabels,
+            axisLine: { lineStyle: { color: pal.axis } },
+            axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 110 }
+          },
+          yAxis: {
+            type: "value",
+            minInterval: 1,
+            name: "Responses",
+            nameTextStyle: { color: pal.muted, fontSize: 10 },
+            axisLabel: { color: pal.muted, fontSize: 11, formatter: fmtCompactCount },
+            splitLine: { lineStyle: { color: pal.split } }
+          },
+          series: errSeries
+        }, true);
+        return;
+      }
+
+      // Default: All Codes stacked bars across runs
+      var allSeries = responseCodes.filter(function (rc) {
+        return Array.isArray(rc.runs) && rc.runs.some(function (v) { return Number(v) > 0; });
+      }).map(function (rc, idx) {
+        var clr = statusCodeColor(rc.code, idx, pal.dark);
+        return {
+          name: "HTTP " + rc.code,
+          type: "bar",
+          stack: "codes",
+          barMaxWidth: 34,
+          data: runs.map(function (_, i) { return Number((rc.runs && rc.runs[i]) || 0); }),
+          itemStyle: { color: clr }
+        };
+      });
+
+      codesChart.setOption({
+        animationDuration: 180,
+        tooltip: {
+          trigger: "axis",
+          axisPointer: { type: "shadow" },
+          backgroundColor: pal.tipBg,
+          borderColor: pal.tipBorder,
+          borderWidth: 1,
+          textStyle: { color: pal.text, fontSize: 12 },
+          formatter: function (params) {
+            if (!params || !params.length) return "";
+            var idx = params[0].dataIndex;
+            var total = params.reduce(function (s, p) { return s + (Number(p.value) || 0); }, 0);
+            var html = '<div style="font-weight:700;margin-bottom:4px">' + esc(labels[idx] || "") + "</div>";
+            params.forEach(function (p) {
+              var val = Number(p.value) || 0;
+              var share = total > 0 ? " (" + fmtDec((val * 100) / total, 2) + "%)" : "";
+              html +=
+                '<div style="display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums">' +
+                  "<span>" + p.marker + " " + esc(p.seriesName) + "</span>" +
+                  "<strong>" + fmtInt(val) + esc(share) + "</strong>" +
+                "</div>";
+            });
+            return html;
+          }
+        },
+        legend: { bottom: 4, type: "scroll", textStyle: { color: pal.muted, fontSize: 11 } },
+        grid: { left: 58, right: 20, top: 20, bottom: 48 },
+        xAxis: {
+          type: "category",
+          data: axisLabels,
+          axisLine: { lineStyle: { color: pal.axis } },
+          axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 110 }
+        },
+        yAxis: {
+          type: "value",
+          name: "Hits",
+          nameTextStyle: { color: pal.muted, fontSize: 10 },
+          axisLabel: { color: pal.muted, fontSize: 11, formatter: fmtCompactCount },
+          splitLine: { lineStyle: { color: pal.split } }
+        },
+        series: allSeries
+      }, true);
+    }
+
+    function renderMixChart(st) {
+      mixChart = ensureNetChart("chart-net-mix", mixChart);
+      if (!mixChart || !net.available) return;
+      var pal = netThemePalette();
+      var labels = buildRunLabels(st);
+      var axisLabels = buildCompactRunLabels(st);
+
+      var rawRows = [];
+      var labelFn;
+      if (mixMode === "methods") {
+        rawRows = Array.isArray(net.methods) ? net.methods : [];
+        labelFn = function (r) { return r.method || "(unknown)"; };
+      } else if (mixMode === "hosts") {
+        rawRows = Array.isArray(net.hosts) ? net.hosts : [];
+        labelFn = function (r) { return r.name || "(unknown)"; };
+      } else {
+        rawRows = Array.isArray(net.contentTypes) ? net.contentTypes : [];
+        labelFn = function (r) { return r.contentType || "(unspecified)"; };
+      }
+
+      var ranked = rawRows.map(function (r) {
+        var vals = runs.map(function (_, i) { return Number((r.runs && r.runs[i]) || 0); });
+        var total = vals.reduce(function (s, v) { return s + v; }, 0);
+        return { name: labelFn(r), vals: vals, total: total };
+      }).filter(function (x) { return x.total > 0; })
+        .sort(function (a, b) { return b.total - a.total; });
+
+      var MAX_SERIES = 7;
+      var top = ranked.slice(0, MAX_SERIES);
+      if (ranked.length > MAX_SERIES) {
+        var rest = ranked.slice(MAX_SERIES);
+        var otherVals = runs.map(function (_, i) {
+          return rest.reduce(function (s, x) { return s + x.vals[i]; }, 0);
+        });
+        top.push({ name: "Other (" + rest.length + ")", vals: otherVals, total: 1 });
+      }
+
+      var series = top.map(function (item, idx) {
+        return {
+          name: item.name,
+          type: "bar",
+          stack: "mix",
+          barMaxWidth: 34,
+          data: item.vals,
+          itemStyle: { color: pal.mixPalette[idx % pal.mixPalette.length] }
+        };
+      });
+
+      mixChart.setOption({
+        animationDuration: 180,
+        tooltip: {
+          trigger: "axis",
+          axisPointer: { type: "shadow" },
+          backgroundColor: pal.tipBg,
+          borderColor: pal.tipBorder,
+          borderWidth: 1,
+          textStyle: { color: pal.text, fontSize: 12 },
+          formatter: function (params) {
+            if (!params || !params.length) return "";
+            var idx = params[0].dataIndex;
+            var total = params.reduce(function (s, p) { return s + (Number(p.value) || 0); }, 0);
+            var html = '<div style="font-weight:700;margin-bottom:4px">' + esc(labels[idx] || "") + "</div>";
+            params.forEach(function (p) {
+              var val = Number(p.value) || 0;
+              var share = total > 0 ? " (" + fmtDec((val * 100) / total, 1) + "%)" : "";
+              html +=
+                '<div style="display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums">' +
+                  "<span>" + p.marker + " " + esc(p.seriesName) + "</span>" +
+                  "<strong>" + fmtInt(val) + esc(share) + "</strong>" +
+                "</div>";
+            });
+            return html;
+          }
+        },
+        legend: { bottom: 4, type: "scroll", textStyle: { color: pal.muted, fontSize: 11 } },
+        grid: { left: 58, right: 20, top: 20, bottom: 48 },
+        xAxis: {
+          type: "category",
+          data: axisLabels,
+          axisLine: { lineStyle: { color: pal.axis } },
+          axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 110 }
+        },
+        yAxis: {
+          type: "value",
+          name: "Hits",
+          nameTextStyle: { color: pal.muted, fontSize: 10 },
+          axisLabel: { color: pal.muted, fontSize: 11, formatter: fmtCompactCount },
+          splitLine: { lineStyle: { color: pal.split } }
+        },
+        series: series
+      }, true);
+    }
+
+    function renderAllCharts(st) {
+      renderTrafficChart(st);
+      var breakdownGrid = document.getElementById("net-breakdown-charts");
+      if (breakdownGrid) breakdownGrid.hidden = !net.available;
+      if (net.available) {
+        renderResponseCodesChart(st);
+        renderMixChart(st);
+      }
+    }
 
     function draw() {
       var st = CMP.getState();
@@ -380,11 +1131,41 @@
         var dRx = CMP.calcDelta(baseRun.bytesReceived, targetRun.bytesReceived);
         var dTx = CMP.calcDelta(baseRun.bytesSent, targetRun.bytesSent);
         var dHits = CMP.calcDelta(baseRun.hits, targetRun.hits);
+        var durA = Number(baseRun.durationSec) || 0;
+        var durB = Number(targetRun.durationSec) || 0;
+        var rxRateSub = (durA > 0 && durB > 0 && dRx.valA !== null && dRx.valB !== null)
+          ? (fmtBytes(dRx.valA / durA) + "/s → " + fmtBytes(dRx.valB / durB) + "/s")
+          : "";
+        var txRateSub = (durA > 0 && durB > 0 && dTx.valA !== null && dTx.valB !== null)
+          ? (fmtBytes(dTx.valA / durA) + "/s → " + fmtBytes(dTx.valB / durB) + "/s")
+          : "";
+        var hitRateSub = (durA > 0 && durB > 0 && dHits.valA !== null && dHits.valB !== null)
+          ? (fmtDec(dHits.valA / durA, 1) + " → " + fmtDec(dHits.valB / durB, 1) + " hits/s")
+          : "";
+
+        var fourthCard = "";
+        if (net.available && responseCodes.length) {
+          var errA = sumHttpErrorsForRun(st.baseIdx);
+          var errB = sumHttpErrorsForRun(st.targetIdx);
+          var dErr = CMP.calcDelta(errA, errB);
+          var errPctA = (baseRun.hits > 0 && errA !== null) ? fmtDec((errA * 100) / baseRun.hits, 3) + "%" : "";
+          var errPctB = (targetRun.hits > 0 && errB !== null) ? fmtDec((errB * 100) / targetRun.hits, 3) + "%" : "";
+          var errSub = (errPctA && errPctB) ? (errPctA + " → " + errPctB + " of hits") : "4xx, 5xx & status 0 responses";
+          fourthCard = renderNetKpi("HTTP Errors (4xx/5xx)", dErr, fmtInt, "lower", errSub, { deadband: 0, absPill: true });
+        } else if (durA > 0 && durB > 0 && dRx.valA !== null && dRx.valB !== null) {
+          var dBw = CMP.calcDelta(dRx.valA / durA, dRx.valB / durB);
+          fourthCard = renderNetKpi("Avg Download Rate", dBw, function (v) { return fmtBytes(v) + "/s"; }, "neutral", "");
+        }
+
+        kpis.className = fourthCard ? "kpi-grid-4" : "kpi-grid-3";
         kpis.innerHTML =
-          renderNetKpi("Bytes Received", dRx, fmtBytes, "neutral") +
-          renderNetKpi("Bytes Sent", dTx, fmtBytes, "neutral") +
-          renderNetKpi("Total Hits", dHits, fmtInt, "higher");
+          renderNetKpi("Bytes Received", dRx, fmtBytes, "neutral", rxRateSub) +
+          renderNetKpi("Bytes Sent", dTx, fmtBytes, "neutral", txRateSub) +
+          renderNetKpi("Total Hits", dHits, fmtInt, "higher", hitRateSub) +
+          fourthCard;
       }
+
+      renderAllCharts(st);
 
       var tablesBox = document.getElementById("net-tables-wrap");
       var emptyBox = document.getElementById("net-empty");
@@ -413,12 +1194,15 @@
       }
     }
 
-    function renderNetKpi(label, delta, fmtFn, pol) {
-      var pc = CMP.polarityClass(delta, pol, 1.0);
+    function renderNetKpi(label, delta, fmtFn, pol, subText, opts) {
+      opts = opts || {};
+      var pc = CMP.polarityClass(delta, pol, opts.deadband !== undefined ? opts.deadband : 1.0);
+      var pillTxt = opts.absPill ? CMP.formatAbsDelta(delta, fmtFn, "") : CMP.formatPct(delta);
       return (
         '<article class="kpi-card">' +
-          '<div class="cmp-kpi-head"><span class="kpi-label">' + esc(label) + '</span><span class="cmp-delta-pill ' + pc + '">' + esc(CMP.formatPct(delta)) + "</span></div>" +
+          '<div class="cmp-kpi-head"><span class="kpi-label">' + esc(label) + '</span><span class="cmp-delta-pill ' + pc + '">' + esc(pillTxt) + "</span></div>" +
           '<div class="cmp-kpi-pair"><span class="cmp-kpi-curr">' + (delta.valB !== null ? esc(fmtFn(delta.valB)) : "—") + '</span><span class="cmp-kpi-prev">from ' + (delta.valA !== null ? esc(fmtFn(delta.valA)) : "—") + "</span></div>" +
+          (subText ? '<div class="kpi-sub">' + esc(subText) + "</div>" : "") +
         "</article>"
       );
     }
@@ -452,8 +1236,25 @@
       }).join("");
     }
 
+    initTabVisibility();
+    wireTablist("net-traffic-mode-tabs", "data-net-mode", function (mode) {
+      trafficMode = mode || "rate";
+      renderTrafficChart(CMP.getState());
+    });
+    wireTablist("net-codes-mode-tabs", "data-codes-mode", function (mode) {
+      codesMode = mode || "all";
+      renderResponseCodesChart(CMP.getState());
+    });
+    wireTablist("net-mix-mode-tabs", "data-mix-mode", function (mode) {
+      mixMode = mode || "contentTypes";
+      renderMixChart(CMP.getState());
+    });
+
     draw();
     window.addEventListener("xlt-cmp-change", draw);
+    window.addEventListener("xlt-theme-changed", function () {
+      renderAllCharts(CMP.getState());
+    });
   }
 
   // =========================================================================

@@ -1428,14 +1428,8 @@ html.dark-theme .wb-kpi-val.highlight-cph {
 .wb-tab-btn[aria-selected="true"] {
   background: var(--brand-blue);
   color: var(--brand-ink-on-accent);
+  border-color: var(--brand-blue);
   box-shadow: none;
-}
-.wb-tab-btn[aria-selected="true"]::after {
-  content: "";
-  position: absolute;
-  inset-inline: 8px;
-  inset-block-end: 0;
-  border-block-end: 2px solid var(--brand-ink-on-accent);
 }
 
 .wb-tabs-hint {
@@ -1568,6 +1562,9 @@ html.dark-theme .wb-kpi-val.highlight-cph {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1 1 340px;
+  min-inline-size: min(260px, 100%);
+  max-inline-size: 540px;
 }
 
 .input-search,
@@ -1579,7 +1576,11 @@ html.dark-theme .wb-kpi-val.highlight-cph {
   background: var(--bg-subtle);
   color: var(--text-primary);
   font-size: 12px;
-  min-inline-size: 290px;
+  min-inline-size: min(290px, 100%);
+}
+.table-search-wrap > :where(.input-search, .filter-input, .table-search-input) {
+  inline-size: 100%;
+  min-inline-size: 0;
 }
 .input-search:focus,
 .filter-input:focus,
@@ -2329,7 +2330,7 @@ html.dark-theme .stream-sticky-header {
   white-space: nowrap;
   position: relative;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   padding: 2px 7px;
   border-radius: 4px;
   font-size: 10.5px;
@@ -2344,13 +2345,7 @@ html.dark-theme .stream-sticky-header {
 .stream-card-tab[aria-selected="true"] {
   background: var(--brand-blue-subtle);
   color: var(--brand-blue);
-}
-.stream-card-tab[aria-selected="true"]::after {
-  content: "";
-  position: absolute;
-  inset-inline: 5px;
-  inset-block-end: 0;
-  border-block-end: 2px solid currentColor;
+  border-color: var(--brand-blue-border);
 }
 .stream-card-stats {
   display: flex;
@@ -3993,6 +3988,16 @@ html.dark-theme .apdex-pill.apdex-unacceptable {
   .card, .kpi-card, .verdict-banner {
     box-shadow: none !important;
     break-inside: avoid;
+  }
+}
+
+@media (forced-colors: active) {
+  .wb-tab-btn[aria-selected="true"],
+  .stream-card-tab[aria-selected="true"] {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+    forced-color-adjust: none;
   }
 }
 
