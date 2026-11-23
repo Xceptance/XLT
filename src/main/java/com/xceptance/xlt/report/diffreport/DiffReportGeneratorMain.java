@@ -86,6 +86,24 @@ public class DiffReportGeneratorMain
 
             // get the command-line options
             final String outputDirName = commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_OUTPUT_DIR);
+            final boolean linkToReports;
+            if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS))
+            {
+                try
+                {
+                    linkToReports = ModernComparisonReportGenerator.parseLinkToReportsOptionValue(
+                        commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS));
+                }
+                catch (final IllegalArgumentException e)
+                {
+                    System.err.println(e.getMessage());
+                    throw new org.apache.commons.cli.ParseException(e.getMessage());
+                }
+            }
+            else
+            {
+                linkToReports = config.isLinkToReports();
+            }
 
             // check the remaining arguments
             final String[] remainingArgs = commandLine.getArgs();
@@ -143,7 +161,7 @@ public class DiffReportGeneratorMain
                     new ModernComparisonReportGenerator.RunInput(oldName, oldReportDir, oldTestReport),
                     new ModernComparisonReportGenerator.RunInput(newName, newReportDir, newTestReport));
                 new ModernComparisonReportGenerator().generateFromTestReports(
-                    "diff", projectName, runInputs, config.getConfigDirectory(), outputDir);
+                    "diff", projectName, runInputs, config.getConfigDirectory(), outputDir, linkToReports);
             }
             else
             {
@@ -319,6 +337,11 @@ public class DiffReportGeneratorMain
         final Option targetDir = new Option("o", true, "the difference report target directory");
         targetDir.setArgName("dir");
         options.addOption(targetDir);
+
+        final Option linkToReports = new Option(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS, true,
+                                                "whether or not to link to the individual single-run reports (default: no)");
+        linkToReports.setArgName("yes|no");
+        options.addOption(linkToReports);
 
         return options;
     }

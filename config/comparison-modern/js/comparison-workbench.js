@@ -253,8 +253,9 @@
         applyFilterAndSort(false, true);
         var statusEl = document.getElementById("table-sort-status");
         if (statusEl) {
+          var sortedCount = uiState.activeList.filter(function (x) { return !x.isAggregate; }).length;
           statusEl.textContent = "Sorted by " + (th.textContent || "").trim() + ", " +
-            (uiState.sortDir === "asc" ? "ascending" : "descending") + ", " + uiState.activeList.length + " rows";
+            (uiState.sortDir === "asc" ? "ascending" : "descending") + ", " + fmtInt(sortedCount) + " items";
         }
       });
     }
@@ -919,10 +920,24 @@
     function updatePagerControls() {
       var list = uiState.activeList;
       var idx = list.findIndex(function (x) { return (x.key || x.name) === uiState.selectedKey; });
+      var selected = idx >= 0 ? list[idx] : null;
+      var regularItems = list.filter(function (x) { return !x.isAggregate; });
+      var totalRegular = regularItems.length;
       var counter = document.getElementById("wb-counter");
       var prevBtn = document.getElementById("wb-prev");
       var nextBtn = document.getElementById("wb-next");
-      if (counter) counter.textContent = list.length ? ("Item " + (idx >= 0 ? idx + 1 : 0) + " of " + fmtInt(list.length)) : "0 items";
+      if (counter) {
+        if (!list.length) {
+          counter.textContent = "0 items";
+        } else if (selected && selected.isAggregate) {
+          counter.textContent = totalRegular > 0
+            ? ("Summary (" + fmtInt(totalRegular) + " " + (totalRegular === 1 ? "item" : "items") + ")")
+            : "Summary";
+        } else {
+          var regIdx = selected ? regularItems.indexOf(selected) : -1;
+          counter.textContent = "Item " + (regIdx >= 0 ? fmtInt(regIdx + 1) : "0") + " of " + fmtInt(totalRegular);
+        }
+      }
       if (prevBtn) prevBtn.disabled = idx <= 0;
       if (nextBtn) nextBtn.disabled = idx < 0 || idx >= list.length - 1;
     }

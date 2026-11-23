@@ -37,8 +37,10 @@ import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltExecutionContext;
+import com.xceptance.xlt.report.diffreport.DiffReportGeneratorConfiguration;
 import com.xceptance.xlt.report.modern.ModernComparisonReportGenerator;
 import com.xceptance.xlt.report.modern.ModernReportGenerator;
+import com.xceptance.xlt.report.trendreport.TrendReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.util.Timer;
 
@@ -59,6 +61,8 @@ public final class UpdateReportUiMain
     private File reportDir;
 
     private boolean helpRequested;
+
+    private Boolean linkToReportsOverride;
 
     private UpdateReportUiMain()
     {
@@ -127,6 +131,12 @@ public final class UpdateReportUiMain
             return;
         }
 
+        if (cmdLine.hasOption(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS))
+        {
+            linkToReportsOverride = Boolean.valueOf(ModernComparisonReportGenerator.parseLinkToReportsOptionValue(
+                cmdLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS)));
+        }
+
         final List<String> nonBlankArgs = new ArrayList<>();
         for (final String arg : cmdLine.getArgs())
         {
@@ -188,7 +198,8 @@ public final class UpdateReportUiMain
         }
         else
         {
-            new ModernComparisonReportGenerator().updateExistingReportDir(configDir, reportDir);
+            final boolean linkToReports = resolveLinkToReports(configDir, reportDir);
+            new ModernComparisonReportGenerator().updateExistingReportDir(configDir, reportDir, linkToReports);
         }
 
         XltLogger.reportLogger.info(timer.stop().get("...finished"));
@@ -196,6 +207,31 @@ public final class UpdateReportUiMain
 
         final File indexFile = new File(reportDir, "index.html");
         XltLogger.reportLogger.info("Report: {}", ReportUtils.toString(indexFile));
+    }
+
+    private boolean resolveLinkToReports(final File configDir, final File targetReportDir)
+    {
+        if (linkToReportsOverride != null)
+        {
+            return linkToReportsOverride.booleanValue();
+        }
+        final File homeDir = XltExecutionContext.getCurrent().getXltHomeDir();
+        try
+        {
+            if (new File(targetReportDir, XltConstants.DIFF_REPORT_XML_FILENAME).isFile())
+            {
+                return new DiffReportGeneratorConfiguration(homeDir, configDir, null).isLinkToReports();
+            }
+            if (new File(targetReportDir, XltConstants.TREND_REPORT_XML_FILENAME).isFile())
+            {
+                return new TrendReportGeneratorConfiguration(homeDir, configDir, null).isLinkToReports();
+            }
+        }
+        catch (final Exception e)
+        {
+            LOG.debug("Could not read linkToReports setting from config directory '{}'; defaulting to false", configDir, e);
+        }
+        return false;
     }
 
     private void printUsage()
@@ -215,6 +251,10 @@ public final class UpdateReportUiMain
     {
         final Options opts = new Options();
         opts.addOption(Option.builder("h").longOpt(OPTION_HELP).desc("print this usage help").build());
+        final Option linkToReports = new Option(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS, true,
+                                                "whether or not to link diff/trend reports to single-run reports (default: no)");
+        linkToReports.setArgName("yes|no");
+        opts.addOption(linkToReports);
         return opts;
     }
 }

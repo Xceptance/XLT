@@ -92,6 +92,9 @@
     var linkHtml = run.reportHref
       ? '<a class="btn-chip" href="' + esc(run.reportHref) + '" target="_blank" rel="noopener">Open Run ↗</a>'
       : "";
+    var headActionsHtml = (scHtml || linkHtml)
+      ? '<div style="display:inline-flex;align-items:center;gap:6px">' + scHtml + linkHtml + "</div>"
+      : "";
 
     var commentHtml = "";
     if (run.commentHeadline || run.commentPlain) {
@@ -109,7 +112,7 @@
             '<span class="cmp-run-badge ' + roleClass + '">' + esc(roleLabel) + "</span>" +
             "<span>#" + (idx + 1) + " " + esc(run.name || ("Run " + (idx + 1))) + "</span>" +
           "</div>" +
-          '<div style="display:inline-flex;align-items:center;gap:6px">' + scHtml + linkHtml + "</div>" +
+          headActionsHtml +
         "</div>" +
         '<div class="cmp-run-panel-meta">' + metrics.join("") + "</div>" +
         commentHtml +

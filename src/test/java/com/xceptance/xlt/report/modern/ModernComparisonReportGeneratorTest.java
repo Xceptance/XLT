@@ -110,6 +110,116 @@ public class ModernComparisonReportGeneratorTest
     }
 
     @Test
+    public void testConfigurationLinkToReportsDefaultOffAndOverride() throws Exception
+    {
+        final File configDir = new File("config");
+        final File homeDir = new File(".");
+
+        final DiffReportGeneratorConfiguration diffDefault = new DiffReportGeneratorConfiguration(homeDir, configDir, null);
+        assertFalse(diffDefault.isLinkToReports());
+
+        final TrendReportGeneratorConfiguration trendDefault = new TrendReportGeneratorConfiguration(homeDir, configDir, null);
+        assertFalse(trendDefault.isLinkToReports());
+
+        final Properties overrideProps = new Properties();
+        overrideProps.setProperty(DiffReportGeneratorConfiguration.PROP_LINK_TO_REPORTS, "true");
+        overrideProps.setProperty(TrendReportGeneratorConfiguration.PROP_LINK_TO_REPORTS, "true");
+
+        assertTrue(new DiffReportGeneratorConfiguration(homeDir, configDir, overrideProps).isLinkToReports());
+        assertTrue(new TrendReportGeneratorConfiguration(homeDir, configDir, overrideProps).isLinkToReports());
+
+        final String prevDiffSys = System.getProperty(DiffReportGeneratorConfiguration.PROP_LINK_TO_REPORTS);
+        final String prevTrendSys = System.getProperty(TrendReportGeneratorConfiguration.PROP_LINK_TO_REPORTS);
+        try
+        {
+            System.setProperty(DiffReportGeneratorConfiguration.PROP_LINK_TO_REPORTS, "true");
+            System.setProperty(TrendReportGeneratorConfiguration.PROP_LINK_TO_REPORTS, "true");
+
+            assertTrue(new DiffReportGeneratorConfiguration(homeDir, configDir, null).isLinkToReports());
+            assertTrue(new TrendReportGeneratorConfiguration(homeDir, configDir, null).isLinkToReports());
+        }
+        finally
+        {
+            restoreSystemProperty(DiffReportGeneratorConfiguration.PROP_LINK_TO_REPORTS, prevDiffSys);
+            restoreSystemProperty(TrendReportGeneratorConfiguration.PROP_LINK_TO_REPORTS, prevTrendSys);
+        }
+
+        assertTrue(ModernComparisonReportGenerator.parseLinkToReportsOptionValue("yes"));
+        assertTrue(ModernComparisonReportGenerator.parseLinkToReportsOptionValue("YES"));
+        assertTrue(ModernComparisonReportGenerator.parseLinkToReportsOptionValue("true"));
+        assertFalse(ModernComparisonReportGenerator.parseLinkToReportsOptionValue("no"));
+        assertFalse(ModernComparisonReportGenerator.parseLinkToReportsOptionValue("NO"));
+        assertFalse(ModernComparisonReportGenerator.parseLinkToReportsOptionValue("false"));
+        try
+        {
+            ModernComparisonReportGenerator.parseLinkToReportsOptionValue("maybe");
+            org.junit.Assert.fail("Expected IllegalArgumentException for invalid linkToReports flag value");
+        }
+        catch (final IllegalArgumentException expected)
+        {
+            assertTrue(expected.getMessage().contains("linkToReports"));
+        }
+    }
+
+    @Test
+    public void testLinkToReportsFeatureFlagDefaultOffAndOptIn() throws Exception
+    {
+        final File run1Dir = tempFolder.newFolder("link-run-1");
+        final File run2Dir = tempFolder.newFolder("link-run-2");
+        final File outOffDir = tempFolder.newFolder("link-diff-off");
+        final File outOnDir = tempFolder.newFolder("link-diff-on");
+
+        final String xml = buildSampleTestReportXml("LinkShop", "Run", List.of("50"), 100.0, 0, false, false, 0);
+        final File xml1File = new File(run1Dir, XltConstants.LOAD_REPORT_XML_FILENAME);
+        final File xml2File = new File(run2Dir, XltConstants.LOAD_REPORT_XML_FILENAME);
+        Files.writeString(xml1File.toPath(), xml, StandardCharsets.UTF_8);
+        Files.writeString(xml2File.toPath(), xml, StandardCharsets.UTF_8);
+        Files.writeString(new File(run1Dir, "index.html").toPath(), "<html></html>", StandardCharsets.UTF_8);
+        Files.writeString(new File(run2Dir, "index.html").toPath(), "<html></html>", StandardCharsets.UTF_8);
+
+        final ModernReportGenerator xmlHelper = new ModernReportGenerator();
+        final List<ModernComparisonReportGenerator.RunInput> inputs = List.of(
+            new ModernComparisonReportGenerator.RunInput("link-run-1", run1Dir, xmlHelper.parseXmlDocument(xml1File)),
+            new ModernComparisonReportGenerator.RunInput("link-run-2", run2Dir, xmlHelper.parseXmlDocument(xml2File)));
+
+        final ModernComparisonReportGenerator generator = new ModernComparisonReportGenerator();
+        final File configDir = new File("config");
+
+        // Default overload leaves reportHref disabled even when source index.html exists
+        generator.generateFromTestReports("diff", "LinkShop", inputs, configDir, outOffDir);
+        final Map<String, Object> metaOff = readJsBundle(new File(outOffDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> runsOff = (List<Map<String, Object>>) metaOff.get("runs");
+        assertEquals(2, runsOff.size());
+        assertNull(runsOff.get(0).get("reportHref"));
+        assertNull(runsOff.get(1).get("reportHref"));
+        assertFalse(runsOff.get(0).containsKey("reportHref"));
+
+        // Explicit opt-in emits relative reportHref links
+        generator.generateFromTestReports("diff", "LinkShop", inputs, configDir, outOnDir, true);
+        final Map<String, Object> metaOn = readJsBundle(new File(outOnDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> runsOn = (List<Map<String, Object>>) metaOn.get("runs");
+        assertEquals("../link-run-1/index.html", runsOn.get(0).get("reportHref"));
+        assertEquals("../link-run-2/index.html", runsOn.get(1).get("reportHref"));
+
+        // Updating with linkToReports=true preserves links from snapshot
+        generator.updateExistingReportDir(configDir, outOnDir, true);
+        final Map<String, Object> metaUpdatedOn = readJsBundle(new File(outOnDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> runsUpdatedOn = (List<Map<String, Object>>) metaUpdatedOn.get("runs");
+        assertEquals("../link-run-1/index.html", runsUpdatedOn.get(0).get("reportHref"));
+
+        // Updating with default (off) strips reportHref from js/report-meta.js
+        generator.updateExistingReportDir(configDir, outOnDir);
+        final Map<String, Object> metaUpdatedOff = readJsBundle(new File(outOnDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> runsUpdatedOff = (List<Map<String, Object>>) metaUpdatedOff.get("runs");
+        assertNull(runsUpdatedOff.get(0).get("reportHref"));
+        assertNull(runsUpdatedOff.get(1).get("reportHref"));
+    }
+
+    @Test
     public void testGenerateDiffFromTestReportsAndSnapshotUpdateRoundTrip() throws Exception
     {
         final File run1Dir = tempFolder.newFolder("run-1");

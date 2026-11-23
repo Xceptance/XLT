@@ -231,6 +231,11 @@ public final class XltConstants
     public static final String COMMANDLINE_OPTION_PDF = "pdf";
 
     /**
+     * The option name of the <em>linkToReports</em> option on the command line for diff/trend reports.
+     */
+    public static final String COMMANDLINE_OPTION_LINK_TO_REPORTS = "linkToReports";
+
+    /**
      * The option name of the <em>rating-score</em> option on the command line.
      */
     public static final String COMMANDLINE_OPTION_RATING_SCORE = "rating-score";

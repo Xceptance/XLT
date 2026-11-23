@@ -40,6 +40,8 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
 
     public static final String PROP_UI_MODE = PROP_PREFIX + "ui";
 
+    public static final String PROP_LINK_TO_REPORTS = PROP_PREFIX + "linkToReports";
+
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
 
     private static final String PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX = ".styleSheetFileName";
@@ -57,6 +59,8 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     private final List<String> outputFileNames;
 
     private final UiMode uiMode;
+
+    private final boolean linkToReports;
 
     public DiffReportGeneratorConfiguration() throws IOException
     {
@@ -91,6 +95,13 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
             p.setProperty(PROP_UI_MODE, sysUi);
             addProperties(p);
         }
+        final String sysLinkToReports = System.getProperty(PROP_LINK_TO_REPORTS);
+        if (sysLinkToReports != null)
+        {
+            final Properties p = new Properties();
+            p.setProperty(PROP_LINK_TO_REPORTS, sysLinkToReports);
+            addProperties(p);
+        }
         if (overrideProperties != null)
         {
             addProperties(overrideProperties);
@@ -105,6 +116,7 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         reportsRootDirectory = reportsRootDir;
 
         uiMode = getEnumProperty(UiMode.class, PROP_UI_MODE, UiMode.MODERN);
+        linkToReports = getBooleanProperty(PROP_LINK_TO_REPORTS, false);
 
         // load the transformation configuration
         outputFileNames = new ArrayList<String>();
@@ -220,6 +232,17 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     public boolean isModernUi()
     {
         return uiMode == UiMode.MODERN;
+    }
+
+    /**
+     * Returns whether relative links to the individual single-run load test reports shall be generated in modern
+     * difference reports ({@code false} by default).
+     *
+     * @return {@code true} if links to source reports are enabled, {@code false} otherwise
+     */
+    public boolean isLinkToReports()
+    {
+        return linkToReports;
     }
 
     /**

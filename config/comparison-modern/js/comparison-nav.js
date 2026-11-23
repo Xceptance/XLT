@@ -182,6 +182,7 @@
         baseLink.hidden = false;
         baseLink.title = "Open Baseline single-run report (" + (rA.name || "") + ")";
       } else {
+        baseLink.removeAttribute("href");
         baseLink.hidden = true;
       }
     }
@@ -191,6 +192,7 @@
         targetLink.hidden = false;
         targetLink.title = "Open Target single-run report (" + (rB.name || "") + ")";
       } else {
+        targetLink.removeAttribute("href");
         targetLink.hidden = true;
       }
     }

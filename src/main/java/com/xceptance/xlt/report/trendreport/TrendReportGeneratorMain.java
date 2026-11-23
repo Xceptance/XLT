@@ -191,6 +191,11 @@ public class TrendReportGeneratorMain
         final Option noCharts = new Option(XltConstants.COMMANDLINE_OPTION_NO_CHARTS, false, "disables generation of charts");
         options.addOption(noCharts);
 
+        final Option linkToReports = new Option(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS, true,
+                                                "whether or not to link to the individual single-run reports (default: no)");
+        linkToReports.setArgName("yes|no");
+        options.addOption(linkToReports);
+
         return options;
     }
 
@@ -854,6 +859,24 @@ public class TrendReportGeneratorMain
 
             noCharts = commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_NO_CHARTS);
             noSorting = commandLine.hasOption("noSorting");
+            final boolean linkToReports;
+            if (commandLine.hasOption(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS))
+            {
+                try
+                {
+                    linkToReports = ModernComparisonReportGenerator.parseLinkToReportsOptionValue(
+                        commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS));
+                }
+                catch (final IllegalArgumentException e)
+                {
+                    System.err.println(e.getMessage());
+                    throw new org.apache.commons.cli.ParseException(e.getMessage());
+                }
+            }
+            else
+            {
+                linkToReports = config.isLinkToReports();
+            }
 
             // create the output directory
             final File outputDir;
@@ -944,7 +967,7 @@ public class TrendReportGeneratorMain
                     }
                 }
                 new ModernComparisonReportGenerator().generateFromTestReports(
-                    "trend", projectName, orderedInputs, config.getConfigDirectory(), outputDir);
+                    "trend", projectName, orderedInputs, config.getConfigDirectory(), outputDir, linkToReports);
             }
             else
             {

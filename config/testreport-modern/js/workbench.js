@@ -1475,7 +1475,15 @@
         }
       }
       if (wbCounter) {
-        wbCounter.textContent = (cfg.entityLabel || "Item") + " " + (state.activeIdx + 1).toLocaleString("en-US") + " of " + state.activeList.length.toLocaleString("en-US");
+        var regularItems = state.activeList.filter(function (x) { return !x.isAggregate; });
+        if (item.isAggregate) {
+          wbCounter.textContent = regularItems.length > 0
+            ? ("Summary (" + regularItems.length.toLocaleString("en-US") + " " + (regularItems.length === 1 ? "item" : "items") + ")")
+            : "Summary";
+        } else {
+          var regIdx = regularItems.indexOf(item);
+          wbCounter.textContent = (cfg.entityLabel || "Item") + " " + (regIdx >= 0 ? regIdx + 1 : 0).toLocaleString("en-US") + " of " + regularItems.length.toLocaleString("en-US");
+        }
       }
       if (wbPrev) wbPrev.disabled = state.activeIdx <= 0;
       if (wbNext) wbNext.disabled = state.activeIdx >= state.activeList.length - 1;
@@ -1720,6 +1728,9 @@
         if (btnAll) btnAll.addEventListener("click", function () { appendBatch(remaining); });
       }
 
+      var aggCountInActive = 0;
+      state.activeList.forEach(function (it) { if (it.isAggregate) aggCountInActive++; });
+
       function appendBatch(count) {
         var step = count || BATCH;
         var end = Math.min(cursor + step, state.activeList.length);
@@ -1732,6 +1743,7 @@
           var card = document.createElement("article");
           card.className = "stream-card";
           card.setAttribute("data-stream-key", it.key);
+          var rankLabel = it.isAggregate ? "Σ" : ("#" + (i + 1 - aggCountInActive));
           var cardLabelsHtml = (hasPageLabels && it.labels && it.labels.length)
             ? renderLabelPills(it.labels)
             : "";
@@ -1747,7 +1759,7 @@
             '<header class="stream-card-head">' +
               '<div class="stream-card-top-row">' +
                 '<div class="stream-card-title-group">' +
-                  '<span class="stream-card-rank">#' + (i + 1) + '</span>' +
+                  '<span class="stream-card-rank">' + rankLabel + '</span>' +
                   cardLabelsHtml +
                   '<div class="stream-card-name-stack">' +
                     '<span class="stream-card-name" title="' + escHtml(it.name) + '">' + escHtml(it.name) + '</span>' +

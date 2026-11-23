@@ -137,9 +137,35 @@ public class ModernComparisonReportGenerator
     }
 
     /**
+     * Parses a CLI flag value for {@code -linkToReports} (accepting {@code yes}/{@code true} or {@code no}/{@code false},
+     * case-insensitively).
+     *
+     * @param value
+     *            raw command-line option value
+     * @return parsed boolean flag
+     * @throws IllegalArgumentException
+     *             if {@code value} is blank or not a recognized boolean token
+     */
+    public static boolean parseLinkToReportsOptionValue(final String value)
+    {
+        final String trimmed = StringUtils.trimToEmpty(value);
+        if ("yes".equalsIgnoreCase(trimmed) || "true".equalsIgnoreCase(trimmed))
+        {
+            return true;
+        }
+        if ("no".equalsIgnoreCase(trimmed) || "false".equalsIgnoreCase(trimmed))
+        {
+            return false;
+        }
+        throw new IllegalArgumentException("Invalid value for '-" + XltConstants.COMMANDLINE_OPTION_LINK_TO_REPORTS
+                                           + "': '" + value + "' (expected 'yes' or 'no')");
+    }
+
+    /**
      * Generates a complete modern comparison or trend report from N parsed single-run {@code testreport.xml} documents,
      * writes a lossless {@code comparison-runs.json.gz} snapshot for future {@code update_report_ui} runs, copies static
-     * templates, and emits all {@code js/*.js} bundles.
+     * templates, and emits all {@code js/*.js} bundles. Relative links to source single-run reports are disabled by
+     * default.
      *
      * @param reportKind
      *            {@code "diff"} or {@code "trend"}
@@ -158,11 +184,38 @@ public class ModernComparisonReportGenerator
         final String reportKind, final String projectName, final List<RunInput> runInputs,
         final File configDir, final File outputDir) throws IOException
     {
-        final ComparisonModel model = buildModelFromTestReports(reportKind, projectName, runInputs, outputDir);
+        generateFromTestReports(reportKind, projectName, runInputs, configDir, outputDir, false);
+    }
+
+    /**
+     * Generates a complete modern comparison or trend report from N parsed single-run {@code testreport.xml} documents,
+     * writes a lossless {@code comparison-runs.json.gz} snapshot for future {@code update_report_ui} runs, copies static
+     * templates, and emits all {@code js/*.js} bundles.
+     *
+     * @param reportKind
+     *            {@code "diff"} or {@code "trend"}
+     * @param projectName
+     *            resolved project name (may be blank)
+     * @param runInputs
+     *            ordered run inputs (index {@code 0..N-1})
+     * @param configDir
+     *            XLT {@code config/} directory containing {@code testreport-modern/} and {@code comparison-modern/}
+     * @param outputDir
+     *            target comparison/trend report output directory
+     * @param linkToReports
+     *            whether to emit relative {@code reportHref} links to each source single-run report on disk
+     * @throws IOException
+     *             if writing files or copying templates fails
+     */
+    public void generateFromTestReports(
+        final String reportKind, final String projectName, final List<RunInput> runInputs,
+        final File configDir, final File outputDir, final boolean linkToReports) throws IOException
+    {
+        final ComparisonModel model = buildModelFromTestReports(reportKind, projectName, runInputs, outputDir, linkToReports);
         FileUtils.forceMkdir(outputDir);
         writeSnapshot(model, new File(outputDir, XltConstants.COMPARISON_SNAPSHOT_FILENAME));
         copyTemplateResources(configDir, outputDir);
-        writeBundlesFromModel(model, outputDir);
+        writeBundlesFromModel(model, outputDir, linkToReports);
     }
 
     /**
@@ -182,7 +235,7 @@ public class ModernComparisonReportGenerator
         final ComparisonModel model = buildModelFromDiffXml(diffDoc);
         FileUtils.forceMkdir(outputDir);
         copyTemplateResources(configDir, outputDir);
-        writeBundlesFromModel(model, outputDir);
+        writeBundlesFromModel(model, outputDir, false);
     }
 
     /**
@@ -202,7 +255,24 @@ public class ModernComparisonReportGenerator
         final ComparisonModel model = buildModelFromTrendXml(trendDoc);
         FileUtils.forceMkdir(outputDir);
         copyTemplateResources(configDir, outputDir);
-        writeBundlesFromModel(model, outputDir);
+        writeBundlesFromModel(model, outputDir, false);
+    }
+
+    /**
+     * Updates templates and regenerates {@code js/*.js} bundles in an existing comparison or trend report directory
+     * using {@code comparison-runs.json.gz} (preferred when present), {@code diffreport.xml}, or {@code trendreport.xml}.
+     * Relative links to source single-run reports are omitted by default.
+     *
+     * @param configDir
+     *            XLT {@code config/} directory
+     * @param reportDir
+     *            existing comparison or trend report directory
+     * @throws Exception
+     *             if no supported comparison/trend data file exists or parsing/writing fails
+     */
+    public void updateExistingReportDir(final File configDir, final File reportDir) throws Exception
+    {
+        updateExistingReportDir(configDir, reportDir, false);
     }
 
     /**
@@ -213,10 +283,13 @@ public class ModernComparisonReportGenerator
      *            XLT {@code config/} directory
      * @param reportDir
      *            existing comparison or trend report directory
+     * @param linkToReports
+     *            whether to preserve any relative {@code reportHref} links stored in the snapshot when emitting
+     *            {@code js/report-meta.js}; when {@code false}, source report links are stripped from the bundle
      * @throws Exception
      *             if no supported comparison/trend data file exists or parsing/writing fails
      */
-    public void updateExistingReportDir(final File configDir, final File reportDir) throws Exception
+    public void updateExistingReportDir(final File configDir, final File reportDir, final boolean linkToReports) throws Exception
     {
         final File snapshotFile = new File(reportDir, XltConstants.COMPARISON_SNAPSHOT_FILENAME);
         final File diffXml = new File(reportDir, XltConstants.DIFF_REPORT_XML_FILENAME);
@@ -243,7 +316,7 @@ public class ModernComparisonReportGenerator
         }
 
         copyTemplateResources(configDir, reportDir);
-        writeBundlesFromModel(model, reportDir);
+        writeBundlesFromModel(model, reportDir, linkToReports);
     }
 
     /**
@@ -320,7 +393,8 @@ public class ModernComparisonReportGenerator
     // =========================================================================
 
     private ComparisonModel buildModelFromTestReports(
-        final String reportKind, final String projectName, final List<RunInput> runInputs, final File outputDir)
+        final String reportKind, final String projectName, final List<RunInput> runInputs,
+        final File outputDir, final boolean linkToReports)
     {
         final int runCount = runInputs.size();
         final ProductInformation prodInfo = ProductInformation.getProductInformation();
@@ -534,7 +608,7 @@ public class ModernComparisonReportGenerator
                 Long.valueOf(ModernReportGenerator.childLong(generalEl, "bytesReceived", 0L)),
                 Long.valueOf(ModernReportGenerator.childLong(generalEl, "hits", 0L)),
                 comments,
-                computeRelativeReportHref(outputDir, input.getReportDir()),
+                linkToReports ? computeRelativeReportHref(outputDir, input.getReportDir()) : null,
                 reportHelper.parseScorecardSummary(input.getScorecardFile()),
                 configuredUsers,
                 summaryMap);
@@ -1551,7 +1625,7 @@ public class ModernComparisonReportGenerator
         return model;
     }
 
-    private void writeBundlesFromModel(final ComparisonModel model, final File outputDir) throws IOException
+    private void writeBundlesFromModel(final ComparisonModel model, final File outputDir, final boolean linkToReports) throws IOException
     {
         final File jsDir = new File(outputDir, "js");
         FileUtils.forceMkdir(jsDir);
@@ -1566,7 +1640,7 @@ public class ModernComparisonReportGenerator
         metaBundle.put("projectName", model.projectName);
         metaBundle.put("defaultBaselineIdx", Integer.valueOf(0));
         metaBundle.put("defaultTargetIdx", Integer.valueOf(Math.max(0, runCount - 1)));
-        metaBundle.put("runs", model.runs);
+        metaBundle.put("runs", linkToReports ? model.runs : stripReportHrefs(model.runs));
         metaBundle.put("counts", model.counts);
         metaBundle.put("capabilities", model.capabilities);
 
@@ -2047,6 +2121,33 @@ public class ModernComparisonReportGenerator
             }
         }
         return String.join("\n", parts);
+    }
+
+    private static List<Map<String, Object>> stripReportHrefs(final List<Map<String, Object>> runs)
+    {
+        if (runs == null)
+        {
+            return null;
+        }
+        final List<Map<String, Object>> sanitized = new ArrayList<>(runs.size());
+        for (final Map<String, Object> run : runs)
+        {
+            if (run == null)
+            {
+                sanitized.add(null);
+            }
+            else if (run.containsKey("reportHref"))
+            {
+                final Map<String, Object> copy = new LinkedHashMap<>(run);
+                copy.remove("reportHref");
+                sanitized.add(copy);
+            }
+            else
+            {
+                sanitized.add(run);
+            }
+        }
+        return sanitized;
     }
 
     private static String computeRelativeReportHref(final File outputDir, final File sourceReportDir)
