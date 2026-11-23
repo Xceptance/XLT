@@ -28,6 +28,20 @@
   var fmtDec = UI.fmtDec;
   var fmtBytes = UI.fmtBytes;
 
+  var ICON_PIN =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<path d="M12 17v5"/>' +
+    '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
+    "</svg>";
+
+  var ICON_PIN_OFF =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+    '<line x1="2" y1="2" x2="22" y2="22"/>' +
+    '<path d="M12 17v5"/>' +
+    '<path d="M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11"/>' +
+    '<path d="M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89"/>' +
+    "</svg>";
+
   function init(config) {
     config = config || {};
     var items = Array.isArray(config.items) ? config.items : [];
@@ -94,7 +108,7 @@
       labelFilter: "ALL",
       activeList: bodyItems.slice(),
       collapsed: false,
-      pinned: true
+      pinned: false
     };
 
     var colDefs = buildColumnDefs({
@@ -110,7 +124,6 @@
 
     var rowMap = new Map();       // key -> HTMLTableRowElement
     var openDrawers = new Map();  // key -> HTMLTableRowElement (.drawer-row)
-    var aggTr = null;
     var echartInst = null;
     var echartRo = null;
 
@@ -429,6 +442,7 @@
       var key = item.key || item.name;
       tr.className = "wb-row" + (isAgg ? " is-aggregate-row" : "");
       tr.setAttribute("data-item-key", key);
+      tr.tabIndex = -1;
       colDefs.forEach(function (col) {
         var td = document.createElement("td");
         td.className = col.cls || "";
@@ -503,11 +517,6 @@
 
     function buildAllRowElements() {
       if (!tbody) return;
-      if (aggItem) {
-        aggTr = buildRowTr(aggItem, true);
-        rowMap.set(aggItem.key || aggItem.name, aggTr);
-        tbody.appendChild(aggTr);
-      }
       bodyItems.forEach(function (it) {
         var tr = buildRowTr(it, false);
         rowMap.set(it.key || it.name, tr);
@@ -531,7 +540,6 @@
     }
 
     function refreshAllRowCells() {
-      if (aggItem && aggTr) populateRowCells(aggTr, aggItem, true);
       bodyItems.forEach(function (it) {
         var tr = rowMap.get(it.key || it.name);
         if (tr) populateRowCells(tr, it, false);
@@ -629,16 +637,6 @@
 
       // Reorder existing <tr> nodes without destroying them
       var frag = document.createDocumentFragment();
-      if (aggTr) {
-        aggTr.hidden = isFiltered;
-        frag.appendChild(aggTr);
-        var aggKey = aggItem.key || aggItem.name;
-        if (openDrawers.has(aggKey)) {
-          var aggDrawer = openDrawers.get(aggKey);
-          aggDrawer.hidden = isFiltered;
-          frag.appendChild(aggDrawer);
-        }
-      }
 
       var rank = 1;
       matched.forEach(function (it) {
@@ -697,31 +695,10 @@
       }
     }
 
-    function renderTableFooter(matched, isFiltered, st) {
-      if (!tfoot) return;
-      if (!isFiltered && aggItem) {
-        var rowHtml = "<tr>";
-        colDefs.forEach(function (col) {
-          if (col.id === "idx") { rowHtml += '<td class="col-idx">Σ</td>'; return; }
-          if (col.id === "name") { rowHtml += '<td class="col-text">' + esc(aggItem.name) + " (" + fmtInt(matched.length) + " items)</td>"; return; }
-          if (col.id === "method" || col.id === "labels") { rowHtml += '<td class="' + col.cls + '">—</td>'; return; }
-          var vA = readItemMetric(aggItem, st.baseIdx, col.id);
-          var vB = readItemMetric(aggItem, st.targetIdx, col.id);
-          var d = CMP.calcDelta(vA, vB);
-          var cd = CMP.buildComparisonCellData(d, col.fmt, col.unit, col.polarity, st.viewMode, {
-            deadband: col.deadband, isEvent: col.isEvent, isError: col.isError, absPill: col.absPill
-          });
-          rowHtml += '<td class="' + col.cls + '" data-copy="' + esc(cd.copyText) + '">' + cd.html + "</td>";
-        });
-        rowHtml += "</tr>";
-        tfoot.innerHTML = rowHtml;
-        return;
-      }
-
-      // Filtered totals row summing matched items
+    function buildSummedFooterRow(rows, idxGlyph, label, trClass, st) {
       var sumA = { count: 0, rate: 0, cph: 0, errors: 0, events: 0, hasCount: false, hasRate: false, hasErr: false, hasEv: false };
       var sumB = { count: 0, rate: 0, cph: 0, errors: 0, events: 0, hasCount: false, hasRate: false, hasErr: false, hasEv: false };
-      matched.forEach(function (it) {
+      rows.forEach(function (it) {
         var rA = it.runs && it.runs[st.baseIdx];
         var rB = it.runs && it.runs[st.targetIdx];
         if (rA) {
@@ -740,10 +717,11 @@
         }
       });
 
-      var fHtml = '<tr class="filtered-totals-row">';
+      var trHtml = trClass ? ('<tr class="' + trClass + '">') : "<tr>";
       colDefs.forEach(function (col) {
-        if (col.id === "idx") { fHtml += '<td class="col-idx">Σ</td>'; return; }
-        if (col.id === "name") { fHtml += '<td class="col-text">Filtered Totals (' + fmtInt(matched.length) + " rows)</td>"; return; }
+        if (col.id === "idx") { trHtml += '<td class="col-idx">' + esc(idxGlyph) + "</td>"; return; }
+        if (col.id === "name") { trHtml += '<td class="col-text">' + esc(label) + "</td>"; return; }
+        if (col.id === "method" || col.id === "labels") { trHtml += '<td class="' + (col.cls || "") + '">—</td>'; return; }
         var cd = null;
         if (col.id === "count" && (sumA.hasCount || sumB.hasCount)) {
           cd = CMP.buildComparisonCellData(CMP.calcDelta(sumA.hasCount ? sumA.count : null, sumB.hasCount ? sumB.count : null), fmtInt, "", "higher", st.viewMode, {});
@@ -756,10 +734,40 @@
         } else if (col.id === "events" && (sumA.hasEv || sumB.hasEv)) {
           cd = CMP.buildComparisonCellData(CMP.calcDelta(sumA.hasEv ? sumA.events : null, sumB.hasEv ? sumB.events : null), fmtInt, "", "warn", st.viewMode, { deadband: 0, isEvent: true, absPill: true });
         }
-        fHtml += '<td class="' + (col.cls || "") + '"' + (cd ? ' data-copy="' + esc(cd.copyText) + '"' : "") + ">" + (cd ? cd.html : "") + "</td>";
+        trHtml += '<td class="' + (col.cls || "") + '"' + (cd ? ' data-copy="' + esc(cd.copyText) + '"' : "") + ">" + (cd ? cd.html : "") + "</td>";
       });
-      fHtml += "</tr>";
-      tfoot.innerHTML = fHtml;
+      trHtml += "</tr>";
+      return trHtml;
+    }
+
+    function renderTableFooter(matched, isFiltered, st) {
+      if (!tfoot) return;
+
+      var totalRowHtml;
+      if (aggItem) {
+        totalRowHtml = "<tr>";
+        colDefs.forEach(function (col) {
+          if (col.id === "idx") { totalRowHtml += '<td class="col-idx">Σ</td>'; return; }
+          if (col.id === "name") { totalRowHtml += '<td class="col-text">Totals (' + fmtInt(bodyItems.length) + " items)</td>"; return; }
+          if (col.id === "method" || col.id === "labels") { totalRowHtml += '<td class="' + col.cls + '">—</td>'; return; }
+          var vA = readItemMetric(aggItem, st.baseIdx, col.id);
+          var vB = readItemMetric(aggItem, st.targetIdx, col.id);
+          var d = CMP.calcDelta(vA, vB);
+          var cd = CMP.buildComparisonCellData(d, col.fmt, col.unit, col.polarity, st.viewMode, {
+            deadband: col.deadband, isEvent: col.isEvent, isError: col.isError, absPill: col.absPill
+          });
+          totalRowHtml += '<td class="' + col.cls + '" data-copy="' + esc(cd.copyText) + '">' + cd.html + "</td>";
+        });
+        totalRowHtml += "</tr>";
+      } else {
+        totalRowHtml = buildSummedFooterRow(bodyItems, "Σ", "Totals (" + fmtInt(bodyItems.length) + " items)", "", st);
+      }
+
+      var filteredRowHtml = isFiltered
+        ? buildSummedFooterRow(matched, "ƒ", "Filtered Total (" + fmtInt(matched.length) + " of " + fmtInt(bodyItems.length) + ")", "filtered-totals-row", st)
+        : "";
+
+      tfoot.innerHTML = filteredRowHtml + totalRowHtml;
     }
 
     // =====================================================================
@@ -912,7 +920,10 @@
       });
       if (shouldScrollRow) {
         var tr = rowMap.get(key);
-        if (tr && !tr.hidden && tr.scrollIntoView) tr.scrollIntoView({ block: "nearest" });
+        if (tr && !tr.hidden) {
+          if (tr.scrollIntoView) tr.scrollIntoView({ block: "nearest" });
+          try { tr.focus({ preventScroll: true }); } catch (_) { tr.focus(); }
+        }
       }
       updateWorkbench();
     }
@@ -986,10 +997,27 @@
       var collapseBtn = document.getElementById("wb-collapse-btn");
       var wbSection = document.getElementById("workbench-section");
       var wbBody = document.getElementById("wb-body");
+      var dirSection = document.getElementById("directory-section");
+      var tableScroll = dirSection ? dirSection.querySelector(".table-scroll") : null;
+      if (dirSection && !dirSection.hasAttribute("tabindex")) dirSection.tabIndex = -1;
+      if (tableScroll && !tableScroll.hasAttribute("tabindex")) tableScroll.tabIndex = -1;
+
+      function isWorkbenchInView() {
+        if (!wbSection || wbSection.hidden) return false;
+        var r = wbSection.getBoundingClientRect();
+        if (r.height <= 0) return false;
+        var header = document.querySelector(".top-header");
+        var topOffset = header ? header.getBoundingClientRect().bottom : 0;
+        var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+        return r.bottom > topOffset + 24 && r.top < vh - 24;
+      }
 
       function stepItem(dir) {
         var list = uiState.activeList;
         if (!list.length) return;
+        if (tbody && document.activeElement && tbody.contains(document.activeElement) && document.activeElement.tagName === "TR") {
+          document.activeElement.blur();
+        }
         var idx = list.findIndex(function (x) { return (x.key || x.name) === uiState.selectedKey; });
         var nextIdx = idx < 0 ? 0 : Math.max(0, Math.min(list.length - 1, idx + dir));
         selectItem(list[nextIdx].key || list[nextIdx].name, false);
@@ -1016,12 +1044,19 @@
         });
       }
 
+      function syncPinBtn() {
+        if (!pinBtn || !wbSection) return;
+        wbSection.classList.toggle("unpinned", !uiState.pinned);
+        pinBtn.classList.toggle("active", uiState.pinned);
+        pinBtn.setAttribute("aria-pressed", uiState.pinned ? "true" : "false");
+        pinBtn.title = uiState.pinned ? "Pinned to top — click to unpin" : "Unpinned — click to pin to top";
+        pinBtn.innerHTML = uiState.pinned ? ICON_PIN : ICON_PIN_OFF;
+      }
       if (pinBtn && wbSection) {
+        syncPinBtn();
         pinBtn.addEventListener("click", function () {
           uiState.pinned = !uiState.pinned;
-          pinBtn.setAttribute("aria-pressed", uiState.pinned ? "true" : "false");
-          if (uiState.pinned) { pinBtn.classList.add("active"); wbSection.classList.remove("unpinned"); }
-          else { pinBtn.classList.remove("active"); wbSection.classList.add("unpinned"); }
+          syncPinBtn();
         });
       }
       if (collapseBtn && wbBody) {
@@ -1038,9 +1073,16 @@
         var tag = e.target && e.target.tagName;
         if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
         if (e.target && e.target.closest && e.target.closest('[role="toolbar"], [role="tablist"]')) return;
-        if (e.key === "ArrowLeft") { e.preventDefault(); stepItem(-1); }
-        else if (e.key === "ArrowRight") { e.preventDefault(); stepItem(1); }
-        else if (e.key === "ArrowDown") {
+        var inTable = Boolean(dirSection && e.target && dirSection.contains(e.target));
+        if (e.key === "ArrowLeft") {
+          if (inTable || !isWorkbenchInView()) return;
+          e.preventDefault();
+          stepItem(-1);
+        } else if (e.key === "ArrowRight") {
+          if (inTable || !isWorkbenchInView()) return;
+          e.preventDefault();
+          stepItem(1);
+        } else if (e.key === "ArrowDown") {
           e.preventDefault();
           var list = uiState.activeList;
           var idx = list.findIndex(function (x) { return (x.key || x.name) === uiState.selectedKey; });
@@ -1050,8 +1092,15 @@
           var listU = uiState.activeList;
           var idxU = listU.findIndex(function (x) { return (x.key || x.name) === uiState.selectedKey; });
           if (idxU - 1 >= 0) selectItem(listU[idxU - 1].key || listU[idxU - 1].name, true);
-        } else if (e.key === "Enter" && uiState.selectedKey && document.activeElement === document.body) {
-          toggleRowDrawer(uiState.selectedKey);
+        } else if (e.key === "Enter" && e.target && e.target.closest && !e.target.closest("button,a")) {
+          var rowEl = e.target.closest("#dir-table tbody tr.wb-row");
+          if (rowEl && !rowEl.hidden) {
+            var rowKey = rowEl.getAttribute("data-item-key");
+            if (rowKey) {
+              e.preventDefault();
+              toggleRowDrawer(rowKey);
+            }
+          }
         }
       });
     }

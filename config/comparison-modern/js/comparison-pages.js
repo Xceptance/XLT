@@ -679,7 +679,7 @@
       var hasHits = rawHits.some(function (v) { return v !== null; });
 
       var seriesDefs = [];
-      if (hasRecv) seriesDefs.push({ key: "recv", label: isRate ? "Recv/s" : "Received", group: "bw", color: pal.recv, swatch: "line", active: Boolean(trafficSeriesState.recv) });
+      if (hasRecv) seriesDefs.push({ key: "recv", label: isRate ? "Received/s" : "Received", group: "bw", color: pal.recv, swatch: "line", active: Boolean(trafficSeriesState.recv) });
       if (hasSent) seriesDefs.push({ key: "sent", label: isRate ? "Sent/s" : "Sent", group: "bw", color: pal.sent, swatch: "line", active: Boolean(trafficSeriesState.sent) });
       if (hasHits) seriesDefs.push({ key: "hits", label: isRate ? "Hits/s" : "Hits", group: "vol", color: pal.hitsSwatch, swatch: "bar", active: Boolean(trafficSeriesState.hits) });
       if (hasHttpErrorRows) seriesDefs.push({ key: "httpErr", label: "4xx / 5xx", group: "vol", color: pal.err, swatch: "dashed", active: Boolean(trafficSeriesState.httpErr) });
@@ -710,7 +710,7 @@
       }
       if (activeRecv) {
         series.push({
-          name: isRate ? "Download (Recv/s)" : "Bytes Received",
+          name: isRate ? "Download (Received/s)" : "Bytes Received",
           type: "line",
           yAxisIndex: 0,
           smooth: 0.12,

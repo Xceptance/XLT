@@ -476,8 +476,8 @@ public class JFreeChartUtilsTest
 
     /**
      * Verifies that modern chart styling applies the clean surface, left-aligned title, borderless legend, open dashed
-     * gridlines, Slate-Blue histogram bars, translucent scatter dots with opaque legend swatch, and Medium Slate XLT
-     * pill.
+     * gridlines, Slate-Blue histogram bars, translucent scatter dots with opaque legend swatch, and subtle gray XLT
+     * watermark without a pill background.
      */
     @Test
     public void testModernChartStyle()
@@ -525,8 +525,9 @@ public class JFreeChartUtilsTest
 
         Assert.assertEquals(new Color(0xDC2626), fixture.errorPlot.getRenderer(0).getSeriesPaint(0));
         Assert.assertEquals(Color.WHITE.getRGB(), image.getRGB(2, 2));
-        // Inside the 2x HiDPI top-right Medium Slate (#64748B) pill at ((654..688)*2, (8..26)*2)
-        Assert.assertEquals(new Color(0x64748B).getRGB(), image.getRGB(1316, 20));
+        // Top-right corner has plain gray (#94A3B8) XLT watermark text on white background (no pill fill)
+        Assert.assertEquals(Color.WHITE.getRGB(), image.getRGB(1316, 20));
+        assertModernWatermarkPresent(image, 700, 2.0);
     }
 
     /**
@@ -569,19 +570,42 @@ public class JFreeChartUtilsTest
         final BufferedImage img1x = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
         Assert.assertEquals(700, img1x.getWidth());
         Assert.assertEquals(400, img1x.getHeight());
-        Assert.assertEquals(new Color(0x64748B).getRGB(), img1x.getRGB(658, 10));
+        assertModernWatermarkPresent(img1x, 700, 1.0);
 
         JFreeChartUtils.setModernChartScaleFactor(1.5);
         final BufferedImage img15x = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
         Assert.assertEquals(1050, img15x.getWidth());
         Assert.assertEquals(600, img15x.getHeight());
-        Assert.assertEquals(new Color(0x64748B).getRGB(), img15x.getRGB(987, 15));
+        assertModernWatermarkPresent(img15x, 700, 1.5);
 
         JFreeChartUtils.setModernChartScaleFactor(3.0);
         final BufferedImage img3x = JFreeChartUtils.renderChart(createSampleCombinedChart().chart, 700, 400);
         Assert.assertEquals(2100, img3x.getWidth());
         Assert.assertEquals(1200, img3x.getHeight());
-        Assert.assertEquals(new Color(0x64748B).getRGB(), img3x.getRGB(1974, 30));
+        assertModernWatermarkPresent(img3x, 700, 3.0);
+    }
+
+    private static void assertModernWatermarkPresent(final BufferedImage image, final int logicalWidth, final double scale)
+    {
+        final int startX = (int) Math.floor((logicalWidth - 44) * scale);
+        final int endX = (int) Math.ceil((logicalWidth - 10) * scale);
+        final int startY = (int) Math.floor(8 * scale);
+        final int endY = (int) Math.ceil(26 * scale);
+        final int oldPillRgb = new Color(0x64748B).getRGB();
+        boolean foundWatermarkPixel = false;
+        for (int y = startY; y < endY; y++)
+        {
+            for (int x = startX; x < endX; x++)
+            {
+                final int rgb = image.getRGB(x, y);
+                Assert.assertNotEquals("Modern chart should not render a pill background around XLT", oldPillRgb, rgb);
+                if (rgb != Color.WHITE.getRGB())
+                {
+                    foundWatermarkPixel = true;
+                }
+            }
+        }
+        Assert.assertTrue("Modern chart should render the gray XLT watermark at scale " + scale, foundWatermarkPixel);
     }
 
     /**

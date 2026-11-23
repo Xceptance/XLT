@@ -75,7 +75,7 @@
     </section>
 
     <div class="workbench-scope" id="wb-scope">
-      <section class="chart-workbench" id="workbench-section">
+      <section class="chart-workbench unpinned" id="workbench-section">
         <header class="workbench-header">
           <div class="wb-title-area">
             <span class="wb-badge" id="wb-badge" hidden></span>
@@ -94,7 +94,7 @@
             <div class="wb-kpis" id="wb-kpis"></div>
             <div class="wb-controls">
               <button type="button" class="btn-chip btn-icon" id="wb-link-btn" aria-label="Copy shareable link" title="Copy shareable link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
-              <button type="button" class="btn-chip btn-icon active" id="wb-pin-btn" aria-pressed="true" aria-label="Pin chart workbench" title="Pinned to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+              <button type="button" class="btn-chip btn-icon" id="wb-pin-btn" aria-pressed="false" aria-label="Pin chart workbench to top" title="Unpinned — click to pin to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="2" y1="2" x2="22" y2="22"/><path d="M12 17v5"/><path d="M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11"/><path d="M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89"/></svg></button>
               <button type="button" class="btn-chip btn-icon" id="wb-collapse-btn" aria-controls="wb-body" aria-expanded="true" aria-label="Toggle chart panel" title="Hide chart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg></button>
             </div>
           </div>
@@ -102,7 +102,7 @@
         <div class="workbench-body" id="wb-body">
           <div class="workbench-tabs-bar">
             <div class="wb-tabs" id="wb-tabs"></div>
-            <div class="wb-tabs-hint">Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row • <kbd>Enter</kbd> Row Details</div>
+            <div class="wb-tabs-hint">Shortcuts: <kbd>←</kbd> <kbd>→</kbd> Page Item • <kbd>↑</kbd> <kbd>↓</kbd> Select Row</div>
           </div>
           <div class="workbench-stage chart-canvas-light" id="wb-stage" style="height:310px"></div>
           <footer class="workbench-footnote" id="wb-footnote"></footer>

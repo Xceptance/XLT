@@ -45,10 +45,11 @@
   var crosshairOverlay = null;
   var crosshairVert = null;
   var crosshairHoriz = null;
+  var crosshairHint = null;
 
   /**
    * Lazily constructs the shared `.chart-crosshair-overlay` element with vertical and horizontal
-   * hairlines matching the classic XLT crosshair aid.
+   * hairlines matching the classic XLT crosshair aid plus a hover-only zoom hint.
    * @returns {HTMLDivElement} The crosshair overlay element.
    */
   function ensureCrosshair() {
@@ -63,8 +64,13 @@
     crosshairHoriz = document.createElement("div");
     crosshairHoriz.className = "hair hair-horizontal";
 
+    crosshairHint = document.createElement("div");
+    crosshairHint.className = "chart-zoom-hint";
+    crosshairHint.textContent = "Click to enlarge";
+
     crosshairOverlay.appendChild(crosshairVert);
     crosshairOverlay.appendChild(crosshairHoriz);
+    crosshairOverlay.appendChild(crosshairHint);
     return crosshairOverlay;
   }
 
@@ -108,6 +114,13 @@
 
     crosshairVert.style.left = (e.clientX - rect.left) + "px";
     crosshairHoriz.style.top = (e.clientY - rect.top) + "px";
+
+    var showHint = img.classList.contains("zoomable-chart") && rect.width >= 200 && rect.height >= 90;
+    crosshairHint.hidden = !showHint;
+    if (showHint) {
+      var nearHint = (rect.right - e.clientX) < 130 && (rect.bottom - e.clientY) < 36;
+      crosshairHint.classList.toggle("is-dodged", nearHint);
+    }
   }
 
   /**

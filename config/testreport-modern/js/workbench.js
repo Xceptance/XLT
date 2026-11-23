@@ -762,7 +762,7 @@
       view: "workbench",
       streamTab: tabs.length ? tabs[0].key : "overview",
       collapsed: false,
-      pinned: true
+      pinned: false
     };
 
     // Hydrate remaining state from URL query params
@@ -799,8 +799,6 @@
     var btnCopyLink = document.getElementById("wb-link-btn");
     var btnZoom = document.getElementById("wb-zoom-btn");
     var btnUnpin = document.getElementById("wb-unpin-btn");
-    var btnViewWb = document.getElementById("btn-view-workbench");
-    var btnViewStream = document.getElementById("btn-view-stream");
     var filterInput = document.getElementById("dir-filter-input");
     var tableTabsBar = document.getElementById("dir-table-tabs");
     var catBar = document.getElementById("dir-category-chips");
@@ -808,6 +806,9 @@
     var tbody = table ? table.tBodies[0] : null;
     var tfoot = table ? table.tFoot : null;
     var statusEl = document.getElementById("table-sort-status");
+    var tableScroll = dirRoot ? dirRoot.querySelector(".table-scroll") : null;
+    if (dirRoot && !dirRoot.hasAttribute("tabindex")) dirRoot.tabIndex = -1;
+    if (tableScroll && !tableScroll.hasAttribute("tabindex")) tableScroll.tabIndex = -1;
 
     var rowMap = new Map(); // item.key -> <tr>
     var drawerMap = new Map(); // item.key -> <tr class="drawer-row">
@@ -896,13 +897,6 @@
       // Build rows once into a DocumentFragment to avoid 1,000+ live reflows
       tbody.innerHTML = "";
       var initFrag = document.createDocumentFragment();
-      if (cfg.includeAggregateRowInTable) {
-        allItems.filter(function (x) { return x.isAggregate; }).forEach(function (agg) {
-          var aggRow = createRowElement(agg, "Σ");
-          rowMap.set(agg.key, aggRow);
-          initFrag.appendChild(aggRow);
-        });
-      }
       tableItems.forEach(function (item, idx) {
         var tr = createRowElement(item, String(idx + 1));
         rowMap.set(item.key, tr);
@@ -910,14 +904,14 @@
       });
       tbody.appendChild(initFrag);
 
-      // Build static Totals + dynamic Filtered Totals rows in <tfoot>
+      // Build Filtered Total (hidden until filtered) above static Totals row in <tfoot>
       if (tfoot && cfg.totalsRow) {
         tfoot.innerHTML = "";
-        tfoot.appendChild(buildTotalsTr(cfg.totalsRow, "Totals (" + tableItems.length + " entries)", false));
         var ftr = document.createElement("tr");
         ftr.className = "filtered-totals-row";
         ftr.hidden = true;
         tfoot.appendChild(ftr);
+        tfoot.appendChild(buildTotalsTr(cfg.totalsRow, "Totals (" + tableItems.length + " entries)", false));
       }
     }
 
@@ -1024,7 +1018,7 @@
           td.setAttribute("data-copy", item.name);
           td.innerHTML =
             '<div class="name-cell-wrap">' +
-              '<button type="button" class="drawer-btn" aria-expanded="false" aria-label="Toggle row details" title="Details (Enter)">▸</button>' +
+              '<button type="button" class="drawer-btn" aria-expanded="false" aria-label="Toggle row details" title="Details">▸</button>' +
               '<div class="name-cell-stack">' +
                 '<span class="name-cell-text" title="' + escHtml(item.name) + '">' + escHtml(item.name) + '</span>' +
               '</div>' +
@@ -1238,15 +1232,6 @@
       var isFiltered = !!(state.query.trim() || (hasPageLabels && state.label !== "ALL"));
       var visibleTableItems = [];
       var sortFrag = document.createDocumentFragment();
-      if (cfg.includeAggregateRowInTable) {
-        aggItems.forEach(function (agg) {
-          var aggTr = rowMap.get(agg.key);
-          if (aggTr) {
-            aggTr.hidden = isFiltered;
-            sortFrag.appendChild(aggTr);
-          }
-        });
-      }
       sortedTableItems.forEach(function (item) {
         var labelMatch = !hasPageLabels || state.label === "ALL" || item.labels.indexOf(state.label) !== -1;
         var searchHaystack = [item.name || ""]
@@ -1281,12 +1266,12 @@
       state.activeList = (!isFiltered ? aggItems.concat(visibleTableItems) : visibleTableItems.slice());
       if (!isFiltered && !state.activeList.length && aggItems.length) state.activeList = aggItems.slice();
 
-      // Update Filtered Totals row
+      // Update Filtered Total row (row 0, positioned above the static Totals row at row 1)
       if (tfoot && tfoot.rows.length >= 2) {
-        var fRow = tfoot.rows[1];
+        var fRow = tfoot.rows[0];
         if (isFiltered) {
           var fTotals = computeFilteredTotals(visibleTableItems);
-          var newFRow = buildTotalsTr(fTotals, "Filtered (" + visibleTableItems.length + " of " + tableItems.length + ")", true);
+          var newFRow = buildTotalsTr(fTotals, "Filtered Total (" + visibleTableItems.length + " of " + tableItems.length + ")", true);
           tfoot.replaceChild(newFRow, fRow);
         } else {
           fRow.hidden = true;
@@ -1326,7 +1311,10 @@
       renderWorkbench();
       if (shouldScrollRow) {
         var tr = rowMap.get(key);
-        if (tr) tr.scrollIntoView({ block: "nearest" });
+        if (tr) {
+          tr.scrollIntoView({ block: "nearest" });
+          try { tr.focus({ preventScroll: true }); } catch (_) { tr.focus(); }
+        }
       }
       syncUrl();
     }
@@ -1340,7 +1328,12 @@
       if (scrollRow) {
         var item = state.activeList[state.activeIdx];
         var tr = item ? rowMap.get(item.key) : null;
-        if (tr) tr.scrollIntoView({ block: "nearest" });
+        if (tr) {
+          tr.scrollIntoView({ block: "nearest" });
+          try { tr.focus({ preventScroll: true }); } catch (_) { tr.focus(); }
+        }
+      } else if (tbody && document.activeElement && tbody.contains(document.activeElement) && document.activeElement.tagName === "TR") {
+        document.activeElement.blur();
       }
       syncUrl();
     }
@@ -1364,7 +1357,7 @@
         col2 =
           '<div class="fn-group">' +
             '<span class="fn-label">Network Waterfall &amp; Spread</span>' +
-            '<span class="fn-val">TTFB: <strong>' + fmtInt(item.ttfb) + ' ms</strong> • Recv: <strong>' + fmtInt(item.recv) + ' ms</strong> • Range: <strong>' + fmtInt(item.min) + '–' + fmtInt(item.max) + ' ms</strong></span>' +
+            '<span class="fn-val">TTFB: <strong>' + fmtInt(item.ttfb) + ' ms</strong> • Receive: <strong>' + fmtInt(item.recv) + ' ms</strong> • Range: <strong>' + fmtInt(item.min) + '–' + fmtInt(item.max) + ' ms</strong></span>' +
           '</div>';
       } else {
         col2 =
@@ -1378,7 +1371,7 @@
         col3 =
           '<div class="fn-group">' +
             '<span class="fn-label">Payload &amp; Throughput</span>' +
-            '<span class="fn-val">Count: <strong>' + fmtInt(item.count) + '</strong> • Mean Recv: <strong>' + fmtInt(item.recvMean) + ' B</strong> • Rate: <strong>' + fmtDec(item.rate, 2) + ' /s</strong></span>' +
+            '<span class="fn-val">Count: <strong>' + fmtInt(item.count) + '</strong> • Mean Received: <strong>' + fmtInt(item.recvMean) + ' B</strong> • Rate: <strong>' + fmtDec(item.rate, 2) + ' /s</strong></span>' +
           '</div>';
       } else {
         col3 =
@@ -1815,6 +1808,9 @@
         var inspectBtn = e.target.closest("[data-inspect-key]");
         if (inspectBtn) {
           selectByKey(inspectBtn.getAttribute("data-inspect-key"), false);
+          if (document.activeElement && streamRoot && streamRoot.contains(document.activeElement) && document.activeElement.blur) {
+            document.activeElement.blur();
+          }
           if (wbRoot) wbRoot.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
@@ -1834,16 +1830,14 @@
       state.view = v;
       if (wbRoot) wbRoot.hidden = false;
       if (streamRoot) streamRoot.hidden = !chartsAvailable;
-      if (btnViewWb) btnViewWb.classList.toggle("active", v === "workbench");
-      if (btnViewStream) {
-        btnViewStream.hidden = !chartsAvailable;
-        btnViewStream.classList.toggle("active", v === "stream");
-      }
       if (scrollBehavior) {
         var beh = scrollBehavior === "auto" ? "auto" : "smooth";
         if (v === "stream" && streamRoot) {
           streamRoot.scrollIntoView({ behavior: beh, block: "start" });
         } else if (v === "workbench" && wbRoot) {
+          if (document.activeElement && dirRoot && dirRoot.contains(document.activeElement) && document.activeElement.blur) {
+            document.activeElement.blur();
+          }
           wbRoot.scrollIntoView({ behavior: beh, block: "start" });
         }
       }
@@ -1940,9 +1934,6 @@
         syncUrl();
       });
     }
-
-    if (btnViewWb) btnViewWb.addEventListener("click", function () { setView("workbench", "smooth"); });
-    if (btnViewStream) btnViewStream.addEventListener("click", function () { setView("stream", "smooth"); });
 
     if (filterInput) {
       var hintPctKey = pickRepresentativePercentile(configuredPcts);
@@ -2049,6 +2040,16 @@
       }
     }
 
+    function isWorkbenchInView() {
+      if (!wbRoot || wbRoot.hidden) return false;
+      var r = wbRoot.getBoundingClientRect();
+      if (r.height <= 0) return false;
+      var header = document.querySelector(".top-header");
+      var topOffset = header ? header.getBoundingClientRect().bottom : 0;
+      var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      return r.bottom > topOffset + 24 && r.top < vh - 24;
+    }
+
     // Keyboard ergonomics (never hijack when dialog[open] or typing in input!)
     document.addEventListener("keydown", function (e) {
       if (document.querySelector("dialog[open]")) return;
@@ -2064,10 +2065,15 @@
         return;
       }
 
+      var inTable = Boolean(dirRoot && e.target && dirRoot.contains(e.target));
+      var inStream = Boolean(streamRoot && e.target && streamRoot.contains(e.target));
+
       if (e.key === "ArrowRight") {
+        if (inTable || inStream || !isWorkbenchInView()) return;
         e.preventDefault();
         stepWorkbench(1, false);
       } else if (e.key === "ArrowLeft") {
+        if (inTable || inStream || !isWorkbenchInView()) return;
         e.preventDefault();
         stepWorkbench(-1, false);
       } else if (e.key === "ArrowDown") {
@@ -2076,11 +2082,15 @@
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         stepWorkbench(-1, true);
-      } else if (e.key === "Enter" && !e.target.closest("button,a")) {
-        var cur = state.activeList[state.activeIdx];
-        if (cur && !cur.isAggregate) {
-          e.preventDefault();
-          toggleDrawer(cur);
+      } else if (e.key === "Enter" && e.target && e.target.closest && !e.target.closest("button,a")) {
+        var rowEl = e.target.closest("#dir-table tbody tr.wb-row");
+        if (rowEl && !rowEl.hidden) {
+          var rowKey = rowEl.getAttribute("data-key");
+          var targetItem = rowKey ? allItems.find(function (it) { return it.key === rowKey; }) : null;
+          if (targetItem) {
+            e.preventDefault();
+            toggleDrawer(targetItem);
+          }
         }
       }
     });

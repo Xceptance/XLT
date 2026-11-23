@@ -744,7 +744,7 @@ html.dark-theme .report-context-bar {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   box-shadow: none;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .card-header {
@@ -2064,10 +2064,12 @@ html.dark-theme .data-table td.col-text a.tier-link {
 }
 
 /* Sticky Totals / Filtered Totals Footer */
-.data-table tfoot td {
+.data-table tfoot {
   position: sticky;
   inset-block-end: 0;
   z-index: 8;
+}
+.data-table tfoot td {
   background: var(--bg-subtle);
   border-block-start: 2px solid var(--border-medium);
   padding: 7px 10px;
@@ -2085,7 +2087,10 @@ html.dark-theme .data-table td.col-text a.tier-link {
 .data-table tfoot tr.filtered-totals-row td {
   background: var(--brand-blue-subtle);
   color: var(--brand-blue);
-  border-block-start: 1px dashed var(--brand-blue);
+  border-block-start: 2px dashed var(--brand-blue);
+}
+html.dark-theme .data-table tfoot tr.filtered-totals-row td {
+  background: color-mix(in srgb, var(--brand-blue) 14%, var(--bg-surface));
 }
 
 /* Inline Row Drawer */
@@ -2456,8 +2461,9 @@ dialog.chart-lightbox-dialog::backdrop {
   inline-size: auto;
 }
 
-img.zoomable-chart {
-  cursor: zoom-in;
+img.zoomable-chart,
+#xlt-lightbox-img {
+  cursor: crosshair;
 }
 
 .chart-crosshair-overlay {
@@ -2488,6 +2494,31 @@ img.zoomable-chart {
 .chart-crosshair-overlay .hair.hair-horizontal {
   inline-size: 100%;
   block-size: 0;
+}
+.chart-crosshair-overlay .chart-zoom-hint {
+  position: absolute;
+  inset-block-end: 6px;
+  inset-inline-end: 8px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #52525b;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0.92;
+  transition: opacity 120ms ease;
+}
+.chart-crosshair-overlay .chart-zoom-hint[hidden] {
+  display: none;
+}
+.chart-crosshair-overlay .chart-zoom-hint.is-dodged {
+  opacity: 0;
 }
 
 /* Footer */
@@ -2984,7 +3015,7 @@ img.zoomable-chart {
   height: auto;
   object-fit: contain;
   border-radius: 4px;
-  cursor: zoom-in;
+  cursor: crosshair;
 }
 
 .error-charts-body {
@@ -3053,7 +3084,7 @@ img.zoomable-chart {
   block-size: auto;
   object-fit: contain;
   border-radius: 4px;
-  cursor: zoom-in;
+  cursor: crosshair;
 }
 
 .error-strip-backlink {
@@ -3184,7 +3215,7 @@ img.zoomable-chart {
   block-size: auto;
   object-fit: contain;
   border-radius: 4px;
-  cursor: zoom-in;
+  cursor: crosshair;
 }
 
 .incident-trace-wrap {
@@ -4580,7 +4611,8 @@ html.dark-theme .exec-tab-btn[aria-selected="true"]::after {
   .exec-echart-controls,
   .exec-tip-btn,
   .exec-mini-link,
-  .hotspot-footer-btn {
+  .hotspot-footer-btn,
+  .chart-crosshair-overlay {
     display: none !important;
   }
   .report-context-bar {
@@ -4597,7 +4629,8 @@ html.dark-theme .exec-tab-btn[aria-selected="true"]::after {
     color: #18181b !important;
     border-inline-start-color: #d4d4d8 !important;
   }
-  .chart-workbench {
+  .chart-workbench,
+  .stream-sticky-header {
     position: static !important;
     break-inside: avoid;
   }

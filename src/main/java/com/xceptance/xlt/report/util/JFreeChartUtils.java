@@ -271,12 +271,12 @@ public final class JFreeChartUtils
     private static final XltChartTheme MODERN_CHART_THEME = new XltChartTheme(true);
 
     /**
-     * The pill background color used for modern XLT chart branding (Medium Slate {@code #64748B}).
+     * The subtle gray text color used for the modern XLT chart watermark (Slate 400 {@code #94A3B8}).
      */
-    private static final Color MODERN_BRAND_PILL_COLOR = new Color(0x64748B);
+    private static final Color MODERN_BRAND_COLOR = new Color(0x94A3B8);
 
     /**
-     * The short brand label inside the modern XLT pill.
+     * The short brand label rendered as the modern XLT chart watermark.
      */
     private static final String MODERN_BRAND_TEXT = "XLT";
 
@@ -1391,22 +1391,13 @@ public final class JFreeChartUtils
                 {
                     g2d.scale((double) scaledWidth / chartWidth, (double) scaledHeight / chartHeight);
                 }
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                final int pillWidth = 34;
-                final int pillHeight = 18;
-                final int pillX = chartWidth - 12 - pillWidth;
-                final int pillY = 8;
-
-                g2d.setColor(MODERN_BRAND_PILL_COLOR);
-                g2d.fillRoundRect(pillX, pillY, pillWidth, pillHeight, pillHeight, pillHeight);
-
-                g2d.setFont(theme.getExtraLargeFont().deriveFont(10f));
-                g2d.setColor(Color.WHITE);
+                g2d.setFont(theme.getExtraLargeFont().deriveFont(11f));
+                g2d.setColor(MODERN_BRAND_COLOR);
                 final FontMetrics fontMetrics = g2d.getFontMetrics();
                 final int textWidth = fontMetrics.stringWidth(MODERN_BRAND_TEXT);
-                final int textX = pillX + (pillWidth - textWidth) / 2;
-                final int textY = pillY + ((pillHeight - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+                final int textX = chartWidth - 12 - textWidth;
+                final int textY = 8 + ((18 - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
                 g2d.drawString(MODERN_BRAND_TEXT, textX, textY);
             }
             else
