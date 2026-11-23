@@ -392,6 +392,12 @@ public class ModernReportGenerator
             startTimeStr, endTimeStr, durationSec, bytesSent, bytesReceived, hits,
             comments, scorecardSummary, summaryEl, agentItemCount, txBundle, errorsBundle, networkBundle, loadProfileParsed);
 
+        // 13b. Executive Summary Bundle (window.XLT_EXECUTIVE)
+        final Map<String, Object> executiveBundle = buildExecutiveBundle(
+            summaryEl, chartsGenerated ? chartsDir : null, startTimeMs, endTimeMs,
+            txBundle, actBundle, reqBundle, errorsBundle, eventsBundle, networkBundle,
+            agentsBundle, webVitalsBundle, loadProfileParsed, fullScorecard, testReportConfig);
+
         // 14. Shared Metadata Bundle (window.XLT_META)
         final Map<String, Object> metaBundle = new LinkedHashMap<>();
         metaBundle.put("productName", productName);
@@ -417,6 +423,7 @@ public class ModernReportGenerator
         // 15. Write all JS bundles deterministically
         writeJsGlobal(new File(jsDir, "report-meta.js"), "XLT_META", metaBundle);
         writeJsGlobal(new File(jsDir, "overview-data.js"), "XLT_OVERVIEW", overviewBundle);
+        writeJsGlobal(new File(jsDir, "executive-data.js"), "XLT_EXECUTIVE", executiveBundle);
         writeJsGlobal(new File(jsDir, "transactions-data.js"), "XLT_TRANSACTIONS", txBundle);
         writeJsGlobal(new File(jsDir, "actions-data.js"), "XLT_ACTIONS", actBundle);
         writeJsGlobal(new File(jsDir, "requests-data.js"), "XLT_REQUESTS", reqBundle);
@@ -497,6 +504,11 @@ public class ModernReportGenerator
         if (overviewJsFile.isFile())
         {
             patchScorecardFieldInJsBundle(overviewJsFile, "XLT_OVERVIEW", parsed.summary);
+        }
+        final File executiveJsFile = new File(jsDir, "executive-data.js");
+        if (executiveJsFile.isFile())
+        {
+            patchFieldInJsBundle(executiveJsFile, "XLT_EXECUTIVE", "scorecardGroups", extractScorecardGroups(parsed.fullBundle));
         }
     }
 
@@ -1923,6 +1935,700 @@ public class ModernReportGenerator
     }
 
     // =========================================================================
+    // Executive Summary Bundle
+    // =========================================================================
+
+    private static final int EXECUTIVE_CHART_BUCKETS = 60;
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> buildExecutiveBundle(
+        final Element summaryEl, final File chartsDir, final long startTimeMs, final long endTimeMs,
+        final Map<String, Object> txBundle, final Map<String, Object> actBundle, final Map<String, Object> reqBundle,
+        final Map<String, Object> errorsBundle, final Map<String, Object> eventsBundle,
+        final Map<String, Object> networkBundle, final Map<String, Object> agentsBundle,
+        final Map<String, Object> webVitalsBundle, final LoadProfileParsed loadProfile,
+        final Map<String, Object> fullScorecard, final Map<String, Object> testReportConfig)
+    {
+        final Map<String, Object> out = new LinkedHashMap<>();
+
+        // 1. Time-series progression (XML <summary><timeSeries>, with fallback to aggregate chart JSONs)
+        Map<String, Object> timeSeries = parseExecutiveTimeSeries(firstChildElement(summaryEl, "timeSeries"));
+        if (timeSeries == null && chartsDir != null && chartsDir.isDirectory())
+        {
+            timeSeries = synthesizeTimeSeriesFromCharts(chartsDir, startTimeMs, endTimeMs);
+        }
+        out.put("timeSeries", timeSeries);
+
+        // 2. Executed Flows (all non-aggregate transactions enriched with configured load profile targets)
+        final Map<String, Map<String, Object>> lpByName = new HashMap<>();
+        if (loadProfile != null && loadProfile.items != null)
+        {
+            for (final Map<String, Object> lp : loadProfile.items)
+            {
+                final String name = String.valueOf(lp.getOrDefault("name", "")).trim();
+                if (!name.isEmpty())
+                {
+                    lpByName.put(name, lp);
+                }
+            }
+        }
+        final List<Map<String, Object>> flows = new ArrayList<>();
+        final long totalTxCount = Math.max(0L, ((Number) ((Map<String, Object>) txBundle.getOrDefault("totals", Collections.emptyMap()))
+            .getOrDefault("count", Long.valueOf(0L))).longValue());
+        final Object rawTxItems = txBundle.get("items");
+        if (rawTxItems instanceof List<?> txList)
+        {
+            for (final Object o : txList)
+            {
+                if (o instanceof Map<?, ?> m)
+                {
+                    final Map<String, Object> item = (Map<String, Object>) m;
+                    if (Boolean.TRUE.equals(item.get("isAggregate")))
+                    {
+                        continue;
+                    }
+                    final String name = String.valueOf(item.getOrDefault("name", ""));
+                    final long cnt = ((Number) item.getOrDefault("count", Long.valueOf(0L))).longValue();
+                    final double sharePct = totalTxCount > 0 ? round3((cnt * 100.0) / totalTxCount) : 0.0;
+
+                    final Map<String, Object> flow = new LinkedHashMap<>();
+                    flow.put("name", name);
+                    flow.put("count", Long.valueOf(cnt));
+                    flow.put("sharePct", Double.valueOf(sharePct));
+                    flow.put("cph", item.get("cph"));
+                    flow.put("rate", item.get("rate"));
+                    flow.put("errors", item.get("errors"));
+                    flow.put("errPct", item.get("errPct"));
+                    flow.put("events", item.get("events"));
+                    flow.put("mean", item.get("mean"));
+                    flow.put("median", item.get("median"));
+                    flow.put("percentiles", item.get("percentiles"));
+
+                    final Map<String, Object> lp = lpByName.get(name);
+                    if (lp != null)
+                    {
+                        flow.put("targetUsers", lp.get("users"));
+                        flow.put("targetArrivalRate", lp.get("arrivalRate"));
+                        flow.put("rampUp", lp.get("rampUp"));
+                        flow.put("measurement", lp.get("measurement"));
+                        flow.put("thinkTime", lp.get("thinkTime"));
+                        flow.put("thinkTimeDev", lp.get("thinkTimeDev"));
+                    }
+                    flows.add(flow);
+                }
+            }
+            flows.sort((a, b) -> Long.compare(((Number) b.get("count")).longValue(), ((Number) a.get("count")).longValue()));
+        }
+        out.put("flows", flows);
+
+        // 3. Slowest Measured Steps (Actions) & Server Requests (sorted by representative percentile or mean)
+        final List<String> cfgPercentiles = (List<String>) testReportConfig.getOrDefault("runtimePercentiles", Collections.emptyList());
+        final String repPctKey = pickRepresentativePercentileKey(cfgPercentiles);
+        out.put("repPercentile", repPctKey);
+        out.put("topSlowActions", pickTopSlowTimers(actBundle, repPctKey, 8, true));
+        out.put("topSlowRequests", pickTopSlowTimers(reqBundle, repPctKey, 8, false));
+
+        // 4. Top Error Groups (enriched with affected flows and share of total transaction errors)
+        final List<Map<String, Object>> topErrors = new ArrayList<>();
+        final Map<String, LinkedHashSet<String>> flowsByErrMsg = new HashMap<>();
+        final List<Map<String, Object>> incidents = (List<Map<String, Object>>) errorsBundle.get("incidents");
+        if (incidents != null)
+        {
+            for (final Map<String, Object> inc : incidents)
+            {
+                final String rawMsg = String.valueOf(inc.getOrDefault("message", ""));
+                final String msgKey = rawMsg.isEmpty() ? "(No error message)" : rawMsg;
+                final String tc = String.valueOf(inc.getOrDefault("testCaseName", "")).trim();
+                if (!tc.isEmpty())
+                {
+                    flowsByErrMsg.computeIfAbsent(msgKey, k -> new LinkedHashSet<>()).add(tc);
+                }
+            }
+        }
+        final Map<String, Object> errSummary = (Map<String, Object>) errorsBundle.getOrDefault("summary", Collections.emptyMap());
+        final long totalTxErrors = ((Number) errSummary.getOrDefault("transactionErrors", Long.valueOf(0L))).longValue();
+        final List<Map<String, Object>> errByMsg = (List<Map<String, Object>>) errorsBundle.get("overviewByMessage");
+        if (errByMsg != null)
+        {
+            for (final Map<String, Object> e : errByMsg)
+            {
+                if (topErrors.size() >= 8)
+                {
+                    break;
+                }
+                final String msg = String.valueOf(e.getOrDefault("message", ""));
+                final long cnt = ((Number) e.getOrDefault("count", Long.valueOf(0L))).longValue();
+                final Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("message", msg);
+                entry.put("count", Long.valueOf(cnt));
+                entry.put("sharePct", Double.valueOf(totalTxErrors > 0 ? round3((cnt * 100.0) / totalTxErrors) : 0.0));
+                entry.put("exceptionClass", e.getOrDefault("exceptionClass", ""));
+                final LinkedHashSet<String> affected = flowsByErrMsg.get(msg);
+                entry.put("affectedFlows", affected != null ? new ArrayList<>(affected).subList(0, Math.min(3, affected.size())) : Collections.emptyList());
+                topErrors.add(entry);
+            }
+        }
+        out.put("topErrors", topErrors);
+
+        // 5. Top Event Categories
+        final List<Map<String, Object>> topEvents = new ArrayList<>();
+        final List<Map<String, Object>> evItems = (List<Map<String, Object>>) eventsBundle.get("items");
+        if (evItems != null)
+        {
+            final List<Map<String, Object>> sortedEv = new ArrayList<>(evItems);
+            sortedEv.sort((a, b) -> Long.compare(
+                ((Number) b.getOrDefault("totalCount", Long.valueOf(0L))).longValue(),
+                ((Number) a.getOrDefault("totalCount", Long.valueOf(0L))).longValue()));
+            for (final Map<String, Object> ev : sortedEv)
+            {
+                if (topEvents.size() >= 8)
+                {
+                    break;
+                }
+                final Map<String, Object> entry = new LinkedHashMap<>(3);
+                entry.put("name", ev.getOrDefault("name", ""));
+                entry.put("testCase", ev.getOrDefault("testCase", ""));
+                entry.put("totalCount", ev.getOrDefault("totalCount", Long.valueOf(0L)));
+                topEvents.add(entry);
+            }
+        }
+        out.put("topEvents", topEvents);
+
+        // 6. HTTP Status Class Breakdown
+        long c2xx = 0L;
+        long c3xx = 0L;
+        long c4xx = 0L;
+        long c5xx = 0L;
+        long c0 = 0L;
+        long cOther = 0L;
+        final List<Map<String, Object>> nonOkCodes = new ArrayList<>();
+        final List<Map<String, Object>> respCodes = (List<Map<String, Object>>) networkBundle.get("responseCodes");
+        if (respCodes != null)
+        {
+            for (final Map<String, Object> rc : respCodes)
+            {
+                final int code = ((Number) rc.getOrDefault("code", Integer.valueOf(0))).intValue();
+                final long cnt = ((Number) rc.getOrDefault("count", Long.valueOf(0L))).longValue();
+                if (code >= 200 && code < 300)
+                {
+                    c2xx += cnt;
+                }
+                else if (code >= 300 && code < 400)
+                {
+                    c3xx += cnt;
+                }
+                else if (code >= 400 && code < 500)
+                {
+                    c4xx += cnt;
+                    nonOkCodes.add(rc);
+                }
+                else if (code >= 500 && code < 600)
+                {
+                    c5xx += cnt;
+                    nonOkCodes.add(rc);
+                }
+                else if (code == 0)
+                {
+                    c0 += cnt;
+                    nonOkCodes.add(rc);
+                }
+                else
+                {
+                    cOther += cnt;
+                }
+            }
+            nonOkCodes.sort((a, b) -> Long.compare(((Number) b.get("count")).longValue(), ((Number) a.get("count")).longValue()));
+        }
+        final Map<String, Object> httpStatus = new LinkedHashMap<>();
+        httpStatus.put("total", Long.valueOf(c2xx + c3xx + c4xx + c5xx + c0 + cOther));
+        httpStatus.put("c2xx", Long.valueOf(c2xx));
+        httpStatus.put("c3xx", Long.valueOf(c3xx));
+        httpStatus.put("c4xx", Long.valueOf(c4xx));
+        httpStatus.put("c5xx", Long.valueOf(c5xx));
+        httpStatus.put("c0", Long.valueOf(c0));
+        httpStatus.put("cOther", Long.valueOf(cOther));
+        httpStatus.put("topNonOk", nonOkCodes.size() > 6 ? new ArrayList<>(nonOkCodes.subList(0, 6)) : nonOkCodes);
+        out.put("httpStatus", httpStatus);
+
+        // 7. Agent Health Summary (cluster + single-agent peak saturation)
+        final Map<String, Object> agTotals = (Map<String, Object>) agentsBundle.getOrDefault("totals", Collections.emptyMap());
+        final List<Map<String, Object>> agItems = (List<Map<String, Object>>) agentsBundle.get("items");
+        int nonAggAgents = 0;
+        double peakSingleAgentCpu = 0.0;
+        String peakSingleAgentName = "";
+        double peakSingleHostCpu = 0.0;
+        String peakSingleHostName = "";
+        long maxSingleAgentFullGc = 0L;
+        if (agItems != null)
+        {
+            for (final Map<String, Object> ag : agItems)
+            {
+                if (Boolean.TRUE.equals(ag.get("isAggregate")))
+                {
+                    continue;
+                }
+                nonAggAgents++;
+                final double aMax = ((Number) ag.getOrDefault("agentCpuMax", Double.valueOf(0.0))).doubleValue();
+                final double tMax = ((Number) ag.getOrDefault("totalCpuMax", Double.valueOf(0.0))).doubleValue();
+                final long fgc = ((Number) ag.getOrDefault("fullGcCount", Long.valueOf(0L))).longValue();
+                final String nm = String.valueOf(ag.getOrDefault("name", ""));
+                if (aMax > peakSingleAgentCpu)
+                {
+                    peakSingleAgentCpu = aMax;
+                    peakSingleAgentName = nm;
+                }
+                if (tMax > peakSingleHostCpu)
+                {
+                    peakSingleHostCpu = tMax;
+                    peakSingleHostName = nm;
+                }
+                if (fgc > maxSingleAgentFullGc)
+                {
+                    maxSingleAgentFullGc = fgc;
+                }
+            }
+        }
+        final Map<String, Object> agentHealth = new LinkedHashMap<>();
+        agentHealth.put("agentCount", Integer.valueOf(nonAggAgents));
+        agentHealth.put("clusterCpuMean", agTotals.getOrDefault("totalCpuMean", Double.valueOf(0.0)));
+        agentHealth.put("clusterCpuMax", agTotals.getOrDefault("totalCpuMax", Double.valueOf(0.0)));
+        agentHealth.put("clusterAgentCpuMean", agTotals.getOrDefault("agentCpuMean", Double.valueOf(0.0)));
+        agentHealth.put("clusterAgentCpuMax", agTotals.getOrDefault("agentCpuMax", Double.valueOf(0.0)));
+        agentHealth.put("peakSingleAgentCpu", Double.valueOf(round2(peakSingleAgentCpu)));
+        agentHealth.put("peakSingleAgentName", peakSingleAgentName);
+        agentHealth.put("peakSingleHostCpu", Double.valueOf(round2(peakSingleHostCpu)));
+        agentHealth.put("peakSingleHostName", peakSingleHostName);
+        agentHealth.put("fullGcCount", agTotals.getOrDefault("fullGcCount", Long.valueOf(maxSingleAgentFullGc)));
+        agentHealth.put("fullGcTime", agTotals.getOrDefault("fullGcTime", Long.valueOf(0L)));
+        agentHealth.put("minorGcCpu", agTotals.getOrDefault("minorGcCpu", Double.valueOf(0.0)));
+        out.put("agentHealth", agentHealth);
+
+        // 8. Browser Core Web Vitals Summary (present only when browser vitals were collected)
+        out.put("webVitals", summarizeWebVitals(webVitalsBundle));
+
+        // 9. Scorecard Group Summaries (present only when scorecard.xml was evaluated)
+        out.put("scorecardGroups", extractScorecardGroups(fullScorecard));
+
+        return out;
+    }
+
+    private Map<String, Object> parseExecutiveTimeSeries(final Element tsEl)
+    {
+        if (tsEl == null)
+        {
+            return null;
+        }
+        final Element rowsEl = firstChildElement(tsEl, "rows");
+        if (rowsEl == null)
+        {
+            return null;
+        }
+        final List<Element> rowEls = childElements(rowsEl, "row");
+        if (rowEls.isEmpty())
+        {
+            return null;
+        }
+
+        final long intervalSec = childLong(tsEl, "interval", 60L);
+        final List<Map<String, Object>> rows = new ArrayList<>(rowEls.size());
+        for (final Element r : rowEls)
+        {
+            final Map<String, Object> row = new LinkedHashMap<>(11);
+            row.put("elapsed", Long.valueOf(childLong(r, "elapsed", 0L)));
+            row.put("time", childText(r, "time", ""));
+            row.put("txMean", Double.valueOf(round1(childDouble(r, "transactionMean", 0.0))));
+            row.put("txRate", Double.valueOf(round3(childDouble(r, "transactionCountPerSecond", 0.0))));
+            row.put("txErr", Double.valueOf(round3(childDouble(r, "transactionErrorsPerSecond", 0.0))));
+            row.put("actMean", Double.valueOf(round1(childDouble(r, "actionMean", 0.0))));
+            row.put("actRate", Double.valueOf(round3(childDouble(r, "actionCountPerSecond", 0.0))));
+            row.put("actErr", Double.valueOf(round3(childDouble(r, "actionErrorsPerSecond", 0.0))));
+            row.put("reqMean", Double.valueOf(round1(childDouble(r, "requestMean", 0.0))));
+            row.put("reqRate", Double.valueOf(round3(childDouble(r, "requestCountPerSecond", 0.0))));
+            row.put("reqErr", Double.valueOf(round3(childDouble(r, "requestErrorsPerSecond", 0.0))));
+            rows.add(row);
+        }
+
+        final Map<String, Object> out = new LinkedHashMap<>(4);
+        out.put("source", "xml");
+        out.put("intervalSec", Long.valueOf(intervalSec));
+        out.put("hasErrorSeries", Boolean.TRUE);
+        out.put("rows", rows);
+        return out;
+    }
+
+    private Map<String, Object> synthesizeTimeSeriesFromCharts(final File chartsDir, final long reportStartMs, final long reportEndMs)
+    {
+        final File txJson = new File(new File(chartsDir, "transactions"), "All Transactions.json");
+        final File actJson = new File(new File(chartsDir, "actions"), "All Actions.json");
+        final File reqJson = new File(new File(chartsDir, "requests"), "All Requests.json");
+
+        final double[][] txBuckets = downsampleChartJsonFull(txJson, EXECUTIVE_CHART_BUCKETS, reportStartMs, reportEndMs);
+        final double[][] actBuckets = downsampleChartJsonFull(actJson, EXECUTIVE_CHART_BUCKETS, reportStartMs, reportEndMs);
+        final double[][] reqBuckets = downsampleChartJsonFull(reqJson, EXECUTIVE_CHART_BUCKETS, reportStartMs, reportEndMs);
+
+        final int n = txBuckets != null ? txBuckets.length : (reqBuckets != null ? reqBuckets.length : (actBuckets != null ? actBuckets.length : 0));
+        if (n == 0)
+        {
+            return null;
+        }
+
+        final long spanMs = Math.max(1000L, reportEndMs > reportStartMs ? (reportEndMs - reportStartMs) : (n * 60_000L));
+        final long intervalSec = Math.max(1L, Math.round((spanMs / 1000.0) / n));
+
+        final List<Map<String, Object>> rows = new ArrayList<>(n);
+        for (int i = 0; i < n; i++)
+        {
+            final long elapsedSec = Math.round(i * (spanMs / 1000.0) / n);
+            final Map<String, Object> row = new LinkedHashMap<>(11);
+            row.put("elapsed", Long.valueOf(elapsedSec));
+            row.put("time", formatDurationHms(elapsedSec));
+            row.put("txMean", Double.valueOf(txBuckets != null && i < txBuckets.length ? round1(txBuckets[i][0]) : 0.0));
+            row.put("txRate", Double.valueOf(txBuckets != null && i < txBuckets.length ? round3(txBuckets[i][1]) : 0.0));
+            row.put("txErr", Double.valueOf(0.0));
+            row.put("actMean", Double.valueOf(actBuckets != null && i < actBuckets.length ? round1(actBuckets[i][0]) : 0.0));
+            row.put("actRate", Double.valueOf(actBuckets != null && i < actBuckets.length ? round3(actBuckets[i][1]) : 0.0));
+            row.put("actErr", Double.valueOf(0.0));
+            row.put("reqMean", Double.valueOf(reqBuckets != null && i < reqBuckets.length ? round1(reqBuckets[i][0]) : 0.0));
+            row.put("reqRate", Double.valueOf(reqBuckets != null && i < reqBuckets.length ? round3(reqBuckets[i][1]) : 0.0));
+            row.put("reqErr", Double.valueOf(0.0));
+            rows.add(row);
+        }
+
+        final Map<String, Object> out = new LinkedHashMap<>(4);
+        out.put("source", "charts");
+        out.put("intervalSec", Long.valueOf(intervalSec));
+        out.put("hasErrorSeries", Boolean.FALSE);
+        out.put("rows", rows);
+        return out;
+    }
+
+    /**
+     * Downsamples a chart JSON file of {@code [timestampMs, meanMs, minMs, maxMs, countPerSec]} tuples into
+     * {@code buckets} equal-width slices returning {@code [meanMs, countPerSec]} per bucket.
+     */
+    private double[][] downsampleChartJsonFull(final File jsonFile, final int buckets, final long reportStartMs, final long reportEndMs)
+    {
+        if (jsonFile == null || !jsonFile.isFile() || buckets <= 0)
+        {
+            return null;
+        }
+        long[] timestamps = new long[256];
+        double[] means = new double[256];
+        double[] rates = new double[256];
+        int count = 0;
+
+        try (JsonParser parser = jsonFactory.createParser(jsonFile))
+        {
+            if (parser.nextToken() != JsonToken.START_ARRAY)
+            {
+                return null;
+            }
+            while (parser.nextToken() != JsonToken.END_ARRAY && parser.currentToken() != null)
+            {
+                if (parser.currentToken() == JsonToken.START_ARRAY)
+                {
+                    long tsVal = 0L;
+                    double meanVal = Double.NaN;
+                    double rateVal = 0.0;
+                    boolean tsValid = false;
+                    boolean meanValid = false;
+                    int idx = 0;
+                    while (parser.nextToken() != JsonToken.END_ARRAY && parser.currentToken() != null)
+                    {
+                        final JsonToken tok = parser.currentToken();
+                        if (tok.isStructStart())
+                        {
+                            parser.skipChildren();
+                        }
+                        else if (idx == 0 && tok.isNumeric())
+                        {
+                            tsVal = parser.getLongValue();
+                            tsValid = true;
+                        }
+                        else if (idx == 1 && tok.isNumeric())
+                        {
+                            meanVal = parser.getDoubleValue();
+                            meanValid = true;
+                        }
+                        else if (idx == 4 && tok.isNumeric())
+                        {
+                            rateVal = parser.getDoubleValue();
+                        }
+                        idx++;
+                    }
+                    if (tsValid && meanValid && Double.isFinite(meanVal))
+                    {
+                        if (count == timestamps.length)
+                        {
+                            timestamps = Arrays.copyOf(timestamps, timestamps.length * 2);
+                            means = Arrays.copyOf(means, means.length * 2);
+                            rates = Arrays.copyOf(rates, rates.length * 2);
+                        }
+                        timestamps[count] = tsVal;
+                        means[count] = meanVal;
+                        rates[count] = Double.isFinite(rateVal) ? rateVal : 0.0;
+                        count++;
+                    }
+                }
+                else if (parser.currentToken().isStructStart())
+                {
+                    parser.skipChildren();
+                }
+            }
+        }
+        catch (final IOException e)
+        {
+            LOG.debug("Failed to synthesize executive time series from '{}': {}", jsonFile, e.getMessage());
+            return null;
+        }
+
+        if (count == 0)
+        {
+            return null;
+        }
+
+        long minTs = Long.MAX_VALUE;
+        long maxTs = Long.MIN_VALUE;
+        for (int i = 0; i < count; i++)
+        {
+            if (timestamps[i] < minTs)
+            {
+                minTs = timestamps[i];
+            }
+            if (timestamps[i] > maxTs)
+            {
+                maxTs = timestamps[i];
+            }
+        }
+        final long start = reportStartMs > 0 && reportEndMs > reportStartMs ? reportStartMs : minTs;
+        final long end = reportStartMs > 0 && reportEndMs > reportStartMs ? reportEndMs : maxTs;
+        final double span = Math.max(1.0, (double) (end - start));
+
+        final int outCount = Math.min(buckets, count);
+        final double[] meanSum = new double[outCount];
+        final double[] rateSum = new double[outCount];
+        final int[] bucketCnt = new int[outCount];
+
+        for (int i = 0; i < count; i++)
+        {
+            int b = (int) Math.floor(((timestamps[i] - start) / span) * outCount);
+            if (b < 0)
+            {
+                b = 0;
+            }
+            else if (b >= outCount)
+            {
+                b = outCount - 1;
+            }
+            meanSum[b] += means[i];
+            rateSum[b] += rates[i];
+            bucketCnt[b]++;
+        }
+
+        final double[][] result = new double[outCount][2];
+        for (int b = 0; b < outCount; b++)
+        {
+            if (bucketCnt[b] > 0)
+            {
+                result[b][0] = meanSum[b] / bucketCnt[b];
+                result[b][1] = rateSum[b] / bucketCnt[b];
+            }
+        }
+        return result;
+    }
+
+    private static String pickRepresentativePercentileKey(final List<String> pctList)
+    {
+        if (pctList == null || pctList.isEmpty())
+        {
+            return "95";
+        }
+        if (pctList.contains("95"))
+        {
+            return "95";
+        }
+        if (pctList.contains("90"))
+        {
+            return "90";
+        }
+        return pctList.get(pctList.size() - 1);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> pickTopSlowTimers(
+        final Map<String, Object> sectionBundle, final String repPctKey, final int limit, final boolean includeApdex)
+    {
+        final List<Map<String, Object>> items = new ArrayList<>();
+        final Object raw = sectionBundle.get("items");
+        if (!(raw instanceof List<?> list))
+        {
+            return items;
+        }
+        final String pKey = "p" + repPctKey;
+        for (final Object o : list)
+        {
+            if (o instanceof Map<?, ?> m)
+            {
+                final Map<String, Object> item = (Map<String, Object>) m;
+                if (Boolean.TRUE.equals(item.get("isAggregate")))
+                {
+                    continue;
+                }
+                final Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("name", item.get("name"));
+                entry.put("count", item.get("count"));
+                entry.put("mean", item.get("mean"));
+                entry.put("median", item.get("median"));
+                entry.put("percentiles", item.get("percentiles"));
+                entry.put("errors", item.get("errors"));
+                entry.put("errPct", item.get("errPct"));
+                if (includeApdex && item.containsKey("apdex"))
+                {
+                    entry.put("apdex", item.get("apdex"));
+                }
+                items.add(entry);
+            }
+        }
+        items.sort((a, b) -> Double.compare(extractSortMetric(b, pKey), extractSortMetric(a, pKey)));
+        return items.size() > limit ? new ArrayList<>(items.subList(0, limit)) : items;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static double extractSortMetric(final Map<String, Object> item, final String pKey)
+    {
+        final Object pcts = item.get("percentiles");
+        if (pcts instanceof Map<?, ?> pm && pm.get(pKey) instanceof Number n)
+        {
+            return n.doubleValue();
+        }
+        final Object mean = item.get("mean");
+        return mean instanceof Number n ? n.doubleValue() : 0.0;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> summarizeWebVitals(final Map<String, Object> webVitalsBundle)
+    {
+        final Map<String, Object> out = new LinkedHashMap<>();
+        final List<Map<String, Object>> items = (List<Map<String, Object>>) webVitalsBundle.get("items");
+        if (items == null || items.isEmpty())
+        {
+            out.put("present", Boolean.FALSE);
+            return out;
+        }
+        final List<String> metricKeys = List.of("lcp", "inp", "cls", "fcp", "ttfb");
+        int goodActions = 0;
+        int improveActions = 0;
+        int poorActions = 0;
+        final Map<String, long[]> agg = new LinkedHashMap<>();
+        for (final String k : metricKeys)
+        {
+            agg.put(k, new long[3]);
+        }
+
+        for (final Map<String, Object> it : items)
+        {
+            int worst = 0; // 1=good, 2=improve, 3=poor
+            for (final String k : metricKeys)
+            {
+                final Object mv = it.get(k);
+                if (mv instanceof Map<?, ?> m)
+                {
+                    final String rating = String.valueOf(m.get("rating"));
+                    final int r = "poor".equals(rating) ? 3 : ("improve".equals(rating) ? 2 : ("good".equals(rating) ? 1 : 0));
+                    if (r > worst)
+                    {
+                        worst = r;
+                    }
+                    final long[] counts = agg.get(k);
+                    counts[0] += ((Number) ((Map<String, Object>) m).getOrDefault("goodCount", Long.valueOf(0L))).longValue();
+                    counts[1] += ((Number) ((Map<String, Object>) m).getOrDefault("improveCount", Long.valueOf(0L))).longValue();
+                    counts[2] += ((Number) ((Map<String, Object>) m).getOrDefault("poorCount", Long.valueOf(0L))).longValue();
+                }
+            }
+            if (worst == 3)
+            {
+                poorActions++;
+            }
+            else if (worst == 2)
+            {
+                improveActions++;
+            }
+            else if (worst == 1)
+            {
+                goodActions++;
+            }
+        }
+
+        final Map<String, Object> metrics = new LinkedHashMap<>();
+        for (final Map.Entry<String, long[]> e : agg.entrySet())
+        {
+            final long[] c = e.getValue();
+            if (c[0] + c[1] + c[2] > 0)
+            {
+                final Map<String, Object> m = new LinkedHashMap<>(3);
+                m.put("good", Long.valueOf(c[0]));
+                m.put("improve", Long.valueOf(c[1]));
+                m.put("poor", Long.valueOf(c[2]));
+                metrics.put(e.getKey(), m);
+            }
+        }
+
+        out.put("present", Boolean.TRUE);
+        out.put("actionCount", Integer.valueOf(items.size()));
+        out.put("goodActions", Integer.valueOf(goodActions));
+        out.put("improveActions", Integer.valueOf(improveActions));
+        out.put("poorActions", Integer.valueOf(poorActions));
+        out.put("metrics", metrics);
+        return out;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> extractScorecardGroups(final Map<String, Object> fullScorecard)
+    {
+        if (fullScorecard == null)
+        {
+            return Collections.emptyList();
+        }
+        final Object raw = fullScorecard.get("groups");
+        if (!(raw instanceof List<?> list))
+        {
+            return Collections.emptyList();
+        }
+        final List<Map<String, Object>> groups = new ArrayList<>(list.size());
+        for (final Object o : list)
+        {
+            if (o instanceof Map<?, ?> m)
+            {
+                final Map<String, Object> g = (Map<String, Object>) m;
+                final Map<String, Object> compact = new LinkedHashMap<>(6);
+                compact.put("id", g.get("id"));
+                compact.put("name", g.get("name"));
+                compact.put("result", g.get("result"));
+                compact.put("points", g.get("points"));
+                compact.put("maxPoints", g.get("maxPoints"));
+                compact.put("ruleCount", g.get("ruleCount"));
+                groups.add(compact);
+            }
+        }
+        return groups;
+    }
+
+    private static double round1(final double v)
+    {
+        return Math.round(v * 10.0) / 10.0;
+    }
+
+    private static double round2(final double v)
+    {
+        return Math.round(v * 100.0) / 100.0;
+    }
+
+    private static double round3(final double v)
+    {
+        return Math.round(v * 1000.0) / 1000.0;
+    }
+
+    // =========================================================================
     // Scorecard XML Parser
     // =========================================================================
 
@@ -2237,6 +2943,12 @@ public class ModernReportGenerator
     private void patchScorecardFieldInJsBundle(
         final File jsFile, final String globalVarName, final Map<String, Object> scorecardSummary) throws IOException
     {
+        patchFieldInJsBundle(jsFile, globalVarName, "scorecard", scorecardSummary);
+    }
+
+    private void patchFieldInJsBundle(
+        final File jsFile, final String globalVarName, final String fieldName, final Object fieldValue) throws IOException
+    {
         final String raw = Files.readString(jsFile.toPath(), StandardCharsets.UTF_8);
         final int eqIdx = raw.indexOf('=');
         final int endIdx = raw.lastIndexOf(';');
@@ -2248,7 +2960,7 @@ public class ModernReportGenerator
         final Map<String, Object> obj = objectMapper.readValue(jsonPart, new TypeReference<LinkedHashMap<String, Object>>()
         {
         });
-        obj.put("scorecard", scorecardSummary);
+        obj.put(fieldName, fieldValue);
         writeJsGlobal(jsFile, globalVarName, obj);
     }
 
