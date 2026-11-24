@@ -165,37 +165,11 @@
   }
 
   function syncSelectorControls() {
-    var runs = getRuns();
     var baseSel = document.getElementById("cmp-base-select");
     var targetSel = document.getElementById("cmp-target-select");
-    var baseLink = document.getElementById("cmp-base-link");
-    var targetLink = document.getElementById("cmp-target-link");
 
     if (baseSel) baseSel.value = String(state.baseIdx);
     if (targetSel) targetSel.value = String(state.targetIdx);
-
-    var rA = runs[state.baseIdx];
-    var rB = runs[state.targetIdx];
-    if (baseLink) {
-      if (rA && rA.reportHref) {
-        baseLink.href = rA.reportHref;
-        baseLink.hidden = false;
-        baseLink.title = "Open Baseline single-run report (" + (rA.name || "") + ")";
-      } else {
-        baseLink.removeAttribute("href");
-        baseLink.hidden = true;
-      }
-    }
-    if (targetLink) {
-      if (rB && rB.reportHref) {
-        targetLink.href = rB.reportHref;
-        targetLink.hidden = false;
-        targetLink.title = "Open Target single-run report (" + (rB.name || "") + ")";
-      } else {
-        targetLink.removeAttribute("href");
-        targetLink.hidden = true;
-      }
-    }
   }
 
   function renderSelectorBar() {
@@ -218,7 +192,6 @@
       '<div class="cmp-run-chip">' +
         '<span class="cmp-run-badge is-base">Baseline (A)</span>' +
         '<select id="cmp-base-select" class="cmp-run-select" aria-label="Baseline run"></select>' +
-        '<a id="cmp-base-link" class="cmp-run-ext-link" target="_blank" rel="noopener" hidden aria-label="Open baseline single-run report">↗</a>' +
       "</div>" +
       '<button type="button" id="cmp-swap-btn" class="cmp-swap-btn" aria-label="Swap Baseline and Target runs" title="Swap Baseline (A) and Target (B)">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/></svg>' +
@@ -226,7 +199,6 @@
       '<div class="cmp-run-chip">' +
         '<span class="cmp-run-badge is-target">Target (B)</span>' +
         '<select id="cmp-target-select" class="cmp-run-select" aria-label="Comparison target run"></select>' +
-        '<a id="cmp-target-link" class="cmp-run-ext-link" target="_blank" rel="noopener" hidden aria-label="Open target single-run report">↗</a>' +
       "</div>" +
       presetsHtml;
 
@@ -1005,6 +977,9 @@
         : (r && r.name || ("Run " + (idx + 1)));
       return "#" + (idx + 1) + " " + name + tag;
     });
+    var runAxisLabels = runs.map(function (_, idx) {
+      return "#" + (idx + 1);
+    });
 
     var readVal = function (idx, field) {
       var rm = runMetrics[idx];
@@ -1319,9 +1294,9 @@
       grid: { left: gridLeft, right: gridRight, top: 26, bottom: 32 },
       xAxis: {
         type: "category",
-        data: runLabels,
+        data: runAxisLabels,
         axisLine: { lineStyle: { color: pal.axis } },
-        axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 130 }
+        axisLabel: { color: pal.muted, fontSize: 11 }
       },
       yAxis: [
         {

@@ -470,11 +470,9 @@
       });
     }
 
-    function buildCompactRunLabels(st) {
-      if (runs.length <= 6) return buildRunLabels(st);
+    function buildCompactRunLabels() {
       return runs.map(function (_, idx) {
-        var tag = idx === st.baseIdx ? " [A]" : (idx === st.targetIdx ? " [B]" : "");
-        return "#" + (idx + 1) + tag;
+        return "#" + (idx + 1);
       });
     }
 
@@ -650,6 +648,7 @@
       var pal = netThemePalette();
       var isRate = trafficMode === "rate" && hasDuration;
       var labels = buildRunLabels(st);
+      var axisLabels = buildCompactRunLabels();
 
       var rawRecv = runs.map(function (r) {
         if (!r || r.bytesReceived == null) return null;
@@ -791,9 +790,9 @@
         grid: { left: gridLeft, right: gridRight, top: 26, bottom: 32 },
         xAxis: {
           type: "category",
-          data: labels,
+          data: axisLabels,
           axisLine: { lineStyle: { color: pal.axis } },
-          axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 130 }
+          axisLabel: { color: pal.muted, fontSize: 11 }
         },
         yAxis: [
           {
@@ -943,7 +942,7 @@
             type: "category",
             data: axisLabels,
             axisLine: { lineStyle: { color: pal.axis } },
-            axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 110 }
+            axisLabel: { color: pal.muted, fontSize: 11 }
           },
           yAxis: {
             type: "value",
@@ -1005,7 +1004,7 @@
           type: "category",
           data: axisLabels,
           axisLine: { lineStyle: { color: pal.axis } },
-          axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 110 }
+          axisLabel: { color: pal.muted, fontSize: 11 }
         },
         yAxis: {
           type: "value",
@@ -1098,7 +1097,7 @@
           type: "category",
           data: axisLabels,
           axisLine: { lineStyle: { color: pal.axis } },
-          axisLabel: { color: pal.muted, fontSize: 11, overflow: "truncate", width: 110 }
+          axisLabel: { color: pal.muted, fontSize: 11 }
         },
         yAxis: {
           type: "value",

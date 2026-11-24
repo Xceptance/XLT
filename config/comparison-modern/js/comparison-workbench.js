@@ -1275,12 +1275,16 @@
       var msUnit = config.valueUnit !== undefined ? config.valueUnit : "ms";
       var yLabel = msUnit ? "Value [" + msUnit + "]" : "Value";
 
-      // Chart runs on light canvas-light box so colors align with testreport-modern charts
-      var textDark = "#18181b";
-      var muted = "#666e7a";
-      var split = "#e5e7eb";
-      var cBase = "#244b73";
-      var cTarget = "#e07000";
+      var dark = document.documentElement.classList.contains("dark-theme");
+      var textDark = dark ? "#e4e4e7" : "#18181b";
+      var muted = dark ? "#a1a1aa" : "#666e7a";
+      var split = dark ? "#2e2e36" : "#e5e7eb";
+      var axisColor = dark ? "#3f3f46" : "#cbd5e1";
+      var tipBg = dark ? "rgba(24, 26, 31, 0.96)" : "#fff";
+      var tipBorder = dark ? "#393e47" : "#cbd5e1";
+      var cBase = dark ? "#60a5fa" : "#244b73";
+      var cTarget = dark ? "#fb923c" : "#e07000";
+      var cErr = dark ? "#f87171" : "#dc2626";
 
       if (uiState.activeTab === "profile") {
         var cats = ["Min", "Mean", "Median"];
@@ -1297,10 +1301,10 @@
 
         echartInst.setOption({
           animationDuration: 180,
-          tooltip: { trigger: "axis", backgroundColor: "#fff", borderColor: "#cbd5e1", textStyle: { color: textDark, fontSize: 12 } },
+          tooltip: { trigger: "axis", backgroundColor: tipBg, borderColor: tipBorder, textStyle: { color: textDark, fontSize: 12 } },
           legend: { bottom: 6, textStyle: { color: textDark, fontSize: 11 } },
           grid: { left: 68, right: 24, top: 24, bottom: 52 },
-          xAxis: { type: "category", data: cats, axisLabel: { color: muted, fontSize: 11 } },
+          xAxis: { type: "category", data: cats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: { color: muted, fontSize: 11 } },
           yAxis: { type: "value", name: yLabel, nameTextStyle: { color: muted }, axisLabel: { color: muted }, splitLine: { lineStyle: { color: split } } },
           series: [
             { name: "Baseline #" + (st.baseIdx + 1) + " (" + baseRun.name + ")", type: "bar", barMaxWidth: 26, data: valsA, itemStyle: { color: cBase, borderRadius: [3, 3, 0, 0] } },
@@ -1314,10 +1318,10 @@
         var socks = [["dns", "DNS"], ["conn", "Connect"], ["send", "Send"], ["busy", "Server Busy"], ["recv", "Receive"], ["ttfb", "TTFB"], ["ttlb", "TTLB"]];
         echartInst.setOption({
           animationDuration: 180,
-          tooltip: { trigger: "axis", backgroundColor: "#fff", borderColor: "#cbd5e1", textStyle: { color: textDark, fontSize: 12 } },
+          tooltip: { trigger: "axis", backgroundColor: tipBg, borderColor: tipBorder, textStyle: { color: textDark, fontSize: 12 } },
           legend: { bottom: 6, textStyle: { color: textDark, fontSize: 11 } },
           grid: { left: 68, right: 24, top: 24, bottom: 52 },
-          xAxis: { type: "category", data: socks.map(function (s) { return s[1]; }), axisLabel: { color: muted, fontSize: 11 } },
+          xAxis: { type: "category", data: socks.map(function (s) { return s[1]; }), axisLine: { lineStyle: { color: axisColor } }, axisLabel: { color: muted, fontSize: 11 } },
           yAxis: { type: "value", name: "Mean [ms]", nameTextStyle: { color: muted }, axisLabel: { color: muted }, splitLine: { lineStyle: { color: split } } },
           series: [
             { name: "Baseline (A)", type: "bar", barMaxWidth: 26, data: socks.map(function (s) { return rA[s[0]] != null ? rA[s[0]] : null; }), itemStyle: { color: cBase, borderRadius: [3, 3, 0, 0] } },
@@ -1331,23 +1335,48 @@
         var tag = i === st.baseIdx ? " [A]" : (i === st.targetIdx ? " [B]" : "");
         return "#" + (i + 1) + " " + (r.name || ("Run " + (i + 1))) + tag;
       });
+      var runAxisLabels = runs.map(function (_, i) {
+        return "#" + (i + 1);
+      });
 
       if (uiState.activeTab === "throughput") {
         var rates = runs.map(function (_, i) { var rm = item.runs && item.runs[i]; return rm && rm.rate != null ? rm.rate : null; });
         var errs = runs.map(function (_, i) { var rm = item.runs && item.runs[i]; return rm && rm.errors != null ? rm.errors : null; });
         var tSeries = [{ name: "Throughput (1/s)", type: "bar", barMaxWidth: 32, data: rates, itemStyle: { color: cBase, borderRadius: [3, 3, 0, 0] } }];
         if (showErrors && errs.some(function (v) { return v !== null; })) {
-          tSeries.push({ name: "Errors", type: "line", yAxisIndex: 1, data: errs, symbolSize: 7, lineStyle: { color: "#dc2626", width: 2 }, itemStyle: { color: "#dc2626" } });
+          tSeries.push({ name: "Errors", type: "line", yAxisIndex: 1, data: errs, symbolSize: 7, lineStyle: { color: cErr, width: 2 }, itemStyle: { color: cErr } });
         }
         echartInst.setOption({
           animationDuration: 180,
-          tooltip: { trigger: "axis", backgroundColor: "#fff", borderColor: "#cbd5e1", textStyle: { color: textDark, fontSize: 12 } },
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: tipBg,
+            borderColor: tipBorder,
+            textStyle: { color: textDark, fontSize: 12 },
+            formatter: function (params) {
+              if (!params || !params.length) return "";
+              var idx = params[0].dataIndex;
+              var html = '<div style="font-weight:700;margin-bottom:4px">' + esc(runLabels[idx] || params[0].axisValue || "") + "</div>";
+              params.forEach(function (p) {
+                var valTxt = "—";
+                if (p.value !== null && p.value !== undefined) {
+                  valTxt = p.seriesName.indexOf("Throughput") === 0 ? (fmtDec(p.value, 2) + " /s") : fmtInt(p.value);
+                }
+                html +=
+                  '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums">' +
+                    "<span>" + p.marker + " " + esc(p.seriesName) + "</span>" +
+                    "<strong>" + esc(valTxt) + "</strong>" +
+                  "</div>";
+              });
+              return html;
+            }
+          },
           legend: { bottom: 6, textStyle: { color: textDark, fontSize: 11 } },
           grid: { left: 64, right: 56, top: 24, bottom: 52 },
-          xAxis: { type: "category", data: runLabels, axisLabel: { color: muted, fontSize: 11, overflow: "truncate", width: 130 } },
+          xAxis: { type: "category", data: runAxisLabels, axisLine: { lineStyle: { color: axisColor } }, axisLabel: { color: muted, fontSize: 11 } },
           yAxis: [
             { type: "value", name: "Rate [1/s]", nameTextStyle: { color: muted }, axisLabel: { color: muted }, splitLine: { lineStyle: { color: split } } },
-            { type: "value", name: "Errors", show: tSeries.length > 1, nameTextStyle: { color: "#dc2626" }, axisLabel: { color: "#dc2626" }, splitLine: { show: false } }
+            { type: "value", name: "Errors", show: tSeries.length > 1, nameTextStyle: { color: cErr }, axisLabel: { color: cErr }, splitLine: { show: false } }
           ],
           series: tSeries
         }, true);
@@ -1365,7 +1394,7 @@
         pcts: pcts,
         baseIdx: st.baseIdx,
         targetIdx: st.targetIdx,
-        dark: false,
+        dark: dark,
         valueUnit: msUnit,
         valueFmt: msFmt,
         showErrors: showErrors,

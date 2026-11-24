@@ -89,11 +89,8 @@
       scHtml = '<span class="status-pill ' + pillCls + '">Scorecard: ' + esc(res) + "</span>";
     }
 
-    var linkHtml = run.reportHref
-      ? '<a class="btn-chip" href="' + esc(run.reportHref) + '" target="_blank" rel="noopener">Open Run ↗</a>'
-      : "";
-    var headActionsHtml = (scHtml || linkHtml)
-      ? '<div style="display:inline-flex;align-items:center;gap:6px">' + scHtml + linkHtml + "</div>"
+    var headActionsHtml = scHtml
+      ? '<div style="display:inline-flex;align-items:center;gap:6px">' + scHtml + "</div>"
       : "";
 
     var commentHtml = "";

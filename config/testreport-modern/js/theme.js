@@ -90,7 +90,8 @@
   }
 
   /**
-   * Flips between light and dark themes, persists the choice, and updates the UI.
+   * Flips between light and dark themes, persists the choice, updates the UI,
+   * and dispatches `xlt-theme-changed` so dynamic charts re-theme live.
    * Exposed globally for inline or programmatic callers.
    */
   window.toggleTheme = function () {
@@ -100,6 +101,9 @@
       localStorage.setItem("xlt-theme", next);
     } catch (_) {}
     applyTheme(next);
+    try {
+      window.dispatchEvent(new CustomEvent("xlt-theme-changed", { detail: { theme: next } }));
+    } catch (_) {}
   };
 
   // Apply before first paint while <head> is still being parsed

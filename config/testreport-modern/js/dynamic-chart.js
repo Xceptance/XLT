@@ -39,8 +39,125 @@
   var instances = new WeakMap();
   /** Maps DOM stage containers to their ResizeObserver so resizing never leaks window listeners. */
   var observers = new WeakMap();
+  /** Tracks mounted stage containers so live theme toggles can re-theme all open dynamic charts. */
+  var activeContainers = new Set();
   /** In-memory JSON response cache keyed by URL so switching tabs/items avoids duplicate fetches. */
   var cache = Object.create(null);
+
+  /**
+   * Returns theme-aware chart palette tokens for light and dark UI modes.
+   * @returns {object} Color tokens for ECharts typography, gridlines, tooltip, dataZoom, and series.
+   */
+  function themePalette() {
+    var dark = document.documentElement.classList.contains("dark-theme");
+    return {
+      dark: dark,
+      title: dark ? "#f4f4f5" : "#18181b",
+      text: dark ? "#d4d4d8" : "#3f3f46",
+      muted: dark ? "#a1a1aa" : "#52525b",
+      axis: dark ? "#525866" : "#a1a1aa",
+      splitX: dark ? "#272a30" : "#e4e4e7",
+      splitY: dark ? "#2e323a" : "#d4d4d8",
+      tipBg: dark ? "rgba(24, 26, 31, 0.96)" : "rgba(255,255,255,0.96)",
+      tipBorder: dark ? "#393e47" : "#d4d4d8",
+      tipText: dark ? "#f4f4f5" : "#18181b",
+      pointerLabelBg: dark ? "#272a30" : "#52525b",
+      mean: dark ? "#60a5fa" : "#244b73",
+      bandItem: dark ? "rgba(96, 165, 250, 0.34)" : "rgba(36, 75, 115, 0.28)",
+      bandArea: dark ? "rgba(96, 165, 250, 0.18)" : "rgba(36, 75, 115, 0.14)",
+      rate: dark ? "#fb923c" : "#e07000",
+      loadingMask: dark ? "rgba(18, 18, 18, 0.82)" : "rgba(255, 255, 255, 0.82)",
+      sliderBg: dark ? "rgba(24, 26, 31, 0.9)" : "rgba(244, 244, 245, 0.7)",
+      sliderBorder: dark ? "#393e47" : "#d4d4d8",
+      sliderFiller: dark ? "rgba(96, 165, 250, 0.22)" : "rgba(36, 75, 115, 0.16)",
+      sliderHandle: dark ? "#272a30" : "#ffffff",
+      sliderDataLine: dark ? "#525866" : "#a1a1aa",
+      sliderDataArea: dark ? "rgba(82, 88, 102, 0.3)" : "rgba(161, 161, 170, 0.25)"
+    };
+  }
+
+  /**
+   * Builds a partial ECharts option object containing only theme/color properties so live
+   * theme switches update colors cleanly without resetting data or active zoom ranges.
+   * @param {object} pal Palette returned by `themePalette()`.
+   * @returns {object} Partial ECharts option patch.
+   */
+  function buildThemePatch(pal) {
+    return {
+      backgroundColor: "transparent",
+      title: { textStyle: { color: pal.title } },
+      legend: { textStyle: { color: pal.text } },
+      toolbox: {
+        iconStyle: { borderColor: pal.muted },
+        emphasis: { iconStyle: { borderColor: pal.title } }
+      },
+      tooltip: {
+        backgroundColor: pal.tipBg,
+        borderColor: pal.tipBorder,
+        textStyle: { color: pal.tipText },
+        axisPointer: {
+          lineStyle: { color: pal.muted },
+          crossStyle: { color: pal.muted },
+          label: { backgroundColor: pal.pointerLabelBg, color: "#ffffff" }
+        }
+      },
+      dataZoom: [
+        {},
+        {
+          backgroundColor: pal.sliderBg,
+          borderColor: pal.sliderBorder,
+          fillerColor: pal.sliderFiller,
+          handleStyle: { color: pal.sliderHandle, borderColor: pal.axis },
+          moveHandleStyle: { color: pal.axis },
+          dataBackground: {
+            lineStyle: { color: pal.sliderDataLine },
+            areaStyle: { color: pal.sliderDataArea }
+          },
+          selectedDataBackground: {
+            lineStyle: { color: pal.mean },
+            areaStyle: { color: pal.bandArea }
+          }
+        }
+      ],
+      xAxis: {
+        nameTextStyle: { color: pal.text },
+        axisLine: { lineStyle: { color: pal.axis } },
+        axisTick: { lineStyle: { color: pal.axis } },
+        axisLabel: { color: pal.text },
+        splitLine: { lineStyle: { color: pal.splitX } }
+      },
+      yAxis: [
+        {
+          nameTextStyle: { color: pal.title },
+          axisLine: { lineStyle: { color: pal.axis } },
+          axisTick: { lineStyle: { color: pal.axis } },
+          axisLabel: { color: pal.text },
+          splitLine: { lineStyle: { color: pal.splitY } }
+        },
+        {
+          nameTextStyle: { color: pal.rate },
+          axisLabel: { color: pal.rate }
+        }
+      ],
+      series: [
+        {
+          name: "Min–Max Band",
+          itemStyle: { color: pal.bandItem },
+          areaStyle: { color: pal.bandArea }
+        },
+        {
+          name: "Mean [ms]",
+          lineStyle: { color: pal.mean },
+          itemStyle: { color: pal.mean }
+        },
+        {
+          name: "Count/s",
+          lineStyle: { color: pal.rate },
+          itemStyle: { color: pal.rate }
+        }
+      ]
+    };
+  }
 
   /**
    * Disposes an ECharts instance and its ResizeObserver for `container`, if initialized.
@@ -48,6 +165,7 @@
    */
   function disposeDynamicChart(container) {
     if (!container) return;
+    activeContainers.delete(container);
     var ro = observers.get(container);
     if (ro) {
       ro.disconnect();
@@ -141,7 +259,13 @@
         observers.set(container, ro);
       }
     }
-    chart.showLoading({ text: "Loading interactive time series…", color: "#244b73" });
+    var initPal = themePalette();
+    chart.showLoading({
+      text: "Loading interactive time series…",
+      color: initPal.mean,
+      textColor: initPal.text,
+      maskColor: initPal.loadingMask
+    });
 
     var rgCfg = (window.XLT_META && window.XLT_META.reportGeneratorConfig) || {};
     var tzLabel = rgCfg.timeZoneLabel || "UTC";
@@ -152,6 +276,7 @@
         return;
       }
       chart.hideLoading();
+      var pal = themePalette();
       var meanSeries = [];
       var minSeries = [];
       var diffSeries = [];
@@ -175,7 +300,7 @@
 
       chart.setOption({
         animation: false,
-        backgroundColor: "#ffffff",
+        backgroundColor: "transparent",
         useUTC: true,
         title: {
           text: title,
@@ -184,7 +309,7 @@
           textStyle: {
             fontSize: 12.5,
             fontWeight: 700,
-            color: "#18181b",
+            color: pal.title,
             width: Math.max(220, (container.clientWidth || 860) - 96),
             overflow: "truncate",
             ellipsis: "…"
@@ -195,12 +320,14 @@
           left: "center",
           itemGap: 18,
           data: ["Mean [ms]", "Min–Max Band", "Count/s"],
-          textStyle: { fontSize: 11, color: "#3f3f46" }
+          textStyle: { fontSize: 11, color: pal.text }
         },
         toolbox: {
           show: true,
           top: 2,
           right: 10,
+          iconStyle: { borderColor: pal.muted },
+          emphasis: { iconStyle: { borderColor: pal.title } },
           feature: {
             dataZoom: {
               yAxisIndex: "none",
@@ -212,10 +339,16 @@
         },
         tooltip: {
           trigger: "axis",
-          axisPointer: { type: "cross", animation: false },
-          backgroundColor: "rgba(255,255,255,0.96)",
-          borderColor: "#d4d4d8",
-          textStyle: { color: "#18181b", fontSize: 11.5 },
+          axisPointer: {
+            type: "cross",
+            animation: false,
+            lineStyle: { color: pal.muted },
+            crossStyle: { color: pal.muted },
+            label: { backgroundColor: pal.pointerLabelBg, color: "#ffffff" }
+          },
+          backgroundColor: pal.tipBg,
+          borderColor: pal.tipBorder,
+          textStyle: { color: pal.tipText, fontSize: 11.5 },
           formatter: function (params) {
             if (!params || !params.length) return "";
             var ts = params[0].value[0];
@@ -241,18 +374,37 @@
         grid: { left: 66, right: 60, top: 34, bottom: 82 },
         dataZoom: [
           { type: "inside", xAxisIndex: 0 },
-          { type: "slider", xAxisIndex: 0, height: 16, bottom: 28, showDetail: false }
+          {
+            type: "slider",
+            xAxisIndex: 0,
+            height: 16,
+            bottom: 28,
+            showDetail: false,
+            backgroundColor: pal.sliderBg,
+            borderColor: pal.sliderBorder,
+            fillerColor: pal.sliderFiller,
+            handleStyle: { color: pal.sliderHandle, borderColor: pal.axis },
+            moveHandleStyle: { color: pal.axis },
+            dataBackground: {
+              lineStyle: { color: pal.sliderDataLine },
+              areaStyle: { color: pal.sliderDataArea }
+            },
+            selectedDataBackground: {
+              lineStyle: { color: pal.mean },
+              areaStyle: { color: pal.bandArea }
+            }
+          }
         ],
         xAxis: {
           type: "time",
           name: "Time [" + tzLabel + "]",
           nameLocation: "middle",
           nameGap: 22,
-          nameTextStyle: { fontSize: 10.5, color: "#3f3f46" },
-          axisLine: { lineStyle: { color: "#a1a1aa" } },
-          axisTick: { lineStyle: { color: "#a1a1aa" } },
-          axisLabel: { fontSize: 10.5, color: "#3f3f46" },
-          splitLine: { show: true, lineStyle: { color: "#e4e4e7", type: "dashed" } }
+          nameTextStyle: { fontSize: 10.5, color: pal.text },
+          axisLine: { lineStyle: { color: pal.axis } },
+          axisTick: { lineStyle: { color: pal.axis } },
+          axisLabel: { fontSize: 10.5, color: pal.text },
+          splitLine: { show: true, lineStyle: { color: pal.splitX, type: "dashed" } }
         },
         yAxis: [
           {
@@ -260,11 +412,11 @@
             name: "Runtime [ms]",
             nameLocation: "middle",
             nameGap: 48,
-            nameTextStyle: { fontSize: 11, fontWeight: 600, color: "#18181b" },
-            axisLine: { show: true, lineStyle: { color: "#a1a1aa" } },
-            axisTick: { show: true, lineStyle: { color: "#a1a1aa" } },
-            axisLabel: { fontSize: 10.5, color: "#3f3f46" },
-            splitLine: { lineStyle: { color: "#d4d4d8", type: "dashed" } }
+            nameTextStyle: { fontSize: 11, fontWeight: 600, color: pal.title },
+            axisLine: { show: true, lineStyle: { color: pal.axis } },
+            axisTick: { show: true, lineStyle: { color: pal.axis } },
+            axisLabel: { fontSize: 10.5, color: pal.text },
+            splitLine: { lineStyle: { color: pal.splitY, type: "dashed" } }
           },
           {
             type: "value",
@@ -272,8 +424,8 @@
             nameLocation: "middle",
             nameRotate: 270,
             nameGap: 44,
-            nameTextStyle: { fontSize: 11, fontWeight: 600, color: "#e07000" },
-            axisLabel: { fontSize: 10.5, color: "#e07000" },
+            nameTextStyle: { fontSize: 11, fontWeight: 600, color: pal.rate },
+            axisLabel: { fontSize: 10.5, color: pal.rate },
             splitLine: { show: false }
           }
         ],
@@ -293,8 +445,8 @@
             stack: "band",
             symbol: "none",
             lineStyle: { opacity: 0 },
-            itemStyle: { color: "rgba(36, 75, 115, 0.28)" },
-            areaStyle: { color: "rgba(36, 75, 115, 0.14)" },
+            itemStyle: { color: pal.bandItem },
+            areaStyle: { color: pal.bandArea },
             tooltip: { show: false }
           },
           {
@@ -302,8 +454,8 @@
             type: "line",
             data: meanSeries,
             showSymbol: false,
-            lineStyle: { width: 1.6, color: "#244b73" },
-            itemStyle: { color: "#244b73" }
+            lineStyle: { width: 1.6, color: pal.mean },
+            itemStyle: { color: pal.mean }
           },
           {
             name: "Count/s",
@@ -311,11 +463,13 @@
             yAxisIndex: 1,
             data: rateSeries,
             showSymbol: false,
-            lineStyle: { width: 1.2, color: "#e07000", type: "dashed" },
-            itemStyle: { color: "#e07000" }
+            lineStyle: { width: 1.2, color: pal.rate, type: "dashed" },
+            itemStyle: { color: pal.rate }
           }
         ]
       }, true);
+
+      activeContainers.add(container);
 
       // Enable drag-to-zoom immediately without requiring a toolbar click first
       chart.dispatchAction({
@@ -329,12 +483,28 @@
       }
       disposeDynamicChart(container);
       container.innerHTML =
-        '<div style="padding:28px;text-align:center;color:#71717a;font-size:12px;">' +
+        '<div style="padding:28px;text-align:center;color:var(--text-muted);font-size:12px;">' +
           'Interactive Dynamic Overview requires serving the report via HTTP (e.g. <code>http://localhost:8080/</code>) so browser CORS permits loading <code>' +
           jsonUrl + '</code>.<br/><span style="font-size:11px;opacity:0.8;">(' + String(err.message || err) + ')</span>' +
         '</div>';
     });
   }
+
+  window.addEventListener("xlt-theme-changed", function () {
+    var patch = buildThemePatch(themePalette());
+    activeContainers.forEach(function (container) {
+      if (!container || !container.isConnected) {
+        disposeDynamicChart(container);
+        return;
+      }
+      var chart = instances.get(container);
+      if (!chart || (typeof chart.isDisposed === "function" && chart.isDisposed())) {
+        activeContainers.delete(container);
+        return;
+      }
+      chart.setOption(patch);
+    });
+  });
 
   window.XltDynamicChart = { render: renderDynamicChart, dispose: disposeDynamicChart };
 })();

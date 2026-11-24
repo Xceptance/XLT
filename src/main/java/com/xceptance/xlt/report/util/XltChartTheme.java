@@ -401,7 +401,17 @@ public class XltChartTheme extends StandardChartTheme
             return;
         }
 
-        xyPlot.setDomainGridlinesVisible(false);
+        final ValueAxis domainAxis = xyPlot.getDomainAxis();
+        final ValueAxis rangeAxis = xyPlot.getRangeAxis();
+        final boolean isSideHistogram = domainAxis != null && !domainAxis.isVisible() && rangeAxis != null && !rangeAxis.isVisible();
+
+        xyPlot.setDomainGridlinesVisible(!isSideHistogram);
+        if (!isSideHistogram)
+        {
+            xyPlot.setDomainGridlinePaint(MODERN_GRID_LINE_PAINT);
+            xyPlot.setDomainGridlineStroke(MODERN_GRID_LINE_STROKE);
+        }
+
         xyPlot.setRangeGridlinesVisible(true);
         xyPlot.setRangeGridlinePaint(MODERN_GRID_LINE_PAINT);
         xyPlot.setRangeGridlineStroke(MODERN_GRID_LINE_STROKE);
@@ -409,7 +419,6 @@ public class XltChartTheme extends StandardChartTheme
         xyPlot.setRangeZeroBaselinePaint(MODERN_BASELINE_PAINT);
         xyPlot.setRangeZeroBaselineStroke(MODERN_BASELINE_STROKE);
 
-        final ValueAxis rangeAxis = xyPlot.getRangeAxis();
         if (rangeAxis instanceof NumberAxis && !(rangeAxis instanceof LogarithmicAxis) && rangeAxis.isAutoRange()
             && rangeAxis.getLowerBound() < 0.0 && rangeAxis.getUpperBound() <= 1.0)
         {
@@ -418,8 +427,7 @@ public class XltChartTheme extends StandardChartTheme
         }
 
         // Add a clean left vertical spine for the right-hand distribution histogram
-        final ValueAxis domainAxis = xyPlot.getDomainAxis();
-        if (domainAxis != null && !domainAxis.isVisible() && rangeAxis != null && !rangeAxis.isVisible())
+        if (isSideHistogram)
         {
             xyPlot.setDomainZeroBaselineVisible(true);
             xyPlot.setDomainZeroBaselinePaint(MODERN_BASELINE_PAINT);

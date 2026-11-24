@@ -496,7 +496,8 @@ public class JFreeChartUtilsTest
         Assert.assertEquals(BlockBorder.NONE, fixture.chart.getLegend().getFrame());
 
         Assert.assertFalse(fixture.runtimePlot.isOutlineVisible());
-        Assert.assertFalse(fixture.runtimePlot.isDomainGridlinesVisible());
+        Assert.assertTrue(fixture.runtimePlot.isDomainGridlinesVisible());
+        Assert.assertEquals(new Color(0xCBD5E1), fixture.runtimePlot.getDomainGridlinePaint());
         Assert.assertTrue(fixture.runtimePlot.isRangeGridlinesVisible());
         Assert.assertEquals(new Color(0xCBD5E1), fixture.runtimePlot.getRangeGridlinePaint());
         Assert.assertTrue(fixture.runtimePlot.isRangeZeroBaselineVisible());
@@ -517,12 +518,15 @@ public class JFreeChartUtilsTest
         Assert.assertTrue(dotLegendItem.getShape() instanceof Ellipse2D);
 
         Assert.assertFalse(fixture.histogramPlot.isOutlineVisible());
+        Assert.assertFalse(fixture.histogramPlot.isDomainGridlinesVisible());
         Assert.assertTrue(fixture.histogramPlot.isDomainZeroBaselineVisible());
         final XYBarRenderer histRenderer = (XYBarRenderer) fixture.histogramPlot.getRenderer(0);
         Assert.assertEquals(new Color(59, 130, 246, 85), histRenderer.getSeriesPaint(0));
         Assert.assertEquals(new Color(0x3B82F6), histRenderer.getSeriesOutlinePaint(0));
         Assert.assertTrue(histRenderer.isDrawBarOutline());
 
+        Assert.assertTrue(fixture.errorPlot.isDomainGridlinesVisible());
+        Assert.assertEquals(new Color(0xCBD5E1), fixture.errorPlot.getDomainGridlinePaint());
         Assert.assertEquals(new Color(0xDC2626), fixture.errorPlot.getRenderer(0).getSeriesPaint(0));
         Assert.assertEquals(Color.WHITE.getRGB(), image.getRGB(2, 2));
         // Top-right corner has plain gray (#94A3B8) XLT watermark text on white background (no pill fill)
