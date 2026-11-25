@@ -1304,6 +1304,55 @@
       renderStream();
     }
 
+    var currentRowScrollId = 0;
+
+    function getStickyTopClearance(includeThead) {
+      var topHeader = document.querySelector(".top-header");
+      var clearance = topHeader ? topHeader.getBoundingClientRect().height : 52;
+      if (wbRoot && !wbRoot.hidden && !wbRoot.classList.contains("unpinned")) {
+        clearance += wbRoot.getBoundingClientRect().height;
+      }
+      if (includeThead && table && table.tHead) {
+        clearance += table.tHead.getBoundingClientRect().height;
+      }
+      return clearance + 16;
+    }
+
+    function scrollToYAsync(targetY, behavior) {
+      var result = window.scrollTo({ top: targetY, behavior: behavior });
+      if (result && typeof result.then === "function") {
+        return result;
+      }
+      return new Promise(function (resolve) {
+        var timeoutId;
+        function finish() {
+          clearTimeout(timeoutId);
+          window.removeEventListener("scrollend", finish);
+          window.removeEventListener("scroll", onScroll);
+          resolve();
+        }
+        function onScroll() {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(finish, 100);
+        }
+        window.addEventListener("scrollend", finish, { once: true });
+        window.addEventListener("scroll", onScroll, { passive: true });
+        timeoutId = setTimeout(finish, 100);
+      });
+    }
+
+    async function scrollElementBelowSticky(el, includeThead, shouldFocus) {
+      if (!el) return;
+      var scrollId = ++currentRowScrollId;
+      var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var targetY = Math.max(0, window.scrollY + el.getBoundingClientRect().top - getStickyTopClearance(includeThead));
+      await scrollToYAsync(targetY, reduceMotion ? "auto" : "smooth");
+      if (scrollId !== currentRowScrollId) return;
+      if (shouldFocus) {
+        try { el.focus({ preventScroll: true }); } catch (_) { el.focus(); }
+      }
+    }
+
     function selectByKey(key, shouldScrollRow) {
       var idx = state.activeList.findIndex(function (it) { return it.key === key; });
       if (idx === -1) return;
@@ -1399,6 +1448,20 @@
     }
 
     // --- Workbench Hero Stage & Footnote Rendering ---
+
+    /** Scrolls a tab button horizontally inside its own tablist without ever scrolling the page vertically. */
+    function scrollTabHorizontallyIntoView(tabBtn) {
+      if (!tabBtn || !tabBtn.parentElement) return;
+      var list = tabBtn.parentElement;
+      if (list.scrollWidth <= list.clientWidth) return;
+      var left = tabBtn.offsetLeft;
+      var right = left + tabBtn.offsetWidth;
+      if (left < list.scrollLeft) {
+        list.scrollLeft = left;
+      } else if (right > list.scrollLeft + list.clientWidth) {
+        list.scrollLeft = right - list.clientWidth;
+      }
+    }
 
     function renderWorkbench() {
       var item = state.activeList[state.activeIdx];
@@ -1511,8 +1574,8 @@
             syncUrl();
           });
           wbTabs.appendChild(b);
-          if (isSelected && b.scrollIntoView) {
-            try { b.scrollIntoView({ block: "nearest", inline: "nearest" }); } catch (_) {}
+          if (isSelected) {
+            scrollTabHorizontallyIntoView(b);
           }
         });
       }
@@ -1606,6 +1669,11 @@
       var isFiltered = !!(state.query.trim() || (hasPageLabels && state.label !== "ALL"));
       var countText = state.activeList.length.toLocaleString("en-US") + (isFiltered ? " matching charts" : " charts");
 
+      var ARROW_UP_ICON_SVG =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+        '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+
       streamRoot.innerHTML =
         '<div class="card">' +
           '<div class="card-header stream-sticky-header">' +
@@ -1616,7 +1684,7 @@
             '<div class="stream-toolbar-controls">' +
               '<span class="stream-glance-label">Glance Metric:</span>' +
               '<div class="wb-tabs" role="tablist" aria-label="Stream chart views">' + tabsHtml + '</div>' +
-              '<button type="button" class="btn-chip" id="btn-stream-to-top" title="Scroll back up to Directory Table">↑ Table</button>' +
+              '<button type="button" class="btn-chip btn-icon" id="btn-stream-to-top" aria-label="Scroll back up to table" title="Scroll back up to table">' + ARROW_UP_ICON_SVG + '</button>' +
             '</div>' +
           '</div>' +
           '<div class="card-body">' +
@@ -1626,16 +1694,6 @@
           '</div>' +
         '</div>';
 
-      Array.prototype.forEach.call(streamRoot.querySelectorAll("[data-stream-tab]"), function (b) {
-        b.addEventListener("click", function () {
-          state.streamTab = b.getAttribute("data-stream-tab");
-          state.activeTab = state.streamTab;
-          renderStream();
-          renderWorkbench();
-          syncUrl();
-        });
-      });
-
       var grid = document.getElementById("stream-cards-grid");
       var loadBar = document.getElementById("stream-load-bar");
       var sentinel = document.getElementById("stream-sentinel");
@@ -1644,7 +1702,7 @@
       if (btnTop) {
         btnTop.addEventListener("click", function () {
           var target = dirRoot || wbRoot;
-          if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+          if (target) scrollElementBelowSticky(target, false, false);
         });
       }
 
@@ -1680,6 +1738,7 @@
         }
         var url = buildChartUrl(it, tObj);
         if (tObj.type === "echart") {
+          bodyEl.style.minBlockSize = "";
           bodyEl.classList.remove("chart-canvas-light");
           bodyEl.innerHTML = '<div class="wb-echart-box stream-echart-box"></div>';
           var box = bodyEl.querySelector(".wb-echart-box");
@@ -1695,9 +1754,56 @@
         } else {
           bodyEl.classList.add("chart-canvas-light");
           var title = it.name + " — " + tObj.label;
-          bodyEl.innerHTML = '<img class="zoomable-chart" loading="lazy" decoding="async" src="' + escHtml(url) + '" alt="' + escHtml(title) + '" data-chart-title="' + escHtml(title) + '"/>';
+          var existingImg = !prevBox && bodyEl.querySelector ? bodyEl.querySelector("img.zoomable-chart") : null;
+          if (existingImg) {
+            existingImg.src = url;
+            existingImg.alt = title;
+            existingImg.setAttribute("data-chart-title", title);
+          } else {
+            var prevH = bodyEl.offsetHeight;
+            if (prevH > 0) bodyEl.style.minBlockSize = prevH + "px";
+            bodyEl.innerHTML = '<img class="zoomable-chart" loading="lazy" decoding="async" src="' + escHtml(url) + '" alt="' + escHtml(title) + '" data-chart-title="' + escHtml(title) + '"/>';
+            var newImg = bodyEl.querySelector("img.zoomable-chart");
+            if (newImg && prevH > 0) {
+              var clearMinH = function () { bodyEl.style.minBlockSize = ""; };
+              newImg.addEventListener("load", clearMinH, { once: true });
+              newImg.addEventListener("error", clearMinH, { once: true });
+            }
+          }
         }
       }
+
+      var glanceBtns = Array.prototype.slice.call(streamRoot.querySelectorAll("[data-stream-tab]"));
+      glanceBtns.forEach(function (b) {
+        b.addEventListener("click", function () {
+          var nextTabKey = b.getAttribute("data-stream-tab");
+          if (!nextTabKey || nextTabKey === state.streamTab) return;
+          state.streamTab = nextTabKey;
+          tabObj = streamTabs.find(function (t) { return t.key === state.streamTab; }) || streamTabs[0];
+          glanceBtns.forEach(function (gb) {
+            var isSel = gb === b;
+            gb.classList.toggle("active", isSel);
+            gb.setAttribute("aria-selected", isSel ? "true" : "false");
+          });
+          scrollTabHorizontallyIntoView(b);
+
+          // Update rendered stream cards in place without rebuilding the DOM or scrolling the page
+          Array.prototype.forEach.call(grid.querySelectorAll(".stream-card"), function (card) {
+            var key = card.getAttribute("data-stream-key");
+            var it = itemByKey.get(key);
+            if (!it) return;
+            var cardTabs = streamTabs.filter(function (t) { return isTabAvailable(t, it); });
+            var cardTabObj = (tabObj && isTabAvailable(tabObj, it)) ? tabObj : cardTabs[0];
+            if (!cardTabObj) return;
+            Array.prototype.forEach.call(card.querySelectorAll("[data-card-tab]"), function (cb) {
+              var sel = cb.getAttribute("data-card-tab") === cardTabObj.key;
+              cb.classList.toggle("active", sel);
+              cb.setAttribute("aria-selected", sel ? "true" : "false");
+            });
+            mountStreamCardStage(card.querySelector(".stream-card-body"), it, cardTabObj, false);
+          });
+        });
+      });
 
       var cursor = 0;
       var BATCH = 24;
@@ -1761,8 +1867,7 @@
                 '</div>' +
                 '<div class="stream-card-actions">' +
                   (cardTabs.length > 1 ? '<div class="stream-card-tabs" role="tablist" aria-label="Card chart views">' + perCardTabs + '</div>' : '') +
-                  '<button type="button" class="btn-chip" data-table-key="' + escHtml(it.key) + '" title="Jump to this row in Directory Table">↑ Table</button>' +
-                  '<button type="button" class="btn-chip" data-inspect-key="' + escHtml(it.key) + '" title="Load in Top Workbench">Inspect ↗</button>' +
+                  '<button type="button" class="btn-chip btn-icon" data-table-key="' + escHtml(it.key) + '" aria-label="Jump to this row in table" title="Jump to this row in table">' + ARROW_UP_ICON_SVG + '</button>' +
                 '</div>' +
               '</div>' +
               '<div class="stream-card-stats">' + buildStreamStatsHtml(it) + '</div>' +
@@ -1793,25 +1898,21 @@
               b.classList.toggle("active", sel);
               b.setAttribute("aria-selected", sel ? "true" : "false");
             });
-            if (cardTabBtn.scrollIntoView) {
-              try { cardTabBtn.scrollIntoView({ block: "nearest", inline: "nearest" }); } catch (_) {}
-            }
+            scrollTabHorizontallyIntoView(cardTabBtn);
             mountStreamCardStage(card.querySelector(".stream-card-body"), it, targetTab, true);
           }
           return;
         }
         var tblBtn = e.target.closest("[data-table-key]");
         if (tblBtn) {
-          selectByKey(tblBtn.getAttribute("data-table-key"), true);
-          return;
-        }
-        var inspectBtn = e.target.closest("[data-inspect-key]");
-        if (inspectBtn) {
-          selectByKey(inspectBtn.getAttribute("data-inspect-key"), false);
-          if (document.activeElement && streamRoot && streamRoot.contains(document.activeElement) && document.activeElement.blur) {
-            document.activeElement.blur();
+          var jumpKey = tblBtn.getAttribute("data-table-key");
+          selectByKey(jumpKey, false);
+          var jumpRow = rowMap.get(jumpKey);
+          if (jumpRow && !jumpRow.hidden) {
+            scrollElementBelowSticky(jumpRow, true, true);
+          } else if (dirRoot) {
+            scrollElementBelowSticky(dirRoot, false, false);
           }
-          if (wbRoot) wbRoot.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
 

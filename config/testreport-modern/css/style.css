@@ -292,7 +292,9 @@ a:hover {
 [id^="err-req-chart-"],
 [id^="err-row-"],
 [id^="rule-"],
-#cv-logs-section {
+#cv-logs-section,
+#directory-section,
+#workbench-section {
   scroll-margin-top: calc(var(--header-height) + 16px);
   transition: box-shadow 0.25s ease, outline-color 0.25s ease;
 }
@@ -1895,6 +1897,7 @@ th:not([aria-sort]) .sort-icon::before {
 
 .data-table tbody tr.wb-row {
   cursor: pointer;
+  scroll-margin-top: calc(var(--header-height) + 72px);
 }
 .data-table tbody tr.wb-row.is-aggregate-row td {
   background-color: var(--bg-subtle);
