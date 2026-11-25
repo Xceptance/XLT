@@ -92,7 +92,7 @@
       if (ev.testCase) byNameMap[nm].scenarios[ev.testCase] = true;
     });
 
-    var byNameList = Object.keys(byNameMap).map(function (k) {
+    var byNameByCount = Object.keys(byNameMap).map(function (k) {
       var g = byNameMap[k];
       g.scenarioCount = Object.keys(g.scenarios).length;
       return g;
@@ -100,9 +100,13 @@
       return b.totalCount - a.totalCount;
     });
 
+    var byNameList = byNameByCount.slice().sort(function (a, b) {
+      return UI.collator.compare(a.name, b.name);
+    });
+
     var uniqueScenarioCount = Object.keys(scenariosMap).length;
-    var topClass = byNameList[0] || null;
-    var secondClass = byNameList[1] || null;
+    var topClass = byNameByCount[0] || null;
+    var secondClass = byNameByCount[1] || null;
 
     // 1. KPI Strip
     if (kpiGrid) {

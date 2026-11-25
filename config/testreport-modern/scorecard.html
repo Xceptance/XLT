@@ -132,16 +132,16 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table class="data-table" id="sc-breached-table">
+        <table class="data-table js-static-sortable" id="sc-breached-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th class="col-text">Group</th>
-              <th class="col-text">Breached Rule</th>
-              <th class="col-text">Target Threshold</th>
-              <th class="col-num">Actual Achieved</th>
-              <th class="col-num">Points Awarded</th>
-              <th class="col-text">Message / Context</th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Group</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Target Threshold</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Actual Achieved</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Points Awarded</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Message / Context</span><span class="sort-icon"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -163,7 +163,7 @@
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Evaluation Group</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Description</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Status</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Rules</span><span class="sort-icon"></span></button></th>
@@ -179,7 +179,7 @@
       </div>
     </section>
 
-    <!-- Full Rules & Checks Directory Section -->
+    <!-- Full Rules & Checks Section -->
     <section class="card" style="margin-bottom: 12px;">
       <div class="directory-toolbar">
         <div class="table-search-wrap">
@@ -193,17 +193,17 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table class="data-table" id="scorecard-rules-table">
+        <table class="data-table js-static-sortable" id="scorecard-rules-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th class="col-text" style="width:90px;">Result</th>
-              <th class="col-text">Group</th>
-              <th class="col-text">Rule Name &amp; Description</th>
-              <th class="col-text">Condition / Threshold</th>
-              <th class="col-num">Actual Value</th>
-              <th class="col-num">Points</th>
-              <th class="col-text">Message / Diagnostic</th>
+              <th scope="col" class="col-text" style="width:90px;"><button type="button" class="th-sort-btn"><span>Result</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Group</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Condition / Threshold</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Actual Value</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Points</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Message / Diagnostic</span><span class="sort-icon"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -224,7 +224,7 @@
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th class="col-text">Tier Name</th>
+              <th scope="col" class="col-text">Name</th>
               <th class="col-text">Description</th>
               <th class="col-num">Score Upper Limit</th>
               <th class="col-text">Fails Entire Test</th>

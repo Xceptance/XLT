@@ -185,10 +185,13 @@
       return;
     }
 
+    var sortedItems = items.slice().sort(function (a, b) {
+      return UI.collator.compare(a.name || "", b.name || "");
+    });
     if (toolbar) toolbar.hidden = false;
     var records = [];
     var frag = document.createDocumentFragment();
-    items.forEach(function (it, idx) {
+    sortedItems.forEach(function (it, idx) {
       var tr = document.createElement("tr");
       var worst = worstRating(it);
       tr.innerHTML =

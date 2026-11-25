@@ -291,7 +291,8 @@ a:hover {
 [id^="err-chart-"],
 [id^="err-req-chart-"],
 [id^="err-row-"],
-[id^="rule-"] {
+[id^="rule-"],
+#cv-logs-section {
   scroll-margin-top: calc(var(--header-height) + 16px);
   transition: box-shadow 0.25s ease, outline-color 0.25s ease;
 }
@@ -3024,12 +3025,95 @@ img.zoomable-chart,
   gap: 16px;
 }
 
-.error-tx-charts-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 18px;
-  border-block-start: 1px solid var(--border-subtle);
+.error-details-subpanel {
+  border-block-start: 2px solid var(--border-medium);
+  scroll-margin-top: calc(var(--header-height) + 16px);
+}
+
+.error-details-subheader {
+  border-radius: 0;
+}
+
+.err-overview-table th.col-actions,
+.err-overview-table td.col-actions {
+  white-space: nowrap;
+  text-align: end;
+  inline-size: 1%;
+}
+
+.err-ov-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.btn-chip.btn-icon.err-ov-action-btn {
+  min-inline-size: 26px;
+  min-block-size: 26px;
+}
+
+.err-jump-details-btn {
+  color: var(--brand-blue);
+}
+
+.err-jump-details-btn:hover,
+.err-jump-details-btn:focus-visible {
+  background: var(--brand-blue-subtle);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
+}
+
+tr.err-ov-chart-drawer > td {
+  padding: 10px 16px 12px;
+  text-align: center;
+}
+
+.err-ov-chart-box {
+  display: inline-block;
+  margin-inline: auto;
+  max-inline-size: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.err-ov-chart-box img {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 860px;
+  block-size: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: crosshair;
+}
+
+#err-overview-table tbody tr,
+#err-incidents-table tbody tr {
+  scroll-margin-top: calc(var(--header-height) + 20px);
+}
+
+#err-overview-table tbody tr:focus-visible,
+#err-incidents-table tbody tr:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: -2px;
+}
+
+tr.is-jump-target > td {
+  animation: err-jump-flash 2.1s ease-out;
+}
+
+tr.is-jump-target > td:first-child {
+  box-shadow: inset 3px 0 0 var(--brand-blue);
+}
+
+@keyframes err-jump-flash {
+  0%, 35% {
+    background-color: var(--brand-blue-subtle);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .error-strip-subsection {
@@ -3198,8 +3282,33 @@ img.zoomable-chart,
   white-space: nowrap;
 }
 
-.incident-detail-chart {
+.incident-body-container {
+  container: incident-body / inline-size;
   margin-block-start: 8px;
+}
+
+.incident-body-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+@container incident-body (inline-size >= 760px) {
+  .incident-body-layout.has-dumps {
+    grid-template-columns: minmax(0, 1fr) minmax(195px, 230px);
+    gap: 12px;
+  }
+}
+
+.incident-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-inline-size: 0;
+}
+
+.incident-detail-chart {
   padding: 4px 8px;
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
@@ -3219,14 +3328,14 @@ img.zoomable-chart,
 }
 
 .incident-trace-wrap {
-  margin-block-start: 8px;
   max-inline-size: 100%;
+  min-inline-size: 0;
 }
 
 .incident-trace-pre {
   margin: 0;
   inline-size: 100%;
-  max-inline-size: max(460px, 64cqi);
+  max-inline-size: 100%;
   background: var(--bg-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
@@ -3250,51 +3359,101 @@ img.zoomable-chart,
   border-radius: 2px;
 }
 
-.incident-dumps-bar {
+.incident-dumps-panel {
+  border-inline-start: 1px solid var(--border-subtle);
+  padding: 2px 0 2px 10px;
+  min-inline-size: 0;
+}
+
+@container incident-body (inline-size < 760px) {
+  .incident-dumps-panel {
+    border-inline-start: none;
+    border-block-start: 1px solid var(--border-subtle);
+    padding: 8px 0 0;
+  }
+}
+
+.incident-dumps-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 5px;
-  margin-block-start: 8px;
+  margin-block-end: 5px;
+  padding-block-end: 4px;
+  border-block-end: 1px solid var(--border-subtle);
 }
 
 .incident-dumps-label {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  margin-inline-end: 2px;
 }
 
-.incident-dump-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-subtle);
-  color: var(--brand-blue);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+.incident-dumps-count {
+  font-size: 10px;
+  padding: 0 5px;
 }
 
-.incident-dump-chip strong {
-  font-weight: 700;
-  color: var(--text-secondary);
+.incident-dumps-header .incident-paths-toggle {
+  margin-inline-start: auto;
+  font-size: 10px;
+  padding: 1px 6px;
 }
 
-.incident-dump-chip:not(.is-static):hover {
+.incident-dumps-header .incident-paths-toggle.active {
   background: var(--brand-blue-subtle);
   border-color: var(--brand-blue);
+  color: var(--brand-blue);
+}
+
+.incident-dumps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.incident-dump-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.incident-dump-link:not(.is-static):hover,
+.incident-dump-link:not(.is-static):focus-visible {
+  background: var(--bg-hover);
+  color: var(--brand-blue);
   text-decoration: underline;
 }
 
-.incident-dump-chip.is-static {
-  color: var(--text-secondary);
+.dump-link-ext {
+  margin-inline-start: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.45;
+  flex-shrink: 0;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.incident-dump-link:not(.is-static):hover .dump-link-ext,
+.incident-dump-link:not(.is-static):focus-visible .dump-link-ext {
+  opacity: 1;
+  color: var(--brand-blue);
+}
+
+.incident-dump-link.is-static {
+  color: var(--text-muted);
 }
 
 .incident-paths-toggle {
@@ -3759,8 +3918,25 @@ html.dark-theme .chart-crosshair-overlay .chart-zoom-hint {
   border-color: rgba(255, 255, 255, 0.14);
   color: #d4d4d8;
 }
-html.dark-theme .error-tx-charts-body {
-  border-block-start-color: var(--border-subtle);
+html.dark-theme .error-details-subpanel {
+  border-block-start-color: var(--border-medium);
+}
+html.dark-theme .err-ov-chart-box {
+  color-scheme: dark;
+  background: #121212;
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+html.dark-theme tr.is-jump-target > td {
+  animation-name: err-jump-flash-dark;
+}
+@keyframes err-jump-flash-dark {
+  0%, 35% {
+    background-color: color-mix(in srgb, var(--brand-blue) 22%, var(--bg-surface));
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 html.dark-theme .error-strip-item {
   color-scheme: dark;
@@ -3780,20 +3956,19 @@ html.dark-theme .incident-detail-chart {
 html.dark-theme .trace-frame-focus {
   background: var(--brand-blue-subtle);
 }
-html.dark-theme .incident-dump-chip {
-  background: var(--bg-subtle);
-  border-color: var(--border-medium);
+html.dark-theme .incident-dumps-panel {
+  border-color: var(--border-subtle);
+}
+html.dark-theme .incident-dump-link {
+  color: var(--text-secondary);
+}
+html.dark-theme .incident-dump-link:not(.is-static):hover,
+html.dark-theme .incident-dump-link:not(.is-static):focus-visible {
+  background: var(--bg-hover);
   color: var(--brand-blue);
 }
-html.dark-theme .incident-dump-chip strong {
-  color: var(--text-secondary);
-}
-html.dark-theme .incident-dump-chip:not(.is-static):hover {
-  background: var(--brand-blue-subtle);
-  border-color: var(--brand-blue);
-}
-html.dark-theme .incident-dump-chip.is-static {
-  color: var(--text-secondary);
+html.dark-theme .incident-dump-link.is-static {
+  color: var(--text-muted);
 }
 html.dark-theme .incident-paths-list {
   background: var(--bg-app);
@@ -4013,6 +4188,7 @@ html.dark-theme .apdex-pill.apdex-unacceptable {
   html.dark-theme .wb-chart-stage,
   html.dark-theme .chart-panel-body,
   html.dark-theme .error-strip-item,
+  html.dark-theme .err-ov-chart-box,
   html.dark-theme .incident-detail-chart {
     color-scheme: light !important;
     background: #ffffff !important;

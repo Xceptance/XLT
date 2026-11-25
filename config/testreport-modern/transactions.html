@@ -126,7 +126,7 @@
     <div id="tx-empty-section" hidden>
       <section class="card" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">Transactions Directory</div>
+          <div class="card-title">Transactions</div>
         </div>
         <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
           <strong>No transaction records available for this test run.</strong>
@@ -177,7 +177,7 @@
     <section class="card" id="directory-section">
       <div class="card-header">
         <div class="card-title">
-          <span>Transactions Directory</span>
+          <span>Transactions</span>
           <span class="badge-tag" id="dir-visible-count">0 shown</span>
         </div>
 
@@ -303,7 +303,7 @@
         entityLabel: "Transaction",
         items: items,
         includeAggregateRowInTable: false,
-        defaultSort: { key: "cph", dir: "descending" },
+        defaultSort: { key: "name", dir: "ascending" },
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + ".webp"; } },
@@ -314,7 +314,7 @@
           { key: "users", label: "Concurrent Users", url: function (it, enc) { return "charts/transactions/" + enc(it.chartBase) + "_ConcurrentUsers.webp"; } }
         ],
         columns: [
-          { key: "name", label: "Transaction Scenario", type: "text" },
+          { key: "name", label: "Name", type: "text" },
           { key: "spark", label: "Trend", type: "spark", sortable: false },
           { key: "count", label: "Count", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.count); } },
           { key: "rate", label: "1/s", group: "Counts", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },

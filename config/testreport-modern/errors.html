@@ -137,93 +137,66 @@
       </div>
     </section>
 
-    <!-- Transaction Error Overview Table -->
-    <section class="card" id="sec-tx-errors">
+    <!-- Unified Transaction Errors Card (Overview + Connected Details) -->
+    <section class="card error-tx-unified-card" id="sec-tx-errors">
       <div class="card-header">
         <div class="card-title">
           <span>Transaction Error Overview</span>
           <span class="badge-tag" id="err-signature-count">0 Signatures</span>
         </div>
-        <button type="button" class="btn-copy-markdown btn-icon" data-copy-table="err-overview-table" aria-label="Copy Error Overview table as Markdown" title="Copy Error Overview table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <div class="view-mode-bar">
+          <button type="button" class="btn-chip" id="err-toggle-all-ov-charts" aria-expanded="false" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Show All Charts</span></button>
+          <button type="button" class="btn-copy-markdown btn-icon" data-copy-table="err-overview-table" aria-label="Copy Error Overview table as Markdown" title="Copy Error Overview table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        </div>
       </div>
       <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
-      <div class="table-scroll">
-        <table class="data-table js-static-sortable" id="err-overview-table">
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Transaction Error Overview Table">
+        <table class="data-table js-static-sortable err-overview-table" id="err-overview-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Error Signature / Exception Message</span><span class="sort-icon"></span></button></th>
-              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Occurrences</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num" aria-sort="descending"><button type="button" class="th-sort-btn"><span>Occurrences</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Share</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Exception Class</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-actions" data-no-copy><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody></tbody>
           <tfoot></tfoot>
         </table>
       </div>
-      <div class="error-tx-charts-body" id="err-tx-charts-wrap" hidden>
-        <div class="error-strip-subheader">
-          <strong>Transaction Error Details</strong>
-          <span id="err-tx-charts-count"></span>
-        </div>
-        <div class="error-strip-stack" id="err-tx-charts-grid"></div>
-      </div>
-    </section>
 
-    <!-- Custom Data Logs Section (Shown when customLogs exist) -->
-    <section class="card" id="sec-custom-logs" hidden>
-      <div class="card-header">
-        <div class="card-title">
-          <span>Custom Data Logs</span>
+      <!-- Connected Transaction Error Details & Stack Traces -->
+      <div class="error-details-subpanel" id="sec-incidents">
+        <div class="card-header error-details-subheader">
+          <div class="card-title">
+            <span>Transaction Error Details</span>
+            <span class="badge-tag" id="err-visible-count">0 incident groups</span>
+          </div>
+          <button type="button" class="btn-copy-markdown btn-icon" data-copy-table="err-incidents-table" aria-label="Copy Error Incidents table as Markdown" title="Copy Error Incidents table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
         </div>
-        <button type="button" class="btn-copy-markdown btn-icon" data-copy-table="err-custom-logs-table" aria-label="Copy Custom Logs table as Markdown" title="Copy Custom Logs table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-      </div>
-      <div class="table-scroll">
-        <table class="data-table js-static-sortable" id="err-custom-logs-table">
-          <thead>
-            <tr>
-              <th scope="col" class="col-idx">#</th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Log File</span><span class="sort-icon"></span></button></th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Scope</span><span class="sort-icon"></span></button></th>
-              <th scope="col" class="col-num"><button type="button" class="th-sort-btn"><span>Size</span><span class="sort-icon"></span></button></th>
-              <th scope="col" class="col-text">Download / Inspect</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Transaction Error Details & Stack Traces -->
-    <section class="card" id="sec-incidents">
-      <div class="card-header">
-        <div class="card-title">
-          <span>Transaction Error Details</span>
-          <span class="badge-tag" id="err-visible-count">0 incident groups</span>
+        <div class="directory-toolbar">
+          <div class="table-search-wrap">
+            <input type="search" class="input-search" id="err-details-filter" placeholder="Filter incidents by test case, action, agent or error..." aria-label="Filter error incidents" />
+          </div>
+          <button type="button" class="btn-chip" id="err-toggle-all-traces" aria-expanded="false">▼ Expand All Traces</button>
         </div>
-        <button type="button" class="btn-copy-markdown btn-icon" data-copy-table="err-incidents-table" aria-label="Copy Error Incidents table as Markdown" title="Copy Error Incidents table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-      </div>
-      <div class="directory-toolbar">
-        <div class="table-search-wrap">
-          <input type="search" class="input-search" id="err-details-filter" placeholder="Filter incidents by test case, action, agent or error..." aria-label="Filter error incidents" />
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Transaction Error Details Table">
+          <table class="data-table js-static-sortable incident-details-table" id="err-incidents-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-idx">#</th>
+                <th scope="col" class="col-num" data-type="number" aria-sort="descending"><button type="button" class="th-sort-btn"><span>Count</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Test Case</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Action</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+                <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Error Forensics, Timeline &amp; Result Browsers</span><span class="sort-icon" aria-hidden="true"></span></button></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
         </div>
-        <button type="button" class="btn-chip" id="err-toggle-all-traces" aria-expanded="false">▼ Expand All Full Traces</button>
-      </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Transaction Error Details Table">
-        <table class="data-table js-static-sortable incident-details-table" id="err-incidents-table">
-          <thead>
-            <tr>
-              <th scope="col" class="col-idx">#</th>
-              <th scope="col" class="col-num" data-type="number" aria-sort="descending"><button type="button" class="th-sort-btn"><span>Count</span><span class="sort-icon" aria-hidden="true"></span></button></th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Test Case</span><span class="sort-icon" aria-hidden="true"></span></button></th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Action</span><span class="sort-icon" aria-hidden="true"></span></button></th>
-              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Error Forensics, Timeline &amp; Result Browsers</span><span class="sort-icon" aria-hidden="true"></span></button></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-          <tfoot></tfoot>
-        </table>
       </div>
     </section>
 

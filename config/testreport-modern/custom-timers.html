@@ -127,7 +127,7 @@
       <section class="card" style="margin-bottom: 24px;">
         <div class="card-header">
           <div>
-            <div class="card-title">Custom Timers Directory</div>
+            <div class="card-title">Custom Timers</div>
             <p class="card-subtitle">Programmatic custom timing measurements recorded via the XLT Session API</p>
           </div>
         </div>
@@ -176,7 +176,7 @@
     <section class="card" id="directory-section">
       <div class="card-header">
         <div class="card-title">
-          <span>Custom Timers Directory</span>
+          <span>Custom Timers</span>
           <span class="badge-tag" id="dir-visible-count">0 shown</span>
         </div>
 
@@ -288,7 +288,7 @@
         entityLabel: "Custom Timer",
         items: items,
         includeAggregateRowInTable: false,
-        defaultSort: { key: "count", dir: "descending" },
+        defaultSort: { key: "name", dir: "ascending" },
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + ".webp"; } },
@@ -297,7 +297,7 @@
           { key: "count", label: "Count/s", url: function (it, enc) { return "charts/custom/" + enc(it.chartBase) + "_CountPerSecond.webp"; } }
         ],
         columns: [
-          { key: "name", label: "Timer Identifier", type: "text" },
+          { key: "name", label: "Name", type: "text" },
           { key: "spark", label: "Trend", type: "spark", sortable: false },
           { key: "count", label: "Executions", group: "Execution Volume", agg: "sum", render: function (it) { return fmtInt(it.count); } },
           { key: "rate", label: "1/s", group: "Execution Volume", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },

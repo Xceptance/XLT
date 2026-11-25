@@ -60,10 +60,16 @@
   document.addEventListener("DOMContentLoaded", function () {
     var cfg = window.XLT_CONFIG || {};
     var meta = window.XLT_META || {};
-    var props = Array.isArray(cfg.properties) ? cfg.properties : (window.XLT_PROPERTIES || []);
-    var loadProfile = Array.isArray(cfg.loadProfile) ? cfg.loadProfile : [];
+    var props = (Array.isArray(cfg.properties) ? cfg.properties : (window.XLT_PROPERTIES || [])).slice().sort(function (a, b) {
+      return UI.collator.compare(a.name || "", b.name || "");
+    });
+    var loadProfile = (Array.isArray(cfg.loadProfile) ? cfg.loadProfile : []).slice().sort(function (a, b) {
+      return UI.collator.compare(a.name || a.userName || a.className || "", b.name || b.userName || b.className || "");
+    });
     var lpTotals = cfg.loadProfileTotals || {};
-    var jvmArgs = Array.isArray(cfg.customJvmArgs) ? cfg.customJvmArgs : [];
+    var jvmArgs = (Array.isArray(cfg.customJvmArgs) ? cfg.customJvmArgs : []).slice().sort(function (a, b) {
+      return UI.collator.compare(String(a || ""), String(b || ""));
+    });
     var ver = cfg.version || {};
     var rgCfg = cfg.reportGeneratorConfig || {};
 
@@ -128,15 +134,15 @@
             "<tr>" +
               '<td class="col-idx">' + (idx + 1) + "</td>" +
               '<td class="col-text" title="' + esc(tc.className || "") + '"><a href="transactions.html?item=' + encodeURIComponent(name) + '">' + esc(name) + "</a></td>" +
-              '<td class="col-num">' + esc(tc.users || "0") + "</td>" +
-              '<td class="col-num">' + fmtDec(tc.usersPct || 0, 2) + "%</td>" +
-              '<td class="col-num">' + iters + "</td>" +
-              '<td class="col-num">' + arr + "</td>" +
-              '<td class="col-num">' + fmtDec(tc.arrivalPct || 0, 2) + "%</td>" +
-              '<td class="col-text">' + esc(fmtDurationHms(tc.rampUp || 0)) + "</td>" +
-              '<td class="col-text">' + esc(fmtDurationHms(tc.measurement || 0)) + "</td>" +
-              '<td class="col-text">' + esc(fmtDurationHms(tc.shutdown || 0)) + "</td>" +
-              '<td class="col-text">' + esc(fmtThinkTime(tc.thinkTime, tc.thinkTimeDev)) + "</td>" +
+              '<td class="col-num" data-val="' + (Number(tc.users) || 0) + '">' + esc(tc.users || "0") + "</td>" +
+              '<td class="col-num" data-val="' + (Number(tc.usersPct) || 0).toFixed(4) + '">' + fmtDec(tc.usersPct || 0, 2) + "%</td>" +
+              '<td class="col-num" data-val="' + (Number(tc.iterations) || 0) + '">' + iters + "</td>" +
+              '<td class="col-num" data-val="' + (Number(tc.arrivalRate) || 0) + '">' + arr + "</td>" +
+              '<td class="col-num" data-val="' + (Number(tc.arrivalPct) || 0).toFixed(4) + '">' + fmtDec(tc.arrivalPct || 0, 2) + "%</td>" +
+              '<td class="col-text" data-val="' + (Number(tc.rampUp) || 0) + '">' + esc(fmtDurationHms(tc.rampUp || 0)) + "</td>" +
+              '<td class="col-text" data-val="' + (Number(tc.measurement) || 0) + '">' + esc(fmtDurationHms(tc.measurement || 0)) + "</td>" +
+              '<td class="col-text" data-val="' + (Number(tc.shutdown) || 0) + '">' + esc(fmtDurationHms(tc.shutdown || 0)) + "</td>" +
+              '<td class="col-text" data-val="' + (Number(tc.thinkTime) || 0) + '">' + esc(fmtThinkTime(tc.thinkTime, tc.thinkTimeDev)) + "</td>" +
             "</tr>"
           );
         }).join("");
@@ -223,11 +229,14 @@
         }
         var show = prefOk && textOk;
         r.tr.hidden = !show;
-        if (show) {
-          vis++;
-          r.tr.cells[0].textContent = String(vis);
-        }
+        if (show) vis++;
       });
+      if (tbody) {
+        var seq = 1;
+        Array.prototype.forEach.call(tbody.rows, function (tr) {
+          if (!tr.hidden && tr.cells[0]) tr.cells[0].textContent = String(seq++);
+        });
+      }
       if (countBadge) {
         countBadge.textContent = fmtInt(vis) + " / " + fmtInt(rows.length) + " properties";
       }
@@ -309,6 +318,9 @@
           note: "Runtime quantile columns rendered across timer tables"
         }
       ];
+      envRows.sort(function (a, b) {
+        return UI.collator.compare(a.label, b.label);
+      });
       envTbody.innerHTML = envRows.map(function (r, idx) {
         return (
           "<tr>" +

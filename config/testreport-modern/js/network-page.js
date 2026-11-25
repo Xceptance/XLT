@@ -84,11 +84,21 @@
     var totalRate = sentRate + recvRate;
     var reqRate = net.reqPerSec !== undefined ? Number(net.reqPerSec) : hits / dur;
 
-    var hosts = Array.isArray(net.hosts) ? net.hosts : [];
-    var ips = Array.isArray(net.ips) ? net.ips : [];
-    var methods = Array.isArray(net.methods) ? net.methods : [];
-    var codes = Array.isArray(net.responseCodes) ? net.responseCodes : [];
-    var types = Array.isArray(net.contentTypes) ? net.contentTypes : [];
+    var hosts = (Array.isArray(net.hosts) ? net.hosts : []).slice().sort(function (a, b) {
+      return UI.collator.compare(a.name || "(unknown)", b.name || "(unknown)");
+    });
+    var ips = (Array.isArray(net.ips) ? net.ips : []).slice().sort(function (a, b) {
+      return UI.collator.compare(a.ip || "(unknown)", b.ip || "(unknown)");
+    });
+    var methods = (Array.isArray(net.methods) ? net.methods : []).slice().sort(function (a, b) {
+      return UI.collator.compare(a.method || "UNKNOWN", b.method || "UNKNOWN");
+    });
+    var codes = (Array.isArray(net.responseCodes) ? net.responseCodes : []).slice().sort(function (a, b) {
+      return (Number(a.code) || 0) - (Number(b.code) || 0);
+    });
+    var types = (Array.isArray(net.contentTypes) ? net.contentTypes : []).slice().sort(function (a, b) {
+      return UI.collator.compare(a.contentType || "(empty / not specified)", b.contentType || "(empty / not specified)");
+    });
 
     // 1. KPI Grid (Bandwidth & Hit Rate Overview)
     var kpiGrid = document.getElementById("sec-network");

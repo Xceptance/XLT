@@ -128,25 +128,26 @@
         </div>
         <button type="button" class="btn-chip btn-icon" data-copy-table="profile-config-table" aria-label="Copy Load Profile Configuration table as Markdown" title="Copy Load Profile Configuration table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
       </div>
+      <div class="sr-only" aria-live="polite" id="table-sort-status"></div>
       <div class="table-scroll">
-        <table class="data-table" id="profile-config-table">
+        <table class="data-table js-static-sortable" id="profile-config-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx" rowspan="2">#</th>
-              <th class="col-text" rowspan="2">Transaction Scenario</th>
-              <th class="col-num" colspan="2">Configured Users</th>
-              <th class="col-num" rowspan="2">Iterations</th>
-              <th class="col-num" colspan="2">Arrival Rate</th>
-              <th class="col-text" rowspan="2">Ramp-Up</th>
-              <th class="col-text" rowspan="2">Measurement</th>
-              <th class="col-text" rowspan="2">Shutdown</th>
-              <th class="col-text" rowspan="2">Think Time</th>
+              <th scope="col" class="col-text" rowspan="2" data-col-idx="1" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
+              <th scope="colgroup" class="col-num" colspan="2">Configured Users</th>
+              <th scope="col" class="col-num" rowspan="2" data-col-idx="4"><button type="button" class="th-sort-btn"><span>Iterations</span><span class="sort-icon"></span></button></th>
+              <th scope="colgroup" class="col-num" colspan="2">Arrival Rate</th>
+              <th scope="col" class="col-text" rowspan="2" data-col-idx="7" data-type="number"><button type="button" class="th-sort-btn"><span>Ramp-Up</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text" rowspan="2" data-col-idx="8" data-type="number"><button type="button" class="th-sort-btn"><span>Measurement</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text" rowspan="2" data-col-idx="9" data-type="number"><button type="button" class="th-sort-btn"><span>Shutdown</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text" rowspan="2" data-col-idx="10" data-type="number"><button type="button" class="th-sort-btn"><span>Think Time</span><span class="sort-icon"></span></button></th>
             </tr>
             <tr>
-              <th class="col-num">Users</th>
-              <th class="col-num">Share</th>
-              <th class="col-num">1/h</th>
-              <th class="col-num">Share</th>
+              <th scope="col" class="col-num" data-col-idx="2"><button type="button" class="th-sort-btn"><span>Users</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num" data-col-idx="3"><button type="button" class="th-sort-btn"><span>Share</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num" data-col-idx="5"><button type="button" class="th-sort-btn"><span>1/h</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-num" data-col-idx="6"><button type="button" class="th-sort-btn"><span>Share</span><span class="sort-icon"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -168,12 +169,12 @@
         </div>
       </div>
       <div class="table-scroll" style="max-height:480px;overflow-y:auto;">
-        <table class="data-table" id="props-table">
+        <table class="data-table js-static-sortable" id="props-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th class="col-text" style="width:42%;">Property Key</th>
-              <th class="col-text">Configured Value</th>
+              <th scope="col" class="col-text" style="width:42%;" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Configured Value</span><span class="sort-icon"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -191,13 +192,13 @@
         <button type="button" class="btn-chip btn-icon" data-copy-table="jvm-table" aria-label="Copy JVM Arguments table as Markdown" title="Copy JVM Arguments table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
       </div>
       <div class="table-scroll">
-        <table class="data-table" id="jvm-table">
+        <table class="data-table js-static-sortable" id="jvm-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th class="col-text" style="width:35%;">JVM Option / Parameter</th>
-              <th class="col-text">Category</th>
-              <th class="col-text">Operational Function &amp; Purpose</th>
+              <th scope="col" class="col-text" style="width:35%;" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Category</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Operational Function &amp; Purpose</span><span class="sort-icon"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -214,13 +215,13 @@
         </div>
       </div>
       <div class="table-scroll">
-        <table class="data-table" id="env-table">
+        <table class="data-table js-static-sortable" id="env-table">
           <thead>
             <tr>
               <th scope="col" class="col-idx">#</th>
-              <th class="col-text">Component / Setting</th>
-              <th class="col-text">Value</th>
-              <th class="col-text">Details</th>
+              <th scope="col" class="col-text" aria-sort="ascending"><button type="button" class="th-sort-btn"><span>Name</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Value</span><span class="sort-icon"></span></button></th>
+              <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Details</span><span class="sort-icon"></span></button></th>
             </tr>
           </thead>
           <tbody></tbody>

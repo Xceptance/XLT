@@ -85,7 +85,13 @@
     var colCount = grid[0].length;
     var headers = [];
     var aligns = [];
+    var skipCols = [];
     for (var c = 0; c < colCount; c++) {
+      var leaf = leafCells[c];
+      if (leaf && leaf.hasAttribute("data-no-copy")) {
+        skipCols[c] = true;
+        continue;
+      }
       var parts = [];
       for (var r = 0; r < grid.length; r++) {
         var val = grid[r][c];
@@ -93,7 +99,6 @@
         if (val && parts[parts.length - 1] !== val) parts.push(val);
       }
       headers.push(parts.join(" "));
-      var leaf = leafCells[c];
       if (leaf && leaf.classList.contains("col-idx")) {
         aligns.push(":---:");
       } else if (leaf && (leaf.classList.contains("col-text") || leaf.classList.contains("col-labels"))) {
@@ -104,7 +109,7 @@
         aligns.push(c === 0 ? ":---" : "---:");
       }
     }
-    return { headers: headers, aligns: aligns };
+    return { headers: headers, aligns: aligns, skipCols: skipCols };
   }
 
   /**
@@ -114,9 +119,17 @@
    * @returns {string} Multi-line Markdown table string.
    */
   function tableToMarkdown(table) {
-    var meta = table.tHead ? expandHeaderLeafMeta(table.tHead) : { headers: [], aligns: [] };
+    var meta = table.tHead ? expandHeaderLeafMeta(table.tHead) : { headers: [], aligns: [], skipCols: [] };
     var headers = meta.headers;
+    var skipCols = meta.skipCols || [];
     var lines = [];
+    function rowVals(tr) {
+      var vals = [];
+      Array.prototype.forEach.call(tr.cells, function (cell, idx) {
+        if (!skipCols[idx]) vals.push(cellText(cell));
+      });
+      return vals;
+    }
     if (headers.length) {
       lines.push("| " + headers.join(" | ") + " |");
       lines.push("| " + meta.aligns.join(" | ") + " |");
@@ -124,15 +137,13 @@
     if (table.tBodies[0]) {
       Array.prototype.forEach.call(table.tBodies[0].rows, function (tr) {
         if (tr.hidden || tr.classList.contains("drawer-row") || tr.style.display === "none") return;
-        var vals = Array.prototype.map.call(tr.cells, cellText);
-        lines.push("| " + vals.join(" | ") + " |");
+        lines.push("| " + rowVals(tr).join(" | ") + " |");
       });
     }
     if (table.tFoot) {
       Array.prototype.forEach.call(table.tFoot.rows, function (tr) {
         if (tr.hidden || tr.style.display === "none") return;
-        var vals = Array.prototype.map.call(tr.cells, cellText);
-        lines.push("| " + vals.join(" | ") + " |");
+        lines.push("| " + rowVals(tr).join(" | ") + " |");
       });
     }
     return lines.join("\n");
@@ -271,7 +282,9 @@
     var decorated = rows.map(function (r) {
       var cell = r.cells[colIdx];
       var raw = cell ? (cell.getAttribute("data-val") !== null ? cell.getAttribute("data-val") : cell.textContent.trim()) : "";
-      return { row: r, val: type === "number" ? Number(String(raw).replace(/,/g, "")) || 0 : String(raw) };
+      var next = r.nextElementSibling;
+      var drawer = next && next.classList.contains("drawer-row") ? next : null;
+      return { row: r, drawer: drawer, val: type === "number" ? Number(String(raw).replace(/,/g, "")) || 0 : String(raw) };
     });
     decorated.sort(function (a, b) {
       return factor * (type === "number" ? (a.val - b.val) : collator.compare(a.val, b.val));
@@ -284,6 +297,9 @@
         idxCell.textContent = String(seq++);
       }
       sortFrag.appendChild(d.row);
+      if (d.drawer) {
+        sortFrag.appendChild(d.drawer);
+      }
     });
     tbody.appendChild(sortFrag);
     if (statusEl) {

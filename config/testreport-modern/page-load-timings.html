@@ -161,7 +161,7 @@
       <section class="card" id="directory-section">
         <div class="card-header">
           <div class="card-title">
-            <span>Page Load Timings Directory</span>
+            <span>Page Load Timings</span>
             <span class="badge-tag" id="dir-visible-count">0 shown</span>
           </div>
 
@@ -220,7 +220,7 @@ xlt.clientperformance.recording = true</pre>
       <section class="card" style="margin-bottom: 24px;">
         <div class="card-header">
           <div>
-            <div class="card-title">Page Load Timings Directory</div>
+            <div class="card-title">Page Load Timings</div>
             <p class="card-subtitle">W3C Navigation and Rendering milestone breakdown by user action</p>
           </div>
         </div>
@@ -228,7 +228,7 @@ xlt.clientperformance.recording = true</pre>
           <table class="data-table">
             <thead>
               <tr>
-                <th class="col-text">Timing Name</th>
+                <th class="col-text">Name</th>
                 <th class="col-num">Count</th>
                 <th class="col-num">Mean [ms]</th>
                 <th class="col-num">Min [ms]</th>
@@ -312,7 +312,7 @@ xlt.clientperformance.recording = true</pre>
         entityLabel: "Page Load Timing",
         items: items,
         includeAggregateRowInTable: false,
-        defaultSort: { key: "count", dir: "descending" },
+        defaultSort: { key: "name", dir: "ascending" },
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/pageLoadTimings/" + enc(it.chartBase) + ".webp"; } },
@@ -321,7 +321,7 @@ xlt.clientperformance.recording = true</pre>
           { key: "count", label: "Count/s", url: function (it, enc) { return "charts/pageLoadTimings/" + enc(it.chartBase) + "_CountPerSecond.webp"; } }
         ],
         columns: [
-          { key: "name", label: "Page Load Timing Name", type: "text" },
+          { key: "name", label: "Name", type: "text" },
           { key: "spark", label: "Trend", type: "spark", sortable: false },
           { key: "count", label: "Samples", group: "Execution Volume", agg: "sum", render: function (it) { return fmtInt(it.count); } },
           { key: "rate", label: "1/s", group: "Execution Volume", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },

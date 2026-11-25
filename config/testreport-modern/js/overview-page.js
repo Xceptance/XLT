@@ -383,11 +383,16 @@
       return;
     }
 
-    // Scale relative progress bars against the largest scenario share (guarded >= 1 to avoid 0/0)
-    var maxUserPct = Math.max.apply(null, items.map(function (i) { return Number(i.usersPct) || 0; }).concat([1]));
-    var maxArrPct = Math.max.apply(null, items.map(function (i) { return Number(i.arrivalPct) || 0; }).concat([1]));
+    // Default sort by scenario name ascending
+    var sortedItems = items.slice().sort(function (a, b) {
+      return UI.collator.compare(a.name || a.className || "", b.name || b.className || "");
+    });
 
-    tbody.innerHTML = items.map(function (tc, idx) {
+    // Scale relative progress bars against the largest scenario share (guarded >= 1 to avoid 0/0)
+    var maxUserPct = Math.max.apply(null, sortedItems.map(function (i) { return Number(i.usersPct) || 0; }).concat([1]));
+    var maxArrPct = Math.max.apply(null, sortedItems.map(function (i) { return Number(i.arrivalPct) || 0; }).concat([1]));
+
+    tbody.innerHTML = sortedItems.map(function (tc, idx) {
       var uPct = Number(tc.usersPct) || 0;
       var aPct = Number(tc.arrivalPct) || 0;
       var uBarW = Math.min(100, (uPct / maxUserPct) * 100).toFixed(1);

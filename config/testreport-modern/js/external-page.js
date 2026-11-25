@@ -104,14 +104,27 @@
       var tablesHtml = (sec.tables || []).map(function (tbl, tIdx) {
         var tableId = "ext-table-" + sIdx + "-" + tIdx;
         var headers = Array.isArray(tbl.headers) ? tbl.headers : [];
-        var rows = Array.isArray(tbl.rows) ? tbl.rows : [];
+        var rawRows = Array.isArray(tbl.rows) ? tbl.rows : [];
+        var firstColIsNum = rawRows[0] && rawRows[0][0] && typeof rawRows[0][0] === "object"
+          ? Boolean(rawRows[0][0].numeric)
+          : false;
+        var rows = rawRows.slice().sort(function (a, b) {
+          var ca = a && a[0] !== undefined ? a[0] : "";
+          var cb = b && b[0] !== undefined ? b[0] : "";
+          var va = ca !== null && typeof ca === "object" ? ca.value : ca;
+          var vb = cb !== null && typeof cb === "object" ? cb.value : cb;
+          return firstColIsNum
+            ? (Number(va) || 0) - (Number(vb) || 0)
+            : UI.collator.compare(String(va || ""), String(vb || ""));
+        });
         var theadHtml = headers.length
           ? "<thead><tr>" + headers.map(function (h, cIdx) {
               var firstRowCell = rows[0] && rows[0][cIdx];
               // Treat column 0 as label text unless the cell object explicitly marks it numeric
               var isNum = firstRowCell && typeof firstRowCell === "object" ? Boolean(firstRowCell.numeric) : cIdx > 0;
+              var sortAttr = cIdx === 0 ? ' aria-sort="ascending"' : "";
               return (
-                '<th scope="col" class="' + (isNum ? "col-num" : "col-text") + '" data-col-idx="' + cIdx + '" data-type="' + (isNum ? "number" : "text") + '">' +
+                '<th scope="col" class="' + (isNum ? "col-num" : "col-text") + '" data-col-idx="' + cIdx + '" data-type="' + (isNum ? "number" : "text") + '"' + sortAttr + ">" +
                   '<button type="button" class="th-sort-btn"><span>' + esc(h) + '</span><span class="sort-icon"></span></button>' +
                 "</th>"
               );

@@ -161,10 +161,12 @@
       }
     }
 
-    // 2. Breached Rules Warning Banner
+    // 2. Breached Rules Warning Banner (default sorted by rule name ascending)
     var failedRules = rules.filter(function (r) {
       var st = String(r.result || "").toUpperCase();
       return st !== "PASSED" && st !== "SKIPPED" && st !== "DISABLED";
+    }).sort(function (a, b) {
+      return UI.collator.compare(a.name || a.id || "", b.name || b.id || "");
     });
     if (breachedSec && breachedTbody) {
       if (!failedRules.length) {
@@ -180,10 +182,10 @@
             "<tr>" +
               '<td class="col-idx">' + (idx + 1) + "</td>" +
               '<td class="col-text">' + esc(r.groupName || "Ungrouped") + "</td>" +
-              '<td class="col-text"><span class="status-pill ' + pillCls + '">' + esc(r.result || "FAILED") + "</span> " + esc(r.name || r.id) + "</td>" +
+              '<td class="col-text" data-val="' + esc(r.name || r.id || "") + '"><span class="status-pill ' + pillCls + '">' + esc(r.result || "FAILED") + "</span> " + esc(r.name || r.id) + "</td>" +
               '<td class="col-text"><code>' + esc(r.condition || "—") + "</code></td>" +
-              '<td class="col-num cell-err">' + esc(r.actualValue != null ? r.actualValue : "—") + "</td>" +
-              '<td class="col-num cell-err">' + fmtInt(r.points || 0) + " / " + fmtInt(r.maxPoints || 0) + " pts</td>" +
+              '<td class="col-num cell-err" data-val="' + (Number(r.actualValue) || 0) + '">' + esc(r.actualValue != null ? r.actualValue : "—") + "</td>" +
+              '<td class="col-num cell-err" data-val="' + (Number(r.points) || 0) + '">' + fmtInt(r.points || 0) + " / " + fmtInt(r.maxPoints || 0) + " pts</td>" +
               '<td class="col-text">' + esc(r.message || r.description || "") + "</td>" +
             "</tr>"
           );
@@ -191,16 +193,19 @@
       }
     }
 
-    // 3. Groups Matrix
+    // 3. Groups Matrix (default sorted by group name ascending)
+    var sortedGroups = groups.slice().sort(function (a, b) {
+      return UI.collator.compare(a.name || a.id || "", b.name || b.id || "");
+    });
     if (groupsTitle) {
-      groupsTitle.textContent = "Scorecard Evaluation Groups (" + fmtInt(groups.length) + (groups.length === 1 ? " Group)" : " Groups)");
+      groupsTitle.textContent = "Scorecard Evaluation Groups (" + fmtInt(sortedGroups.length) + (sortedGroups.length === 1 ? " Group)" : " Groups)");
     }
     if (groupsTbody) {
-      if (!groups.length) {
+      if (!sortedGroups.length) {
         groupsTbody.innerHTML = '<tr><td colspan="9" class="col-text" style="text-align:center;padding:20px;color:var(--text-muted);">No rule groups configured in scorecard.</td></tr>';
         if (groupsTfoot) groupsTfoot.innerHTML = "";
       } else {
-        groupsTbody.innerHTML = groups.map(function (g, idx) {
+        groupsTbody.innerHTML = sortedGroups.map(function (g, idx) {
           var st = String(g.result || "PASSED").toUpperCase();
           var pCls = statusPillClass(st);
           var maxP = Number(g.maxPoints) || 0;
@@ -253,8 +258,11 @@
       if (!rules.length) {
         rTbody.innerHTML = '<tr><td colspan="8" class="col-text" style="text-align:center;padding:24px;color:var(--text-muted);">No scorecard rules configured.</td></tr>';
       } else {
+        var sortedRules = rules.slice().sort(function (a, b) {
+          return UI.collator.compare(a.name || a.id || "", b.name || b.id || "");
+        });
         var frag = document.createDocumentFragment();
-        rules.forEach(function (r, idx) {
+        sortedRules.forEach(function (r, idx) {
           var st = String(r.result || "PASSED").toUpperCase();
           var normStatus = st === "PASSED" ? "passed" : "failed";
           var pCls = statusPillClass(st);
@@ -278,15 +286,15 @@
             '<td class="col-idx">' + (idx + 1) + "</td>" +
             '<td class="col-text"><span class="status-pill ' + pCls + '">' + esc(st) + "</span></td>" +
             '<td class="col-text">' + esc(r.groupName || "Ungrouped") + "</td>" +
-            '<td class="col-text">' +
+            '<td class="col-text" data-val="' + esc(r.name || r.id || "") + '">' +
               "<span" + (isRuleFail ? ' style="color:var(--status-fail-text);"' : "") + ">" + esc(r.name || r.id) + "</span>" +
               (r.failsTest ? ' <span class="badge-tag cell-err" title="Fails entire test when breached">Fails Test</span>' : "") +
               (r.description ? '<br><span class="card-subtitle">' + esc(r.description) + "</span>" : "") +
               xpathHtml +
             "</td>" +
             '<td class="col-text"><code>' + esc(r.condition || "—") + "</code></td>" +
-            '<td class="col-num' + (isRuleFail ? " cell-err" : "") + '">' + esc(r.actualValue != null ? r.actualValue : "—") + "</td>" +
-            '<td class="col-num' + (isRuleFail ? " cell-err" : "") + '">' + fmtInt(r.points || 0) + " / " + fmtInt(r.maxPoints || 0) + "</td>" +
+            '<td class="col-num' + (isRuleFail ? " cell-err" : "") + '" data-val="' + (Number(r.actualValue) || 0) + '">' + esc(r.actualValue != null ? r.actualValue : "—") + "</td>" +
+            '<td class="col-num' + (isRuleFail ? " cell-err" : "") + '" data-val="' + (Number(r.points) || 0) + '">' + fmtInt(r.points || 0) + " / " + fmtInt(r.maxPoints || 0) + "</td>" +
             '<td class="col-text' + (isRuleFail ? " cell-err" : "") + '">' + esc(r.message || "") + "</td>";
 
           frag.appendChild(tr);
@@ -338,11 +346,14 @@
         var textOk = !q || item.blob.indexOf(q) !== -1;
         var show = statusOk && textOk;
         item.tr.hidden = !show;
-        if (show) {
-          vis++;
-          item.tr.cells[0].textContent = String(vis);
-        }
+        if (show) vis++;
       });
+      if (rulesTable && rulesTable.tBodies[0]) {
+        var seq = 1;
+        Array.prototype.forEach.call(rulesTable.tBodies[0].rows, function (tr) {
+          if (!tr.hidden && tr.cells[0]) tr.cells[0].textContent = String(seq++);
+        });
+      }
       if (countBadge) {
         countBadge.textContent = vis + " / " + rowItems.length + " rules";
       }

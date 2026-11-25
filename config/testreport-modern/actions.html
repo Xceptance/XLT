@@ -126,7 +126,7 @@
     <div id="act-empty-section" hidden>
       <section class="card" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">Actions Directory</div>
+          <div class="card-title">Actions</div>
         </div>
         <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
           <strong>No action records available for this test run.</strong>
@@ -173,7 +173,7 @@
     <section class="card" id="directory-section">
       <div class="card-header">
         <div class="card-title">
-          <span>Actions Directory</span>
+          <span>Actions</span>
           <span class="badge-tag" id="dir-visible-count">0 shown</span>
         </div>
 
@@ -305,7 +305,7 @@
         entityLabel: "Action",
         items: items,
         includeAggregateRowInTable: false,
-        defaultSort: { key: "cph", dir: "descending" },
+        defaultSort: { key: "name", dir: "ascending" },
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/actions/" + enc(it.chartBase) + ".webp"; } },
@@ -314,7 +314,7 @@
           { key: "count", label: "Count/s", url: function (it, enc) { return "charts/actions/" + enc(it.chartBase) + "_CountPerSecond.webp"; } }
         ],
         columns: [
-          { key: "name", label: "Action Step Name", type: "text" },
+          { key: "name", label: "Name", type: "text" },
           { key: "spark", label: "Trend", type: "spark", sortable: false },
           { key: "count", label: "Count", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.count); } },
           { key: "rate", label: "1/s", group: "Counts", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },

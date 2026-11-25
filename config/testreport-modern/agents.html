@@ -286,7 +286,7 @@
         entityLabel: "Agent",
         items: allItems,
         includeAggregateRowInTable: false,
-        defaultSort: { key: "totalTx", dir: "descending" },
+        defaultSort: { key: "name", dir: "ascending" },
         totalsRow: totals,
         tabs: [
           { key: "cpu", label: "CPU Utilization", url: function (it, enc) { return "charts/agents/" + enc(it.chartBase) + "/CpuUsage.webp"; } },
@@ -294,7 +294,7 @@
           { key: "threads", label: "Threads", url: function (it, enc) { return "charts/agents/" + enc(it.chartBase) + "/Threads.webp"; } }
         ],
         columns: [
-          { key: "name", label: "Agent Node Identifier", type: "text" },
+          { key: "name", label: "Name", type: "text" },
           { key: "totalTx", label: "Completed Tx", group: "Workload", agg: "sum", render: function (it) { return fmtInt(it.totalTx); } },
           { key: "errors", label: "Errors", group: "Workload", agg: "sum", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtInt(it.errors); } },
           { key: "errPct", label: "Err %", group: "Workload", agg: "errPct", cellClass: function (it) { return it.errors > 0 ? "cell-err" : ""; }, render: function (it) { return fmtDec(it.errPct, 2) + "%"; } },

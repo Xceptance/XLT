@@ -331,7 +331,7 @@ public class ModernReportGenerator
         final Map<String, Object> networkBundle = buildNetworkBundle(root, bytesSent, bytesReceived, hits, durationSec);
 
         // 9. Errors
-        final Map<String, Object> errorsBundle = buildErrorsBundle(errorsRootEl, summaryEl, customLogsList);
+        final Map<String, Object> errorsBundle = buildErrorsBundle(errorsRootEl, summaryEl);
 
         // 10. External Data
         final Map<String, Object> externalBundle = buildExternalBundle(firstChildElement(root, "external"));
@@ -1412,8 +1412,7 @@ public class ModernReportGenerator
         return out;
     }
 
-    private Map<String, Object> buildErrorsBundle(
-        final Element errorsEl, final Element summaryEl, final List<Map<String, Object>> customLogs)
+    private Map<String, Object> buildErrorsBundle(final Element errorsEl, final Element summaryEl)
     {
         final Element sumTx = firstChildElement(summaryEl, "transactions");
         final Element sumAct = firstChildElement(summaryEl, "actions");
@@ -1538,7 +1537,6 @@ public class ModernReportGenerator
         out.put("requestErrorCharts", reqErrCharts);
         out.put("transactionErrorCharts", txErrCharts);
         out.put("overviewByMessage", overviewByMessage);
-        out.put("customLogs", customLogs);
         out.put("incidents", incidents);
         return out;
     }

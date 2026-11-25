@@ -126,7 +126,7 @@
     <div id="req-empty-section" hidden>
       <section class="card" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">Requests Directory</div>
+          <div class="card-title">Requests</div>
         </div>
         <div class="card-body" style="text-align:center;padding:40px 16px;color:var(--text-muted);">
           <strong>No HTTP request records available for this test run.</strong>
@@ -173,7 +173,7 @@
     <section class="card" id="directory-section">
       <div class="card-header">
         <div class="card-title">
-          <span id="req-dir-title">Requests Directory</span>
+          <span id="req-dir-title">Requests</span>
           <span class="badge-tag" id="dir-visible-count">0 shown</span>
         </div>
 
@@ -236,7 +236,7 @@
 
       var dirTitle = document.getElementById("req-dir-title");
       if (dirTitle && nonAgg.length) {
-        dirTitle.textContent = "Requests Directory (" + fmtInt(nonAgg.length) + " Endpoint" + (nonAgg.length === 1 ? "" : "s") + ")";
+        dirTitle.textContent = "Requests (" + fmtInt(nonAgg.length) + " Endpoint" + (nonAgg.length === 1 ? "" : "s") + ")";
       }
       var slowestLink = document.getElementById("req-slowest-link");
       if (slowestLink && window.XLT_META && window.XLT_META.counts && window.XLT_META.counts.slowestRequests !== undefined) {
@@ -316,7 +316,7 @@
       }
 
       var reqColumns = [
-        { key: "name", label: "Request Rule / Endpoint", type: "text" },
+        { key: "name", label: "Name", type: "text" },
         { key: "spark", label: "Trend", type: "spark", sortable: false },
         { key: "count", label: "Count", group: "Counts", agg: "sum", render: function (it) { return fmtInt(it.count); } },
         { key: "rate", label: "1/s", group: "Counts", agg: "sum", render: function (it) { return fmtDec(it.rate, 2); } },
@@ -332,7 +332,7 @@
       ];
 
       var reqNetworkColumns = [
-        { key: "name", label: "Request Rule / Endpoint", type: "text" },
+        { key: "name", label: "Name", type: "text" },
         { key: "dns", label: "Mean", group: "DNS Time [ms]", agg: "weightedMean", render: renderStatInt("dns") },
         { key: "dnsMin", label: "Min", group: "DNS Time [ms]", agg: "min", render: renderStatInt("dnsMin") },
         { key: "dnsMax", label: "Max", group: "DNS Time [ms]", agg: "max", render: renderStatInt("dnsMax") },
@@ -357,7 +357,7 @@
       ];
 
       var reqBandwidthColumns = [
-        { key: "name", label: "Request Rule / Endpoint", type: "text" },
+        { key: "name", label: "Name", type: "text" },
         { key: "sentTotal", label: "Total", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentTotal") },
         { key: "sentRate", label: "1/s", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentRate") },
         { key: "sentCpm", label: "1/min", group: "Bytes Sent", agg: "sum", render: renderStatInt("sentCpm") },
@@ -381,7 +381,7 @@
         colorizeRequests: true,
         items: items,
         includeAggregateRowInTable: false,
-        defaultSort: { key: "cph", dir: "descending" },
+        defaultSort: { key: "name", dir: "ascending" },
         totalsRow: totals,
         tabs: [
           { key: "overview", label: "Overview", url: function (it, enc) { return "charts/requests/" + enc(it.chartBase) + ".webp"; } },
@@ -393,9 +393,9 @@
         ],
         columns: reqColumns,
         tableViews: [
-          { key: "runtimes", label: "Runtimes", columns: reqColumns, defaultSort: { key: "cph", dir: "descending" } },
-          { key: "network", label: "Network Timing", columns: reqNetworkColumns, defaultSort: { key: "ttfb", dir: "descending" } },
-          { key: "bandwidth", label: "Bandwidth", columns: reqBandwidthColumns, defaultSort: { key: "recvTotal", dir: "descending" } }
+          { key: "runtimes", label: "Runtimes", columns: reqColumns, defaultSort: { key: "name", dir: "ascending" } },
+          { key: "network", label: "Network Timing", columns: reqNetworkColumns, defaultSort: { key: "name", dir: "ascending" } },
+          { key: "bandwidth", label: "Bandwidth", columns: reqBandwidthColumns, defaultSort: { key: "name", dir: "ascending" } }
         ],
         renderWbKpis: function (item, escFn, fInt, fDec) {
           var distinctStr = item.distinctUrls ? (' • Distinct: ' + fInt(item.distinctUrls) + ' URLs') : '';
