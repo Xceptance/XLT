@@ -145,6 +145,7 @@
           <span class="badge-tag" id="err-signature-count">0 Signatures</span>
         </div>
         <div class="view-mode-bar">
+          <button type="button" class="btn-chip active err-sel-clear-btn" id="err-ov-clear-selection" hidden>Clear Filter (0) ✕</button>
           <button type="button" class="btn-chip" id="err-toggle-all-ov-charts" aria-expanded="false" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Show All Charts</span></button>
           <button type="button" class="btn-copy-markdown btn-icon" data-copy-table="err-overview-table" aria-label="Copy Error Overview table as Markdown" title="Copy Error Overview table as Markdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
         </div>
@@ -154,6 +155,7 @@
         <table class="data-table js-static-sortable err-overview-table" id="err-overview-table">
           <thead>
             <tr>
+              <th scope="col" class="col-select" data-no-copy><label class="err-cb-wrap"><input type="checkbox" class="err-ov-checkbox" id="err-select-all" aria-label="Select all error signatures to filter details" title="Select or clear all error signatures" /><span class="err-cb-box" aria-hidden="true"></span></label></th>
               <th scope="col" class="col-idx">#</th>
               <th scope="col" class="col-text"><button type="button" class="th-sort-btn"><span>Error Signature / Exception Message</span><span class="sort-icon"></span></button></th>
               <th scope="col" class="col-num" aria-sort="descending"><button type="button" class="th-sort-btn"><span>Occurrences</span><span class="sort-icon"></span></button></th>
@@ -180,6 +182,7 @@
           <div class="table-search-wrap">
             <input type="search" class="input-search" id="err-details-filter" placeholder="Filter incidents by test case, action, agent or error..." aria-label="Filter error incidents" />
           </div>
+          <button type="button" class="btn-chip active err-sel-clear-btn" id="err-details-clear-selection" hidden>Selected: 0 errors ✕</button>
           <button type="button" class="btn-chip" id="err-toggle-all-traces" aria-expanded="false">▼ Expand All Traces</button>
         </div>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Transaction Error Details Table">

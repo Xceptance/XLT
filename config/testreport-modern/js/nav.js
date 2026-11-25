@@ -143,6 +143,45 @@
       }
     }
 
+    // 2b. Optional XTC run metadata line (matches classic header.xsl when com.xceptance.xtc.organization is set)
+    var contextInner = document.querySelector(".report-context-inner");
+    var existingXtc = document.getElementById("meta-xtc-strip");
+    var xtc = meta.xtc && meta.xtc.organization ? meta.xtc : null;
+    if (contextInner) {
+      if (xtc) {
+        var xtcStrip = existingXtc || document.createElement("div");
+        xtcStrip.id = "meta-xtc-strip";
+        xtcStrip.className = "report-context-xtc";
+        xtcStrip.textContent = "";
+        var xtcFields = [
+          { key: "Organization:", val: xtc.organization },
+          { key: "Project:", val: xtc.project },
+          { key: "Load Test:", val: xtc.loadTestId },
+          { key: "Result:", val: xtc.resultId },
+          { key: "Report:", val: xtc.reportId }
+        ];
+        xtcFields.forEach(function (field) {
+          var item = document.createElement("span");
+          item.className = "ctx-xtc-item";
+          var k = document.createElement("span");
+          k.className = "ctx-xtc-key";
+          k.textContent = field.key;
+          var v = document.createElement("span");
+          v.className = "ctx-xtc-val";
+          v.textContent = field.val ? String(field.val) : "—";
+          item.appendChild(k);
+          item.appendChild(document.createTextNode(" "));
+          item.appendChild(v);
+          xtcStrip.appendChild(item);
+        });
+        if (!existingXtc) {
+          contextInner.appendChild(xtcStrip);
+        }
+      } else if (existingXtc) {
+        existingXtc.remove();
+      }
+    }
+
     // 3. Top-level nav pills (Errors, Agents, Scorecard, AI Markdown link)
     var c = meta.counts || {};
 

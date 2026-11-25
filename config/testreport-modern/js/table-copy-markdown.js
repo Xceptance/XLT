@@ -292,8 +292,8 @@
     var sortFrag = document.createDocumentFragment();
     var seq = 1;
     decorated.forEach(function (d) {
-      var idxCell = d.row.cells[0];
-      if (idxCell && idxCell.classList.contains("col-idx") && !d.row.hidden && d.row.style.display !== "none") {
+      var idxCell = d.row.querySelector("td.col-idx");
+      if (idxCell && !d.row.hidden && d.row.style.display !== "none") {
         idxCell.textContent = String(seq++);
       }
       sortFrag.appendChild(d.row);

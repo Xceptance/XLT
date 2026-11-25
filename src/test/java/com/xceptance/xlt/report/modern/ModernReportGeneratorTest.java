@@ -645,6 +645,54 @@ public class ModernReportGeneratorTest
         assertEquals(1, emptySlowItems.size());
         assertNull(emptySlowItems.get(0).get("basePercentiles"));
         assertNull(emptySlowItems.get(0).get("baseP95"));
+        assertFalse("Non-XTC report should omit xtc metadata", emptyMeta.containsKey("xtc"));
+    }
+
+    @Test
+    public void generateReportBundles_emitsOptionalXtcMetadataWhenOrganizationPresent() throws Exception
+    {
+        final File reportDir = tempFolder.newFolder("modern-xtc-meta");
+        final String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <testreport>
+              <configuration>
+                <projectName>Ariat</projectName>
+                <properties>
+                  <property name="com.xceptance.xtc.organization" value="ariat"/>
+                  <property name="com.xceptance.xtc.project" value="lf-2024"/>
+                  <property name="com.xceptance.xtc.loadtest.run.id" value="A12"/>
+                  <property name="com.xceptance.xtc.loadtest.result.id" value="R42"/>
+                  <property name="com.xceptance.xtc.loadtest.report.id" value="REP9"/>
+                </properties>
+              </configuration>
+              <general>
+                <startTime>2026-09-24 08:26:38 CEST</startTime>
+                <endTime>2026-09-24 09:41:38 CEST</endTime>
+                <duration>4500</duration>
+              </general>
+              <summary/>
+              <transactions/>
+              <actions/>
+              <requests/>
+              <errors/>
+              <events/>
+              <agents/>
+            </testreport>
+            """;
+        Files.writeString(new File(reportDir, "testreport.xml").toPath(), xml, StandardCharsets.UTF_8);
+
+        final ModernReportGenerator generator = new ModernReportGenerator();
+        generator.generateReportBundles(reportDir);
+
+        final Map<String, Object> meta = readJsBundle(new File(reportDir, "js/report-meta.js"), "XLT_META");
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> xtc = (Map<String, Object>) meta.get("xtc");
+        assertNotNull("Expected xtc metadata block when com.xceptance.xtc.organization is set", xtc);
+        assertEquals("ariat", xtc.get("organization"));
+        assertEquals("lf-2024", xtc.get("project"));
+        assertEquals("A12", xtc.get("loadTestId"));
+        assertEquals("R42", xtc.get("resultId"));
+        assertEquals("REP9", xtc.get("reportId"));
     }
 
     private Map<String, Object> readJsBundle(final File jsFile, final String globalVarName) throws Exception

@@ -424,13 +424,19 @@
       'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
       '<polyline points="18 15 12 9 6 15"/></svg>';
 
+    var selectAllCb = document.getElementById("err-select-all");
+    var ovClearSelBtn = document.getElementById("err-ov-clear-selection");
+    var detailsClearSelBtn = document.getElementById("err-details-clear-selection");
+    var selectedMsgs = new Set();
+
     var ovTbody = document.querySelector("#err-overview-table tbody");
     var ovTfoot = document.querySelector("#err-overview-table tfoot");
     var totalIncCount = overviewRows.reduce(function (s, r) { return s + (Number(r.count) || 0); }, 0);
     if (ovTbody) {
       if (!overviewRows.length) {
+        if (selectAllCb) selectAllCb.disabled = true;
         ovTbody.innerHTML =
-          '<tr><td colspan="6" class="col-text" style="text-align:center;padding:28px;color:var(--status-pass-text);font-weight:700;">' +
+          '<tr><td colspan="7" class="col-text" style="text-align:center;padding:28px;color:var(--status-pass-text);font-weight:700;">' +
             "✓ Zero transaction errors recorded during this test run." +
           "</td></tr>";
         if (ovTfoot) ovTfoot.innerHTML = "";
@@ -457,7 +463,8 @@
             : "";
 
           var mainRow =
-            '<tr id="' + esc(rowId) + '" data-error-msg="' + esc(msgKey) + '" tabindex="-1">' +
+            '<tr id="' + esc(rowId) + '" class="err-ov-selectable-row" data-error-msg="' + esc(msgKey) + '" aria-selected="false" tabindex="-1">' +
+              '<td class="col-select"><label class="err-cb-wrap"><input type="checkbox" class="err-ov-checkbox" data-ov-select aria-label="Filter details to ' + esc(r.message) + '" /><span class="err-cb-box" aria-hidden="true"></span></label></td>' +
               '<td class="col-idx">' + (idx + 1) + "</td>" +
               '<td class="col-text">' + esc(r.message) + "</td>" +
               '<td class="col-num cell-err" data-val="' + (Number(r.count) || 0) + '">' + fmtInt(r.count) + "</td>" +
@@ -472,7 +479,7 @@
 
           var drawerRow =
             '<tr id="' + esc(drawerId) + '" class="drawer-row err-ov-chart-drawer" data-ov-chart-id="' + esc(chartIdStr) + '" hidden>' +
-              '<td colspan="6">' +
+              '<td colspan="7">' +
                 '<div class="err-ov-chart-box chart-canvas-light">' +
                   '<img class="zoomable-chart" src="' + esc(chartSrc) + '" alt="' + esc(chartLabel) + '" data-chart-title="' + esc(chartLabel) + '" loading="lazy" decoding="async" />' +
                 "</div>" +
@@ -483,7 +490,17 @@
         }).join("");
         if (ovTfoot) {
           ovTfoot.innerHTML =
+            '<tr class="filtered-totals-row" id="err-ov-filtered-totals" hidden>' +
+              '<td class="col-select"></td>' +
+              '<td class="col-idx">ƒ</td>' +
+              '<td class="col-text"></td>' +
+              '<td class="col-num"></td>' +
+              '<td class="col-num"></td>' +
+              '<td class="col-text"></td>' +
+              '<td class="col-actions"></td>' +
+            "</tr>" +
             "<tr>" +
+              '<td class="col-select"></td>' +
               '<td class="col-idx">Σ</td>' +
               '<td class="col-text">Total Failures (' + fmtInt(overviewRows.length) + " signatures)</td>" +
               '<td class="col-num cell-err">' + fmtInt(totalIncCount) + "</td>" +
@@ -504,6 +521,7 @@
     var toggleAllBtn = document.getElementById("err-toggle-all-traces");
     var tzOffsetMs = computeReportTzOffsetMs(meta);
     var cards = [];
+    var totalDetailCount = 0;
 
     function setTraceExpanded(wrap, btn, open) {
       if (!wrap) return;
@@ -555,7 +573,7 @@
         if (countBadge) countBadge.textContent = "0 incident groups";
       } else {
         var frag = document.createDocumentFragment();
-        var totalDetailCount = incidents.reduce(function (s, i) { return s + (Number(i.count) || 0); }, 0);
+        totalDetailCount = incidents.reduce(function (s, i) { return s + (Number(i.count) || 0); }, 0);
 
         incidents.forEach(function (inc, idx) {
           var n = idx + 1;
@@ -701,6 +719,7 @@
           cards.push({
             el: tr,
             item: inc,
+            msgKey: msgKey,
             traceWrap: tr.querySelector("[data-trace-wrap]"),
             toggleBtn: tr.querySelector("[data-toggle-trace]"),
             blob: ((inc.testCaseName || "") + " " + (inc.actionName || "") + " " + (inc.requestName || "") + " " + dumpHints.join(" ") + " " + (inc.message || "") + " " + traceText).toLowerCase()
@@ -711,6 +730,13 @@
         incTbody.appendChild(frag);
         if (incTfoot) {
           incTfoot.innerHTML =
+            '<tr class="filtered-totals-row" id="err-inc-filtered-totals" hidden>' +
+              '<td class="col-idx">ƒ</td>' +
+              '<td class="col-num"></td>' +
+              '<td class="col-text"></td>' +
+              '<td class="col-text"></td>' +
+              '<td class="col-text"></td>' +
+            "</tr>" +
             "<tr>" +
               '<td class="col-idx">Σ</td>' +
               '<td class="col-num cell-err">' + fmtInt(totalDetailCount) + "</td>" +
@@ -727,13 +753,22 @@
     }
 
     function applyDetailsFilter() {
-      if (!filterInput || !cards.length) return;
-      var q = filterInput.value;
+      if (!cards.length) return;
+      var q = filterInput ? filterInput.value : "";
+      var hasSel = selectedMsgs.size > 0;
+      var hasQuery = Boolean(q && q.trim());
+      var isFiltered = hasSel || hasQuery;
       var vis = 0;
+      var visOccurrences = 0;
       cards.forEach(function (c) {
-        var ok = UI.matchesFilter(c.blob, q, c.item);
+        var selOk = !hasSel || selectedMsgs.has(c.msgKey);
+        var txtOk = UI.matchesFilter(c.blob, q, c.item);
+        var ok = selOk && txtOk;
         c.el.hidden = !ok;
-        if (ok) vis++;
+        if (ok) {
+          vis++;
+          visOccurrences += Number(c.item && c.item.count) || 0;
+        }
       });
       if (incTbody) {
         var seq = 1;
@@ -743,12 +778,126 @@
           }
         });
       }
+      var incFilteredRow = document.getElementById("err-inc-filtered-totals");
+      if (incFilteredRow) {
+        if (isFiltered) {
+          var visPct = totalDetailCount > 0 ? (visOccurrences * 100) / totalDetailCount : 0;
+          incFilteredRow.hidden = false;
+          incFilteredRow.cells[1].innerHTML =
+            '<div class="incident-count-val">' + fmtInt(visOccurrences) + "</div>" +
+            '<div class="incident-count-share">' + fmtDec(visPct, 1) + "%</div>";
+          incFilteredRow.cells[4].textContent = "Filtered Total (" + fmtInt(vis) + " of " + fmtInt(cards.length) + " groups)";
+        } else {
+          incFilteredRow.hidden = true;
+        }
+      }
       if (countBadge) {
-        countBadge.textContent = q && q.trim()
+        countBadge.textContent = isFiltered
           ? (vis + " / " + cards.length + " incident groups")
           : (fmtInt(cards.length) + " incident group(s)");
       }
       syncToggleAllBtn();
+    }
+
+    function syncSelectionUi() {
+      var ovRows = ovTbody ? Array.prototype.slice.call(ovTbody.querySelectorAll("tr.err-ov-selectable-row")) : [];
+      var selectedCount = 0;
+      var selectedOccurrences = 0;
+      ovRows.forEach(function (row) {
+        var msg = row.getAttribute("data-error-msg");
+        var isSel = selectedMsgs.has(msg);
+        if (isSel) {
+          selectedCount++;
+          var countCell = row.cells[3];
+          selectedOccurrences += countCell ? (Number(countCell.getAttribute("data-val")) || 0) : 0;
+        }
+        row.classList.toggle("is-selected", isSel);
+        row.setAttribute("aria-selected", isSel ? "true" : "false");
+        var cb = row.querySelector("[data-ov-select]");
+        if (cb) cb.checked = isSel;
+      });
+
+      var ovFilteredRow = document.getElementById("err-ov-filtered-totals");
+      if (ovFilteredRow) {
+        if (selectedCount > 0) {
+          var selShare = totalIncCount > 0 ? (selectedOccurrences * 100) / totalIncCount : 0;
+          ovFilteredRow.hidden = false;
+          ovFilteredRow.cells[2].textContent = "Selected Total (" + fmtInt(selectedCount) + " of " + fmtInt(ovRows.length) + " signatures)";
+          ovFilteredRow.cells[3].textContent = fmtInt(selectedOccurrences);
+          ovFilteredRow.cells[4].textContent = fmtDec(selShare, 1) + "%";
+        } else {
+          ovFilteredRow.hidden = true;
+        }
+      }
+
+      if (selectAllCb) {
+        selectAllCb.checked = ovRows.length > 0 && selectedCount === ovRows.length;
+        selectAllCb.indeterminate = selectedCount > 0 && selectedCount < ovRows.length;
+      }
+      if (ovClearSelBtn) {
+        ovClearSelBtn.hidden = selectedCount === 0;
+        ovClearSelBtn.textContent = "Clear Filter (" + selectedCount + ") ✕";
+      }
+      if (detailsClearSelBtn) {
+        detailsClearSelBtn.hidden = selectedCount === 0;
+        detailsClearSelBtn.textContent = "Selected: " + selectedCount + (selectedCount === 1 ? " error" : " errors") + " ✕";
+      }
+      applyDetailsFilter();
+    }
+
+    function clearOverviewSelection() {
+      if (!selectedMsgs.size) return;
+      selectedMsgs.clear();
+      syncSelectionUi();
+      if (statusEl) {
+        statusEl.textContent = "Cleared error selection filter";
+      }
+    }
+
+    if (selectAllCb) {
+      selectAllCb.addEventListener("change", function () {
+        var ovRows = ovTbody ? Array.prototype.slice.call(ovTbody.querySelectorAll("tr.err-ov-selectable-row")) : [];
+        if (selectAllCb.checked) {
+          ovRows.forEach(function (row) {
+            var msg = row.getAttribute("data-error-msg");
+            if (msg !== null) selectedMsgs.add(msg);
+          });
+        } else {
+          selectedMsgs.clear();
+        }
+        syncSelectionUi();
+      });
+    }
+
+    if (ovClearSelBtn) {
+      ovClearSelBtn.addEventListener("click", clearOverviewSelection);
+    }
+    if (detailsClearSelBtn) {
+      detailsClearSelBtn.addEventListener("click", clearOverviewSelection);
+    }
+
+    if (ovTbody) {
+      ovTbody.addEventListener("change", function (e) {
+        var cb = e.target.closest("[data-ov-select]");
+        if (!cb) return;
+        var row = cb.closest("tr.err-ov-selectable-row");
+        if (!row) return;
+        var msg = row.getAttribute("data-error-msg");
+        if (cb.checked) selectedMsgs.add(msg);
+        else selectedMsgs.delete(msg);
+        syncSelectionUi();
+      });
+
+      ovTbody.addEventListener("click", function (e) {
+        if (e.target.closest("a, button, input, label")) return;
+        if (window.getSelection && String(window.getSelection()).trim()) return;
+        var row = e.target.closest("tr.err-ov-selectable-row");
+        if (!row) return;
+        var msg = row.getAttribute("data-error-msg");
+        if (selectedMsgs.has(msg)) selectedMsgs.delete(msg);
+        else selectedMsgs.add(msg);
+        syncSelectionUi();
+      });
     }
 
     if (filterInput && cards.length) {
@@ -887,11 +1036,19 @@
         var matchRow = rows.find(function (r) {
           return !r.hidden && r.getAttribute("data-error-msg") === msgKey;
         });
-        var clearedFilter = false;
+        var adjustedFilter = false;
+        if (!matchRow && selectedMsgs.size > 0 && !selectedMsgs.has(msgKey)) {
+          selectedMsgs.add(msgKey);
+          syncSelectionUi();
+          adjustedFilter = true;
+          matchRow = rows.find(function (r) {
+            return !r.hidden && r.getAttribute("data-error-msg") === msgKey;
+          });
+        }
         if (!matchRow && filterInput && filterInput.value) {
           filterInput.value = "";
           applyDetailsFilter();
-          clearedFilter = true;
+          adjustedFilter = true;
           matchRow = rows.find(function (r) {
             return !r.hidden && r.getAttribute("data-error-msg") === msgKey;
           });
@@ -900,7 +1057,7 @@
           jumpToRow(
             matchRow,
             "center",
-            (clearedFilter ? "Cleared details filter and jumped" : "Jumped") +
+            (adjustedFilter ? "Updated details filter and jumped" : "Jumped") +
               " to first matching detail for " + msgKey
           );
         }

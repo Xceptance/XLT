@@ -726,6 +726,30 @@ html.dark-theme .report-context-bar {
 .ctx-meta-sep {
   color: rgba(255, 255, 255, 0.42);
 }
+.report-context-xtc {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 14px;
+  font-size: 11px;
+  line-height: 1.35;
+  margin-block-start: 2px;
+}
+.ctx-xtc-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.ctx-xtc-key {
+  color: rgba(255, 255, 255, 0.74);
+  font-weight: 500;
+}
+.ctx-xtc-val {
+  color: #ffffff;
+  font-weight: 700;
+}
 
 /* ============================================================================
    Main Container & Compact Card Primitives
@@ -3039,6 +3063,93 @@ img.zoomable-chart,
   border-radius: 0;
 }
 
+.err-overview-table th.col-select,
+.err-overview-table td.col-select {
+  inline-size: 32px;
+  text-align: center;
+  padding-inline: 6px;
+}
+
+.err-cb-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.err-ov-checkbox {
+  margin: 0;
+  inline-size: 14px;
+  block-size: 14px;
+  accent-color: var(--brand-blue);
+  cursor: pointer;
+}
+
+.err-cb-box {
+  display: none;
+}
+
+@supports not (accent-color: var(--brand-blue)) {
+  .err-ov-checkbox {
+    position: absolute;
+    clip-path: inset(50%);
+    overflow: hidden;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    white-space: nowrap;
+  }
+
+  .err-cb-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 14px;
+    block-size: 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 3px;
+    background: var(--bg-surface);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .err-ov-checkbox:focus-visible + .err-cb-box {
+    outline: 2px solid var(--brand-blue);
+    outline-offset: 2px;
+  }
+
+  .err-ov-checkbox:checked + .err-cb-box,
+  .err-ov-checkbox:indeterminate + .err-cb-box {
+    background: var(--brand-blue);
+    border-color: var(--brand-blue);
+  }
+
+  .err-ov-checkbox:checked + .err-cb-box::after {
+    content: "✓";
+  }
+
+  .err-ov-checkbox:indeterminate + .err-cb-box::after {
+    content: "–";
+  }
+}
+
+tr.err-ov-selectable-row {
+  cursor: pointer;
+}
+
+tr.err-ov-selectable-row.is-selected > td {
+  background: var(--brand-blue-subtle);
+}
+
+tr.err-ov-selectable-row.is-selected > td:first-child {
+  box-shadow: inset 3px 0 0 var(--brand-blue);
+}
+
 .err-overview-table th.col-actions,
 .err-overview-table td.col-actions {
   white-space: nowrap;
@@ -3940,6 +4051,9 @@ html.dark-theme .err-ov-chart-box {
   color: var(--text-primary);
   border-color: var(--border-medium);
 }
+html.dark-theme tr.err-ov-selectable-row.is-selected > td {
+  background: color-mix(in srgb, var(--brand-blue) 18%, var(--bg-surface));
+}
 html.dark-theme tr.is-jump-target > td {
   animation-name: err-jump-flash-dark;
 }
@@ -4227,9 +4341,13 @@ html.dark-theme .apdex-pill.apdex-unacceptable {
   .context-sep,
   .report-context-meta,
   .ctx-meta-duration,
-  .ctx-meta-sep {
+  .ctx-meta-sep,
+  .ctx-xtc-val {
     color: #18181b !important;
     border-inline-start-color: #d4d4d8 !important;
+  }
+  .ctx-xtc-key {
+    color: #52525b !important;
   }
   .chart-workbench,
   .stream-sticky-header {

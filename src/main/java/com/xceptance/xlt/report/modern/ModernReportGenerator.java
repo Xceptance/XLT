@@ -239,6 +239,11 @@ public class ModernReportGenerator
         // Properties
         final List<Map<String, String>> propertiesList = new ArrayList<>();
         String xtcLoadTestName = null;
+        String xtcOrganization = null;
+        String xtcProject = null;
+        String xtcLoadTestId = null;
+        String xtcResultId = null;
+        String xtcReportId = null;
         final Element propsEl = firstChildElement(configEl, "properties");
         if (propsEl != null)
         {
@@ -254,8 +259,39 @@ public class ModernReportGenerator
                 {
                     xtcLoadTestName = value.trim();
                 }
+                else if ("com.xceptance.xtc.organization".equals(name) && StringUtils.isNotBlank(value))
+                {
+                    xtcOrganization = value.trim();
+                }
+                else if ("com.xceptance.xtc.project".equals(name) && StringUtils.isNotBlank(value))
+                {
+                    xtcProject = value.trim();
+                }
+                else if ("com.xceptance.xtc.loadtest.run.id".equals(name) && StringUtils.isNotBlank(value))
+                {
+                    xtcLoadTestId = value.trim();
+                }
+                else if ("com.xceptance.xtc.loadtest.result.id".equals(name) && StringUtils.isNotBlank(value))
+                {
+                    xtcResultId = value.trim();
+                }
+                else if ("com.xceptance.xtc.loadtest.report.id".equals(name) && StringUtils.isNotBlank(value))
+                {
+                    xtcReportId = value.trim();
+                }
             }
             propertiesList.sort(Comparator.comparing(m -> m.getOrDefault("name", "")));
+        }
+
+        Map<String, String> xtcMeta = null;
+        if (StringUtils.isNotBlank(xtcOrganization))
+        {
+            xtcMeta = new LinkedHashMap<>(5);
+            xtcMeta.put("organization", xtcOrganization);
+            xtcMeta.put("project", StringUtils.defaultString(xtcProject));
+            xtcMeta.put("loadTestId", StringUtils.defaultString(xtcLoadTestId));
+            xtcMeta.put("resultId", StringUtils.defaultString(xtcResultId));
+            xtcMeta.put("reportId", StringUtils.defaultString(xtcReportId));
         }
 
         final String loadTestName = nonBlankOrDefault(xtcLoadTestName, extractCommentHeadline(comments));
@@ -400,6 +436,10 @@ public class ModernReportGenerator
         metaBundle.put("xltVersion", productVersion);
         metaBundle.put("projectName", projectName);
         metaBundle.put("loadTestName", loadTestName);
+        if (xtcMeta != null)
+        {
+            metaBundle.put("xtc", xtcMeta);
+        }
         metaBundle.put("comments", comments);
         metaBundle.put("startTime", startTimeStr);
         metaBundle.put("endTime", endTimeStr);
