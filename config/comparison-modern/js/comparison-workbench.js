@@ -101,8 +101,8 @@
     var uiState = {
       selectedKey: requestedKey || (items[0] ? (items[0].key || items[0].name) : ""),
       activeTab: defaultTab,
-      sortCol: "mean",
-      sortDir: "desc",
+      sortCol: "name",
+      sortDir: "asc",
       filterQuery: "",
       statusFilter: "all",
       labelFilter: "ALL",

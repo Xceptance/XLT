@@ -1630,6 +1630,11 @@ html.dark-theme .wb-kpi-val.highlight-cph {
   text-align: end;
   vertical-align: middle;
 }
+.data-table thead tr:first-child th {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
 .data-table thead tr.group-header-row th {
   text-align: center;
   text-transform: uppercase;
@@ -3188,12 +3193,21 @@ tr.is-jump-target > td:first-child {
   text-decoration: underline;
 }
 
+.incident-details-table thead th:nth-child(1),
+.incident-details-table thead th:nth-child(2),
+.incident-details-table thead th:nth-child(3),
+.incident-details-table thead th:nth-child(4) {
+  inline-size: 1%;
+  white-space: nowrap;
+}
+
 .incident-details-table tbody td {
   vertical-align: top;
-  padding: 10px;
+  padding: 10px 8px;
 }
 
 .incident-details-table td.incident-count-cell {
+  inline-size: 1%;
   white-space: nowrap;
   text-align: end;
 }
@@ -3211,11 +3225,9 @@ tr.is-jump-target > td:first-child {
   margin-block-start: 2px;
 }
 
-.incident-details-table td.incident-testcase-cell {
-  white-space: nowrap;
-}
-
+.incident-details-table td.incident-testcase-cell,
 .incident-details-table td.incident-action-cell {
+  inline-size: 1%;
   white-space: nowrap;
 }
 
@@ -3227,6 +3239,7 @@ tr.is-jump-target > td:first-child {
   white-space: normal;
   min-inline-size: 520px;
   inline-size: 100%;
+  padding-inline: 10px;
 }
 
 .incident-trace-header {
