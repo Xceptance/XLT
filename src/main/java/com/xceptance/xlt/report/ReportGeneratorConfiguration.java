@@ -199,6 +199,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
+    private static final String PROP_ACTION_MERGE_RULES_PREFIX = PROP_PREFIX + "actionMergeRules.";
+
     static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
 
     // Special settings for profiling and debugging
@@ -231,6 +233,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_CHART_CAPPING_MODE = PROP_CHARTS_PREFIX + "cappingMode";
 
     private static final String PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES = PROP_PREFIX + "requests.removeIndexes";
+
+    private static final String PROP_REMOVE_INDEXES_FROM_ACTION_NAMES = PROP_PREFIX + "actions.removeIndexes";
 
     private static final String PROP_SLOWEST_REQUESTS_PER_BUCKET = PROP_PREFIX + "slowestRequests.requestsPerBucket";
 
@@ -402,6 +406,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final boolean removeIndexesFromRequestNames;
 
     /**
+     * Whether to automatically remove any indexes from the action name.
+     */
+    private final boolean removeIndexesFromActionNames;
+
+    /**
      * Whether dynamic/interactive charts are enabled.
      */
     private boolean dynamicChartsEnabled;
@@ -475,16 +484,20 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         // replace merge rules if necessary
         {
             final Map<String, String> currentMergeRules = snapshotMergeRules();
+            final Map<String, String> currentActionMergeRules = snapshotActionMergeRules();
             loadProperties(new File(configDirectory, XltConstants.MASTERCONTROLLER_PROPERTY_FILENAME));
             mergeMergeRules(currentMergeRules);
+            mergeActionMergeRules(currentActionMergeRules);
         }
 
         // load test suite properties
         // replace merge rules if necessary
         {
             final Map<String, String> currentMergeRules = snapshotMergeRules();
+            final Map<String, String> currentActionMergeRules = snapshotActionMergeRules();
             addProperties(xltProperties);
             mergeMergeRules(currentMergeRules);
+            mergeActionMergeRules(currentActionMergeRules);
         }
 
         // load command line property file
@@ -497,8 +510,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             }
 
             final Map<String, String> currentMergeRules = snapshotMergeRules();
+            final Map<String, String> currentActionMergeRules = snapshotActionMergeRules();
             loadProperties(overridePropertyFile);
             mergeMergeRules(currentMergeRules);
+            mergeActionMergeRules(currentActionMergeRules);
         }
 
         // load command line properties
@@ -506,8 +521,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         if (commandLineProperties != null)
         {
             final Map<String, String> currentMergeRules = snapshotMergeRules();
+            final Map<String, String> currentActionMergeRules = snapshotActionMergeRules();
             addProperties(commandLineProperties);
             mergeMergeRules(currentMergeRules);
+            mergeActionMergeRules(currentActionMergeRules);
         }
 
         File testReportsRootDir = getFileProperty(PROP_REPORTS_ROOT_DIR, new File(homeDirectory, XltConstants.REPORT_ROOT_DIR));
@@ -582,6 +599,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         threadQueueLength = Math.max(1, getIntProperty(PROP_THREAD_QUEUE_LENGTH, Dispatcher.DEFAULT_QUEUE_LENGTH));
 
         removeIndexesFromRequestNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES, true);
+
+        removeIndexesFromActionNames = getBooleanProperty(PROP_REMOVE_INDEXES_FROM_ACTION_NAMES, true);
 
         dataRecordClasses = readDataRecordClasses();
         reportProviderClasses = readReportProviderClasses();
@@ -1255,6 +1274,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
+     * Returns whether to automatically remove any indexes from the action name.
+     *
+     * @return <code>true</code> if indexes are to be removed, <code>false</code> otherwise
+     */
+    public boolean getRemoveIndexesFromActionNames()
+    {
+        return removeIndexesFromActionNames;
+    }
+
+    /**
      * Reads and returns all configured runtime interval boundaries.
      *
      * @return the boundary values
@@ -1671,6 +1700,13 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         }
     }
 
+    /**
+     * Snapshots the currently defined request merge rules by copying them to a map and
+     * removing them from the active configuration properties. This is used during multi-stage
+     * property file loading to prevent old merge rules from overriding new ones.
+     *
+     * @return a map containing the snapshotted request merge rules
+     */
     private Map<String, String> snapshotMergeRules()
     {
         // save old merge rules and remove them from configuration
@@ -1685,6 +1721,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return oldMergeRulesComplete;
     }
 
+    /**
+     * Merges previously snapshotted request merge rules back into the active configuration
+     * properties, but only if no new request merge rules have been loaded. This ensures that
+     * default rules are preserved if no overriding rules were specified.
+     *
+     * @param oldMergeRulesComplete
+     *            the previously snapshotted request merge rules
+     */
     private void mergeMergeRules(final Map<String, String> oldMergeRulesComplete)
     {
         // if no new merge rule was loaded, apply the old rules
@@ -1698,18 +1742,85 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Reads the configured request processing rules and returns new instances
+     * Snapshots the currently defined action merge rules by copying them to a map and
+     * removing them from the active configuration properties. This is used during multi-stage
+     * property file loading to prevent old action merge rules from overriding new ones.
+     *
+     * @return a map containing the snapshotted action merge rules
+     */
+    private Map<String, String> snapshotActionMergeRules()
+    {
+        // save old action merge rules and remove them from configuration
+        final Set<String> oldMergeRuleKeys = getPropertyKeysWithPrefix(PROP_ACTION_MERGE_RULES_PREFIX);
+        final Map<String, String> oldMergeRulesComplete = new HashMap<>();
+        for (final String key : oldMergeRuleKeys)
+        {
+            oldMergeRulesComplete.put(key, getStringProperty(key));
+            getProperties().remove(key);
+        }
+
+        return oldMergeRulesComplete;
+    }
+
+    /**
+     * Merges previously snapshotted action merge rules back into the active configuration
+     * properties, but only if no new action merge rules have been loaded. This ensures that
+     * default action rules are preserved if no overriding rules were specified.
+     *
+     * @param oldMergeRulesComplete
+     *            the previously snapshotted action merge rules
+     */
+    private void mergeActionMergeRules(final Map<String, String> oldMergeRulesComplete)
+    {
+        // if no new action merge rule was loaded, apply the old rules
+        if (getPropertyKeysWithPrefix(PROP_ACTION_MERGE_RULES_PREFIX).isEmpty())
+        {
+            for (final Entry<String, String> rule : oldMergeRulesComplete.entrySet())
+            {
+                getProperties().setProperty(rule.getKey(), rule.getValue());
+            }
+        }
+    }
+
+    /**
+     * Reads the configured request processing rules and returns new instances.
      *
      * @return the list of request processing rules
      */
     public List<MergeRule> getMergeRules()
     {
-        final List<MergeRule> requestProcessingRules = new ArrayList<>();
+        return getMergeRules(PROP_REQUEST_MERGE_RULES_PREFIX, "request");
+    }
+
+    /**
+     * Reads the configured action processing rules and returns new instances.
+     *
+     * @return the list of action processing rules
+     */
+    public List<MergeRule> getActionMergeRules()
+    {
+        return getMergeRules(PROP_ACTION_MERGE_RULES_PREFIX, "action");
+    }
+
+    /**
+     * Reads and parses the merge rules defined under the given property prefix.
+     *
+     * @param prefix
+     *            the property prefix (e.g. PROP_REQUEST_MERGE_RULES_PREFIX)
+     * @param ruleType
+     *            the string representation of the rule type for error logging (e.g. "request" or "action")
+     * @return the list of parsed merge rules
+     * @throws XltException
+     *             if any configuration rule is invalid or contradicts other settings
+     */
+    private List<MergeRule> getMergeRules(final String prefix, final String ruleType)
+    {
+        final List<MergeRule> rules = new ArrayList<>();
 
         boolean invalidRulePresent = false;
-        for (final int i : getRuleNumbers(PROP_REQUEST_MERGE_RULES_PREFIX))
+        for (final int i : getRuleNumbers(prefix))
         {
-            final String basePropertyName = PROP_REQUEST_MERGE_RULES_PREFIX + i;
+            final String basePropertyName = prefix + i;
 
             // general stuff
             final var newName = new NewName(getStringProperty(basePropertyName + ".newName", "", false));
@@ -1769,12 +1880,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                           contentTypeExcludePattern, statusCodeExcludePattern, agentNameExcludePattern,
                                                           transactionNameExcludePattern, httpMethodExcludePattern, continueOnMatchAtId,
                                                           continueOnNoMatchAtId, dropOnMatch, urlText, urlTextExclude);
-                requestProcessingRules.add(mergeRule);
+                rules.add(mergeRule);
             }
             catch (final InvalidMergeRuleException imre)
             {
                 // Log it and continue with next rule.
-                final String errMsg = "Request processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();
+                final String errMsg = StringUtils.capitalize(ruleType) + " processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();
                 System.err.println(errMsg);
                 // remember that we encountered an invalid merge rule
                 invalidRulePresent = true;
@@ -1783,10 +1894,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         if (invalidRulePresent)
         {
-            throw new XltException("Please check your configuration. At least one request processing rule is invalid.");
+            throw new XltException("Please check your configuration. At least one " + ruleType + " processing rule is invalid.");
         }
 
-        return requestProcessingRules;
+        return rules;
     }
 
     /**
