@@ -704,15 +704,23 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
         final int l = length & ~(8 - 1);
         final int l2 = length + from;
 
-        for (; i < l; i += 8)
+        for (; i < l; i += 8) 
         {
-            h = -1807454463 * h + 1742810335 * src[i + 0] + 887503681 * src[i + 1] + 28629151 * src[i + 2] + 923521 * src[i + 3] +
-                29791 * src[i + 4] + 961 * src[i + 5] + 31 * src[i + 6] + 1 * src[i + 7];
+            h = -1807454463 * h;
+            int h1 = 1742810335 * src[i] +
+                            887503681 * src[i+1] +
+                            28629151 * src[i+2] +
+                            923521 * src[i+3] +
+                            29791 * src[i+4] +
+                            961 * src[i+5] +
+                            31 * src[i+6] +
+                            src[i+7];
+            h += h1;
         }
 
-        for (; i < l2; i++)
+        for (; i < l2; i++) 
         {
-            h = 31 * h + src[i];
+            h = (src[i] - h) + (h << 5);
         }
 
         this.hashCode = h;
