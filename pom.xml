@@ -508,7 +508,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.4.0-jre</version>
+            <version>33.7.1-jre</version>
         </dependency>
         <!-- slf4j is used by many libs. Ensure that the version used by logback-classic wins. -->
         <dependency>
