@@ -35,6 +35,7 @@ import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.MergeRule;
 import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
+import com.xceptance.xlt.report.mergerules.ActionDataRequestWrapper;
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import it.unimi.dsi.util.FastRandom;
@@ -85,6 +86,11 @@ class DataParserThread implements Runnable
      * there is no shared state between threads, hence we can more efficiently cache and process stuff.
      */
     private final List<MergeRule> mergeRules;
+    
+    /**
+     * The action processing rules for this thread. Each parser thread gets its own copy of the rule set.
+     */
+    private final List<MergeRule> actionMergeRules;
 
     /**
      * Constructor.
@@ -113,6 +119,7 @@ class DataParserThread implements Runnable
         // Get the rules now! 
         // Reason: If a rule is invalid, an exception is thrown from here, which will terminate the report generator correctly.
         mergeRules = config.getMergeRules();
+        actionMergeRules = config.getActionMergeRules();
     }
 
     /**
@@ -137,6 +144,9 @@ class DataParserThread implements Runnable
         // our request processing, this is move away from here to test it better
         final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
                                                                           config.getRemoveIndexesFromRequestNames());
+        
+        final MergeRuleProcessor actionProcessing = new MergeRuleProcessor(actionMergeRules,
+                                                                           config.getRemoveIndexesFromActionNames());
 
         while (true)
         {
@@ -247,6 +257,17 @@ class DataParserThread implements Runnable
                         if (result != null)
                         {
                             postProcessedData.add(result);
+                        }
+                    }
+                    else if (data instanceof ActionData)
+                    {
+                        final ActionDataRequestWrapper wrapper = new ActionDataRequestWrapper((ActionData) data);
+                        final RequestData result = actionProcessing.postprocess(wrapper);
+                        if (result != null)
+                        {
+                            final ActionData processedAction = ((ActionDataRequestWrapper) result).getActionData();
+                            processedAction.getName().hashCode();
+                            postProcessedData.add(processedAction);
                         }
                     }
                     else
